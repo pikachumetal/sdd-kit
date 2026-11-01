@@ -101,8 +101,8 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 
 - GIVEN el molde `salas-3`, con `ROADMAP.md`; un `CHANGELOG.md` con `## [1.4.1] - 2026-10-05` y `## [1.4.0] - 2026-09-01`; en «Por triar» de `debt.md`, dos filas del informe de QA `docs/qa/2026-10-12-informe.md`: «La exportación a CSV pierde las tildes desde la 1.4.2» y «`salas libres --planta 2` lista también salas de la planta 1»; y en «En espera», «Las reservas de más de 8 h no avisan al responsable», del 2026-07-01, con «Falta» `2.º caso`, con `## [1.3.0] - 2026-07-20` también en el changelog. En el molde, la exportación conserva las tildes y `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`
 - WHEN el usuario pide «Tria lo que hay por triar en la deuda.»
-- THEN `sdd-roadmap` no propone la fila del CSV en «Lista»: como no se reproduce, la propone en «En espera» con «Falta» `reproducirlo`
-- AND propone la fila de la planta en «Lista», con «Evidencia» `node src/app.js libres --planta 2` → `Norte (planta 1)` y un «Destino» no vacío: el id de una fila de Now o Next, nueva o existente, o `sin fila`
+- THEN `sdd-roadmap` no propone la fila del CSV en «Lista»: como no se reproduce, la propone en «En espera» con «Falta» `reproducirlo` y «Causa» `sin determinar`
+- AND propone la fila de la planta en «Lista», con «Causa» `defecto del producto`, «Evidencia» `node src/app.js libres --planta 2` → `Norte (planta 1)` y un «Destino» no vacío: el id de una fila de Now o Next, nueva o existente, o `sin fila`
 - AND propone la fila de las 8 h, que `roadmap check` avisa que caduca, en «Descartadas» con el «Motivo» `caducada`; toda fila descartada lleva su motivo
 - AND en `pair` y `delegate` no escribe en `debt.md` ni en `ROADMAP.md` hasta que el usuario decide, como en el resto de entradas; con la decisión, o con «decide tú», mueve cada fila que cambia de estado a la tabla de ese estado, con la «Fecha» del día, y deja lo decidido en el cuerpo del commit; una fila que sigue en su estado conserva su «Fecha»
 - AND en `unattended`, lo que no puede decidir se queda en «Por triar»
@@ -116,6 +116,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - THEN cada ítem es una fila de «Deuda técnica» cuyo «Destino» empieza por `**Actuar**` (lo que iría a «Lista»), `**Esperar 2.º ticket**` (a «En espera», con lo que falta) o `**Descartada**` (con su motivo), y ninguna queda sin «Destino»
 - AND la fila del CSV va a `**Esperar 2.º ticket**` con «falta reproducirlo»; la de la planta va a `**Actuar**`, con el comando que la reproduce
 - AND no crea `ROADMAP.md` ni `debt.md`
+- AND cada «Destino» lleva tras la marca `· causa: <causa>`, y el de `**Actuar**`, además, `· arreglo: <arreglo>`; con dos casos, `· remedio: <remedio>`
 
 ### Una fila con dos o más tests de comportamiento nuevo no es un patch
 
@@ -131,10 +132,27 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - THEN la fila enlaza el `patch.md` de la 0007 con la sección de las medidas
 - AND ese `patch.md` lleva las cifras que cita la fila (`test/store.test.js` 31 min 40 s), en una adenda fechada
 
+### El segundo caso se busca por causa
+
+- GIVEN el molde `salas-3-cause`: en «En espera», «Las salidas de `DRY_RUN=1` no aparecen en `out/`», con «Falta» `2.º caso`, cuyo ticket mide una ruta de 152 caracteres descartada en silencio por `out_path` y se resuelve con un `RUNS_DIR` en `D:\r`; en «Por triar», «Copiar el molde de una campaña falla con `ENOENT` en una carpeta que existe», cuyo ticket mide una ruta de más de 260 y se resuelve igual; «`/tmp` no existe en la sesión de Git Bash…», que se resuelve con `mkdir -p /tmp`; y dos filas que se resuelven con `relanza`: un `pnpm install` con la red caída y un test que agota su tiempo con la máquina cargada
+- WHEN el usuario pide «Tria lo que hay por triar en la deuda.»
+- THEN `sdd-roadmap` propone una sola fila en «Lista» que junta las dos primeras, con «Causa» `entorno de la máquina`, los dos tickets en «Origen» y en «Evidencia», el `RUNS_DIR` corto en «Remedio temporal» (no `ninguno`) y «Arreglo» `comprobación automática`, porque el lanzador puede medir la ruta al arrancar; no `línea nueva`
+- AND la fila del `/tmp` no cuenta como 2.º caso, aunque comparte la causa: otro cambio y otro remedio son otro problema; se propone aparte, en «En espera» o en «Descartadas», con «Causa» `entorno de la máquina`
+- AND las dos filas de `relanza` no se juntan: un remedio de reintento no es criterio
+- AND el 2.º caso se busca en toda la deuda, también entre las filas de la tanda que se tría, y un hallazgo con el mismo mecanismo y otra categoría se reclasifica y cuenta
+
+### En 2.x, el segundo caso también pasa la fila a `**Actuar**`
+
+- GIVEN el molde `salas-cause-2x`, con `.docs/sdd/roadmap.md` 2.x, los dos tickets del `RUNS_DIR` de «El segundo caso se busca por causa» y, en «Deuda técnica», la fila de las salidas con «Destino» `**Esperar 2.º ticket** — falta 2.º caso`, sin causa
+- WHEN el usuario pide «Tria el ticket docs/tickets/2026-10-20-copia-molde.md. Decide tú.»
+- THEN esa fila queda con «Destino» `**Actuar** → sin fila · causa: entorno de la máquina · arreglo: comprobación automática · remedio: <RUNS_DIR corto>`, o con un id en lugar de `sin fila`, y enlaza los dos tickets
+- AND no queda otra fila de «Deuda técnica» para el segundo ticket
+- AND no crea `ROADMAP.md` ni `debt.md`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz (2.x: `.docs/sdd/roadmap.md`); la deuda, en `.docs/sdd/steering/debt.md` (2.x: «Deuda técnica» del roadmap). La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md` (2.x: bajo `specs/`). El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.
-- **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`; las secciones `Now`, `Next` y `Later`, en inglés, como en `roadmap`. El texto va en castellano, y también las etiquetas del brief (`**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**`, `**Toca:**`), los estados de la deuda y los literales del triaje (`reproducirlo`, `2.º caso`, `caducada`, `sin fila`).
+- **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`; las secciones `Now`, `Next` y `Later`, en inglés, como en `roadmap`. El texto va en castellano, y también las etiquetas del brief (`**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**`, `**Toca:**`), los estados de la deuda, las causas, los tipos de arreglo y los literales del triaje (`reproducirlo`, `2.º caso`, `caducada`, `sin fila`, `ninguno`).
 - **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» (2.x: `Actuar`) sin reproducirse o sin un 2.º caso.
 - **Avisos**: un posible duplicado entre una fila nueva y una existente se pregunta, no se resuelve.
 - **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva.

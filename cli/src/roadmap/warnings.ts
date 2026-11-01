@@ -22,7 +22,7 @@ function blockWarnings(lines: string[], block: Block): string[] {
 }
 
 const ABSORBED = /\*\*Absorbida por ([^*]*)\*\*/;
-const ACTING = /^\*\*Actuar → ([^*]*)\*\*/;
+const ACTING = /^\*\*Actuar(?:\*\*)? → ([^*·]*)/;
 const TASK_ID = /\b\d{4}\b/g;
 const WITHOUT_LINKS = /\[[^\]]*\]\([^)]*\)/g;
 

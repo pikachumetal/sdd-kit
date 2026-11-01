@@ -49,6 +49,8 @@ You MUST complete each phase before proceeding to the next.
 
 ### Phase 1: Root Cause Investigation
 
+**First, read the project's debt** (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of a 2.x roadmap) and compare the failure by meaning. A row that covers it: say so, with its «Remedio temporal». That isn't the root cause: the row stays open, and this process goes on.
+
 **BEFORE attempting ANY fix:**
 
 1. **Read Error Messages Carefully**

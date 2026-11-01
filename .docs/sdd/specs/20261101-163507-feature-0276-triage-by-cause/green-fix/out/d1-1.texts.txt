@@ -1,0 +1,22 @@
+--- [2]
+Empiezo por la deuda del proyecto y el hook.
+
+--- [9]
+**Causa raíz:** el hook está escrito en CommonJS, pero el `package.json` de la raíz declara `"type": "module"`, así que Node lo ejecuta como módulo ES y revienta en la línea 3.
+
+**Evidencia**
+- Ejecuté `.githooks/pre-commit` directamente, sin commitear. Sale con código 1 y este error:
+  ```
+  .githooks/pre-commit:3
+  const { spawnSync } = require('node:child_process');
+  ReferenceError: require is not defined in ES module scope
+  ```
+- `package.json` contiene solo `{"type": "module"}`, y entró en el commit `c5c9bee` junto con el resto del molde.
+- Para un fichero sin extensión como `pre-commit`, Node decide el formato con el `"type"` del `package.json` más cercano. Con `"type": "module"` lo trata como ESM, donde `require` no existe.
+- El fallo no depende de `notas.txt`. Pasa igual con cualquier commit, porque el hook muere antes de mirar nada. Tampoco depende de GIT_DIR ni de GIT_INDEX_FILE: el resultado fue el mismo con y sin ellos.
+- El hook no llega a crear el worktree temporal. `git worktree list` solo muestra el worktree principal y no hay `.git/hook-check`.
+
+**Lo que no he comprobado:** como el hook falla antes de ejecutar su lógica, no sé si el resto funciona. Los `git` que lanza heredan el entorno del commit, y eso podría dar un segundo fallo cuando el primero esté resuelto.
+
+No he tocado nada. Cuando quieras, te propongo el arreglo.
+

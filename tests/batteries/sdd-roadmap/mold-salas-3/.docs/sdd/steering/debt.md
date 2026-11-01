@@ -9,16 +9,16 @@
 
 ## En espera
 
-| Ítem | Origen | Impacto | Falta | Fecha |
-| --- | --- | --- | --- | --- |
-| Las reservas de más de 8 h no avisan al responsable | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
 
 ## Lista
 
-| Ítem | Origen | Impacto | Evidencia | Destino |
-| --- | --- | --- | --- | --- |
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Descartadas
 
-| Ítem | Origen | Motivo | Fecha |
-| --- | --- | --- | --- |
+| Ítem | Causa | Origen | Motivo | Fecha |
+| --- | --- | --- | --- | --- |

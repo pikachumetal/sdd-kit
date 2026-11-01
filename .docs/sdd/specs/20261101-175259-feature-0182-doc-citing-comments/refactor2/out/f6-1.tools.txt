@@ -1,0 +1,94 @@
+
+>>> Read: <run>/review-final-53bc211.diff
+<<< 1	# Review package: fd217d6..HEAD
+2	
+3	## Commits
+4	53bc211 feat(bookings): guardar la devolución
+5	
+6	## Files changed
+7	 src/app.js | 7 +++++++
+8	 1 file changed, 7 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e25d07a 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -39,10 +39,17 @@ function cancelledList() {
+16	 export function run(cmd, params) {
+17	   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+18	   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+19	   if (cmd === 'cancelar') return
+
+>>> Bash: cd <run>/repo && git show 53bc211 --stat | head -20; grep -n "rooms" src/app.js | head; ls; ls test* 2>/dev/null
+<<< commit 53bc2111521977a52cb0cf38109ddaf96438e58b
+Author: Fixture <fixture@example.com>
+Date:   Sun Nov 1 19:35:28 2026 +0100
+
+    feat(bookings): guardar la devolución
+    
+    Cuerpo del commit.
+
+ src/app.js | 7 +++++++
+ 1 file changed, 7 insertions(+)
+2:const rooms = ['Norte', 'Sur'];
+7:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+52:  if (!rooms.includes(room)) return 'sala no válida';
+package.json
+PRODUCT.md
+README.md
+src
+test
+app.test.js
+cancel.test.js
+
+=== RESULTADO (3 turnos, 0.11147889999999999 $)
+### Strengths
+- The change is small and has one purpose. `saveRefund` is 6 lines, well under the 30-line limit.
+- It reuses the existing `rooms` list instead of duplicating it.
+- The user-facing message is in Spanish: `'sala no válida'`.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:51`, the comment `// Task 4: validar antes de guardar`.**
+   - It cites a plan task. The task numbering lives in the plan, which is archived or renumbered, so the reference goes stale.
+   - It also only restates what the next line does (`if (!rooms.includes(room)) return …`).
+   - Delete it. If a reason is needed, say why the validation comes first, without the task number.
+
+2. **`src/app.js:50-54`, `saveRefund` has no tests.**
+   - The commit touches only `src/app.js`, and `test/` has only `app.test.js` and `cancel.test.js`.
+   - The validation branch and the IBAN normalisation are untested (Clean Code: possible "a test for every public method").
+   - Add tests for an invalid room, an IBAN with spaces, and a valid room.
+
+3. **`src/app.js:52-53`, `saveRefund` returns two different types.**
+   - It returns an error string for an invalid room and an object on success. A caller cannot tell the two apart without checking `typeof`.
+   - Because of this, an error message could be mistaken for a saved record.
+   - Throw an error, or return a uniform `{ ok, error }` result (Clean Code: possible "exceptions over return codes").
+
+4. **`src/app.js:53`, `iban.replaceAll(' ', '')` crashes when `iban` is `undefined` or not a string.**
+   - A user who forgets the IBAN gets a raw `TypeError` instead of a Spanish message.
+   - Validate it before use and return or raise a Spanish error.
+
+#### Minor (Nice to Have)
+- **`src/app.js:50`, no persistence.** The function is named "save" but only builds an object and stores nothing. It is also not wired into `run`, so nothing calls it. Confirm that this is intended and that a later task adds the wiring.
+- **`src/app.js:50`, the function sits below the `if (command) console.log(...)` line.** That line runs at import time, so new exports belong above it.
+- **`src/app.js:53`, `replaceAll(' ', '')` strips only plain spaces,** not tabs or non-breaking spaces. Consider `/\s/g`.
+
+### Recommendations
+- Add tests first, then fix the return contract and the input validation.
+- A Spanish error for a missing or invalid IBAN, as well as the room check, would make the validation complete.
+
+### Declined to judge
+- **`src/app.js:53`, `// requisito del proveedor: el IBAN va sin espacios`.** It is on the "Comentarios que citan documentos" list. «Requisito del proveedor» is not a document of this project, so it is a false positive. The comment also gives the reason for the normalisation, so I did not report it.
+- **IBAN checksum or format validation.** The spec is not in the package, so I set it aside as outside what I can judge. The Spec axis decides whether it is required.
+- **E2E rules.** None apply, because the project declares no E2E tests.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is simple and correct for the happy path. It has a stale plan-task comment, no tests, an inconsistent return type, and a crash on a missing IBAN.

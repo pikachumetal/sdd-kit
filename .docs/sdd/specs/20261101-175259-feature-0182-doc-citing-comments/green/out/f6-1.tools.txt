@@ -1,0 +1,90 @@
+
+>>> Read: <run>/review-final-9f2c906.diff
+<<< 1	# Review package: 63ebf49..HEAD
+2	
+3	## Commits
+4	9f2c906 feat(bookings): guardar la devolución
+5	
+6	## Files changed
+7	 src/app.js | 7 +++++++
+8	 1 file changed, 7 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e25d07a 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -39,10 +39,17 @@ function cancelledList() {
+16	 export function run(cmd, params) {
+17	   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+18	   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+19	   if (cmd === 'cancelar') return
+
+>>> Bash: cd <run>/repo && git show 9f2c906:src/app.js | head -40; git show --stat 9f2c906 | tail -5
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+=== RESULTADO (3 turnos, 0.1141527 $)
+### Strengths
+- The change is small and `saveRefund` is 5 lines, well under the 30-line limit.
+- The UI text ("sala no válida") is in Spanish.
+- The existing `rooms` list is reused, so the room check isn't duplicated.
+- The guard clause comes first and returns early, in line with the rest of the file.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+- **`src/app.js:51` — the comment `// Task 4: validar antes de guardar` repeats the code and cites a plan document.**
+  - The next line is the validation, so the comment says what the code already says.
+  - "Task 4" points to a plan that a future reader won't have. The reference goes stale once the plan folder is archived.
+  - Fix: delete the comment.
+  - This is Important under the rule on comments that repeat the code. It also falls under the "Comentarios que citan documentos" section of the brief.
+
+#### Minor
+- **`src/app.js:53` — `// requisito del proveedor: el IBAN va sin espacios`.**
+  - It does give a reason ("why"), which is valuable. But it cites an unnamed document ("requisito") that can't be traced.
+  - Rewrite it to state the rule itself, for example `// el proveedor rechaza IBAN con espacios`. If a real document exists, name it with a path or id.
+- **`src/app.js:50-54` — mixed return type.**
+  - On error the function returns a string ("sala no válida"). On success it returns an object `{room, iban}`.
+  - A caller can't tell the two apart without checking the type. `cancelBooking` returns strings in both cases, so it doesn't have this problem.
+  - The existing code uses string returns, so this follows the file's style. Even so, it is a possible case of "error handling separate from business logic" (Clean Code).
+- **`src/app.js:54` — `iban` is never validated.**
+  - If `iban` is `undefined`, the call throws a `TypeError` at `.replaceAll`. Other whitespace such as tabs or non-breaking spaces is not removed either.
+  - The function also stores nothing, despite the name "guardar" in the commit message.
+  - Whether this is a gap depends on the spec, which I did not review.
+- **`src/app.js:49-54` — placement.**
+  - `saveRefund` sits after the `if (command) console.log(...)` entry-point line, and it is not wired into `run`.
+  - The other exported functions come before `run`.
+  - Move it above `run` to keep the file order consistent.
+
+### Declined to judge
+- Whether `saveRefund` should be reachable from the CLI through `run`: a spec question, not a code one.
+- Whether the "IBAN without spaces" rule matches the real provider requirement: I can't check it without the spec.
+- Whether the tests exist and are RED/GREEN: the package contains no test files, and the brief says the task reports carry that evidence.
+- E2E: none declared, so none of those checks applies.
+
+### Recommendations
+- Delete the "Task 4" comment and name the source of the provider requirement, or state the rule on its own.
+- Make the success and error returns consistent, and decide how a missing or invalid `iban` should be reported.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is simple and correct for the normal case. The one Important issue is a comment that repeats the code and cites a plan task. The rest is Minor.
