@@ -49,7 +49,7 @@ With no approved `spec.md` on the branch, stop and send the change to `sdd-propo
 Every task, the second and later ones too, in both methods:
 
 1. **Check the base first**, with or without a remote: `git diff $(git merge-base HEAD <integration>) <integration> -- .docs/sdd/roadmap.md`, with `<integration>` `develop` or the one the constitution fixes (with a remote, `git fetch` first and compare `origin/<integration>` too). Without a remote the base moves anyway: another worktree commits to the local branch. If the feature's row is in the diff, it's a scope brake: don't start or dispatch, and follow its row in the [gate table](../sdd-propose/references/control-profiles.md). Then cross `git diff --name-only $(git merge-base HEAD <integration>) <integration>` with the task's «Crear» and «Modificar» files: for a match, compare `git diff -U0` of the base (`origin/<integration>` too if the match comes from there; ranges are the merge base's) with the lines the task will touch. An overlap the spec doesn't declare, or lines you can't tell, is the same brake. Other lines, or an overlap the spec declares with file and region and the base stays inside it, is a `Ruling:` with both ranges, and you go on.
-2. **The RED tests are the thread's**: with the opening already in its commit, you write the tests that encode the task's scenarios —one per THEN and one per Review Focus line that names the task— in RED by compilation or by failure, without committing them: they go in the task's commit. Keep a copy outside the repo to compare later: it's the only proof the test wasn't fitted to the code (`tests/tests-red-hilo-red.md`).
+2. **In a spike, «Evidencia» replaces the RED tests**: the raw output goes in the spec's folder, and the task's «Verificación» checks that file. Otherwise, **the RED tests are the thread's**: with the opening already in its commit, you write the tests that encode the task's scenarios —one per THEN and one per Review Focus line that names the task— in RED by compilation or by failure, without committing them: they go in the task's commit. Keep a copy outside the repo to compare later: it's the only proof the test wasn't fitted to the code (`tests/tests-red-hilo-red.md`).
 
 ## Native loop
 
@@ -331,9 +331,7 @@ When the closing of the review is done (`sdd-verify`) and its fixes are committe
 - You're about to dodge a file marked «NO se tocan» with a fix that isn't in its own commit and doesn't enter review.
 - You're about to record as a ruling a discovered fix that is already the third, or a decision that changes the observable output, without the scope brake.
 - You're about to start or dispatch a task without crossing its files with the base, because the feature's row didn't change.
-- You're about to mark a UI task done because «the tests pass and the review is clean», without looking at it in a browser or leaving it «no probado».
 - You're about to mark a UI task done with a detector finding open and unjustified, or without running the detector `§Frontend` declares.
-- You're about to stop a process by its name or a command-line pattern, instead of the PID or port of what you started.
 - An implementer's brief carries the project's full gate because «the constitution says all green in every task» — that rule is met with the task's surfaces, not the whole suite.
 
 | Excuse | Reality |

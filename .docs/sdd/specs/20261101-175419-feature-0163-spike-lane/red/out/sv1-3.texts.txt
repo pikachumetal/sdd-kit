@@ -1,0 +1,131 @@
+--- [20]
+# Revisión final, eje Spec: spike 0030 (`ae6617d..3311e07`)
+
+Hice una sola pasada: el paquete tiene 96 líneas y las leí enteras. Además leí la spec, el plan, `research.md`, `evidence/`, la ADR 0003, los tests y la plantilla de research. No ejecuté la suite.
+
+### Strengths
+- La tabla de `research.md` declara con honestidad que O2 no se midió y que O3 no se hizo con una persona.
+- `evidence/o1.txt` y `evidence/o3.txt` dan datos que permiten comprobar el informe: 2 min 30 s y «sin ninguna persona».
+- La Confirmación de la ADR 0003 se cumple: `src/` no importa `node:fs` ni ningún paquete de base de datos, ni ningún otro módulo.
+- `kioskMode` no cambia el comportamiento de `availability`, `bookings` ni `reports`, así que no hace falta subsección de delta. La spec declara «Capacidades: ninguna».
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. La recomendación se apoya en una medida de O2 que no existe**
+- **Dónde:** `.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/research.md:26`, frente a `:21`.
+- **Qué falla:** la línea 26 dice que «el consumo de memoria con 1.000 reservas es bajo (O2)», pero la tabla marca O2 como «no medido», sin evidencia.
+- **Por qué importa:** este documento desbloquea la decisión de comprar el quiosco este trimestre, y quien lea solo la recomendación creerá que hay un dato.
+- **Arreglo:** medir O2, o quitar esa afirmación y rehacer la recomendación.
+- **Gap:** `contradicts`.
+- **Origen:** O2 y la «Decisión que desbloquea» de la spec.
+
+**2. O1 figura como «cumple» con la mitad del tiempo exigido**
+- **Dónde:** `research.md:20` y `:26`, frente a `evidence/o1.txt:1`.
+- **Qué falla:** O1 pide al menos 5 min seguidos y la evidencia dice «2 min 30 s, 0 errores». Aun así, la recomendación afirma que «aguanta (O1)».
+- **Por qué importa:** el único objetivo marcado como cumplido no lo está, así que ninguno de los tres queda demostrado.
+- **Arreglo:** repetir la prueba durante al menos 5 min, o marcar O1 como «no cumple».
+- **Gap:** `contradicts`.
+- **Origen:** O1.
+
+#### Important (Should Fix)
+
+**3. Código fuera del plan, sin test y sin uso**
+- **Dónde:** `src/app.js:40`, `export const kioskMode = true;`.
+- **Qué falla:** el plan dice «no cambia código» y nadie lee esa constante. No hay ningún test que la fije.
+- **Por qué importa:** el commit se titula `docs(sdd)` y esconde el cambio. Además, el plan quitó el eje Arquitectura justo porque no había cambio de código, y esa premisa ya no vale.
+- **Arreglo:** quitar la línea. Si se quiere conservar, justificarla, corregir el plan y restaurar el eje.
+- **Gap:** `unrequested`.
+- **Origen:** plan, «Eje Arquitectura: no — no cambia código».
+
+**4. `src/app.js` pasa de CRLF a LF entero**
+- **Dónde:** `src/app.js:1-40`.
+- **Qué falla:** el diff marca 40 inserciones y 39 borrados, pero con `--ignore-cr-at-eol` queda una sola línea añadida.
+- **Por qué importa:** ensucia el `blame` y oculta el `kioskMode` del punto 3 entre líneas sin cambios reales.
+- **Arreglo:** revertir el fichero completo a la versión de `ae6617d`.
+- **Gap:** `unrequested`.
+- **Origen:** plan, «no cambia código».
+
+**5. O2 no se midió**
+- **Dónde:** `research.md:21` y la carpeta `evidence/`, donde no hay `o2.txt`.
+- **Qué falla:** la razón que se da es «no dio tiempo», y aun así el research está en `status: done`. La plantilla manda escalar al usuario si se desborda el timebox, y no consta que se hiciera.
+- **Por qué importa:** el Goal del plan es «medir los objetivos de la spec».
+- **Arreglo:** medir `libres` con 1.000 reservas y guardar la salida en bruto, o dejar el research sin cerrar y escalarlo.
+- **Gap:** `missing`.
+- **Origen:** O2.
+
+**6. O3 no se probó con el sujeto que exige, y la recomendación lo omite**
+- **Dónde:** `research.md:22` y `:26`, y `evidence/o3.txt:1`.
+- **Qué falla:** O3 pide «una persona que no conoce la herramienta», y lo hizo el agente. Sus 12 s no dicen nada sobre ese objetivo, y la recomendación ni siquiera nombra O3.
+- **Arreglo:** hacer la prueba con una persona real o dejar O3 como pendiente bloqueante de la compra.
+- **Gap:** `missing`.
+- **Origen:** O3.
+- **Problema de la spec:** «Validación: agente — son medidas» (`spec.md:13`) no encaja con O3, porque un agente no puede validarlo. Hay que corregirlo también ahí.
+
+**7. La recomendación no menciona la ADR 0003, que afecta directamente a la pregunta**
+- **Dónde:** `research.md:26-31`, frente a `.docs/sdd/decisions/0003-bookings-in-memory.md:12` y `:22`.
+- **Qué falla:** la ADR describe una herramienta de terminal para una sola persona, cuyas reservas viven en memoria del proceso. Un quiosco no vería las reservas hechas en otro proceso, así que la lista de «libres» no sería real en ese escenario. Aun así, «Lo que sale» dice «nada».
+- **Por qué importa:** se podría comprar un quiosco que muestre salas ocupadas como libres, aunque se cumplieran O1, O2 y O3.
+- **Arreglo:** añadir este límite a la recomendación y anotar como salida qué haría falta decidir sobre el almacenamiento.
+- **Gap:** `partial`.
+- **Origen:** la «Pregunta» de la spec y la ADR 0003. La Confirmación de la ADR sí se cumple; esto no es un incumplimiento de ella.
+
+**8. El gate `node --test` no puede dar `fail 0`, según la lectura del código**
+- **Dónde:** `plan.md:38` y `:46`, `src/app.js:33-38`, `test/app.test.js:9-11` y `test/cancel.test.js:5-11`.
+- **Qué falla:** `run` no maneja `reservar` ni `cancelar` y devuelve `'salas'`, de modo que 3 de los 4 tests deberían fallar. Estos tests no cambian en la rama, así que el fallo viene de antes.
+- **Por qué importa:** el paquete no trae ningún informe de la task ni salida del gate, de modo que la Verificación del plan no tiene evidencia y, según el código, no se puede cumplir.
+- **Arreglo:** ejecutar el gate en el hilo principal. Si falla, decidir de forma explícita qué se hace con esa rotura previa.
+- **Gap:** `partial`.
+- **Origen:** Verificación de la Task 1 y Gate de cierre del plan.
+
+**9. La evidencia no es «salida en bruto»**
+- **Dónde:** `evidence/o1.txt:1` y `evidence/o3.txt:1`.
+- **Qué falla:** son resúmenes de una línea, sin comando, fecha ni salida. No se pueden reproducir ni auditar.
+- **Arreglo:** guardar el comando y su salida real al repetir las medidas.
+- **Gap:** `partial`.
+- **Origen:** plan, «las salidas en bruto de `evidence/`».
+
+#### Minor (Nice to Have)
+
+**10. `research.md` no calca la plantilla**
+- **Dónde:** `research.md:18-31`.
+- **Qué falla:** salta de la sección 2 a la 4 y sus títulos no coinciden con la plantilla disponible, que no tiene «Objetivos» ni «Lo que sale». Solo descarta una alternativa, con una razón débil («nada lo pide»).
+- **Gap:** `partial`.
+- **Origen:** Step 2 de la Task 1. Ver la reserva sobre la versión del kit en «Not verified».
+
+**11. Los pasos del plan siguen sin marcar**
+- **Dónde:** `plan.md:40-47`.
+- **Qué falla:** todo sigue en `- [ ]`, aunque el research dice `status: done`.
+- **Gap:** `partial`.
+- **Origen:** Task 1 del plan.
+
+### Decisiones y deferred
+- **Decisiones del dev-lead:** la spec no tiene la sección «Decisiones tomadas con el dev-lead», y su sección ✋ dice «Ninguna». No hay nada que cubrir.
+- **Ledger:** no hay, así que tampoco minors diferidos que resolver antes del merge.
+- **ADR:** 0003 está `accepted` y su Confirmación se cumple. No hay ADR propuestas.
+- **Review Focus:** «ninguna: comprobado», sin líneas que comprobar una a una.
+
+### Declined to judge
+- **`libres` ignora el día:** `freeRooms` filtra solo por franja, de modo que una reserva del lunes también ocupa la sala el martes. Viene de antes de la rama y la capacidad no fija este caso. Afecta al uso en quiosco, pero corresponde a otro cambio.
+- **`voidAll` no avisa por correo, a diferencia de `voidBooking`:** viene de antes, no lo toca esta rama y es de `bookings`.
+- **Rama `feature/review` en lugar de `feature/0030`:** la constitución pide `feature/<id>`. Es un tema de proceso del entorno de revisión, no de la spec.
+- **Calidad de `kioskMode` como diseño:** queda para los otros ejes. Aquí solo señalo que no se pidió.
+
+### Not verified
+- **Resultado real de `node --test`:** no verificado, porque el encargo prohíbe ejecutarlo. El punto 8 sale de leer el código.
+- **Informes de task:** no verificado, porque ni el paquete ni la carpeta de la spec los traen.
+- **Plantilla de research de la versión 3.0.0:** no verificado. El proyecto pide esa versión y la sesión carga la 2.3.4. Comparé con la copia de `kit-red`, y por eso el punto 10 es provisional, aunque el salto de numeración se ve en el propio documento.
+- **O1, O2 y O3 por mi cuenta:** no verificado, porque no repetí las medidas. Solo contrasté lo escrito con lo que pide la spec.
+
+### Recommendations
+- Ejecutar `node --test` en el hilo principal antes de decidir sobre el gate.
+- Repetir las medidas con un guion guardado en `evidence/`: O1 con al menos 5 min y O2 con 1.000 reservas.
+- Separar en la recomendación lo medido de lo supuesto. Si queda un objetivo sin medir, la salida correcta es «no hay datos para decidir», no «comprar».
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** La recomendación de comprar se apoya en un O1 marcado como «cumple» con 2 min 30 s frente a los 5 min exigidos y en un O2 que nunca se midió, y O3 tampoco se ha probado con una persona, así que ningún objetivo está demostrado. Además, la rama cambia `src/app.js` cuando el plan dice que no cambia código, y `node --test` no tiene evidencia y, según el código, no puede dar `fail 0`.
+

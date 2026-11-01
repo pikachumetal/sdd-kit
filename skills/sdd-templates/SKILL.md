@@ -12,8 +12,8 @@ The SDD kit's canonical templates. **They live only here**: projects don't carry
 
 | Template | Artifact | When |
 | --- | --- | --- |
-| [spec-template.md](templates/spec-template.md) | `spec.md` | Every feature, in both modes. Light spec: decisions to validate · Intent/Scope/Approach · delta per capability · approvals |
-| [plan-template.md](templates/plan-template.md) | `plan.md` | Full mode only, after the spec is approved (how) |
+| [spec-template.md](templates/spec-template.md) | `spec.md` | Every feature, in every mode. Light spec: decisions to validate · Intent/Scope/Approach · delta per capability · approvals |
+| [plan-template.md](templates/plan-template.md) | `plan.md` | Full mode and spike, after the spec is approved (how) |
 | [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Only if the plan has >1 task (live record) |
 | [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Closing of every feature |
 | [patch-template.md](templates/patch-template.md) | `patch.md` | Patch lane (only artifact) |
@@ -21,7 +21,7 @@ The SDD kit's canonical templates. **They live only here**: projects don't carry
 | [launch-prompt-template.md](templates/launch-prompt-template.md) | launch prompt, in the chat | Given by `sdd-roadmap` and `sdd-explore`: starts the change in another worktree with its lane and its decisions |
 | [validation-template.md](templates/validation-template.md) | validation message, in the chat | Presented by `sdd-archive` |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Optional: data changes that don't fit in the plan |
-| [research-template.md](templates/research-template.md) | `research.md` | Optional: prior research with a timebox |
+| [research-template.md](templates/research-template.md) | `research.md` | A spike's evidence, with its objectives table |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Release closing: single record (inventory + triage + retro) |
 | [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Release closing: client notes distilled from the changelog |
 | [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Living truth of behavior: created by the spec that declares the capability, merged by `sdd-archive` |

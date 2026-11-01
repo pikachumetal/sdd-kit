@@ -1,0 +1,44 @@
+--- [3]
+Ahora: preparo el workspace y leo spec y plan. Queda: tasks, revisión final y validación.
+
+--- [9]
+Estoy en un checkout normal, en la rama `feature/0031-free-rooms-load` (no es `main`), así que trabajo aquí. Uso el workspace y compruebo el baseline en un worktree desacoplado.
+
+--- [24]
+Estoy cerrando la medida: el script reproduce los resultados y arreglo una errata en `research.md`. Después hago el commit y ejecuto `sdd task done`.
+
+--- [27]
+La task 1 está completa y su commit existe. Ahora toca la revisión final con `sdd-verify`.
+
+--- [44]
+Implementé el plan y el spike 0031 queda cerrado, salvo el merge, que no he hecho. La rama `feature/0031-free-rooms-load` tiene tres commits y el árbol está limpio.
+
+**Resultado:** `libres` aguanta 1.000 reservas. O1 cumple con mucho margen. Con 1.000 reservas activas en la misma franja, cargadas con `seed`, la mediana es 0,0001–0,0002 ms por llamada y el máximo 0,38 ms, frente a los 50 ms del objetivo. En 10 repeticiones seguidas el tiempo no sube y la memoria (`heapUsed`) se queda entre 4,7 y 5,5 MB sin crecer. Recomiendo no añadir caché.
+
+**Lo que dejé en la rama** (en `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/`; `src/` queda intacto):
+- `research.md`, con los objetivos, el aguante y la recomendación.
+- `evidencia-libres.txt`, la salida en bruto de la medida.
+- `medir-libres.mjs`, el script que la reproduce.
+- `walkthrough.md`.
+
+`node --test` da 4/4 en verde.
+
+**Rulings I made**
+1. **La medida es de la función, no de la CLI.** Mide `run('libres', [franja])` dentro del proceso, sin el arranque de `node` ni una persona esperando. Si el umbral de 50 ms se entendía extremo a extremo, habría que medir la CLI. Lo dejé escrito en `research.md` §4.
+2. **Añadí una variante de control fuera de la carga de la spec.** Con las 1.000 reservas repartidas entre Norte y Sur, `some` corta pronto. Añadí una variante con una sala inexistente, que fuerza el recorrido completo: máximo 0,40 ms. Si no la querías, es una fila de más en `research.md`.
+3. **Corregí un error en `research.md`.** Decía «cuatro órdenes de magnitud», pero 0,4 ms frente a 50 ms es un margen de más de 100 veces. Es solo texto, y lo revisé yo en el hilo.
+
+**Deferred minors:** ninguno.
+
+**Lo que no cumple el estándar del kit**
+- **Revisión final sin subagentes.** No tengo herramienta de subagentes en esta sesión, así que la hice yo, por ejes Spec y Código. Es más débil que revisores con contexto fresco, y el walkthrough lo dice. El eje Arquitectura no aplica, porque solo toca `.docs/`.
+- **Merge sin hacer.** `sdd-kit.json` no tiene el bloque `merge` (`merge.into`, `merge.noFf`), así que `sdd merge --check` se detiene. No he fusionado nada. Dime si fusiono en `develop` con `--no-ff` o prefieres hacerlo tú, y qué bloque `merge` quieres dejar en la configuración.
+- **Fila del roadmap.** El `roadmap.md` no tiene fila para la 0031, así que no hay ninguna que marcar. No inventé una.
+- **Changelog.** No añadí entrada, porque el spike no cambia nada visible del producto.
+- **Roadmap previo.** `sdd roadmap check` ya fallaba antes de mi trabajo, en el formato de «Releases cerradas» y en la cabecera de «Deuda técnica». No lo toqué.
+- **Versión del kit.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que he seguido pueden ser las de una versión vieja. Se arregla con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+¿Quieres que genere el ticket de mejora del kit con `sdd-feedback` para esta sesión?
+
+**No terminado.** Falta el merge. No borres todavía el worktree `<run>/repo`. Es el checkout principal, así que no hay ningún worktree enlazado que ofrecerte borrar.
+

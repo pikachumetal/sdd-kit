@@ -58,7 +58,7 @@ created: <YYYY-MM-DD>
 ### 4.2 Smoke / tests
 
 > Distinguir siempre lo **verificado por el agente** (con evidencia) de lo **reportado por el usuario**.
-> Una fila por THEN de la spec. Evidencia: `suite` · `ejecución real` · `no probado`. Un THEN que se ve en una
+> Una fila por THEN (spike: por objetivo). Evidencia: `suite` · `ejecución real` · `no probado`. Un THEN que se ve en una
 > interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado
 > con `ejecución real`; un THEN de fallo se provoca con la entrada que falla.
 

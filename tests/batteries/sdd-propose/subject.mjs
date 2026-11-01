@@ -248,6 +248,12 @@ const steps = {
 };
 for (const id of ['k1', 'k3', 'k4', 'k6']) steps[id] = () => (s.env.TURN2 = 'Sí.');
 steps.p2 = steps.p1;
+steps.k2p = () => {
+  const folder = '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load';
+  s.git('checkout', '-q', '-b', 'feature/0031-free-rooms-load');
+  s.put(`${folder}/spec.md`, readFileSync(join(HERE, '..', 'sdd-implement', 'fixtures', 'spec-0031.md'), 'utf8'));
+  s.commit('docs(sdd): abrir el spike 0031 con su spec');
+};
 steps.g1b = steps.g1;
 steps.ws2 = steps.k5;
 steps.ws3 = steps.ws1;

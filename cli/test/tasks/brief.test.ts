@@ -17,6 +17,7 @@ describe('sdd task start con spec lite', () => {
   it('recognizes mode lite in the frontmatter', () => {
     expect(isLiteSpec(liteSpec)).toBe(true);
     expect(isLiteSpec(liteSpec.replace('mode: lite', 'mode: full'))).toBe(false);
+    expect(isLiteSpec(liteSpec.replace('mode: lite', 'mode: spike'))).toBe(false);
     expect(isLiteSpec('# Plan\n\nmode: lite\n')).toBe(false);
     expect(isLiteSpec(liteSpec.replace('mode: lite', 'mode: lite-x'))).toBe(false);
   });

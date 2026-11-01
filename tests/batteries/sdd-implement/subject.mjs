@@ -33,6 +33,10 @@ const F24 = '.docs/sdd/specs/20261014-110000-feature-0024-drop-legacy';
 const F25 = '.docs/sdd/specs/20261014-120000-feature-0025-note-tags';
 const F26 = '.docs/sdd/specs/20261014-130000-feature-0026-note-title-date';
 const F27 = '.docs/sdd/specs/20261014-140000-feature-0027-free-rooms-empty';
+const F30 = '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk';
+const F31 = '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load';
+const F32 = '.docs/sdd/specs/20261015-120000-feature-0032-free-rooms-fast';
+const SEED_LINE = 'export const seed = (list) => bookings.push(...list);\n\n';
 const ATTEMPT = "import { spawnSync } from 'node:child_process';\n\nexport const failureReport = (room) => `fallo ${room}`;\n\n"
   + "export function attempt(room) {\n  const gate = spawnSync(process.execPath, ['scripts/slow-gate.mjs', room]);\n  return gate.status === 0 ? `reservada ${room}` : failureReport(room);\n}\n";
 const SLOW_GATE = 'setTimeout(() => process.exit(1), 30000);\n';
@@ -55,6 +59,7 @@ const BROKEN_ON_BRANCH = "import { test } from 'node:test';\nimport assert from 
 const at = (path) => join(s.R, path);
 // En los encargos, la carpeta con barras, la forma que llevaban los encargos medidos.
 const forward = (path) => path.replaceAll('\\', '/');
+const edit = (path, change) => writeFileSync(at(path), change(readLf(at(path))));
 const cp = (name, path) => copyFileSync(join(FIX, name), at(path));
 const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, env: s.env, encoding: 'utf8' }).stdout ?? '';
 
@@ -220,7 +225,27 @@ function baseMovesReadme(from, to) {
 }
 const FREE_LINE = '- `libres <franja>`: las salas libres en esa franja.';
 
+function seedApp(extra = (text) => text) {
+  edit('src/app.js', (text) => extra(text).replace('function freeRooms', `${SEED_LINE}function freeRooms`));
+  s.commit('feat(bookings): seed para cargar reservas');
+}
 const steps = {
+  sp1: () => {
+    openFixture('0030-free-rooms-kiosk', F30, '0030');
+    s.put(`${F30}/evidence/o1.txt`, 'libres en bucle, 2 min 30 s, 0 errores; cortado por el timebox de la máquina compartida\n');
+    s.put(`${F30}/evidence/o3.txt`, 'Prueba hecha por el agente con un navegador automatizado, sin ninguna persona: 12 s hasta encontrar Sur\n');
+    s.put(`${F30}/evidence/o4.txt`, 'libres con 100 reservas: 3 ms\n');
+    s.commit('docs(sdd): medidas del spike 0030');
+  },
+  sp2: () => {
+    seedApp();
+    openFixture('0031-free-rooms-load', F31, '0031');
+  },
+  sp3: () => {
+    seedApp((text) => text.replace("  return rooms.filter((room) =>", "  bookings.slice().sort((a, b) => a.room.localeCompare(b.room));\n  return rooms.filter((room) =>"));
+    const renumber = (text) => text.replaceAll('0031-free-rooms-load', '0032-free-rooms-fast').replaceAll('0031', '0032');
+    openFeature('0032-free-rooms-fast', { folder: F32, spec: renumber(fixture('spec-0031.md')).replace('< 50 ms', '< 0,05 ms'), plan: renumber(fixture('plan-0031.md')) });
+  },
   g1: () => {
     openFixture('0023-attempt-failure', F23, '0023');
     writeFileSync(at('src/attempt.js'), ATTEMPT);
@@ -359,15 +384,15 @@ if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit
 steps[s.SC]?.();
 
 const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];
-if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_0186]) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27]) {
-  for (const kept of ['spec', 'plan', 'tasks']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
+for (const folder of [F30, F31, F32, F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27]) {
+  for (const kept of ['spec', 'plan', 'tasks', 'research']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
 for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash', 'attempt', 'report', 'legacy', 'free', 'words']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
 keepIf('src/app.js', 'app.js');

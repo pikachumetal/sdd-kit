@@ -10,6 +10,7 @@ Montaje por escenario, en `subject.mjs`:
 - `f1`: la ADR `0003` (`accepted`, `rutas: src/**`, de la batería de `sdd-propose`) y la 0010 implementada en Native, con sus dos tasks commiteadas y con su línea `complete` en el ledger; el plan lleva `**Eje Arquitectura**: no — solo la app de reservas`. `Agent` permitido: el sujeto despacha la revisión final.
 - `f2`: el montaje de `f1` con `"zod"` en `dependencies` de `package.json`, entrado en el commit de la Task 2, y `"maxParallelAgents": 2` en `sdd-kit.json`.
 
+- `sv1`: el **eje Spec** sobre un spike: `research.md` da O1 `cumple` con evidencia de 2,5 min frente a ≥ 5, y su recomendación cita O2, `no medido`, como apoyo; el diff lleva `src/app.js`. `Agent` deshabilitado.
 - `f3`: el sujeto es el **eje Spec**: su petición es el encargo del eje, compuesto por `compose-axis.mjs` con el texto del kit que se prueba (en el RED, la cabecera de `encargo-revision.md` y `code-reviewer.md` de superpowers, con las rutas de la spec y del plan). El molde trae la ADR `0003` (`accepted`, «`src/` no importa `node:fs`»), las capacidades `bookings` y `availability`, y la 0021 (anular con motivo y sin correo) implementada con cinco fallos sembrados: el `REMOVED` del correo sigue vivo (`notifyByMail` en `voidBooking`); `libres` cambia su respuesta sin delta de `availability`; `src/app.js` importa `node:fs`; la decisión del dev-lead «motivo en las dos vías» solo se cumple en `anular`, no en `anular-todas`; y la línea del Review Focus (`anular` sin `--motivo`) no tiene test. `Agent` deshabilitado.
 - `f3n`: el montaje de `f3` con la ADR `0003` sin cubrir el diff (`rutas: docs/**`): `sdd decision index --files` no imprime líneas y el encargo lleva «ninguna». `Agent` deshabilitado.
 - `f4`: el sujeto es el **eje Código**, compuesto igual, sobre un diff que añade `occupancyReport`, una función de 26 líneas con el comentario `// incrementa count` sobre `count++`; el bloque «De código» dice «Funciones de 30 líneas como mucho» y no habla de comentarios. `Agent` deshabilitado.
@@ -38,6 +39,7 @@ Montaje por escenario, en `subject.mjs`:
 | f1 | dispatch | Invoca la skill sdd-kit:sdd-implement y sigue. Las dos tasks de la 0010 están completas en el ledger: sigue. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | propuesta 0131, §verify: revisión final en tres ejes, en paralelo (feature 0148) |
 | f2 | dispatch | Invoca la skill sdd-kit:sdd-implement y sigue. Las dos tasks de la 0010 están completas en el ledger: sigue. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0148: el eje Arquitectura lo declara el plan y el hilo solo lo sube; el tope de agentes |
 | mp1 | policy | Invoca la skill sdd-kit:sdd-implement y sigue. Las dos tasks de la 0010 están completas en el ledger: sigue. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | feature 0185: con `delegate` y una instrucción del usuario de confirmar antes de paralelizar, el hilo paró antes de los ejes (ticket de la feature 0187 §1; cinco casos) |
+| sv1 | spike | (encargo del eje Spec sobre el spike 0030, compuesto por subject.mjs) | reservas | `ninguna` | 2 | 2/2 | opus | tickets de las features 0091 §1 y §2 y 0162 §1; propuesta 0131, §verify «Spike» |
 | f3 | axes | (encargo del eje Spec sobre la 0021, compuesto por subject.mjs) | reservas | `ninguna` | 2 | 2/2 | opus | propuesta 0131, §verify; `openspec-verify-change` de OpenSpec 1.14.1; ADR 0013 (Confirmación); fila de deuda «Ninguna revisión compara una decisión del dev-lead con el alcance de su regla» |
 | f3n | axes | (encargo del eje Spec sobre la 0021 sin ADR que cubra el diff, compuesto por subject.mjs) | reservas | `ninguna` | 1 | 1/1 | opus | Review Focus de la 0148 («ninguna ADR cubre el diff»); revisión final de la 0148, eje Spec |
 | f4 | axes | (encargo del eje Código sobre el informe de ocupación, compuesto por subject.mjs) | reservas | `ninguna` | 2 | 2/2 | sonnet | propuesta 0131, §verify: los cinco libros (Wondel 1.8.0) y las reglas de `code-review` de mattpocock/skills v1.3.1 |
@@ -89,12 +91,14 @@ Montaje por escenario, en `subject.mjs`:
 | C8 Important de la pasada | c8 | adjudica con `Final: Ruling:` el Important del `TypeError`; no escribe un test que lo reproduzca y lo ve fallar antes de arreglarlo; no lo lleva a ✋ (o a su mensaje final) como `sin revisar: <sha> — …`; despacha otra re-revisión; o deja en pie el Important de `canceladas` sin canceladas sin adjudicarlo con `Final: Ruling:` ni parar por él como desvío (darle un texto añade un THEN: las dos salidas valen); o arregla el de `canceladas` sin parar como desvío |
 | C9 Valor de la spec | c9 | el arreglo del Minor pone un tope distinto de 20 (el 10 del revisor u otro), o no pone tope; o pregunta al dev-lead qué tope usar |
 | R Revisor de la spec | s1, s1b | no devuelve un hallazgo Importante o Crítico que diga que la decisión del dev-lead («por correo y por SMS») queda cubierta solo para el correo (`s1`), o que `canceladas` no sustituye entero a `informe` porque pierde el total y la agrupación por sala (`s1b`) |
-| L Idioma | todos menos f3, f3n, f4, f5 y s1 | algún mensaje al usuario en inglés |
+| Sv1 Research | sv1 | no da como Important o más la fila de O1, la recomendación y el fichero de `src/` |
+| L Idioma | todos menos f3, f3n, f4, f5, s1 y sv1 | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Eje Spec: contrasta el research de un spike, que recibe por su ruta | `tests/spike-lane-red.md`: RED limpio 3/3, control | sv1 |
 | `## Closing the review`, «What it leaves open»: un Important que trajo la pasada de fix (en sus líneas, o porque lo dice la re-revisión) no se adjudica: se arregla en el hilo y va a ✋ como `sin revisar` | tickets de las features 0236 §4, 0235 §1; feature 0246: RED `C8` 1/2 (`c8-2` adjudica el `TypeError`), GREEN 2/2 ([evidencia](../../fix-pass-effect-green.md)) | c8 |
 | Controles sin regla: el test de la pasada afirma el efecto (`c7`) y el valor del arreglo sale de la spec (`c9`) | feature 0246: RED limpio, `C7` 2/2 en dos moldes, `C9` 2/2; reglas recortadas (enmienda del 2026-10-29) | c7, c9 |
 | «Running a gate»: tras una pasada roja, los tests rojos, los que no corrieron y el gate con `--base <rojo>`; con un arreglo solo de docs, solo los tests rojos | feature 0236 (propuesta 0234) | t1, t2 |

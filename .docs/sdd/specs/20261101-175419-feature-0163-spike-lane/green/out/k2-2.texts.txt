@@ -1,0 +1,60 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto para clasificar tu petición (parece un spike).
+
+--- [13]
+Ahora: te cuento cómo entiendo el spike y fijo el criterio de "aguanta". Queda: acordar el umbral y el método, la spec con tu aprobación, el plan, la medición y la tabla, ~25 min.
+
+```text
+Carril: spike, modo spike · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No hay `sdd-kit.local.json`, así que no ignoro ninguna clave.
+
+**Lo que entendí.** Quieres saber si `libres` responde bien con 1.000 reservas en memoria, y quieres el resultado como una tabla de medidas, no como una opinión. Es un spike: no se toca código de producción. Lo que salga, tabla y conclusión, queda en una carpeta de `specs/`, y cualquier cambio posterior iría en su propia fila del roadmap. Corrígeme si no es esto.
+
+**Lo que he visto en el código (`src/app.js`):**
+- `libres <franja>` filtra las 2 salas (Norte, Sur) y, para cada una, recorre todas las reservas con `some`. El coste es salas × reservas, y con 1.000 reservas salen unas 2.000 comparaciones por llamada.
+- `bookings` es un array privado del módulo y solo trae 1 reserva de ejemplo. Ningún comando añade reservas: `reservar` solo devuelve un texto. Para medir con 1.000, el spike tendrá que inyectar los datos sin modificar `src/app.js`. Eso es el método y lo decidimos después.
+- Todavía no he medido nada.
+
+❓ **¿Qué significa "aguanta"?**
+Sin umbral, la tabla tendría números pero ninguna conclusión. Esto solo lo sabes tú.
+1️⃣ **Lo que notas en la terminal:** `node src/app.js libres 10:00-12:00` completo, arranque de Node incluido, en menos de 200 ms con 1.000 reservas. La tabla mide el comando entero y también la función sola, para ver cuánto es arranque y cuánto es `libres`.
+2️⃣ **Solo la función:** `libres` en proceso, sin arranque de Node, en menos de 5 ms por llamada. Mide solo lo que depende del número de reservas, pero no dice lo que sientes al usarlo.
+3️⃣ **Otro umbral tuyo,** o escalar el número de reservas hasta que deje de cumplirlo.
+
+➡️ **Recomiendo 1️⃣**, porque en esta CLI lo que importa es el tiempo que esperas tras pulsar Enter, y esa medida lleva a la vez la parte de la función. A cambio, el arranque de Node mete ruido en cada medida y habrá que repetirla varias veces para promediarlo.
+
+--- [15]
+Ahora: tomo tu "Apruebo" como la elección de 1️⃣ para el umbral. Reservo el id, creo la rama y escribo la spec del spike. Queda: presentarte la spec para su aprobación, luego el plan y parar antes de la Task 1, ~10 min.
+
+--- [24]
+Ahora: te presento la spec del spike para que la apruebes. Queda: tras tu «sí», escribo el plan y paro antes de la Task 1, como pediste, ~5 min.
+
+Tu «Apruebo» respondía a la pregunta del umbral, así que lo he usado para eso. La spec no la habías visto, y aprobarla va aparte. No hay ninguna frase de aprobación por delegación, así que no escribo el plan hasta que la valides.
+
+**Lo que he hecho:**
+- Reservé el id **0012** y creé la rama `feature/0012-libres-1000-reservas`. No hay remoto, así que el id vale con el contador local.
+- Escribí la spec en `.docs/sdd/specs/20261101-190941-feature-0012-libres-1000-reservas/spec.md`.
+- La dejé en un commit local de borrador en esa rama. No me lo habías pedido; se puede deshacer con `git reset`.
+
+🦆 Para quien usa `salas` no cambia nada: el spike no toca el producto. Lo que cambia es que sabrás, con una tabla, si `libres 10:00-12:00` sigue contestando al instante con 1.000 reservas en memoria. La tabla separa los ms del arranque de Node de los ms de `libres`. Para medirlo se genera una copia del programa con 1.000 reservas inventadas, sin tocar `src/app.js`.
+
+**✋ Decisiones que he tomado yo — valida estas:**
+1. **Peor carga:** 1.000 reservas activas, 500 por sala, ninguna en la franja consultada. Así `libres` recorre las 1.000 en cada sala. El reparto lo he decidido yo; tú solo dijiste «1.000».
+2. **Cuándo cumple (O1):** las 10 repeticiones seguidas del comando completo, cada una por debajo de 200 ms. Si una sola pasa de 200 ms, la tabla dice `no cumple tal como se definió`. Los 200 ms son tuyos; el criterio de las 10 repeticiones es mío.
+3. **Cómo se inyectan las reservas:** un script del spike copia `src/app.js` a una carpeta temporal fuera del repo, cambiando solo la línea de `bookings`. Se mide esa copia, y `src/app.js` no se modifica.
+4. **Medidas de apoyo, sin umbral:**
+   - La misma medida con 1, 100, 1.000 y 10.000 reservas.
+   - El tiempo de la función sola junto al del comando completo.
+5. **Dónde queda lo medido:** la salida en bruto en `evidencia/` y el resumen en `research.md`. Si la memoria no se puede medir con `process.memoryUsage()`, la tabla lo dice.
+6. **Validación `agente`:** son cifras en bruto y nadie vería nada que yo no haya medido. La propuesta es mía.
+
+La revisión de la spec por lentes no aplica a un spike, así que el repaso de coherencia lo hice yo. No hay delta de capacidades, y no hay filas de roadmap implicadas: busqué «0012» y no aparece.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada):** escribo el plan y paro antes de la Task 1.
+2. **Cambios:** dime qué ajustar.
+

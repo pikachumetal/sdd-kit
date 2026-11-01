@@ -4,7 +4,7 @@ feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la se
 parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
 proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
 title: <título corto descriptivo>
-mode: full            # full | lite — lo lee sdd-archive; sin campo = full
+mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
 profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release o del proyecto
 status: draft
 created: <YYYY-MM-DD>
@@ -49,6 +49,13 @@ Validación: <dev-lead | agente> — <porqué>
 > Solo si alguna decisión no la tomaste tú sola: una aprobación delegada, un cambio de perfil, una respuesta que resolvió una ambigüedad. Una línea por decisión, con la frase literal del dev-lead.
 
 - <decisión> — «<frase literal>»
+
+## Forma spike *(solo con `mode: spike`: sustituye a Intent, Scope, Approach, Dónde se prueba y Delta; en Capacidades, «Ninguna, porque investigación»)*
+
+- **Pregunta**: <una frase>
+- **Objetivos**: O1 — <qué se mide y su umbral numérico>
+- **Decisión que desbloquea**: <cuál>
+- **Peor carga** *(si un objetivo es de rendimiento)*: <la carga> — confirmada: «<frase del dev-lead>» | `sin confirmar`, y va a ✋
 
 ## Intent
 
