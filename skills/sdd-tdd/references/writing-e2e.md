@@ -10,11 +10,11 @@ In the field, a menu offered the *previous* copy for ~3 s after copying; every E
 
 ## Rule 1: Name the Core Flow
 
-`operations.md` §Testing lists the project's **Flujos core**, each with its test. New steps extend one of those tests. A behavior of no core flow (a remembered filter, a format, a label) is tested one layer down: a component or endpoint test. A new title is a proposal for the spec's ✋: the list is the dev-lead's. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
+`operations.md` §Testing lists the project's **Flujos core**, each with its test. New steps extend one of those tests. A behavior of no core flow (a remembered filter, a label) is tested one layer down: a component or endpoint test. A new title is a proposal for the spec's ✋: the list is the dev-lead's. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
 
 With E2E tests, the project keeps a titles test in a suite the close runs whole (`unitario` or `pendiente`). Missing, write it with the first E2E you touch, even with the list `pendiente`, and run it: every current title goes to «Títulos heredados», born green.
 
-It runs `playwright test --list --reporter=json` per Playwright config, with the config's `grep` and `grepInvert` switched off by env; a regex misses dynamic titles. No server starts; ~3 s per config, so a 30 s timeout. Red, naming the title: in neither «Flujos core» nor «Títulos heredados», or a heredado gone. Compare `describe › title` as a set: one test in two `projects` is one title. Red with Playwright's error: a non-zero exit, as when a spec reads the environment at load (move that to a fixture, or give the listing what it needs).
+It runs `playwright test --list --reporter=json` for every `playwright*.config.*` (glob them: a default one hides the rest), with the config's `grep` and `grepInvert` switched off by env; a regex misses dynamic titles. No server starts; ~3 s per config, so a 30 s timeout. Red, naming the title: in neither «Flujos core» nor «Títulos heredados», or a «Títulos heredados» title gone. Compare `describe › title` as a set: one test in two `projects` is one title. A core line's title follows its last `·`. A non-zero exit doesn't throw: red printing the JSON's `errors`, as when a spec reads the environment at load (move it to a fixture, or give the listing what it needs).
 
 «Títulos heredados» only shrinks: a deleted test loses its line; a new or renamed title never gets one. A red title you didn't add goes to the dev-lead.
 
@@ -66,11 +66,11 @@ await editor.pressSequentially(text);
 ```
 </Good>
 
-Fix a shared helper where it lives: it fails the whole suite. `page.waitForTimeout()` is not a wait: Playwright discourages it because «tests that wait for time are inherently flaky».
+Fix a shared helper where it lives: it fails the whole suite. `page.waitForTimeout()` is not a wait.
 
 ## Rule 5: Each Test Owns Its Data
 
-Each test creates what it needs and deletes it when it ends, as `operations.md` §Testing «Datos» says: a test that only passes on a freshly emptied environment depends on another. Tests and probes run with the **agent's user** («Acceso a la aplicación»), never the one the person validating uses. A one-off probe gets its own output folder (`--output <workspace>/probe-results`).
+Each test creates its data and deletes it when it ends, as `operations.md` §Testing «Datos» says; a test that only passes on a freshly emptied environment depends on another. Tests and probes run with the **agent's user** («Acceso a la aplicación»), never the one the person validating uses. A one-off probe gets its own output folder (`--output <workspace>/probe-results`).
 
 ## Rule 6: Retries and Timeouts Come from `operations.md`
 
@@ -81,7 +81,7 @@ Playwright's defaults: 30 s per test, 5 s per assertion, no retries. Retries are
 1. **Repeat only that test**: `npx playwright test <file> -g "<title>" --repeat-each=10`, not the suite.
 2. **Classify the cause** from the failing run's output: a **race in the test** (rules 2-4: fix the test); a **race in the app**, which the user hits too (a bug: `sdd-debugging`); the **environment** (a server down, a port taken: check it before the code); **shared data** (rule 5: isolate it).
 3. **Fix the cause** and repeat that test again.
-4. **Can't fix it now**: declare it `test.fixme('<title>', { annotation: { type: 'issue', description: '<url>' } }, …)`. Playwright doesn't run it, and the suite stops lying.
+4. **Can't fix it now**: declare it `test.fixme('<title>', { annotation: { type: 'issue', description: '<url>' } }, …)`. Playwright doesn't run it.
 
 ## Common Rationalizations
 

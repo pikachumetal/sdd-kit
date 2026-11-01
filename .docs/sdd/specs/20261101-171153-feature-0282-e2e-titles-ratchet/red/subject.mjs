@@ -1,14 +1,14 @@
 // Copias de dos suites reales, sin sus documentos ni su historia, y un molde sin E2E. Lanzador de RED y GREEN.
 // MOLDS: carpeta con dm/, ody/ (solo código de apps/frontend y lo que importa) y sus node_modules ya instalados.
-// a1, a2: una task que amplía un E2E, sin «Flujos core». m1: paso 2 de la migración con E2E. i1: init con E2E.
+// a1, a2: una task que amplía un E2E, sin «Flujos core». a3: una task con un título nuevo. m1: paso 2 de la migración con E2E. i1: init con E2E.
 // n1: la guía sin E2E. n2: paso 2 de la migración sin E2E.
 // Las salidas llevan títulos de producto de clientes: SPEC_DIR va fuera del repo y aquí no se guarda ninguno.
 import { mkdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { initSubject } from '../../../../../tests/headless/lib.mjs';
 
-const REPO = process.env.KIT_REPO;
-const MOLDS = process.env.MOLDS;
+const { KIT_REPO: REPO, MOLDS } = process.env;
+if (!REPO || !MOLDS) throw new Error('define KIT_REPO y MOLDS');
 const s = initSubject(process.argv.slice(2), 'sdd-tdd');
 s.env.MAX_TURNS ||= '60';
 s.env.SUBJECT_TIMEOUT ||= '1200';
@@ -33,11 +33,15 @@ function operations(unit, e2eLine) {
   return `# Operations\n\n## Testing\n\n- **Suites**: ${unit}${e2eLine ? `; ${e2eLine}` : ''}\n- **Gate de cierre**: la suite ${e2eLine ? 'E2E' : 'unit'}, entera\n`;
 }
 
-function task(project) {
+function task(project, newTitle) {
   const F = '.docs/sdd/specs/20261101-090000-feature-0030-assert';
   s.git('checkout', '-q', '-b', 'feature/0030-assert');
-  s.put(`${F}/spec.md`, `---\nfeature: 0030\nmode: full\nprofile: delegate\nstatus: approved\n---\n\n# Spec\n\n## Dónde se prueba\n\n- En el E2E existente: su primer test gana una aserción, sin cambiar de título.\n\n## Aprobaciones\n\n| 2026-11-01 | aprobada por delegación |\n`);
-  s.put(`${F}/plan.md`, `# Plan\n\n**Ejecución**: Native.\n\n## Task 1: una aserción más\n\n- **Qué**: en el primer test de \`${project.e2e}\`, al acabar, comprueba con una aserción web-first que la página sigue con un \`body\` visible. Sin título nuevo.\n`);
+  const where = newTitle ? 'En un E2E nuevo.' : 'En el E2E existente: su primer test gana una aserción, sin cambiar de título.';
+  const what = newTitle
+    ? `un \`test('${newTitle}')\` nuevo en \`${project.e2e}\` que abre \`/files\` y comprueba con una aserción web-first un \`body\` visible.`
+    : `en el primer test de \`${project.e2e}\`, al acabar, comprueba con una aserción web-first que la página sigue con un \`body\` visible. Sin título nuevo.`;
+  s.put(`${F}/spec.md`, `---\nfeature: 0030\nmode: full\nprofile: delegate\nstatus: approved\n---\n\n# Spec\n\n## Dónde se prueba\n\n- ${where}\n\n## Aprobaciones\n\n| 2026-11-01 | aprobada por delegación |\n`);
+  s.put(`${F}/plan.md`, `# Plan\n\n**Ejecución**: Native.\n\n## Task 1: una aserción más\n\n- **Qué**: ${what}\n`);
   s.commit('docs(sdd): abrir la 0030');
   return `Invoca la skill sdd-kit:sdd-tdd y haz la Task 1 del plan de la 0030 (${F}/plan.md), también lo que la guía del kit pida al proyecto para esa task. Las dependencias ya están instaladas: no instales nada. Aquí no hay navegadores ni entorno levantado: el E2E escríbelo sin ejecutarlo. Haz commit de lo que deba quedar y para; acaba diciendo en dos líneas qué has dejado y qué pides al dev-lead.`;
 }
@@ -67,6 +71,7 @@ function noE2eHojas() {
 const scenarios = {
   a1: () => prepareTask('dm'),
   a2: () => prepareTask('ody'),
+  a3: () => prepareTask('dm', 'la lista de ficheros se abre'),
   m1() {
     const p = realProject('dm');
     docs2x(`## Testing\n\n${operations(p.unit, '`e2e` · `pnpm --dir apps/frontend exec playwright test` · ~10 min').split('## Testing\n\n')[1]}`);
@@ -100,12 +105,12 @@ const scenarios = {
   },
 };
 
-function prepareTask(name) {
+function prepareTask(name, newTitle) {
   const project = realProject(name);
   s.put('.docs/sdd/steering/operations.md', operations(project.unit, '`e2e` · `pnpm --dir apps/frontend exec playwright test` · ~10 min · E2E'));
   s.initRepo('feat: base');
   linkModules(name);
-  return task(project);
+  return task(project, newTitle);
 }
 
 mkdirSync(s.R, { recursive: true });

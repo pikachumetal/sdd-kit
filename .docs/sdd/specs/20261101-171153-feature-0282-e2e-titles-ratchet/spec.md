@@ -4,7 +4,7 @@ feature: 0282
 title: El test de títulos E2E se adopta con ratchet y lee playwright test --list
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-01
 author: Àngel Delgado
 approvers:
@@ -84,7 +84,7 @@ Con el texto de la 0278, adoptar el test en una suite sin limpiar deja en rojo u
 
 ## Approach
 
-La regla 1 pasa a decir, en este orden: qué lanza el test (`playwright test --list --reporter=json`, una vez por config, con los filtros apagados, sin levantar nada), cuándo sale en rojo (título en ninguna de las dos listas; heredado que ya no existe; salida distinta de 0), cómo nace (al faltar, con el primer E2E que se toca, se rellena «Títulos heredados» con todos los títulos de hoy) y qué no se hace (añadir una línea a heredados). Sigue viviendo en una suite que el cierre corre entera y sigue siendo el proyecto quien la escribe.
+La regla 1 pasa a decir, en este orden: cómo nace (al faltar, con el primer E2E que se toca, se rellena «Títulos heredados» con todos los títulos de hoy), qué lanza el test (`playwright test --list --reporter=json`, una vez por config, con los filtros apagados, sin levantar nada), cuándo sale en rojo (título en ninguna de las dos listas; heredado que ya no existe; salida distinta de 0) y qué no se hace (añadir una línea a heredados). Sigue viviendo en una suite que el cierre corre entera y sigue siendo el proyecto quien la escribe.
 
 ## Dónde se prueba
 

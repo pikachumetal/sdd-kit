@@ -9,7 +9,7 @@
 
 ## Testing
 
-> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+> TDD si hay tests automáticos; smoke manual documentado si no los hay.
 
 - **Suites**: <una por línea, cada una con su comando, su duración y su nivel —`unitario` (sin host, base de datos, red ni procesos), `integración` (arranca el host, un motor de base de datos, contenedores o el sistema de ficheros), `E2E` (la aplicación entera desde fuera) o `pendiente` si no se sabe qué arranca—, p. ej. `unit` · `dotnet test Api.UnitTests` · ~20 s · unitario>
 - **Lo afectado**: <comando que corre solo los tests de lo que toca un cambio, p. ej. `moon run :test --affected`; lo usan la pasada de fix y el gate de merge>
@@ -24,7 +24,7 @@
 
 > Los seis campos siguientes, solo si el proyecto tiene tests E2E; si no, bórralos.
 
-- **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` › emite y descarga el PDF». Un test de la suite `unitario` los compara con `playwright test --list`; lo demás, una capa más abajo>
+- **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` · emite y descarga el PDF», con su `describe › ` si lo tiene, tras el último `·`. Un test de la suite `unitario` los compara con `playwright test --list`; lo demás, una capa más abajo>
   - **Títulos heredados**: <los que la suite ya tenía al adoptar ese test, uno por línea; solo encoge: no se añade ninguno>
 - **Presupuesto E2E**: <minutos que puede tardar la suite E2E del gate de cierre, p. ej. `10 min` · `pendiente`>
 - **Retries**: <`0` en local; en CI, `0`, `1` o `2`. Recomendado: `0` en local y `2` en CI>
