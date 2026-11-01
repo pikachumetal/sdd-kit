@@ -250,9 +250,9 @@ En la skill, la regla va en la sección Triage, en el paso donde se decide, y ll
 
 #### ADDED — Quien depura busca el fallo en la deuda antes de investigar
 
-- GIVEN el molde `salas-3-remedy`: `npm run informe` falla con `ENOENT` sobre `.cache/informes/ocupacion.csv`, y en «Lista» de `debt.md` hay una fila de problema «El informe no arranca tras limpiar la caché», con «Remedio temporal» `mkdir -p .cache/informes`
+- GIVEN el molde `remedy`: `npm run informe` falla con `ENOENT` sobre `.cache/informes/ocupacion.csv`, y en «Lista» de `debt.md` hay una fila de problema «El listado de ocupación no sale tras limpiar el repo», con «Remedio temporal» `recrea la carpeta de la caché`
 - WHEN se invoca `sdd-debugging` para ese fallo
-- THEN busca el primer error en la deuda antes de investigar por su cuenta, y dice que esa fila lo cubre, con su remedio
+- THEN compara el fallo con las filas de la deuda por significado, no solo por las palabras del error, y dice que esa fila lo cubre, con su remedio
 - AND aplicar el remedio no se da por causa raíz: la fila sigue abierta y el arreglo sigue pendiente
 - AND sin una fila que lo nombre, sigue la Fase 1 sin cambios
 
@@ -277,6 +277,9 @@ Precio medido: `c1`, 0,16 $ por sujeto en el RED. `sdd-upgrade` `v1` es más lar
 | Suma | | 7,82 |
 
 ## Enmiendas
+
+- 2026-11-01 — `feature-flow`: la fila del molde cuenta el fallo con otras palabras, y el THEN compara por significado, en lugar de buscar el primer error — con el literal en la fila, 2/2 la encontraban por `grep` y el RED no medía nada; con otras palabras, 1 de 2 no mira la deuda — sin aprobar (aplica la decisión 17 tras el RED; va en la lista de rulings del cierre).
+- 2026-11-01 — `migration`: en el molde, la fila con marcas apunta a la 0022 (`0030` no existe en el molde); el GIVEN se lee con ese id — sin aprobar (dato de molde).
 
 ## Aprobaciones
 

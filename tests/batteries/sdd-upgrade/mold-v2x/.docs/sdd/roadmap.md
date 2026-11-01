@@ -22,6 +22,8 @@
 | `cancel` no comprueba que la reserva sea del que cancela ([ticket SAL-45](https://tracker.example.com/SAL-45), [análisis](field-reports/sal-45.md)) | Alto — cualquiera cancela cualquier reserva | **Actuar**: 0022 |
 | Los mensajes de error mezclan castellano e inglés | Bajo — confunde | **Actuar**: sin fila |
 | El test de franjas falla a veces en CI | Medio — rojo intermitente | **Esperar 2.º ticket**: falta un segundo fallo con su log |
+| El test de avisos depende de la fecha del sistema ([ticket SAL-46](https://tracker.example.com/SAL-46)) | Medio — rojo a fin de mes | **Actuar** → 0022 · causa: prueba o molde · arreglo: mover regla |
+| El changelog pierde una entrada al fusionar | Bajo — se repone a mano | **Esperar 2.º ticket** · causa: fusión de registros — falta reproducirlo |
 | Validar el formato de la franja en la API | Bajo | **Descartada**: duplica la 0018 |
 | Pasar `src/app.js` a TypeScript | Bajo | versión siguiente |
 

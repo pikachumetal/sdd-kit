@@ -65,6 +65,10 @@ Las reglas que añaden la 0161 y la 0150 a `skills/sdd-roadmap/SKILL.md`, de dó
 | «Something concrete»: antes de «Patch:» o `**Carril:** patch`, cuenta los tests de comportamiento nuevo; con dos o más, lite o feature | tickets de la feature 0211 §3 y del patch 0220 (menores); RED de la 0264, `rl1` 0/1; GREEN 2/2 | rl1 |
 | «Something concrete»: una fila nacida de otro cambio enlaza su artefacto, con las cifras añadidas antes en él | ticket del patch 0219 §1; RED de la 0264, `re1` 0/1 (copió las cifras a la celda, sin enlace); GREEN 2/2 | re1 |
 
+| Triage: el 2.º caso se decide por el mecanismo, abriendo los tickets; causa, remedio y orden de arreglo | feature 0276; RED en la spec, `c1`: 1 de 2 no relaciona los tickets, y ninguno deja causa ni remedio en la fila; GREEN `c1` y `c2` 2/2 | c1, c2, m3, m6 |
+
+**Retirado** (feature 0276, para pagar el saldo): la red flag de proponer en «Lista» sin reproducir y las racionalizaciones «The size is not clear», «The 0012 is discarded» y «The notes are already reflected»; las cuatro repetían una línea que se queda. Control: `m3` y `m5` 2/2.
+
 **Retirado** (feature 0264, para pagar el saldo): la racionalización «I freeze the scope in a separate document» y las red flags de editar una fila en marcha, reescribir una regla de una propuesta y tomar una reunión sin sus notas; las tres últimas repetían una línea de la skill.
 
 **Sin regla** (feature 0264): `rf1` (ficheros leídos del código) salió limpio con un sujeto y queda de control; posible falso negativo, porque el molde es pequeño.
