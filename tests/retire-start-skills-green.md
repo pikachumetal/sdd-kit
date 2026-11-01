@@ -42,7 +42,7 @@ Salidas en `fix/`, `refactor/` y `control2/`.
 | `v1b`, n = 1 en `fix/` | el mensaje de la plantilla, en prosa | rojo: sin 🦆 ni ✋, aunque la puerta dé verde |
 | `v1b`, n = 2 en `refactor/` | sus dos primeras líneas, literales en el paso | 2/2 con 🦆 y ✋: fallo de forma, curado con la forma (Art. II) |
 | `v1a`, n = 1 | la decisión de la revisión final, sola en su turno | 1/1 |
-| `pt1b`, n = 1 | un `tasks.md` de otra carpeta no saca al patch del carril | 1/1 |
+| `pt1b`, n = 1 | un `tasks.md` de otra carpeta | 1/1, pero no mide el riesgo: el sujeto crea su propia carpeta y no lee ese fichero. El Review Focus queda por lectura; un patch abierto con artefactos de más es retomar, de la 0116 |
 | `sr1`, n = 2 | los dos revisores de la spec, sin esperar uno al otro | 2/2: los dos `Agent` salen en segundo plano; el `tools.txt` no dice si en la misma respuesta |
 | `s1`, n = 1 | `compose-spec-review.mjs` tras el traslado | el encargo llega entero; antes llegaba vacío |
 

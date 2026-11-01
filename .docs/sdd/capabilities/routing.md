@@ -17,7 +17,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
 - WHEN el usuario reporta un bug acotado y pide arreglarlo
-- THEN la primera skill que se invoca es `sdd-kit:sdd-propose`, que lo clasifica como patch y, con la confirmación, sigue con `sdd-start-patch`
+- THEN la primera skill que se invoca es `sdd-kit:sdd-propose`, que lo clasifica como patch y, con la confirmación, sigue con `sdd-implement`
 - AND `patch.md` lleva `solution: causa raíz`, la causa con su evidencia en §2, la entrada del changelog en `Fixed` y el commit del fix con el tipo `fix`
 
 ### El router solo existe donde hay SDD
@@ -85,7 +85,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 ### Un patch visual se verifica con una captura y se registra como `Changed`
 
 - GIVEN un patch abierto para un ajuste solo de presentación o una retirada
-- WHEN el agente lo recorre con `sdd-start-patch` y lo cierra con `sdd-archive`
+- WHEN el agente lo recorre con `sdd-implement` y lo cierra con `sdd-archive`
 - THEN §2 de `patch.md` lleva la intención en una frase, en lugar de la causa raíz, y no se invoca `sdd-debugging`
 - AND §4 lleva la ruta de una captura en navegador real de cada pantalla tocada antes y después del cambio, guardadas fuera de git, y la salida del detector en los dos viewports con cada hallazgo resuelto o justificado, con los mismos contraejemplos que una task full
 - AND sin detector declarado, el aviso «composición no medida», y con el detector declarado sin ejecutar, «no probado» con el error concreto
@@ -115,7 +115,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 ### El patch registra quién fijó la solución y quién decidió cada cosa
 
-- GIVEN un patch abierto con `sdd-start-patch`
+- GIVEN un patch abierto con `sdd-implement`
 - WHEN el agente escribe `patch.md`
 - THEN el frontmatter lleva `solution: ticket | dev-lead | causa raíz`, y §3 una lista `Decisiones` con el autor en cada línea: `ticket`, `dev-lead` o `sin el dev-lead`
 - AND una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` hace que el agente pare el patch y lo suba a feature por el paso de la spec de `sdd-propose`, y se lo diga al usuario
@@ -262,7 +262,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el carril patch va a correr su primer test, o el carril config su gate
 - THEN antes corre el paso 2 de `sdd-worktrees` («Project Setup»), con el gestor de paquetes del proyecto, y el test no falla por un módulo que falta
 - AND la clasificación de `sdd-propose` también: al reproducir un fallo, ningún `node --test` ni `node src/…` va antes de `pnpm install`
-- AND el paso 2 de `sdd-propose` nombra ese paso, sin copiar sus órdenes, y `sdd-start-patch` y el carril config no lo repiten
+- AND el paso 2 de `sdd-propose` nombra ese paso, sin copiar sus órdenes, y `sdd-implement` y el carril config no lo repiten
 
 ## Reglas de la capacidad
 

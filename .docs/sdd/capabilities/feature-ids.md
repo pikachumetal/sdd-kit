@@ -85,7 +85,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 
 ### En modo gestor el id es el del ticket
 
-- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-start-feature`, `sdd-start-patch`, `sdd-roadmap`, `sdd-explore`)
+- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-propose`, `sdd-implement`, `sdd-roadmap`, `sdd-explore`)
 - WHEN el trabajo tiene ticket en el gestor
 - THEN el id es el del ticket, y `0000` cuando el trabajo no tiene ticket
 

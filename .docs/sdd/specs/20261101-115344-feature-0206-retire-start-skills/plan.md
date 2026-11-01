@@ -3,7 +3,7 @@ id: 20261101-115344-feature-0206-retire-start-skills
 feature: 0206
 title: Plan de implementación — Retirar sdd-start-feature y sdd-start-patch
 spec: ./spec.md
-status: draft
+status: done
 created: 2026-11-01
 ---
 

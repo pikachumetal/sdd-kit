@@ -5,7 +5,7 @@ proposal: 0131
 title: Retirar sdd-start-feature y sdd-start-patch y repartir lo que hacen entre las cinco acciones
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-01
 author: agente con el dev-lead
 approvers:
@@ -407,7 +407,7 @@ Cada paso nuevo o cambiado y su escenario: sección del patch, N1, N2 → `pt1`-
 
 ## Enmiendas
 
-- 2026-11-01 — Cuatro `MODIFIED` más en `feature-flow`: dejan de nombrar el «paso 7», sin cambiar conducta. La revisión final vio que el repaso de coherencia solo buscó los nombres de las skills — aplica literal «Las dos skills se retiran» de las decisiones con el dev-lead — sin aprobar.
+- 2026-11-01 — Cuatro `MODIFIED` más en `feature-flow`: dejan de nombrar el «paso 7», sin cambiar conducta. La revisión final vio que el repaso de coherencia solo buscó los nombres de las skills — aplica literal «Las dos skills se retiran» de las decisiones con el dev-lead — sin aprobar. `sdd capability merge` sobre una copia: 18 requisitos, 3 añadidos y 15 sustituidos, `Capacidades válidas: 20`.
 
 ## Aprobaciones
 

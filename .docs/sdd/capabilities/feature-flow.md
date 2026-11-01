@@ -187,7 +187,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### La verificación visual se enseña con medidas y capturas
 
 - GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, el criterio «el selector filtra la lista por estado» y contraste del texto ≥ 4,5:1
-- WHEN el agente para tras la task en `pair`, o presenta la validación del paso 7 en `delegate`
+- WHEN el agente para tras la task en `pair`, o presenta la validación de `sdd-archive` en `delegate`
 - THEN antes del guion de pruebas enseña el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `select` · arreglado: padding-right 12 px») y la ruta de cada captura
 - AND cada medida en estilos computados, solo porque el criterio fija un valor, con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1»)
 - AND sin detector declarado, el aviso literal «composición no medida: `tech-stack.md` no declara detector en §Frontend»
@@ -226,7 +226,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### Cada cambio de paso lleva un aviso en llano
 
-- GIVEN una feature en curso con `sdd-propose` o `sdd-start-feature`
+- GIVEN una feature en curso con `sdd-propose` o `sdd-implement`
 - WHEN el agente pasa de un paso del flujo al siguiente
 - THEN su mensaje dice, en lenguaje llano, qué hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará cuando el paso lanza subagentes o sujetos
 - AND un contador («van 7 de 15») o un número de paso sin esa frase no cuentan como aviso
@@ -234,7 +234,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### Una decisión del dev-lead que sale de la revisión final se pregunta sola
 
 - GIVEN la revisión final de rama con un hallazgo cuya resolución es del dev-lead
-- WHEN el agente llega al paso 7
+- WHEN el agente llega a la validación de `sdd-archive`
 - THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
 - AND no la resuelve por defecto ni la mete en el mensaje de la validación
 
@@ -326,7 +326,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El guion de pruebas empieza con el entorno parado, salvo que la persona lo quiera arrancado
 
-- GIVEN la validación del paso 7 de la feature 0012, con la web levantada por el agente en el puerto 4656
+- GIVEN la validación de `sdd-archive` de la feature 0012, con la web levantada por el agente en el puerto 4656
 - WHEN el agente presenta el guion de pruebas sin `validation.startEnvironment` en `.docs/sdd/sdd-kit.local.json`, o con `false`
 - THEN antes de presentarlo ha parado lo que arrancó, y el guion empieza por cómo arrancarla
 - AND con `validation.startEnvironment: true`, la deja arrancada, y el guion dice en qué puerto está y cómo pararla
@@ -345,7 +345,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN la fila 0012 «`npm run check:changed` … si la rama no cambia ninguno, escribe «Nada que comprobar» y sale con 0», cuyo THEN negativo no se puede observar desde `feature/0012`, porque la rama siempre cambia `scripts/check-changed.mjs`
 - WHEN el agente escribe la spec
 - THEN bajo ese escenario escribe `Se valida en: worktree con la base al día` (o `validación post-merge con fecha`)
-- AND en el paso 7 prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
+- AND en la validación de `sdd-archive` prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
 
 ### Un hallazgo de ejecución se reproduce antes de arreglarse
 
@@ -498,15 +498,15 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN la feature 0010 en `delegate`, con la spec aprobada y el plan escrito por `sdd-propose`
 - WHEN `sdd-propose` termina el plan
-- THEN invoca `sdd-start-feature`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
-- AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-start-patch` con la clase del patch y la estimación de la pregunta
-- AND si se invoca `sdd-start-feature` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
+- THEN invoca `sdd-implement`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
+- AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-implement` con la clase del patch y la estimación de la pregunta
+- AND si se invoca `sdd-implement` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
 
 ### La implementación la lleva `sdd-implement`
 
 - GIVEN la feature 0042 en modo full, con la spec aprobada y el plan con `Ejecución: native, porque 2 tasks encadenadas por la interfaz de Ledger, …`
-- WHEN `sdd-start-feature` llega al paso 6
-- THEN invoca `sdd-implement`, que ejecuta las dos tasks en Native y, con la revisión final de vuelta y su pasada de fix hecha, sigue en el paso 7 de `sdd-start-feature`
+- WHEN `sdd-propose` entrega la feature
+- THEN invoca `sdd-implement`, que ejecuta las dos tasks en Native y, con la revisión final de vuelta y su pasada de fix hecha, invoca `sdd-archive`, que abre con la validación
 - AND ningún fichero de `skills/` invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
 - AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
 
@@ -716,6 +716,21 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND va en el commit de la apertura o, si ya está hecho, en el de la Task 1
 - AND con una sola task no lo escribe por esta regla
 - AND con más de una task y sin `tasks.md` junto al plan, `sdd task start` y `sdd task brief` fallan con un error que nombra el fichero, sin escribir el brief
+
+### Un patch sigue en `sdd-implement`, con verificación y sin revisión final
+
+- GIVEN el patch 0031, confirmado en `sdd-propose`: si cancelo Norte el martes, que no tengo reservado, me quita la del lunes
+- WHEN `sdd-propose` lo entrega
+- THEN invoca `sdd-implement`, que lee lo primero `references/patch-flow.md` y sigue su flujo: causa raíz, `patch.md`, fix mínimo y commit; ni el Setup ni los bucles de tasks aplican
+- AND antes de decir que está arreglado, §4 de `patch.md` lleva el comando del test y su salida leída en esta sesión, como dice la «Gate Function» de `sdd-verify`
+- AND no se despacha ningún eje de la revisión final, y sigue en `sdd-archive`
+
+### Ninguna skill intermedia entre propose e implement
+
+- GIVEN la feature 0010 con la spec aprobada y el plan escrito
+- WHEN el hilo pasa de `sdd-propose` a implementar y, al acabar, a cerrar
+- THEN las únicas skills de flujo que invoca son `sdd-implement`, `sdd-verify` y `sdd-archive`
+- AND mientras trabaja el revisor final, `sdd-implement` escribe sin commitear el borrador de `walkthrough.md` y el delta fusionado, sin adelantar el roadmap, y `sdd-archive` los completa
 
 ## Reglas de la capacidad
 

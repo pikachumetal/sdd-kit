@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, aprobación, validación diferida y política de merge. La tabla que aplican las skills vive en `skills/sdd-start-feature/references/control-profiles.md`.
+Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, aprobación, validación diferida y política de merge. La tabla que aplican las skills vive en `skills/sdd-propose/references/control-profiles.md`.
 
 ## Requisitos
 
@@ -116,7 +116,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### Con `validation.mode: field`, la validación es en campo
 
 - GIVEN un proyecto con `"validation":{"mode":"field"}` en `.docs/sdd/sdd-kit.json` y la feature 0030 con el cierre de su revisión final terminado, su smoke por THEN y la suite en verde, en cualquier perfil
-- WHEN el agente llega a la validación (paso 7 de `sdd-start-feature`, o el paso de validación de `sdd-archive`), o cierra el patch 0031 con `sdd-archive`
+- WHEN el agente llega a la validación (el paso de validación de `sdd-archive`), o cierra el patch 0031 con `sdd-archive`
 - THEN no pregunta qué ha probado el usuario ni ofrece diferir, y sigue con el cierre sin parar
 - AND el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutó (p. ej. `suite 412/412 en 96 s · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`)
 - AND con un `sin revisar` o un «no verificado» sin resolver, esa línea no dice «limpia»: dice cuántos quedan (`…, re-revisión limpia, 1 sin revisar`)
