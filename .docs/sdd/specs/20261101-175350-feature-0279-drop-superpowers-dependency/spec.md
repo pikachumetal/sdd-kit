@@ -48,7 +48,7 @@ Review de spec: un revisor (Opus, siete puntos), decidida por mí por el perfil 
 12. **El smoke guarda un resumen** en `green/smoke/` de esta carpeta, con y sin plugin, porque en la 0116 el eje Spec no pudo verificar los smokes (ticket §Menores).
 13. **Sin `SUPERPOWERS_DIR`**, un sujeto de `using-sdd` da el «Está hecho» de que un sujeto carga e invoca, y un sujeto de la batería de `sdd-propose` cubre la edición de su Overview (Art. I, tramo del paso).
 14. **Una pieza entra, otra sale**: entra el paso 10 (~130 palabras en una referencia); salen la dependencia, la instalación de superpowers, el campo del ticket y las cláusulas de la constitution.
-15. **Delta probado en una copia**: ver el resultado al final de «Delta de comportamiento».
+15. **Delta probado en una copia** de `.docs/sdd`: `sdd capability merge` añade 1 requisito a `routing.md` y 1 a `migration.md`, y sustituye 1 en `onboarding.md`, 2 en `cli.md`, 1 en `kit-feedback.md` y 1 en `migration.md`, sin rechazos.
 16. **`migration-init-parity.test.ts` lleva una exención**, `extraKnownMarketplaces.superpowers-marketplace`: `v2.0.0.md` la declara en su `**Escribe**` y es historia, y la init deja de tenerla. El `**Escribe**` de v3.0.0 nombra el paso 10 en prosa, sin clave nueva, porque el paso solo retira.
 17. **La init no lleva la pregunta del paso 10, y no lo cuento como excepción al Art. V**: esa regla reparte lo que una migración *añade*, y el paso 10 solo retira. Un proyecto nuevo no tiene nada que quitar; una init sobre un `settings.json` que ya lo activa no lo toca (decisión 4).
 18. **El paso 10 queda fuera de «Verificación»**, como el paso 8: corre después del marcador, y la verificación corre antes.
@@ -231,7 +231,6 @@ Primero los tests en rojo; después manifests, init y lanzador; después los tex
 - REMOVED AND la suite falla si una clave declarada no aparece literal en `sdd-init`, contando su `SKILL.md`, sus `references/`, los documentos que estos enlazan salvo `skills/sdd-upgrade/`, `sdd-config` incluido, y los `.ts` de `cli/src/init/`
 - AND la suite falla si el texto de una pregunta del catálogo de `sdd-config` aparece en la init o en una migración, o si una de ellas no nombra `sdd-config`
 
-Prueba en una copia de `.docs/sdd`: `sdd capability merge` añade 1 requisito a `routing.md` y 1 a `migration.md`, y sustituye 1 en `onboarding.md`, 2 en `cli.md`, 1 en `kit-feedback.md` y 1 en `migration.md`, sin rechazos.
 
 ## Topes de palabras
 

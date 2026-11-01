@@ -45,6 +45,14 @@ function salas3WithSuperpowers(enabledPlugins) {
 const molds = {
   salas3: () => salas3WithSuperpowers({ 'superpowers@superpowers-marketplace': true }),
   'salas3-shared': () => salas3WithSuperpowers({ 'superpowers@superpowers-marketplace': true, 'elements-of-style@superpowers-marketplace': true }),
+  // Ya migrado, con una regla que repite el kit: lo que mide que la revisión de reglas no abra el paso de superpowers.
+  'salas3-current': () => {
+    salas3WithSuperpowers({ 'superpowers@superpowers-marketplace': true });
+    s.put('.docs/sdd/sdd-kit.json', `{"version": "3.0.0", ${MARKER}}\n`);
+    s.put('CLAUDE.md', '# salas\n\n- El id de una feature se elige a mano.\n');
+  },
+  // Un proyecto 2.x con superpowers activado: el paso 10 tras las tablas y los gates de una migración real.
+  'v2x-superpowers': () => s.put('.claude/settings.json', `${JSON.stringify({ extraKnownMarketplaces: { 'superpowers-marketplace': SUPERPOWERS_MARKETPLACE }, enabledPlugins: { 'superpowers@superpowers-marketplace': true } }, null, 2)}\n`),
   salas: () => s.put('.docs/sdd/sdd-kit.json', `{"version": "2.3.3", ${MARKER}}\n`),
   // Un proyecto 2.x completo, en 2.3.4: lo que mide la migración a la 3.0.0.
   v2x: () => {},
@@ -101,7 +109,7 @@ s.git('checkout', '-q', '-b', 'develop');
 const turn2 = { o1: 'No, ahora no. Sigue con lo del filtro.', o2: 'Sí, actualízalo.', s1: 'Sí, quítala.', s2: 'No, lo usamos fuera del kit.', s3: 'Sí, quítala.' };
 if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];
 
-const long = ['v1', 'v3', 'g1', 'v4', 'g2'].includes(s.SC);
+const long = ['v1', 'v3', 'g1', 'v4', 'g2', 's4'].includes(s.SC);
 if (long) s.env.MAX_TURNS ||= '90';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
@@ -123,4 +131,4 @@ function v2xReport() {
     .map((path) => `## ${path}\n${readFileSync(join(s.R, path), 'utf8')}`);
   return [`## ficheros\n${markdown(s.R).sort().join('\n')}\n`, `## sdd roadmap check\n${sdd('roadmap', 'check', '--path', join(s.R, '.docs', 'sdd'))}`, `## sdd capability check\n${sdd('capability', 'check', '--path', join(s.R, '.docs', 'sdd'))}`, ...shown].join('');
 }
-s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## sdd-kit.json\n${readFileSync(join(s.R, '.docs', 'sdd', 'sdd-kit.json'), 'utf8')}${SALAS3 ? `## settings.json\n${readFileSync(join(s.R, '.claude', 'settings.json'), 'utf8')}` : ''}${V2X ? v2xReport() : ''}`);
+s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## sdd-kit.json\n${readFileSync(join(s.R, '.docs', 'sdd', 'sdd-kit.json'), 'utf8')}${existsSync(join(s.R, '.claude', 'settings.json')) ? `## settings.json\n${readFileSync(join(s.R, '.claude', 'settings.json'), 'utf8')}` : ''}${V2X ? v2xReport() : ''}`);

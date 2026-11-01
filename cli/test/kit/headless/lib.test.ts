@@ -174,6 +174,16 @@ describe('initSubject (lib.mjs)', () => {
     expect(fake.errs).toEqual(['[a-1] la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin agents cli hooks']);
   });
 
+  it('un kit que declara dependencies no aborta sin SUPERPOWERS_DIR', () => {
+    const fs = kitFs();
+    fs.write(join(KIT, '.claude-plugin', 'plugin.json'), '{"name":"sdd-kit","dependencies":[{"name":"superpowers"}]}\n');
+    const fake = fakeDeps(fs);
+
+    initSubject([KIT, 'a-1', 'a', OUT], 'sdd-plan', { env: baseEnv(), deps: fake.deps, cwd: CWD });
+
+    expect(fake.errs).toEqual([]);
+  });
+
   it.each([{ label: '' }, { label: '..' }, { label: 'x/../../y' }])('aborta con una etiqueta que no es un nombre plano: «$label»', ({ label }) => {
     const fake = fakeDeps(kitFs());
 
