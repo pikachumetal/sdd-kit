@@ -1,0 +1,131 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd/ 2>&1; cat .docs/sdd/sdd-kit.json 2>&1; ls .docs/sdd/capabilities 2>&1; ls node_modules 2>&1 | head -1
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/kes/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -50
+<<< ./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+<<< Sin capacidades
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Bash: git branch --show-current; ls src test; wc -l src/app.js; cat src/app.js; ls .docs/sdd/specs; cat .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 1
+develop
+src:
+app.js
+
+test:
+app.test.js
+16 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/kes/skills/sdd-propose/references" && head -40 control-profiles.md
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+=== RESULTADO (11 turnos, 0.1886436 $)
+Ahora: clasificar el cambio. Queda: tu respuesta sobre cómo partirlo, ~0 min por mi parte hasta entonces.
+
+**Carril:** feature, modo full. Perfil: `delegate`, el predeterminado del kit. No hay `control.profile` en `sdd-kit.json` ni existe `sdd-kit.local.json`.
+
+Preveo más de 5 tasks entre las tres piezas, así que el kit me manda proponerte partirlo en lugar de abrir una sola spec:
+
+| Pieza | Tasks previstas | Por qué va aparte |
+| --- | --- | --- |
+| A. Informe de ocupación por sala | ~3 | Es la base de las otras dos. Hay que fijar qué es «ocupación»: porcentaje de franjas, horas por semana, etc. Hoy `src/app.js` tiene las reservas en memoria y una sola de ejemplo. |
+| B. Exportar a Excel | ~3 | Depende de A. El stack es Node 22 sin dependencias externas, así que un `.xlsx` real implica generar el zip y el XML a mano. Un CSV que Excel abre directamente cuesta mucho menos. |
+| C. Aviso semanal a los responsables | ~4 | Depende de A. Falta decidir cómo se envía, quién recibe y cuándo se dispara. Se solapa con la fila 1 del roadmap, «Avisos por correo antes de la reserva», que también necesita un envío de correo. |
+
+Pregunta (responde con el número):
+
+1. **Partir en tres features con fila propia en el roadmap, A → B → C, y arrancar con A (recomendada).** Cada una se especifica y se valida por separado. B y C se apuntan en el roadmap sin arrancarlas.
+2. **Partir en dos:** A+B juntas (informe y exportación) y C aparte.
+3. **Mantenerlo entero** como una sola feature. No te lo volvería a proponer.
+
+Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `pair` para esta feature».
+
+Antes de la spec de A te preguntaré tres cosas: la definición de ocupación, si «Excel» admite CSV y quiénes son los «responsables». Esto último afecta sobre todo a C.
+
+Dos avisos:
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+- La constitución del proyecto cita `sdd-start-task` y `sdd-end-task`, nombres del kit antiguo. Puedo actualizarlo después con `sdd-upgrade`.

@@ -1,0 +1,63 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd 2>&1 | head -50; node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30; ls node_modules 2>&1 | head -3
+
+>>> Glob: **/*.{js,html}
+<<< .:
+./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+
+.docs/sdd:
+./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+- `order-sheets` — Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+ls: cannot access 'node_modules': No such file or directory
+<<< app.js
+pages\albaran-detalle.html
+pages\pedido-detalle.html
+
+>>> Bash: cd "<run>/repo" && cat package.json app.js; grep -n 'data-accion\|<script' pages/*.html; cat .docs/sdd/capabilities/order-sheets.md .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md .docs/sdd/sdd-kit.json; ls .docs/sdd/sdd-kit.local.json 2>&1; ls index.html 2>&1
+<<< Exit code 2
+{ "name": "ventas", "private": true }
+function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+pages/albaran-detalle.html:9:        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+pages/albaran-detalle.html:10:        <butt
+
+=== RESULTADO (6 turnos, 0.15533630000000004 $)
+Ahora: clasificar el cambio. Queda: tu confirmación del carril; luego abro el patch y lo implemento, ~15 min.
+
+🦆 Hoy el botón Cancelar de las dos fichas (`pages/pedido-detalle.html` y `pages/albaran-detalle.html`) está en pantalla pero no hace nada. El cambio es un listener en `app.js` que, al hacer clic en `[data-accion="cancelar"]`, navega a `../index.html`. Las dos fichas ya cargan `app.js`, así que no hay que tocar los HTML.
+
+**Carril: patch (petición cerrada).** El ticket fija qué cambia (destino de Cancelar) y cómo (el listener). Es un solo comportamiento nuevo, y se comprueba abriendo la ficha y pulsando Cancelar. No hay tests automáticos en el proyecto. El patch llevaría un delta en `order-sheets` («Cancelar lleva al listado de pedidos»). Perfil: `delegate`, del proyecto. No hay `estimation.md`, así que no doy estimación.
+
+**Aviso:** `../index.html` no existe en el repo. Con el listener tal cual, Cancelar llevaría a una página inexistente (404) hasta que exista el listado. Implemento lo que fija el ticket, pero conviene confirmar con quien lo escribió que el listado llega por otra vía.
+
+¿Abro el patch?
+
+1. **Sí, abro el patch como está en el ticket (Recomendada).** Incluye el aviso del `index.html` en `patch.md`.
+2. **Sí, pero creo también un `index.html` mínimo** para que el destino exista. Esto añade una pantalla que el ticket no fija, así que subiría a feature.
+3. **No.** Lo dejamos como está.

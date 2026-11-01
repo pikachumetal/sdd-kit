@@ -1,0 +1,88 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50; git branch --show-current
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+develop
+<<< Sin capacidades
+
+>>> Bash: cd .docs/sdd; for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat $f.md; done; ls specs; cd ../..; ls
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: wc -l src/* test/*; head -60 src/app.js; cat package.json; git log --oneline | head
+<<<   16 src/app.js
+  15 test/app.test.js
+  31 total
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/skills/sdd-propose/references"; cat nombrado.md; sed -n 1,60p control-profiles.md
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (
+
+=== RESULTADO (8 turnos, 0.18574380000000001 $)
+Ahora: clasificar el cambio. Queda: tu respuesta sobre cómo partirlo y, después, la entrevista de la spec (sin tocar código ni crear rama todavía).
+
+**Carril:** feature, modo full. **Perfil:** `delegate`, del proyecto, porque `sdd-kit.json` no fija `control.profile` y no hay `sdd-kit.local.json`.
+
+**Por qué te pregunto antes de arrancar:** son tres piezas con superficies distintas. Calculo bastante más de 5 tasks internas.
+- **Informe de ocupación por sala:** hoy `src/app.js` solo tiene reservas en memoria, así que hace falta definir de dónde salen los datos y qué se mide (periodo, horas ocupadas frente a disponibles).
+- **Exportar a Excel:** el stack es Node 22 sin dependencias externas. Un `.xlsx` real obliga a generar el zip y el XML a mano o a romper esa regla del stack. Esto es una decisión de diseño.
+- **Aviso semanal a los responsables:** no existe el concepto de "responsable", ni un envío de correo, ni un planificador. Se solapa con la fila 1 del roadmap (avisos por correo).
+
+**Pregunta (elige un número):**
+
+1. **Partir en tres features, cada una con su fila en el roadmap (recomendada).**
+   - La primera sería el informe de ocupación, que es la base de las otras dos.
+   - La segunda sería la exportación a Excel, que consume ese informe.
+   - La tercera sería el aviso semanal, que se enlaza con la fila 1.
+   - Empezaría por la primera, con spec propia. Cada pieza se valida y se cierra por separado.
+2. **Mantenerlo todo como una sola feature.** Una spec grande y una sola validación al final.
+
+**Si vas a estar ausente:** puedes decir «apruebo la spec por delegación, nos vemos en la validación» y no paro en el gate de la spec.
+
+**Para otro perfil:** «perfil `pair` para esta feature» (o `unattended`).
+
+Dos cosas que me ayudarían a afinar la spec, aunque las repreguntaré en la entrevista:
+- ¿Hay un fichero o una base de datos de reservas reales, o el informe parte de los datos en memoria?
+- ¿Quiénes son los "responsables" y cómo se les avisa: correo, otro medio?

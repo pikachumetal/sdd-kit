@@ -1,0 +1,124 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/kes/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; ls node_modules 2>&1 | head -3
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/mission.md; git branch --show-current; ls src test; wc -l src/*.js; cat src/app.js; cat package.json 2>&1 | head -20; ls .docs/sdd/specs
+<<< # Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+develop
+src:
+app.js
+
+test:
+app.test.js
+16 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/kes/skills/sdd-propose/references" && grep -n -i "default\|por defecto" control-profiles.md | head -12; sed -n 1,40p nombrado.md
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+18:4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+30:- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+215:| Clave | Tipo | Default |
+233:`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (el merge de `sdd-archive`) pregunta como hoy — una política que nadie declaró entera n
+
+=== RESULTADO (9 turnos, 0.18682690000000002 $)
+Esto es una feature, y te propongo partirla antes de abrir rama o carpeta.
+
+🦆 **En llano:** hoy `salas` es un solo fichero de 16 líneas con reservas en memoria. Tu petición junta tres cosas que se apoyan una en otra, pero se pueden entregar por separado:
+- El informe de ocupación por sala es la base. Sin él no hay nada que exportar ni que avisar.
+- La exportación a Excel es un formato de salida del informe. La constitución dice «sin dependencias externas», así que habría que escribir el `.xlsx` a mano o aceptar una librería.
+- El aviso semanal es lo más grande: hace falta una programación semanal, un canal (probablemente correo) y una lista de responsables. Hoy no existe ninguna de las tres. Además se solapa con la fila 1 del roadmap, «Avisos por correo antes de la reserva».
+
+Cuento unas 6 tareas internas y tres superficies distintas (informe, formato de fichero, envío programado). Por eso, según el criterio del kit, lo recomendable es partir.
+
+**Carril:** feature, modo full · **Perfil:** `delegate`, por defecto (no hay `control.profile` en `sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+**¿Cómo lo hacemos?**
+
+1. **Partir en 3 features, cada una con su fila en el roadmap (recomendada).**
+   - La primera es el informe de ocupación por sala (comando `ocupacion`), que arranco ahora.
+   - La segunda es la exportación a Excel, que depende de la primera.
+   - La tercera es el aviso semanal a los responsables, que enlazo con la fila 1 del roadmap.
+2. **Mantenerla entera** en una sola feature con sus 3 partes.
+3. **Partir en 2:** informe y Excel juntos, y el aviso aparte.
+
+Antes de seguir necesito saber dos cosas, porque cambian el diseño:
+- **¿Quiénes son los «responsables»?** La misión dice que solo lo usas tú. ¿Son los responsables de cada sala del coworking? Si lo son, ¿de dónde sale su lista de contactos?
+- **¿Por qué canal les llega el aviso?** Puede ser correo u otro, y hay que decidir quién lo lanza cada semana (un cron del servidor, por ejemplo).
+
+Dos avisos:
+- Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (`sdd-kit.json`), así que algunas reglas pueden ser de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code. Puedo seguir con lo cargado, pero te lo recomiendo.
+- Como estás en `develop` y el id sale de `ids.mode: sequence`, no creo rama, id ni carpeta hasta que elijas.

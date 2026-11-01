@@ -16,13 +16,13 @@ created: 2026-11-01
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Reescribir las dos skills | in_progress | — | |
-| 2 | Medir enrutado y calco | pending | — | |
+| 1 | Reescribir las dos skills | done | 46c3ecf0 | |
+| 2 | Medir enrutado y calco | done | — | A/B de `r1` y enmienda |
 
 ## Verificación por task
 
-- [ ] Task 1 — `moon run cli:test`
-- [ ] Task 2 — batería `using-sdd` y humo con `sdd decision check`
+- [x] Task 1 — `moon run cli:test`
+- [x] Task 2 — batería `using-sdd` y humo con `sdd decision check`
 
 ## Fixes adicionales
 

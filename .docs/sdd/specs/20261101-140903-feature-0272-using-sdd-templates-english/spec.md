@@ -72,7 +72,7 @@ Los dos `SKILL.md` se sustituyen por los drafts de la tabla de reglas, línea a 
 
 ## Dónde se prueba
 
-- Enrutado y `description` de `using-sdd`: batería entera con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`), con `KIT_DIR` en el worktree; ninguna fila por debajo de su umbral. Un rojo no se relanza: se lee y, si pide cambiar algo más que el inglés, para.
+- Enrutado y `description` de `using-sdd`: batería entera con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`), con `KIT_DIR` en el worktree; ninguna fila por debajo de su umbral, salvo `r1`, que falla igual con el texto en castellano (A/B: 11/14 en inglés y 9/14 en castellano) y se compara por A/B con él. Un rojo no se relanza: se lee y, si pide cambiar algo más que el inglés, para.
 - Filas en prosa: lectura de `texts.txt` según la decisión 6.
 - Calco de plantilla: el humo de la decisión 5.
 - Frases del usuario intactas: comparación por script de todo lo que va entre «» antes y después; solo pueden faltar las cuatro racionalizaciones.
@@ -196,7 +196,7 @@ Cada línea de texto que cambia, casada por número de línea con el draft: es e
 
 ## Enmiendas
 
-- Ninguna.
+- 2026-11-01 — `r1` no exige su umbral 2/2: se compara por A/B con el castellano, y su inestabilidad va a una fila — la batería dio 1/2 y el A/B de 14 sujetos por idioma, 11/14 en inglés y 9/14 en castellano — aprobada: «1»
 
 ## Aprobaciones
 
