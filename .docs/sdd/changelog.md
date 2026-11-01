@@ -61,6 +61,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Patch 0286** — Un conflicto de `sdd merge --sync` en Markdown en el que los dos lados solo añaden lo junta el agente, repite el gate y lo nombra, y `--sync` va en una llamada propia; un hook que rechaza la resolución ya no se informa como conflicto. → [ref](specs/20261101-220737-patch-0286-sync-additive-conflicts/)
 - **Patch 0275** — La fila `r1` de la batería de `using-sdd` pasa a n = 4 y umbral 2/4, y un rojo de enrutado tras una edición se contrasta con un A/B contra el texto anterior. → [ref](specs/20261101-170209-patch-0275-r1-threshold/)
 - **Patch 0274** — La regla 7 de `CLAUDE.md` fija el primer push de la rama tras el commit de cierre, y sigue pidiendo mirar la CI antes del merge. → [ref](specs/20261101-143402-patch-0274-rule-7-push-after-closing/)
 - **Feature 0151** — `sdd-agent-writing`: una skill para escribir y probar lo que lee un agente, fork de `writing-for-agents` y `writing-skills`; crear una skill entra por ella, y el kit deja de invocar skills de superpowers. → [walkthrough](specs/20261101-151300-feature-0151-agent-writing/walkthrough.md)

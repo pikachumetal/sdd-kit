@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-01
 branch: patch/0286-sync-additive-conflicts
-commit: pendiente
+commit: f287ea5b
 ---
 
 # Patch 0286 — Un conflicto de `sdd merge --sync` que solo suma no para al dev-lead, y `--sync` va en una llamada propia
@@ -57,10 +57,15 @@ Lo comprobado:
 
 El recorte final de palabras cayó con el GREEN recién lanzado y se aplicó también a su copia del kit: quita «by the case» y «and names it», sin cambiar la regla.
 
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 303/303 · cli:typecheck: corrió · cli:test: corrió 1859/1871, 12 saltados · 259 s sobre el fix f287ea5b con los registros del cierre
+
+Validación en campo: 2026-11-01 · `sync.slow` y `failures.slow` 29/29 · RED `m3` y GREEN `m1` a `m4` (tabla) · pre-commit en verde (`cli:typecheck`, `cli:test`, `kit:roadmap`). No probado: un conflicto de dos filas contiguas de una tabla con sujetos; lo cubre la misma regla que `m3`, y se valida en uso.
+
 ## 5. Tiempo
 
 - Estimación: 2 h + 0,17 h del gate de cierre (10 min, patches 027x)
 - Inicio: 2026-11-01T22:07Z
+- Esfuerzo real: 0,55 h — reloj de la sesión 0,55 h desde 2026-11-01T21:52Z, sin 0 min de espera al dev-lead (0 esperas)
 - Coste de sujetos: 4,42 $ en 10 sujetos sonnet — RED 0,83 $; GREEN 3,59 $
 
 ## 6. Delta de capacidad
@@ -76,3 +81,6 @@ El recorte final de palabras cayó con el GREEN recién lanzado y se aplicó tam
 - AND lo mismo con una frase que la base añade al final de una línea de `.docs/sdd/tech-stack.md` que la rama reescribe, si no dice lo contrario que la línea de la rama: queda la línea de la rama más la frase de la base
 - AND lo mismo fuera de `.docs/`, en cualquier `*.md`: dos adiciones en la línea `**Escribe**` de una migración quedan juntas, y dos filas contiguas de una tabla que toca cada lado quedan con el cambio de cada uno
 - AND si los dos lados reescriben la misma frase de forma distinta, si en un trozo ponen dos «Destino» distintos (`**Actuar → 0240**` y `**Descartada**`), si la frase de la base dice lo contrario que la línea de la rama, si el conflicto incluye un fichero que no es Markdown (`src/slots.js`), o ante la duda, no resuelve nada: el cierre queda «No terminado» para una persona
+
+**Reglas de la capacidad**
+- **Regla ante conflicto**: un conflicto al integrar la base o al fusionar que `sdd merge` no resuelve lo resuelve una persona, salvo el que cae solo en Markdown y en el que los dos lados solo añaden o tocan filas distintas sin cambiar lo del otro, que lo resuelve el agente, repite el gate y lo nombra; un rojo que también falla sin la rama lo decide el dev-lead tras la búsqueda en la deuda; el merge a la rama estable, el tag y su push solo con la frase del dev-lead; la fila de la madre de una familia la cierra el dev-lead, no el cierre; el panel en Chrome va antes que el plan B, que solo sale sin Claude in Chrome, sin navegador conectado o con la inyección fallida; si lo que la persona dice en el chat contradice una marca del panel, manda lo que dice, y el agente lo registra con su frase
