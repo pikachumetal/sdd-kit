@@ -336,6 +336,8 @@ describe('sdd roadmap check: avisos de cierre', () => {
     const content = pointingRoadmap('✅');
     content[27] = '| Los tests dependen de la fecha del sistema | medio | **Actuar** → 0149 · causa: herramienta del kit · arreglo: mover regla |';
     expect((await check(content)).lines).toContain('roadmap.md: aviso: línea 28: apunta a 0149, ya ✅: sáldala');
+    content[27] = '| Los tests dependen de la fecha del sistema | medio | **Actuar → 0149** · causa: herramienta del kit |';
+    expect((await check(content)).lines).toContain('roadmap.md: aviso: línea 28: apunta a 0149, ya ✅: sáldala');
   });
 
   it('the prefix the warning accepts is the one the cut removes, and the other warns', async () => {

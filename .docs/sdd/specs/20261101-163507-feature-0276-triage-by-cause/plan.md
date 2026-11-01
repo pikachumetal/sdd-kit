@@ -3,7 +3,7 @@ id: 20261101-163507-feature-0276-triage-by-cause
 feature: 0276
 title: Plan de implementación — Triaje de la deuda por causa
 spec: ./spec.md
-status: approved
+status: done
 created: 2026-11-01
 ---
 

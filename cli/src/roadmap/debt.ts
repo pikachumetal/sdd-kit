@@ -1,5 +1,6 @@
 import { lineAt, parseSections, tableBlocks } from './parse.ts';
 import type { Block } from './parse.ts';
+import { CLOSING_PREFIX } from './releases.ts';
 import { formProseProblems, formSectionProblems } from './structure.ts';
 import type { FormRules } from './structure.ts';
 import { headerIs, headerProblem, rowsOf, tableBlockProblems } from './tables.ts';
@@ -31,7 +32,8 @@ const CAUSES = [
 ];
 const FIX_TYPES = ['comprobación automática', 'conectar comprobación', 'mover regla', 'línea nueva'];
 const LINK_TARGET = /\]\(([^)]+)\)/g;
-const SETTLED_ROW = /^\*\*\[[^\]]*: saldada — /;
+const SETTLED_ROW = new RegExp(`^${CLOSING_PREFIX}saldada — `, 'i');
+const LIST_COLUMN = { item: 0, cause: 1, origin: 2, evidence: 4, remedy: 5, fix: 6, destination: 7 };
 const RULES: FormRules = { names: [...HEADERS.keys()], kindOf: (section) => section.title, subject: 'debt.md' };
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const RELEASES_TO_EXPIRE = 2;
@@ -45,13 +47,13 @@ function isBlank(value: string | undefined): boolean {
 }
 
 function causeProblems(row: Row): string[] {
-  const cause = row.cells[1] || '—';
+  const cause = row.cells[LIST_COLUMN.cause] || '—';
   return CAUSES.includes(cause) ? [] : [`línea ${row.index + 1}: causa «${cause}» no admitida: ${CAUSES.join(', ')}`];
 }
 
 function fixProblems(row: Row): string[] {
-  const fix = row.cells[6] || '—';
-  if (FIX_TYPES.includes(fix) || (fix === '—' && row.cells[1] === PRODUCT_DEFECT)) return [];
+  const fix = row.cells[LIST_COLUMN.fix] || '—';
+  if (FIX_TYPES.includes(fix) || (fix === '—' && row.cells[LIST_COLUMN.cause] === PRODUCT_DEFECT)) return [];
   return [`línea ${row.index + 1}: arreglo «${fix}» no admitido: ${FIX_TYPES.join(', ')}`];
 }
 
@@ -60,21 +62,20 @@ function caseCount(origin: string): number {
 }
 
 function triageProblems(row: Row): string[] {
-  if (SETTLED_ROW.test(row.cells[0] ?? '')) return [];
+  if (SETTLED_ROW.test(row.cells[LIST_COLUMN.item] ?? '')) return [];
   return [
     ...causeProblems(row),
-    ...(row.cells[1] === UNDETERMINED ? [`línea ${row.index + 1}: una fila de «Lista» no admite la causa «${UNDETERMINED}»`] : []),
+    ...(row.cells[LIST_COLUMN.cause] === UNDETERMINED ? [`línea ${row.index + 1}: una fila de «Lista» no admite la causa «${UNDETERMINED}»`] : []),
     ...fixProblems(row),
-    ...(caseCount(row.cells[2] ?? '') >= 2 && isBlank(row.cells[5]) ? [`línea ${row.index + 1}: fila de problema sin «Remedio temporal»`] : []),
+    ...(caseCount(row.cells[LIST_COLUMN.origin] ?? '') >= 2 && isBlank(row.cells[LIST_COLUMN.remedy]) ? [`línea ${row.index + 1}: fila de problema sin «Remedio temporal»`] : []),
   ];
 }
 
 function listProblems(row: Row): string[] {
-  const [evidence, destination] = [row.cells[4], row.cells[7]];
   return [
     ...triageProblems(row),
-    ...(isBlank(evidence) ? [`línea ${row.index + 1}: fila de «Lista» sin «Evidencia»`] : []),
-    ...(isBlank(destination) ? [`línea ${row.index + 1}: fila de «Lista» sin «Destino»`] : []),
+    ...(isBlank(row.cells[LIST_COLUMN.evidence]) ? [`línea ${row.index + 1}: fila de «Lista» sin «Evidencia»`] : []),
+    ...(isBlank(row.cells[LIST_COLUMN.destination]) ? [`línea ${row.index + 1}: fila de «Lista» sin «Destino»`] : []),
   ];
 }
 

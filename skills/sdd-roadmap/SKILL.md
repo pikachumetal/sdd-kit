@@ -113,8 +113,8 @@ Triage decides the state of each item of the technical debt (3.0.0: `debt.md`; 2
 
 The rules:
 
-- **Second case, before choosing the state**: open the tickets of every debt row and of the rest of the batch; don't compare the rows' words. Two findings are cases of one problem if the same concrete change or the same concrete remedy would solve both. Sharing only the cause, `ninguno` or a retry (`relanza`) doesn't count. Merge them into one «Lista» row (2.x: one row, `**Actuar**`), with a link per case in «Origen» and «Evidencia»: the merged rows go.
-- **«Causa»**, per row out of «Por triar», the root that vanishes with the remedy (definitions in `debt-template.md`): `entorno de la máquina`, `carga o paralelismo`, `herramienta del kit`, `regla lejos de su paso`, `decisión que no era del agente`, `fusión de registros`, `prueba o molde`, `defecto del producto`, `sin determinar` (never in «Lista»). Same mechanism under another cause: reclassify it, and it counts. A row without one gets it when you touch it.
+- **Second case, before choosing the state**: open the tickets of every debt row and of the batch; the rows' words don't decide. The same concrete change or concrete remedy makes one problem; sharing only the cause, `ninguno` or a retry (`relanza`) doesn't. Merge them into one «Lista» row (2.x: one `**Actuar**` row), a link per case in «Origen» and «Evidencia».
+- **«Causa»**, per row out of `Por triar`, the root that vanishes with the remedy (`debt-template.md` defines them): `entorno de la máquina`, `carga o paralelismo`, `herramienta del kit`, `regla lejos de su paso`, `decisión que no era del agente`, `fusión de registros`, `prueba o molde`, `defecto del producto`, `sin determinar` (never in «Lista»). Same mechanism under another cause: reclassify it. A row without one gets it when touched.
 - **«Remedio temporal»**: with two cases, what solved it, from the tickets; `ninguno` only if you looked.
 - **«Arreglo»**, the first that works, in order: `comprobación automática`, `conectar comprobación`, `mover regla`, and only last `línea nueva`; `—` only with `defecto del producto`.
 - Nothing goes to «Lista» without being reproduced or without a second case: an item you could not reproduce goes to «En espera», with «Falta» `reproducirlo` (`tests/sdd-roadmap-0150-red.md`, m3).
@@ -146,10 +146,6 @@ The rules:
 | «It's an epic; it gets split when it starts» | When it starts nobody looks at the whole roadmap. The split is proposed now, so the PM creates the children (p3). |
 | «The proposal's example was incomplete; I rewrite it» | The proposal is historical: the change goes to «Enmiendas» with its date. Rewriting it erases what was agreed before (p10). |
 | «Now that the change is clear, I start the feature and write the spec» | Planning is not doing. `sdd-roadmap` ends in the roadmap (p10). |
-| «"Prepara la release" is closing the release» | Preparing is deciding what goes in; closing is `sdd-end-release` (p6). |
-| «The minutes' triage already decided it; I mark the release comprometida» | The triage decided the destination of each request; committing the milestone, its order and its state is another decision of the user. |
-| «The client said everything is important» | Verbal emphasis is not prioritization. It is registered and decided with product criteria. |
-| «I carry all the technical debt, so it gets paid off» | Debt enters by prerequisite or by explicit decision, not by inertia: it inflates the scope. |
 | «The note is on the topic of the feature in flight; I group it in its row» | Its branch is editing that row and that spec. Grouping it there causes the conflict on closing and changes an approved scope: it goes to a new row «tras» it. |
 | «The roadmap of my worktree is the real state» | It is your base's. Another branch may have closed, split or reserved; without reading it, you repeat ids or extend closed features. |
 | «I put the next free number to get ahead» | A made-up id is confused with a reserved one forever. The id comes from the tracker or from `sdd id next --reserve`. |

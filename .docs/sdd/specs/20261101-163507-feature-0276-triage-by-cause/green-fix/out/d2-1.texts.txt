@@ -1,0 +1,19 @@
+--- [2]
+Empiezo por la Fase 1: leer la deuda del proyecto, el script y reproducir el error.
+
+--- [6]
+**Causa raíz:** `scripts/informe.mjs` escribe en `.cache/informes/ocupacion.csv` y nada crea antes la carpeta `.cache/informes`.
+
+**Evidencia**
+- El script es una sola línea: `writeFileSync('.cache/informes/ocupacion.csv', …)` (`scripts/informe.mjs:3`). `writeFileSync` crea el fichero, pero no las carpetas intermedias. Si falta alguna, lanza `ENOENT` con `syscall: 'open'`.
+- Reproduje el error con `npm run informe`. Este checkout no tiene `.cache`: `ls .cache` dice que no existe.
+- `.cache` no viene con el repo. Git no versiona carpetas vacías y no hay `.gitignore` ni ningún otro paso (ni en `package.json` ni en el script) que la cree. Por eso falla en un worktree recién creado o tras limpiar el repo, que es lo que cuentan los dos tickets (`docs/tickets/2026-10-12-informe.md` y `2026-10-19-informe.md`). En tu máquina funcionará mientras la carpeta exista de ejecuciones anteriores.
+
+**Deuda existente:** la primera fila de `.docs/sdd/steering/debt.md` («El listado de ocupación no sale tras limpiar el repo») cubre este síntoma. Su «Remedio temporal» es recrear la carpeta de la caché a mano, por ejemplo `mkdir -p .cache/informes`. Eso no es la causa raíz, así que la fila sigue abierta.
+
+La fila atribuye la causa a la «herramienta del kit» y propone una «comprobación automática». Con lo que he visto, el defecto está en el propio script del proyecto, que da por hecha una carpeta que nadie crea. Conviene revisar esa clasificación al triar la fila.
+
+No he cambiado nada ni creado la carpeta. Todavía no hay fix ni test que falle.
+
+**Aviso:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Esto no afecta a la causa del error.
+

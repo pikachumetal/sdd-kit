@@ -29,7 +29,7 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-verify': { skillMd: 3060, total: 9120 },
   'sdd-tdd': { skillMd: 1750, total: 4030 },
   'sdd-upgrade': { skillMd: 980, total: 980 },
-  'sdd-debugging': { skillMd: 1600, total: 3400 },
+  'sdd-debugging': { skillMd: 1700, total: 3400 },
   'sdd-worktrees': { skillMd: 1300, total: 1300 },
   'sdd-templates': { skillMd: 1700, total: 15720 },
   // El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.

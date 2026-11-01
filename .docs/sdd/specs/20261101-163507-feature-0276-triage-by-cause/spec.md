@@ -260,7 +260,7 @@ En la skill, la regla va en la sección Triage, en el paso donde se decide, y ll
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
-| `skills/sdd-debugging/SKILL.md` | se mide con el conteo del test al implementar / 1.600 | el que dé | sin cambio: si no cabe, se para y se pregunta (Art. I) |
+| `skills/sdd-debugging/SKILL.md` | 1.619 al abrir, 1.663 al cerrar / 1.600 | −19 | 1.700: decisión del dev-lead («1», 2026-11-01) |
 | `skills/sdd-roadmap/SKILL.md` | 3.584 / 3.600 | 16 | sin cambio: lo que entra (~140 palabras) lo pagan las repeticiones que salen (~140) |
 
 ## Previsión de coste
@@ -278,7 +278,8 @@ Precio medido: `c1`, 0,16 $ por sujeto en el RED. `sdd-upgrade` `v1` es más lar
 
 ## Enmiendas
 
-- 2026-11-01 — `feature-flow`: la fila del molde cuenta el fallo con otras palabras, y el THEN compara por significado, en lugar de buscar el primer error — con el literal en la fila, 2/2 la encontraban por `grep` y el RED no medía nada; con otras palabras, 1 de 2 no mira la deuda — sin aprobar (aplica la decisión 17 tras el RED; va en la lista de rulings del cierre).
+- 2026-11-01 — El tope de `sdd-debugging` sube a 1.700, y `sdd-roadmap` retira cuatro racionalizaciones más («Prepara la release», «The minutes' triage», «The client said everything», «I carry all the technical debt»), que repetían una línea que se queda — no cabía con lo previsto — aprobada: «1».
+- 2026-11-01 — `feature-flow`: la fila del molde cuenta el fallo con otras palabras, y el THEN compara por significado, en lugar de buscar el primer error — con el literal en la fila, 2/2 la encontraban por `grep` y el RED no medía nada; con otras palabras, 1 de 2 no mira la deuda — aprobada: «1».
 - 2026-11-01 — `migration`: en el molde, la fila con marcas apunta a la 0022 (`0030` no existe en el molde); el GIVEN se lee con ese id — sin aprobar (dato de molde).
 
 ## Aprobaciones

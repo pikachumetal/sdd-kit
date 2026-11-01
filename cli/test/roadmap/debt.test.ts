@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { checkProject, debtHeaders, lineOf, templateLines, validDebt, validRoadmap } from './project.ts';
 
@@ -125,6 +126,22 @@ describe('sdd roadmap check: causa y arreglo de debt.md', () => {
     const result = await check(content);
     expect(result.lines).toContain(`debt.md: línea ${index + 1}: arreglo «más cuidado» no admitido: ${FIX_LIST}`);
     expect(result.code).toBe(1);
+  });
+
+  it('treats an empty fix type like a dash', async () => {
+    const { content, index } = withListRows([listRow('prueba o molde', '[t](a.md)', '—', '')]);
+    expect((await check(content)).lines).toContain(`debt.md: línea ${index + 1}: arreglo «—» no admitido: ${FIX_LIST}`);
+  });
+
+  it('a malformed closing prefix is not exempt', async () => {
+    const item = '**[Feature 0009, 2026-07-20: saldada, salvo el GO]** La planta 2';
+    const { content, index } = withListRows([listRow('mala suerte', '[t](a.md)', '—', 'mover regla', item)]);
+    expect((await check(content)).lines).toContain(`debt.md: línea ${index + 1}: causa «mala suerte» no admitida: ${CAUSE_LIST}`);
+  });
+
+  it('the roadmap skill names every cause and fix type', () => {
+    const skill = readFileSync(new URL('../../../skills/sdd-roadmap/SKILL.md', import.meta.url), 'utf8');
+    for (const value of [...CAUSE_LIST.split(', '), ...FIX_LIST.split(', ')]) expect(skill).toContain(`\`${value}\``);
   });
 
   it('rejects sin determinar in Lista', async () => {
