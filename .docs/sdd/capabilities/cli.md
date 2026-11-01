@@ -229,6 +229,43 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - AND repetirlo no duplica la entrada y dice `sin cambios` en los dos
 - AND con `--mark` sale con 2 y no escribe
 
+### `sdd review comments` lista los comentarios añadidos que citan documentos
+
+- GIVEN una rama sobre `develop` que añade a `src/save.ts`, en sus líneas 3, 4, 5 y 6, `// según la spec §3`, `// Task 4: validar antes de guardar`, `// moon hereda el entorno: sin limpiarlo usa otro workspace` y `const note = "// según la spec §3";`
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN escribe `src/save.ts:3 · spec · // según la spec §3` y `src/save.ts:4 · task · // Task 4: validar antes de guardar`
+- AND no escribe las líneas 5 y 6
+- AND cierra con `2 comentarios citan documentos` y sale con 0
+
+### `sdd review comments` sale con 0 sin encontrar nada
+
+- GIVEN una rama cuyo diff no añade comentarios que citen documentos
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN escribe `ningún comentario cita documentos` y sale con 0
+- AND sin `--base` escribe el uso en stderr y sale con 2
+- AND con una `--base` que no existe escribe en stderr `base: no se encuentra <ref>` y sale con 1
+
+### `sdd review comments` mira solo las líneas añadidas
+
+- GIVEN `src/old.ts` con `// Task 2: viejo` en `develop`, y una rama que añade otra línea de código a ese fichero y un fichero `docs/a.md` con `<!-- según la spec §3 -->`
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN no escribe `src/old.ts` ni `docs/a.md`
+- AND si la rama integró `develop` con un merge que trae `src/otra.ts` con `// Task 9`, tampoco lo escribe
+
+### `sdd review comments` reconoce los comentarios de cada lenguaje
+
+- GIVEN una rama que añade `# según la spec §3` a `a.py`, `-- Task 4` a `b.sql`, `<!-- constitution -->` a `c.html`, una línea interior de un `/* */` con `capabilities/booking.md` a `d.cs`, y `x = "# según la spec §3"` a `e.py`
+- WHEN se ejecuta `node sdd.js review comments --base develop --json`
+- THEN `comments` trae `a.py`, `b.sql`, `c.html` y `d.cs`, con `cites` `["spec"]`, `["task"]`, `["constitution"]` y `["capabilities/"]`, y no trae `e.py`
+- AND un comentario `// requisito de la spec` lleva `cites` `["spec","requisito"]`, y `foo.spec.ts` dentro de un comentario no cuenta como `spec`
+
+### `sdd review comments` dice qué no ha leído
+
+- GIVEN una rama que añade `a.vue`, `b.json`, `c.md` y `.docs/sdd/specs/x/red/m.ts` con `// Task 4`
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN escribe `sin leer: a.vue` antes de la línea de cierre, y no lista los otros tres
+- AND con `--json`, `unread` es `["a.vue"]`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.claude/hooks/sdd-kit-loaded.mjs`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`, y el hook, de `hooks/project/` del kit. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe `.docs/sdd/sdd-kit.json`, o, con `--project-hook`, el hook y su entrada en settings. `sdd validation serve` lee los pasos de `--steps` y el panel de `skills/sdd-archive/references/validation-panel.js` del kit cargado, y escribe solo el fichero de `--out`. `sdd hook session-start` escribe la marca de la sesión en la carpeta temporal del sistema. `sdd hook session-end` lee el JSON de stdin, `CLAUDE_CODE_TMPDIR` y `CLAUDE_PROJECT_DIR`, borra esa marca y su `.warned`, y solo borra subcarpetas de `<CLAUDE_CODE_TMPDIR o la carpeta temporal del sistema>/claude/<carpeta del proyecto>/`.

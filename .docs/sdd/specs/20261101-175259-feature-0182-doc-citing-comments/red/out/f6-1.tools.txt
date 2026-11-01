@@ -1,0 +1,72 @@
+
+>>> Read: <run>/review-final-5954229.diff
+<<< 1	# Review package: d0c2c44..HEAD
+2	
+3	## Commits
+4	5954229 feat(bookings): guardar la devolución
+5	
+6	## Files changed
+7	 src/app.js | 7 +++++++
+8	 1 file changed, 7 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e25d07a 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -39,10 +39,17 @@ function cancelledList() {
+16	 export function run(cmd, params) {
+17	   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+18	   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+19	   if (cmd === 'cancelar') return
+
+>>> Bash: cd <run>/repo && git show --stat HEAD | head; grep -n "rooms\|saveRefund" -r src test* 2>/dev/null | head -20
+<<< commit 59542298ed089f639a493617b19ff9712182129e
+Author: Fixture <fixture@example.com>
+Date:   Sun Nov 1 19:30:15 2026 +0100
+
+    feat(bookings): guardar la devolución
+    
+    Cuerpo del commit.
+
+ src/app.js | 7 +++++++
+ 1 file changed, 7 insertions(+)
+src/app.js:2:const rooms = ['Norte', 'Sur'];
+src/app.js:7:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+src/app.js:50:export function saveRefund(room, iban) {
+src/app.js:52:  if (!rooms.includes(room)) return 'sala no válida';
+
+=== RESULTADO (3 turnos, 0.1631355 $)
+### Strengths
+- The change is small, and `saveRefund` is 5 lines, well inside the 30-line limit.
+- The user-facing message is in Spanish ("sala no válida"), as the restrictions require.
+- It validates the room before returning, and its early return keeps the flow flat.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- `src/app.js:50-55`: nothing calls `saveRefund`, and no test covers it. The diff has no test and no `run` command for it. Its name says it saves the refund, but it persists nothing. It returns an object, or a string on error. The caller can't tell success from failure without checking the type: `'sala no válida'` is a string and the success value is an object. Possible Clean Code row "error handling separate from business logic / exceptions over return codes". Fix: throw an error, or return a consistent `{ok, error}` shape. Also add a test for it.
+- `src/app.js:51`: the comment `// Task 4: validar antes de guardar` points to a task number. It repeats what the next line does, and it will go stale. The `if` already says it validates. Delete it.
+- `src/app.js:54`: `iban.replaceAll(' ', '')` throws a `TypeError` if `iban` is `undefined` or `null`. The IBAN is never validated, only stripped of spaces. A user who sends an empty or missing IBAN gets a crash, not a message in Spanish. Add a check that returns a message such as "IBAN no válido".
+
+#### Minor (Nice to Have)
+- `src/app.js:49-56`: `saveRefund` sits after the `if (command) console.log(...)` line, which is the module's entry point. Declarations conventionally go before it. Function hoisting makes it work, but it reads as an add-on. Move it above that line.
+- `src/app.js:53`: `// requisito del proveedor: el IBAN va sin espacios` explains why the code does this, so it is acceptable. Keep it.
+
+### Recommendations
+- Wire `saveRefund` into `run`, or into whatever the plan says calls it, and write the test first, since the task was a RED task.
+- I did not run the suite, as instructed. I recommend the main thread run it to confirm nothing else broke.
+
+### Declined to judge
+- Whether `saveRefund` must actually persist data, and where to: the spec was not in the package, so I can't tell. The Spec axis should check it.
+- Whether the commit should include tests: that depends on the plan's task split, which is not in the package. I flagged the missing test only as a code-quality gap.
+- Where `saveRefund` sits relative to the rest of the app's modules: that is the Architecture axis.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The code is short and meets the length and language rules. But it has an unhandled `TypeError` on a missing IBAN, an inconsistent success/error return type, no caller or test, and a comment that repeats the code.
