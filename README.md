@@ -51,18 +51,14 @@ Una pregunta no es trabajo. `sdd-explore` lee la documentación de anclaje y res
 El kit se distribuye solo como plugin de Claude Code, y necesita [Node](https://nodejs.org) 22.18.0 o posterior en el `PATH` (ver [Dependencias](#dependencias)):
 
 ```text
-/plugin marketplace add obra/superpowers-marketplace
 /plugin marketplace add pikachumetal/sdd-kit
-/plugin install superpowers@superpowers-marketplace
 /plugin install sdd-kit@sdd-kit
 /reload-plugins
 ```
 
-El kit necesita [superpowers](https://github.com/obra/superpowers), que se instala desde `superpowers-marketplace`, el marketplace de su autor. Añade los dos marketplaces e instala superpowers antes que el kit, en ese orden. El manifest del kit declara la dependencia: si falta superpowers, Claude Code deshabilita el kit y te dice cómo instalarlo. Es ruidoso a propósito: prefiero un error claro a un flujo que se ejecuta a medias sin que nadie se entere.
+El kit no necesita ningún otro plugin. Si usas [superpowers](https://github.com/obra/superpowers) por tu cuenta, puedes seguir teniéndolo.
 
-El kit no usa `claude-plugins-official`: ese marketplace fija superpowers a un commit y llega tarde a las versiones nuevas. Si tenías `superpowers@claude-plugins-official`, desinstálalo con `claude plugin uninstall superpowers@claude-plugins-official`; con los dos, las skills de superpowers salen duplicadas.
-
-Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea en el `.claude/settings.json` del proyecto de dónde salen los dos marketplaces (`extraKnownMarketplaces`), qué plugins activar (`enabledPlugins`: el kit y superpowers) y la memoria automática desactivada (`autoMemoryEnabled`). Con solo `enabledPlugins`, los plugins aparecen activados pero Claude Code no sabe de dónde sacarlos. `sdd-init` deja escrito este bloque entero, fusionado con lo que ya tenga el fichero.
+Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea en el `.claude/settings.json` del proyecto de dónde sale el marketplace (`extraKnownMarketplaces`), qué plugin activar (`enabledPlugins`) y la memoria automática desactivada (`autoMemoryEnabled`). Con solo `enabledPlugins`, el plugin aparece activado pero Claude Code no sabe de dónde sacarlo. `sdd-init` deja escrito este bloque entero, fusionado con lo que ya tenga el fichero.
 
 `sdd-init` y la migración a v3.0.0 dejan además `.claude/hooks/sdd-kit-loaded.mjs` y su entrada en `hooks.UserPromptSubmit`: si una sesión arranca sin el kit cargado, ese hook avisa en el primer mensaje con la ruta de la versión que declara el proyecto. Va en el proyecto porque el hook del plugin no corre sin el plugin.
 
@@ -73,15 +69,10 @@ Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, com
     "sdd-kit": {
       "source": { "source": "github", "repo": "pikachumetal/sdd-kit" },
       "autoUpdate": true
-    },
-    "superpowers-marketplace": {
-      "source": { "source": "github", "repo": "obra/superpowers-marketplace" },
-      "autoUpdate": true
     }
   },
   "enabledPlugins": {
-    "sdd-kit@sdd-kit": true,
-    "superpowers@superpowers-marketplace": true
+    "sdd-kit@sdd-kit": true
   },
   "autoMemoryEnabled": false
 }
@@ -93,7 +84,7 @@ Fija también el modelo en tu `~/.claude/settings.json` (por ejemplo, `"model": 
 
 ### Enrutado automático
 
-La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, algo grande o una reunión, una funcionalidad concreta, un fallo, el cierre de una entrega, tus preferencias o una edición sin más. Si la petición es vaga, hace una sola pregunta antes de elegir. En un proyecto SDD pasa por delante de `brainstorming` de superpowers. El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, inyecta esa skill al empezar cada sesión, sin que tengas que tocar tu `CLAUDE.md`. Con una versión de Node anterior a la 22.18.0 el hook inyecta igual y añade un aviso; sin Node, Claude Code enseña el error del hook.
+La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, algo grande o una reunión, una funcionalidad concreta, un fallo, el cierre de una entrega, tus preferencias o una edición sin más. Si la petición es vaga, hace una sola pregunta antes de elegir. Si el proyecto también tiene superpowers, pasa por delante de su `brainstorming`. El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, inyecta esa skill al empezar cada sesión, sin que tengas que tocar tu `CLAUDE.md`. Con una versión de Node anterior a la 22.18.0 el hook inyecta igual y añade un aviso; sin Node, Claude Code enseña el error del hook.
 
 ## Las skills
 
@@ -176,13 +167,12 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 | Dependencia | ¿Obligatoria? | Instalación |
 | --- | --- | --- |
 | [Node](https://nodejs.org) 22.18.0 o posterior | Sí | El hook de sesión y los verbos de la CLI `sdd` que usan las skills se ejecutan con él. Sin Node, Claude Code enseña el error del hook. Descarga o gestor de versiones (`proto`, `fnm`, `nvm`); `node --version` lo comprueba |
-| [`superpowers`](https://github.com/obra/superpowers) | Sí | Antes que el kit (ver [Instalación](#instalación)). Desde la terminal: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
 | [impeccable](https://www.npmjs.com/package/impeccable) | No, recomendada si el proyecto tiene interfaz | Sin instalar: `npx impeccable@<versión> detect <url> --viewport 390x844`. Necesita Chrome, Chromium o Edge |
 | [Playwright](https://playwright.dev) | No, recomendada si el proyecto tiene interfaz | El MCP de Playwright o el paquete `playwright` en el proyecto |
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 0 skills de superpowers: ninguna. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 0 skills de superpowers: ninguna. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan.
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 

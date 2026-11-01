@@ -174,15 +174,6 @@ describe('initSubject (lib.mjs)', () => {
     expect(fake.errs).toEqual(['[a-1] la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin agents cli hooks']);
   });
 
-  it('sin SUPERPOWERS_DIR aborta si el kit declara dependencies (ticket de la feature 0095 §2)', () => {
-    const fs = kitFs();
-    fs.write(join(KIT, '.claude-plugin', 'plugin.json'), '{"name":"sdd-kit","dependencies":[{"name":"superpowers"}]}\n');
-    const fake = fakeDeps(fs);
-
-    expect(dies(() => initSubject([KIT, 'a-1', 'a', OUT], 'sdd-plan', { env: baseEnv(), deps: fake.deps, cwd: CWD }))).toBe('exit 1');
-    expect(fake.errs).toEqual(['[a-1] el kit declara dependencies: define SUPERPOWERS_DIR (ruta de superpowers)']);
-  });
-
   it.each([{ label: '' }, { label: '..' }, { label: 'x/../../y' }])('aborta con una etiqueta que no es un nombre plano: «$label»', ({ label }) => {
     const fake = fakeDeps(kitFs());
 
@@ -475,14 +466,14 @@ describe('Argumentos de claude -p (lib.mjs)', () => {
       hooks: { PreToolUse: [{ matcher: 'Bash|PowerShell', hooks: [{ type: 'command', command: `node "${DENY_KILL}"` }] }] },
     });
     expect(args.slice(5)).toEqual([
-      '--plugin-dir', KIT, '--add-dir', KIT, '--add-dir', subject.RUN,
+      '--plugin-dir', KIT, '--add-dir', KIT, '--add-dir', subject.RUN, '--setting-sources', '',
       '--permission-mode', 'acceptEdits', '--allowedTools', 'Bash(*)', 'PowerShell(*)', 'Agent',
       '--disallowedTools', 'SendMessage', 'ListAgents', 'AskUserQuestion',
       '--max-turns', '60', '--output-format', 'stream-json', '--verbose', 'Invoca la skill.',
     ]);
   });
 
-  it('con SUPERPOWERS_DIR aísla al sujeto y carga superpowers desde esa ruta (feature 0074)', async () => {
+  it('con SUPERPOWERS_DIR carga además superpowers desde esa ruta (feature 0074)', async () => {
     const { subject, fs } = start({ DRY_RUN: '1', SUPERPOWERS_DIR: 'C:/sp/6.4.1' });
 
     await subject.launch('x');

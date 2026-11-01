@@ -5,11 +5,9 @@ export const INIT_SETTINGS: Json = {
   autoMemoryEnabled: false,
   extraKnownMarketplaces: {
     'sdd-kit': { source: { source: 'github', repo: 'pikachumetal/sdd-kit' }, autoUpdate: true },
-    'superpowers-marketplace': { source: { source: 'github', repo: 'obra/superpowers-marketplace' }, autoUpdate: true },
   },
   enabledPlugins: {
     'sdd-kit@sdd-kit': true,
-    'superpowers@superpowers-marketplace': true,
   },
 };
 
