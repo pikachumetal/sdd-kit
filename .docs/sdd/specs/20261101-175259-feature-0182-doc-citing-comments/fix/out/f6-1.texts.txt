@@ -1,0 +1,37 @@
+--- [3]
+### Strengths
+- The change is small and focused: one function of 5 lines, within the 30-line limit.
+- The user-facing text ("sala no válida") is in Spanish, as required.
+- The room is validated before anything is built.
+- The commit message follows the project's convention.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:51`, `// Task 4: validar antes de guardar`.** The comment cites a plan task, so it goes stale when the plan is renumbered or archived. It also repeats what the next line already says (`if (!rooms.includes(room)) return ...`). Delete it. If a reason is needed, state it without the task number.
+2. **`src/app.js:50-54`, `saveRefund` has no test in the diff.** The commit adds a public function and touches no test file. The validation branch and the IBAN space-stripping both go untested. Possible Clean Code violation, "a test for every public method". Add tests for an invalid room, an IBAN containing spaces, and a valid room.
+3. **`src/app.js:52-53`, inconsistent return type.** On error it returns a string; on success it returns an object `{room, iban}`. A caller cannot tell the two apart without checking `typeof`. This is also unlike `run`, which returns strings. Possible Clean Code violation, "exceptions over return codes". Throw an error for the invalid room, or return a uniform `{ok, error}` shape.
+4. **`src/app.js:53`, no guard on `iban`.** If `iban` is `undefined` or not a string, `iban.replaceAll` throws a `TypeError` with no explanation. The code does not validate the IBAN, only the room, even though the comment says "validar antes de guardar". Validate that it is a string, or state that the caller guarantees it.
+
+#### Minor (Nice to Have)
+- **`src/app.js:50`, name and behaviour.** `saveRefund` ("guardar la devolución") only builds and returns an object. It persists nothing, so the name overpromises. Rename it (for example `buildRefund`) or do the save.
+- **`src/app.js:50`, placement.** The function sits after the `if (command) console.log(...)` entry-point line. Put exports before the side-effecting line. `saveRefund` is also not reachable from `run`, so it is dead code for now.
+
+### Recommendations
+- Run the test suite from the main thread once tests for `saveRefund` exist. I did not run anything.
+
+### Declined to judge
+- `src/app.js:53`, `// requisito del proveedor: el IBAN va sin espacios`: it cites an external provider's requirement, not a document of this project. It also carries its own reason, the why behind the `replaceAll`. It is a false positive of the list.
+- Whether `rooms` is defined and what a "valid room" means for refunds: I did not judge this from the diff alone; it belongs to the Spec axis.
+- Whether a refund should be tied to `cancelBooking` or `voidBooking`: that is the Architecture/Spec axis.
+- E2E tests: none apply, because the project declares none.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is small and correct for the happy path. The comment citing "Task 4" goes stale with the plan, there are no tests, and the mixed return types plus the missing `iban` guard need correcting before merge.
+

@@ -202,6 +202,13 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - AND `operations.md` sale con `Retries: 0 en local; 2 en CI`, `Timeouts: 60 s por test, sin motivo escrito` y `Presupuesto E2E: pendiente`
 - AND en un proyecto sin E2E no pregunta nada de esto y §Testing no lleva esos campos
 
+### La init ofrece el test de títulos E2E
+
+- GIVEN un proyecto con código, `playwright.config.ts` y tests E2E
+- WHEN `sdd-init` llega a la fila de Testing
+- THEN ofrece el test de títulos, y con el «sí» deja «Títulos heredados» salidos de `playwright test --list` y el test en verde
+- AND en un proyecto sin E2E no lo nombra
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el funcional aportado, en `.docs/sdd/sources/`, literal y sin editar. El progreso de una init en curso, en la clave `init` de `.docs/sdd/sdd-kit.json` (`approved` y `config`), que `sdd init --finish` quita. El bloque de `.claude/settings.json` que escribe la init, en una constante de `cli/src/init/`, que el README reproduce. Los temporales del proyecto, en `.temp/` de la raíz, que la init ignora en `.gitignore`.

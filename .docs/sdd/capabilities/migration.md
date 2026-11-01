@@ -360,6 +360,14 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN el fichero queda escrito y su entrada en `hooks.UserPromptSubmit` de `.claude/settings.json`, una sola vez, sin gate y sin tocar las demás entradas
 - AND si la entrada ya estaba, no la duplica, y la línea `**Escribe**:` de la migración los nombra
 
+### La migración a v3.0.0 ofrece el test de títulos E2E
+
+- GIVEN un proyecto 2.x con `playwright.config.ts` y `e2e/booking.spec.ts`, sin «Flujos core»
+- WHEN aplica el paso 2 de `migrations/v3.0.0.md`
+- THEN la tabla ofrece el test de títulos, con «Títulos heredados» salidos de `playwright test --list`
+- AND con el «sí», `operations.md` lleva el bloque, el test queda en una suite que el cierre corre entera y sale en verde
+- AND en un proyecto sin E2E la tabla no lo nombra
+
 ### La migración a v3.0.0 propone quitar la activación de superpowers
 
 - GIVEN un proyecto que migra a v3.0.0 con `enabledPlugins["superpowers@superpowers-marketplace"]` y `extraKnownMarketplaces["superpowers-marketplace"]` en `.claude/settings.json`
