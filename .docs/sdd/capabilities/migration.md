@@ -243,12 +243,15 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 ### La migración a v3.0.0 lleva la deuda a `debt.md` sin inventar celdas
 
-- GIVEN una «Deuda técnica» 2.x con una fila `**Actuar** → 0022` cuyo «Ítem» enlaza su ticket, una `**Actuar** → sin fila` sin evidencia, una `**Esperar 2.º ticket**`, una `**Descartada**: duplica la 0018`, una con destino `versión siguiente` y una saldada posterior a la última release cerrada
+- GIVEN una «Deuda técnica» 2.x con una fila `**Actuar** → 0022` cuyo «Ítem» enlaza su ticket, una `**Actuar** → sin fila` sin evidencia, una `**Esperar 2.º ticket**`, una `**Descartada**: duplica la 0018`, una con destino `versión siguiente`, una saldada posterior a la última release cerrada, una `**Actuar** → 0030 · causa: prueba o molde · arreglo: mover regla`, y una `**Esperar 2.º ticket** · causa: fusión de registros — falta reproducirlo`
 - WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
 - THEN `.docs/sdd/steering/debt.md` tiene la primera en «Lista» con destino 0022 y el ticket como evidencia, y la saldada en «Lista» con su prefijo `**[… saldada …]**` intacto
 - AND la de `sin fila` y la de `versión siguiente` están en «Por triar», la de `**Esperar**` en «En espera» y la `**Descartada**` en «Descartadas» con «duplica la 0018» como motivo
 - AND cada «Fecha» es la del commit que añadió su fila al roadmap, y la tabla dice de dónde salió
 - AND `sdd roadmap check --path .docs/sdd` escribe `Roadmap válido`
+- AND la de la 0030 tiene «Causa» `prueba o molde` y «Arreglo» `mover regla`, y la de `fusión de registros` tiene esa «Causa» y «Falta» `reproducirlo`, sin las marcas
+- AND las que no traen causa o arreglo los llevan propuestos en la tabla, marcados como propuesta, leyendo su «Ítem»; si el dev-lead rechaza la causa de una, esa fila va a «Por triar»
+- AND el «Remedio temporal» sale de `· remedio:`; sin él, es `—` en una fila de un caso, y la tabla lo pregunta en una con dos o más enlaces
 
 ### Sin el dev-lead, la migración a v3.0.0 no mueve nada
 

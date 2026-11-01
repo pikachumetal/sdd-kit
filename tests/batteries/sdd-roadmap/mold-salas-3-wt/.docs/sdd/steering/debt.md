@@ -8,15 +8,15 @@
 
 ## En espera
 
-| Ítem | Origen | Impacto | Falta | Fecha |
-| --- | --- | --- | --- | --- |
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
 
 ## Lista
 
-| Ítem | Origen | Impacto | Evidencia | Destino |
-| --- | --- | --- | --- | --- |
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Descartadas
 
-| Ítem | Origen | Motivo | Fecha |
-| --- | --- | --- | --- |
+| Ítem | Causa | Origen | Motivo | Fecha |
+| --- | --- | --- | --- | --- |

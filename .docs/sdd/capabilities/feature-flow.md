@@ -740,6 +740,14 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND con el título en la lista sale en verde
 - AND con la lista `pendiente` o sin E2E, no se pide ese test
 
+### Quien depura busca el fallo en la deuda antes de investigar
+
+- GIVEN el molde `remedy`: `npm run informe` falla con `ENOENT` sobre `.cache/informes/ocupacion.csv`, y en «Lista» de `debt.md` hay una fila de problema «El listado de ocupación no sale tras limpiar el repo», con «Remedio temporal» `recrea la carpeta de la caché`
+- WHEN se invoca `sdd-debugging` para ese fallo
+- THEN compara el fallo con las filas de la deuda por significado, no solo por las palabras del error, y dice que esa fila lo cubre, con su remedio
+- AND aplicar el remedio no se da por causa raíz: la fila sigue abierta y el arreglo sigue pendiente
+- AND sin una fila que lo nombre, sigue la Fase 1 sin cambios
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
