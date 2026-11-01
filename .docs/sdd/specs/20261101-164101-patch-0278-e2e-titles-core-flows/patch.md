@@ -69,3 +69,15 @@ Validación en campo: 2026-11-01 · RED 1/1 · GREEN 3/3 (0,91 $) · el test del
 - THEN deja un test en una suite que el cierre corre entera, que sale en rojo y nombra ese título
 - AND con el título en la lista sale en verde
 - AND con la lista `pendiente` o sin E2E, no se pide ese test
+
+## Addendum, 2026-11-01: medidas para la adopción
+
+Mini spike de solo lectura tras el cierre, que abre la fila 0282; conteo con `grep` de `test(...)` en tres suites E2E reales, sin ejecutar ninguna. Ninguna declara «Flujos core».
+
+| Suite | Título literal | Sin título literal |
+| --- | --- | --- |
+| document-manager | 63 | 1 |
+| GCODocs | 15 | 4 |
+| OdySIF | 20 | 3 |
+
+Son 8 de 106 tests que una regex sobre literales no ve. El test que dejó `t1-1` lee con regex.
