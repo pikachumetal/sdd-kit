@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { chmodSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
@@ -89,6 +89,31 @@ describe('sdd merge --sync', () => {
     expect(sha(feature, 'MERGE_HEAD')).toBe(sha(feature, 'origin/develop'));
     expect(git(feature, 'diff', '--name-only', '--diff-filter=U')).toBe(TECH_STACK);
     expect(readFileSync(join(feature, '.docs/sdd/roadmap.md'), 'utf8')).toContain('| 0100 | base de 0002 |\n| 0101 | otra de 0001 |\n');
+  });
+
+  it('un hook que rechaza el commit de un conflicto ya resuelto no se llama conflicto', async () => {
+    const fx = mergeFixture('sync-hook-resuelto');
+    for (const id of ['0002', '0001']) {
+      const feature = join(fx.wt, id);
+      edit(feature, '.docs/sdd/roadmap.md', '| 0100 | base |\n', `| 0100 | base |\n| ${id} | fila de ${id} |\n`);
+      saveAll(feature, `docs: fila de ${id}`);
+    }
+    expect((await runMerge(join(fx.wt, '0002'), ['--push'])).code).toBe(0);
+    const redHooks = join(fx.root, 'red-hooks');
+    write(redHooks, 'pre-commit', "#!/bin/sh\necho 'Tests Failed: 3' >&2\nexit 1\n");
+    chmodSync(join(redHooks, 'pre-commit'), 0o755);
+    git(fx.repo, 'config', 'core.hooksPath', redHooks);
+    const feature = join(fx.wt, '0001');
+    const before = sha(feature, 'HEAD');
+
+    const result = await sync(fx);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('verificación: el hook rechazó el merge.');
+    expect(result.text).toContain('Tests Failed: 3');
+    expect(result.text).not.toContain('conflicto en');
+    expect(sha(feature, 'HEAD')).toBe(before);
+    expect(git(feature, 'status', '--porcelain')).toBe('');
   });
 
   it('con cambios sin commitear no toca nada', async () => {
