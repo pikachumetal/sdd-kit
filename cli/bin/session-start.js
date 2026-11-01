@@ -1,4 +1,5 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { gitBashTmpPath, repairGitBashTmp, withSystemMessage } from './git-bash-tmp.js';
 import { nodeVersionProblem } from './node-version.js';
@@ -74,7 +75,34 @@ function gitBashTmpNotice() {
   }
 }
 
-export function runSessionStart(pluginRoot) {
+export function sessionMarkerPath(id, base = tmpdir()) {
+  return join(base, 'sdd-kit-sessions', id);
+}
+
+// la marca dice al hook del proyecto que el plugin cargó; devuelve el `source` de la sesión
+export function markSession(stdin, base = tmpdir()) {
+  try {
+    const { session_id: id, source } = JSON.parse(stdin) ?? {};
+    if (typeof id === 'string' && /^[A-Za-z0-9-]+$/.test(id)) {
+      mkdirSync(join(base, 'sdd-kit-sessions'), { recursive: true });
+      writeFileSync(sessionMarkerPath(id, base), '');
+    }
+    return typeof source === 'string' ? source : '';
+  } catch {
+    return '';
+  }
+}
+
+function hookInput(readInput) {
+  try {
+    return readInput();
+  } catch {
+    return '';
+  }
+}
+
+export function runSessionStart(pluginRoot, readInput = () => readFileSync(0, 'utf8')) {
+  if (markSession(hookInput(readInput)) === 'resume') return 0;
   const notice = gitBashTmpNotice();
   try {
     const projectDir = resolve(process.env.CLAUDE_PROJECT_DIR || process.cwd());

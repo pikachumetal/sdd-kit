@@ -1,6 +1,7 @@
 import { lstatSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
+import { sessionMarkerPath } from './session-start.js';
 
 const MAX_AGE_MS = 24 * 3600 * 1000;
 // el presupuesto de los SessionEnd es 1,5 s, y el timeout de un hook de plugin no lo sube
@@ -76,11 +77,21 @@ export function cleanSessionTemp(stdin, env, { now = Date.now(), deadline = Infi
   return '';
 }
 
+export function removeSessionMarks(stdin, base = tmpdir()) {
+  const { id } = parseInput(stdin);
+  if (!id) return;
+  const marker = sessionMarkerPath(id, base);
+  rmSync(marker, { force: true });
+  rmSync(`${marker}.warned`, { force: true });
+}
+
 export function runSessionEnd() {
   try {
     // el plazo cuenta desde que arranca el proceso: el arranque de node ya se come parte del presupuesto
     const deadline = performance.timeOrigin + BUDGET_MS;
-    const warning = cleanSessionTemp(readFileSync(0, 'utf8'), process.env, { deadline });
+    const stdin = readFileSync(0, 'utf8');
+    removeSessionMarks(stdin);
+    const warning = cleanSessionTemp(stdin, process.env, { deadline });
     if (warning) process.stderr.write(`${warning}\n`);
   } catch {
     // el hook nunca debe romper el cierre de la sesión
