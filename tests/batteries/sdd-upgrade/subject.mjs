@@ -1,5 +1,5 @@
 // Sujeto de la batería de sdd-upgrade: una petición de battery.md sobre el molde salas de using-sdd, con migraciones pendientes.
-// Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
+// Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';

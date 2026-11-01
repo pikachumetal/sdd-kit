@@ -1,6 +1,5 @@
 ---
 kit_version: <de .docs/sdd/sdd-kit.json>
-superpowers_version: <versión instalada>
 lane: <feature|patch>
 id: <yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>   # igual que el nombre del fichero
 task: <id>                                    # id de la feature o del patch, según el modo del proyecto
@@ -50,7 +49,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 - **Qué pasó**: <evidencia de la sesión; si cita un fallo de ejecución, el comando exacto, el shell
   y la línea de error: «`./scripts/check-docs.sh` en PowerShell → `The term './scripts/check-docs.sh' is not recognized`»>
-- **Fuente**: <de dónde sale cada versión, cifra o cita de «Qué pasó»: un fichero o metadato del kit con su línea, o un comando con su salida — «`.docs/sdd/sdd-kit.json:3` → `"version": "2.3.3"`», «`claude plugin list` → `superpowers@7.0.0`»; un fichero del proyecto, con un descriptor genérico>
+- **Fuente**: <de dónde sale cada versión, cifra o cita de «Qué pasó»: un fichero o metadato del kit con su línea, o un comando con su salida — «`.docs/sdd/sdd-kit.json:3` → `"version": "2.3.3"`», «`claude plugin list` → `sdd-kit@2.3.3`»; un fichero del proyecto, con un descriptor genérico>
 - **Dónde en el kit**: <ruta del kit y paso — `skills/<skill>/SKILL.md` paso N, una plantilla, una referencia; nunca un fichero del proyecto; si no se localiza, dilo>
 - **Por qué el kit no lo evitó**: <…; si la regla existía y no la aplicaste, dilo>
 - **Coste**: <cifra; una causa, solo con la spec, el walkthrough o el commit que la respalda (ruta o sha), o marcada «sin respaldo»>

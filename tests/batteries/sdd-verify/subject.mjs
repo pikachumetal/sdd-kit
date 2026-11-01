@@ -1,5 +1,5 @@
 // Sujeto de la batería de sdd-verify: un punto de la implementación o del cierre de la 0010, con sus artefactos ya escritos.
-// Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR.
+// Lo lanza tests/headless/battery.mjs run.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
