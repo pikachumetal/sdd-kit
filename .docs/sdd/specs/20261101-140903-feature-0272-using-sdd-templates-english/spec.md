@@ -22,7 +22,7 @@ Validación: agente — son texto de skill y su batería: un humano no observar�
 
 ## Capacidades
 
-Ninguna: ningún requisito cambia. `routing` sigue cumpliéndose tal como está, y `using-sdd` sigue nombrando las siete puertas que exige.
+Ninguna, porque ningún requisito cambia. `routing` sigue cumpliéndose tal como está, y `using-sdd` sigue nombrando las siete puertas que exige.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
