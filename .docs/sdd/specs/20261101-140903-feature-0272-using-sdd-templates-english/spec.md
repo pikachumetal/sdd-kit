@@ -6,7 +6,7 @@ proposal: 0131
 title: using-sdd y sdd-templates en inglés
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-01
 author: Àngel Delgado
 approvers:

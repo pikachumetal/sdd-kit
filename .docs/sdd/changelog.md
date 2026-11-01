@@ -58,6 +58,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0272** — `using-sdd` y `sdd-templates` pasan a inglés, con sus `description` y sin cambiar ninguna regla: las frases del usuario y los literales que otra pieza lee siguen igual. → [ref](specs/20261101-140903-feature-0272-using-sdd-templates-english/)
 - **Feature 0177** — `sdd-end-release` corta desde Now: saca lo hecho al changelog, caduca la deuda en espera y deja solo las release notes; el cierre 3.0.0 no escribe el changelog; retirados el changelog de cliente y el email. → [ref](specs/20261031-165052-feature-0177-release-cut-now-to-changelog/)
 - **Patch 0266** — Las skills preguntan en prosa al final del mensaje, con las opciones numeradas y la recomendada primero, y el turno acaba ahí: `AskUserQuestion` sale de `sdd-propose`, `sdd-grilling`, `sdd-start-feature`, `sdd-archive`, `control-profiles.md` y `validation-template.md`, porque su diálogo tapa el mensaje que explica la pregunta. → [ref](specs/20261031-160126-patch-0266-prose-questions/)
 - **Feature 0224** — `sdd-propose` comprueba las dependencias en su paso 2, antes de cualquier comando que ejecute código, y la spec que edita una skill con sujetos gana la sección «Previsión de coste». → [ref](specs/20261030-112923-feature-0224-coherence-pass-and-cost-slot/)

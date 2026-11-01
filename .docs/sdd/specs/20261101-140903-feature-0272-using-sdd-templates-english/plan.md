@@ -3,7 +3,7 @@ id: 20261101-140903-feature-0272-using-sdd-templates-english
 feature: 0272
 title: Plan de implementación — using-sdd y sdd-templates en inglés
 spec: ./spec.md
-status: approved
+status: done
 created: 2026-11-01
 ---
 
@@ -131,7 +131,7 @@ Ninguna.
 **Modelo**: el hilo, con sujetos en Sonnet, como declara la batería.
 **Tests RED**: línea base de la 0206.
 **Superficies**: tooling
-**Verificación**: `node tests/headless/battery.mjs run` con `BATTERY=using-sdd`, `KIT_DIR` en el worktree y `PHASE=green`: cada fila ≥ umbral (24/24). Humo: `sdd decision check` → sin fallos.
+**Verificación**: `node tests/headless/battery.mjs run` con `BATTERY=using-sdd`, `KIT_DIR` en el worktree y `PHASE=green`: cada fila ≥ umbral, salvo `r1`, por la enmienda de la spec. Humo: `sdd decision check` → sin fallos.
 **Se prueba en la aplicación**: no, porque son sujetos sobre moldes.
 
 **Interfaces**:

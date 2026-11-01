@@ -1,6 +1,6 @@
 # GREEN — `using-sdd` y `sdd-templates` en inglés (feature 0272)
 
-Salidas en `.docs/sdd/specs/20261101-140903-feature-0272-using-sdd-templates-english/`, en `green/`, `ab-en/`, `ab-es/` y `humo/`. Sujetos en Sonnet, con superpowers 7.0.0, sobre una copia del kit sacada con `git archive`. Línea base: la batería de la 0206, 24/24 con el texto en castellano. Coste: 63 sujetos, 9,92 $ de ~13 $.
+Salidas en `.docs/sdd/specs/20261101-140903-feature-0272-using-sdd-templates-english/`, en `green/`, `ab-en/`, `ab-es/` y `humo/`. Sujetos en Sonnet, con superpowers 7.0.0, sobre una copia del kit sacada con `git archive` de `46c3ecf0`. Línea base: la batería de la 0206, 24/24 con el texto en castellano. Coste: 63 sujetos, 9,92 $ de ~13 $.
 
 ## Batería entera de `using-sdd`
 
@@ -21,7 +21,7 @@ La traducción no empeora `r1`. Con ~70 % de acierto, su umbral 2/2 sale en rojo
 
 - `d1`, 2/2: una sola pregunta sobre qué es y cuánto abarca, con la recomendación primero.
 - `s1`, 2/2: la preferencia va a la configuración del kit, no a la memoria.
-- Idioma: los mensajes finales leídos (`d1`, `s1`, `r1-1`, `r1-2`, `r6` y el humo) están en castellano. De los demás sujetos se leyó solo la primera línea, en castellano salvo `f2`, cuya petición está en inglés, y `r6`, que abre con una línea en inglés. `i1`, `f3` y `pc1` mezclan «Using sdd-…» con el castellano.
+- Idioma: el mensaje final de los 34 sujetos y del humo está en castellano. También `f2`, cuya petición está en inglés: no es regresión, porque la 0206 hacía lo mismo. Fuga pequeña y nueva en mensajes intermedios: `f3-1`, `i1-1` y `pc1-2` abren con «Using sdd-…» y `r6-1` con una frase en inglés, 4 de 34; la línea base da 0 en esos escenarios. Se queda en este registro: un arreglo cambiaría el texto de la skill y solo es fila con un segundo caso.
 
 ## Humo de `sdd-templates`
 
