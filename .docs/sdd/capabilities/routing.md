@@ -264,6 +264,12 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - AND la clasificación de `sdd-propose` también: al reproducir un fallo, ningún `node --test` ni `node src/…` va antes de `pnpm install`
 - AND el paso 2 de `sdd-propose` nombra ese paso, sin copiar sus órdenes, y `sdd-implement` y el carril config no lo repiten
 
+### Quien pide una skill o instrucciones para un agente entra por sdd-agent-writing
+
+- GIVEN un proyecto con `.docs/sdd/`
+- WHEN el usuario pide crear una skill («quiero una skill para…»)
+- THEN la puerta es `sdd-kit:sdd-agent-writing`, no `sdd-propose`
+
 ### Una sesión sin el kit cargado lo avisa con la ruta
 
 - GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.0` y `.claude/hooks/sdd-kit-loaded.mjs`, y una sesión sin el plugin `sdd-kit` cargado

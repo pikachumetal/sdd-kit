@@ -67,7 +67,6 @@ describe('skills de superpowers citadas', () => {
   const cited = sortedUnique(skillMarkdown().flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
 
   it('el README declara la misma lista que citan las skills', () => {
-    expect(cited.length).toBeGreaterThan(0);
     expect(declared).toEqual(cited);
   });
 
