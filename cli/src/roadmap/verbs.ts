@@ -2,6 +2,9 @@ import { UsageError, lockTimeoutOption, requiredOption, requiredRootOption, text
 import { docsFolder } from '../cli/layout.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { configuredMergeInto } from '../merge/policy.ts';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { causesReport, renderCauses } from './causes.ts';
 import { checkRoadmap } from './check.ts';
 import { publish, resolveProjectRoot } from './publish.ts';
 
@@ -15,6 +18,26 @@ export const roadmapCheckVerb: Verb = {
     if (args.values.json) io.json({ valid: errors.length === 0, errors, warnings });
     else lines.forEach((line) => io.out(line));
     return code;
+  },
+};
+
+export const roadmapCausesVerb: Verb = {
+  noun: 'roadmap',
+  verb: 'causes',
+  summary: 'Agrupa la deuda por causa y dice qué sigue abierto desde la retro anterior',
+  options: { path: { type: 'string' }, 'project-root': { type: 'string' }, version: { type: 'string' }, json: { type: 'boolean' } },
+  async run(args, io) {
+    const docsPath = requiredRootOption(args, 'path', docsFolder);
+    const version = text(args, 'version') ?? '';
+    if (!/^\d+\.\d+\.\d+$/.test(version)) throw new UsageError('--version debe ser X.Y.Z');
+    if (!existsSync(join(docsPath, 'steering', 'debt.md'))) {
+      io.err('roadmap causes: no existe steering/debt.md');
+      return 2;
+    }
+    const report = causesReport(docsPath, version);
+    if (args.values.json) io.json({ causes: report.causes, open: report.open, closedSinceLast: report.closedSinceLast });
+    else renderCauses(report).forEach((line) => io.out(line));
+    return 0;
   },
 };
 

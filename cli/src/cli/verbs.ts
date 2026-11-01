@@ -5,7 +5,7 @@ import { idClaimVerb, idNextVerb } from '../ids/verbs.ts';
 import { estimationLogVerb } from '../estimation/verbs.ts';
 import { initVerb } from '../init/verbs.ts';
 import { upgradeVerb } from '../upgrade/verbs.ts';
-import { roadmapCheckVerb, roadmapPublishVerb } from '../roadmap/verbs.ts';
+import { roadmapCausesVerb, roadmapCheckVerb, roadmapPublishVerb } from '../roadmap/verbs.ts';
 import { mergeVerb } from '../merge/verbs.ts';
 import { watchCommandVerb, watchSubagentVerb } from '../watch/verbs.ts';
 import { sessionTokensVerb } from '../session/verbs.ts';
@@ -28,4 +28,4 @@ export interface Verb {
   run(args: VerbArgs, io: Io): Promise<number>;
 }
 
-export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, decisionCheckVerb, decisionIndexVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, idClaimVerb, estimationLogVerb, initVerb, upgradeVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, hookSessionEndVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, reviewCommentsVerb, ledgerRulingsVerb, validationServeVerb, lockRunVerb];
+export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, decisionCheckVerb, decisionIndexVerb, roadmapCheckVerb, roadmapPublishVerb, roadmapCausesVerb, idNextVerb, idClaimVerb, estimationLogVerb, initVerb, upgradeVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, hookSessionEndVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, reviewCommentsVerb, ledgerRulingsVerb, validationServeVerb, lockRunVerb];

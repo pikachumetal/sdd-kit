@@ -33,7 +33,7 @@ const CAUSES = [
 const FIX_TYPES = ['comprobación automática', 'conectar comprobación', 'mover regla', 'línea nueva'];
 const LINK_TARGET = /\]\(([^)]+)\)/g;
 const SETTLED_ROW = new RegExp(`^${CLOSING_PREFIX}saldada — `, 'i');
-const LIST_COLUMN = { item: 0, cause: 1, origin: 2, evidence: 4, remedy: 5, fix: 6, destination: 7 };
+export const LIST_COLUMN = { item: 0, cause: 1, origin: 2, evidence: 4, remedy: 5, fix: 6, destination: 7 };
 const RULES: FormRules = { names: [...HEADERS.keys()], kindOf: (section) => section.title, subject: 'debt.md' };
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const RELEASES_TO_EXPIRE = 2;
@@ -57,12 +57,16 @@ function fixProblems(row: Row): string[] {
   return [`línea ${row.index + 1}: arreglo «${fix}» no admitido: ${FIX_TYPES.join(', ')}`];
 }
 
-function caseCount(origin: string): number {
+export function caseCount(origin: string): number {
   return new Set([...origin.matchAll(LINK_TARGET)].map((link) => link[1])).size;
 }
 
+export function isSettledRow(row: Row): boolean {
+  return SETTLED_ROW.test(row.cells[LIST_COLUMN.item] ?? '');
+}
+
 function triageProblems(row: Row): string[] {
-  if (SETTLED_ROW.test(row.cells[LIST_COLUMN.item] ?? '')) return [];
+  if (isSettledRow(row)) return [];
   return [
     ...causeProblems(row),
     ...(row.cells[LIST_COLUMN.cause] === UNDETERMINED ? [`línea ${row.index + 1}: una fila de «Lista» no admite la causa «${UNDETERMINED}»`] : []),
