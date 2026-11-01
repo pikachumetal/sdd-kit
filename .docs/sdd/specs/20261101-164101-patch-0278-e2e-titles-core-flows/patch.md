@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-01
 branch: patch/0278-e2e-titles-core-flows
-commit: pendiente
+commit: a6f263cc
 ---
 
 # Patch 0278 — un test del proyecto compara los títulos E2E con «Flujos core»
@@ -47,11 +47,16 @@ Dev-lead, 2026-11-01, «si», al proponer el enfoque de la fila: «`writing-e2e.
 | 2 | GREEN `t1`: el test del sujeto, sin tocar la lista | ✅ `Tests  1 failed (1)`, nombra «formatea una celda como moneda» |
 | 3 | El mismo test con el título en la lista | ✅ `Tests  1 passed (1)` |
 | 4 | GREEN `t2` (`pendiente`) y `t3` (sin E2E) | ✅ sin test de títulos; `t3` no lo pide |
+| 5 | `word-budget`, `skills`, `path-length` y `operations-gate-fields` de `cli/test/kit/` | ✅ 184 pasados, 11 saltados |
+
+Validación en campo: 2026-11-01 · RED 1/1 · GREEN 3/3 (0,91 $) · el test del sujeto, rojo y verde a mano en una copia del molde · no probado: el texto recortado tras el GREEN (cuatro palabras), ni un molde con Playwright real
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1,5 h + ~10 min de gate de cierre
-- Inicio: 2026-11-01
+- Inicio: 2026-11-01T16:30Z
+- Esfuerzo real: 0,19 h — reloj de la sesión 0,19 h desde 2026-11-01T16:30Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: −87 %. Sin paradas ni rojos, y con el molde `hojas` y el lanzador de sujetos ya hechos, que la estimación contaba como trabajo
 - Coste de sujetos: 0,91 $ en 4 sujetos Sonnet — RED 0,20 $; GREEN 0,71 $
 
 ## 6. Delta de capacidad
