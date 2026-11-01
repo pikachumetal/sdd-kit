@@ -34,6 +34,9 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`); el mé
 | d1 | duda | Hay que mejorar las reservas, que se quejan los usuarios. | salas | ninguna | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
 | t1 | sdd-propose | Corrige el typo «recervas» del README. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | 0074, control; desde la 0160, carril config |
 | c2 | sdd-propose | Cambia «Guardar» por «Guardar y cerrar» y ponlo a la derecha, en las dos fichas. | ventas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `visual-patch-red.md`: edición directa 2 de 2; desde la 0117, un texto dado literal es petición cerrada |
+| rf1 | retomar | Retoma la feature. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0010b del template §2: retomó a mano, sin skill; molde en la rama `feature/0020-room-filter` con la Task 1 hecha |
+| rf2 | retomar | Sigue con la Task 2. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: la frase perdió su puerta; mismo molde que `rf1` |
+| rp1 | retomar | Retoma el patch, lo dejé ayer a medias. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: `sdd-start-patch` lo recogía; molde en `patch/0021-cancel-missing` con `patch.md` sin commitear y sin fix |
 
 ## Procedencia de las reglas
 
