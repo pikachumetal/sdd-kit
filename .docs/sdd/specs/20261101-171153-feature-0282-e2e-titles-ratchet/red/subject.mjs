@@ -56,6 +56,12 @@ function noE2eHojas() {
   rmSync(join(s.R, 'e2e'), { recursive: true });
   rmSync(join(s.R, 'playwright.config.ts'));
   s.put('.gitignore', 'node_modules/\n');
+  const pkg = JSON.parse(readFileSync(join(s.R, 'package.json'), 'utf8'));
+  delete pkg.scripts.e2e;
+  delete pkg.devDependencies['@playwright/test'];
+  s.put('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
+  rmSync(join(s.R, 'README.md'));
+  s.put('.docs/sdd/constitution.md', '# Constitution\n\n1. Tests antes que código. Gate de cierre: `npm test` en verde.\n');
 }
 
 const scenarios = {
