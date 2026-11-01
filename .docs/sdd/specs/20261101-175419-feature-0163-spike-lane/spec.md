@@ -217,6 +217,10 @@ Fuentes: [Spec Kit](https://github.com/github/spec-kit) · [superpowers](https:/
 
 ## Enmiendas
 
+- 2026-11-01 — `spec-reviewer-prompt.md` sale del Scope: `sv1` salió limpio 3/3, y el frente sale de lo que se arregla; el eje Spec solo recibe la ruta de `research.md` — aplica literal la decisión «Un frente limpio sale de lo que se arregla» — Task 3 — sin aprobar
+- 2026-11-01 — «production code never» no se escribe en `sdd-implement`, y su párrafo queda en una frase: `sp3` limpio en `src/`, y `sp1` y `sp2` en verde solo con la plantilla — aplica la misma decisión — Task 2 — sin aprobar
+- 2026-11-01 — «Dónde se prueba» gana `k2p`, porque `k2` para en el gate de la spec y no llega al plan — Task 1 — sin aprobar
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |

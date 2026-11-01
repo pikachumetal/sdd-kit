@@ -21,6 +21,7 @@ let MARKER = `"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"has
 if (['c5', 'c6', 'c8'].includes(s.SC)) MARKER += ', "validation": {"mode": "field"}';
 if (s.SC === 'c1f' || s.SC === 'c9') MARKER += ', "review": {"minors": "fix"}';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
+const F30 = '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-void-reason';
 const F22 = '.docs/sdd/specs/20261013-100000-feature-0022-cancel-notice';
 const F23 = '.docs/sdd/specs/20261013-110000-feature-0023-cancelled-list';
@@ -186,12 +187,26 @@ function voidWithReason() {
   cp(join(FIX, 'void-f3.test.js'), 'test/void.test.js');
   s.commit('feat(bookings): anular con motivo');
 }
+function spikeWithResearch() {
+  s.put(`${F30}/spec.md`, readFileSync(join(IMPL, 'fixtures', 'spec-0030.md'), 'utf8'));
+  s.put(`${F30}/plan.md`, readFileSync(join(IMPL, 'fixtures', 'plan-0030.md'), 'utf8'));
+  s.commit('docs(sdd): abrir el spike 0030');
+  s.put(`${F30}/evidence/o1.txt`, 'libres en bucle, 2 min 30 s, 0 errores\n');
+  s.put(`${F30}/evidence/o3.txt`, 'Prueba hecha por el agente, sin ninguna persona: 12 s\n');
+  s.put(`${F30}/research.md`, readFileSync(join(FIX, 'research-sv1.md'), 'utf8'));
+  writeFileSync(at('src/app.js'), `${readLf(at('src/app.js'))}
+export const kioskMode = true;
+`);
+  s.commit('docs(sdd): medir el spike 0030');
+}
 function reviewF3() {
   const base = reviewBase();
   s.git('checkout', '-q', '-b', 'feature/review');
   if (s.SC === 'f4') {
     cp(join(FIX, 'app-f4.js'), 'src/app.js');
     s.commit('feat(bookings): informe de ocupación');
+  } else if (s.SC === 'sv1') {
+    spikeWithResearch();
   } else {
     voidWithReason();
   }
@@ -326,12 +341,12 @@ steps.c7 = () => {
   steps.c1();
 };
 steps.f2 = steps.f1;
-for (const id of ['f3', 'f3n', 'f4']) steps[id] = reviewF3;
+for (const id of ['f3', 'f3n', 'f4', 'sv1']) steps[id] = reviewF3;
 steps[s.SC]?.();
 
-if (['v1', 'f3', 'f3n', 'f4', 'f5', 's1', 's1b'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+if (['v1', 'f3', 'f3n', 'f4', 'f5', 's1', 's1b', 'sv1'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { f1: '30', f2: '30', mp1: '30', c2: '30', c3: '30', c4: '30' };
-for (const id of ['f3', 'f3n', 'f4', 'f5', 's1', 's1b']) turns[id] = '25';
+for (const id of ['f3', 'f3n', 'f4', 'f5', 's1', 's1b', 'sv1']) turns[id] = '25';
 for (const id of ['c1', 'c1f', 'c5', 'c6', 'c7', 'c8', 'c9']) turns[id] = '50';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 

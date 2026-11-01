@@ -12,3 +12,7 @@ Kit de la rama, Sonnet, 2026-11-01. Salidas en `green/out/` y `refactor/out/` de
 | Control | `h1` | 1/1 | la feature normal sigue con sus RED |
 
 Las reglas del research funcionan solo con la plantilla: sin el párrafo en `sdd-implement`, `sp1` y `sp2` salieron 2/2 (ADR 0014). Por eso esa skill solo gana una frase, y baja 30 palabras.
+
+## Eje Spec
+
+`sv1`, Opus, RED limpio 3/3 sobre el kit de la apertura: los tres sujetos marcan la recomendación que cita O2, la fila de O1 y `src/app.js`. Con caso de campo se midió con n = 3 y sale de lo que se arregla: `spec-reviewer-prompt.md` no cambia, y `sv1` sigue como control. La regla del research la lleva la plantilla, y el eje recibe su ruta (ticket de la 0091 §2). «Solo el eje Spec» es texto de la tabla, sin sujeto propio.

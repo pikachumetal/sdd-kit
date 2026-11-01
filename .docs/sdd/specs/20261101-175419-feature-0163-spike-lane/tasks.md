@@ -16,6 +16,6 @@ created: 2026-11-01
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Plantillas y `sdd-propose` | pending | — | |
-| 2 | `sdd-implement` | pending | — | |
-| 3 | `sdd-verify` y `sdd-archive` | pending | — | |
+| 1 | Plantillas y `sdd-propose` | done | a4c44190 | |
+| 2 | `sdd-implement` | done | b831a670 | |
+| 3 | `sdd-verify` y `sdd-archive` | done | este commit | |
