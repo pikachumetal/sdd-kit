@@ -32,11 +32,10 @@ Las fuentes de las que el kit copia texto (los avisos de abajo) o toma conceptos
 
 - `skills/sdd-templates/templates/spec-template.md`, sección «Dónde se prueba», toma de la skill `to-spec` de [mattpocock/skills](https://github.com/mattpocock/skills) 1.2.3 la regla de probar en la costura existente más alta, con cuantas menos costuras mejor — MIT, Copyright (c) 2026 Matt Pocock.
 - `skills/sdd-rubber-duck/` adapta `teach` y `wait-what` de [mattpocock/skills](https://github.com/mattpocock/skills) 1.2.3 — MIT, Copyright (c) 2026 Matt Pocock. El aviso y el texto de la licencia van en su [`NOTICE`](skills/sdd-rubber-duck/NOTICE).
+- `skills/sdd-agent-writing/` adapta `writing-for-agents` de [mattpocock/skills](https://github.com/mattpocock/skills) v1.3.1 — MIT, Copyright (c) 2026 Matt Pocock — y `writing-skills` de [obra/superpowers](https://github.com/obra/superpowers) 7.0.0 — MIT, Copyright (c) 2025 Jesse Vincent. El aviso y el texto de las licencias van en su [`NOTICE`](skills/sdd-agent-writing/NOTICE). La fila «Elemento omitido» del Art. II de la constitution viene de la tabla «Match the Form to the Failure» de `writing-skills` ([ADR 0014](.docs/sdd/decisions/0014-form-for-omissions.md)).
 
 ## Skills de desarrollo de este repo
 
 Solo para editar el kit; no forman parte del plugin. Viven en `.agents/skills/` (enlazadas desde `.claude/skills/`) y las fija `skills-lock.json`.
 
-- `writing-skills` de [obra/superpowers](https://github.com/obra/superpowers) 7.0.0 — MIT, Copyright (c) 2025 Jesse Vincent. La fila «Elemento omitido» del Art. II de la constitution viene de su tabla «Match the Form to the Failure» ([ADR 0014](.docs/sdd/decisions/0014-form-for-omissions.md)).
-- `writing-for-agents` de [mattpocock/skills](https://github.com/mattpocock/skills) v1.3.1 — MIT, Copyright (c) 2026 Matt Pocock.
 - `skill-creator` de [anthropics/skills](https://github.com/anthropics/skills) — Apache 2.0; el texto de la licencia va en [`.agents/skills/skill-creator/LICENSE.txt`](.agents/skills/skill-creator/LICENSE.txt).
