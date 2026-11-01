@@ -22,14 +22,15 @@
 - **Motor de producción**: <si los tests usan el motor de base de datos de producción o uno en memoria, y qué no se puede expresar con el segundo>
 - **Temporales**: <dónde deja hoy cada suite sus temporales, según su config o, si no lo fija, el valor por defecto del runner (Playwright sin `outputDir`: `test-results/`), y si no es `.temp/`, la propuesta para llevarlos ahí, p. ej. `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`; si ninguno lo dice, `<suite>` · `no declarado`, sin propuesta; con un «no», solo el sitio>
 
-> Los seis campos siguientes, solo si el proyecto tiene tests E2E; si no, bórralos. Los lee la referencia de E2E de `sdd-tdd`, y el cierre compara la suite con su presupuesto.
+> Los seis campos siguientes, solo si el proyecto tiene tests E2E; si no, bórralos.
 
-- **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` › emite y descarga el PDF». Un test de la suite `unitario` los compara con los `test(...)`; lo demás, una capa más abajo>
+- **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` › emite y descarga el PDF». Un test de la suite `unitario` los compara con `playwright test --list`; lo demás, una capa más abajo>
+  - **Títulos heredados**: <los que la suite ya tenía al adoptar ese test, uno por línea; solo encoge: no se añade ninguno>
 - **Presupuesto E2E**: <minutos que puede tardar la suite E2E del gate de cierre, p. ej. `10 min` · `pendiente`>
 - **Retries**: <`0` en local; en CI, `0`, `1` o `2`. Recomendado: `0` en local y `2` en CI>
 - **Timeouts**: <`por defecto` (los del runner: en Playwright, 30 s por test y 5 s por `expect`) · o el valor subido con su motivo escrito>
 - **Entorno de la suite**: <el comando que levanta todo lo que la suite necesita (contenedores, API, web) y cómo se comprueba que responde, p. ej. `moon run env:up` · `curl -f http://localhost:5000/health` · o `no aplica`, si la suite no necesita servidores>
-- **Datos**: <cómo crea y borra cada test sus datos, p. ej. «la fixture `invoice` la crea y la borra al acabar». Un test que solo pasa con el entorno recién vaciado depende de otro>
+- **Datos**: <cómo crea y borra cada test sus datos, p. ej. «la fixture `invoice` la crea y la borra al acabar»>
 
 ## Frontend
 

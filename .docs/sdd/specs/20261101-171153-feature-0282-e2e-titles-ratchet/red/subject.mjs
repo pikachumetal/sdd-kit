@@ -3,7 +3,7 @@
 // a1, a2: una task que amplía un E2E, sin «Flujos core». m1: paso 2 de la migración con E2E. i1: init con E2E.
 // n1: la guía sin E2E. n2: paso 2 de la migración sin E2E.
 // Las salidas llevan títulos de producto de clientes: SPEC_DIR va fuera del repo y aquí no se guarda ninguno.
-import { mkdirSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { initSubject } from '../../../../../tests/headless/lib.mjs';
 
@@ -43,7 +43,7 @@ function task(project) {
 }
 
 function docs2x(testing) {
-  s.putKitMarker('"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "validation": {"mode": "field"}');
+  s.put('.docs/sdd/sdd-kit.json', '{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "validation": {"mode": "field"}}\n');
   s.put('.docs/sdd/mission.md', '# Misión\n\n## Por qué existe\n\nUn producto de ejemplo.\n');
   s.put('.docs/sdd/tech-stack.md', `# Tech stack\n\n## Comandos\n\n- **Build**: \`pnpm build\`\n\n${testing}`);
   s.put('.docs/sdd/roadmap.md', '# Roadmap\n\n## Próximo\n');

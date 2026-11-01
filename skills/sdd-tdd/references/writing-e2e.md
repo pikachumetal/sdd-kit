@@ -1,6 +1,6 @@
 # Writing E2E Tests
 
-**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts: its 1.65 docs.
+**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs.
 
 ## Overview
 
@@ -12,7 +12,11 @@ In the field, a menu offered the *previous* copy for ~3 s after copying; every E
 
 `operations.md` §Testing lists the project's **Flujos core**, each with its test. New steps extend one of those tests. A behavior of no core flow (a remembered filter, a format, a label) is tested one layer down: a component or endpoint test. A new title is a proposal for the spec's ✋: the list is the dev-lead's. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
 
-With the list declared (not `pendiente`), a test in a suite the close runs whole (`unitario` or `pendiente`) compares every `test(...)` title of the E2E files with the list, and goes red naming each title missing from it. Missing, add it with the first E2E you touch. A red title you didn't add goes to the dev-lead.
+With E2E tests, the project keeps a titles test in a suite the close runs whole (`unitario` or `pendiente`). Missing, write it with the first E2E you touch, even with the list `pendiente`, and run it: every current title goes to «Títulos heredados», born green.
+
+It runs `playwright test --list --reporter=json` per Playwright config, with the config's `grep` and `grepInvert` switched off by env; a regex misses dynamic titles. No server starts; ~3 s per config, so a 30 s timeout. Red, naming the title: in neither «Flujos core» nor «Títulos heredados», or a heredado gone. Compare `describe › title` as a set: one test in two `projects` is one title. Red with Playwright's error: a non-zero exit, as when a spec reads the environment at load (move that to a fixture, or give the listing what it needs).
+
+«Títulos heredados» only shrinks: a deleted test loses its line; a new or renamed title never gets one. A red title you didn't add goes to the dev-lead.
 
 ## Rule 2: Test What the User Sees
 
@@ -84,6 +88,3 @@ Playwright's defaults: 30 s per test, 5 s per assertion, no retries. Retries are
 | Excuse | Reality |
 |--------|---------|
 | "Without waiting for the server, the next action would have nothing" | That's what the user gets. The test must fail there, not wait it out. |
-| "The helper already types in cells; I reuse it" | A shared helper that types before the editor is ready loses keys in every test. Wait for the visible state, in the helper. |
-| "I raise this one timeout to 10 s: the server is slow" | A raised timeout hides the race on a fast machine and loses it on a slow one. Keep the default or write the reason in `operations.md`. |
-| "Retries: 2 makes the suite green" | It makes the failure invisible. Triage it, or declare it `test.fixme('<title>', { annotation: { type: 'issue', description: '<url>' } }, …)`. |
