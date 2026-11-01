@@ -19,4 +19,8 @@ Los frentes limpios no llevan guía nueva (decisiones 6 y 7 de la spec): sus fil
 
 Un sujeto de este molde no puede escribir en `.claude/skills/` si la herramienta le pide permiso: varios dejan el cambio en su mensaje, y se califica sobre ese texto.
 
+`p1` R2: la `description` de `green4/out/p1-2/skill.md` dice solo cuándo usarla; de `p1-1` no quedó copia. `e1`, editar una skill existente, entra por `sdd-agent-writing` en `green3` y también en `green4`, con una `description` que lo excluía: se acepta, porque es lo que pedía la fila de la 0173 §2. Queda sin medir: esa edición no pasa por el carril de `sdd-propose` en un proyecto.
+
+Tramo `sdd-propose` de la batería de `using-sdd` con la fila nueva: f1, f2, f3, p1 y c1w verdes; v1 y pc1 1 de 2 lanzados, sin rojos; bt1, t1 y c2 sin lanzar, por el techo de 45 sujetos de la spec.
+
 Efecto de más que se acepta: `m1` y `f1` escriben o proponen un `scenario.md` también al editar una skill que ya existe.

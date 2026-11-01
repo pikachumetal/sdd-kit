@@ -1,6 +1,6 @@
 ---
 name: sdd-agent-writing
-description: Use when creating a skill or writing what an agent will follow — «quiero una skill para las migraciones SQL», «escribe una skill que…», an AGENTS.md or CLAUDE.md — or when editing, testing or estimating the test of an existing skill. Not for a change to the product itself (that is sdd-propose).
+description: Use when creating or editing a skill — «quiero una skill para las migraciones SQL», «añade a la skill…» — or when a step of the kit names it, to write or test what an agent follows. Not for a change to the product itself (that is sdd-propose).
 ---
 
 # sdd-agent-writing

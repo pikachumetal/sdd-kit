@@ -25,4 +25,6 @@ const ask = named ? `Invoca la skill sdd-kit:sdd-agent-writing y ${REQUEST[0].to
 
 s.env.MAX_TURNS ||= '30';
 await s.launch(ask);
+const written = s.git('ls-files', '--others', '--exclude-standard').split('\n').filter((path) => path.endsWith('/SKILL.md'));
+written.forEach((path) => s.keep(join(s.R, path), 'skill.md'));
 s.save(`## petición\n${ask}\n## git status\n${s.git('status', '--short')}## ficheros\n${s.git('ls-files', '--others', '--exclude-standard')}\n## diff\n${s.git('diff')}`);
