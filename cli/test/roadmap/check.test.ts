@@ -332,6 +332,14 @@ describe('sdd roadmap check: avisos de cierre', () => {
     expect((await check(content)).lines).toEqual(['Roadmap válido']);
   });
 
+  it('warns with the cause suffix', async () => {
+    const content = pointingRoadmap('✅');
+    content[27] = '| Los tests dependen de la fecha del sistema | medio | **Actuar** → 0149 · causa: herramienta del kit · arreglo: mover regla |';
+    expect((await check(content)).lines).toContain('roadmap.md: aviso: línea 28: apunta a 0149, ya ✅: sáldala');
+    content[27] = '| Los tests dependen de la fecha del sistema | medio | **Actuar → 0149** · causa: herramienta del kit |';
+    expect((await check(content)).lines).toContain('roadmap.md: aviso: línea 28: apunta a 0149, ya ✅: sáldala');
+  });
+
   it('the prefix the warning accepts is the one the cut removes, and the other warns', async () => {
     const content = lines();
     content[19] = '| B2 | **[Feature 0031, 2026-09-10: saldada — [walkthrough](w.md)]** Exportar a CSV | contabilidad |';
@@ -431,10 +439,10 @@ describe('sdd roadmap check: entradas', () => {
 });
 
 describe('sdd roadmap check: debt.md junto al roadmap', () => {
-  const missingEvidence = '| `libres --planta 2` lista salas de la planta 1 | [informe de QA](q.md) | alto | — | 0014 |';
+  const missingEvidence = '| `libres --planta 2` lista salas de la planta 1 | defecto del producto | [informe de QA](q.md) | alto | — | — | — | 0014 |';
   const brokenDebt = validDebt.map((text) => (text.startsWith('| `libres') ? missingEvidence : text));
   const evidenceError = `debt.md: línea ${lineOf(brokenDebt, missingEvidence)}: fila de «Lista» sin «Evidencia»`;
-  const agingRow = '| Las reservas de más de 8 h no avisan al responsable | [ticket](t.md) | medio | 2.º caso | 2026-07-01 |';
+  const agingRow = '| Las reservas de más de 8 h no avisan al responsable | sin determinar | [ticket](t.md) | medio | 2.º caso | 2026-07-01 |';
   const agingDebt = brokenDebt.map((text) => (text.startsWith('| El aviso semanal') ? agingRow : text));
   const releases = ['# Changelog', '', '## [1.4.0] - 2026-09-01', '', '## [1.3.0] - 2026-07-20'];
 
