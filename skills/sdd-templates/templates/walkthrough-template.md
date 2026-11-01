@@ -86,6 +86,8 @@ created: <YYYY-MM-DD>
 
 - <aprendizaje> → <destino>
 
+Retro: <señal> → <salida> (<fichero>) | Retro: <señal> → ticket del kit: <qué desmiente> | Retro: sin señales
+
 ## 6. Adendas
 
 > Lo que cambia después del cierre: validación tardía, integración con otra feature. El cuerpo de arriba

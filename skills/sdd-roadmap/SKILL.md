@@ -96,7 +96,7 @@ If the user asks for a section that is not in the template of its form («abre u
 
 ### Prepare a release
 
-1. **Inventory** — Later (2.x: Backlog), the technical debt (the «Lista» of `debt.md`; 2.x: «Deuda técnica»), and the minutes and action items of the previous release's retro if `.docs/sdd/releases/<last>/feedback.md` exists. Technical debt enters only if it is a verifiable prerequisite of an item in scope or by the user's explicit decision, not in bulk.
+1. **Inventory** — Later (2.x: Backlog), the technical debt (the «Lista» of `debt.md`; 2.x: «Deuda técnica»), and the «Propuestas» and action items of the newest `.docs/sdd/releases/v*/retro.md`, if any. Technical debt enters only if it is a verifiable prerequisite of an item in scope or by the user's explicit decision, not in bulk.
 2. **Order** — risk first, then cost-benefit, counting dependencies, with the **blocks marked** (🔒 + which decision is missing + who must make it).
 3. **Scope** — the user decides, item by item or by blocks. A stakeholder's pressure («todo es importante») is registered, not obeyed.
 4. **Recipient** — if `sdd-kit.json` has no `release.hasRecipient`, ask once whether the release is delivered to someone other than who makes it and write the answer in that field, merging without touching the rest; with the field present, apply its value without asking. You never write it without an explicit answer.

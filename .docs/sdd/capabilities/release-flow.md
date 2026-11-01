@@ -56,10 +56,11 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 
 ### La carpeta de la release existe solo si tiene contenido
 
-- GIVEN `release.hasRecipient: false` y un cierre sin retro
+- GIVEN `release.hasRecipient: false`, un proyecto sin filas triadas en `.docs/sdd/steering/debt.md`, o sin ese fichero, y un cierre sin retro pedida
 - WHEN termina `sdd-end-release`
 - THEN no se exige que exista `.docs/sdd/releases/vX.Y.Z/` ni se crea vacía
-- AND con destinatario o con retro, la carpeta sigue siendo obligatoria
+- AND con destinatario, con filas triadas en `debt.md` o con retro pedida, la carpeta sigue siendo obligatoria
+- AND con `release.hasRecipient: false` y una fila en «Lista» de `debt.md`, existe `.docs/sdd/releases/vX.Y.Z/retro.md`
 
 ### El bump usa el tooling del proyecto
 
@@ -131,14 +132,6 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - WHEN se ejecuta `sdd-end-release`
 - THEN no escribe acta ni triaje (`feedback.md`) y dice que ese feedback es entrada de `sdd-roadmap`
 - AND el cierre sigue con sus cinco pasos, sin esperar a que se procese
-
-### La retro es opcional
-
-- GIVEN un proyecto con `.docs/sdd/estimation-log.md`
-- WHEN `sdd-end-release` propone la versión en el paso 1
-- THEN la misma propuesta ofrece la retro en una línea, sin pregunta aparte
-- AND solo se escribe si el usuario la pide, en `.docs/sdd/releases/vX.Y.Z/retro.md`, y no retiene los demás pasos
-- AND sin `estimation-log.md` no se ofrece
 
 ### El corte exige la suite completa en verde sobre su sha, o el último verde de la CI en ese sha
 
@@ -213,6 +206,16 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - GIVEN `release.hasRecipient: false`
 - WHEN se cierra una release
 - THEN no se escribe `release-notes.md` y el paso no aplica
+
+### La estimación y los action items de la retro son opcionales
+
+- GIVEN un proyecto con `.docs/sdd/estimation-log.md`
+- WHEN `sdd-end-release` propone la versión en el paso 1
+- THEN la misma propuesta ofrece la estimación y los action items de la retro en una línea, sin pregunta aparte
+- AND solo se escriben si el usuario los pide, en `.docs/sdd/releases/vX.Y.Z/retro.md`, y no retienen los demás pasos
+- AND sin `estimation-log.md` no se ofrecen
+- AND el repaso por causa de esa retro no se ofrece: corre sin preguntar ([`project-retro`](project-retro.md))
+- AND pedidos sin `debt.md`, `retro.md` lleva solo esa parte
 
 ## Reglas de la capacidad
 

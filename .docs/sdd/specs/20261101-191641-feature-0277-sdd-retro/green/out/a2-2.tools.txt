@@ -1,0 +1,148 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; node "D:/code/.worktrees/sdd-kit/feature-0277-sdd-retro/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo ---; git worktree list; echo ---; ls .docs/sdd .docs/sdd/specs 2>&1; cat .docs/sdd/sdd-kit.json
+<<< ---
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0008-cancel-missing'
+---
+<run>/repo 0410433 [feature/0008-cancel-missing]
+---
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261010-090000-patch-0008-cancel-missing/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "remove
+
+>>> Bash: cd .docs/sdd; cat specs/20261010-090000-patch-0008-cancel-missing/*; echo ----; cat roadmap.md changelog.md; ls specs/*; git log --stat -3 | head -30; cd ../..; ls; ls src tests 2>/dev/null; cat package.json 2>/dev/null
+<<< ---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## 1. Síntoma
+
+`cancelar mie 10:00`, sin reserva ese día, responde «cancelada mie 10:00».
+
+## 2. Causa raíz
+
+`run('cancelar')` devuelve el texto sin buscar la reserva en `bookings`.
+
+## 3. Fix
+
+`cancelar` busca la res
+
+>>> Bash: cat src/app.js; node --test 2>&1 | tail -15; git rev-parse HEAD; git remote -v; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return bookings.some((b) => b.day === params[0] && b.slot.startsWith(params[1])) ? `cancelada ${params[0
+
+>>> Bash: node src/app.js cancelar mie 10:00; node src/app.js cancelar lun 10:00; date +%F
+<<< no hay reserva mie 10:00
+cancelada lun 10:00
+2026-11-01
+
+>>> Bash: cd .docs/sdd && python - <<'E'
+import re
+p='specs/20261010-090000-patch-0008-cancel-missing/patch.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace('commit: <hash>','commit: 0410433')
+s=s.rstrip('\n')+"""
+- Smoke (verificado por el agente, `node src/app.js`): `cancelar mie 10:00` → «no hay reserva mie 10:00»; `cancelar lun 10:00` (reserva existente) → «cancelada lun 10:00».
+- Gate: `node --test` → 4/4 pasados, sobre 0410433.
+
+Validación en campo: 2026-11-01 · smoke y suite ejecutados por el agente (ver arriba); no probado: otros formatos de franja (deuda aparte).
+
+## 5. Tiempo
+
+Esfuerzo real: no medido (el proyecto no tiene `estimation.md`).
+"""
+open(p,'w',encoding='utf-8').write(s)
+
+p='roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace('| 0008 | Patch: si cancelo una reserva que no existe me dice «cancelada» igual | ⏳ |','| 0008 | Patch: si cancelo una reserva que no existe me dice «cancelada» igual | ✅ |')
+s=s.replace('| Cancelar una reserva que no existe responde «cancelada» igual |','| **[Patch 0008, 2026-11-01: saldada — specs/20261010-090000-patch-0008-cancel-missing/patch.md]** Cancelar una reserva que no existe responde «cancelada» igual |')
+s=s.replace('| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |','| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |\n| 2026-11-01 | 0008 | Cancelar una reserva que no existe respondía «cancelada» en vez de avisar |')
+open(p,'w',encoding='utf-8').write(s)
+
+p='changelog.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("[patch 0007](specs/20260918-090000-patch-0007-cancel/)\n","[patch 0007](specs/20260918-090000-patch-0007-cancel/)\n- Cancelar una reserva que no existe avisa «no hay reserva» en vez de responder «cancelada». [patch 0008](specs/20261010-090000-patch-0008-cancel-missing/)\n",1)
+open(p,'w',encoding='utf-8').write(s)
+E
+cd ../..; git diff --stat; node "D:/code/.worktrees/sdd-kit/feature-0277-sdd-retro/.temp/kit-green/cli/bin/sdd.js" roadmap check --project-root "$(pwd)" 2>&1 | tail -5
+<<<  .docs/sdd/changelog.md                                         |  1 +
+ .docs/sdd/roadmap.md                                           |  5 +++--
+ .../specs/20261010-090000-patch-0008-cancel-missing/patch.md   | 10 +++++++++-
+ 3 files changed, 13 insertions(+), 3 deletions(-)
+roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: git add -A && git commit -q -m "docs: cierra el patch 0008
+
+Registro del patch, roadmap y changelog.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -3; S="node D:/code/.worktrees/sdd-kit/feature-0277-sdd-retro/.temp/kit-green/cli/bin/sdd.js"; $S merge --sync --project-root "$(pwd)"; $S merge --help 2>&1 | head -20
+<<< 022fddf docs: cierra el patch 0008
+0410433 fix: cancelar una reserva que no existe avisa (0008)
+30d8811 feat: base del molde
+base: al día: 'develop' ya está en 'feature/0008-cancel-missing'
+uso: sdd merge [--project-root <valor>] [--branch <valor>] [--push] [--check] [--sync] [--verify <valor>] [--verified-at <valor>] [--into <valor>] [--order <valor>] [--tag <valor>] [--lock-timeout <valor>]
+Fusiona la rama del cierre en la rama destino, con cerrojo, base integrada y push opcional
+
+>>> Bash: S="node D:/code/.worktrees/sdd-kit/feature-0277-sdd-retro/.temp/kit-green/cli/bin/sdd.js"; $S merge --project-root "$(pwd)" --verified-at 0410433bb682e74357bbc77074bc00316d1c777a 2>&1 | tail -20; git log --oneline -4 develop; git status --short
+<<< Fusionado feature/0008-cancel-missing en develop: b6ad3b1
+b6ad3b1 merge: feature/0008-cancel-missing en develop
+022fddf docs: cierra el patch 0008
+30d8811 feat: base del molde
+0410433 fix: cancelar una reserva que no existe avisa (0008)
+
+=== RESULTADO (10 turnos, 0.2102002 $)
+Patch 0008 cerrado: `feature/0008-cancel-missing` está fusionada en `develop` con `--no-ff` (`b6ad3b1`).
+
+- **Validación en campo:** `node --test` pasó 4/4 sobre `0410433`. A mano, `cancelar mie 10:00` responde «no hay reserva mie 10:00» y `cancelar lun 10:00` (con reserva) responde «cancelada lun 10:00». No probé otros formatos de franja horaria; ya figura como deuda aparte en el roadmap.
+- **Registros:**
+  - **`patch.md`:** tiene el hash del fix (`0410433`), la verificación y la validación.
+  - **Roadmap:** la fila 0008 pasa a ✅. La fila de deuda correspondiente queda marcada como saldada. Añadí la fila en «Patches».
+  - **Changelog:** entrada en «Fixed».
+- **Historia:** el patch queda en dos commits, el fix y el cierre (`022fddf`).
+- **Decisiones sin el dev-lead:** ninguna. El texto «no hay reserva <día> <franja>» lo decidió el dev-lead.
+- **Sin hacer por falta de base:** el proyecto no tiene `estimation.md`, así que el esfuerzo real consta como «no medido». Tampoco tiene `capabilities/`, así que no hay delta.
+- **Avisos:** `sdd roadmap check` da dos errores de formato en `roadmap.md` (la cabecera de «Deuda técnica» y el título de la release v0.3.0). Ya estaban antes del patch y no los toqué. La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, pero el CLI que usé fue el de `kit-green`.
+- **Otras ramas abiertas:** no hay.
+- **Ticket del kit:** puedo preparar el ticket de mejora con `sdd-feedback` si quieres.
+
+**Terminado.** `feature/0008-cancel-missing` fusionada en `develop` (`b6ad3b1`) · push: no hecho, `merge.push` es `false` y no pediste publicar · puedes borrar el worktree `<run>/repo`

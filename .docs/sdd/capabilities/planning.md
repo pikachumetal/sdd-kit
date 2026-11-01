@@ -149,6 +149,14 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - AND no queda otra fila de «Deuda técnica» para el segundo ticket
 - AND no crea `ROADMAP.md` ni `debt.md`
 
+### Preparar una release lee las propuestas de la última retro
+
+- GIVEN `releases/v1.3.0/retro.md` con una fila de «Propuestas» para `regla lejos de su paso` y un action item `[A1]`
+- WHEN el usuario pide «prepara la release 1.4: qué entra de lo que tenemos»
+- THEN `sdd-roadmap` presenta en su inventario esa propuesta y ese action item, y el dev-lead decide si entran
+- AND lee la retro de la última carpeta `vX.Y.Z` que tenga `retro.md`; una `feedback.md` de una release anterior no se lee
+- AND sin `retro.md` el inventario sigue sin ella
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz (2.x: `.docs/sdd/roadmap.md`); la deuda, en `.docs/sdd/steering/debt.md` (2.x: «Deuda técnica» del roadmap). La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md` (2.x: bajo `specs/`). El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.

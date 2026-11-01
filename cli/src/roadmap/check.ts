@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { readLines, readText } from '../cli/files.ts';
 import { basename, dirname, join, resolve } from 'node:path';
 import { resolveDocument, shadowWarning } from '../cli/layout.ts';
-import { debtProblems, debtWarnings } from './debt.ts';
+import { debtPath, debtProblems, debtWarnings } from './debt.ts';
 import { releaseDates } from './changelog.ts';
 import { nowNextLaterProblems } from './now-next-later.ts';
 import { lineAt, parseSections, tableBlocks } from './parse.ts';
@@ -77,7 +77,7 @@ function roadmapReport(sddPath: string, changelog: string): Report | null {
 }
 
 function debtReport(sddPath: string, changelog: string): Report | null {
-  const file = join(resolve(sddPath), 'steering', 'debt.md');
+  const file = debtPath(sddPath);
   if (!existsSync(file)) return null;
   const lines = readLines(file);
   return {

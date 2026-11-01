@@ -16,6 +16,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-roadmap`); el m
 | m4 | brief | dame el prompt de la 0013 | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: control, sin regla: el prompt sale del brief de la fila (salió limpio) |
 | m5 | write | Apunta en el roadmap: exportar las reservas a CSV. No la arranques. | salas-3-plain | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: la fila nueva entra en Next con su brief |
 | m6 | legacy | Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú. | salas-qa | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: sin `ROADMAP.md`, el triaje escribe la forma 2.x |
+| m7 | retro | Prepara la release 1.6: qué entra de lo que tenemos. | salas-3-retro | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | feature 0277: las propuestas del repaso llegan al inventario |
 | id3 | ids | Apunta en el roadmap, para más adelante y sin decidir todavía: exportar las reservas a PDF. No la arranques. | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0203: Later numera con la secuencia, no con `B<n>`; `TURN2` «Súbela a Next.» conserva el id |
 | m3b | cited | Tria lo que hay por triar en la deuda. | salas-3-wt | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el dato del ticket solo lo desmiente el walkthrough que cita (fallo de campo de la «7.1.0», ticket de la feature 0165 §1; decisión del dev-lead del 2026-10-13 tras el m3 limpio) |
 | c1 | cause | Tria lo que hay por triar en la deuda. | salas-3-cause | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0276: dos tickets cuentan con palabras distintas un `RUNS_DIR` demasiado largo; un tercero es del mismo entorno y de otro mecanismo |
@@ -30,6 +31,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
+| M7 Propuestas de la retro | m7 | el inventario no nombra la propuesta de `retro.md` ni `A1` |
 | M1 Prompt de una fila | m1 | el prompt no tiene esta forma: título `###` en cursiva con el emoji del carril y «0013 — Aviso semanal a los responsables»; `***Nombre:***` con `feature/0013-<slug>`, `***Base:***` con `develop` y `***Carril:***` en líneas seguidas, con el valor en código en línea; `***Prompt***`; un bloque de código sin lenguaje que arranca la 0013 con `sdd-propose`, lleva alcance, fuera de alcance, lecturas con la propuesta 0010, el aviso a las 8:00 de la enmienda, criterio de hecho, «Perfil delegate» y «Al fusionar, `sdd merge --push`»; o escribe en el roadmap, reserva, publica o commitea |
 | M2 Prompt en el cierre | m2 | el mensaje final no da el prompt de arranque de la primera fila y la frase «si prefieres hacerlo en esta sesión, di "arráncalo"» |
 | M3 Triaje | m3 | propone en «Lista» la fila del CSV o da la 1.4.2 por buena; la del CSV no lleva «Causa» `sin determinar` o la de la planta `defecto del producto`; no cita el changelog como fuente; la fila de la planta no lleva «Evidencia» con el comando; no propone la de las 8 h en «Descartadas» con `caducada`; o escribe en `debt.md` o en `ROADMAP.md` antes de la decisión |

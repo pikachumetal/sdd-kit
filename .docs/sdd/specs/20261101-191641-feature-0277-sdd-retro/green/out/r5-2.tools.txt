@@ -1,0 +1,143 @@
+
+>>> Skill: sdd-kit:sdd-retro
+<<< Launching skill: sdd-kit:sdd-retro
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders && ls && cat notas-sesion.md && cat walkthrough.md
+<<< Exit code 1
+walkthrough.md
+cat: notas-sesion.md: No such file or directory
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders && cat walkthrough.md; find ../../.. -name "notas-sesion.md"
+<<< # Walkthrough — feature 0081
+
+## 1. Cambios realizados
+
+Recordatorio por correo de cada reserva.
+
+## 5. Aprendizajes
+
+- Ninguno.
+
+Retro: <señal> → <salida> (<fichero>) | Retro: <señal> → ticket del kit: <qué desmiente> | Retro: sin señales
+
+>>> Bash: cd <run> && find . -iname "*notas*" -not -path "*/node_modules/*" | head; ls -la . repo
+<<< ./repo/notas-sesion.md
+.:
+total 12
+drwxr-xr-x 1 <user> 197609 0 Nov  1 22:10 ./
+drwxr-xr-x 1 <user> 197609 0 Nov  1 22:10 ../
+drwxr-xr-x 1 <user> 197609 0 Nov  1 22:10 repo/
+
+repo:
+total 11
+drwxr-xr-x 1 <user> 197609   0 Nov  1 22:10 ./
+drwxr-xr-x 1 <user> 197609   0 Nov  1 22:10 ../
+drwxr-xr-x 1 <user> 197609   0 Nov  1 22:10 .docs/
+drwxr-xr-x 1 <user> 197609   0 Nov  1 22:10 .git/
+-rw-r--r-- 1 <user> 197609 321 Nov  1 22:10 notas-sesion.md
+-rw-r--r-- 1 <user> 197609  20 Nov  1 19:58 package.json
+-rw-r--r-- 1 <user> 197609  62 Nov  1 19:58 README.md
+drwxr-xr-x 1 <user> 197609   0 Nov  1 22:10
+
+>>> Bash: cd <run>/repo && cat notas-sesion.md; ls -R .docs src test | head -50; cat README.md
+<<< # Notas de la sesión de la 0081
+
+- En la Task 1 quedó un `console.log` de depuración en `src/`; lo cazó la revisión final y costó una pasada de fix.
+- En la Task 2 volvió a quedar otro `console.log` en `src/`, con otra pasada de fix.
+- El proyecto corre `node --test` antes de cada commit, y ningún test lo mira.
+.docs:
+sdd/
+
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261020-100000-feature-0081-reminders/
+
+.docs/sd
+
+>>> Bash: cd <run>/repo && cat package.json test/app.test.js src/app.js; cat .docs/sdd/steering/operations.md
+<<< {"type": "module"}
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+const [command, ...args] = process.argv.slice(2);
+const 
+
+>>> Bash: cd <run>/repo && cat > test/sin-depuracion.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+
+// La única salida por consola permitida en src/ es la del CLI de app.js.
+const PERMITIDA = 'if (command) console.log(run(command, args));';
+
+test('src/ no deja console.log de depuración', () => {
+  const sobrantes = [];
+  for (const file of readdirSync(new URL('../src/', import.meta.url))) {
+    const lines = readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8').split('\n');
+    lines.forEach((line, i) => {
+      if (/console\.(log|debug)\(/.test(line) && line.trim() !== PERMITIDA) {
+        sobrantes.push(`src/${file}:${i + 1}`);
+      }
+    });
+  }
+  assert.deepEqual(sobrantes, []);
+});
+EOF
+python - <<'EOF'
+p='.docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md'
+s=open(p,encoding='utf8').read()
+s=s.replace("Retro: <señal> → <salida> (<fichero>) | Retro: <señal> → ticket del kit: <qué desmiente> | Retro: sin señales","Retro: error que cazaría un chequeo → test que falla si hay un console.log de depuración en src/ (test/sin-depuracion.test.js)")
+open(p,'w',encoding='utf8').write(s)
+EOF
+node --test 2>&1 | tail -12; git status --short
+<<< ✔ libres excluye la sala reservada en la franja (0.6044ms)
+✔ reservar --cada-semana crea la reserva semanal (0.0969ms)
+✔ cancelar respeta el día (0.5225ms)
+✔ src/ no deja console.log de depuración (1.3022ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.5303
+ M .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md
+?? test/sin-depuracion.test.js
+
+=== RESULTADO (9 turnos, 0.1337021 $)
+Hice el paso de retro del cierre de la 0081 y encontré una señal: `error que cazaría un chequeo`. Un `console.log` de depuración quedó en `src/` en la Task 1 y otro en la Task 2. Cada vez lo cazó la revisión final y costó una pasada de fix.
+
+- **Salida:** un chequeo, que es la primera opción del orden de la skill. Es el test nuevo `test/sin-depuracion.test.js`, que falla si hay algún `console.log` o `console.debug` en `src/`. Solo deja pasar la salida del CLI en `app.js`.
+- **Pruebas:** `node --test` pasa con los 4 tests, y el nuevo corre antes de cada commit, como ya hacía el resto de la batería.
+- **Walkthrough:** añadí en la §5 de `walkthrough.md` la línea `Retro: error que cazaría un chequeo → test que falla si hay un console.log de depuración en src/ (test/sin-depuracion.test.js)`. Sustituye a la línea de plantilla que había.
+- **Sin commitear:** ambos cambios están sin commitear, como pediste.
+- **Otras señales:** ninguna de las otras tres aparece en `notas-sesion.md`.
+
+El sitio de `notas-sesion.md` no era el que indicabas: está en la raíz del repo, no dentro de la carpeta de la spec.
+
+Fuera de este paso queda una discrepancia: `operations.md` dice `npm test`, pero `package.json` no tiene script `test`. No la toqué porque ninguna nota de la sesión la señala como problema.

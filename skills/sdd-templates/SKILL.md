@@ -1,6 +1,6 @@
 ---
 name: sdd-templates
-description: Use when an SDD artifact must be created (spec, plan, tasks, walkthrough, patch, proposal, data-model, research, release feedback, release notes) or a project document (PRODUCT, constitution, operations, architecture, roadmap, estimation, changelog, ADR) — the template is traced from here. Templates live ONLY in the kit; projects do NOT carry a templates/ folder.
+description: Use when an SDD artifact must be created (spec, plan, tasks, walkthrough, patch, proposal, data-model, research, release retro, release notes) or a project document (PRODUCT, constitution, operations, architecture, roadmap, estimation, changelog, ADR) — the template is traced from here. Templates live ONLY in the kit; projects do NOT carry a templates/ folder.
 user-invocable: false
 ---
 
@@ -22,7 +22,7 @@ The SDD kit's canonical templates. **They live only here**: projects don't carry
 | [validation-template.md](templates/validation-template.md) | validation message, in the chat | Presented by `sdd-archive` |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Optional: data changes that don't fit in the plan |
 | [research-template.md](templates/research-template.md) | `research.md` | A spike's evidence, with its objectives table |
-| [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Release closing: single record (inventory + triage + retro) |
+| [retro-template.md](templates/retro-template.md) | `retro.md` | Release cut, through `sdd-retro`: review by cause, proposals and, if asked, estimate |
 | [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Release closing: client notes distilled from the changelog |
 | [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Living truth of behavior: created by the spec that declares the capability, merged by `sdd-archive` |
 | [kit-feedback-template.md](templates/kit-feedback-template.md) | ticket in `.docs/sdd/kit-feedback/` | When closing a feature or a patch, via `sdd-feedback` |

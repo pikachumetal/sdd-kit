@@ -88,7 +88,7 @@ Si el cambio se puede describir en una frase, se hace directamente. La planifica
 
 Igual que en el flujo original: presentación periódica, idealmente semanal, de lo implementado al cliente o a los stakeholders internos, y recogida de feedback con notas, capturas y decisiones. Las notas pasan por `sdd-roadmap`, que propone qué cambia en el roadmap, y cada fila nueva entra después por el ciclo de la fase 2.
 
-Si el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente y `sdd-end-release` corta la versión: changelog sellado, lo hecho fuera de Now, notas para el cliente y el merge y el tag, que confirmas tú; la retro con números, si la pides. En brownfield hay un tipo de feedback que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
+Si el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente y `sdd-end-release` corta la versión: changelog sellado, lo hecho fuera de Now, notas para el cliente y el merge y el tag, que confirmas tú; el repaso de la deuda por causa y, si la pides, la retro con números. En brownfield hay un tipo de feedback que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
 
 ## 4. Trazabilidad y estimación
 
