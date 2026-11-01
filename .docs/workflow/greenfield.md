@@ -52,7 +52,7 @@ El resultado de esta fase es el plan de implementación, igual que en el flujo o
 
 Instala el kit SDD desde el primer día:
 
-- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `using-sdd`, la puerta de entrada que decide por qué carril entra cada petición; `sdd-init` para arrancar; `sdd-start-feature` y `sdd-archive` para el ciclo completo; `sdd-start-patch` y `sdd-archive` para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `sdd-config` para la configuración del equipo y las preferencias de cada uno; `sdd-feedback` para el ticket de mejora del kit; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
+- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `using-sdd`, la puerta de entrada que decide por qué carril entra cada petición; `sdd-init` para arrancar; `sdd-propose`, `sdd-implement` y `sdd-archive` para el ciclo completo y para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `sdd-config` para la configuración del equipo y las preferencias de cada uno; `sdd-feedback` para el ticket de mejora del kit; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
 - **Skills técnicas**, según el stack elegido: por ejemplo `sql-migration`, `translation-migration`, `backend-command` y `backend-query` para CQRS, `backend-feature` para casos de uso, o `frontend-feature`.
 
 Las skills encapsulan las convenciones del proyecto, así que nadie tiene que recordarlas ni interpretarlas: basta con seguir el flujo.
@@ -65,7 +65,7 @@ Antes de empezar, inicializa el repositorio Git y haz commits frecuentes, como e
 
 Cada feature sigue el mismo ciclo, guiado por las skills. Cuánto para el agente a esperarte lo decide el perfil de control del proyecto: `pair`, `delegate` (el de defecto) o `unattended`. Qué te pregunta en cada parada y qué contestar lo cuenta la [guía de uso](usage-guide.md#4-qué-te-pregunta-el-agente-y-qué-contestar).
 
-1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta. Una pregunta va a `sdd-consult`, un bug determinista o un ajuste solo de presentación al carril patch, lo que se apunta sin hacerlo todavía a `sdd-roadmap`, y un cambio con comportamiento a `sdd-start-feature`. La primera pregunta de `sdd-start-feature` confirma el carril, el modo (lite si el cambio es acotado) y el perfil.
+1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta. Una pregunta va a `sdd-consult`, un bug determinista o un ajuste solo de presentación al carril patch, lo que se apunta sin hacerlo todavía a `sdd-roadmap`, y un cambio con comportamiento a `sdd-propose`. La primera pregunta de `sdd-propose` confirma el carril, el modo (lite si el cambio es acotado) y el perfil.
 2. **Especificación**: sesión de brainstorming con Claude cuyo resultado es `spec.md`, qué hay que hacer y por qué, con el delta de comportamiento por capacidad. Empieza por las decisiones que el agente ha tomado sin ti, que es lo único que necesitas leer para aprobarla. Según la complejidad, propone una revisión adversarial de la spec y tú decides si la activas.
 3. **Plan** en `plan.md`: cómo se va a hacer, con la estimación de esfuerzo, el método de ejecución y las restricciones globales que viajarán en cada encargo. Solo en `pair` para a que lo apruebes; en `delegate` el agente comprueba que cada escenario de la spec tiene su task y sigue.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos que conviene seguir por separado.
@@ -96,7 +96,7 @@ Estructura recomendada:
 
 ### 2.1. Gestión del contexto
 
-**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva. No agrupes tareas en la misma conversación ni esperes a agotar el contexto. Empezar de cero no cuesta nada, porque `sdd-start-feature` carga la documentación de anclaje que hace falta.
+**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva. No agrupes tareas en la misma conversación ni esperes a agotar el contexto. Empezar de cero no cuesta nada, porque `sdd-propose` carga la documentación de anclaje que hace falta.
 
 ### 2.2. Verificación
 
@@ -110,7 +110,7 @@ Las incidencias detectadas se corrigen antes de presentar al cliente, igual que 
 
 ### 2.3. Carril rápido: patch
 
-Para un cambio pequeño con la solución ya fijada no hace falta el ciclo completo: un fallo determinista (la fija la causa raíz), un ajuste o una retirada solo de presentación (la fija la petición) o una petición cerrada (la fija el ticket o el dev-lead). Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación, y las decisiones con su autor. Mantiene la trazabilidad sin añadir burocracia. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos): el `patch.md` lleva la intención en una frase y la verificación es una captura.
+Para un cambio pequeño con la solución ya fijada no hace falta el ciclo completo: un fallo determinista (la fija la causa raíz), un ajuste o una retirada solo de presentación (la fija la petición) o una petición cerrada (la fija el ticket o el dev-lead). Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. `sdd-implement` genera un único `patch.md` con síntoma, causa raíz y verificación, y las decisiones con su autor. Mantiene la trazabilidad sin añadir burocracia. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos): el `patch.md` lleva la intención en una frase y la verificación es una captura.
 
 ```text
 /

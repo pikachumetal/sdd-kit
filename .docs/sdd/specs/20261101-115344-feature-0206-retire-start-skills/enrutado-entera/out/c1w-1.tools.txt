@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch --show-current
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+develop
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md tech-stack.md roadmap.md; node "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/cli/bin/sdd.js" capability index --path .; cd ../..; ls pages styles; cat package.json; ls node_modules 2>&1 | head -1
+<<< # Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+# Roadmap — ventas
+
+## Features
+
+| id | Feature | Estado |
+| --- | --- | --- |
+| 001
+
+>>> Bash: cat pages/*.html styles/ficha.css app.js; cat .docs/sdd/capabilities/order-sheets.md
+<<< <!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Albarán</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+<body>
+  <main class="ficha">
+    <header class="ficha-cabecera">
+      <h1>Albarán PV-2026-0142</h1>
+      <div class="ficha-acciones">
+        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+        <button type="button" class="btn" data-accion="cancelar">Cancelar</button>
+        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</button>
+      </div>
+    </header>
+    <section c
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/skills/sdd-propose/references"; cat modo-lite.md | head -60; cat spec-writing.md
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.19665110000000002 $)
+Ahora: clasifico el cambio y te hago la primera pregunta de diseño. Queda: la entrevista, la spec (que apruebo por delegación si te ausentas) y el plan, ~10 min.
+
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido, corrígeme:** en las fichas de pedido (`pedido-detalle.html`) y de albarán (`albaran-detalle.html`), cuando el pedido esté facturado el botón Borrar no se muestra. Cuando se muestre, pasa de estar junto a Guardar y Cancelar al extremo derecho.
+
+**Por qué no es un patch:** ocultar el botón según el estado es una condición nueva, y hoy el código no tiene ningún dato de «facturado». Las dos fichas son HTML estático con una línea fija (`PV-2026-0142`) y `app.js` solo calcula totales. Además cambia la capacidad `order-sheets`, que hoy dice que la ficha siempre ofrece Borrar. La estimación es de unas 3 tasks o menos, en el mismo módulo, así que no propongo partirla.
+
+❓ **¿De dónde sale que un pedido está facturado?**
+Hoy las fichas no traen ese dato. Tengo que decidir cómo lo conoce la página:
+1️⃣ **Un atributo `data-facturado="true"` en la ficha, como `data-cantidad` o `data-precio` en las líneas.** `app.js` oculta Borrar si lo ve. En la ficha de `PV-2026-0142` marcada como facturada, aparecen Guardar y Cancelar, y Borrar no. Encaja con cómo ya viaja el resto de datos y no necesita backend. Cuando haya datos reales, quien genere la página pondrá el atributo.
+2️⃣ **Un atributo `hidden` o una clase fija escrita a mano en el HTML de cada ficha.** Funciona sin `app.js`, pero la ficha facturada queda grabada en la página y no hay una regla que reutilizar.
+3️⃣ **Ya existe un campo de estado en tu sistema real (por ejemplo `estado: "facturado"`) y las páginas lo recibirán con otro nombre o formato.** Dime cuál es y lo uso.
+➡️ **Recomiendo 1️⃣**, porque es el mismo mecanismo que usan hoy las líneas y la regla queda en un solo sitio, `app.js`, para las dos fichas. A cambio, las dos fichas de ejemplo del repo tendrán que marcarse a mano para poder verlo hasta que haya datos reales.

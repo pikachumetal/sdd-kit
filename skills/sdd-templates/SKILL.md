@@ -19,7 +19,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [patch-template.md](templates/patch-template.md) | `patch.md` | Carril patch (único artefacto) |
 | [proposal-template.md](templates/proposal-template.md) | `proposal.md` | Carril `proposal`: la escribe `sdd-roadmap` para algo grande o una reunión con el cliente; histórica, con enmiendas fechadas |
 | [launch-prompt-template.md](templates/launch-prompt-template.md) | prompt de arranque, en el chat | Lo dan `sdd-roadmap` y `sdd-explore`: arranca el cambio en otro worktree con su carril y sus decisiones |
-| [validation-template.md](templates/validation-template.md) | mensaje de validación, en el chat | Lo presentan `sdd-start-feature` y `sdd-archive` |
+| [validation-template.md](templates/validation-template.md) | mensaje de validación, en el chat | Lo presenta `sdd-archive` |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Opcional: cambios de datos que no caben en el plan |
 | [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |
@@ -48,7 +48,7 @@ El código ejecutable del kit es una CLI en Node, `cli/bin/sdd.js`, que viaja co
 | `sdd merge` | Merge del cierre según la política `merge` de `sdd-kit.json`, con cerrojo por repo, en un worktree temporal `merge-<id>`; regenera `estimation-log.md` si choca y ejecuta `--verify` antes, en el worktree del cambio y sin el cerrojo. Con `--push` empuja la rama destino. Si falla, la deja como estaba. Receta: [merge-recipe](../sdd-archive/references/merge-recipe.md): `merge --project-root "<worktree>" [--push] [--verify "<suite>"]`. |
 | `sdd capability check` | Valida `capabilities/` (título, secciones, propósito ≤ 300 caracteres, GIVEN/WHEN/THEN, sin marcas de delta, reglas con sus cinco entradas). Con `--artifact`, tras fusionar, comprueba que el bloque «Capacidades» de la spec o del `patch.md` nombra las capacidades de su delta y que cada `ADDED` o `MODIFIED` está en su capacidad: `capability check --path "<raíz>/.docs/sdd" [--artifact "<spec.md o patch.md>"]`. |
 | `sdd capability merge` | Fusiona el delta de una spec o `patch.md` en `capabilities/` (`ADDED` añade, `MODIFIED` sustituye, `REMOVED` quita, las reglas por nombre; solo pasan los escenarios). Todo o nada: con un fallo no escribe y sale con 1: `capability merge --path "<raíz>/.docs/sdd" --artifact "<spec.md o patch.md>"`. |
-| `sdd capability index` | El índice de `capabilities/`, al vuelo: una línea `` - `<nombre>` — <propósito> `` por capacidad, o `(sin propósito)`. Lo usan `sdd-start-feature`, `sdd-roadmap` y `sdd-explore` antes de elegir qué leer. Sale siempre con 0: `capability index --path "<raíz>/.docs/sdd"`. |
+| `sdd capability index` | El índice de `capabilities/`, al vuelo: una línea `` - `<nombre>` — <propósito> `` por capacidad, o `(sin propósito)`. Lo usan `sdd-propose`, `sdd-roadmap` y `sdd-explore` antes de elegir qué leer. Sale siempre con 0: `capability index --path "<raíz>/.docs/sdd"`. |
 | `sdd decision check` | Valida las ADR de `decisions/` (nombre, `status`, `date`, `rutas`, secciones en orden, números sin repetir); una línea por fallo y sale con 1: `decision check --path "<raíz>/.docs/sdd"`. |
 | `sdd decision index` | Lista las ADR; con `--files`, solo las `accepted` y `proposed` cuyas `rutas` casan con esos ficheros. Sale siempre con 0: `decision index --path "<raíz>/.docs/sdd" [--files <fichero>]…`. |
 | `sdd roadmap check` | Valida `ROADMAP.md` (forma de `now-next-later-template.md`) o `.docs/sdd/roadmap.md` (forma de `roadmap-template.md`), y `steering/debt.md` si existe (secciones, orden, tablas, cabeceras y estados, nada saldado tras la última release cerrada). Una línea por fallo y sale con 1; sin fallos, `Roadmap válido`. Bloquea el corte de `sdd-end-release`; en los demás cierres avisa de lo heredado: `roadmap check --path "<raíz>/.docs/sdd"`. |
@@ -62,7 +62,7 @@ El código ejecutable del kit es una CLI en Node, `cli/bin/sdd.js`, que viaja co
 | `sdd task done` | Ejecuta la «Verificación» de una task y, si pasa, la anota en el ledger: `task done <plan> <n> <base> -- <comando…>`. |
 | `sdd task brief` | Extrae el texto de una task del plan a un fichero: `task brief <plan> <n> <out>`. |
 | `sdd review package` | Genera el paquete de revisión de un rango de commits: `review package <plan> <base> <head> <out>`. |
-| `sdd ledger rulings` | Lista los rulings y los minor diferidos del ledger de un plan: `ledger rulings <plan>`. Lo usan `sdd-start-feature` y `sdd-archive`. |
+| `sdd ledger rulings` | Lista los rulings y los minor diferidos del ledger de un plan: `ledger rulings <plan>`. Lo usan `sdd-implement` y `sdd-archive`. |
 | `sdd hook session-start` | Escribe el contexto de arranque de sesión; lo ejecuta `hooks/hooks.json`, no las skills. |
 
 Reglas al usarlas:

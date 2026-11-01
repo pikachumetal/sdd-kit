@@ -2,7 +2,7 @@
 
 ## Propósito
 
-La historia de la rama de una feature o de un patch: qué commits quedan al fusionar y qué hash apuntan los artefactos. La receta vive en `skills/sdd-start-feature/references/commit-milestones.md`.
+La historia de la rama de una feature o de un patch: qué commits quedan al fusionar y qué hash apuntan los artefactos. La receta vive en `skills/sdd-implement/references/commit-milestones.md`.
 
 ## Requisitos
 

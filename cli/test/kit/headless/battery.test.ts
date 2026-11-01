@@ -19,7 +19,7 @@ const TOY = `# Batería de juguete
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | r1 | roadmap | Apunta lo del filtro. | salas | \`sdd-kit:sdd-roadmap\` | 2 | 2/2 | sonnet | toy |
 | r2 | roadmap | Reordena el roadmap. | salas | \`sdd-kit:sdd-roadmap\` | 1 | 1/1 | opus | toy |
-| f1 | feature | Añade un filtro. | salas | \`sdd-kit:sdd-start-feature\` | 1 | 1/1 | sonnet | toy |
+| f1 | feature | Añade un filtro. | salas | \`sdd-kit:sdd-propose\` | 1 | 1/1 | sonnet | toy |
 | t1 | directa | Corrige la errata «Guadar», ¿vale? | salas | ninguna | 1 | 1/1 | sonnet | toy |
 | d1 | duda | Hay que mejorar las reservas. | salas | ninguna | 2 | 1/2 | sonnet | toy |
 | a1 | brief | Implementa la Task 1. | reservas | \`cualquiera\` | 2 | 2/2 | sonnet | toy |
@@ -41,7 +41,7 @@ describe('verdict', () => {
   it('da verde y rojo por escenario', () => {
     const fs = toyFs();
     for (const label of ['r1-1', 'r1-2', 'r2-1']) tools(fs, label, finished('>>> Skill: sdd-kit:sdd-roadmap'));
-    tools(fs, 'f1-1', finished('>>> Skill: sdd-kit:sdd-start-patch'));
+    tools(fs, 'f1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
     tools(fs, 't1-1', finished('>>> Edit: README.md'));
     const { lines, red } = verdict(TABLE, OUT, ['roadmap', 'feature', 'directa'], fs);
     expect(lines).toEqual(['r1 · 2/2 · umbral 2/2 · verde', 'r2 · 1/1 · umbral 1/1 · verde', 'f1 · 0/1 · umbral 1/1 · rojo', 't1 · 1/1 · umbral 1/1 · verde']);
@@ -50,7 +50,7 @@ describe('verdict', () => {
 
   it('no cuenta como puerta la invocación de using-sdd, que es el enrutador', () => {
     const fs = toyFs();
-    tools(fs, 'f1-1', finished('>>> Skill: sdd-kit:using-sdd\n>>> Skill: sdd-kit:sdd-start-feature'));
+    tools(fs, 'f1-1', finished('>>> Skill: sdd-kit:using-sdd\n>>> Skill: sdd-kit:sdd-propose'));
     tools(fs, 't1-1', finished('>>> Skill: sdd-kit:using-sdd\n>>> Edit: README.md'));
     const { lines } = verdict(TABLE, OUT, ['feature', 'directa'], fs);
     expect(lines).toEqual(['f1 · 1/1 · umbral 1/1 · verde', 't1 · 1/1 · umbral 1/1 · verde']);
@@ -75,7 +75,7 @@ describe('verdict', () => {
 
   it('da rojo si lo medido ya no alcanza el umbral, aunque falte evidencia', () => {
     const fs = toyFs();
-    tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-start-patch'));
+    tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-explore'));
     const result = verdict(TABLE, OUT, ['roadmap'], fs);
     expect(lineOf(result.lines, 'r1')).toBe('r1 · 0/2 · umbral 2/2 · rojo · sin tools.txt: r1-2');
     expect(result.red).toBe(true);

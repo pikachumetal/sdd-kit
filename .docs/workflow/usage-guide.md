@@ -11,7 +11,7 @@ Con el kit se trabaja con tres verbos, siempre en este orden:
 | Verbo | Skill | Qué haces | Qué queda escrito |
 | --- | --- | --- | --- |
 | **Planificar** | `sdd-roadmap` | Meter trabajo en el roadmap sin hacerlo todavía: algo grande, algo concreto, los items del gestor, las notas de una reunión, un cambio de orden, la siguiente release | Filas en `.docs/sdd/roadmap.md` con su id y su orden y, si es algo grande o una reunión, una propuesta en `.docs/sdd/specs/<fecha>-proposal-<id>-<nombre>/proposal.md` |
-| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, la fila del roadmap al día (en 2.x, también el changelog), y el merge en `develop` |
+| **Hacer** | `sdd-propose` y `sdd-implement` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, la fila del roadmap al día (en 2.x, también el changelog), y el merge en `develop` |
 | **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | El changelog sellado, lo hecho fuera de Now, la deuda caducada, las notas de la versión si hay destinatario y, cuando tú lo confirmas, el merge a `main` y el tag |
 
 Planificar no hace nada: deja el roadmap listo para que alguien arranque. Hacer arranca una fila y termina con ella fusionada. Entregar publica lo hecho.
@@ -44,7 +44,7 @@ Tres cosas que conviene saber:
 - **Los ids no se inventan.** Con gestor (Azure DevOps, Jira: `ids.mode: tracker`), el id es el del gestor. Sin gestor (`ids.mode: sequence`), `sdd-roadmap` reserva de una vez los ids de todo lo que apunta y publica la reserva con un commit en `develop` que solo toca el roadmap. Hasta ese commit, los demás worktrees no ven la reserva.
 - **Termina diciéndote qué fila va primero** y con qué skill se arranca. No arranca nada: ni rama, ni carpeta, ni spec.
 
-Cuando abres el worktree de esa fila y arrancas `sdd-start-feature` en la rama `feature/<id>-<nombre>`, el agente toma la fila como enunciado. Si la fila dice «`proposal: <id>`», lee también la propuesta: ahí están las reglas y sus ejemplos.
+Cuando abres el worktree de esa fila y arrancas `sdd-propose` en la rama `feature/<id>-<nombre>`, el agente toma la fila como enunciado. Si la fila dice «`proposal: <id>`», lee también la propuesta: ahí están las reglas y sus ejemplos.
 
 ## 3. Hacer: feature o patch
 
@@ -52,7 +52,7 @@ Llega algo, o arrancas una fila, y lo escribes tal cual. El agente elige la puer
 
 | Lo que escribes | Por dónde entra |
 | --- | --- |
-| «Añade el filtro por estado en el listado de pedidos», «es una tontería, hazlo rápido», o `/sdd-start-feature` en la rama de una fila | Feature |
+| «Añade el filtro por estado en el listado de pedidos», «es una tontería, hazlo rápido», o `/sdd-propose` en la rama de una fila | Feature |
 | «El total del carrito no suma el envío cuando hay cupón» | Patch |
 | «Apunta en el roadmap lo de la exportación, no lo arranques» | Planificar (sección 2) |
 | «¿Por qué las reservas caducan a las 24 h?», «pruébalo rápido» | Consulta |
@@ -221,7 +221,7 @@ Al medir los tokens de la sesión en el cierre, `sdd session tokens` busca los t
 ### Las skills no cargan, o llegan viejas
 
 - **El kit aparece deshabilitado**: falta superpowers o su marketplace. Añade `obra/superpowers-marketplace` antes que el del kit y reinstala (pasos en el [README](../../README.md#instalación)). Si tenías `superpowers@claude-plugins-official`, desinstálalo: con los dos, las skills salen duplicadas.
-- **El agente no entra por el carril que toca**: `using-sdd` la inyecta un hook al empezar la sesión, solo si el proyecto tiene `.docs/sdd/`. Si el hook no llegó a correr (sin Node, Claude Code enseña el error del hook; el kit pide Node 22.18 o posterior), nombra la skill en la petición («con `sdd-start-feature`, añade…»).
+- **El agente no entra por el carril que toca**: `using-sdd` la inyecta un hook al empezar la sesión, solo si el proyecto tiene `.docs/sdd/`. Si el hook no llegó a correr (sin Node, Claude Code enseña el error del hook; el kit pide Node 22.18 o posterior), nombra la skill en la petición («con `sdd-propose`, añade…»).
 - **Tras actualizar el kit, el agente sigue con la versión anterior** o nombra una skill que ya no existe (la 2.0.0 renombró las skills de «task» a «feature»): una sesión sirve las skills con el texto que tenían al arrancar. Actualiza con `/plugin marketplace update`, abre una sesión nueva y, si el proyecto viene de una versión anterior, pide «ponme el proyecto al día con `sdd-init`». Desde la 2.2.0, el arranque de la sesión te avisa de los dos casos: si el kit cargado es más viejo que el del proyecto, con el comando para actualizarlo, y si el proyecto tiene migraciones pendientes, con esa misma frase.
 
 ### El merge del cierre falla

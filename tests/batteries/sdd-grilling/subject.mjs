@@ -20,7 +20,7 @@ const molds = {
     s.putKitMarker(SALAS_MARKER);
   },
   reservas: () => {
-    s.copy(join(HERE, '..', 'sdd-start-feature', 'mold-reservas'));
+    s.copy(join(HERE, 'mold-reservas'));
     s.putKitMarker(SALAS_MARKER);
   },
   'salas-sin-docs': () => {

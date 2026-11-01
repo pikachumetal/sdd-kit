@@ -1,0 +1,54 @@
+--- [9]
+Ya tengo la causa. Antes de abrir nada necesito tu confirmación.
+
+🦆 `findBooking` (`src/app.js:10`) recibe el día pero no lo usa. Solo mira que la sala coincida y que la reserva esté activa. Con Norte reservada el lunes, `cancelar Norte mar` encuentra esa reserva, la cancela y responde con el día que le pasaste. Por eso ves «cancelada Norte mar» y pierdes la del lunes. El test actual de «sin reserva» solo usa Sur, que no tiene ninguna, así que no lo detecta.
+
+`anular` usa la misma función, así que tiene el mismo fallo y se arregla con el mismo cambio.
+
+**Carril: patch.** Es determinista y la causa fija la solución: `findBooking` tiene que comparar también `b.day === day`. No hay nada que decidir sobre lo que ve el usuario.
+
+- **Test que falla hoy:** `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar activa la del lunes. Hoy cancela la del lunes.
+- **Estimación:** no hay `.docs/sdd/estimation.md`, así que no hay estimación en horas.
+- **Gate de cierre:** `node --test` entero.
+- **Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Abro el patch?
+
+1. **Sí, abro el patch (Recomendada).** Creo la rama y la carpeta `patch-`, escribo el test que falla, aplico el arreglo y cierro con el gate.
+2. **Sí, y añado un test para `anular`.** Lo cubre el mismo arreglo, pero así queda protegido también el segundo comando.
+3. **No lo abras.** Lo dejamos como está.
+
+--- [19]
+Estoy reproduciendo el fallo con los tests que van a fallar antes de tocar el arreglo. Después aplico el fix, corro el gate y preparo el commit.
+
+--- [22]
+El primer intento no vale: las reservas son estado compartido del módulo y el test anterior ya había cancelado la del lunes. Importo el módulo de nuevo en cada test para aislarlo.
+
+--- [26]
+El fichero quedó bien. Corro los tests para ver el RED real.
+
+--- [28]
+Reproducido: sale `cancelada Norte mar` y `anulada Norte mar`, tal como lo describiste. Ahora el arreglo mínimo y `patch.md`.
+
+--- [32]
+6 de 6 en verde. Escribo `patch.md` y hago el commit del fix.
+
+--- [34]
+Arreglado y commiteado (`38d22f7`) en la rama `feature/0032-cancelar-dia`.
+
+**Causa:** `findBooking` (`src/app.js:10`) recibía el día pero no lo comparaba. Devolvía la primera reserva activa de la sala. `anular` usa la misma función y tenía el mismo fallo.
+
+**Cambio:** `findBooking` ahora exige también `b.day === day`.
+
+**Pruebas:**
+- Antes del fix, los dos tests nuevos fallaban con `cancelada Norte mar` y `anulada Norte mar`.
+- Después, `node --test` da 6 de 6.
+- Los tests nuevos importan una copia limpia del módulo cada uno, porque las reservas son estado compartido.
+
+El commit incluye `patch.md` en `.docs/sdd/specs/20261101-132525-patch-0032-cancelar-dia/`.
+
+**Pendiente:**
+- No he invocado `sdd-archive`, porque pediste parar en el commit del fix. Falta la validación tuya, el hash en `patch.md`, la fila de 0032 en el roadmap y el merge.
+- El aviso del inicio de sesión dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. No actualicé el plugin ni reinicié, pero las skills que he seguido pueden ser de una versión vieja.
+- No hay remoto: `sdd id claim` comprobó el id 0032 solo contra el contador local.
+

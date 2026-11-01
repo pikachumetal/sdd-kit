@@ -150,7 +150,8 @@ function specReview(folder, { capability, fixture }) {
   s.put(`${folder}/spec.md`, readFileSync(join(FIX, fixture), 'utf8'));
   s.commit(`docs(sdd): spec de la ${id.split('-')[0]}`);
   const composed = spawnSync(s.NODE, [join(HERE, 'compose-spec-review.mjs'), s.KIT, `${folder}/spec.md`, `.docs/sdd/capabilities/${capability}`], { cwd: s.R, env: s.env, encoding: 'utf8' });
-  return (composed.stdout ?? '').replace(/\n+$/, '');
+  if (composed.status !== 0) s.die(`compose-spec-review falló: ${composed.stderr}`);
+  return composed.stdout.replace(/\n+$/, '');
 }
 const reReview = (fixture) => copyFileSync(join(FIX, fixture), join(workspace(), 're-review.md'));
 // La 0010 hecha, con una pasada de fix y su re-revisión con el veredicto que mide el escenario.

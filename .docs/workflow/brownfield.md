@@ -47,7 +47,7 @@ El onboarding no bloquea: se crea la documentación mínima de anclaje y se empi
 
 El ciclo es el mismo que en greenfield, guiado por las skills:
 
-1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta: consulta, patch, roadmap o `sdd-start-feature`, que carga el contexto del proyecto y confirma el modo (lite o ciclo completo) y el perfil de control.
+1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta: consulta, patch, roadmap o `sdd-propose`, que carga el contexto del proyecto y confirma el modo (lite o ciclo completo) y el perfil de control.
 2. **Especificación**: brainstorming con Claude hasta llegar a `spec.md`, con el delta de comportamiento por capacidad, revisada y aprobada antes de continuar. En brownfield conviene activar la revisión adversarial de la spec más a menudo, porque el riesgo está en lo que la spec da por supuesto del sistema existente.
 3. **Plan** en `plan.md`, con la estimación de esfuerzo, el método de ejecución y las restricciones globales. Solo para a que lo apruebes en el perfil `pair`.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos.
@@ -62,7 +62,7 @@ Las tareas tienen que ser pequeñas, de una jornada o menos. En las demasiado gr
 
 ### 2.1. Gestión del contexto
 
-**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva y `sdd-start-feature` carga la documentación de anclaje. En codebases grandes conviene usar subagentes para explorar el código sin contaminar el contexto principal, que es lo que recomienda Anthropic para repositorios de ese tamaño.
+**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva y `sdd-propose` carga la documentación de anclaje. En codebases grandes conviene usar subagentes para explorar el código sin contaminar el contexto principal, que es lo que recomienda Anthropic para repositorios de ese tamaño.
 
 ### 2.2. Verificación
 
@@ -74,7 +74,7 @@ En brownfield el riesgo principal es la **regresión**: cambios plausibles y sin
 
 ### 2.3. Carril rápido: patch
 
-En un sistema en producción los bugs pequeños son frecuentes. Para un cambio pequeño con la solución ya fijada (un fallo determinista, un ajuste o una retirada solo de presentación, o una petición cerrada), `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación: trazabilidad completa sin el ciclo entero. Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos), con la intención en una frase y una captura como verificación.
+En un sistema en producción los bugs pequeños son frecuentes. Para un cambio pequeño con la solución ya fijada (un fallo determinista, un ajuste o una retirada solo de presentación, o una petición cerrada), `sdd-implement` genera un único `patch.md` con síntoma, causa raíz y verificación: trazabilidad completa sin el ciclo entero. Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos), con la intención en una frase y una captura como verificación.
 
 ### 2.4. Carril de consulta
 

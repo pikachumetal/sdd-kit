@@ -288,7 +288,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - GIVEN un proyecto que migra a v3.0.0 con el dev-lead presente, cuya `steering/constitution.md` dice «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap.»
 - WHEN se aplican y aprueban los pasos de la v3.0.0
 - THEN `sdd-kit.json` queda con `version` `3.0.0`, escrito con `sdd upgrade --mark 3.0.0`, y hay un commit `chore(sdd): migrar al kit v3.0.0`
-- AND después el agente presenta una tabla con cada regla de `CLAUDE.md`, `AGENTS.md`, `PRODUCT.md` y `steering/` que repite o contradice el kit instalado, con su fichero y línea, la ruta del kit que la cubre y su propuesta; la regla de los ids sale con la ruta de `skills/sdd-start-feature/references/nombrado.md`
+- AND después el agente presenta una tabla con cada regla de `CLAUDE.md`, `AGENTS.md`, `PRODUCT.md` y `steering/` que repite o contradice el kit instalado, con su fichero y línea, la ruta del kit que la cubre y su propuesta; la regla de los ids sale con la ruta de `skills/sdd-propose/references/nombrado.md`
 - AND solo cambia lo que el dev-lead aprueba, en un commit `chore(sdd): reglas del proyecto que ya cubre el kit`
 - AND una regla sin una ruta del kit que la cubra no sale en la tabla; sin ninguna, el paso se salta y lo dice
 - AND sin el dev-lead, la tabla va al informe como pendiente, con cómo reanudarla, y ni la constitution ni el marcador dependen de ella
@@ -342,6 +342,13 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN se aplica el paso 7 de `v2.0.0.md`
 - THEN `funcional.md` no cambia y el informe no lo lista entre las capacidades a las que se ha escrito el propósito
 - AND con `capabilities/legacy.md` sin marca, sin `## Requisitos` y sin escenarios, la verificación de `v3.0.0.md` lista su fallo como pendiente del dev-lead y propone la línea `> **No es una capacidad.**` tras el título, sin escribirla ni frenar el marcador
+
+### La migración a v3.0.0 sustituye los nombres de las skills de arranque retiradas
+
+- GIVEN un proyecto cuyo `CLAUDE.md` dice «arranca el trabajo con `sdd-start-feature`» y cuyo `.claude/commands/fix.md` cita `/sdd-start-patch`
+- WHEN se aplica el paso 5 de la v3.0.0
+- THEN `CLAUDE.md` dice «arranca el trabajo con `sdd-propose`» y el comando cita `/sdd-propose`, sin gate
+- AND la verificación del paso no devuelve ninguno de los dos nombres
 
 ## Reglas de la capacidad
 

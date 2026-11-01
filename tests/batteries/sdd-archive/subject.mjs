@@ -420,7 +420,7 @@ const molds = {
     done0010();
     developRoomsTest();
     validated0010();
-    s.env.TURN2 = 'El walkthrough sin commitear es el borrador del paso 7: sigue con el cierre.';
+    s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
   },
   'reservas-gate-lock': () => {
     moldReservas();
@@ -428,7 +428,7 @@ const molds = {
     done0010();
     developLockfile();
     validated0010();
-    s.env.TURN2 = 'El walkthrough sin commitear es el borrador del paso 7: sigue con el cierre.';
+    s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
   },
   'reservas-docs-join': () => (moldReservas(), done0010(), stackConflict('join')),
   'reservas-docs-clash': () => (moldReservas(), done0010(), stackConflict('clash')),
@@ -462,6 +462,22 @@ const molds = {
     done0010();
     appendFileSync(at(`${F10}/plan.md`), '\n**Se prueba en la aplicación**: la persona arranca el servidor y cancela y lista por `GET /run` con la misma sesión (`x-session`), porque el servidor es la aplicación que usa.\n');
     s.commit('docs(sdd): cómo se prueba la 0010 en la aplicación');
+  },
+  'reservas-decision': () => {
+    manualValidation();
+    moldReservas();
+    done0010();
+    appendFileSync(at(`${F10}/tasks.md`), '\n## Decisión que deja la revisión final\n\n¿`canceladas` lista primero las más recientes o por sala? Es de producto, y sigue sin responder.\n');
+    s.commit('docs(sdd): la decisión que deja la revisión final');
+  },
+  'reservas-campo': () => (moldReservas(), done0010()),
+  'reservas-valida-en': () => {
+    manualValidation();
+    moldReservas();
+    done0010();
+    const spec = readLf(at(`${F10}/spec.md`)).replace(/^(- THEN .*)$/m, '$1\n- Se valida en: worktree con la base al día');
+    writeFileSync(at(`${F10}/spec.md`), spec);
+    s.commit('docs(sdd): el primer THEN se valida con la base al día');
   },
   'reservas-config-manual': () => (manualValidation(), moldReservas(), doneConfig0020()),
   'reservas-config-agent': () => (manualValidation(), moldReservas(), doneConfig0020('Validación: agente — solo fija la versión de Node: una persona no observaría nada que la comprobación del agente no mida')),

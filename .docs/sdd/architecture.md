@@ -14,10 +14,8 @@
 │   ├── sdd-init/SKILL.md
 │   ├── sdd-upgrade/SKILL.md       (+ references/migrations/, una por versión)
 │   ├── sdd-propose/SKILL.md
-│   ├── sdd-start-feature/SKILL.md
 │   ├── sdd-implement/SKILL.md
 │   ├── sdd-{tdd,debugging,worktrees,parallel-agents,verify}/
-│   ├── sdd-start-patch/SKILL.md
 │   ├── sdd-archive/SKILL.md
 │   ├── sdd-roadmap/SKILL.md
 │   ├── sdd-end-release/SKILL.md

@@ -23,21 +23,19 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-init': { skillMd: 2500, total: 3100 },
   'sdd-roadmap': { skillMd: 3600, total: 3600 },
   'sdd-rubber-duck': { skillMd: 600, total: 600 },
-  'sdd-propose': { skillMd: 5250, total: 6800 },
-  'sdd-implement': { skillMd: 9483, total: 13249 },
+  'sdd-propose': { skillMd: 5250, total: 14200 },
+  'sdd-implement': { skillMd: 9483, total: 17740 },
   'sdd-verify': { skillMd: 3060, total: 9120 },
   'sdd-tdd': { skillMd: 1750, total: 4030 },
   'sdd-upgrade': { skillMd: 980, total: 980 },
   'sdd-debugging': { skillMd: 1600, total: 3400 },
-  'sdd-start-feature': { skillMd: 1916, total: 11322 },
-  'sdd-start-patch': { skillMd: 2300, total: 2300 },
   'sdd-worktrees': { skillMd: 1300, total: 1300 },
   'sdd-templates': { skillMd: 1700, total: 15720 },
   // El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
   'using-sdd': { skillMd: 570, total: 570 },
 };
 
-const kitBudget = 91328;
+const kitBudget = 89328;
 
 const anchorBudgets: Record<string, number> = {
   'constitution.md': 2236,
