@@ -285,17 +285,30 @@ const STACK_CHANGES = {
   join: { branch: '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`, que también valida el motivo al cancelar.', base: `${STACK_LINE} Los tests corren con \`node --test\`.` },
   clash: { branch: '- Node 20, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.', base: '- Node 24, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.' },
 };
-function stackConflict(kind) {
-  const { branch: ours, base } = STACK_CHANGES[kind];
-  edit('.docs/sdd/tech-stack.md', [STACK_LINE, ours]);
-  s.commit('docs(sdd): tech-stack de la 0010');
+function lineConflict(file, line, { branch: ours, base }) {
+  edit(file, [line, ours]);
+  s.commit(`docs: ${file} de la 0010`);
   s.git('checkout', '-q', 'develop');
-  edit('.docs/sdd/tech-stack.md', [STACK_LINE, base]);
-  if (!has('.docs/sdd/tech-stack.md', base)) s.die('no se plantó la línea de develop');
-  s.commit('docs(sdd): tech-stack de la 0016');
+  edit(file, [line, base]);
+  if (!has(file, base)) s.die('no se plantó la línea de develop');
+  s.commit(`docs: ${file} de la 0016`);
   s.git('checkout', '-q', 'feature/0010-cancel-reason');
   const probe = spawnSync('git', ['-C', s.R, 'merge-tree', '--write-tree', '--name-only', 'HEAD', 'develop'], { env: s.env, encoding: 'utf8' });
-  if (probe.status !== 1 || !probe.stdout.includes('.docs/sdd/tech-stack.md')) s.die('la base y la rama no chocan en tech-stack.md');
+  if (probe.status !== 1 || !probe.stdout.includes(file)) s.die(`la base y la rama no chocan en ${file}`);
+}
+const stackConflict = (kind) => lineConflict('.docs/sdd/tech-stack.md', STACK_LINE, STACK_CHANGES[kind]);
+// Una migración del proyecto, fuera de `.docs/`: está en develop antes de abrir la 0010 para que las dos ramas partan de su línea.
+const MIGRATION = 'migrations/v3.0.0.md';
+const MIGRATION_CHANGES = {
+  join: { line: '**Escribe**: `sdd-kit.json`.', branch: '**Escribe**: `sdd-kit.json`, `operations.md`.', base: '**Escribe**: `sdd-kit.json`, `ROADMAP.md`.' },
+  clash: { line: 'Paso 3: renombra `roadmap.md` a `ROADMAP.md`.', branch: 'Paso 3: borra `roadmap.md` al acabar.', base: 'Paso 3: conserva `roadmap.md` como copia de consulta.' },
+};
+function migrationMold(kind) {
+  moldReservas();
+  s.put(MIGRATION, `# Migración a la v3.0.0\n\n${MIGRATION_CHANGES[kind].line}\n`);
+  s.commit('docs: migración a la v3.0.0');
+  done0010();
+  lineConflict(MIGRATION, MIGRATION_CHANGES[kind].line, MIGRATION_CHANGES[kind]);
 }
 // La CI de la base declarada en el tech-stack del molde; con suites, también la suite unitaria.
 const CI_LINE = '- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`';
@@ -432,6 +445,8 @@ const molds = {
   },
   'reservas-docs-join': () => (moldReservas(), done0010(), stackConflict('join')),
   'reservas-docs-clash': () => (moldReservas(), done0010(), stackConflict('clash')),
+  'reservas-md-join': () => migrationMold('join'),
+  'reservas-md-clash': () => migrationMold('clash'),
   'reservas-ci-red': () => (moldReservas(), baseCi(false), ghFake(ghRun('failure', 'develop')), done0010()),
   'reservas-ci-down': () => (moldReservas(), baseCi(false), ghFake(GH_LOGGED_OUT), done0010()),
   'reservas-release-ci': () => (moldReservas(), baseCi(true), release300(), ghFake(ghRun('success', 'develop'))),

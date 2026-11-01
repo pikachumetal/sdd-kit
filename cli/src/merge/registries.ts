@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { DomainError } from '../cli/args.ts';
 import { estimationLogPath } from '../cli/layout.ts';
 import { generateEstimationLog, writeEstimationLog } from '../estimation/log.ts';
 import { git } from '../git/git.ts';
@@ -7,6 +8,7 @@ import type { MergeAttempt } from './attempt.ts';
 import { dedupeRows, idColumn, mergeKeyedHunk, TABLE_SEPARATOR, tableHeaders, type KeyedMerge } from './keyed.ts';
 import { MARKER, mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
 import { mergeRequirementLines } from './requirement-lines.ts';
+import { failureReport } from './verify.ts';
 
 const LOG = /estimation-log\.md$/i;
 const HUNK = /^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*(?:\n|(?![\s\S]))/gms;
@@ -139,9 +141,14 @@ async function stageResolution(worktree: string, files: string[]): Promise<void>
   await git(worktree, ['add', '--', ...files]);
 }
 
-async function commitResolution(worktree: string, conflicted: string[]): Promise<boolean> {
+// Sin nada en conflicto, un commit rechazado es del hook: decir «conflicto» manda a buscar marcas que no hay.
+async function commitResolution(worktree: string, conflicted: string[]): Promise<void> {
   await stageResolution(worktree, conflicted);
-  return (await git(worktree, ['commit', '--no-edit'])).code === 0;
+  const { code, stdout, stderr } = await git(worktree, ['commit', '--no-edit']);
+  if (code === 0) return;
+  await git(worktree, ['merge', '--abort']);
+  const output = `${stdout}\n${stderr}`.split(/\r?\n/).filter((line) => line !== '');
+  throw new DomainError(`verificación: el hook rechazó el merge.\n${failureReport(output)}`);
 }
 
 // Mergiraf solo une código: lo que une lo verifica la suite, y en los documentos nadie lo haría.
@@ -164,7 +171,7 @@ export async function resolveConflicts(attempt: MergeAttempt, conflicted: string
   const left = await stillConflicted(buffered, conflicted, attempt.report);
   if (left.length > 0 && attempt.mergedDestination === undefined) return left;
   if (left.length > 0) await stageResolution(attempt.worktree, conflicted.filter((file) => !left.includes(file)));
-  else if (!(await commitResolution(attempt.worktree, conflicted))) return conflicted;
+  else await commitResolution(attempt.worktree, conflicted);
   pending.forEach((line) => attempt.report(line));
   return left;
 }
