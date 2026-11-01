@@ -1,6 +1,6 @@
 ---
 name: sdd-propose
-description: Use when the user asks for a change in a project with .docs/sdd/ — a feature, a fix, an adjustment, a removal, a dependency, CI or settings change, a typo or rename, or an investigation that must leave measurements — even a small one («añade…», «hazme…», «arregla…», «sube la versión de…», «let's build…», «es una tontería, hazlo rápido»), or a roadmap row or ticket to start. Not for questions (sdd-explore), planning without doing (sdd-roadmap) or closing work (sdd-archive).
+description: Use when the user asks for a change in a project with .docs/sdd/ — a feature, a fix, an adjustment, a removal, a dependency, CI or settings change, a typo or rename, or an investigation that must leave measurements — even a small one («añade…», «hazme…», «arregla…», «sube la versión de…», «let's build…», «es una tontería, hazlo rápido»), or a roadmap row or ticket to start. Not for questions (sdd-explore), planning without doing (sdd-roadmap), resuming paused work (sdd-implement) or closing work (sdd-archive).
 argument-hint: "<change, roadmap id or ticket>"
 ---
 
@@ -132,7 +132,7 @@ That the reporter "believes they know the cause" does NOT make the bug determini
 | "The rubric says no review: the spec is ready for the gate" | No review is no reviewer, not no reading. You do the coherence pass before presenting: a spec approved with a THEN that contradicted its decision cost an amendment and a dev-lead stop. |
 | "The user won't answer; I'll continue and document it" | An unapproved spec isn't a contract. The task WAITS at the gate; your last message presents the spec and asks for approval. |
 | "In `delegate` the user no longer repeats the gate; from approval on the agent works alone" | Choosing a scope isn't approving. The approval question is explicit and goes alone: without a «sí» or an «apruebo», the spec stays ON HOLD even if the profile is `delegate`. |
-| "It's simple / the client expects it today" | Pressure doesn't change the process. What's really small has its lanes: patch or config. |
+| "It's simple / the client expects it today" | What's really small has its lanes: patch or config. |
 | "The typo goes apart, as config" | A request with parts of several lanes goes by its heaviest part, and you say which part rides inside it. Splitting it is the user's call, not yours. |
 | "It's only a version bump: a direct edit" | That's the config lane: it asks, runs the gate and commits with its result. A bump that breaks the build is what it prevents. |
 | "The request says «patch:», but I'd better confirm the lane" | A lane the request brings and your investigation confirms isn't asked again. Ask only when you see a heavier one. |

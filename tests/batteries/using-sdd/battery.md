@@ -14,7 +14,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`); el mé
 | i2 | sdd-init | Sigue con la init, se cortó ayer. | salas | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | 0156: una init en curso (`sdd-kit.json` con la clave `init`) entra por `sdd-init` |
 | u1 | sdd-upgrade | Actualízame al kit. | salas | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0157: la migración entraba por `sdd-init`, una skill de onboarding (fila 0122); el molde, con migraciones pendientes |
 | c1 | sdd-explore | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0074, control; desde la 0161, `sdd-explore` |
-| r1 | sdd-roadmap | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Ponte con ello. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
+| r1 | sdd-roadmap | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Ponte con ello. | salas | `sdd-kit:sdd-roadmap` | 4 | 2/4 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2; patch 0275: acierta ~70 % con cualquier texto (`english-using-templates-green.md`: 11/14 y 9/14), umbral 2/4; una regresión a 30 % la cubre el A/B |
 | r2 | sdd-roadmap | Te paso las notas de la reunión de hoy con el cliente: quieren reservas recurrentes, ver las salas libres por la tarde y quitar lo del correo. A ver qué hacemos. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | 0074, control |
 | r3 | sdd-roadmap | Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona). | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
 | r4 | sdd-roadmap | Lo de exportar a calendario tiene que ir antes que los avisos por correo. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | 0074, control |
@@ -34,6 +34,10 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`); el mé
 | d1 | duda | Hay que mejorar las reservas, que se quejan los usuarios. | salas | ninguna | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
 | t1 | sdd-propose | Corrige el typo «recervas» del README. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | 0074, control; desde la 0160, carril config |
 | c2 | sdd-propose | Cambia «Guardar» por «Guardar y cerrar» y ponlo a la derecha, en las dos fichas. | ventas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `visual-patch-red.md`: edición directa 2 de 2; desde la 0117, un texto dado literal es petición cerrada |
+| rf1 | retomar | Retoma la feature. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0010b del template §2: retomó a mano, sin skill; molde en la rama `feature/0020-room-filter` con la Task 1 hecha |
+| rf2 | retomar | Sigue con la Task 2. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: la frase perdió su puerta; mismo molde que `rf1` |
+| rp1 | retomar-patch | Retoma el patch, lo dejé ayer a medias. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: `sdd-start-patch` lo recogía; molde en `patch/0021-cancel-missing` con `patch.md` sin commitear y sin fix |
+| rf3 | retomar-sin-spec | Retoma la feature. | salas | cualquiera | 2 | 2/2 | sonnet | revisión final de la 0116: sin spec ni `patch.md` en la rama, no toca nada y remite a `sdd-propose`; se lee a mano |
 
 ## Procedencia de las reglas
 
@@ -55,3 +59,4 @@ Cada regla de `skills/using-sdd/SKILL.md`, de dónde viene y qué escenario la c
 | Racionalización «It's a typo or a version bump: a direct edit» | `visual-patch-red.md` (v1, c2); `tests/sdd-propose-0160-red.md` (k1) | t1, c2 |
 | Racionalización «They've been assigned to me: I'll do them one after another» | `using-sdd-red.md` (r3) | r3 |
 | Puerta: «dame el prompt de la <id>» → `sdd-roadmap` | `tests/sdd-explore-0161-red.md`, m1: 2 de 2 entraron por `sdd-consult`; GREEN r6 2/2 | r6 |
+| Puerta: retomar una feature o un patch en pausa → `sdd-implement` | feature 0116: rodeo por `sdd-propose` 4 de 4 con «retoma» | rf1, rf2, rp1 |

@@ -4,18 +4,15 @@
 
 ## Overview
 
-An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for:
-
-```
-1. An E2E names a core flow
-2. Between two user actions, wait only for what the user can see
-```
+An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for.
 
 In the field, a menu offered the *previous* copy for ~3 s after copying; every E2E of that flow polled the API for the new copy before opening the menu, and the bug lived three releases with the suite green.
 
 ## Rule 1: Name the Core Flow
 
-`operations.md` §Testing lists the project's **Flujos core**, each with its test. A new E2E extends one of them; say which in its `describe`. A behavior of no core flow (a remembered filter, a format, a label) is tested one layer down: a component or endpoint test. A change you think creates a core flow is a proposal for the spec's ✋, not a file you add. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
+`operations.md` §Testing lists the project's **Flujos core**, each with its test. New steps extend one of those tests. A behavior of no core flow (a remembered filter, a format, a label) is tested one layer down: a component or endpoint test. A new title is a proposal for the spec's ✋: the list is the dev-lead's. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
+
+With the list declared (not `pendiente`), a test in a suite the close runs whole (`unitario` or `pendiente`) compares every `test(...)` title of the E2E files with the list, and goes red naming each title missing from it. Missing, add it with the first E2E you touch. A red title you didn't add goes to the dev-lead.
 
 ## Rule 2: Test What the User Sees
 
@@ -90,4 +87,3 @@ Playwright's defaults: 30 s per test, 5 s per assertion, no retries. Retries are
 | "The helper already types in cells; I reuse it" | A shared helper that types before the editor is ready loses keys in every test. Wait for the visible state, in the helper. |
 | "I raise this one timeout to 10 s: the server is slow" | A raised timeout hides the race on a fast machine and loses it on a slow one. Keep the default or write the reason in `operations.md`. |
 | "Retries: 2 makes the suite green" | It makes the failure invisible. Triage it, or declare it `test.fixme('<title>', { annotation: { type: 'issue', description: '<url>' } }, …)`. |
-| "The behavior is new, so it gets its own E2E file" | New isn't core. Name the core flow, or go one layer down. |

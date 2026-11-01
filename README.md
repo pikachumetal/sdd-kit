@@ -64,6 +64,8 @@ El kit no usa `claude-plugins-official`: ese marketplace fija superpowers a un c
 
 Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea en el `.claude/settings.json` del proyecto de dónde salen los dos marketplaces (`extraKnownMarketplaces`), qué plugins activar (`enabledPlugins`: el kit y superpowers) y la memoria automática desactivada (`autoMemoryEnabled`). Con solo `enabledPlugins`, los plugins aparecen activados pero Claude Code no sabe de dónde sacarlos. `sdd-init` deja escrito este bloque entero, fusionado con lo que ya tenga el fichero.
 
+`sdd-init` y la migración a v3.0.0 dejan además `.claude/hooks/sdd-kit-loaded.mjs` y su entrada en `hooks.UserPromptSubmit`: si una sesión arranca sin el kit cargado, ese hook avisa en el primer mensaje con la ruta de la versión que declara el proyecto. Va en el proyecto porque el hook del plugin no corre sin el plugin.
+
 <!-- sdd-init: settings -->
 ```json
 {

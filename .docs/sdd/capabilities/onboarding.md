@@ -70,6 +70,7 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - AND `.gitignore` contiene las líneas `.playwright-mcp/`, `.superpowers/`, `.docs/sdd/sdd-kit.local.json` y `.temp/` una sola vez cada una, y cada ruta de `--ignore`
 - AND con `"autoMemoryEnabled": true` previo, la salida dice `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia` y el agente pregunta; con su «sí», repite `--finish` con `--memory-off` y la clave queda en `false`; con su «no», se queda en `true` y el resumen de cierre lo anota
 - AND si `claude plugin marketplace list` no muestra `superpowers-marketplace`, el agente ejecuta `claude plugin marketplace add obra/superpowers-marketplace`
+- AND la init escribe `.claude/hooks/sdd-kit-loaded.mjs` y añade su entrada a `hooks.UserPromptSubmit` de `.claude/settings.json` una sola vez, sin tocar las que ya hubiera
 
 ### El log de estimación lo genera el script del kit
 

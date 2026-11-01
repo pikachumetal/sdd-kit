@@ -22,7 +22,10 @@ Validación: agente — son plantilla, CLI y texto de skill, sin pantalla; el us
 
 ## Capacidades
 
-- Modificadas: `roadmap` — la forma de `debt.md` y lo que valida el check. `planning` — el triaje por causa, en las dos formas. `migration` — de dónde salen las celdas nuevas de la deuda. `feature-flow` — quien depura busca el fallo en la deuda.
+- Modificadas: `roadmap` — la forma de `debt.md` y lo que valida el check.
+- Modificadas: `planning` — el triaje por causa, en las dos formas.
+- Modificadas: `migration` — de dónde salen las celdas nuevas de la deuda.
+- Modificadas: `feature-flow` — quien depura busca el fallo en la deuda.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 

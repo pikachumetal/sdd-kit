@@ -353,6 +353,13 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN `CLAUDE.md` dice «arranca el trabajo con `sdd-propose`» y el comando cita `/sdd-propose`, sin gate
 - AND la verificación del paso no devuelve ninguno de los dos nombres
 
+### La migración a v3.0.0 deja el hook del proyecto
+
+- GIVEN un proyecto que migra a v3.0.0 sin `.claude/hooks/sdd-kit-loaded.mjs`
+- WHEN corre la migración
+- THEN el fichero queda escrito y su entrada en `hooks.UserPromptSubmit` de `.claude/settings.json`, una sola vez, sin gate y sin tocar las demás entradas
+- AND si la entrada ya estaba, no la duplica, y la línea `**Escribe**:` de la migración los nombra
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.

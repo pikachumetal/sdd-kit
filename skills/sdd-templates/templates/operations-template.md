@@ -24,7 +24,7 @@
 
 > Los seis campos siguientes, solo si el proyecto tiene tests E2E; si no, bórralos. Los lee la referencia de E2E de `sdd-tdd`, y el cierre compara la suite con su presupuesto.
 
-- **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` › emite y descarga el PDF». Un E2E nuevo nombra uno de estos flujos; lo demás se prueba en una capa más baja>
+- **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` › emite y descarga el PDF». Un test de la suite `unitario` los compara con los `test(...)`; lo demás, una capa más abajo>
 - **Presupuesto E2E**: <minutos que puede tardar la suite E2E del gate de cierre, p. ej. `10 min` · `pendiente`>
 - **Retries**: <`0` en local; en CI, `0`, `1` o `2`. Recomendado: `0` en local y `2` en CI>
 - **Timeouts**: <`por defecto` (los del runner: en Playwright, 30 s por test y 5 s por `expect`) · o el valor subido con su motivo escrito>
