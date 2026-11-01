@@ -205,6 +205,13 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND no despacha otra re-revisión
 - AND un Important que la re-revisión achaca a la pasada sin que caiga en sus líneas, porque lo dice su informe, sigue el mismo camino
 
+### El eje Spec contrasta el research de un spike
+
+- GIVEN un spike con una recomendación que cita un objetivo `no medido` como apoyo, y un fichero de `src/` en el diff
+- WHEN `sdd-verify` despacha la revisión final
+- THEN sale solo el eje Spec, que recibe la ruta de `research.md`
+- AND marca como Important o más la recomendación, una fila cuyo estado su evidencia no sostiene y el fichero de `src/`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:` en `tasks.md` (sin él, en la presentación de la validación); los hallazgos, rulings y minors en el ledger del workspace del plan (en lite, el de `spec.md`), hasta que «Finish» los cosecha.

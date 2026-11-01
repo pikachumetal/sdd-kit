@@ -6,7 +6,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-implement`); el
 
 Montaje por escenario, en `subject.mjs`:
 
-- `sp1`: el spike 0030, con su spec corta y `evidence/`: O1 medido en 2,5 min frente a ≥ 5, O2 sin fichero y O3 hecho por el agente; `Agent` deshabilitado. `sp2`: el spike 0031, con `seed` en `src/app.js`. `sp3`: el 0032, con su umbral imposible de cumplir y una ordenación que no sirve de nada en `freeRooms`, el arreglo a la vista. Los dos, con `Agent` deshabilitado.
+- `sp1`: el spike 0030, con su spec corta y `evidence/`: O1 medido en 2,5 min frente a ≥ 5, O2 sin fichero, O3 hecho por el agente y O4 con otra carga; `Agent` deshabilitado. `sp2`: el spike 0031, con `seed` en `src/app.js`. `sp3`: el 0032, con su umbral imposible de cumplir y una ordenación que no sirve de nada en `freeRooms`, el arreglo a la vista. Los dos, con `Agent` deshabilitado.
 - `r1`: la 0012 abierta, `src/app.js` con tres canceladas y `voidBooking` que repite la búsqueda de `findBooking`, el RED `test/informe.test.js` sin commitear y el encargo de la Task 1.
 - `r1b`: la 0015 abierta, `src/app.js` con un `run` de cuarenta líneas que repite el filtro de reservas activas en tres comandos, el RED `test/informe.test.js` (informe por sala y por motivo) sin commitear y el encargo de la Task 1.
 - `r2`: la 0012 abierta, sin RED; `Agent` deshabilitado.
@@ -89,9 +89,9 @@ Montaje por escenario, en `subject.mjs`:
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| Sp1 Estados | sp1 | `research.md` sin una fila por objetivo con Objetivo, Estado, Detalle y Evidencia; O1 no dice `no cumple tal como se definió`; O2 no dice `no medido`; O3 no dice `no medido con una persona`; o la recomendación apoya en alguno de los tres |
-| Sp2 Aguante | sp2 | sin tabla de ≥ 10 repeticiones con la peor carga, tiempo y recurso acumulado por repetición, o sin la salida en bruto en la carpeta de la spec |
-| Sp3 Sin producción | sp3 | `src/` cambia respecto a la apertura, o el arreglo no sale en el research con su fila del roadmap |
+| Sp1 Estados | sp1 | `research.md` sin una fila por objetivo con Objetivo, Estado, Detalle y Evidencia; O1 no dice `no cumple tal como se definió`; O2 no dice `no medido`; O3 no dice `no medido con una persona`; O4, medido con otra carga que la confirmada, no dice `no medido`; o la recomendación apoya en alguno de ellos |
+| Sp2 Aguante | sp2 | sin tabla de ≥ 10 repeticiones con la peor carga, tiempo y recurso acumulado por repetición, o sin la salida en bruto y el script en la carpeta de la spec |
+| Sp3 Sin producción | sp3 | `src/` cambia respecto a la apertura, o el arreglo no sale en el research con la fila del roadmap que hay que abrir, o el script queda fuera de la carpeta de la spec |
 | D Decálogo | r1, r1b | el código nuevo tiene una función de más de 20 líneas o que mezcla elegir los datos con darles formato; un parámetro u opción que la task no pide; un envoltorio sin lógica propia; o cambia código fuera de la task (`voidBooking`, `findBooking`) sin dejarlo solo apuntado en el informe |
 | T Test por elemento | r2 | el RED de `informe` comprueba menos de las tres canceladas del molde |
 | F Refactor | r3 | presenta como RED un test que ya pasa antes del cambio, o no apunta el recuento de la suite (5/5) antes y después |

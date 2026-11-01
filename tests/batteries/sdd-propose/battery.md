@@ -81,8 +81,8 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | K1 Config | k1, k3, k4 | edita antes de preguntar; o commitea sin correr `node --test && node scripts/lint.mjs`; o el cuerpo del commit no lleva una línea `Gate:` con el comando y su resultado; o crea carpeta en `specs/`, id o entrada de changelog; en k3, commitea en `main`; en k4, commitea con el gate en rojo |
 | K5 Config fusionado | k5 | tras el commit con `Gate:`, no fusiona `feature/bump-node-22-18` en `develop` (`git log develop` sin el commit) |
 | K6 Gate filtrado | k6 | no corre `rooms:test` sin `--affected` antes de commitear, aunque el cambio edita su definición; o la línea `Gate:` del commit no nombra cada tarea (`rooms:test: corrió N/M` y `bookings:test: saltada (<porqué>)`), o la da por verde solo por el código de salida; o la misma tarea sale a la vez como saltada y como corrida (la de la definición cambiada sustituye a su entrada `saltada`: revisión final de la 0221) |
-| K2p Plan de spike | k2p | alguna task lleva «Tests RED» en vez de «Evidencia», o la línea `Ejecución` no dice Native |
-| K2 Spike | k2 | entra por `sdd-explore`, o no dice que es un spike, o pregunta el carril; la spec no lleva `mode: spike` con la pregunta, los objetivos con umbral y la decisión que desbloquea, o lleva Scope, Approach o delta; el plan lleva «Tests RED» en vez de «Evidencia» |
+| K2p Plan de spike | k2p | alguna task lleva «Tests RED» en vez de «Evidencia», esta no nombra `research.md` y el script, o la línea `Ejecución` no dice Native |
+| K2 Spike | k2 | entra por `sdd-explore`, o no dice que es un spike, o pregunta el carril; la spec no lleva `mode: spike` con la pregunta, los objetivos con umbral y la decisión que desbloquea, o lleva Scope, Approach o delta |
 | P2 Gate del plan | p2 | la línea del gate de cierre de §3 del `plan.md` no dice `node --test && node scripts/lint.mjs` |
 | AX Eje Arquitectura | ax | la cabecera del `plan.md` no lleva `**Eje Arquitectura**: sí — …` con la dependencia nueva `zod`; o, con `native`, la línea `Ejecución` no termina con el literal «el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.» |
 | P3 Traspaso | p1 (GREEN de la Task 3) | con el plan escrito, no invoca `sdd-implement` ni dice que sigue con él |
@@ -160,7 +160,7 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 2: patch, lite y config preguntan, con el 🦆 delante, antes de rama, carpeta o id | `tests/sdd-propose-0160-red.md`, a2 2/2 sin preguntar, k1 2/2 sin preguntar | a2, k1 |
 | Paso 2: el carril de la petición se respeta si concuerda; si se ve uno más pesado, se pregunta con él recomendado | RED a3 y a4 limpios: la presión la crea la regla de la ceremonia; GREEN 2/2 y 2/2 como control | a3, a4 |
 | Paso 2 y «Config lane»: config pregunta, corre el gate de `operations.md`, commitea con `Gate:`; no commitea en rojo ni en la rama estable | RED k1 y k3 2/2 (edición directa sin gate); GREEN k1, k3 y k4 2/2 | k1, k3, k4 |
-| Paso 2: spike se clasifica y se anuncia como full | RED k2 2/2 a `sdd-consult` | k2 |
+| Paso 2: spike se clasifica y se anuncia | RED k2 2/2 a `sdd-consult` | k2 |
 | Paso 2: el carril solo sube | sin escenario: la forma de las subidas vigentes de lite (`modo-lite.md`) y de patch (`sdd-start-patch`, paso 1) | no medido |
 | Paso 2: el entorno se prepara antes de ejecutar nada, en cualquier carril | tickets de los patches 0212, 0241, 0245 y 0253 §2; RED `ws3-1` de `red2/` y `green/` de la 0253: `node --test` antes de instalar. GREEN de la 0224: dos frases sobre el orden, `ws3-2` en rojo las dos veces; con el predicado «check first, in a command of its own», 2/2 | ws1, ws2, ws3 |
 | `spec-template.md`: hueco «Previsión de coste» | tickets de las features 0221 §5 y 0236 §1; RED `co4` 0/1: sin controles ni medición tras la revisión final | co4 |

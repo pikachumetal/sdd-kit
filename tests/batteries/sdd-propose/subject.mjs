@@ -246,7 +246,6 @@ const steps = {
     s.put(`${F10}/spec.md`, spec);
   },
 };
-steps.k2 = () => (s.env.TURN2 = 'Apruebo. Escribe el plan y para antes de la Task 1.');
 for (const id of ['k1', 'k3', 'k4', 'k6']) steps[id] = () => (s.env.TURN2 = 'Sí.');
 steps.p2 = steps.p1;
 steps.k2p = () => {

@@ -6,6 +6,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Added
 
+- **Feature 0163** — El carril spike tiene forma propia: `mode: spike`, spec corta, tasks con «Evidencia», `research.md` con la tabla de objetivos y sus estados, tabla de aguante y solo el eje Spec en la revisión final, con la ruta del research. → [ref](specs/20261101-175419-feature-0163-spike-lane/)
 - **Patch 0268** — `tests/headless/extract.mjs` sale con 3 ante una salida con el email de la cuenta de Claude, sin repetirlo, y avisa en stderr si no puede leerlo. → [ref](specs/20261031-213728-patch-0268-extract-account-email/)
 - **Feature 0129** — Capacidades en campo: `sdd capability index` y las migraciones respetan la marca «No es una capacidad.», `sdd capability check` avisa de un requisito de más de 500 caracteres, y `sdd capability merge` para antes de vaciar una capacidad salvo con `- Retiradas:`, que borra su fichero. → [ref](specs/20261031-203301-feature-0129-capabilities-in-the-field/)
 - **Feature 0186** — El freno «fichero de la task cambiado en la base» compara regiones: otra región o un solape declarado es un ruling con los dos tramos. `sdd task start` y `sdd task brief` fallan con más de una task y sin `tasks.md`. La oferta de gama media dice cuántas tasks y no sale con una sola. → [spec](.docs/sdd/specs/20261031-182430-feature-0186-implement-deviations-and-brakes/)

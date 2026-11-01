@@ -234,6 +234,7 @@ const steps = {
     openFixture('0030-free-rooms-kiosk', F30, '0030');
     s.put(`${F30}/evidence/o1.txt`, 'libres en bucle, 2 min 30 s, 0 errores; cortado por el timebox de la máquina compartida\n');
     s.put(`${F30}/evidence/o3.txt`, 'Prueba hecha por el agente con un navegador automatizado, sin ninguna persona: 12 s hasta encontrar Sur\n');
+    s.put(`${F30}/evidence/o4.txt`, 'libres con 100 reservas: 3 ms\n');
     s.commit('docs(sdd): medidas del spike 0030');
   },
   sp2: () => {
@@ -242,7 +243,8 @@ const steps = {
   },
   sp3: () => {
     seedApp((text) => text.replace("  return rooms.filter((room) =>", "  bookings.slice().sort((a, b) => a.room.localeCompare(b.room));\n  return rooms.filter((room) =>"));
-    openFeature('0032-free-rooms-fast', { folder: F32, spec: fixture('spec-0031.md').replaceAll('0031-free-rooms-load', '0032-free-rooms-fast').replaceAll('0031', '0032').replace('< 50 ms', '< 0,05 ms'), plan: fixture('plan-0031.md').replaceAll('0031-free-rooms-load', '0032-free-rooms-fast').replaceAll('0031', '0032') });
+    const renumber = (text) => text.replaceAll('0031-free-rooms-load', '0032-free-rooms-fast').replaceAll('0031', '0032');
+    openFeature('0032-free-rooms-fast', { folder: F32, spec: renumber(fixture('spec-0031.md')).replace('< 50 ms', '< 0,05 ms'), plan: renumber(fixture('plan-0031.md')) });
   },
   g1: () => {
     openFixture('0023-attempt-failure', F23, '0023');

@@ -132,7 +132,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 > si no los hay). El gate completo corre una vez, en §3. Si hay más de una task → crear `tasks.md`
 > (registro vivo).
 >
-> **Tasks verticales** (orientación, no regla): en un plan que cambia una aplicación, cada task acaba en algo que el usuario puede probar en ella: una rebanada que atraviesa las capas que necesita (migración, API, pantalla), no una capa. Si una task no puede, su línea «Se prueba en la aplicación» dice por qué: una base común que usan varias funcionalidades, una migración de datos sin cambio visible o un refactor. Las capas de una sola funcionalidad no son base común: «BD y API de facturas» con la pantalla de subida en la task siguiente es partir por capas; la primera task lleva la subida de punta a punta, de la tabla al botón.
+> **Tasks verticales** (orientación, no regla): en un plan que cambia una aplicación, cada task acaba en algo que el usuario puede probar en ella: una rebanada que atraviesa las capas que necesita (migración, API, pantalla), no una capa. Si una task no puede, su línea «Se prueba en la aplicación» dice por qué: una base común que usan varias funcionalidades, una migración de datos sin cambio visible o un refactor. Las capas de una sola funcionalidad no son base común: «BD y API de facturas» con la pantalla de subida en la task siguiente es partir por capas; la primera task lleva la subida de punta a punta, de la tabla al botón. Sin tamaño fijo en horas.
 >
 > **Dependencias**: las tasks se ejecutan en orden, sin paralelo. Cada una declara en `**Tras**:` la task que la bloquea, o `—` si no la bloquea ninguna: «Quitar Sur de favoritas» lleva `Tras: Task 1` si la Task 1 es «Marcar Sur como favorita».
 
@@ -144,7 +144,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
 
-**Evidencia** *(con `mode: spike`, en vez de Tests RED)*: <objetivo · fichero con la salida en bruto, en la carpeta de la spec>
+**Evidencia** *(con `mode: spike`, en vez de Tests RED)*: <objetivo · salida en bruto y script que la saca, en la carpeta de la spec · fila de `research.md`, calcado de su plantilla>
 
 **Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
 **Verificación**: <los comandos de esas superficies y ninguno más; cada uno sale con un código distinto de 0 si algo falla (con Pester, `-CI`), sin códigos de color (`NO_COLOR=1`), y con la línea de resumen que imprime, literal, copiada de una ejecución: `node --test test/cancel.test.js` → `ℹ fail 0` (su última línea es `ℹ duration_ms`, que no dice si pasó) · con Vitest, `Tests  12 passed (12)` · sin tests automáticos, el smoke manual con su resultado esperado>
@@ -167,7 +167,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
 - [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-implement/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
 
-> Un cuerpo que la firma y los tests ya determinan es una transcripción, también en §1: el implementador lo escribiría igual. Lo que tocaba era la firma (`MapGet("/bookings", (BookingsDb db, int page = 1, string? status = null))` en `BookingsEndpoints.cs`), los valores (`status` sin distinguir mayúsculas y minúsculas, 400 si no es un estado) y los tests que los fijan, con sus asserts como código (`Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)`).
+> Un cuerpo que la firma y los tests ya determinan es una transcripción, también en §1: el implementador lo escribiría igual. Basta con la firma (`MapGet("/bookings", (BookingsDb db, int page = 1, string? status = null))` en `BookingsEndpoints.cs`), los valores (`status` sin distinguir mayúsculas y minúsculas, 400 si no es un estado) y los tests que los fijan, con sus asserts como código (`Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)`).
 
 ---
 

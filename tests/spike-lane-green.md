@@ -16,3 +16,7 @@ Las reglas del research funcionan solo con la plantilla: sin el párrafo en `sdd
 ## Eje Spec
 
 `sv1`, Opus, RED limpio 3/3 sobre el kit de la apertura: los tres sujetos marcan la recomendación que cita O2, la fila de O1 y `src/app.js`. Con caso de campo se midió con n = 3 y sale de lo que se arregla: `spec-reviewer-prompt.md` no cambia, y `sv1` sigue como control. La regla del research la lleva la plantilla, y el eje recibe su ruta (ticket de la 0091 §2). «Solo el eje Spec» es texto de la tabla, sin sujeto propio.
+
+## Tras la revisión final
+
+Kit de la rama con la pasada de fix, Sonnet, n = 1 salvo `sp3`: `sp1` con O4 medido con otra carga da `no medido` sin frase nueva; `sp2` deja el script en la carpeta de la spec, y `sp3-1` no, porque el plan del molde no lo nombraba: corregido el molde, ver abajo; `k2p` nombra `research.md` y el script; controles `p2` y `ax` sin cambios. `sp3` nombra el arreglo y dice que la fila se abre con `sdd-roadmap`, pero ninguno de los dos la abrió: esa parte de la rúbrica queda a medias. «Sale solo el eje Spec» y `execution: subagent` en un spike, sin medir. Campaña: 34 sujetos, 23,64 $.

@@ -22,11 +22,11 @@ Validación: agente — en campo (`validation.mode: field`); son skills y planti
 
 ## Capacidades
 
-- Modificadas: `routing` — el spike deja de ir como full; `feature-flow` — forma del spike y la cláusula de las secciones; `verification` — el eje Spec contrasta el research.
+- Modificadas: `routing` — el spike deja de ir como full; `feature-flow` — forma del spike y la cláusula de las secciones; `verification` — el eje Spec contrasta el research; `archive` — el smoke de un spike va por objetivo.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-Review de spec propuesta: ninguna — señales: `MODIFIED`, tres capacidades (2 de 4) · tamaño: ~60 líneas en 11 ficheros
+Review de spec propuesta: ninguna — señales: `MODIFIED`, cuatro capacidades, con `archive` por enmienda (2 de 4) · tamaño: ~60 líneas en 11 ficheros
 - Mínimo razonable: ninguna — deja sin cubrir solo lo que mira el repaso de coherencia, que ya he hecho
 
 1. **El saldo de `sdd-templates` no llega a cero: sube ~96 palabras, contra lo que pediste.** La plantilla es justo donde pediste poner la regla: suma +213 palabras (research +130, spec +62, plan +21). Sin quitar instrucciones solo encuentro −117 de procedencia e historia (lista en «Topes de palabras»); bajar más exige quitar instrucciones de otras plantillas, cada una con su RED, o recortar el research que pides. Recomiendo aceptar esta excepción: el tope lo aguanta (16.419 de 19.650) y las otras cuatro skills sí quedan igual o bajan. Si no la aceptas, dímelo en «Cambios» y recorto «Descartadas» y «Sin medir» del research (−20) y busco el resto con RED.
@@ -37,14 +37,14 @@ Review de spec propuesta: ninguna — señales: `MODIFIED`, tres capacidades (2 
 6. La peor carga la fija la spec: `confirmada: «<frase del dev-lead>»`, o `sin confirmar` y va a ✋, de modo que aprobar la spec la confirma.
 7. Un spike siempre corre en Native, aunque `execution` diga otra cosa: mide el hilo; el implementador de SDD pide tests RED que aquí no existen.
 8. En la revisión final de un spike sale solo el eje Spec, que recibe además la ruta de `research.md` (la receta del paquete excluye esa carpeta: ticket 0091 §2). El eje Código revisaría scripts desechables, y Arquitectura no tiene nada que mirar. La re-revisión se queda.
-9. «Sin código de producción» se comprueba en el eje Spec: un fichero del diff fuera de `.docs/` es Important, `contradicts`. No añado verbo a la CLI (YAGNI, hasta un segundo caso). Los scripts de medida viven en la carpeta de la spec, como `probe/` en la 0162.
+9. «Sin código de producción» se comprueba en el eje Spec: un fichero del diff fuera de `.docs/` es Important o más. No añado verbo a la CLI (YAGNI, hasta un segundo caso). Los scripts de medida viven en la carpeta de la spec, como `probe/` en la 0162.
 10. El smoke de `sdd-archive` va por objetivo en vez de por THEN (3 palabras); el resto del cierre no cambia: un spike sigue las ramas `Feature only:`.
 11. En `unattended`, el spike sigue con su forma, sin pregunta: cambia «lite y spike van como full» por «lite va como full».
 12. Se mantiene `plan.md` con la plantilla de siempre y su task con «Evidencia»: `sdd task start` lo necesita.
 13. Se descarta la forma de spike de superpowers (sin tests, sin plan y sin revisión) porque aquí el entregable es la evidencia; sí coincide en que quedarse con lo que salió es una petición nueva.
 - Política de modelos: revisores de la spec, ninguno · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · sujetos sonnet, salvo el revisor `sv1`, opus; por tandas · en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar que pidan las instrucciones del usuario; lo que no nombra se confirma aparte
 
-Repaso de coherencia: placeholders, contradicciones, alcance y ambigüedad, sin hallazgos que cambien la spec; corregí el recuento de la tabla de topes contra los borradores. `sdd capability merge` sobre una copia: acepta el delta, con 3 requisitos sustituidos y 4 añadidos en `routing`, `feature-flow` y `verification`.
+Repaso de coherencia: placeholders, contradicciones, alcance y ambigüedad, sin hallazgos que cambien la spec; corregí el recuento de la tabla de topes contra los borradores. `sdd capability merge` sobre una copia: acepta el delta, con 4 requisitos sustituidos y 4 añadidos en `routing`, `feature-flow`, `verification` y `archive`.
 
 ### Decisiones tomadas con el dev-lead
 
@@ -61,7 +61,7 @@ Un spike es una investigación que debe dejar evidencia medida y hoy se trata co
 
 ## Scope
 
-- Entra: `skills/sdd-templates/templates/research-template.md`, `spec-template.md`, `plan-template.md` y `skills/sdd-templates/SKILL.md` (su línea de `research`); `skills/sdd-propose/SKILL.md`, `references/spec-writing.md`, `references/plan-writing.md` (spike, Native) y `references/control-profiles.md`; `skills/sdd-implement/SKILL.md`; `skills/sdd-verify/SKILL.md` y `references/spec-reviewer-prompt.md`, con recortes en `references/encargo-revision.md`; `skills/sdd-archive/SKILL.md`; las baterías de `sdd-propose`, `sdd-implement` y `sdd-verify`, y su evidencia en `tests/`.
+- Entra: `skills/sdd-templates/templates/research-template.md`, `spec-template.md`, `plan-template.md` y `skills/sdd-templates/SKILL.md` (su línea de `research`); `skills/sdd-propose/SKILL.md`, `references/spec-writing.md`, `references/plan-writing.md` (spike, Native) y `references/control-profiles.md`; `skills/sdd-implement/SKILL.md`; `skills/sdd-verify/SKILL.md` y `references/spec-reviewer-prompt.md`, este con el hueco de la ruta de `research.md`, con recortes en `references/encargo-revision.md`; `skills/sdd-archive/SKILL.md`; las baterías de `sdd-propose`, `sdd-implement` y `sdd-verify`, y su evidencia en `tests/`.
 - No entra: otros carriles ni la clasificación de patch, lite y feature; B15; un verbo de CLI; `sdd-tdd`, que ya dice que el spike lleva «Evidencia»; `implementer-prompt.md`, que el spike no usa.
 
 ## Lo que se retira o cambia de forma
@@ -86,7 +86,7 @@ La regla vive en el hueco de lo que el agente calca: tabla y estados en `researc
 
 ## Dónde se prueba
 
-- Spec corta y plan con «Evidencia»: batería `sdd-propose`, `k2` ampliado, con su spec y su plan en disco.
+- Spec corta y plan con «Evidencia»: batería `sdd-propose`, `k2` para la spec y `k2p`, nuevo, para el plan: `k2` para en el gate.
 - Research con la tabla, «no cumple» y lo simulado: `sp1`, nuevo, batería `sdd-implement`: spec aprobada y medidas ya en disco (2,5 min frente a ≥ 5; un objetivo sin medir; uno simulado por el agente).
 - Tabla de aguante: `sp2`, nuevo, batería `sdd-implement`: el molde `reservas`, sin que la petición nombre la tabla ni las repeticiones.
 - Sin código de producción: `sp3`, nuevo, batería `sdd-implement`: la medida deja a la vista un arreglo de una línea en `src/`.
@@ -170,7 +170,20 @@ Un frente con RED limpio se mide con n = 3 si tiene caso de campo (todos lo tien
 - GIVEN un spike con una recomendación que cita un objetivo `no medido` como apoyo, y un fichero de `src/` en el diff
 - WHEN `sdd-verify` despacha la revisión final
 - THEN sale solo el eje Spec, que recibe la ruta de `research.md`
-- AND marca como Important, `contradicts`, la recomendación, una fila cuyo estado su evidencia no sostiene y el fichero de `src/`
+- AND marca como Important o más la recomendación, una fila cuyo estado su evidencia no sostiene y el fichero de `src/`
+
+### Capacidad: `archive`
+
+#### MODIFIED — El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite (antes: "una fila por THEN con su evidencia")
+
+- GIVEN una feature cerrada con `sdd-archive`
+- WHEN se escribe «4. Verificación» del walkthrough
+- THEN «4.1 Builds» lleva la línea `Gate:` del gate de cierre, con las suites unitarias, su duración, su configuración (la del gate, o lo que se añadió) y el sha de la validación; si se repitió tras el merge de sincronización, el mensaje final da su resultado y su sha
+- AND si el sha de la validación cae en el tramo que el cierre junta (una pasada de fix o un borrador tras la última task), «4.1 Builds» dice «sobre el commit de cierre» en lugar del sha, y `--verified-at` y el mensaje final llevan el sha del commit de cierre; nunca el de la última task
+- AND con E2E, «4.1 Builds» lleva el comando de «Entorno de la suite» con su comprobación, levantado en esa sesión, y la duración de la suite E2E frente a «Presupuesto E2E»
+- AND «4.2 Smoke / tests» tiene una fila por THEN, o por objetivo en un spike, con su evidencia (`suite` · `ejecución real` · `no probado`)
+- AND si la suite E2E pasó de su presupuesto, o, sin presupuesto, la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
+- REMOVED AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
 
 ## Topes de palabras
 
@@ -178,7 +191,7 @@ Cuenta de `word-budget.test.ts` sobre el borrador de cada texto, antes de presen
 
 | Skill | Medido / tope (×1,25) | Suma | Resta, sin quitar instrucción | Saldo |
 | --- | --- | --- | --- | --- |
-| `sdd-templates` | 16.419 / 19.650 | +213 | −117: frases «Recibido de la spec ligera…» de `plan-template.md` (−34), «Sin ella en la plantilla…» (−29), «Medido con superpowers 6.4.2…» hasta «paginación» (−26), «(medido en `tests/proportional-review-red.md`)» y su motivo (−28) | **+96** (decisión 1) |
+| `sdd-templates` | 16.419 / 19.650 | +213 | −117: frases «Recibido de la spec ligera…» de `plan-template.md` (−34), «Sin ella en la plantilla…» (−29), «Medido con superpowers 6.4.2…» hasta «paginación» (−26), «(medido en `tests/proportional-review-red.md`)» y su motivo (−28) | **+106** (decisión 1 y enmienda) |
 | `sdd-propose` | 13.928 / 17.750 | +13 | −8 en `spec-writing.md`; −5 o más: la racionalización «It's only a version bump», que `using-sdd` y «Config lane» ya dicen | ≤ 0 |
 | `sdd-implement` | 17.505 / 22.175 | +50 | −46 o más: dos red flags que repiten su tabla y su párrafo: «stop a process by its name» y «mark a UI task done because…» | ≤ 0 |
 | `sdd-verify` | 9.635 / 11.400 | +60 | −60: párrafos de procedencia de `encargo-revision.md` («Es lo que pedía…», «Por qué: la plantilla…») | ≤ 0 |
@@ -217,9 +230,12 @@ Fuentes: [Spec Kit](https://github.com/github/spec-kit) · [superpowers](https:/
 
 ## Enmiendas
 
-- 2026-11-01 — `spec-reviewer-prompt.md` sale del Scope: `sv1` salió limpio 3/3, y el frente sale de lo que se arregla; el eje Spec solo recibe la ruta de `research.md` — aplica literal la decisión «Un frente limpio sale de lo que se arregla» — Task 3 — sin aprobar
-- 2026-11-01 — «production code never» no se escribe en `sdd-implement`, y su párrafo queda en una frase: `sp3` limpio en `src/`, y `sp1` y `sp2` en verde solo con la plantilla — aplica la misma decisión — Task 2 — sin aprobar
-- 2026-11-01 — «Dónde se prueba» gana `k2p`, porque `k2` para en el gate de la spec y no llega al plan — Task 1 — sin aprobar
+- 2026-11-01 — El párrafo de `sdd-implement` queda en una frase y «production code never» no se escribe: `sp3` limpio en `src/`, y `sp1` y `sp2` en verde solo con la plantilla — Task 2 — aprobada (opción «Apruebo»)
+- 2026-11-01 — `spec-reviewer-prompt.md` solo gana el hueco de la ruta, sin el bloque del contraste: `sv1` RED limpio 3/3 — Task 3 — aprobada (opción «Apruebo»)
+- 2026-11-01 — «Dónde se prueba» gana `k2p` — Task 1 — aprobada (opción «Apruebo»)
+- 2026-11-01 — Delta nuevo en `archive`, y «Important, `contradicts`» pasa a «Important o más»: en `sv1`, O1 y la recomendación salen Critical — revisión final — aprobada (opción «Apruebo»)
+- 2026-11-01 — «Sale solo el eje Spec» queda sin sujeto de despacho, y el THEN de §5 nombra la fila por abrir: ninguno de los sujetos de `sp3` la abrió, como se presentó en la parada — revisión final — aprobada (opción «Apruebo»)
+- 2026-11-01 — El tope de `sdd-templates` pasa de +96 a lo que mide tras la pasada de fix: los huecos que pidió la revisión final — revisión final — aprobada (opción «Apruebo»)
 
 ## Aprobaciones
 

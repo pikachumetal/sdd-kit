@@ -201,5 +201,5 @@ Ninguna.
 - `feature-flow`, sin arreglo en la rama, §5, scripts en la carpeta, Native → Task 2, `sp3`. ✓
 - `verification`, solo eje Spec con `research.md` → Task 3, `sv1` y el texto de la tabla de ejes. ✓
 - `verification`, tres Important → Task 3, `sv1`. ✓
-- Review Focus 1 → Task 1, `sp2` en Task 2. ✓
+- Review Focus 1 → `sp1`, con O4 medido con otra carga. ✓
 - Review Focus 2 → Task 3, `test/tasks`. ✓

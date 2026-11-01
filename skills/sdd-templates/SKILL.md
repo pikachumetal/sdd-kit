@@ -12,8 +12,8 @@ The SDD kit's canonical templates. **They live only here**: projects don't carry
 
 | Template | Artifact | When |
 | --- | --- | --- |
-| [spec-template.md](templates/spec-template.md) | `spec.md` | Every feature, in both modes. Light spec: decisions to validate · Intent/Scope/Approach · delta per capability · approvals |
-| [plan-template.md](templates/plan-template.md) | `plan.md` | Full mode only, after the spec is approved (how) |
+| [spec-template.md](templates/spec-template.md) | `spec.md` | Every feature, in every mode. Light spec: decisions to validate · Intent/Scope/Approach · delta per capability · approvals |
+| [plan-template.md](templates/plan-template.md) | `plan.md` | Full mode and spike, after the spec is approved (how) |
 | [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Only if the plan has >1 task (live record) |
 | [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Closing of every feature |
 | [patch-template.md](templates/patch-template.md) | `patch.md` | Patch lane (only artifact) |

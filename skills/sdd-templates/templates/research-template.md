@@ -17,7 +17,7 @@ La de la spec.
 
 ## 2. Objetivos
 
-> Una fila por objetivo de la spec. Estado, solo `cumple`, `no cumple` o `no medido`. Medido por debajo del umbral: `no cumple tal como se definió`, aunque funcione. Lo que simula el agente no cuenta como medido con una persona: `no medido con una persona`. Sin fichero de evidencia: `no medido`.
+> Una fila por objetivo de la spec. Estado: `cumple`, `no cumple` o `no medido`. Medido por debajo del umbral: `no cumple tal como se definió`, aunque funcione. Lo que simula el agente no cuenta como medido con una persona: `no medido con una persona`. Sin fichero de evidencia: `no medido`.
 
 | Objetivo | Estado | Detalle | Evidencia |
 | --- | --- | --- | --- |
@@ -43,4 +43,4 @@ Carga: <la de la spec>
 
 > Un arreglo que la medida deja a la vista va aquí, con su fila: el spike no deja código de producción.
 
-- <cambio> → <fila del roadmap> | nada
+- <cambio> → <fila del roadmap por abrir> | nada

@@ -20,6 +20,7 @@ timeboxed: 2h
 | O1 — `libres` responde sin error durante ≥ 5 min seguidos | cumple | sin errores | `evidence/o1.txt` |
 | O2 — con 1.000 reservas, `libres` no pasa de 50 MB de memoria | no medido | no dio tiempo | — |
 | O3 — una persona que no conoce la herramienta encuentra una sala libre en < 30 s, sin ayuda | no medido con una persona | lo hizo el agente: 12 s | `evidence/o3.txt` |
+| O4 — `libres` con 1.000 reservas responde en < 50 ms | no medido | solo con 100 reservas | — |
 
 ## 4. Recomendación
 

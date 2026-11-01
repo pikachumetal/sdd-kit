@@ -168,7 +168,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - AND con «si cancelo una reserva que no existe me dice "cancelada" igual», que es patch, pregunta en prosa antes de abrir rama, carpeta o id, con el 🦆 de lo que hará y, si existe `estimation.md`, la estimación en horas
 - AND con un cambio que cumple el predicado de lite, la pregunta ofrece lite citando sus condiciones una por una
 - AND si la feature prevé más de 5 tasks, la pregunta de partir sustituye al anuncio y lleva la opción de aprobar la spec por delegación
-- AND en `unattended` no pregunta: patch y config siguen, lite va en full y spike va como full
+- AND en `unattended` no pregunta: patch, config y spike siguen, y lite va en full
 
 ### El carril que trae la petición se respeta si concuerda
 
@@ -189,7 +189,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN el molde `reservas`
 - WHEN el usuario escribe «¿aguanta `libres` con 1.000 reservas? quiero la tabla de medidas»
-- THEN `sdd-propose` lo clasifica como spike y lo anuncia como un full, sin pregunta de confirmación, y sigue como feature full hasta que la 0163 le dé su forma
+- THEN `sdd-propose` lo clasifica como spike y lo anuncia, sin pregunta de confirmación, y escribe la spec con `mode: spike`
 - AND «¿se puede filtrar `libres` por planta?», sin pedir evidencia, entra por `sdd-explore`
 
 ### Una pregunta entra por explore
