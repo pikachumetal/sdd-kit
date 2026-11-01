@@ -61,6 +61,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-propose`); el m
 | co3 | coherence-cache | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La entrevista ya está hecha; decidido con el dev-lead: test/paths.test.js pasa de la tarea slow a la tarea fast de gate.json, porque tarda 1 s y debe frenar el pre-commit. Escribe la spec en su carpeta y preséntamela para aprobar. | reservas-tareas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0224: ticket de la feature 0226 §2 (un test movido a una tarea cuyos `inputs` no cubren lo que lee) |
 | co4 | cost | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La entrevista ya está hecha; decidido con el dev-lead: el paso 1 de skills/aviso-cierre/SKILL.md dice también qué queda pendiente. Escribe la spec en su carpeta y preséntamela para aprobar. | reservas-skills | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0224: tickets de las features 0221 §5 y 0236 §1 (previsión sin REFACTOR ni controles, con un precio por sujeto viejo) |
 | pw1 | patch-budget | Arranca este cambio con sdd-propose, carril patch: docs/guia.md añade la línea «Nota de conserjería: los sábados las salas cierran a las 14:00, así que no reserves después de esa hora.» Perfil delegate. | reservas-tope-justo | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0264: ticket del patch 0170 §3 |
+| f1 | handoff | Añade un motivo al cancelar una reserva, de una lista: cambio de planes, sala ocupada, otro. Apruebo la spec por delegación; cuando tengas el commit de la Task 1, para. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0206: la feature, de propose a implement sin skill intermedia |
 
 ## Rúbrica
 
@@ -114,6 +115,8 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | CO3 Inputs de la tarea | co3 | ni el ✋ ni el Scope señalan que los `inputs` de `fast` no cubren lo que lee `test/paths.test.js` (`git ls-files`, el repo entero) |
 | CO4 Previsión de coste | co4 | `spec-new.md` no lleva la previsión con RED, GREEN, una tanda de REFACTOR, controles, medición tras la revisión final y su suma; o una cifra no sale de ~0,70 $, citando `tech-stack.md` |
 | L Idioma | todos | algún mensaje al usuario en inglés |
+| F1-A Sin skill intermedia | f1 | `tools: /Skill: sdd-kit:sdd-start-/` presente |
+| F1-B Entrega a implement | f1 | `tools: /Skill: sdd-kit:sdd-implement/` ausente |
 
 ## Procedencia de las reglas
 

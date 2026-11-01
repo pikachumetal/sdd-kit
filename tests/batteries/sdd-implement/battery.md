@@ -75,6 +75,10 @@ Montaje por escenario, en `subject.mjs`:
 | k3 | recorded-decision | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0021: el humo `h1` falló (`.docs/sdd/specs/20261012-100000-feature-0021-keep-note/green/h1.txt`). Haz la ronda de REFACTOR y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0211 §6: un AND de la pasada de fix que aplica una decisión registrada del dev-lead; decisión del dev-lead del 2026-10-26 («Sigue con la enmienda marcada») |
 | o1 | form-omission | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0020: el humo `h1` falló (`.docs/sdd/specs/20261013-100000-feature-0020-path-reply/green/h1.txt`). Haz la ronda de REFACTOR y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0166 §1: dos rondas en prosa sobre una omisión (feature 0173) |
 | o2 | refactor-stop | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0020: la ronda 1 de REFACTOR no arregló el humo (`.docs/sdd/specs/20261013-100000-feature-0020-path-reply/green/h1-r1.txt`). Haz la siguiente ronda y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0166 §1: la segunda ronda repitió la forma de la primera (feature 0173) |
+| pt1 | patch | patch: si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0206: el patch de un fallo, de propose a implement, con verificación y sin revisión final |
+| pt2 | patch | patch: en `public/index.html`, pasa Guardar y Cancelar de la cabecera a una columna derecha. Solo presentación. | reservas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0206: la variante del ajuste visual |
+| pt3 | patch | patch: el mensaje de cancelar pasa de «cancelada <sala> <día>» a «anulada <sala> <día>»; solución fijada por mí, dev-lead. | reservas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0206: la variante de la petición cerrada |
+| f2 | gate | Invoca la skill sdd-kit:sdd-implement y sigue. La 0010 tiene la spec escrita, sin aprobar: empieza la Task 1. | reservas | `sdd-kit:sdd-implement` | 1 | 1/1 | sonnet | feature 0206, F5: sin spec aprobada, manda a `sdd-propose` |
 
 ## Rúbrica
 
@@ -120,6 +124,11 @@ Montaje por escenario, en `subject.mjs`:
 | O1 Forma de una omisión | o1 | el paso 3 de `skills/guardar-nota/SKILL.md` no manda enviar una línea o un bloque literal con un marcador de la ruta (`<path>`, `<ruta>`, `{path}`): solo añade una frase o énfasis que pide incluirla; un ejemplo con una ruta concreta que el paso no da como plantilla de la respuesta es prosa, y también un marcador solo dentro de la ruta en una frase que pide incluirla («one line that carries the path… `notas/<slug>.md`»): la plantilla es la línea entera de la respuesta |
 | O2 Parada tras una ronda 0/N | o2 | la ronda vuelve a ser una frase o énfasis sobre la ruta (otras palabras, «always», «must», negrita); pasa si pone el hueco de `O1` o si para antes de editar y propone al dev-lead enmendar el THEN |
 | L Idioma | todos menos r1, r5, t1a, t1b, t5a y t5b | algún mensaje al usuario en inglés |
+| PT-A Sin skill intermedia | pt1, pt2, pt3 | `tools: /Skill: sdd-kit:sdd-start-/` presente |
+| PT-B Sin revisores | pt1, pt2, pt3 | `tools: />>> Agent/` presente |
+| PT-C Lee el flujo | pt1, pt2, pt3 | `tools: /patch-flow.md/` ausente |
+| PT-D Evidencia | pt1, pt2, pt3 | `patch-new.md` §4 no lleva el comando de la verificación con su salida leída (en `pt2`, las rutas de las capturas o el «no probado» con su motivo, y el aviso del detector) |
+| F2 Sin spec aprobada | f2 | escribe código, o no manda a `sdd-propose` |
 
 ## Procedencia de las reglas
 

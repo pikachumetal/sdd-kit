@@ -338,6 +338,23 @@ steps.w3 = steps.w1;
 for (const id of ['t1a', 't1b', 't1c']) steps[id] = steps.r1b;
 steps.o2 = steps.o1;
 steps.u2 = steps.u1;
+const BUGGY_FIND = ['b.room === room && b.day === day && ', 'b.room === room && '];
+steps.pt1 = () => {
+  writeFileSync(at('src/app.js'), readFileSync(at('src/app.js'), 'utf8').replaceAll(...BUGGY_FIND));
+  s.git('add', '-A');
+  s.commit('chore: estado del molde');
+  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
+};
+steps.pt2 = () => {
+  s.put('public/index.html', '<header><h1>Pedido</h1><button>Guardar</button><button>Cancelar</button></header><main><p>Detalle</p></main>\n');
+  s.git('add', '-A');
+  s.commit('chore: pantalla del molde');
+  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
+};
+steps.pt3 = () => {
+  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
+};
+steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(join(FIX, 'spec-0010.md')), plan: fixture('plan-0010.md') });
 steps[s.SC]?.();
 
 const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];
@@ -358,4 +375,6 @@ keepIf('README.md', 'README.md');
 keepIf('skills/guardar-nota/SKILL.md', 'guardar-nota.md');
 const sddTemp = at('.temp/sdd');
 for (const plan of existsSync(sddTemp) ? readdirSync(sddTemp).sort() : []) keepIf(`.temp/sdd/${plan}/progress.md`, 'progress.md');
+const patchFolder = existsSync(at('.docs/sdd/specs')) ? readdirSync(at('.docs/sdd/specs')).filter((name) => name.includes('-patch-')).sort().at(-1) : undefined;
+if (patchFolder) s.keep(at(`.docs/sdd/specs/${patchFolder}/patch.md`), 'patch-new.md');
 s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}## worktrees\n${s.git('worktree', 'list')}`);

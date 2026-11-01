@@ -1,6 +1,6 @@
 ---
 name: sdd-implement
-description: Use when sdd-start-feature reaches its implementation step with an approved spec (and plan, in full mode), to implement it task by task, in this session (Native) or with a subagent per task (SDD). Invoked from that step; not the entry of a change (that is sdd-propose).
+description: Use when sdd-propose hands off an approved spec (and plan, in full mode), to implement it task by task, in this session (Native) or with a subagent per task (SDD). Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
 # sdd-implement
@@ -13,7 +13,7 @@ Execute the approved plan, task by task, and leave a record that survives your o
 
 **Your first message after loading this skill**, new run or resumed, carries under its phase notice the line `Workspace del plan: <ruta> — …` of [Setup](#setup), step 2. Saying «preparo el workspace» or «leo el ledger» isn't it.
 
-**Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record. The phase notice of `sdd-start-feature` still opens each change of step.
+**Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record. Each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects.
 
 **Continuous execution:** do not pause to check in with the user between tasks. Execute all tasks from the plan without stopping: in Native, the plan's `Ejecución` line chose it to spend less, not to answer «should I continue?» after every task. «Should I continue?» prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. Four things stop you, and only these: an irreversible or destructive operation; a security-sensitive action; a side effect outside this worktree that norms say you ask about first (a merge, a push to a shared branch, a publish); and a plan so broken that every path forward is a guess. For those, stop and ask. The kit's own stops are a fifth class, not an exception to the four: a **deviation** from the approved spec, a **scope brake** and, in `pair`, the stop after each task ([Deviations and rulings](#deviations-and-rulings)).
 
@@ -29,6 +29,8 @@ The plan's `Ejecución` line decides, for the whole plan. With `execution: auto`
 Both run in this session, share the workspace, the ledger and its format, and never pause between tasks: a plan can change method mid-flight and the new one resumes from the same ledger. After a compaction in Native with two or more tasks without their `complete` line, the rest goes on with SDD over the same ledger, without stopping in `delegate` or `unattended`; with one task left, Native goes on. Ledger it every time, with either outcome: `Task <N>: Ruling: compactación — sigo con <Native | SDD> — quedan <k> tasks` (with one, `queda 1 task`; the task you were on counts); the walkthrough's `Compactación:` line comes from it. After compaction you reread the plan and the ledger, not this skill.
 
 ## Setup
+
+With no approved `spec.md` on the branch, stop and send the change to `sdd-propose`: an unapproved spec isn't a contract.
 
 1. **Worktree**: invoke `sdd-worktrees` with `Skill`; it detects or creates the isolated workspace, runs `env:setup` if `.docs/sdd/environments.md` exists and the baseline in a detached worktree.
 2. **Workspace**: each plan owns one. Run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it prints the plan's git-ignored directory, home to every artifact of THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. **Your next message to the user**, right under its phase notice, carries this line, also when you resume: `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`). «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`). The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
@@ -68,7 +70,7 @@ digraph native {
     "sdd-verify: final review in axes (fresh reviewers, in the background)" [shape=box];
     "sdd-verify: closing of the review" [shape=box];
     "Closing done: rulings to tasks.md, delete this plan's workspace" [shape=box];
-    "Step 7 of sdd-start-feature (validation)" [shape=box style=filled fillcolor=lightgreen];
+    "sdd-archive (validation)" [shape=box style=filled fillcolor=lightgreen];
 
     "Setup: worktree, workspace + ledger, read plan + spec, sdd-tdd, pre-flight scan" -> "sdd task start: brief + BASE; read the brief";
     "sdd task start: brief + BASE; read the brief" -> "Base check; write the RED tests, keep a copy";
@@ -85,7 +87,7 @@ digraph native {
     "More tasks remain?" -> "sdd-verify: final review in axes (fresh reviewers, in the background)" [label="no"];
     "sdd-verify: final review in axes (fresh reviewers, in the background)" -> "sdd-verify: closing of the review";
     "sdd-verify: closing of the review" -> "Closing done: rulings to tasks.md, delete this plan's workspace";
-    "Closing done: rulings to tasks.md, delete this plan's workspace" -> "Step 7 of sdd-start-feature (validation)";
+    "Closing done: rulings to tasks.md, delete this plan's workspace" -> "sdd-archive (validation)";
 }
 ```
 
@@ -153,7 +155,7 @@ digraph sdd {
     "sdd-verify: final review in axes" [shape=box];
     "sdd-verify: closing of the review" [shape=box];
     "Closing done: rulings to tasks.md, delete this plan's workspace" [shape=box];
-    "Step 7 of sdd-start-feature (validation)" [shape=box style=filled fillcolor=lightgreen];
+    "sdd-archive (validation)" [shape=box style=filled fillcolor=lightgreen];
 
     "Setup: worktree, ledger check, read plan + spec, pre-flight review" -> "Base check; write the RED tests; sdd task brief";
     "Base check; write the RED tests; sdd task brief" -> "Dispatch implementer subagent (implementer-prompt.md)";
@@ -183,7 +185,7 @@ digraph sdd {
     "More tasks remain?" -> "sdd-verify: final review in axes" [label="no"];
     "sdd-verify: final review in axes" -> "sdd-verify: closing of the review";
     "sdd-verify: closing of the review" -> "Closing done: rulings to tasks.md, delete this plan's workspace";
-    "Closing done: rulings to tasks.md, delete this plan's workspace" -> "Step 7 of sdd-start-feature (validation)";
+    "Closing done: rulings to tasks.md, delete this plan's workspace" -> "sdd-archive (validation)";
 }
 ```
 
@@ -290,7 +292,7 @@ When the review comes back clean — or every open finding is parked with a ruli
 
 **In `pair`**, with the task's commit done, stop before the next one and present that task's test script, shaped as [dev-validation.md](../sdd-archive/references/dev-validation.md) says, from its plan line «Se prueba en la aplicación»; if it says «no, porque…», the script says so and gives the check that can be done. With «Verificación visual», before the script show the criterion, the detector output per viewport with each finding fixed or justified, each measurement with its value and the expected one if the criterion fixes a value, and each screenshot's path, or «composición no medida» or «no probado» with its reason. `delegate` and `unattended` don't stop here (`tests/testable-tasks-red.md`, v6).
 
-The closing gate —the project's full build and suite— runs at the baseline of `sdd-worktrees` and once in the final validation (step 7 of `sdd-start-feature`), never inside a task.
+The closing gate —the project's full build and suite— runs at the baseline of `sdd-worktrees` and once in the validation (step 1 of `sdd-archive`), never inside a task.
 
 ## Deviations and rulings
 
@@ -309,11 +311,13 @@ After a machine crash or a quota cut, before anything else, reread the ledger, `
 
 **Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, launch the command through its watch: `watch command -- <the command…>`, which saves its output and ends with the command (`watch command --path <its output>` only for a command already running); the script reads the thresholds. What to do with its warning is in [Vigía de silencio](../sdd-propose/references/control-profiles.md#vigía-de-silencio). (`tests/silence-watch-red.md`)
 
+**Closing drafts**: while the axes review, write in their place, uncommitted, `walkthrough.md` without the verification or the time, the delta merged into `capabilities/` with the `sdd capability merge` of step 3 of `sdd-archive` and, in 2.x, the changelog entry; the roadmap isn't touched. `sdd-archive` only completes them (`tests/closing-off-critical-path-red.md`, c1).
+
 ## Finish
 
 Before you delete anything, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" ledger rulings <plan>` and paste its lines into `tasks.md` under `## Rulings` (without `tasks.md`, in the validation's presentation). Every ledger line containing `Ruling:` —pre-flight rulings, parked findings, breaker adjudications, final rulings, all of them— reaches the user in your final message under «Rulings I made», in the order you made them, each with what it costs if wrong, and every `minor (deferred)` line under «Deferred minors». Both lists are exhaustive: if the ledger holds a ruling, the list holds it. Your final message is the only place the decisions you took on the user's behalf — and the findings you chose not to act on — reach them: they read it and rework whatever you got wrong. The lists feed «Decisiones tomadas sin el dev-lead» of the walkthrough. A ruling that dies with the workspace was a decision made in secret.
 
-When the closing of the review is done (`sdd-verify`) and its fixes are committed, delete this plan's workspace — the git history is the record now. Sibling directories belong to other plans; leave them alone. Then go on with step 7 of `sdd-start-feature` (validation).
+When the closing of the review is done (`sdd-verify`) and its fixes are committed, delete this plan's workspace — the git history is the record now. Sibling directories belong to other plans; leave them alone. Then invoke `sdd-archive` with `Skill`: its first step is the validation.
 
 ## Red flags — STOP
 
@@ -397,7 +401,7 @@ Deferred minors:
 
 [Delete this plan's workspace — the record now lives in git]
 
-Step 7 of sdd-start-feature: validation.
+sdd-archive: validation.
 ```
 
 **SDD:**
@@ -467,5 +471,5 @@ Spec axis: All requirements met. Code axis: no findings. Deferred minors triaged
 [tasks.md: Revisión final; sdd ledger rulings → ## Rulings]
 [Delete this plan's workspace — the record now lives in git]
 
-Step 7 of sdd-start-feature: validation.
+sdd-archive: validation.
 ```
