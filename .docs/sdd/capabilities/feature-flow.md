@@ -732,6 +732,14 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN las únicas skills de flujo que invoca son `sdd-implement`, `sdd-verify` y `sdd-archive`
 - AND mientras trabaja el revisor final, `sdd-implement` escribe sin commitear el borrador de `walkthrough.md` y el delta fusionado, sin adelantar el roadmap, y `sdd-archive` los completa
 
+### Un test del proyecto compara los títulos E2E con Flujos core
+
+- GIVEN un proyecto con «Flujos core» declarados en `operations.md` §Testing y un `test(...)` cuyo título no está en la lista
+- WHEN una task toca un E2E siguiendo la guía de `sdd-tdd`
+- THEN deja un test en una suite que el cierre corre entera, que sale en rojo y nombra ese título
+- AND con el título en la lista sale en verde
+- AND con la lista `pendiente` o sin E2E, no se pide ese test
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
