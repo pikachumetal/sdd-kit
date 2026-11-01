@@ -343,18 +343,19 @@ steps.pt1 = () => {
   writeFileSync(at('src/app.js'), readFileSync(at('src/app.js'), 'utf8').replaceAll(...BUGGY_FIND));
   s.git('add', '-A');
   s.commit('chore: estado del molde');
-  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
+};
+steps.pt1b = () => {
+  steps.pt1();
+  s.put('.docs/sdd/specs/20261008-100000-feature-0031-old/tasks.md', '# Tasks — 0031\n\n| 1 | olvidado | pending |\n');
+  s.commit('chore: tasks de una carpeta olvidada');
 };
 steps.pt2 = () => {
   s.put('public/index.html', '<header><h1>Pedido</h1><button>Guardar</button><button>Cancelar</button></header><main><p>Detalle</p></main>\n');
   s.git('add', '-A');
   s.commit('chore: pantalla del molde');
-  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
-};
-steps.pt3 = () => {
-  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 };
 steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(join(FIX, 'spec-0010.md')), plan: fixture('plan-0010.md') });
+if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps[s.SC]?.();
 
 const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];

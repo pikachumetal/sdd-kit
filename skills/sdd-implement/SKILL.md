@@ -11,9 +11,9 @@ Execute the approved plan, task by task, and leave a record that survives your o
 
 **Core principle:** the plan already did the thinking. Execute it exactly, prove each step with a test you watched fail and then pass, and leave a record that survives your own forgetting.
 
-**Your first message after loading this skill**, new run or resumed, carries under its phase notice the line `Workspace del plan: <ruta> — …` of [Setup](#setup), step 2. Saying «preparo el workspace» or «leo el ledger» isn't it.
+**Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` of [Setup](#setup), step 2. Saying «preparo el workspace» or «leo el ledger» isn't it.
 
-**Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record. Each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects.
+**Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record. Each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects; a counter or a step number alone isn't a notice.
 
 **Continuous execution:** do not pause to check in with the user between tasks. Execute all tasks from the plan without stopping: in Native, the plan's `Ejecución` line chose it to spend less, not to answer «should I continue?» after every task. «Should I continue?» prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. Four things stop you, and only these: an irreversible or destructive operation; a security-sensitive action; a side effect outside this worktree that norms say you ask about first (a merge, a push to a shared branch, a publish); and a plan so broken that every path forward is a guess. For those, stop and ask. The kit's own stops are a fifth class, not an exception to the four: a **deviation** from the approved spec, a **scope brake** and, in `pair`, the stop after each task ([Deviations and rulings](#deviations-and-rulings)).
 

@@ -245,6 +245,39 @@ Todo lo que dice «`patch-flow.md`» es el mismo texto, traducido y sin cambiar 
 - AND ningún fichero de `skills/` invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
 - AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
 
+#### MODIFIED — La verificación visual se enseña con medidas y capturas
+
+- GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, el criterio «el selector filtra la lista por estado» y contraste del texto ≥ 4,5:1
+- WHEN el agente para tras la task en `pair`, o presenta la validación de `sdd-archive` en `delegate`
+- THEN antes del guion de pruebas enseña el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `select` · arreglado: padding-right 12 px») y la ruta de cada captura
+- AND cada medida en estilos computados, solo porque el criterio fija un valor, con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1»)
+- AND sin detector declarado, el aviso literal «composición no medida: `tech-stack.md` no declara detector en §Frontend»
+- AND si la composición sigue mal tras la tercera ronda, lo dice ahí, para que decida el dev-lead
+- AND una task que quedó «no probado» lo dice en ese sitio, con su motivo
+
+#### MODIFIED — Una decisión del dev-lead que sale de la revisión final se pregunta sola
+
+- GIVEN la revisión final de rama con un hallazgo cuya resolución es del dev-lead
+- WHEN el agente llega a la validación de `sdd-archive`
+- THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
+- AND no la resuelve por defecto ni la mete en el mensaje de la validación
+
+#### MODIFIED — El guion de pruebas empieza con el entorno parado, salvo que la persona lo quiera arrancado
+
+- GIVEN la validación de `sdd-archive` de la feature 0012, con la web levantada por el agente en el puerto 4656
+- WHEN el agente presenta el guion de pruebas sin `validation.startEnvironment` en `.docs/sdd/sdd-kit.local.json`, o con `false`
+- THEN antes de presentarlo ha parado lo que arrancó, y el guion empieza por cómo arrancarla
+- AND con `validation.startEnvironment: true`, la deja arrancada, y el guion dice en qué puerto está y cómo pararla
+- AND con `validation.startEnvironment: true` y el entorno sin levantar (el gate de cierre `node --test test/` no lo arranca), lo levanta antes del guion con `env:setup` de `## Entornos` de `operations.md` si la sección existe, o si no con «Arrancar» (`node scripts/env-up.mjs`), comprueba que responde, y el guion abre con su puerto y cómo pararlo (`node scripts/env-down.mjs`)
+- AND sin «Arrancar» ni `## Entornos` en `operations.md`, el guion dice que no hay comando de arranque declarado y empieza por cómo arrancarla
+
+#### MODIFIED — Un THEN que solo se observa con la base al día declara cómo se valida
+
+- GIVEN la fila 0012 «`npm run check:changed` … si la rama no cambia ninguno, escribe «Nada que comprobar» y sale con 0», cuyo THEN negativo no se puede observar desde `feature/0012`, porque la rama siempre cambia `scripts/check-changed.mjs`
+- WHEN el agente escribe la spec
+- THEN bajo ese escenario escribe `Se valida en: worktree con la base al día` (o `validación post-merge con fecha`)
+- AND en la validación de `sdd-archive` prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
+
 ### Capacidad: `migration`
 
 #### ADDED — La migración a v3.0.0 sustituye los nombres de las skills de arranque retiradas
@@ -373,6 +406,8 @@ Precio por sujeto: lo medido en la 0186, 0,93 $ en Opus; en Sonnet, 1 $ como tec
 Cada paso nuevo o cambiado y su escenario: sección del patch, N1, N2 → `pt1`-`pt3`; P7d → `c1`; P7f → `v1a`; P7h → `v1b`; P7i → `se1`, nueva en `sdd-archive`; la suite una sola vez → `g6`; una re-revisión no abre otra → `c2`; F5 → `f2`, nueva en `sdd-implement`, sin spec aprobada; F4 → `f1`; migración, paso 5 → sin sujeto: el guion del paso no cambia de forma, y lo mide la 0198, su primera prueba real. La fila del inglés, aparte: ~13 $ (`using-sdd` entera y un humo de `sdd-templates`). Si la prueba pasa de **52 $**, paro y decides.
 
 ## Enmiendas
+
+- 2026-11-01 — Cuatro `MODIFIED` más en `feature-flow`: dejan de nombrar el «paso 7», sin cambiar conducta. La revisión final vio que el repaso de coherencia solo buscó los nombres de las skills — aplica literal «Las dos skills se retiran» de las decisiones con el dev-lead — sin aprobar.
 
 ## Aprobaciones
 

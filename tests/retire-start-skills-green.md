@@ -22,7 +22,7 @@ Salidas en `.docs/sdd/specs/20261101-115344-feature-0206-retire-start-skills/`, 
 | `g6`, n = 2 | la suite, una sola vez, entrando por `sdd-archive` | 2/2 |
 | `c1`, n = 1 | borradores y cierre de la revisión | 1/1 |
 | `c2`, n = 1 | una re-revisión no abre otra, entrando por `sdd-archive` | 1/1 |
-| `v1b`, n = 1 | 🦆 y ✋ en la validación en campo | 1/1 |
+| `v1b`, n = 1 | 🦆 y ✋ en la validación en campo | primera tanda: el veredicto de la puerta dio 1/1 y la rúbrica falló (sin 🦆 ni ✋). Ver «Tras la revisión final» |
 | `sr1`, n = 1 | los dos revisores de la spec, en paralelo | 1/1 |
 | `p1`, n = 2 | control del plan | 2/2 |
 | `h1`, `h2`, `w1`, n = 1 | control de Native, SDD y worktree, ya sin la skill en la petición | 3/3 |
@@ -31,5 +31,19 @@ Salidas en `.docs/sdd/specs/20261101-115344-feature-0206-retire-start-skills/`, 
 ## Lo que no se midió
 
 - El paso 5 de la migración: no tiene sujeto, porque su forma no cambia. Lo mide la 0198, su primera prueba real.
-- `v1a` no pasa a `sdd-archive`: `t1` ya mide esa conducta.
 - `pt1` y `pt3` escriben en §4 el comando y el resultado resumido (`node --test` → 6/6), no la salida entera: se da por bueno.
+
+## Tras la revisión final
+
+Salidas en `fix/`, `refactor/` y `control2/`.
+
+| Escenario | Hallazgo | Resultado |
+| --- | --- | --- |
+| `v1b`, n = 1 en `fix/` | el mensaje de la plantilla, en prosa | rojo: sin 🦆 ni ✋, aunque la puerta dé verde |
+| `v1b`, n = 2 en `refactor/` | sus dos primeras líneas, literales en el paso | 2/2 con 🦆 y ✋: fallo de forma, curado con la forma (Art. II) |
+| `v1a`, n = 1 | la decisión de la revisión final, sola en su turno | 1/1 |
+| `pt1b`, n = 1 | un `tasks.md` de otra carpeta no saca al patch del carril | 1/1 |
+| `sr1`, n = 2 | los dos revisores de la spec, sin esperar uno al otro | 2/2: los dos `Agent` salen en segundo plano; el `tools.txt` no dice si en la misma respuesta |
+| `s1`, n = 1 | `compose-spec-review.mjs` tras el traslado | el encargo llega entero; antes llegaba vacío |
+
+El veredicto de `battery.mjs` es el de la puerta y las filas `tools:`: las filas de conducta se leen a mano, y `v1b` salió verde sin cumplir la suya. Las filas sin rúbrica leída a mano en este fichero son `g6`, `c1`, `c2` y `p1`.
