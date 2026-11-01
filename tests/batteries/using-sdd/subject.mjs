@@ -37,7 +37,7 @@ function moldBase(mold, marker) {
 const FEATURE_DIR = '.docs/sdd/specs/20260920-090000-feature-0020-room-filter';
 const SPEC = `---\nmode: full\nprofile: delegate\n---\n\n# Spec — filtro por sala en libres\n\n## Intent\n\n\`libres\` da las salas libres de una franja; hay que poder preguntar por una sala y exigir la franja.\n\n## Requisitos\n\n- GIVEN Norte reservada en 10:00-12:00 WHEN \`libres 10:00-12:00 --sala Norte\` THEN responde \`ocupada\`\n- GIVEN cualquier estado WHEN \`libres\` sin franja THEN responde \`indica una franja\`\n- GIVEN el README WHEN se lee THEN explica \`--sala\`\n\n## Aprobaciones\n\n- Spec aprobada por el dev-lead, 2026-09-20.\n`;
 const PLAN = `# Plan — filtro por sala\n\n**Spec**: spec.md\n**Ejecución**: native, fijado en sdd-kit.json.\n\n## Task 1: --sala en libres\n\nModificar: src/app.js, test/app.test.js. Verificación: node --test.\n\n## Task 2: libres sin franja\n\nModificar: src/app.js, test/app.test.js. Test: \`libres\` sin franja responde \`indica una franja\`. Verificación: node --test.\n\n## Task 3: README\n\nModificar: README.md. Una línea que explique \`--sala\`. Verificación: node --test.\n`;
-const PATCH = `---\nsolution: causa raíz\n---\n\n# Patch 0021 — cancelar una reserva que no existe\n\n## 1. Síntoma\n\n«Si cancelo una reserva que no existe me dice cancelada igual.»\n\n## 2. Causa raíz\n\n\`run\` en src/app.js:12 devuelve \`cancelada\` sin mirar \`bookings\`.\n\n## 3. Fix\n\nSi no hay reserva de esa sala y día, responde \`no existe\`. Decisiones: texto, dev-lead.\n\n## 4. Verificación\n\nPendiente.\n\n## 5. Tiempo\n\n- Inicio: 2026-09-21T09:00:00Z\n`;
+const PATCH = `---\nsolution: causa raíz\n---\n\n# Patch 0021 — cancelar una reserva que no existe\n\n## 1. Síntoma\n\n«Si cancelo una reserva que no existe me dice cancelada igual.»\n\n## 2. Causa raíz\n\n\`run\` en src/app.js:12 devuelve \`cancelada\` sin mirar \`bookings\`.\n\n## 3. Fix\n\nSi no hay reserva de ese día y franja, responde \`no existe\`; el test \`cancelar respeta el día\` pasa a usar \`lun 10:00-12:00\`. Decisiones: texto, dev-lead.\n\n## 4. Verificación\n\nPendiente.\n\n## 5. Tiempo\n\n- Inicio: 2026-09-21T09:00:00Z\n`;
 const TASK1_CODE = "if (cmd === 'libres' && params[1] === '--sala') return freeRooms(params[0]).includes(params[2]) ? 'libre' : 'ocupada';\n  if (cmd === 'libres')";
 
 // Una feature en pausa: spec y plan aprobados, la Task 1 commiteada y en tasks.md, la 2 y la 3 sin empezar.
@@ -68,6 +68,6 @@ moldBase(mold, markers[mold]);
 if (s.SC === 'rf1' || s.SC === 'rf2') pausedFeature();
 if (s.SC === 'rp1') pausedPatch();
 
-s.env.MAX_TURNS ||= cell('Paso') === 'retomar' ? '14' : '8';
+s.env.MAX_TURNS ||= cell('Paso').startsWith('retomar') ? '14' : '8';
 await s.launch(ASK);
 s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}`);

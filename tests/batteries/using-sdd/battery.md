@@ -36,7 +36,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`); el mé
 | c2 | sdd-propose | Cambia «Guardar» por «Guardar y cerrar» y ponlo a la derecha, en las dos fichas. | ventas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `visual-patch-red.md`: edición directa 2 de 2; desde la 0117, un texto dado literal es petición cerrada |
 | rf1 | retomar | Retoma la feature. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0010b del template §2: retomó a mano, sin skill; molde en la rama `feature/0020-room-filter` con la Task 1 hecha |
 | rf2 | retomar | Sigue con la Task 2. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: la frase perdió su puerta; mismo molde que `rf1` |
-| rp1 | retomar | Retoma el patch, lo dejé ayer a medias. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: `sdd-start-patch` lo recogía; molde en `patch/0021-cancel-missing` con `patch.md` sin commitear y sin fix |
+| rp1 | retomar-patch | Retoma el patch, lo dejé ayer a medias. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: `sdd-start-patch` lo recogía; molde en `patch/0021-cancel-missing` con `patch.md` sin commitear y sin fix |
 
 ## Procedencia de las reglas
 
@@ -58,3 +58,4 @@ Cada regla de `skills/using-sdd/SKILL.md`, de dónde viene y qué escenario la c
 | Racionalización «It's a typo or a version bump: a direct edit» | `visual-patch-red.md` (v1, c2); `tests/sdd-propose-0160-red.md` (k1) | t1, c2 |
 | Racionalización «They've been assigned to me: I'll do them one after another» | `using-sdd-red.md` (r3) | r3 |
 | Puerta: «dame el prompt de la <id>» → `sdd-roadmap` | `tests/sdd-explore-0161-red.md`, m1: 2 de 2 entraron por `sdd-consult`; GREEN r6 2/2 | r6 |
+| Puerta: retomar una feature o un patch en pausa → `sdd-implement` | feature 0116: rodeo por `sdd-propose` 4 de 4 con «retoma» | rf1, rf2, rp1 |
