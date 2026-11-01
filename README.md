@@ -114,7 +114,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una, también la tabla de precios para el coste de cada sesión y si los Minor de la revisión final se arreglan o se difieren. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
 | `sdd-grilling` | Cómo te pregunta el kit: una decisión por turno, la recomendada con su razón, sin sugerirte lo que solo sabes tú, y buscando antes lo que puede comprobar. La invocan las demás skills; adaptada de `grilling` de Matt Pocock (MIT). |
 | `sdd-rubber-duck` | Cómo te explica el kit las cosas: en palabras del producto y con su glosario, sin rutas ni jerga. En corto, el párrafo 🦆 de una parada; en largo, a petición («explícame cómo viaja un pedido de punta a punta»), por pasos y siguiendo un ejemplo; y si no te ha llegado («no te he entendido»), te lo vuelve a contar con contexto y frases cortas. Adaptada de `teach` y `wait-what` de Matt Pocock (MIT). |
-| `sdd-agent-writing` | Escribir y probar lo que lee un agente: una skill nueva («quiero una skill para las migraciones SQL») o una edición. |
+| `sdd-agent-writing` | Escribir y probar lo que lee un agente: una skill nueva («quiero una skill para las migraciones SQL»); editar una entra por `sdd-propose`. Adaptada de `writing-for-agents` de mattpocock/skills y `writing-skills` de superpowers (MIT). |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
 | `sdd-templates` | Las 24 plantillas canónicas. |

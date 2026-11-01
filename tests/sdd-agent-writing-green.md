@@ -1,6 +1,6 @@
 # `sdd-agent-writing` — RED y GREEN (feature 0151)
 
-Batería: `tests/batteries/sdd-agent-writing/`. Sujetos Sonnet; salidas en `.docs/sdd/specs/20261101-151300-feature-0151-agent-writing/`, carpetas `red`, `red2`, `red3`, `green` y `green2`. Kit del RED: `git archive` de `78b0b6fa`. Molde pequeño y un solo turno: un RED limpio puede no reproducir lo que pasó en campo.
+Batería: `tests/batteries/sdd-agent-writing/`. Sujetos Sonnet; salidas en `.docs/sdd/specs/20261101-151300-feature-0151-agent-writing/`, carpetas `red`, `red2`, `red3` y de `green` a `green5`, más `green-using` y `green-using2`. Kit del RED: `git archive` de `78b0b6fa`. Molde pequeño y un solo turno: un RED limpio puede no reproducir lo que pasó en campo.
 
 | Escenario · fila | RED | GREEN |
 | --- | --- | --- |
@@ -19,8 +19,14 @@ Los frentes limpios no llevan guía nueva (decisiones 6 y 7 de la spec): sus fil
 
 Un sujeto de este molde no puede escribir en `.claude/skills/` si la herramienta le pide permiso: varios dejan el cambio en su mensaje, y se califica sobre ese texto.
 
-`p1` R2: la `description` de `green4/out/p1-2/skill.md` dice solo cuándo usarla; de `p1-1` no quedó copia. `e1`, editar una skill existente, entra por `sdd-agent-writing` en `green3` y también en `green4`, con una `description` que lo excluía: se acepta, porque es lo que pedía la fila de la 0173 §2. Queda sin medir: esa edición no pasa por el carril de `sdd-propose` en un proyecto.
+`p1` R2: la `description` de `green4/out/p1-2/skill.md` dice solo cuándo usarla; de `p1-1` no quedó copia, y `green5` no la guarda.
 
-Tramo `sdd-propose` de la batería de `using-sdd` con la fila nueva: f1, f2, f3, p1 y c1w verdes; v1 y pc1 1 de 2 lanzados, sin rojos; bt1, t1 y c2 sin lanzar, por el techo de 45 sujetos de la spec.
+**`e1`, editar una skill existente.** `green3` y `green4` no valen: el arnés anteponía «Invoca la skill sdd-kit:sdd-agent-writing», y un ruling se apoyó en ese artefacto; lo cazó el eje Spec de la revisión final. Sin nombrarla, con la `description` final (`green5`): 2/2 entran por `sdd-propose`. Texto de la `description`, sin copia fijada por carpeta: `green5` y `green-using2`, la final; las anteriores no se pueden comprobar.
+
+`p2`, sin `.claude/skills/` en el molde y sin ruta en la petición (`green5`): 1/1 apunta a `.claude/skills/migraciones-sql/` (el `Write` se denegó por permiso: no queda fichero).
+
+Tramo `sdd-propose` de `using-sdd` con la fila nueva y el texto final (`green-using2`): las 10 filas en verde, `bt1` incluida. `green-using`, la primera tanda, se cortó por el techo de sujetos.
+
+Coste: 63 sujetos, 10,88 $, frente a una previsión de 45 y 18,66 $: se pasa en sujetos y no en dinero. Lo que sumó 18 de más fue repetir `e1`, `p1` y el tramo tras la revisión final.
 
 Efecto de más que se acepta: `m1` y `f1` escriben o proponen un `scenario.md` también al editar una skill que ya existe.

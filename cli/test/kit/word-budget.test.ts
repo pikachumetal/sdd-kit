@@ -13,7 +13,7 @@ const slack = 1.25;
 
 const skillBudgets: Record<string, Budget> = {
   'add-to-changelog': { skillMd: 500, total: 500 },
-  'sdd-agent-writing': { skillMd: 2000, total: 8470 },
+  'sdd-agent-writing': { skillMd: 2000, total: 8760 },
   'sdd-archive': { skillMd: 3920, total: 8000 },
   'sdd-config': { skillMd: 1450, total: 1450 },
   'sdd-explore': { skillMd: 1100, total: 1100 },

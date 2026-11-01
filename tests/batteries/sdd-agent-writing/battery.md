@@ -4,7 +4,7 @@ Cómo escribe un agente lo que lee otro agente: una skill nueva, una edición co
 
 Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-agent-writing`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). El molde es `tests/batteries/using-sdd/mold-salas` con `mold-skill/` encima: las skills `exportes` y `avisos` del proyecto.
 
-**Petición por fase.** Fuera del RED, en f1, t1, b1 y b2, `subject.mjs` antepone «Invoca la skill sdd-kit:sdd-agent-writing y »; p1 mide la puerta y va siempre sin nombrarla.
+**Petición por fase.** Fuera del RED, en f1, t1, b1, b2, h1, m1 y c1, `subject.mjs` antepone «Invoca la skill sdd-kit:sdd-agent-writing y »; p1, p2 y e1 miden la puerta y van siempre sin nombrarla. `p2` corre sin la carpeta `.claude/skills/` del molde.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta. El de la conducta sale de la rúbrica, leyendo `state.txt`, `texts.txt` y lo que deja el sujeto.
 
@@ -20,7 +20,8 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-agent-writing`)
 | h1 | fork-clash | La skill `avisos` (.claude/skills/avisos/) es un fork de una skill externa. Devuélvele esta frase de su fuente, que se quitó sin motivo: «A running notification never waits on a human: decide and go on.» Es solo la skill del proyecto: no abras feature ni patch, edítala y ya. | skill | `sdd-kit:sdd-agent-writing` | 1 | 1/1 | sonnet | ticket de la 0175 §1: el texto devuelto chocó con una parada |
 | m1 | message-form | En la skill `exportes` (.claude/skills/exportes/) el paso 1, si falta la sala, tiene que preguntarla con la skill `sdd-grilling`, y esa pregunta tiene que abrir con la línea `Exportación: <mes>`. Escríbelo. Es solo la skill del proyecto: no abras feature ni patch, edítala y ya. | skill | `sdd-kit:sdd-agent-writing` | 1 | 1/1 | sonnet | ticket de la 0160 §1: la forma de un mensaje que estructura otra skill |
 | c1 | precheck | Voy a medir con sujetos una excepción del paso 1 de `exportes`: «con una sola sala en `src/rooms.json`, no preguntes cuál». El escenario pide «exporta marzo», sobre un molde con dos salas, y la rúbrica falla si el sujeto pregunta la sala. Comprueba el escenario antes de lanzarlo y deja en `check.md` si lo lanzo o qué cambio. No abras feature ni patch. | skill | `sdd-kit:sdd-agent-writing` | 1 | 1/1 | sonnet | tickets 0077 §3, 0036 §1, 0080 §1 y 0156 §4: el molde no deja ver el disparador |
-| e1 | control | Añade a la skill `exportes` un paso que compruebe que el mes está cerrado antes de exportar. | skill | `sdd-kit:sdd-agent-writing` | 1 | 1/1 | sonnet | fila «Al editar una skill no se carga la skill de escribir skills» (0173 §2); excluirlo en la `description` no lo cambió (`green4`) |
+| e1 | control | Añade a la skill `exportes` un paso que compruebe que el mes está cerrado antes de exportar. | skill | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | Review Focus de la 0151: la puerta nueva solo cubre crear |
+| p2 | gate-no-dir | Quiero una skill para las migraciones SQL: al equipo se le olvida el rollback y probarlas contra una copia de la base. Es SQLite, en `salas.db`: la copia es copiar ese fichero, y se aplican con `node db/migrate.js up` y `down`. Deja las dudas para después. | skill | `sdd-kit:sdd-agent-writing` | 1 | 1/1 | sonnet | Review Focus de la 0151: sin `.claude/skills/`, la crea allí y no toca `skills/` |
 
 ## Rúbrica
 
@@ -34,6 +35,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-agent-writing`)
 | R6 Partida | b1 | la previsión no lleva partida para los controles y la pasada de fix tras la revisión final, o no cuenta ninguna tanda de REFACTOR |
 | R7 Contraste | b2 | decide reescribir o dar e9 por bueno sin contrastarlo con el kit de la base |
 | R8 Repetir | b2 | saca la regla de idioma sin repetir antes el baseline |
+| R12 Sitio | p2 | escribe la skill fuera de `.claude/skills/<nombre>/` |
 | R9 Choque | h1 | devuelve la frase sin acotarla ni avisar de que contradice el paso que para y pregunta |
 | R10 Mensaje | m1 | la línea `Exportación: <mes>` no se escribe en el paso que invoca `sdd-grilling` o no nombra ese mensaje |
 | R11 Disparador | c1 | da el escenario por bueno, sin ver que dos salas no disparan la excepción de una sola |
@@ -46,7 +48,8 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-agent-writing`)
 | Invocación, forma, descubrimiento y refuerzo de `skill-mechanics.md` | `SKILL-MECHANICS.md` y `writing-skills` 7.0.0, entran | texto de la fuente; controles f1 y h1 |
 | Prueba, sujetos y persuasión de `skill-testing.md` | `writing-skills` y `testing-skills-with-subagents` 7.0.0, entran | texto de la fuente; controles b2 y c1 |
 | Rutas de plataforma, `render-graphs.js`, `graphviz-conventions.dot`, `examples/` y «Discovery Workflow» | se descartan | el kit trabaja distinto: solo plugin de Claude Code, sin esas herramientas |
-| `anthropic-best-practices.md` | se descarta | documentación oficial, no texto de la skill (decisión 2 de la spec) |
+| `anthropic-best-practices.md` | se descarta | documentación oficial, no texto de la skill; queda su puntero (decisión 2 de la spec) |
+| «TDD Mapping» de `writing-skills` | sigue en `skill-mechanics.md` | texto de la fuente |
 | Una skill no está hecha sin un escenario | del kit | p1, RED: 0 de 2 lo dejaron |
 | Forma del traspaso | del kit | t1, R5: RED 2 de 2 en una línea; 0147 |
 | Partidas de la previsión | del kit | b1, R6: RED 2 de 2 en 4,50 $ |

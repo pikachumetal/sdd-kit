@@ -71,6 +71,26 @@ Way of thinking about problems (flatten-with-flags, test-invariants)
 ### Reference
 API docs, syntax guides, tool documentation (office docs)
 
+## Directory Structure
+
+```
+skills/
+  skill-name/
+    SKILL.md              # Main reference (required)
+    supporting-file.*     # Only if needed
+```
+
+**Flat namespace** - all skills in one searchable namespace
+
+**Separate files for:**
+1. **Heavy reference** (100+ lines) - API docs, comprehensive syntax
+2. **Reusable tools** - Scripts, utilities, templates
+
+**Keep inline:**
+- Principles and concepts
+- Code patterns (< 50 lines)
+- Everything else
+
 ## SKILL.md Structure
 
 **Frontmatter (YAML):**
@@ -294,7 +314,28 @@ digraph when_flowchart {
 - Linear instructions → Numbered lists
 - Labels without semantic meaning (step1, helper2)
 
+## Code Examples
 
+**One excellent example beats many mediocre ones**
+
+Choose most relevant language:
+- Testing techniques → TypeScript/JavaScript
+- System debugging → Shell/Python
+- Data processing → Python
+
+**Good example:**
+- Complete and runnable
+- Well-commented explaining WHY
+- From real scenario
+- Shows pattern clearly
+- Ready to adapt (not generic template)
+
+**Don't:**
+- Implement in 5+ languages
+- Create fill-in-the-blank templates
+- Write contrived examples
+
+You're good at porting - one great example is enough.
 
 ## File Organization
 
@@ -384,7 +425,7 @@ This cuts off entire class of "I'm following the spirit" rationalizations.
 
 ### Build Rationalization Table
 
-Capture rationalizations from baseline testing (see Testing section below). Every excuse agents make goes in the table:
+Capture rationalizations from baseline testing (see [skill-testing.md](skill-testing.md)). Every excuse agents make goes in the table:
 
 ```markdown
 | Excuse | Reality |

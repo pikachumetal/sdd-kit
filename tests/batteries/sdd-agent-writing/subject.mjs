@@ -1,5 +1,6 @@
 // Sujeto de la batería de sdd-agent-writing: un proyecto con skills propias y algo que escribir para un agente.
 // Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
+import { rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
@@ -16,11 +17,12 @@ const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"h
 const salas = join(HERE, '..', 'using-sdd', 'mold-salas');
 s.copy(moldFrom(cell, s, { skill: salas }));
 s.copy(join(HERE, 'mold-skill'));
+if (s.SC === 'p2') rmSync(join(s.R, '.claude'), { recursive: true, force: true });
 s.putKitMarker(MARKER);
 s.initRepo();
 
 // En el RED la skill no existe: la petición de quien la invoca la nombra solo fuera de él.
-const named = s.SC !== 'p1' && !red;
+const named = !['p1', 'p2', 'e1'].includes(s.SC) && !red;
 const ask = named ? `Invoca la skill sdd-kit:sdd-agent-writing y ${REQUEST[0].toLowerCase()}${REQUEST.slice(1)}` : REQUEST;
 
 s.env.MAX_TURNS ||= '30';

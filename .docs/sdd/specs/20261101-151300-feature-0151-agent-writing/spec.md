@@ -124,7 +124,7 @@ Fork primero, con el texto de sus fuentes; lo propio del kit, solo donde el RED 
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
-| `sdd-agent-writing` (nueva) | 0 / sin tope | — | `SKILL.md` 2.000; total 8.470: 8.783 de las fuentes, menos ~600 de lo común y lo de plataforma, más ~120 del kit y 2 % |
+| `sdd-agent-writing` (nueva) | 0 / sin tope | — | `SKILL.md` 2.000; total 8.760: 8.739 medidos con las piezas que la ADR 0013 obliga a conservar, más ~20 de la pasada de fix |
 | `using-sdd` | 524 / 570 | 46 | sin cambio |
 | `sdd-archive` | sin aumento | — | sin cambio |
 | kit | 92.830 / 89.328, con holgura ×1,25 | 18.830 con la holgura | sin cambio |
@@ -148,7 +148,7 @@ Pasos nuevos del agente y su medida: puerta → `p1`; description y prueba liger
 
 ## Enmiendas
 
-- Ninguna.
+- 2026-11-01 — Tope de `sdd-agent-writing`: 8.470 → 8.760 palabras en total — la re-revisión exige devolver «Quick Reference», «The Bottom Line», «Real-World Impact» y el principio de `testing-skills-with-subagents`, que la ADR 0013 obliga a conservar — aprobada: «Apruebo subir el tope a 8.760», opción 1.
 
 ## Aprobaciones
 

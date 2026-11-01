@@ -1,6 +1,12 @@
 # Testing skills
 
-From `writing-skills` and `testing-skills-with-subagents` of superpowers 7.0.0. In a project, a light test is enough: one scenario, run or written next to the skill. In the kit's repo, RED and GREEN by its constitution (Art. I) and `tech-stack.md`, «Baterías por skill».
+**Writing skills IS Test-Driven Development applied to process documentation.** You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the skill (documentation), watch tests pass (agents comply), and refactor (close loopholes).
+
+**Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill teaches the right thing.
+
+The Iron Law and the checklist below bind the kit's repo, by its constitution (Art. I) and `tech-stack.md`, «Baterías por skill». In a project, the failing test is one scenario, run or written next to the skill.
+
+Official authoring guidance: Anthropic's skill authoring best practices.
 
 ## The Iron Law (Same as TDD)
 
@@ -124,6 +130,19 @@ Micro-tests verify wording; they do not replace pressure scenarios for disciplin
 
 **Testing methodology:** see «Testing with subagents» below.
 
+## STOP: Before Moving to Next Skill
+
+**After writing ANY skill, you MUST STOP and complete the deployment process.**
+
+**Do NOT:**
+- Create multiple skills in batch without testing each
+- Move to next skill before current one is verified
+- Skip testing because "batching is more efficient"
+
+**The deployment checklist below is MANDATORY for EACH skill.**
+
+Deploying untested skills = deploying untested code. It's a violation of quality standards.
+
 ## Skill Creation Checklist (TDD Adapted)
 
 **IMPORTANT: Create a todo for EACH checklist item below.**
@@ -141,7 +160,7 @@ Micro-tests verify wording; they do not replace pressure scenarios for disciplin
 - [ ] Keywords throughout for search (errors, symptoms, tools)
 - [ ] Clear overview with core principle
 - [ ] Address specific baseline failures identified in RED
-- [ ] Guidance form matches the failure type (see Match the Form to the Failure)
+- [ ] Guidance form matches the failure type (see Match the Form to the Failure in [skill-mechanics.md](skill-mechanics.md))
 - [ ] For behavior-shaping guidance: wording micro-tested against a no-guidance control (5+ reps, every flagged match read manually) — N/A for pure reference skills
 - [ ] Code inline OR link to separate file
 - [ ] One excellent example (not multi-language)
@@ -166,6 +185,12 @@ Micro-tests verify wording; they do not replace pressure scenarios for disciplin
 - [ ] Consider contributing back via PR (if broadly useful)
 
 ## Testing with subagents
+
+**Testing skills is just TDD applied to process documentation.**
+
+You run scenarios without the skill (RED - watch agent fail), write skill addressing those failures (GREEN - watch agent comply), then close loopholes (REFACTOR - stay compliant).
+
+**Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill prevents the right failures.
 
 ### When to Use
 
@@ -507,6 +532,34 @@ Agents resist single pressure, break under multiple.
 **❌ Stopping after first pass**
 Tests pass once ≠ bulletproof.
 ✅ Fix: Continue REFACTOR cycle until no new rationalizations.
+
+### Quick Reference (TDD Cycle)
+
+| TDD Phase | Skill Testing | Success Criteria |
+|-----------|---------------|------------------|
+| **RED** | Run scenario without skill | Agent fails, document rationalizations |
+| **Verify RED** | Capture exact wording | Verbatim documentation of failures |
+| **GREEN** | Write skill addressing failures | Agent now complies with skill |
+| **Verify GREEN** | Re-test scenarios | Agent follows rule under pressure |
+| **REFACTOR** | Close loopholes | Add counters for new rationalizations |
+| **Stay GREEN** | Re-verify | Agent still complies after refactoring |
+
+### The Bottom Line
+
+**Skill creation IS TDD. Same principles, same cycle, same benefits.**
+
+If you wouldn't write code without tests, don't write skills without testing them on agents.
+
+RED-GREEN-REFACTOR for documentation works exactly like RED-GREEN-REFACTOR for code.
+
+### Real-World Impact
+
+From applying TDD to TDD skill itself (2025-10-03):
+- 6 RED-GREEN-REFACTOR iterations to bulletproof
+- Baseline testing revealed 10+ unique rationalizations
+- Each REFACTOR closed specific loopholes
+- Final VERIFY GREEN: 100% compliance under maximum pressure
+- Same process works for any discipline-enforcing skill
 
 ## Persuasion principles
 
