@@ -21,6 +21,7 @@
 │   ├── sdd-end-release/SKILL.md
 │   ├── sdd-explore/SKILL.md
 │   ├── sdd-config/SKILL.md
+│   ├── sdd-retro/SKILL.md
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
 │   ├── sdd-grilling/SKILL.md      (+ NOTICE: preguntar)
@@ -80,7 +81,7 @@ Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art
 | `decisions/NNNN-<slug>.md` | ADR | la feature que toma o sustituye la decisión | quien toca sus `rutas`, con `sdd decision index --files` | inmutable: solo cambia `status` al sustituirse; forma: `sdd decision check` |
 | `specs/<carpeta>/` | evento | el arranque y el cierre de cada feature, patch o propuesta | su propia sesión, y quien busca un porqué | una carpeta por evento; no se edita tras el cierre, salvo adendas fechadas |
 | `field-reports/` | evento | `sdd-feedback`, copiado literal | el triaje del roadmap | un fichero por ticket; no se edita |
-| `releases/vX.Y.Z/` | evento | `sdd-end-release` | las personas | una carpeta por release |
+| `releases/vX.Y.Z/` | evento | `sdd-end-release` y `sdd-retro` | las personas, el corte siguiente y `sdd-roadmap` | una carpeta por release |
 | `tests/*.md` (fuera de `.docs/`) | evento | la campaña RED/GREEN de cada edición de skill | la revisión final y quien reabre la regla | un fichero por campaña |
 
 ## Relación con los proyectos consumidores

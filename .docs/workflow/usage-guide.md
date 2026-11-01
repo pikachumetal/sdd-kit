@@ -186,7 +186,7 @@ Si no lo quieres, dile que no. Lo que no conviene es pedir «no generes más tic
 
 Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la entrega». `sdd-end-release` corta lo hecho, como la rama de release de git-flow. No importa si la release se preparó antes con `sdd-roadmap` o si has ido cerrando features sueltas: el corte es el mismo, en siete pasos, y pide el proyecto en la forma 3.0.0: si no, te ofrece migrar.
 
-1. **Alcance y versión.** Te propone qué entra y qué pasa a la siguiente, y la versión. La confirmas tú. Si el proyecto no tiene decidido si la release se entrega a alguien distinto de quien la hace (`release.hasRecipient`), te lo pregunta una vez. Si hay registro de estimaciones, te ofrece la retro en una línea: solo se hace si la pides.
+1. **Alcance y versión.** Te propone qué entra y qué pasa a la siguiente, y la versión. La confirmas tú. Si el proyecto no tiene decidido si la release se entrega a alguien distinto de quien la hace (`release.hasRecipient`), te lo pregunta una vez. Si hay registro de estimaciones, te ofrece la estimación de la retro en una línea: solo se hace si la pides. El repaso de la deuda por causa va siempre, sin preguntar, y te nombra sus propuestas.
 2. **Smoke y validaciones diferidas.** Te pregunta qué probaste, nombrando lo que tiene la validación diferida a esta release. Lo que nombras queda validado; lo que no, gana un disparador nuevo.
 3. **Changelog.** Una línea por cada fila hecha de Now, y `[Unreleased]` pasa a `[X.Y.Z] - fecha`, con la línea de smoke.
 4. **Now.** Sale lo hecho y validado. Lo que sigue sin validar se queda, con su disparador.

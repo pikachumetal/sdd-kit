@@ -50,6 +50,10 @@ function salas0013() {
 const molds = {
   salas: () => {},
   'salas-3': layer3,
+  'salas-3-retro': () => {
+    layer3();
+    s.put('.docs/sdd/releases/v1.5.0/retro.md', '# Retro — v1.5.0\n\n## Propuestas\n\n| Causa | Filas | Cambio | Arreglo |\n| --- | --- | --- | --- |\n| carga o paralelismo | «El lote de avisos agota su tiempo» | Lanzar el lote con un solo worker | conectar comprobación |\n\n## Estimación y action items\n\n- **Action items nuevos**:\n  - [A1] Medir el lote con la máquina cargada — su tiempo en el log\n');
+  },
   // salas-3 sin la exportación a CSV ni su fila de deuda: m5 apunta la exportación como fila nueva.
   'salas-3-plain': () => {
     layer3();

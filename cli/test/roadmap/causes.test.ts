@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { dirname } from 'node:path';
-import { runSdd, sddFolder } from '../capability/helpers.ts';
+import { readRepoFile, runSdd, sddFolder } from '../capability/helpers.ts';
 import { debtHeaders } from './project.ts';
 
 const ANNOUNCE = 'El anuncio sale 4 de 6';
@@ -25,6 +25,7 @@ function retro(rows: [string, string][]): string {
   return ['# Retro', '', ...openHeader, ...lines, ''].join('\n');
 }
 
+const retroTemplate = readRepoFile('skills/sdd-templates/templates/retro-template.md');
 const fullDebt = debt([announceRow, promptRow, floorRow], [waitingRow]);
 const previousRetro = retro([[ANNOUNCE, '1.2.0'], ['La fila cerrada', '1.3.0']]);
 
@@ -172,6 +173,19 @@ describe('sdd roadmap causes', () => {
     const { lines, code } = await runSdd(['roadmap', 'causes', '--project-root', root, '--version', '1.4.0']);
     expect(code).toBe(0);
     expect(lines[0]).toBe('## Repaso por causa');
+  });
+
+  it('reads a retro traced from the template and filled with its output', async () => {
+    const { lines: output } = await runSdd(['roadmap', 'causes', '--path', sddFolder(withDebt(debt([floorRow]))), '--version', '1.3.0']);
+    const filled = retroTemplate.replace('<salida de `sdd roadmap causes`, sin tocar>', output.join('\n'));
+    const { lines } = await causes(withDebt(debt([floorRow]), { 'releases/v1.3.0/retro.md': filled }));
+    expect(lines).toContain('| `--planta 2` lista otra planta | defecto del producto | 1 | 0030 | 1.3.0 |');
+    expect(lines.at(-1)).toBe('Cerradas desde la 1.3.0: 0');
+  });
+
+  it('skips a retro traced from the template and left untouched', async () => {
+    const { lines } = await causes(withDebt(debt([floorRow]), { 'releases/v1.3.0/retro.md': retroTemplate }));
+    expect(lines.join('\n')).not.toContain('Cerradas desde');
   });
 
   it('rejects path with project-root', async () => {
