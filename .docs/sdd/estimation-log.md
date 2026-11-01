@@ -256,18 +256,19 @@
 | 2026-11-01 | 0116 | infra/tooling | 3 | 1.02 | 0.34 | 27243k | 3137k | 10.69 | 16.54 | 20261101-150956-feature-0116-session-start-and-resume |
 | 2026-11-01 | 0151 | infra/tooling | 2.5 | 0.89 | 0.36 | 17630k | 4750k | 10.88 | 13.02 | 20261101-151300-feature-0151-agent-writing |
 | 2026-11-01 | 0278 | patch | 1.5 | 0.19 | 0.13 | — | — | 0.91 | — | 20261101-164101-patch-0278-e2e-titles-core-flows |
+| 2026-11-01 | 0275 | patch | 0.25 | 0.05 | 0.2 | — | — | no aplica | — | 20261101-170209-patch-0275-r1-threshold |
 
-**Factor de calibración** (ratio mediano real/estimado, 216 artefactos): **0.57** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 217 artefactos): **0.56** · media 0.73
 
-- p25–p75: 0.37–0.9
+- p25–p75: 0.36–0.9
 - p80: 1.03 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 25 % · sobreestimadas: 65 % · infraestimadas: 10 %
-- Error absoluto (h): media 1.3 · mediana 0.88
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.35
+- Error absoluto (h): media 1.3 · mediana 0.86
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.33
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 85 | 39 % |
+| <0.5 | 86 | 40 % |
 | 0.5–0.8 | 62 | 29 % |
 | 0.8–1.25 | 48 | 22 % |
 | 1.25–2 | 13 | 6 % |
@@ -278,7 +279,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 97 | 0.56 | 0.39–0.8 |
 | infra/tooling | 55 | 0.48 | 0.36–0.77 |
-| patch | 62 | 0.8 | 0.32–1.2 |
+| patch | 63 | 0.8 | 0.31–1.2 |
 | tooling | 1 | 0.6 | — |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -298,6 +299,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 104 | 211.94 | 0.52 | 521.23 | 1761.75 |
+| sin publicar | 105 | 211.99 | 0.52 | 521.23 | 1761.75 |
 
 > Ver `estimation.md`.
