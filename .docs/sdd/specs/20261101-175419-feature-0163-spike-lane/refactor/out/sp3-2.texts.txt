@@ -1,0 +1,41 @@
+--- [10]
+Estoy usando la skill sdd-worktrees para preparar el espacio aislado.
+
+--- [24]
+Ahora compruebo la causa (el `sort` descartado) para sostener la recomendación.
+
+--- [37]
+Los rulings ya están listados. Borro el workspace del plan, porque la historia de git es ahora el registro.
+
+--- [39]
+He implementado el plan del spike 0032: `libres` no aguanta 1.000 reservas con el umbral de la spec. O1 queda como `no cumple tal como se definió`. `node --test` da 4/4 en verde, y los commits son `6d22652` y `eb51cba`.
+
+## Qué midió
+- **Carga:** 1.000 reservas activas en la misma franja, cargadas con `seed`, y 12 repeticiones de 2.000 llamadas cada una.
+- **Reparto de salas:** la spec no dice cómo se reparten, y eso cambia la medida. Medí tres repartos y juzgué O1 con el peor.
+
+| Reparto | ms por llamada |
+| --- | --- |
+| Al azar (el peor) | 0,068–0,085 |
+| Alternado | 0,061–0,069 |
+| Todo en una sala | 0,015–0,023 |
+
+- **Aguante:** el tiempo no deriva con las repeticiones y el heap oscila entre 4,5 y 6,4 MB sin tendencia. El problema es el nivel del tiempo, no el aguante.
+- **Causa:** `freeRooms` en `src/app.js` ordena una copia de las reservas y descarta el resultado. En una réplica aislada, quitar esa línea baja de 0,0884 a 0,0001 ms por llamada.
+- **Recomendación:** no poner caché; quitar ese `sort` y repetir la medida de O1 sobre `app.js`. No medí ninguna caché, y el research lo dice.
+- **Archivos:** en la carpeta de la spec están `research.md`, el script `measure-libres.mjs` y la salida en bruto de cada medida. No toqué `src/` ni `test/`.
+
+## Rulings I made
+1. **Peor carga, primera versión:** la medí con todas las reservas en una sala. Fue un error mío. El `sort` ordena rápido cuando las salas son iguales, así que no era el peor caso. Si me equivoco otra vez, se repite la medida.
+2. **Corrección del ruling anterior:** medí tres repartos y juzgué O1 con el peor. Si me equivoco, se repite la medida.
+3. **Frase sobre la caché:** la primera versión de la recomendación descartaba la caché con un coste que no medí. La reescribí para citar solo lo medido. Si me equivoco, cambia una frase del research.
+4. **Sin `tasks.md`:** el plan tiene una sola task. Si me equivoco, no cuesta nada.
+
+## Cosas que debes saber
+- **Revisión final:** este entorno no tiene herramienta de subagentes, así que la hice yo (`Final review: self-review (no subagent tool)`). Es más débil que revisores con contexto fresco. Decide tú si basta antes de integrar.
+- **Sin directorio nuevo:** trabajé en la rama de la feature sin crear un worktree, porque no era `main` y no había preferencia declarada.
+- **Versión del kit:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que usé pueden ser de una versión vieja. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Deferred minors:** ninguno.
+
+Falta crear la fila del roadmap para el arreglo del `sort`. Eso lo hace el cierre, porque aquí no toco el roadmap. No he invocado `sdd-archive` porque acaba en una integración a la rama base. Dime si sigo con ese cierre o prefieres lanzarlo tú.
+

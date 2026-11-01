@@ -9,38 +9,38 @@ timeboxed: 2h
 
 # Research — <tema>
 
-> Documento opcional: crear cuando la spec requiere investigación previa.
-> **Timebox**: máx 2h; si se desborda, escalar al usuario.
-> **Output**: recomendación clara + 1-3 alternativas descartadas.
-> Borra los bloques de ayuda (`>`) al redactar.
+> **Timebox**: máx 2h; si se desborda, escalar al usuario. Borra los bloques de ayuda (`>`) al redactar.
 
 ## 1. Pregunta a resolver
 
-Una frase.
+La de la spec.
 
-## 2. Opciones evaluadas
+## 2. Objetivos
 
-### 2.1 Opción A — <nombre>
+> Una fila por objetivo de la spec. Estado, solo `cumple`, `no cumple` o `no medido`. Medido por debajo del umbral: `no cumple tal como se definió`, aunque funcione. Lo que simula el agente no cuenta como medido con una persona: `no medido con una persona`. Sin fichero de evidencia: `no medido`.
 
-- **Qué es**:
-- **Pros**:
-- **Contras**:
-- **Coste estimado**: <dev-días + coste recurrente si aplica>
+| Objetivo | Estado | Detalle | Evidencia |
+| --- | --- | --- | --- |
+| O1 — <objetivo y umbral> | | <lo medido, con su cifra> | <fichero con la salida en bruto> |
 
-### 2.2 Opción B — <nombre>
+## 3. Aguante *(solo si un objetivo es de rendimiento)*
 
-Misma estructura.
+> ≥ 10 repeticiones seguidas con la peor carga que confirmó el dev-lead. Un umbral cumplido con el recurso creciendo se dice.
 
-## 3. Recomendación
+Carga: <la de la spec>
 
-- **Elegida**: Opción <X>
-- **Por qué**: razón concreta.
+| Repetición | Tiempo | Recurso acumulado |
+| --- | --- | --- |
 
-## 4. Spike (si se hizo)
+## 4. Recomendación
 
-- **Branch**: `spike/<id>-<tema>` · **Duración real**: <Xh> · **Resultado**: <link>
-- **Aprendizajes clave**: 3-5 bullets.
+> Solo cita filas medidas; no dar por cumplido un `no cumple` ni un `no medido`. «No seguir» es una recomendación válida.
 
-## 5. Referencias
+- **Elegida**: <opción, o no seguir> · **Por qué**: <filas que la sostienen>
+- **Descartadas**: <1-3, y por qué>
 
-- Docs oficiales, comparativas, tickets.
+## 5. Lo que sale
+
+> Un arreglo que la medida deja a la vista va aquí, con su fila: el spike no deja código de producción.
+
+- <cambio> → <fila del roadmap> | nada

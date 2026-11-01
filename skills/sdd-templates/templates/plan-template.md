@@ -10,12 +10,12 @@ created: <YYYY-MM-DD>
 # Plan de implementación — <título>
 
 > Se escribe siguiendo `plan-writing.md` de `sdd-propose`. El método lo recomienda su handoff y va en la línea
-> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-propose/references/control-profiles.md)).
+> `Ejecución` de abajo, para el plan entero.
 > Borra los bloques de ayuda (`>`) al redactar.
 
 ## Decisiones que he tomado yo — valida estas
 
-> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué; la revisión final de rama no sigue esta política ni se quita en Native: sus ejes van con el modelo de `sdd-verify` —Spec y Arquitectura con `sdd-kit:effort-high` + `opus`, Código con `sdd-kit:effort-high` + `sonnet`—, también con una sola task, y «no hay subagentes que auditar» no vale, porque es la única revisión independiente de Native), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos**, **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero) y el **Review Focus** en una línea que lo resume («Review Focus: <n> entradas que la spec no fija, con su comportamiento esperado; ver la sección»): cada entrada fija un comportamiento que la spec calla.
+> Una línea por decisión: **modelo y effort por task** (y por qué; la revisión final de rama no sigue esta política ni se quita en Native: sus ejes van con el modelo de `sdd-verify` —Spec y Arquitectura con `sdd-kit:effort-high` + `opus`, Código con `sdd-kit:effort-high` + `sonnet`—, también con una sola task, y «no hay subagentes que auditar» no vale, porque es la única revisión independiente de Native), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos**, **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero) y el **Review Focus** en una línea que lo resume («Review Focus: <n> entradas que la spec no fija, con su comportamiento esperado; ver la sección»): cada entrada fija un comportamiento que la spec calla.
 
 1. <decisión> — <por qué>
 
@@ -47,13 +47,13 @@ created: <YYYY-MM-DD>
 
 ### De proceso
 
-> El bloque «De proceso» es para quien despacha: no viaja al encargo de ningún revisor, porque un revisor audita lo que lee y convierte en hallazgo una regla que no es del código (medido en `tests/proportional-review-red.md`). Aquí van la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto), el **modo de ejecución** por defecto y las reglas de atribución de commits.
+> El bloque «De proceso» es para quien despacha: no viaja al encargo de ningún revisor. Aquí van la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto), el **modo de ejecución** por defecto y las reglas de atribución de commits.
 
 - <regla de proceso>
 
 ## Review Focus
 
-> La pide `plan-writing.md` de `sdd-propose` en todo plan, y `sdd-verify` se la pasa literal al eje Spec de la revisión final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero (el criterio, en `plan-writing.md`). Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda. Sin ella en la plantilla, 1 de 2 planes en Opus la escribió como «Foco de revisión» entre las decisiones técnicas, donde el revisor final no la recibe (`tests/plan-review-focus-red.md`).
+> La pide `plan-writing.md` de `sdd-propose` en todo plan, y `sdd-verify` se la pasa literal al eje Spec de la revisión final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero. Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda.
 
 - <entrada o condición> → <comportamiento esperado> · Task <n>, `<nombre del test>` — p. ej. `GET /bookings?status=Foo` → 400 con los estados válidos, no la lista entera · Task 1, `Rejects_unknown_status`
 
@@ -100,15 +100,15 @@ Endpoints, shape request/response.
 
 ### 1.5 UX *(si aplica)*
 
-> Recibido de la spec ligera, que ya no lo lleva. Frontend: componentes, wireframes o capturas.
+> Frontend: componentes, wireframes o capturas.
 
 ### 1.6 Dependencias
 
-> Specs previas, servicios externos, librerías. Recibido de la spec ligera.
+> Specs previas, servicios externos, librerías.
 
 ### 1.7 Riesgos
 
-> Recibidos de la spec ligera, que ya no los lleva: lo técnico vive aquí.
+> Lo técnico vive aquí.
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 | --- | --- | --- | --- |
@@ -119,7 +119,7 @@ Endpoints, shape request/response.
 
 ### 1.9 Excepciones a la constitution
 
-> Si el plan necesita desviarse de un artículo: artículo · por qué · plan de remediación · aprobado por. Recibido de la spec ligera. "Ninguna" si no hay.
+> Si el plan necesita desviarse de un artículo: artículo · por qué · plan de remediación · aprobado por. "Ninguna" si no hay.
 
 ---
 
@@ -132,7 +132,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 > si no los hay). El gate completo corre una vez, en §3. Si hay más de una task → crear `tasks.md`
 > (registro vivo).
 >
-> **Tasks verticales** (orientación, no regla): en un plan que cambia una aplicación, cada task acaba en algo que el usuario puede probar en ella: una rebanada que atraviesa las capas que necesita (migración, API, pantalla), no una capa. Si una task no puede, su línea «Se prueba en la aplicación» dice por qué: una base común que usan varias funcionalidades, una migración de datos sin cambio visible o un refactor. Las capas de una sola funcionalidad no son base común: «BD y API de facturas» con la pantalla de subida en la task siguiente es partir por capas; la primera task lleva la subida de punta a punta, de la tabla al botón. Sin tamaño fijo en horas.
+> **Tasks verticales** (orientación, no regla): en un plan que cambia una aplicación, cada task acaba en algo que el usuario puede probar en ella: una rebanada que atraviesa las capas que necesita (migración, API, pantalla), no una capa. Si una task no puede, su línea «Se prueba en la aplicación» dice por qué: una base común que usan varias funcionalidades, una migración de datos sin cambio visible o un refactor. Las capas de una sola funcionalidad no son base común: «BD y API de facturas» con la pantalla de subida en la task siguiente es partir por capas; la primera task lleva la subida de punta a punta, de la tabla al botón.
 >
 > **Dependencias**: las tasks se ejecutan en orden, sin paralelo. Cada una declara en `**Tras**:` la task que la bloquea, o `—` si no la bloquea ninguna: «Quitar Sur de favoritas» lleva `Tras: Task 1` si la Task 1 es «Marcar Sur como favorita».
 
@@ -143,6 +143,8 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Tests RED**: <hilo principal · `ruta/del/test`, escritos antes de despachar y sin commitear: van en el commit de la task; Native: TDD del propio hilo>
 
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
+
+**Evidencia** *(con `mode: spike`, en vez de Tests RED)*: <objetivo · fichero con la salida en bruto, en la carpeta de la spec>
 
 **Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
 **Verificación**: <los comandos de esas superficies y ninguno más; cada uno sale con un código distinto de 0 si algo falla (con Pester, `-CI`), sin códigos de color (`NO_COLOR=1`), y con la línea de resumen que imprime, literal, copiada de una ejecución: `node --test test/cancel.test.js` → `ℹ fail 0` (su última línea es `ℹ duration_ms`, que no dice si pasó) · con Vitest, `Tests  12 passed (12)` · sin tests automáticos, el smoke manual con su resultado esperado>
@@ -165,7 +167,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
 - [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-implement/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
 
-> Un cuerpo que la firma y los tests ya determinan es una transcripción, también en §1: el implementador lo escribiría igual. Medido con superpowers 6.4.2 (patch 0082): 2 de 4 planes copiaron el cuerpo entero de un endpoint (el parseo del filtro, el 400 y la paginación). Lo que tocaba era la firma (`MapGet("/bookings", (BookingsDb db, int page = 1, string? status = null))` en `BookingsEndpoints.cs`), los valores (`status` sin distinguir mayúsculas y minúsculas, 400 si no es un estado) y los tests que los fijan, con sus asserts como código (`Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)`).
+> Un cuerpo que la firma y los tests ya determinan es una transcripción, también en §1: el implementador lo escribiría igual. Lo que tocaba era la firma (`MapGet("/bookings", (BookingsDb db, int page = 1, string? status = null))` en `BookingsEndpoints.cs`), los valores (`status` sin distinguir mayúsculas y minúsculas, 400 si no es un estado) y los tests que los fijan, con sus asserts como código (`Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)`).
 
 ---
 

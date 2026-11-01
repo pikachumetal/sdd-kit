@@ -21,7 +21,7 @@ The SDD kit's canonical templates. **They live only here**: projects don't carry
 | [launch-prompt-template.md](templates/launch-prompt-template.md) | launch prompt, in the chat | Given by `sdd-roadmap` and `sdd-explore`: starts the change in another worktree with its lane and its decisions |
 | [validation-template.md](templates/validation-template.md) | validation message, in the chat | Presented by `sdd-archive` |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Optional: data changes that don't fit in the plan |
-| [research-template.md](templates/research-template.md) | `research.md` | Optional: prior research with a timebox |
+| [research-template.md](templates/research-template.md) | `research.md` | A spike's evidence, with its objectives table |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Release closing: single record (inventory + triage + retro) |
 | [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Release closing: client notes distilled from the changelog |
 | [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Living truth of behavior: created by the spec that declares the capability, merged by `sdd-archive` |

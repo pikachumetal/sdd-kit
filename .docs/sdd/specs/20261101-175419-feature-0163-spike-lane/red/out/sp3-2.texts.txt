@@ -1,0 +1,49 @@
+--- [3]
+Ahora: preparo el entorno y leo el plan. Queda: las tasks, la revisión final y la validación.
+
+--- [8]
+Estoy usando la skill sdd-worktrees para preparar un espacio aislado.
+
+--- [25]
+Tengo la Task 1 hecha y commiteada (`10d2e7a`), con `node --test` en verde. Ahora paso a la revisión final con sdd-verify.
+
+--- [32]
+Cierro: borro el workspace del plan y paso a la validación con sdd-archive.
+
+--- [48]
+**No terminado.** El spike está medido, documentado y commiteado en `bca04dd`, pero no he fusionado: `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Dime en qué rama integro (nunca `main`) y si va con `--no-ff`, o hazlo tú. No borres el worktree `<run>/repo`.
+
+🦆 **Qué cambia:** `libres` no aguanta 1.000 reservas tal cual, pero no necesita caché. El objetivo era responder en menos de 0,05 ms. Con 1.000 reservas activas en la misma franja, cargadas con `seed`:
+
+| Carga | Tiempo por llamada | ¿Cumple? |
+| --- | --- | --- |
+| Todas de `Norte` | 0,018 ms | Sí |
+| Todas de `Sur` | 0,017 ms | Sí |
+| `Norte` y `Sur` alternas | 0,084 ms | No |
+
+La causa es `bookings.slice().sort(...)` en `freeRooms`, que ordena una copia y tira el resultado. En una copia fuera de `src/` quité esa línea y la mezcla bajó de 0,0001 ms. Esa cifra hay que reconfirmarla sobre el código real. No he tocado `src/`.
+
+**Rulings I made** (por orden, con lo que cuesta si me equivoco):
+1. Trabajé en `feature/0032-free-rooms-fast` sin crear un worktree enlazado, porque el repo ya estaba en esa rama y no en `main`. No cuesta nada.
+2. No escribí tests RED. La spec no tiene THENs y el plan dice que no cambia código; la evidencia es `medida-bruta.txt`. Ningún test protege la cifra.
+3. No escribí la tabla del scan previo del plan. Era una sola task, sin pares que compartan fichero. Sin coste visible.
+4. La revisión final la hice yo, no revisores con contexto limpio, porque esta sesión no tiene herramienta de subagentes. Una autorevisión es más débil; tú decides si basta antes de fusionar.
+5. Tras releer `research.md` retoqué dos cifras: «~0,0001 ms» pasó a «menos de 0,0001 ms», porque la mediana medida es 0,0000, y la duración del spike quedó como «no cronometrada». Ese retoque es un cambio de 3 líneas de documentación, revisado por mí en el hilo. Va sin revisar por nadie más.
+
+**Deferred minors:**
+- La medida usa una sola franja y dos salas; con más salas no se probó.
+
+**Qué he hecho en el cierre:**
+- **Validación:** la spec dice `Validación: agente`, así que no hay guion. Está registrada en el walkthrough con `node --test` 4/4 sobre `429872e`. El commit final solo añade documentación.
+- **Deuda:** añadí una fila en la «Deuda técnica» del roadmap para quitar el `sort` en un patch.
+- **Changelog y capacidades:** no hay entrada de changelog (no cambia nada visible) ni capacidades que fusionar.
+- **Fuera de alcance:** no hay `estimation.md`, ADRs ni `.claude/skills/`. No hay fila 0032 en el roadmap que marcar.
+- **Historia:** junté todo en un solo commit sobre `d10f5ce`.
+
+**Avisos:**
+- `sdd roadmap check` falla en dos sitios que ya estaban antes de mi cambio: el encabezado `### v0.3.0 (…)` y la cabecera de la tabla de deuda. No los toqué.
+- La sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+
+¿Quieres que genere el ticket de mejora del kit con `sdd-feedback`? No lo hago hasta que me lo digas.
+
