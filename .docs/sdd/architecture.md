@@ -27,7 +27,7 @@
 │   ├── sdd-rubber-duck/SKILL.md   (+ NOTICE: explicar)
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje)
 ├── cli/                         (la CLI `sdd`, TypeScript sin build: bin/, src/ por dominio, test/ con Vitest y fixtures/)
-├── hooks/                       (hooks.json: `sdd hook session-start` inyecta skills/using-sdd/SKILL.md; `session-end` borra temporales)
+├── hooks/                       (hooks.json: `sdd hook session-start` inyecta skills/using-sdd/SKILL.md; `session-end` borra temporales; project/: el hook que se copia a cada proyecto y solo cambia con una migración, igual que la ruta de la marca que lee)
 ├── .claude/                     (settings.json del repo y hooks/kit-session-source.mjs: aviso de skills cargadas fuera de la rama)
 ├── tests/                       (evidencia RED/GREEN por skill, fixtures/, headless/ (lanzador de sujetos) y batteries/ (baterías por skill))
 └── .docs/

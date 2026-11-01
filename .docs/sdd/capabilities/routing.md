@@ -264,6 +264,26 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - AND la clasificación de `sdd-propose` también: al reproducir un fallo, ningún `node --test` ni `node src/…` va antes de `pnpm install`
 - AND el paso 2 de `sdd-propose` nombra ese paso, sin copiar sus órdenes, y `sdd-implement` y el carril config no lo repiten
 
+### Una sesión sin el kit cargado lo avisa con la ruta
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.0` y `.claude/hooks/sdd-kit-loaded.mjs`, y una sesión sin el plugin `sdd-kit` cargado
+- WHEN el usuario escribe su primer mensaje
+- THEN el usuario y el agente reciben `AVISO sdd-kit: esta sesión no tiene cargadas las skills del kit. El proyecto declara el kit 3.0.0: léelas en <config>/plugins/cache/sdd-kit/sdd-kit/3.0.0/skills/<skill>/SKILL.md. Instálalo o actualízalo con «claude plugin install sdd-kit@sdd-kit --scope project» y reinicia Claude Code.`
+- AND en el segundo mensaje de esa sesión no sale
+- AND si la carpeta de `3.0.0` no existe, dice `y esa versión no está en la caché (<ruta>)` en lugar de la frase de lectura
+- AND sin `version` en `sdd-kit.json` no da ruta, y sin `.docs/sdd/` no escribe nada
+- AND con el plugin cargado, también por `--plugin-dir` o al reanudar, no sale
+- AND si el hook falla, sale con 0 y no escribe nada
+
+### Retomar una feature o un patch entra por `sdd-implement`
+
+- GIVEN la rama `feature/0020-room-filter` con spec aprobada, plan de 3 tasks y `tasks.md` con la Task 1 hecha, sin ledger
+- WHEN el usuario escribe «Retoma la feature.» o «Sigue con la Task 2.»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-implement`, no `sdd-kit:sdd-propose`
+- AND no crea carpeta ni rama, no repite la Task 1 y sigue por la Task 2, tras mirar la base
+- AND en la rama `patch/0021-cancel-missing`, con `patch.md` hasta el fix y sin commitear, «Retoma el patch, lo dejé ayer a medias.» invoca primero `sdd-kit:sdd-implement`, que sigue por el primer paso cuya salida falta, sin crear otro `patch.md`
+- AND sin `spec.md` aprobada ni `patch.md` en la rama, lo manda a `sdd-propose`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: no aplica.

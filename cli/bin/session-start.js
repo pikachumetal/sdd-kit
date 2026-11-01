@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { gitBashTmpPath, repairGitBashTmp, withSystemMessage } from './git-bash-tmp.js';
 import { nodeVersionProblem } from './node-version.js';
 
@@ -75,18 +75,26 @@ function gitBashTmpNotice() {
   }
 }
 
+// esta ruta la leen las copias del hook del proyecto: cambiarla exige una migración
 export function sessionMarkerPath(id, base = tmpdir()) {
-  return join(base, 'sdd-kit-sessions', id);
+  return join(base, `sdd-kit-sessions${process.getuid ? `-${process.getuid()}` : ''}`, id);
+}
+
+function writeMark(id, base) {
+  if (typeof id !== 'string' || !/^[A-Za-z0-9-]+$/.test(id)) return;
+  try {
+    mkdirSync(dirname(sessionMarkerPath(id, base)), { recursive: true });
+    writeFileSync(sessionMarkerPath(id, base), '');
+  } catch {
+    // sin marca, el hook del proyecto avisa de más: mejor que perder el arranque
+  }
 }
 
 // la marca dice al hook del proyecto que el plugin cargó; devuelve el `source` de la sesión
 export function markSession(stdin, base = tmpdir()) {
   try {
     const { session_id: id, source } = JSON.parse(stdin) ?? {};
-    if (typeof id === 'string' && /^[A-Za-z0-9-]+$/.test(id)) {
-      mkdirSync(join(base, 'sdd-kit-sessions'), { recursive: true });
-      writeFileSync(sessionMarkerPath(id, base), '');
-    }
+    writeMark(id, base);
     return typeof source === 'string' ? source : '';
   } catch {
     return '';

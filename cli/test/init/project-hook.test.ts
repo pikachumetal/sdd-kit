@@ -1,5 +1,6 @@
-import { describe, it, expect, afterAll } from 'vitest';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { describe, it, expect, afterAll, vi } from 'vitest';
+import fs from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -82,7 +83,32 @@ describe('the verbs install it', () => {
     expect(settingsOf(root).hooks.UserPromptSubmit).toEqual([ours]);
   });
 
-  it('sdd upgrade rejects --project-hook with --mark', async () => {
-    expect(await run(['upgrade', '--root', project(), '--project-hook', '--mark', '3.0.0'], memoryIo())).toBe(2);
+  it('sdd upgrade --project-hook prints one line per file', async () => {
+    const root = project();
+    const first = memoryIo();
+    await run(['upgrade', '--root', root, '--project-hook'], first);
+    expect(first.stdout).toEqual([`${SETTINGS}: creado`, `${SCRIPT}: creado`]);
+    const second = memoryIo();
+    await run(['upgrade', '--root', root, '--project-hook'], second);
+    expect(second.stdout).toEqual([`${SETTINGS}: sin cambios`, `${SCRIPT}: sin cambios`]);
+  });
+
+  it('sdd upgrade rejects --project-hook with --mark and writes nothing', async () => {
+    const root = project();
+    expect(await run(['upgrade', '--root', root, '--project-hook', '--mark', '3.0.0'], memoryIo())).toBe(2);
+    expect(existsSync(join(root, SCRIPT))).toBe(false);
+  });
+
+  it('writes the script before the entry that points at it', () => {
+    const root = project();
+    const order: string[] = [];
+    const original = fs.writeFileSync;
+    const spy = vi.spyOn(fs, 'writeFileSync').mockImplementation((file, ...rest) => {
+      order.push(String(file).replaceAll('\\', '/'));
+      return original(file, ...rest);
+    });
+    installProjectHook(root);
+    spy.mockRestore();
+    expect(order.at(-1)).toMatch(/\.claude\/settings\.json$/);
   });
 });

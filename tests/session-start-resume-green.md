@@ -1,6 +1,6 @@
 # GREEN — feature 0116: arrancar sin el kit y retomar
 
-Salidas en `.docs/sdd/specs/20261101-150956-feature-0116-session-start-and-resume/green/` y `green-entera/`.
+Salidas de los sujetos en `.docs/sdd/specs/20261101-150956-feature-0116-session-start-and-resume/green/`, `green-entera/` y `fix/`. Los smokes del hook no guardaron salida: su evidencia es esta tabla.
 
 ## Hook de arranque
 
@@ -10,6 +10,8 @@ Smoke con Haiku, Claude Code 2.1.316, un proyecto con el hook copiado y `sdd-kit
 | --- | --- | --- |
 | Sin plugin | sí | sí |
 | Con el kit y superpowers por `--plugin-dir` | no | no |
+
+Con el kit cargado, sin aviso en el inicio, con `--resume` y con `--continue`. Con `--continue`, el stream etiqueta SessionStart con un id y UserPromptSubmit con otro, pero el hook vio la marca: al terminar no quedó ningún `.warned`. Sin medir: `/clear`, cuyo SessionStart marca igual. El hook tarda ~66 ms por mensaje en Windows.
 
 Hallazgo: con el kit por `--plugin-dir` y **sin superpowers**, el kit no carga (`plugins` no lo lista, 0 skills) y el aviso salta, con razón.
 
@@ -27,6 +29,8 @@ Hallazgo: con el kit por `--plugin-dir` y **sin superpowers**, el kit no carga (
 
 Los sujetos mencionan el aviso de versión porque el marcador del molde es 3.0.0 y `plugin.json` sigue en 2.3.4: es el aviso esperado, no un fallo de esta feature.
 
-Coste de la campaña: 10,32 $ (previsión de la spec: 12,44 $, con el smoke aparte).
+Coste de la campaña: 10,69 $ (previsión de la spec: 12,44 $, con el smoke aparte).
 
-Sin observar: «sin `spec.md` ni `patch.md`, a `sdd-propose`»: es la regla de Setup que ya existía, sin sujeto.
+## Retomar sin spec
+
+`rf3` (`fix/`), «Retoma la feature.» en una rama sin spec ni `patch.md`, 2 sujetos: entran por `sdd-implement`, paran sin tocar nada y recomiendan `sdd-propose`. Dejan la decisión al usuario en lugar de invocarla, y con la petición vaga es lo razonable.

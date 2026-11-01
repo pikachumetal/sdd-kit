@@ -20,16 +20,17 @@ Validación: agente — `validation.mode: field` en `sdd-kit.json`; se cierra co
 
 ## Capacidades
 
+- Modificadas: `cli` — `sdd init --finish` escribe un fichero más; `sdd upgrade --project-hook`; `session-end` borra la marca
 - Modificadas: `routing` — una sesión sin el kit avisa; retomar entra por `sdd-implement`
 - Modificadas: `onboarding` — la init deja el hook del proyecto
 - Modificadas: `migration` — la migración a v3.0.0 deja el hook del proyecto
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-Review de spec propuesta: ninguna — señales: contrato público (entrada de `.claude/settings.json` y fichero del proyecto), `MODIFIED` (`onboarding`), tres capacidades · tamaño: ~150 líneas en 12 ficheros. Tres señales no proponen review.
+Review de spec propuesta: ninguna — señales: contrato público (entrada de `.claude/settings.json` y fichero del proyecto), `MODIFIED` (`onboarding`), tres capacidades (cuatro tras la enmienda; siguen tres señales) · tamaño: ~150 líneas en 12 ficheros. Tres señales no proponen review.
 
 1. **Cambio sobre lo que pediste: el aviso no puede vivir solo en `hookSessionStartVerb`.** Medido en `red/hook-probe.md`: un hook del plugin no corre si el plugin no cargó, y la entrada de un hook (`session_id`, `transcript_path`, `cwd`, `hook_event_name`, `source`) no trae la lista de skills. Solo un hook del proyecto puede avisar. Eso añade un fichero y una entrada de settings a cada proyecto, y un paso a la migración v3.0.0. Es decisión tuya: el impacto de la fila era «Bajo, ~3 min». **Mi recomendación es hacerlo**, porque es lo único que cumple tu «hecho está cuando». La alternativa, «Cambios: sin aviso», deja solo la puerta de retomar, salda la fila con esta medición y retira la Task 1 y la Task 2.
-2. Cómo se sabe que el kit cargó: el hook del plugin escribe en SessionStart la marca `<tmpdir del SO>/sdd-kit-sessions/<session_id>`, y el hook del proyecto la mira en `UserPromptSubmit`, porque en SessionStart los dos corren a la vez y no hay orden. Descartados: leer `installed_plugins.json` o el transcript (formatos sin documentar) y `claude plugin list` (dice qué hay instalado, no qué cargó esta sesión).
+2. Cómo se sabe que el kit cargó: el hook del plugin escribe en SessionStart la marca `<tmpdir del SO>/sdd-kit-sessions[-<uid>]/<session_id>`, y el hook del proyecto la mira en `UserPromptSubmit`, porque en SessionStart los dos corren a la vez y no hay orden. Descartados: leer `installed_plugins.json` o el transcript (formatos sin documentar) y `claude plugin list` (dice qué hay instalado, no qué cargó esta sesión).
 3. El aviso sale una vez por sesión, en el primer mensaje del usuario, a él (`systemMessage`) y al agente (contexto). Es un mensaje más tarde que SessionStart, antes de que el agente responda.
 4. Literal del aviso: `AVISO sdd-kit: esta sesión no tiene cargadas las skills del kit. El proyecto declara el kit <versión>: léelas en <ruta>/<skill>/SKILL.md. Instálalo o actualízalo con «claude plugin install sdd-kit@sdd-kit --scope project» y reinicia Claude Code.` Si la carpeta de esa versión no existe, la frase de lectura cambia a `y esa versión no está en la caché (<ruta>)`. Sin `version` en `sdd-kit.json`, sin ruta: `esta sesión no tiene cargadas las skills del kit. Instálalo…`.
 5. Ruta: `<CLAUDE_CONFIG_DIR o ~/.claude>/plugins/cache/sdd-kit/sdd-kit/<versión>/skills`. El formato de la caché no está documentado; si cambia, sale la frase de «no está en la caché» y la orden de instalar sigue valiendo.
@@ -83,7 +84,7 @@ Tres tasks, sin partir: (1) la marca en el hook del plugin y `sdd-kit-loaded.mjs
 
 - Marca y aviso: Vitest en `cli/test/hook/`, como `session-start.test.ts`, con el caso de «falta el fichero» que pide `tech-stack.md`.
 - Sesión real sin plugin y con plugin: smoke headless con Haiku, como el sondeo.
-- Instalación: `cli/test/init/verbs.test.ts` y `settings.test.ts`; la migración, con los tests de `cli/test/kit/`.
+- Instalación: `cli/test/init/verbs.test.ts` y `project-hook.test.ts`; la migración, con el test de `--project-hook` y la paridad de `cli/test/kit/`.
 - Puerta y retomar: batería `using-sdd`, tramo `retomar` y entera, con sus filas en prosa leídas a mano (`d1`).
 
 ## Términos y ADR
@@ -92,6 +93,33 @@ Tres tasks, sin partir: (1) la marca en el hook del plugin y `sdd-kit-loaded.mjs
 - ADR candidatas: el aviso de kit no cargado vive en un hook copiado al proyecto — alternativa descartada: solo en el hook del plugin, que no corre en ese caso.
 
 ## Delta de comportamiento
+
+### Capacidad: `cli`
+
+#### ADDED — `sdd upgrade --project-hook` instala el hook del proyecto
+
+- GIVEN un proyecto sin `.claude/hooks/sdd-kit-loaded.mjs`
+- WHEN se ejecuta `sdd upgrade --root <raíz> --project-hook`
+- THEN escribe el fichero y su entrada en `hooks.UserPromptSubmit` de `.claude/settings.json`, con una línea de salida por fichero, y sale con 0
+- AND repetirlo no duplica la entrada y dice `sin cambios` en los dos
+- AND con `--mark` sale con 2 y no escribe
+
+#### MODIFIED — `sdd init --finish` escribe lo determinista de la init
+
+- GIVEN un proyecto sin `.claude/settings.json`, con un `.gitignore` con CRLF que tiene `node_modules/` y `.superpowers/`, y un `sdd-kit.json` en curso con `init.config` = `{"ids":{"mode":"sequence"},"control":{"profile":"delegate"}}`
+- WHEN se ejecuta `sdd init --root <raíz> --finish --ignore .auth/`
+- THEN `.claude/settings.json` tiene el bloque de la init (memoria desactivada, los dos marketplaces con `autoUpdate: true` y los dos plugins activados), igual al bloque marcado con `<!-- sdd-init: settings -->` del README, más la entrada del hook del proyecto
+- AND `.gitignore` conserva `node_modules/` y `.superpowers/` una vez, gana `.playwright-mcp/`, `.docs/sdd/sdd-kit.local.json`, `.temp/` y `.auth/` con CRLF, y termina en salto de línea
+- AND `.docs/sdd/sdd-kit.json` tiene `version` igual a la de `.claude-plugin/plugin.json`, `channel` `plugin`, `updated` del día, `ids.mode` `sequence` y `control.profile` `delegate`, sin `init`, y es el último fichero que se escribe
+- AND la salida tiene una línea por fichero con `creado` o `actualizado`, y sale con 0
+- AND repetir el mismo comando deja los cuatro ficheros iguales y dice `sin cambios` en los cuatro
+- AND `.claude/hooks/sdd-kit-loaded.mjs` queda escrito y su entrada, en `hooks.UserPromptSubmit` de `.claude/settings.json`, antes de `sdd-kit.json`
+- AND sin `.gitignore`, lo crea con las líneas de la init
+- AND con un `sdd-kit.json` de template que ya tiene `"version": "1.1.0"`, la conserva
+
+#### Reglas de la capacidad — cli
+
+- **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.claude/hooks/sdd-kit-loaded.mjs`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`, y el hook, de `hooks/project/` del kit. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe `.docs/sdd/sdd-kit.json`, o, con `--project-hook`, el hook y su entrada en settings. `sdd validation serve` lee los pasos de `--steps` y el panel de `skills/sdd-archive/references/validation-panel.js` del kit cargado, y escribe solo el fichero de `--out`. `sdd hook session-start` escribe la marca de la sesión en la carpeta temporal del sistema. `sdd hook session-end` lee el JSON de stdin, `CLAUDE_CODE_TMPDIR` y `CLAUDE_PROJECT_DIR`, borra esa marca y su `.warned`, y solo borra subcarpetas de `<CLAUDE_CODE_TMPDIR o la carpeta temporal del sistema>/claude/<carpeta del proyecto>/`.
 
 ### Capacidad: `routing`
 
@@ -152,6 +180,8 @@ Precios medidos en el RED de esta feature: 0,34 $ por sujeto de retomar, 14 turn
 Paso cambiado → escenario: fila de `using-sdd` → `rf1`, `rf2`, `rp1`; regla de `sdd-implement` → `rf1`, `rf2`; regla de `patch-flow.md` → `rp1`; `description` de `sdd-implement` y `sdd-propose` → batería entera; frases recortadas → `i1`, `i2`, `d1`, `f2`, `f3`; paso de la migración → test y la «Verificación», sin sujetos, porque es una escritura mecánica.
 
 ## Enmiendas
+
+- 2026-11-01 — capacidad `cli` en el delta (`--project-hook`, reglas) y la línea de la migración en «Dónde se prueba»; el requisito de `--finish` de `cli` pasa a cuatro ficheros; la ruta de la marca de la decisión 2 lleva el uid donde el sistema lo tiene — los ejes Spec y Arquitectura de la revisión final: sin esto, `cli.md` queda falsa — aprobada (opción «Apruebo»)
 
 ## Aprobaciones
 

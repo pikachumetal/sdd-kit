@@ -1,10 +1,9 @@
 import fs from 'node:fs';
-import { dirname, isAbsolute, join, normalize } from 'node:path';
-import { DomainError, UsageError } from '../cli/args.ts';
-import { readText } from '../cli/files.ts';
-import { isRecord } from '../cli/records.ts';
+import { isAbsolute, normalize } from 'node:path';
+import { UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { mergeGitignore } from './gitignore.ts';
+import { jsonText, parseJson, readOptional, writeChange } from './json-file.ts';
 import { finishMarker, mergeConfig, recordApproved } from './marker.ts';
 import { PROJECT_HOOK_SCRIPT, projectHookSource, withProjectHook } from './project-hook.ts';
 import { mergeSettings } from './settings.ts';
@@ -23,26 +22,6 @@ const GITIGNORE = '.gitignore';
 const MARKER = '.docs/sdd/sdd-kit.json';
 
 type Write = { file: string; before: string | null; after: string };
-
-function readOptional(root: string, file: string): string | null {
-  const path = join(root, file);
-  return fs.existsSync(path) ? readText(path) : null;
-}
-
-function parseJson(root: string, file: string): Record<string, any> | null {
-  const text = readOptional(root, file);
-  if (text === null) return null;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    throw new DomainError(`${file} no es JSON válido: no se toca`);
-  }
-  if (!isRecord(parsed)) throw new DomainError(`${file} no se puede fusionar: la raíz no es un objeto`);
-  return parsed;
-}
-
-const jsonText = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 
 function plan(options: InitOptions, notes: string[]): Write[] {
   const { root, action } = options;
@@ -76,10 +55,7 @@ function sameJson(before: string | null, after: string): boolean {
 
 function apply(root: string, write: Write): string {
   if (write.before === write.after || (write.file !== GITIGNORE && sameJson(write.before, write.after))) return `${write.file}: sin cambios`;
-  const path = join(root, write.file);
-  fs.mkdirSync(dirname(path), { recursive: true });
-  fs.writeFileSync(path, write.after, 'utf8');
-  return `${write.file}: ${write.before === null ? 'creado' : 'actualizado'}`;
+  return writeChange(root, write.file, write.before, write.after);
 }
 
 export function validateIgnore(path: string): string {

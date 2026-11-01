@@ -37,6 +37,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`); el mé
 | rf1 | retomar | Retoma la feature. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0010b del template §2: retomó a mano, sin skill; molde en la rama `feature/0020-room-filter` con la Task 1 hecha |
 | rf2 | retomar | Sigue con la Task 2. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: la frase perdió su puerta; mismo molde que `rf1` |
 | rp1 | retomar-patch | Retoma el patch, lo dejé ayer a medias. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: `sdd-start-patch` lo recogía; molde en `patch/0021-cancel-missing` con `patch.md` sin commitear y sin fix |
+| rf3 | retomar-sin-spec | Retoma la feature. | salas | cualquiera | 2 | 2/2 | sonnet | revisión final de la 0116: sin spec ni `patch.md` en la rama, no toca nada y remite a `sdd-propose`; se lee a mano |
 
 ## Procedencia de las reglas
 

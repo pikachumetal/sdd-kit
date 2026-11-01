@@ -67,6 +67,7 @@ if (!markers[mold]) s.die(`molde desconocido en battery.md: ${s.SC}`);
 moldBase(mold, markers[mold]);
 if (s.SC === 'rf1' || s.SC === 'rf2') pausedFeature();
 if (s.SC === 'rp1') pausedPatch();
+if (s.SC === 'rf3') s.git('checkout', '-q', '-b', 'feature/0022-room-notes');
 
 s.env.MAX_TURNS ||= cell('Paso').startsWith('retomar') ? '14' : '8';
 await s.launch(ASK);

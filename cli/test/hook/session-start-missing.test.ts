@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { cpSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { removeSessionMarks } from '../../bin/session-end.js';
 import { markSession, runSessionStart, sessionMarkerPath, sessionStartOutput } from '../../bin/session-start.js';
 
@@ -43,6 +43,12 @@ describe('sdd hook session-start marks the session', () => {
     expect(readdirSync(base)).toEqual([]);
   });
 
+  it('keeps the source when the mark cannot be written', () => {
+    const base = tempBase();
+    writeFileSync(join(base, 'no-es-carpeta'), '');
+    expect(markSession('{"session_id": "abc-3", "source": "resume"}', join(base, 'no-es-carpeta'))).toBe('resume');
+  });
+
   it('injects nothing on resume', () => {
     const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     vi.stubEnv('CLAUDE_PROJECT_DIR', project);
@@ -62,7 +68,7 @@ describe('sdd hook session-start marks the session', () => {
     markSession('{"session_id": "abc-2"}', base);
     writeFileSync(`${sessionMarkerPath('abc-2', base)}.warned`, '');
     removeSessionMarks('{"session_id": "abc-2"}', base);
-    expect(readdirSync(join(base, 'sdd-kit-sessions'))).toEqual([]);
+    expect(readdirSync(dirname(sessionMarkerPath('abc-2', base)))).toEqual([]);
     expect(() => removeSessionMarks('{"session_id": "abc-2"}', base)).not.toThrow();
   });
 });

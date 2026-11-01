@@ -81,8 +81,12 @@ export function removeSessionMarks(stdin, base = tmpdir()) {
   const { id } = parseInput(stdin);
   if (!id) return;
   const marker = sessionMarkerPath(id, base);
-  rmSync(marker, { force: true });
-  rmSync(`${marker}.warned`, { force: true });
+  try {
+    rmSync(marker, { force: true });
+    rmSync(`${marker}.warned`, { force: true });
+  } catch {
+    // un fichero bloqueado no debe impedir la limpieza de temporales
+  }
 }
 
 export function runSessionEnd() {

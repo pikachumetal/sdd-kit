@@ -118,7 +118,7 @@ Ninguna.
 
 **Interfaces**:
 - Consume: nada.
-- Produce: marca `join(tmpdir(), 'sdd-kit-sessions', <session_id>)`; `sessionMarkerPath(id, base = tmpdir())` exportada de `cli/bin/session-start.js`; `hooks/project/sdd-kit-loaded.mjs`.
+- Produce: marca `join(tmpdir(), 'sdd-kit-sessions[-<uid>]', <session_id>)` (uid: enmienda de la spec); `sessionMarkerPath(id, base = tmpdir())` exportada de `cli/bin/session-start.js`; `hooks/project/sdd-kit-loaded.mjs`.
 
 **Ficheros**: los de la marca y `hooks/project/sdd-kit-loaded.mjs`.
 

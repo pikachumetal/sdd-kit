@@ -3,14 +3,15 @@
 // a la vez, y la marca del plugin podría no estar aún.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const OPENING = 'AVISO sdd-kit: esta sesión no tiene cargadas las skills del kit.';
 const FIX = 'Instálalo o actualízalo con «claude plugin install sdd-kit@sdd-kit --scope project» y reinicia Claude Code.';
 
+// con uid: en Linux, /tmp lo comparten los usuarios y la carpeta de otro daría EACCES
 export function markerPath(id, base = tmpdir()) {
-  return join(base, 'sdd-kit-sessions', id);
+  return join(base, `sdd-kit-sessions${process.getuid ? `-${process.getuid()}` : ''}`, id);
 }
 
 function parseInput(stdin) {
@@ -23,9 +24,11 @@ function parseInput(stdin) {
 }
 
 function declaredVersion(projectDir) {
+  const file = join(projectDir, '.docs', 'sdd', 'sdd-kit.json');
+  if (!existsSync(file)) return '';
   try {
-    const { version } = JSON.parse(readFileSync(join(projectDir, '.docs', 'sdd', 'sdd-kit.json'), 'utf8'));
-    return /^\d+\.\d+\.\d+$/.test(version) ? version : '';
+    const { version } = JSON.parse(readFileSync(file, 'utf8'));
+    return typeof version === 'string' && /^\d+\.\d+\.\d+$/.test(version) ? version : '';
   } catch {
     return '';
   }
@@ -45,7 +48,7 @@ export function sessionNotice(stdin, env, base = tmpdir()) {
   if (!id || !existsSync(join(projectDir, '.docs', 'sdd'))) return '';
   const marker = markerPath(id, base);
   if (existsSync(marker) || existsSync(`${marker}.warned`)) return '';
-  mkdirSync(join(base, 'sdd-kit-sessions'), { recursive: true });
+  mkdirSync(dirname(marker), { recursive: true });
   writeFileSync(`${marker}.warned`, '');
   const message = warning(declaredVersion(projectDir), env);
   return JSON.stringify({ systemMessage: message, hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: message } });

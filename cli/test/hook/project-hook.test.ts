@@ -1,7 +1,8 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { removeSessionMarks } from '../../bin/session-end.js';
 import { sessionMarkerPath } from '../../bin/session-start.js';
 import { markerPath, sessionNotice } from '../../../hooks/project/sdd-kit-loaded.mjs';
 
@@ -72,7 +73,7 @@ describe('sdd-kit-loaded project hook', () => {
 
   it('stays silent with the marker', () => {
     const { env, base } = world(VERSION_300);
-    mkdirSync(join(base, 'sdd-kit-sessions'), { recursive: true });
+    mkdirSync(dirname(markerPath('session-1', base)), { recursive: true });
     writeFileSync(markerPath('session-1', base), '');
     expect(sessionNotice(input(), env, base)).toBe('');
   });
@@ -89,5 +90,24 @@ describe('sdd-kit-loaded project hook', () => {
 
   it('uses the marker path of the plugin hook', () => {
     expect(markerPath('abc-1', 'base')).toBe(sessionMarkerPath('abc-1', 'base'));
+  });
+
+  it('keeps the marker path the deployed copies look at', () => {
+    const owner = process.getuid ? `-${process.getuid()}` : '';
+    expect(markerPath('abc-1', 'base')).toBe(join('base', `sdd-kit-sessions${owner}`, 'abc-1'));
+  });
+
+  it('warns without a route when the version is not a string', () => {
+    const { env, base } = world('{"version": ["3.0.0"]}');
+    expect(JSON.parse(sessionNotice(input(), env, base)).systemMessage).toBe(`${OPENING} ${FIX}`);
+  });
+
+  it('leaves nothing behind once the session ends with the plugin', () => {
+    const { env, base } = world(VERSION_300);
+    sessionNotice(input(), env, base);
+    const folder = dirname(markerPath('session-1', base));
+    expect(readdirSync(folder)).not.toEqual([]);
+    removeSessionMarks(input(), base);
+    expect(readdirSync(folder)).toEqual([]);
   });
 });
