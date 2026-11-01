@@ -1,5 +1,5 @@
 // Sujeto de la batería de sdd-archive: una feature o un patch hechos, listos para cerrar.
-// Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
+// Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
@@ -354,7 +354,7 @@ function citedSha0010() {
 function roadmap300() {
   s.git('rm', '-q', '.docs/sdd/roadmap.md');
   s.put('ROADMAP.md', '# Roadmap — salas\n\n## Now\n\nPerfil de control: delegate\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n| 0010 | — | **Motivo al cancelar**<br>*Al cancelar se elige un motivo*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** spec de la 0010<br>**Decisiones ya tomadas:** —<br>**Salda:** «El motivo de cancelar no se valida» entera; «Los motivos no se traducen», solo el castellano<br>**Toca:** `src/app.js`</details> | 🔄 | — | M |\n\n## Next\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n\n## Later\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n| B1 | — | **Exportar a calendario**<br>*Las reservas en .ics* | ⏳ | — | — |\n');
-  s.put('.docs/sdd/steering/debt.md', '# Deuda técnica — salas\n\n## Por triar\n\n| Ítem | Origen | Fecha |\n| --- | --- | --- |\n\n## En espera\n\n| Ítem | Origen | Impacto | Falta | Fecha |\n| --- | --- | --- | --- | --- |\n\n## Lista\n\n| Ítem | Origen | Impacto | Evidencia | Destino |\n| --- | --- | --- | --- | --- |\n| El motivo de cancelar no se valida | revisión de la 0007 | medio | `cancelar Sur mar --motivo xyz` | 0010 |\n| Los motivos no se traducen (castellano e inglés) | cliente | bajo | `canceladas` | 0010 |\n\n## Descartadas\n\n| Ítem | Origen | Motivo | Fecha |\n| --- | --- | --- | --- |\n');
+  s.put('.docs/sdd/steering/debt.md', '# Deuda técnica — salas\n\n## Por triar\n\n| Ítem | Origen | Fecha |\n| --- | --- | --- |\n\n## En espera\n\n| Ítem | Causa | Origen | Impacto | Falta | Fecha |\n| --- | --- | --- | --- | --- | --- |\n\n## Lista\n\n| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| El motivo de cancelar no se valida | defecto del producto | revisión de la 0007 | medio | `cancelar Sur mar --motivo xyz` | — | — | 0010 |\n| Los motivos no se traducen (castellano e inglés) | defecto del producto | cliente | bajo | `canceladas` | — | — | 0010 |\n\n## Descartadas\n\n| Ítem | Causa | Origen | Motivo | Fecha |\n| --- | --- | --- | --- | --- |\n');
   s.commit('docs(sdd): roadmap y deuda en la forma 3.0.0');
 }
 // El corte solo arranca en la forma 3.0.0.

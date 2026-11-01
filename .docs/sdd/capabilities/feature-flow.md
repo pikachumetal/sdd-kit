@@ -738,7 +738,33 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN una task toca un E2E siguiendo la guía de `sdd-tdd`
 - THEN deja un test en una suite que el cierre corre entera, que sale en rojo y nombra ese título
 - AND con el título en la lista sale en verde
-- AND con la lista `pendiente` o sin E2E, no se pide ese test
+- AND sin E2E, no se pide ese test
+
+### El test de títulos E2E nace en verde y su lista de heredados solo encoge
+
+- GIVEN una suite con 70 tests en 2 configs de Playwright, sin el test de títulos y con «Flujos core» sin declarar
+- WHEN una task toca un E2E siguiendo la guía de `sdd-tdd`
+- THEN `operations.md` lleva todos sus títulos en «Títulos heredados» y el test sale en verde
+- AND con un `test('exporta a PDF')` nuevo, sale en rojo y nombra `exporta a PDF`
+- AND con un bucle nuevo sobre `claro` y `oscuro` cuyo `test(...)` tiene de título una plantilla `pinta en ${t}`, sale en rojo y nombra `pinta en claro` y `pinta en oscuro`
+- AND al borrar un test heredado, sale en rojo y nombra su título hasta que se quita su línea
+- AND el título nuevo es propuesta para el ✋: la task no añade su línea a «Títulos heredados»
+
+### El test de títulos lee los títulos que corre Playwright
+
+- GIVEN una config con `grepInvert: /@slow/` que esconde 5 de 70 tests, y otra config con 34 tests en 2 `projects`
+- WHEN corre el test de títulos
+- THEN compara los 70 títulos de la primera y los 19 distintos de la segunda, salidos de `playwright test --list`
+- AND sin arrancar servidor, `globalSetup` ni navegador
+- AND si `--list` sale con un código distinto de 0, el test sale en rojo con el error de Playwright, no con una lista vacía
+
+### Quien depura busca el fallo en la deuda antes de investigar
+
+- GIVEN el molde `remedy`: `npm run informe` falla con `ENOENT` sobre `.cache/informes/ocupacion.csv`, y en «Lista» de `debt.md` hay una fila de problema «El listado de ocupación no sale tras limpiar el repo», con «Remedio temporal» `recrea la carpeta de la caché`
+- WHEN se invoca `sdd-debugging` para ese fallo
+- THEN compara el fallo con las filas de la deuda por significado, no solo por las palabras del error, y dice que esa fila lo cubre, con su remedio
+- AND aplicar el remedio no se da por causa raíz: la fila sigue abierta y el arreglo sigue pendiente
+- AND sin una fila que lo nombre, sigue la Fase 1 sin cambios
 
 ### Un spike tiene spec corta
 

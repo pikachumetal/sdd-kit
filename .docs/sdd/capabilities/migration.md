@@ -112,7 +112,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - GIVEN una migración de `skills/sdd-upgrade/references/migrations/` que escribe en `sdd-kit.json` u otro fichero del proyecto
 - WHEN corre la suite del kit
 - THEN la migración declara en su línea `**Escribe**:` cada fichero y cada clave que escribe
-- AND la suite falla si una clave declarada no aparece literal en `sdd-init`, contando su `SKILL.md`, sus `references/`, los documentos que estos enlazan salvo `skills/sdd-upgrade/`, `sdd-config` incluido, y los `.ts` de `cli/src/init/`
+- AND la suite falla si una clave declarada no aparece literal en `sdd-init`, contando su `SKILL.md`, sus `references/`, los documentos que estos enlazan salvo `skills/sdd-upgrade/`, `sdd-config` incluido, y los `.ts` de `cli/src/init/`, salvo `extraKnownMarketplaces.superpowers-marketplace`, que el kit retiró después de escribirla `v2.0.0.md`
 - AND la suite falla si el texto de una pregunta del catálogo de `sdd-config` aparece en la init o en una migración, o si una de ellas no nombra `sdd-config`
 
 ### La migración a v2.0.0 quita el historial de las capacidades
@@ -243,12 +243,15 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 ### La migración a v3.0.0 lleva la deuda a `debt.md` sin inventar celdas
 
-- GIVEN una «Deuda técnica» 2.x con una fila `**Actuar** → 0022` cuyo «Ítem» enlaza su ticket, una `**Actuar** → sin fila` sin evidencia, una `**Esperar 2.º ticket**`, una `**Descartada**: duplica la 0018`, una con destino `versión siguiente` y una saldada posterior a la última release cerrada
+- GIVEN una «Deuda técnica» 2.x con una fila `**Actuar** → 0022` cuyo «Ítem» enlaza su ticket, una `**Actuar** → sin fila` sin evidencia, una `**Esperar 2.º ticket**`, una `**Descartada**: duplica la 0018`, una con destino `versión siguiente`, una saldada posterior a la última release cerrada, una `**Actuar** → 0030 · causa: prueba o molde · arreglo: mover regla`, y una `**Esperar 2.º ticket** · causa: fusión de registros — falta reproducirlo`
 - WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
 - THEN `.docs/sdd/steering/debt.md` tiene la primera en «Lista» con destino 0022 y el ticket como evidencia, y la saldada en «Lista» con su prefijo `**[… saldada …]**` intacto
 - AND la de `sin fila` y la de `versión siguiente` están en «Por triar», la de `**Esperar**` en «En espera» y la `**Descartada**` en «Descartadas» con «duplica la 0018» como motivo
 - AND cada «Fecha» es la del commit que añadió su fila al roadmap, y la tabla dice de dónde salió
 - AND `sdd roadmap check --path .docs/sdd` escribe `Roadmap válido`
+- AND la de la 0030 tiene «Causa» `prueba o molde` y «Arreglo» `mover regla`, y la de `fusión de registros` tiene esa «Causa» y «Falta» `reproducirlo`, sin las marcas
+- AND las que no traen causa o arreglo los llevan propuestos en la tabla, marcados como propuesta, leyendo su «Ítem»; si el dev-lead rechaza la causa de una, esa fila va a «Por triar»
+- AND el «Remedio temporal» sale de `· remedio:`; sin él, es `—` en una fila de un caso, y la tabla lo pregunta en una con dos o más enlaces
 
 ### Sin el dev-lead, la migración a v3.0.0 no mueve nada
 
@@ -356,6 +359,26 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN corre la migración
 - THEN el fichero queda escrito y su entrada en `hooks.UserPromptSubmit` de `.claude/settings.json`, una sola vez, sin gate y sin tocar las demás entradas
 - AND si la entrada ya estaba, no la duplica, y la línea `**Escribe**:` de la migración los nombra
+
+### La migración a v3.0.0 ofrece el test de títulos E2E
+
+- GIVEN un proyecto 2.x con `playwright.config.ts` y `e2e/booking.spec.ts`, sin «Flujos core»
+- WHEN aplica el paso 2 de `migrations/v3.0.0.md`
+- THEN la tabla ofrece el test de títulos, con «Títulos heredados» salidos de `playwright test --list`
+- AND con el «sí», `operations.md` lleva el bloque, el test queda en una suite que el cierre corre entera y sale en verde
+- AND en un proyecto sin E2E la tabla no lo nombra
+
+### La migración a v3.0.0 propone quitar la activación de superpowers
+
+- GIVEN un proyecto que migra a v3.0.0 con `enabledPlugins["superpowers@superpowers-marketplace"]` y `extraKnownMarketplaces["superpowers-marketplace"]` en `.claude/settings.json`
+- WHEN llega al paso 10, con el marcador ya en `3.0.0`
+- THEN pregunta «El kit ya no usa superpowers. ¿Quito su activación de `.claude/settings.json`? Si el proyecto usa sus skills fuera del kit, di que no y se queda como está.» y espera, sin haber escrito nada
+- AND con un «sí», quita las dos claves y hace el commit `chore(sdd): quitar la activación de superpowers`
+- AND con un «no», o sin respuesta, `.claude/settings.json` no cambia y el informe dice «Superpowers sigue declarado en `.claude/settings.json`. Para quitarlo más tarde, borra `enabledPlugins["superpowers@superpowers-marketplace"]` y, si ningún otro plugin activado sale de ese marketplace, `extraKnownMarketplaces["superpowers-marketplace"]`.»
+- AND con `enabledPlugins["elements-of-style@superpowers-marketplace"]` = `true`, el «sí» quita solo `superpowers@superpowers-marketplace`, conserva el marketplace y dice que lo usa ese plugin
+- AND con esa misma clave en `false`, el marketplace se quita: un plugin desactivado no lo usa
+- AND no desinstala nada ni toca `~/.claude/settings.json`
+- AND sin ninguna de las dos claves, o con solo el marketplace y otro plugin en `true`, el paso se salta y lo dice
 
 ## Reglas de la capacidad
 

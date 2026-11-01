@@ -1,5 +1,5 @@
 // Sujeto de la batería de sdd-debugging: un pre-commit que falla por el entorno que hereda del commit.
-// Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
+// Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,13 +15,24 @@ const FAKE_SECRET = 'ghp_FAKE0231notarealtoken0000000000000';
 
 s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
 s.putKitMarker(MARKER);
-if (cell('Molde') !== 'hook') s.die(`molde desconocido en battery.md: ${s.SC}`);
-s.copy(join(HERE, 'mold-hook'));
-chmodSync(join(s.R, '.githooks', 'pre-commit'), 0o755);
-s.initRepo();
-s.git('config', 'core.hooksPath', '.githooks');
-writeFileSync(join(s.R, 'notas.txt'), 'Revisar el aforo de la sala 3.\n');
-s.git('add', 'notas.txt');
+const molds = {
+  hook: () => {
+    s.copy(join(HERE, 'mold-hook'));
+    chmodSync(join(s.R, '.githooks', 'pre-commit'), 0o755);
+    s.initRepo();
+    s.git('config', 'core.hooksPath', '.githooks');
+    writeFileSync(join(s.R, 'notas.txt'), 'Revisar el aforo de la sala 3.\n');
+    s.git('add', 'notas.txt');
+  },
+  // Un fallo que ya tiene su remedio en la deuda: el error no nombra la fila.
+  remedy: () => {
+    s.copy(join(HERE, 'mold-remedy'));
+    s.initRepo();
+  },
+};
+const mold = molds[cell('Molde')];
+if (!mold) s.die(`molde desconocido en battery.md: ${s.SC}`);
+mold();
 
 // El sujeto hereda el entorno de quien lanza: un RED que lo vuelque copiaría a las salidas un secreto real.
 for (const name of Object.keys(s.env)) if (/TOKEN|SECRET|PASSWORD|_KEY$/.test(name)) delete s.env[name];

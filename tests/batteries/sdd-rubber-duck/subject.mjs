@@ -1,5 +1,5 @@
 // Sujeto de la batería de sdd-rubber-duck: algo que explicar a un dev-lead que conoce el producto y no el código.
-// Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
+// Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';

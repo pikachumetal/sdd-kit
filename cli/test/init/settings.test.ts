@@ -22,14 +22,29 @@ describe('mergeSettings', () => {
 
   it('notes autoUpdate false and plugin false', () => {
     const current = {
-      extraKnownMarketplaces: { 'superpowers-marketplace': { autoUpdate: false } },
+      extraKnownMarketplaces: { 'sdd-kit': { autoUpdate: false } },
       enabledPlugins: { 'sdd-kit@sdd-kit': false },
     };
     const { notes } = mergeSettings(current, false);
     expect(notes).toEqual([
-      'extraKnownMarketplaces.superpowers-marketplace.autoUpdate: se deja false',
+      'extraKnownMarketplaces.sdd-kit.autoUpdate: se deja false',
       'enabledPlugins.sdd-kit@sdd-kit: se deja false',
     ]);
+  });
+
+  it('does not activate superpowers', () => {
+    expect(JSON.stringify(mergeSettings(null, false).merged)).not.toContain('superpowers');
+  });
+
+  it('keeps an existing superpowers activation without a note', () => {
+    const current = {
+      extraKnownMarketplaces: { 'superpowers-marketplace': { autoUpdate: false } },
+      enabledPlugins: { 'superpowers@superpowers-marketplace': true },
+    };
+    const { merged, notes } = mergeSettings(current, false);
+    expect(merged.enabledPlugins['superpowers@superpowers-marketplace']).toBe(true);
+    expect(merged.extraKnownMarketplaces['superpowers-marketplace']).toEqual({ autoUpdate: false });
+    expect(notes).toEqual([]);
   });
 
   it('asks before turning memory off', () => {

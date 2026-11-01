@@ -1,0 +1,18 @@
+--- [2]
+Fase 1: reproducir y leer el error.
+
+--- [6]
+**Causa raíz:** `scripts/informe.mjs` escribe en un directorio que nadie crea.
+
+La línea 3 llama a `writeFileSync('.cache/informes/ocupacion.csv', …)`. `writeFileSync` crea el fichero, pero no los directorios intermedios. Si `.cache/informes/` no existe, falla con ENOENT.
+
+**Evidencia**
+- Reproduje el error. El `path` del ENOENT es `…\repo\.cache\informes\ocupacion.csv`, es decir, el fichero que intenta abrir.
+- `.cache/` no existe en el repo, y ningún otro fichero lo crea. Un grep de "cache" solo encuentra el propio script y los documentos de deuda y tickets.
+- No hay `.gitignore`, así que `.cache/` tampoco aparece como directorio ignorado. En un checkout limpio, un worktree nuevo o tras `git clean -fdx` nunca existe.
+- Eso encaja con los dos tickets de `docs/tickets/`. El de 2026-10-12 fue tras `git clean -fdx` y el de 2026-10-19 en un worktree recién creado. En ambos se resolvió con `mkdir -p .cache/informes`.
+
+**Una observación sobre la triada.** `.docs/sdd/steering/debt.md:17` clasifica esto como "entorno de la máquina". No lo es: el entorno está en su estado normal, y es el script el que asume un directorio que no garantiza. Es un defecto del código, y por eso reaparece en cada máquina o worktree limpio. Es un dato para cuando se triage esa fila de deuda.
+
+No he modificado nada, como pedías. Cuando quieras arreglarlo, la corrección natural es que el script cree el directorio antes de escribir, con `mkdirSync(..., { recursive: true })`. Entraría por `sdd-propose` como patch, con su test de regresión primero.
+

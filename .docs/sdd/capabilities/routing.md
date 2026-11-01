@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y superpowers: qué skill se invoca primero. Las salidas finas las decide después el paso 2 de `sdd-propose`.
+Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/`: qué skill se invoca primero. Las salidas finas las decide después el paso 2 de `sdd-propose`.
 
 ## Requisitos
 
@@ -289,6 +289,13 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - AND no crea carpeta ni rama, no repite la Task 1 y sigue por la Task 2, tras mirar la base
 - AND en la rama `patch/0021-cancel-missing`, con `patch.md` hasta el fix y sin commitear, «Retoma el patch, lo dejé ayer a medias.» invoca primero `sdd-kit:sdd-implement`, que sigue por el primer paso cuya salida falta, sin crear otro `patch.md`
 - AND sin `spec.md` aprobada ni `patch.md` en la rama, lo manda a `sdd-propose`
+
+### El kit carga y enruta sin superpowers
+
+- GIVEN un proyecto con `.docs/sdd/`, `sdd-kit.json` en la versión del kit cargado, el hook del proyecto instalado, y sin superpowers instalado
+- WHEN arranca una sesión y el usuario escribe «añade autenticación con magic link»
+- THEN el kit está cargado, el hook de sesión inyecta `using-sdd` sin ningún aviso, y el agente entra por `sdd-kit:sdd-propose`
+- AND el hook del proyecto `.claude/hooks/sdd-kit-loaded.mjs` no escribe `AVISO sdd-kit: esta sesión no tiene cargadas las skills del kit.`
 
 ## Reglas de la capacidad
 

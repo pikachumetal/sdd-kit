@@ -1,0 +1,73 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat package.json; echo ---; npm run informe 2>&1 | head -30; echo ---; ls -la; git log --oneline | head
+<<< {
+  "name": "salas",
+  "private": true,
+  "scripts": { "informe": "node scripts/informe.mjs" }
+}
+---
+npm notice run informe
+npm notice run node scripts/informe.mjs
+node:fs:3020
+    return binding.writeFileUtf8(
+                   ^
+
+Error: ENOENT: no such file or directory, open '<run>\repo\.cache\informes\ocupacion.csv'
+    at writeFileSync (node:fs:3020:20)
+    at file:///<run>/repo/scripts/informe.mjs:3:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal
+
+>>> Bash: cat scripts/informe.mjs; echo ---; cat .gitignore README.md; git check-ignore -v .cache; git log --stat --oneline | head -20; ls scripts
+<<< import { writeFileSync } from 'node:fs';
+
+writeFileSync('.cache/informes/ocupacion.csv', 'sala,ocupacion\nNorte,80\n');
+---
+cat: .gitignore: No such file or directory
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+54b862f feat: base del molde
+ .docs/sdd/changelog.md                             | 20 ++++++++++++++
+ .docs/sdd/constitution.md                          |  6 +++++
+ .docs/sdd/mission.md                               |  3 +++
+ .docs/sdd/roadmap.md                               | 31 ++++++++++++++++++++++
+ .docs/sdd/sdd-kit.json                             |  1 +
+ .../sp
+
+>>> Bash: cat docs/tickets/*; grep -n -i "cache\|informe" -r .docs src test | head -20
+<<< # El listado de ocupación no sale
+
+Tras limpiar el repo, el listado de ocupación da un error de fichero. Perdí 30 minutos. Recrear la carpeta de la caché lo resolvió.
+# Un worktree nuevo no saca el listado
+
+En un worktree recién creado el listado de ocupación no sale. Después de 40 minutos, recrear la carpeta de la caché a mano lo resolvió.
+.docs/sdd/steering/debt.md:17:| El listado de ocupación no sale tras limpiar el repo | entorno de la máquina | [ticket](../../../docs/tickets/2026-10-12-informe.md), [ticket](../../../docs/tickets/2026-10-19-informe.md) | medio | los dos tickets | recrea la
+
+=== RESULTADO (6 turnos, 0.1209778 $)
+## Causa raíz
+
+`npm run informe` falla porque `scripts/informe.mjs:3` escribe en `.cache/informes/ocupacion.csv` con `writeFileSync`, y ese directorio no existe. `writeFileSync` no crea directorios intermedios, así que Node lanza `ENOENT`.
+
+## Evidencia
+
+- Reproduje el fallo. El error es `ENOENT ... open '...\repo\.cache\informes\ocupacion.csv'` con `syscall: 'open'`, lanzado desde `informe.mjs:3`.
+- El script solo hace `writeFileSync('.cache/informes/ocupacion.csv', ...)`. No tiene ningún `mkdirSync`.
+- La carpeta `.cache/` no está en el repo ni en el árbol de trabajo. No hay `.gitignore`, y nada en el proyecto la crea (ni `package.json` ni otros scripts).
+- Por eso falla en cualquier checkout limpio, en un worktree nuevo o tras limpiar el repo. Solo funciona en una máquina donde alguien ya creó `.cache/informes/` a mano.
+- Los dos tickets de `docs/tickets/` cuentan lo mismo: tras limpiar o en un worktree nuevo no sale el listado, y recrear la carpeta de la caché lo arregló.
+- `.docs/sdd/steering/debt.md:17` ya tiene esa deuda anotada, pero la clasifica como "entorno de la máquina".
+
+## Matiz sobre esa clasificación
+
+La causa no está en la máquina. El script da por hecho que existe un directorio que nadie crea, así que el fallo está en el propio script. Ese fallo se repite en cada checkout limpio, y el entorno no tiene nada que ver. Por eso diría que esa fila del triaje está mal clasificada. Lo que sigue sería una decisión tuya.
+
+## Qué no he hecho
+
+No he tocado nada, como pediste. Cuando quieras pasar al arreglo, el cambio entra por `sdd-propose`.
+
+Una nota aparte: el hook de sesión avisa de que está cargado el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que he usado pueden ser de una versión vieja.

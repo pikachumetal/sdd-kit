@@ -66,10 +66,9 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 
 - GIVEN un `sdd-init` sobre un proyecto cuyo `.claude/settings.json` es `{"permissions": {"allow": ["Bash(npm test)"]}}`
 - WHEN ejecuta `sdd init --root <raíz> --finish`
-- THEN `.claude/settings.json` conserva `permissions` y gana `"autoMemoryEnabled": false`, `extraKnownMarketplaces.sdd-kit` con la fuente `github` `pikachumetal/sdd-kit` y `extraKnownMarketplaces.superpowers-marketplace` con la fuente `github` `obra/superpowers-marketplace`, los dos con `"autoUpdate": true`, y `enabledPlugins` con `"sdd-kit@sdd-kit": true` y `"superpowers@superpowers-marketplace": true`
+- THEN `.claude/settings.json` conserva `permissions` y gana `"autoMemoryEnabled": false`, `extraKnownMarketplaces.sdd-kit` con la fuente `github` `pikachumetal/sdd-kit` y `"autoUpdate": true`, y `enabledPlugins` con `"sdd-kit@sdd-kit": true`, sin ninguna clave de superpowers
 - AND `.gitignore` contiene las líneas `.playwright-mcp/`, `.superpowers/`, `.docs/sdd/sdd-kit.local.json` y `.temp/` una sola vez cada una, y cada ruta de `--ignore`
 - AND con `"autoMemoryEnabled": true` previo, la salida dice `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia` y el agente pregunta; con su «sí», repite `--finish` con `--memory-off` y la clave queda en `false`; con su «no», se queda en `true` y el resumen de cierre lo anota
-- AND si `claude plugin marketplace list` no muestra `superpowers-marketplace`, el agente ejecuta `claude plugin marketplace add obra/superpowers-marketplace`
 - AND la init escribe `.claude/hooks/sdd-kit-loaded.mjs` y añade su entrada a `hooks.UserPromptSubmit` de `.claude/settings.json` una sola vez, sin tocar las que ya hubiera
 
 ### El log de estimación lo genera el script del kit
@@ -202,6 +201,13 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - THEN propone como candidatos a flujo core los de esos tres ficheros, y pregunta cuáles lo son
 - AND `operations.md` sale con `Retries: 0 en local; 2 en CI`, `Timeouts: 60 s por test, sin motivo escrito` y `Presupuesto E2E: pendiente`
 - AND en un proyecto sin E2E no pregunta nada de esto y §Testing no lleva esos campos
+
+### La init ofrece el test de títulos E2E
+
+- GIVEN un proyecto con código, `playwright.config.ts` y tests E2E
+- WHEN `sdd-init` llega a la fila de Testing
+- THEN ofrece el test de títulos, y con el «sí» deja «Títulos heredados» salidos de `playwright test --list` y el test en verde
+- AND en un proyecto sin E2E no lo nombra
 
 ## Reglas de la capacidad
 

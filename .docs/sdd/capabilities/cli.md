@@ -82,7 +82,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 - GIVEN un proyecto sin `.claude/settings.json`, con un `.gitignore` con CRLF que tiene `node_modules/` y `.superpowers/`, y un `sdd-kit.json` en curso con `init.config` = `{"ids":{"mode":"sequence"},"control":{"profile":"delegate"}}`
 - WHEN se ejecuta `sdd init --root <raíz> --finish --ignore .auth/`
-- THEN `.claude/settings.json` tiene el bloque de la init (memoria desactivada, los dos marketplaces con `autoUpdate: true` y los dos plugins activados), igual al bloque marcado con `<!-- sdd-init: settings -->` del README, más la entrada del hook del proyecto
+- THEN `.claude/settings.json` tiene el bloque de la init (memoria desactivada, el marketplace del kit con `autoUpdate: true` y el plugin del kit activado), igual al bloque marcado con `<!-- sdd-init: settings -->` del README, más la entrada del hook del proyecto
 - AND `.gitignore` conserva `node_modules/` y `.superpowers/` una vez, gana `.playwright-mcp/`, `.docs/sdd/sdd-kit.local.json`, `.temp/` y `.auth/` con CRLF, y termina en salto de línea
 - AND `.docs/sdd/sdd-kit.json` tiene `version` igual a la de `.claude-plugin/plugin.json`, `channel` `plugin`, `updated` del día, `ids.mode` `sequence` y `control.profile` `delegate`, sin `init`, y es el último fichero que se escribe
 - AND la salida tiene una línea por fichero con `creado` o `actualizado`, y sale con 0
@@ -93,9 +93,9 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 ### `sdd init --finish` fusiona `settings.json` por hoja sin pisar
 
-- GIVEN un `.claude/settings.json` con `extraKnownMarketplaces.sdd-kit.source.repo` = `"otro/fork"`, `extraKnownMarketplaces.superpowers-marketplace.autoUpdate` = `false` y `enabledPlugins["sdd-kit@sdd-kit"]` = `false`
+- GIVEN un `.claude/settings.json` con `extraKnownMarketplaces.sdd-kit.source.repo` = `"otro/fork"`, `enabledPlugins["superpowers@superpowers-marketplace"]` = `true` y `enabledPlugins["sdd-kit@sdd-kit"]` = `false`
 - WHEN se ejecuta `sdd init --root <raíz> --finish`
-- THEN esas tres hojas no cambian, se añaden las que faltan del bloque, y la salida dice `extraKnownMarketplaces.sdd-kit.source.repo: se deja "otro/fork"`, `extraKnownMarketplaces.superpowers-marketplace.autoUpdate: se deja false` y `enabledPlugins.sdd-kit@sdd-kit: se deja false`
+- THEN esas tres hojas no cambian, se añaden las que faltan del bloque, y la salida dice `extraKnownMarketplaces.sdd-kit.source.repo: se deja "otro/fork"` y `enabledPlugins.sdd-kit@sdd-kit: se deja false`, sin ninguna línea sobre superpowers, que no es del bloque
 - AND con `"autoMemoryEnabled": true`, dice `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`, y con `--memory-off` la deja en `false`
 
 ### `sdd init` no escribe nada si un fichero no se puede fusionar
@@ -228,6 +228,43 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN escribe el fichero y su entrada en `hooks.UserPromptSubmit` de `.claude/settings.json`, con una línea de salida por fichero, y sale con 0
 - AND repetirlo no duplica la entrada y dice `sin cambios` en los dos
 - AND con `--mark` sale con 2 y no escribe
+
+### `sdd review comments` lista los comentarios añadidos que citan documentos
+
+- GIVEN una rama sobre `develop` que añade a `src/save.ts`, en sus líneas 3, 4, 5 y 6, `// según la spec §3`, `// Task 4: validar antes de guardar`, `// moon hereda el entorno: sin limpiarlo usa otro workspace` y `const note = "// según la spec §3";`
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN escribe `src/save.ts:3 · spec · // según la spec §3` y `src/save.ts:4 · task · // Task 4: validar antes de guardar`
+- AND no escribe las líneas 5 y 6
+- AND cierra con `2 comentarios citan documentos` y sale con 0
+
+### `sdd review comments` sale con 0 sin encontrar nada
+
+- GIVEN una rama cuyo diff no añade comentarios que citen documentos
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN escribe `ningún comentario cita documentos` y sale con 0
+- AND sin `--base` escribe el uso en stderr y sale con 2
+- AND con una `--base` que no existe escribe en stderr `base: no se encuentra <ref>` y sale con 1
+
+### `sdd review comments` mira solo las líneas añadidas
+
+- GIVEN `src/old.ts` con `// Task 2: viejo` en `develop`, y una rama que añade otra línea de código a ese fichero y un fichero `docs/a.md` con `<!-- según la spec §3 -->`
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN no escribe `src/old.ts` ni `docs/a.md`
+- AND si la rama integró `develop` con un merge que trae `src/otra.ts` con `// Task 9`, tampoco lo escribe
+
+### `sdd review comments` reconoce los comentarios de cada lenguaje
+
+- GIVEN una rama que añade `# según la spec §3` a `a.py`, `-- Task 4` a `b.sql`, `<!-- constitution -->` a `c.html`, una línea interior de un `/* */` con `capabilities/booking.md` a `d.cs`, y `x = "# según la spec §3"` a `e.py`
+- WHEN se ejecuta `node sdd.js review comments --base develop --json`
+- THEN `comments` trae `a.py`, `b.sql`, `c.html` y `d.cs`, con `cites` `["spec"]`, `["task"]`, `["constitution"]` y `["capabilities/"]`, y no trae `e.py`
+- AND un comentario `// requisito de la spec` lleva `cites` `["spec","requisito"]`, y `foo.spec.ts` dentro de un comentario no cuenta como `spec`
+
+### `sdd review comments` dice qué no ha leído
+
+- GIVEN una rama que añade `a.vue`, `b.json`, `c.md` y `.docs/sdd/specs/x/red/m.ts` con `// Task 4`
+- WHEN se ejecuta `node sdd.js review comments --base develop`
+- THEN escribe `sin leer: a.vue` antes de la línea de cierre, y no lista los otros tres
+- AND con `--json`, `unread` es `["a.vue"]`
 
 ## Reglas de la capacidad
 

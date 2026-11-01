@@ -26,7 +26,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - WHEN el hilo despacha la revisión final
 - THEN con `sdd-parallel-agents` y en segundo plano salen dos revisores sobre `a1b2c3d`: el eje Spec con `sdd-kit:effort-high` + `opus` y el eje Código con `sdd-kit:effort-high` + `sonnet`, cada uno con su vigía de silencio
 - AND el encargo de cada eje lleva la cabecera de `encargo-revision.md` («Restricciones de código»), su sección «Cómo revisar» y el encargo de su eje de `sdd-verify`
-- AND el eje Spec recibe además las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan literal, la lista de ADR `accepted` de `sdd decision index --files <ficheros del diff>`, la salida de `sdd capability index` y el puntero a las líneas `Ruling:` y `minor (deferred)` del ledger; el eje Código, el paquete y «Flujos core», «Retries» y «Timeouts» de `operations.md` §Testing, literales, o `sin E2E declarados`; el eje Arquitectura, el paquete y `architecture.md`
+- AND el eje Spec recibe además las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan literal, la lista de ADR `accepted` de `sdd decision index --files <ficheros del diff>`, la salida de `sdd capability index` y el puntero a las líneas `Ruling:` y `minor (deferred)` del ledger; el eje Código, el paquete, «Flujos core», «Retries» y «Timeouts» de `operations.md` §Testing, literales, o `sin E2E declarados`, y la salida de `sdd review comments` en el worktree del revisor; el eje Arquitectura, el paquete y `architecture.md`
 - AND con `Eje Arquitectura: sí — <frontera>` sale además el eje Arquitectura, con `sdd-kit:effort-high` + `opus`
 - AND con `control.maxParallelAgents: 2` y tres ejes, salen dos y el tercero cuando vuelve uno
 - AND los ejes trabajan en el mismo worktree desanclado `review-<id>-a1b2c3d`
@@ -204,6 +204,15 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - THEN no lo adjudica con un ruling: escribe el test que lo reproduce, lo ve fallar, lo arregla, corre la suite y lleva a ✋ `sin revisar: <sha> — arregla el Important «canceladas enseña la franja de la reserva equivocada»`
 - AND no despacha otra re-revisión
 - AND un Important que la re-revisión achaca a la pasada sin que caiga en sus líneas, porque lo dice su informe, sigue el mismo camino
+
+### El eje Código juzga cada comentario que lista `sdd review comments`
+
+- GIVEN un encargo del eje Código con la salida `src/save.ts:4 · task · // Task 4: validar antes de guardar` y `src/iban.ts:9 · requisito · // requisito del proveedor: el IBAN va sin espacios`, y un bloque «De código» que no habla de comentarios
+- WHEN revisa el eje Código
+- THEN marca Important `src/save.ts:4`
+- AND no marca `src/iban.ts:9` como hallazgo, y lo escribe en «Declined to judge»
+- AND una cita del diff que la lista no trae también es hallazgo
+- AND con un bloque «De código» que prohíbe citar documentos, una cita a `capabilities/` es Important aunque traiga un motivo
 
 ### El eje Spec contrasta el research de un spike
 

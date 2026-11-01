@@ -1,5 +1,5 @@
 // Sujeto de la batería de sdd-implement: un paso de la implementación, con los artefactos de ese punto ya escritos,
-// o el encargo de un implementador como petición. Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR.
+// o el encargo de un implementador como petición. Lo lanza tests/headless/battery.mjs run.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

@@ -1,0 +1,203 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Read: <run>\repo\docs\tickets\2026-10-20-copia-molde.md
+<<< 1	# Copiar el molde falla con `ENOENT`
+2	
+3	Al arrancar el segundo sujeto, `cp` dio `ENOENT: no such file or directory` sobre un fichero de `node_modules` que existe en el molde. Sucede solo en la copia que cuelga del scratchpad de la sesión de la feature 0044, cuyo nombre de worktree es largo: la ruta de destino pasa de 260.
+4	
+5	Perdí 40 minutos mirando permisos y Defender. Con la copia colgando de `D:\r` no falla.
+6	
+
+>>> Bash: cd "<run>/repo" && ls -a . docs docs/tickets .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json; git branch --all; cat ROADMAP.md .docs/sdd/steering/debt.md 2>&1
+<<< Exit code 1
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+docs/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+docs:
+./
+../
+tickets/
+
+docs/tickets:
+./
+../
+2026-10-05-salidas.md
+2026-10-20-copia-molde.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+* develop
+  main
+cat: ROADMAP.md: No
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/roadmap.md; echo ----; cat docs/tickets/2026-10-05-salidas.md; ls .docs/sdd/specs
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+| Las salidas de `DRY_RUN=1` no aparecen en `out/` ([ticket](../../docs/tickets/2026-10-05-salidas.md)) | Medio | **Esperar 2.º ticket** — falta 2.º caso |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve --count 1; cat .docs/sdd/changelog.md | head -20
+<<< 0008
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](specs/20260917-090000-task-0006-free/)
+
+### Fixed
+
+- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+
+## [0.3.0] - 2026-09-01
+
+### Added
+
+- Cancelar una reserva propia.
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| 1 | Avisos por correo antes de la reserva | ⏳ |\n","| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: comprobar la longitud de la ruta raíz de las ejecuciones antes de lanzar o copiar (falla con un aviso claro si el destino se acerca al límite) | ⏳ |\n")
+old=[l for l in s.split("\n") if l.startswith("| Las salidas de `DRY_RUN=1`")][0]
+new=("| Rutas largas bajo el scratchpad rompen en silencio: `DRY_RUN=1` deja `out/` vacía (`out_path` descarta rutas de 140 o más) y la copia del molde falla con `ENOENT` (destino de más de 260) "
+"([ticket](../../docs/tickets/2026-10-05-salidas.md), [ticket](../../docs/tickets/2026-10-20-copia-molde.md)) | Medio | "
+"**Actuar** → 0008 · causa: entorno de la máquina · arreglo: comprobación automática · remedio: lanzar y copiar desde un directorio corto (`D:\\r`) |")
+s=s.replace(old,new)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+S="D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js"; node "$S" roadmap check --path .docs/sdd
+<<< Exit code 1
+roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 22: prosa en «Deuda técnica»; fuera de «Releases cerradas» el roadmap solo lleva tablas
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: cd "<run>/repo" && sed -n 16,24p .docs/sdd/roadmap.md; git status --short
+<<< ## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+| Rutas largas bajo el scratchpad rompen en silencio: `DRY_RUN=1` deja `out/` vacía (`out_path` descarta rutas de 140 o más) y la copia del molde falla con `ENOENT` (destino de más de 260) ([ticket](../../docs/tickets/2026-10-05-salidas.md), [ticket](../../docs/tickets/2026-10-20-copia-molde.md)) | Medio | **Actuar** → 0008 · causa: entorno de la máquina · arreglo: comprobación automática · remedio: lanzar y copiar desde un directorio corto (`D:`) |
+
+
+
+>>> Bash: cd "<run>/repo" && git diff | cat -A | grep -n 'D:' | head; git diff --stat
+<<< 58:+| Rutas largas bajo el scratchpad rompen en silencio: `DRY_RUN=1` deja `out/` vacM-CM--a (`out_path` descarta rutas de 140 o mM-CM-!s) y la copia del molde falla con `ENOENT` (destino de mM-CM-!s de 260) ([ticket](../../docs/tickets/2026-10-05-salidas.md), [ticket](../../docs/tickets/2026-10-20-copia-molde.md)) | Medio | **Actuar** M-bM-^FM-^R 0008 M-BM-7 causa: entorno de la mM-CM-!quina M-BM-7 arreglo: comprobaciM-CM-3n automM-CM-!tica M-BM-7 remedio: lanzar y copiar desde un directorio corto (`D:^M`) |^M$
+ .docs/sdd/roadmap.md | 65 ++++++++++++++++++++++++++--------------------------
+ 1
+
+>>> Bash: cd "<run>/repo" && git checkout .docs/sdd/roadmap.md && file .docs/sdd/roadmap.md
+<<< Updated 1 path from the index
+.docs/sdd/roadmap.md: Unicode text, UTF-8 text, with CRLF line terminators
+
+>>> Edit: <run>\repo\.docs\sdd\roadmap.md
+<<< The file <run>\repo\.docs\sdd\roadmap.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\roadmap.md
+<<< The file <run>\repo\.docs\sdd\roadmap.md has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js"; git diff --stat; node "$S" roadmap check --path .docs/sdd
+<<< Exit code 1
+ .docs/sdd/roadmap.md | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+roadmap.md: línea 31: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js"; node "$S" roadmap publish --project-root . --message "docs(roadmap): triaje del ticket copia-molde
+
+Decidido (delegado): el ticket es el 2.º caso de salidas.md; mismo arreglo concreto (comprobar la longitud de la ruta raíz antes de lanzar o copiar). Fusionadas en una fila de Deuda técnica con Actuar -> 0008, causa: entorno de la máquina, arreglo: comprobación automática, remedio: directorio corto (D:\\r). Fila 0008 (patch) en Próximo.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md; git log --oneline -2
+<<< destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+9996f10 feat: base del molde
+
+>>> Bash: cd "<run>/repo" && git add .docs/sdd/roadmap.md && git commit -q -F - <<'EOF'
+docs(roadmap): triaje del ticket copia-molde
+
+Decidido (delegado): el ticket es el 2.º caso de salidas.md; mismo arreglo concreto (comprobar la longitud de la ruta raíz antes de lanzar o copiar). Fusionadas en una fila de Deuda técnica con Actuar -> 0008, causa: entorno de la máquina, arreglo: comprobación automática, remedio: directorio corto (D:\r). Fila 0008 (patch) en Próximo.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2
+<<< 697ced0 docs(roadmap): triaje del ticket copia-molde
+9996f10 feat: base del molde
+
+=== RESULTADO (16 turnos, 0.2494128 $)
+He triado el ticket y lo he fusionado con `salidas.md` en una sola fila de deuda, que pasa a **Actuar** y apunta a la fila nueva **0008**. Está en el commit `697ced0` de `develop`.
+
+**Por qué los fusiono.** Los dos tickets tienen la misma raíz: una ruta raíz larga bajo el scratchpad. Una comprobación de la longitud de la ruta antes de lanzar o copiar arregla ambos.
+- `salidas.md`: `out_path` descarta rutas de 140 o más.
+- `copia-molde.md`: el destino pasa de 260 y `cp` da `ENOENT`.
+
+**Cómo queda la fila de deuda.**
+- **Causa:** entorno de la máquina.
+- **Arreglo:** comprobación automática.
+- **Remedio temporal:** usar un directorio corto (`D:\r`).
+- **Evidencia:** los enlaces a los dos tickets.
+- **Destino:** **Actuar** → 0008.
+- La fila anterior de «Esperar 2.º ticket» desaparece, fusionada en esta.
+
+**Fila 0008 en Próximo.** Es un patch: comprobar la longitud de la ruta raíz de las ejecuciones antes de lanzar o copiar, con un aviso claro si el destino se acerca al límite. Reservé el id con `sdd id next --reserve`.
+
+**Decisiones mías, por el «decide tú»:**
+- Traté el proyecto como 2.x, porque no hay `ROADMAP.md`, aunque `sdd-kit.json` diga 3.0.0.
+- Cuenta como patch porque pide una sola comprobación. Si al arrancar resulta que son dos comprobaciones distintas (lanzador y copia), se re-clasifica.
+- La causa es discutible: también podría ser «herramienta del kit», porque el lanzador descarta la ruta en silencio. Elegí entorno porque lo que desaparece con el arreglo es la ruta larga.
+
+**Estado de la comprobación.** `sdd roadmap check` sigue dando dos fallos en líneas que no toqué, y no los he corregido. Son la forma heredada, pendiente de la migración a la plantilla:
+- La cabecera de «Deuda técnica» debería ser `| Ítem | Impacto | Destino |`.
+- El título `v0.3.0 (2026-09-01)` no tiene el formato `### v<versión> — <fecha>`.
+
+**Publicación.** `sdd roadmap publish` se negó porque `develop` está sacada en este mismo worktree con cambios sin confirmar. Hice el commit a mano con `git commit`, solo de `roadmap.md`. No hice push.
+
+**Siguiente paso.** Va primero la 0008. Prompt de lanzamiento:
+
+> Arranca el patch 0008: comprobar la longitud de la ruta raíz de las ejecuciones antes de lanzar o copiar, con un aviso claro si el destino se acerca al límite (tickets `docs/tickets/2026-10-05-salidas.md` y `docs/tickets/2026-10-20-copia-molde.md`).
+
+Si prefieres hacerlo en esta sesión, di «arráncalo».

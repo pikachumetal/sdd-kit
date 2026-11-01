@@ -4,6 +4,8 @@ import { dirname, join, resolve, sep } from 'node:path';
 import { isMigration, repoRoot } from './kit-files.ts';
 
 const migrationsDir = join(repoRoot, 'skills/sdd-upgrade/references/migrations');
+// Una migración publicada no se reescribe, aunque el kit retire después lo que escribía.
+const RETIRED_TOKENS = ['extraKnownMarketplaces.superpowers-marketplace'];
 
 const migrations = readdirSync(migrationsDir)
   .filter((name) => /^v.*\.md$/.test(name))
@@ -46,8 +48,12 @@ describe('paridad migración–init', () => {
   });
 
   it('cada token declarado por una migración aparece en sdd-init', () => {
-    const missing = migrations.flatMap(({ name, text }) => declaredTokens(text).filter((token) => !corpus.includes(token)).map((token) => `${name}: ${token}`));
+    const missing = migrations.flatMap(({ name, text }) => declaredTokens(text).filter((token) => !corpus.includes(token) && !RETIRED_TOKENS.includes(token)).map((token) => `${name}: ${token}`));
     expect(missing).toEqual([]);
+  });
+
+  it('una clave retirada sale de la init', () => {
+    expect(RETIRED_TOKENS.filter((token) => corpus.includes(token))).toEqual([]);
   });
 
   it('el corpus de una init no incluye las migraciones', () => {
