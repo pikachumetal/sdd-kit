@@ -1,6 +1,6 @@
 ---
 name: sdd-implement
-description: Use when sdd-propose hands off an approved spec (and plan, in full mode), to implement it task by task, in this session (Native) or with a subagent per task (SDD). Invoked from there; not the entry of a change (that is sdd-propose).
+description: Use when sdd-propose hands off a confirmed patch, or an approved spec (and plan, in full mode), to implement it task by task, in this session (Native) or with a subagent per task (SDD). Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
 # sdd-implement
@@ -16,6 +16,10 @@ Execute the approved plan, task by task, and leave a record that survives your o
 **Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record. Each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects.
 
 **Continuous execution:** do not pause to check in with the user between tasks. Execute all tasks from the plan without stopping: in Native, the plan's `Ejecución` line chose it to spend less, not to answer «should I continue?» after every task. «Should I continue?» prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. Four things stop you, and only these: an irreversible or destructive operation; a security-sensitive action; a side effect outside this worktree that norms say you ask about first (a merge, a push to a shared branch, a publish); and a plan so broken that every path forward is a guess. For those, stop and ask. The kit's own stops are a fifth class, not an exception to the four: a **deviation** from the approved spec, a **scope brake** and, in `pair`, the stop after each task ([Deviations and rulings](#deviations-and-rulings)).
+
+## Patch
+
+If `sdd-propose` handed you a confirmed patch, first thing, read [references/patch-flow.md](references/patch-flow.md) and follow it from its step 1, with the class and the estimate it brought; implement nothing from here. Everything below is for features and lites: the Setup, both loops and [After the last task](#after-the-last-task) don't apply, so a patch has no ledger, no final review and no axes. Its `sdd <verb>` run as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
 
 ## Method
 
