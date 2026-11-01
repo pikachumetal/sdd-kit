@@ -1,0 +1,100 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/steering/debt.md; echo ----; cat .docs/sdd/sdd-kit.json; ls; git branch --all
+<<< # Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio tem
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; cat package.json; find src test docs -type f; cat ROADMAP.md; cat .docs/sdd/steering/debt-template.md 2>/dev/null | head -5
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+{"type": "module"}
+src/app.js
+test/app.test.js
+docs/qa/2026-10-12-informe.md
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja po
+
+>>> Bash: cat src/app.js test/app.test.js; git log --oneline -5 -- src; node --test 2>&1 | tail -30; cat CHANGELOG.md | head -20; ls .docs/sdd .docs/sdd/*
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js exportar | od -c | head -3; node src/app.js exportar | iconv -f utf-8 -t ascii 2>&1 | head -2; node src/app.js libres --planta 2; locale 2>/dev/null | head -2; git log --all --oneline | head; cat .docs/sdd/steering/*.md | head -0; sed -n 1,200p .docs/sdd/constitution.md | head -40
+<<< 0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,d
+iconv: (stdin):1:6: cannot convert
+Norte (planta 1)
+LANG=en_US.UTF-8
+LC_CTYPE="en_US.UTF-8"
+425ec53 feat: base del molde
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de
+
+=== RESULTADO (7 turnos, 0.156388 $)
+Estoy triando las dos filas de «Por triar». Ya he reproducido las dos y no he escrito nada todavía. Como el perfil es `delegate`, te propongo el triaje y espero tu decisión.
+
+**1. «La exportación a CSV pierde las tildes desde la 1.4.2» → En espera, Falta `reproducirlo`**
+- Evidencia en contra: `node src/app.js exportar` saca `sala,día,franja`. Los bytes son `c3 ad`, o sea UTF-8 correcto, y el código fuente tiene la tilde bien.
+- El informe habla de la 1.4.2, y esa versión no está en el changelog (llega a la 1.4.1) ni en el repositorio.
+- Si el fallo existe, parece venir de cómo se lee el fichero en la máquina de QA, por ejemplo Excel sin BOM. Eso no lo puedo afirmar, así que la causa es `sin determinar`. No puede ir a «Lista».
+- Pido a QA el comando exacto, la versión y el sistema donde lo vieron.
+
+**2. `salas libres --planta 2` lista salas de la planta 1 → Lista**
+- Reproducido: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- El motivo es `floors[room] <= floor` en `roomsOnFloor` (`src/app.js:10`), que usa «menor o igual» en vez de igualdad.
+- Causa: `defecto del producto`. Arreglo: `—`. Remedio temporal: `ninguno`, porque lo he buscado y no hay tickets.
+- Hay un solo caso y no se mezcla con el otro. Con una sola fila no hay segundo caso que fusionar.
+- Destino: una fila nueva en Now, `S`, con `**Carril:** patch`. Sería un test que falla y un cambio de `<=` a `===`. Me da una pega: `Sur` está en la planta 3, así que pedir la planta 2 no devolvería ninguna sala. Habrá que fijar qué se muestra cuando no hay salas.
+
+**Aparte:** la fila de «En espera» de las reservas de más de 8 h (2.º caso, desde 2026-07-01) no ha caducado. La última release `X.Y.0` del changelog es la 1.4.0 (2026-09-01) y ya estaba en espera antes de ella. Eso sería una sola release, y `sdd roadmap check` no avisa. Aun así la compruebo al escribir.
+
+¿Apruebo así? Si dices «decide tú», lo escribo tal cual, reservo un id con `sdd id next --reserve`, paso `roadmap check`, publico el cambio y dejo las decisiones en el commit.

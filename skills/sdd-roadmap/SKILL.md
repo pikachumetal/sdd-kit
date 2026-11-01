@@ -25,9 +25,9 @@ With `ROADMAP.md` at the root, the project is on the **3.0.0 form**: Now, Next a
 | The `**Requisitos:**` of the brief (the proposal's path) | «`proposal: <id>`» in the «Ítem» cell |
 | A patch in Now, with `**Carril:** patch` | «Próximo», with «Patch:» at the start of the item |
 | Preparing a release | `## Release <N>` with «Ficheros que toca» |
-| Lista | A «Deuda técnica» row with `**Actuar**: <id of its «Próximo» row>` (or `sin fila`) in «Destino»; the «Próximo» row never replaces the debt row (`tests/sdd-roadmap-0150-green.md`, m6) |
-| En espera | `**Esperar 2.º ticket**`, with what is missing |
-| Descartada | `**Descartada**`, with its reason |
+| Lista | A «Deuda técnica» row with `**Actuar** → <id of its «Próximo» row> · causa: <causa> · arreglo: <arreglo>` (or `sin fila`; with two cases, `· remedio: <remedio>`) in «Destino»; the «Próximo» row never replaces the debt row (`tests/sdd-roadmap-0150-green.md`, m6) |
+| En espera | `**Esperar 2.º ticket** · causa: <causa> — falta <what is missing>` |
+| Descartada | `**Descartada** · causa: <causa>: <reason>` |
 | Por triar | does not exist: triage decides one of the three |
 
 ## Which entry it is (you decide, without asking)
@@ -113,6 +113,10 @@ Triage decides the state of each item of the technical debt (3.0.0: `debt.md`; 2
 
 The rules:
 
+- **Second case, before choosing the state**: open the tickets of every debt row and of the rest of the batch; don't compare the rows' words. Two findings are cases of one problem if the same concrete change or the same concrete remedy would solve both. Sharing only the cause, `ninguno` or a retry (`relanza`) doesn't count. Merge them into one «Lista» row (2.x: one row, `**Actuar**`), with a link per case in «Origen» and «Evidencia»: the merged rows go.
+- **«Causa»**, per row out of «Por triar», the root that vanishes with the remedy (definitions in `debt-template.md`): `entorno de la máquina`, `carga o paralelismo`, `herramienta del kit`, `regla lejos de su paso`, `decisión que no era del agente`, `fusión de registros`, `prueba o molde`, `defecto del producto`, `sin determinar` (never in «Lista»). Same mechanism under another cause: reclassify it, and it counts. A row without one gets it when you touch it.
+- **«Remedio temporal»**: with two cases, what solved it, from the tickets; `ninguno` only if you looked.
+- **«Arreglo»**, the first that works, in order: `comprobación automática`, `conectar comprobación`, `mover regla`, and only last `línea nueva`; `—` only with `defecto del producto`.
 - Nothing goes to «Lista» without being reproduced or without a second case: an item you could not reproduce goes to «En espera», with «Falta» `reproducirlo` (`tests/sdd-roadmap-0150-red.md`, m3).
 - The «Evidencia» of a «Lista» row is the command that reproduces it, with its output, or the links to the two cases; the report or the line of code is not enough (m3).
 - The «Destino» of a «Lista» row is the id of a row of Now or Next, new or existing, or `sin fila`; never empty. A new row is written like any concrete thing, and the `**Salda:**` of a brief names only «Lista» rows.
@@ -134,15 +138,12 @@ The rules:
 - You're about to write in the roadmap an id that doesn't come from the tracker or from `sdd id next --reserve`.
 - You're about to mark a release «comprometida» without the user saying so, or with external blocks open.
 - You're planning with the roadmap of your worktree without having read the integration branch's and the `feature/*` branches'.
-- You're about to propose in «Lista» an item you didn't reproduce or that has no evidence.
 
 | Rationalization | Reality |
 | --- | --- |
 | «Each feature gets its spec and plan when it starts; I leave the common decisions in a block of the roadmap» | The roadmap is the index every skill reads. The rules and their why go to `proposal.md`, with examples with data (`tests/sdd-roadmap-red.md`, p1). |
 | «The Azure item and the row are the same; I keep one row» | Deleting or replacing a row is the user's decision, not a cleanup (p3). Ask about the duplicate. |
 | «It's an epic; it gets split when it starts» | When it starts nobody looks at the whole roadmap. The split is proposed now, so the PM creates the children (p3). |
-| «The notes are already reflected in the rows» | The rows say what to do, not what the client said. Without minutes, the next discussion has nothing to read from (p4). |
-| «The 0012 is discarded; I remove it from the roadmap» | A discard is `⏸️ aparcada: descartada por <quién>, <fecha>`. Deleting it loses the why (p4). |
 | «The proposal's example was incomplete; I rewrite it» | The proposal is historical: the change goes to «Enmiendas» with its date. Rewriting it erases what was agreed before (p10). |
 | «Now that the change is clear, I start the feature and write the spec» | Planning is not doing. `sdd-roadmap` ends in the roadmap (p10). |
 | «"Prepara la release" is closing the release» | Preparing is deciding what goes in; closing is `sdd-end-release` (p6). |
@@ -153,4 +154,3 @@ The rules:
 | «The roadmap of my worktree is the real state» | It is your base's. Another branch may have closed, split or reserved; without reading it, you repeat ids or extend closed features. |
 | «I put the next free number to get ahead» | A made-up id is confused with a reserved one forever. The id comes from the tracker or from `sdd id next --reserve`. |
 | «The report says it fails and cites the line; it goes to Lista» | A report is a claim, not a reproduction: «Lista» needs the command and its output, or «En espera» with `reproducirlo` (`tests/sdd-roadmap-0150-red.md`, m3). |
-| «The size is not clear; I leave `—`» | In Now and Next the size is required: estimate it with the splitting threshold (`tests/sdd-roadmap-0150-red.md`, m5). |
