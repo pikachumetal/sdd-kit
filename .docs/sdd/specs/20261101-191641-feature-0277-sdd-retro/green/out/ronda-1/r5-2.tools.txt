@@ -1,0 +1,139 @@
+
+>>> Skill: sdd-kit:sdd-retro
+<<< Launching skill: sdd-kit:sdd-retro
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders/ && ls && cat notas-sesion.md && cat walkthrough.md
+<<< Exit code 1
+walkthrough.md
+cat: notas-sesion.md: No such file or directory
+
+>>> Bash: cd <run>/repo; pwd; find . -name "notas-sesion*" -not -path "./.git/*"; ls -a . .docs/sdd; cat .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md
+<<< <run>/repo
+./notas-sesion.md
+.:
+./
+../
+.docs/
+.git/
+notas-sesion.md
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+# Walkthrough — feature 0081
+
+## 1. Cambios realizados
+
+Recordatorio por correo de cada reserva.
+
+## 5. Aprendizajes
+
+- Ninguno.
+
+>>> Bash: cat notas-sesion.md; ls .docs/sdd/steering; cat .docs/sdd/constitution.md | head -60
+<<< # Notas de la sesión de la 0081
+
+- En la Task 1 quedó un `console.log` de depuración en `src/`; lo cazó la revisión final y costó una pasada de fix.
+- En la Task 2 volvió a quedar otro `console.log` en `src/`, con otra pasada de fix.
+- El proyecto corre `node --test` antes de cada commit, y ningún test lo mira.
+operations.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main
+
+>>> Bash: cat package.json; ls -R src test; cat .docs/sdd/steering/operations.md | head -40; grep -rn "console\." src test
+<<< {"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+# Operations — salas
+
+## Testing
+
+- Tests: `npm test`
+src/app.js:16:if (command) console.log(run(command, args));
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -20
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cat > test/sin-depuracion.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+
+// La salida de la CLI es la única llamada permitida: `if (command) console.log(run(...))`.
+const PERMITIDA = /^\s*if \(command\) console\.log\(run\(command, args\)\);\s*$/;
+
+test('src/ no deja console.log de depuración', () => {
+  const dir = new URL('../src/', import.meta.url);
+  const sobrantes = [];
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.js'))) {
+    readFileSync(new URL(file, dir), 'utf8').split('\n').forEach((line, i) => {
+      if (/console\.log\(/.test(line) && !PERMITIDA.test(line)) sobrantes.push(`${file}:${i + 1}`);
+    });
+  }
+  assert.deepEqual(sobrantes, []);
+});
+EOF
+node --test 2>&1 | tail -12; printf '\nconsole.log("x");\n' >> src/app.js; node --test 2>&1 | grep -E "^# (pass|fail)"; git checkout src/app.js; git status --short
+<<< ✔ libres excluye la sala reservada en la franja (0.7029ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1105ms)
+✔ cancelar respeta el día (0.7319ms)
+✔ src/ no deja console.log de depuración (2.9959ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.7224
+Updated 1 path from the index
+?? test/sin-depuracion.test.js
+
+>>> Bash: printf '\nconsole.log("x");\n' >> src/app.js; node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git checkout src/app.js; git status --short
+<<< ℹ pass 3
+ℹ fail 1
+Updated 1 path from the index
+?? test/sin-depuracion.test.js
+
+=== RESULTADO (10 turnos, 0.1340647 $)
+Retro: error que cazaría un chequeo → test (`test/sin-depuracion.test.js`: `src/` no deja `console.log` de depuración)
+
+La nota de la sesión muestra dos veces el mismo error: un `console.log` de depuración que quedó en `src/` (Task 1 y Task 2). Cada vez lo cazó la revisión final y costó una pasada de fix. Un test lo caza antes. Como el proyecto ya corre `node --test` antes de cada commit, el test es la primera salida y no hace falta tocar documentos ni skills.
+
+- **Qué comprueba el test:** falla si algún `.js` de `src/` tiene un `console.log(`. La única excepción es la salida de la CLI en `src/app.js:16`.
+- **Cómo lo verifiqué:** con el test, `node --test` da 4 de 4 en verde. Con un `console.log("x")` extra en `src/app.js`, falla (3 pasan, 1 falla). Ese `console.log("x")` lo quité después con `git checkout`.
+- **Sin commitear:** el único cambio es `test/sin-depuracion.test.js`, sin commitear. No toqué el `walkthrough.md`, porque el skill pide para el §5 solo la línea de la retro. Esa línea es la de arriba.
+- **Señales del kit:** ninguna señal viene de una skill o plantilla del kit, así que no hay ticket que ofrecer.

@@ -471,6 +471,17 @@ const molds = {
     s.commit('docs(sdd): la decisión que deja la revisión final');
   },
   'reservas-campo': () => (moldReservas(), done0010()),
+  'reservas-cap': () => {
+    moldReservas();
+    done0010();
+    const stack = '# Tech stack\n\n- Node 22.\n- `src/app.js`.\n- Puerto 4100 (`operations.md`).\n';
+    writeFileSync(at('.docs/sdd/tech-stack.md'), stack);
+    s.put('.docs/sdd/steering/operations.md', '# Operations\n\n- Puerto de las pruebas: 4100.\n');
+    s.put('scripts/word-cap.mjs', `import { readFileSync } from 'node:fs';\nconst words = readFileSync('.docs/sdd/tech-stack.md', 'utf8').split(/\\s+/).filter(Boolean).length;\nif (words > ${stack.split(/\s+/).filter(Boolean).length}) { console.error('tech-stack.md pasa de su tope de palabras: ' + words); process.exit(1); }\n`);
+    s.put('.githooks/pre-commit', '#!/bin/sh\nexec node scripts/word-cap.mjs\n');
+    s.commit('chore: tope de palabras de tech-stack.md');
+    s.git('config', 'core.hooksPath', '.githooks');
+  },
   'reservas-valida-en': () => {
     manualValidation();
     moldReservas();

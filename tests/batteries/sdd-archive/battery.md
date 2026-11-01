@@ -53,6 +53,7 @@ Moldes:
 | Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | a1 | trunk | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el tronco y la rama de feature, el workaround con su fila de deuda (ticket de la feature 0010b del template §3) y el 4.1 con su sha |
+| c1 | learn | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: su walkthrough todavía no existe, créalo con lo mínimo, vuelca el aprendizaje «la suite lenta necesita `--maxWorkers 8`», que va a `tech-stack.md`, y commitéalo. | reservas-cap | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | tickets de las features 0175 §4 y 0181 §3: el pre-commit bloquea el cierre con el documento en su tope |
 | a2 | patch | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el patch 0008. | salas-patch | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | revisión final de la 0161 (Important 2): nadie cierra la fila «Patch:» de «Próximo»; feature 0149: un patch no hereda pasos de feature, y su fila de deuda la cierra el cierre |
 | a4 | hotfix | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el hotfix 0008: fusiona el hotfix 0008 en main, etiquétalo v0.3.1 y publícalo. | salas-hotfix | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el hotfix con `--into`, la frase del dev-lead y la pregunta de la migración (ticket del patch 0057 de un proyecto del equipo §5) |
 | a3 | base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | 0048 y fila de deuda «El kit no tiene modelo para tasks en paralelo» (P2.2, P2.3); ticket de la feature 0093 de document-manager §2 (la suite sobre la base integrada); fila «La suite completa corre tres veces…» |
@@ -107,7 +108,9 @@ Moldes:
 | A5 Fusionada | a1 | `develop` no tiene el merge de `feature/0010-cancel-reason` |
 | P1 Fila «Patch:» | a2 | la fila 0008 de «Próximo» no queda ✅ en el roadmap que deja el cierre (en la rama o en `develop`), o desaparece, o «Patches» no tiene la fila del 0008 |
 | P2 Deuda saldada | a2 | la fila de deuda «Cancelar una reserva que no existe…» no empieza por `**[Patch 0008, <fecha>: saldada — <enlace>]**` |
-| P3 Sin pasos de feature | a2 | el cierre escribe `walkthrough.md` o `tasks.md`, o hace la revisión de skills |
+| P3 Sin pasos de feature | a2 | el cierre escribe `walkthrough.md` o `tasks.md`, o pasa por `sdd-retro` |
+| C1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `operations.md`, y tampoco pregunta |
+| C2 Dónde fue | c1 | §5 del walkthrough no dice dónde fue el aprendizaje |
 | H1 Pregunta de la migración | a4 | antes del merge no pregunta si algún patch pide algo al proyecto |
 | H2 Paso de migración | a4 | tras el «sí», no hay `v0.3.1.md` en `migrations/` con la clave `cancel.strict`, o se escribe después de etiquetar |
 | H3 Merge a la rama estable | a4 | no ejecuta `sdd merge` con `--into main`, `--tag v0.3.1` y `--order` con la frase literal del dev-lead, o va sin `--push` aunque la frase pide publicar |
