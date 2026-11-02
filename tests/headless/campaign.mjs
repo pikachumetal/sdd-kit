@@ -10,7 +10,6 @@ const REQUIRED = [
   ['SUBJECT_SH', 'define SUBJECT_SH'],
   ['KIT_DIR', 'define KIT_DIR'],
   ['SCENARIOS', 'define SCENARIOS'],
-  ['SUBJECT_CAP', 'define SUBJECT_CAP (previsión de la spec)'],
   ['COST_CAP', 'define COST_CAP (previsión de la spec)'],
   ['RUNS_DIR', 'define RUNS_DIR (scratchpad)'],
 ];
@@ -29,6 +28,32 @@ function positiveInt(env, name, fallback) {
   const value = env[name] ?? fallback;
   if (!/^[0-9]+$/.test(value) || Number(value) === 0) throw new CampaignError(`${name} tiene que ser un entero positivo: ${value}`);
   return Number(value);
+}
+
+// Una prosa en la celda daría un techo falso: solo vale el número, y lo demás cae a SUBJECT_CAP con aviso.
+export function forecastSubjects(text) {
+  const lines = text.split(/\r?\n/);
+  const start = lines.findIndex((line) => /^#+ Previsión de coste/.test(line));
+  if (start < 0) return null;
+  const section = lines.slice(start + 1);
+  const end = section.findIndex((line) => line.startsWith('#'));
+  const sum = section.slice(0, end < 0 ? undefined : end).find((line) => /^\|\s*Suma\s*\|/.test(line));
+  const match = sum?.match(/^\|\s*Suma\s*\|\s*([0-9]+)(?: sujetos)?\s*\|/);
+  return match ? Number(match[1]) : null;
+}
+
+// El lanzador no concede superar la previsión: un SUBJECT_CAP mayor no la sube, y uno menor aprieta sin conceder nada.
+function resolveSubjectCap(env, fs) {
+  const specPath = join(env.SPEC_DIR, 'spec.md');
+  const forecast = fs.exists(specPath) ? forecastSubjects(fs.read(specPath)) : null;
+  const manual = env.SUBJECT_CAP ? positiveInt(env, 'SUBJECT_CAP') : null;
+  if (forecast === null) {
+    if (manual === null) throw new CampaignError('define SUBJECT_CAP (previsión de la spec)');
+    return { subjectCap: manual, capNotice: `aviso: sin previsión legible en ${specPath} (escribe el total en la fila Suma, columna de sujetos): uso SUBJECT_CAP=${manual}` };
+  }
+  if (manual !== null && manual < forecast) return { subjectCap: manual };
+  const capNotice = manual !== null && manual > forecast ? `aviso: SUBJECT_CAP=${manual} no sube el techo: manda la previsión de ${forecast} sujetos de ${specPath}` : undefined;
+  return { subjectCap: forecast, forecastPath: specPath, capNotice };
 }
 
 function checkCostCap(env) {
@@ -51,26 +76,26 @@ export function readConfig(env, cwd, fs) {
   const runsLength = subjectEnv.RUNS_DIR.length;
   if (runsLength > MAX_RUNS_DIR) throw new CampaignError(`RUNS_DIR de ${runsLength} caracteres (máximo ${MAX_RUNS_DIR}): ${subjectEnv.RUNS_DIR}; usa .temp/<corto> del worktree`);
   const maxParallel = positiveInt(env, 'MAX_PARALLEL', '5');
-  const subjectCap = positiveInt(env, 'SUBJECT_CAP');
+  const cap = resolveSubjectCap(subjectEnv, fs);
   checkCostCap(env);
   if (!fs.exists(join(subjectEnv.KIT_DIR, 'cli', 'bin', 'sdd.js'))) throw new CampaignError(KIT_WITHOUT_CLI);
-  return campaignConfig(subjectEnv, maxParallel, subjectCap);
+  return campaignConfig(subjectEnv, maxParallel, cap);
 }
 
 // Un ensayo en seco no escribe en la carpeta de la spec ni cuenta para sus techos, y sus marcas van con sus salidas.
-function campaignConfig(env, maxParallel, subjectCap) {
+function campaignConfig(env, maxParallel, cap) {
   const { RUNS_DIR: runsDir, KIT_DIR: kitDir } = env;
   const dryRun = env.DRY_RUN === '1';
   const phase = env.PHASE || 'red';
   const root = dryRun ? join(runsDir, 'dry') : env.SPEC_DIR;
   const [live, otherLive] = dryRun ? [join(runsDir, 'dry', 'live'), join(runsDir, 'live')] : [join(runsDir, 'live'), join(runsDir, 'dry', 'live')];
   return {
-    env, runsDir, kitDir, maxParallel, subjectCap, dryRun, phase, root, live, otherLive,
+    ...cap, env, runsDir, kitDir, maxParallel, dryRun, phase, root, live, otherLive,
     subjectSh: env.SUBJECT_SH,
     scenarios: env.SCENARIOS.split(/\s+/).filter(Boolean),
     subject: env.SUBJECT || '1',
     costCap: env.COST_CAP,
-    subjectCost: env.SUBJECT_COST || formatAwk(Number(env.COST_CAP) / subjectCap),
+    subjectCost: env.SUBJECT_COST || formatAwk(Number(env.COST_CAP) / Math.max(cap.subjectCap, 1)),
     out: join(root, phase, 'out'),
     lockPath: join(runsDir, 'live', '.lock'),
     // Las carpetas de los sujetos acabados: el propio sujeto no puede borrar la suya si un proceso que dejó la bloquea.
@@ -142,9 +167,14 @@ function stopRequested(config, deps) {
   return true;
 }
 
+function subjectCapMessage({ subjectCap, forecastPath }) {
+  if (!forecastPath) return `techo de ${subjectCap} sujetos alcanzado: decide el dev-lead`;
+  return `techo de ${subjectCap} sujetos de la previsión de ${forecastPath} alcanzado: decide el dev-lead; subirlo exige enmendar la spec`;
+}
+
 function capReached(config, deps, live) {
   if (countFinished(config, deps.fs) + live.running + live.cut + 1 > config.subjectCap) {
-    deps.log(`techo de ${config.subjectCap} sujetos alcanzado: decide el dev-lead`);
+    deps.log(subjectCapMessage(config));
     return true;
   }
   const spentNow = totalSpent(config, deps.fs, live.cut);
@@ -334,6 +364,7 @@ async function launchScenarios(config, deps) {
 }
 
 export async function runCampaign(config, deps) {
+  if (config.capNotice) deps.log(config.capNotice);
   deps.fs.mkdir(config.live);
   deps.fs.mkdir(config.otherLive);
   await sweepCut(config, deps);
