@@ -4,10 +4,10 @@ task: 0293
 title: Patch — el pre-commit lanza las comprobaciones sin las variables locales de git
 type: patch
 solution: dev-lead
-status: in-progress
+status: done
 created: 2026-11-02
 branch: patch/0293-precommit-clean-git-env
-commit:
+commit: 9b1542aa
 ---
 
 # Patch 0293 — El pre-commit lanza las comprobaciones sin las variables locales de git
@@ -45,8 +45,21 @@ Lo que da por existente, comprobado: el hook y el vigilante. `GIT_ENV_NAMES` no 
 | 1 | RED: `pnpm --dir cli exec vitest run test/kit/hooks.slow.test.ts --test-timeout 120000`, antes del fix | ❌ 1 rojo de 12: `expected 'true' to be 'false'` en `core.bare` del repo temporal; `core.bare` del repo real, `false` |
 | 2 | GREEN: `pnpm exec vitest run test/kit/hooks.slow.test.ts test/kit/git-env.slow.test.ts --test-timeout 120000` | ✅ 20/20: con el gate que hace `git init`, `core.bare` en `false`, solo las ramas `main` y `work`, un único commit propio, y el `feature/1` ajeno en el repo hijo; un commit normal pasa; un gate en rojo bloquea |
 | 3 | `pnpm exec tsc --noEmit` | ✅ sin errores |
+| 4 | Commit del fix con el pre-commit real (`git config core.hooksPath` → `.githooks`) | ✅ `cli:test` 2079 passed, 12 skipped; `core.bare` del repo después: `false` · ejecución real |
+
+Los casos los verificó el agente. Los casos 1 y 2 son `ejecución real`: un `git commit` de verdad con el hook, `moon` y un worktree enlazado en un repo temporal.
+
+Otros hooks: `.githooks/pre-merge-commit` lanza los tests delegando en `pre-commit`, así que hereda el arreglo; no hay más hooks en `.githooks/`.
+
+Validación en campo: 2026-11-02 · RED→GREEN en `hooks.slow.test.ts` · commit real por el hook · el gate de cierre corre en la base integrada, porque `feature/0194-roadmap-whats-next` está abierta a la vez · no probado: el `pre-merge-commit` con un gate que hace `git init` (delega en el hook probado)
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-02T19:38Z
+- Esfuerzo real: 0,06 h — reloj de la sesión 0,06 h desde 2026-11-02T19:35Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: -89 %, sin medir
+- Tokens del hilo: 1.509.548 — claude-opus-5-5 1.509.548
+- Tokens de subagentes: no aplica
+- Coste de la sesión: 1,69 $ (hilo 1,69 $)
+- Coste de sujetos: no aplica
