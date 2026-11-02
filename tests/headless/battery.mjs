@@ -8,7 +8,7 @@
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia o no hay escenarios.
 // Con 0 y `puerta verde`, la conducta sigue sin leer: las filas en prosa las lee el hilo. `verde` solo si todas sus filas son de máquina:
-// `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea.
+// `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea, y `text: /<regex>/`, que falla si <salida>/<etiqueta>.texts.txt falta o no casa, también con emoji.
 // Lo que hace fallar el primer lanzamiento: KIT_DIR es una copia sin .docs/ ni tests/, sacada con git archive <commit> skills .claude-plugin agents cli hooks;
 // SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda, y la previsión de la spec manda sobre él (cabecera de run.mjs); y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
 import { existsSync, readFileSync } from 'node:fs';
@@ -64,8 +64,8 @@ const orderCheck = (first, second) => (text) => {
 };
 
 // Al contrario que `tools: … presente`, falla si no está: el sujeto guarda la línea, no la dice en el chat.
-const fileCheck = (name, pattern) => ({ label }, { outDir, fs }) => {
-  const path = join(outDir, label, name);
+const savedCheck = (saved, pattern) => ({ label }, { outDir, fs }) => {
+  const path = join(outDir, saved(label));
   return !fs.exists(path) || !pattern.test(fs.read(path).replaceAll('\r\n', '\n'));
 };
 
@@ -78,7 +78,10 @@ function compileCheck(cell) {
   const order = cell.match(/^`tools: \/(.+)\/ antes de \/(.+)\/`$/);
   if (order) return onTools(orderCheck(regex(order[1]), regex(order[2])));
   const file = cell.match(/^`file: ([^\s`/\\]+) \/(.+)\/`$/);
-  if (file) return fileCheck(file[1], regex(file[2], 'm'));
+  if (file) return savedCheck((label) => join(label, file[1]), regex(file[2], 'm'));
+  // Con `u`, un emoji es un carácter: `\u{1F986}` y `[🦆✋]` casan (ticket de la 0291 §1, un grep de Git Bash no lo encontró).
+  const said = cell.match(/^`text: \/(.+)\/`$/);
+  if (said) return savedCheck((label) => `${label}.texts.txt`, regex(said[1], 'mu'));
   throw new SyntaxError(cell);
 }
 
@@ -109,11 +112,11 @@ function proseCovers(cell, known) {
 // Una celda puede juntar varias filas: «S1, S2, R1 Juntas».
 const rowIds = (fila) => fila.match(/^[^\s,]+(?:,\s+[^\s,]+)*/)?.[0] ?? fila;
 
-// Una fila cuya celda «Falla si…» empieza por `tools: o `file: es una comprobación; mal escrita es un error, porque callada no correría.
+// Una fila cuya celda «Falla si…» empieza por `tools:, `file: o `text: es una comprobación; mal escrita es un error, porque callada no correría.
 function readRubric(batteryPath, rows, fs) {
   const known = new Set(rows.map((row) => row.Id));
   const table = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
-  const byMachine = (row) => /^`(tools|file):/.test(row['Falla si…']);
+  const byMachine = (row) => /^`(tools|file|text):/.test(row['Falla si…']);
   return {
     checks: table.filter(byMachine).map((row) => parseCheck(row, known)),
     prose: table.filter((row) => !byMachine(row)).map((row) => ({ id: rowIds(row.Fila), covers: proseCovers(row.Escenarios, known) })),
