@@ -20,7 +20,7 @@ Validación: agente — `validation.mode: field`: es una regla del kit, y lo med
 
 ## Capacidades
 
-- Modificadas: `verification` — el cierre de la revisión para ante un hallazgo cuyo arreglo cambia una decisión de la spec.
+Ninguna, porque el RED salió limpio y `sdd-verify` no cambia: solo entran escenarios de regresión.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -89,19 +89,7 @@ Una viñeta de la lista que abre «Closing the review», porque ahí se decide q
 
 ## Delta de comportamiento
 
-### Capacidad: `verification`
-
-#### MODIFIED — La revisión se cierra una vez
-
-- GIVEN la revisión final sobre `a1b2c3d`, con 1 Important del eje Código y 1 Minor del eje Spec
-- WHEN el hilo la procesa, con cualquier método
-- THEN el Important entra en una sola pasada de fix (en Native, el hilo con TDD; en SDD, un subagente con todos los hallazgos de todos los ejes), y el Minor, sin `review.minors` en `sdd-kit.json` o con `defer`, va al ledger como `Final: minor (deferred): <una línea>`
-- AND con `"review": {"minors": "fix"}` en `sdd-kit.json`, el Minor entra en esa misma pasada sin preguntar, y el ledger lo apunta como `Final: fixed <hallazgo> — <test> RED→GREEN, suite <N>/<N>` (si ningún test lo reproduce, `Final: fixed <hallazgo> — suite <N>/<N>`), nunca como `minor (deferred)`
-- AND un hallazgo de cualquier grado cuyo arreglo cambia una decisión de la spec —un Minor que pide `Norte lun - sala ocupada` cuando la decisión aprobada fija `Norte lun — sala ocupada`— es un desvío: en `pair` y `delegate` el hilo para con su 🦆 y su ✋ antes de commitearlo
-- AND justo antes de presentar la validación (con `validation.mode: field`, antes de pasar al cierre), despacha una sola re-revisión con `sdd-kit:effort-high` + `opus`, con la cabecera de `encargo-revision.md` y `re-review-prompt.md`, los hallazgos abiertos de todos los ejes y el «What to Check» de los ejes que salieron, sobre el paquete `sdd review package <plan> a1b2c3d HEAD`; apunta `Re-revisión: a1b2c3d..<head>, sdd-kit:effort-high + opus, <veredicto>`
-- AND en SDD la fix wave no lleva otra re-revisión: es esta
-- AND un Important que la re-revisión deja abierto en código que ya vio la revisión final, el hilo lo adjudica con `Final: Ruling:` y llega a ✋ en la presentación y en el walkthrough, sin otra pasada de fix ni otra re-revisión; uno que mete la propia pasada de fix no se adjudica («Un Important que mete la pasada de fix no se adjudica»)
-- AND si desde `a1b2c3d` solo hay commits que se revisan en el hilo, no despacha re-revisión
+Sin delta: salió con la enmienda del 2026-11-02.
 
 ### Estimación y esfuerzo
 
@@ -113,7 +101,7 @@ Una viñeta de la lista que abre «Closing the review», porque ahí se decide q
 
 ## Topes de palabras
 
-Conteo de `word-budget.test.ts`, sobre `1538af66`. El test deja un 25 % de margen; aquí va el tope nominal. Saldo previsto: +27 de la viñeta, −15 de la mención y −14 de los dos recortes, −2.
+Conteo de `word-budget.test.ts`, sobre `1538af66`. El test deja un 25 % de margen; aquí va el tope nominal. Saldo real: 0, porque la viñeta y sus recortes salieron (3.594 antes y después).
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
@@ -137,6 +125,7 @@ Con RED limpio 3 de 3 solo se gasta la primera fila.
 
 ## Enmiendas
 
+- 2026-11-02 — Se retira la enmienda siguiente y salen la viñeta, su delta y sus recortes: `c10` es limpio 3 de 3 en el RED, con 🦆 y ✋; el 🦆 0/3 era un error de conteo, porque `grep` de Git Bash no encuentra ese carácter, recontado con Node — aprobada: «ok», a la opción «Retiro la viñeta, su delta y los recortes, y cierro con un `Ruling:`».
 - 2026-11-02 — La viñeta de la decisión 2 dice «stop with 🦆 and ✋ before committing it», y lo paga también «(two of two stopped here…)» — con «stop» a secas, `c10` da 🦆 0/3 en el GREEN (1/3 en el RED) y `c6` 0/2, y el resultado pide parar con 🦆 y ✋ — aprobada: opción «Apruebo: la viñeta dice «stop with 🦆 and ✋ before committing it»».
 
 ## Aprobaciones
