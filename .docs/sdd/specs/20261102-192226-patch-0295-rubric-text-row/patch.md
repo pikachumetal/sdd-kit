@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-02
 branch: patch/0295-rubric-text-row
-commit: 
+commit: fe0387b2
 ---
 
 # Patch 0295 — Una fila de rúbrica `text:` comprueba lo que el sujeto dice
@@ -47,7 +47,15 @@ Lo que da por existente, comprobado: `fileCheck` y `compileCheck` en `tests/head
 
 Los casos los verificó el agente.
 
+Validación en campo: 2026-11-02 · RED→GREEN en `battery.test.ts` 89/89 · veredicto real sobre las salidas de la 0291: `c10` 3/3 · el gate de cierre corre en la base integrada, porque `feature/0194-roadmap-whats-next` está abierta a la vez
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,4 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-02T19:22Z
+- Esfuerzo real: 0,05 h — reloj de la sesión 0,05 h desde 2026-11-02T19:21Z, sin 0 min de espera al dev-lead (0 esperas)
+- Tokens del hilo: 1.694.414 — claude-opus-5-5 1.694.414
+- Tokens de subagentes: no aplica
+- Coste de la sesión: 1,78 $ (hilo 1,78 $)
+- Coste de sujetos: no aplica
+- Desvío: −88 % frente a los 0,4 h. La fila `file:` ya daba la forma, y el arreglo salió a la primera.
