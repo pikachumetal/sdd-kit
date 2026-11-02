@@ -59,12 +59,22 @@ const orderCheck = (first, second) => (text) => {
   return firstAt >= 0 && (secondAt < 0 || firstAt < secondAt);
 };
 
+// Al contrario que `tools: … presente`, falla si no está: el sujeto guarda la línea, no la dice en el chat (r1 de la 0277).
+const fileCheck = (name, pattern) => ({ label }, { outDir, fs }) => {
+  const path = join(outDir, label, name);
+  return !fs.exists(path) || !pattern.test(fs.read(path).replaceAll('\r\n', '\n'));
+};
+
+const onTools = (check) => ({ text }) => check(text);
+
 function compileCheck(cell) {
-  const regex = (source) => new RegExp(source.replaceAll('\\|', '|'));
+  const regex = (source, flags) => new RegExp(source.replaceAll('\\|', '|'), flags);
   const presence = cell.match(/^`tools: \/(.+)\/` (presente|ausente)$/);
-  if (presence) return presenceCheck(regex(presence[1]), presence[2] === 'presente');
+  if (presence) return onTools(presenceCheck(regex(presence[1]), presence[2] === 'presente'));
   const order = cell.match(/^`tools: \/(.+)\/ antes de \/(.+)\/`$/);
-  if (order) return orderCheck(regex(order[1]), regex(order[2]));
+  if (order) return onTools(orderCheck(regex(order[1]), regex(order[2])));
+  const file = cell.match(/^`file: ([^\s`/\\]+) \/(.+)\/`$/);
+  if (file) return fileCheck(file[1], regex(file[2], 'm'));
   throw new SyntaxError(cell);
 }
 
@@ -82,11 +92,23 @@ function parseCheck(row, known) {
   return { id, scenarioIds, fails };
 }
 
-// Una fila cuya celda «Falla si…» empieza por `tools: es una comprobación; mal escrita es un error, porque callada no correría.
-function readChecks(batteryPath, rows, fs) {
+// Celda de texto libre: lo que no se entiende cubre de más, porque un «puerta verde» de más no engaña y un «verde» de más sí.
+function proseCovers(cell, known) {
+  const named = cell.split(/[^\w-]+/).filter((token) => known.has(token));
+  if (/^todos\s+menos\b/.test(cell)) return (id) => !named.includes(id);
+  if (/^todos\b/.test(cell) || named.length === 0) return () => true;
+  return (id) => named.includes(id);
+}
+
+// Una fila cuya celda «Falla si…» empieza por `tools: o `file: es una comprobación; mal escrita es un error, porque callada no correría.
+function readRubric(batteryPath, rows, fs) {
   const known = new Set(rows.map((row) => row.Id));
-  const rubric = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
-  return rubric.filter((row) => row['Falla si…'].startsWith('`tools:')).map((row) => parseCheck(row, known));
+  const table = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
+  const byMachine = (row) => /^`(tools|file):/.test(row['Falla si…']);
+  return {
+    checks: table.filter(byMachine).map((row) => parseCheck(row, known)),
+    prose: table.filter((row) => !byMachine(row)).map((row) => ({ id: row.Fila.split(' ')[0], covers: proseCovers(row.Escenarios, known) })),
+  };
 }
 
 function selectSteps(rows, steps) {
@@ -135,14 +157,14 @@ function scenarioState({ passed, missing, needed, kitFailed }) {
   return missing ? 'sin evidencia' : 'verde';
 }
 
-function judge(row, outDir, checks, fs) {
+function judge(row, outDir, { checks, prose }, fs) {
   const n = Number(row.n);
   const [needed] = row.Umbral.split('/').map(Number);
   const { runs, noTools, unfinished } = readRuns(row, outDir, fs);
   const unloaded = runs.filter(({ text }) => kitMissing(text)).map(({ label }) => label);
   const failedChecks = checks
     .filter((check) => check.scenarioIds.includes(row.Id))
-    .map((check) => ({ id: check.id, labels: runs.filter(({ text }) => check.fails(text)).map(({ label }) => label) }))
+    .map((check) => ({ id: check.id, labels: runs.filter((run) => check.fails(run, { outDir, fs })).map(({ label }) => label) }))
     .filter(({ labels }) => labels.length > 0);
   // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito.
   const passed = runs.filter(
@@ -150,19 +172,21 @@ function judge(row, outDir, checks, fs) {
       !unloaded.includes(label) && !failedChecks.some(({ labels }) => labels.includes(label)) && (row.Esperado === ANY || firstSkill(text) === row.Esperado),
   ).length;
   const state = scenarioState({ passed, missing: n - runs.length, needed, kitFailed: unloaded.length > 0 });
+  const unread = state === 'verde' ? prose.filter(({ covers }) => covers(row.Id)).map(({ id }) => id) : [];
+  const stated = unread.length ? `puerta verde · sin leer: ${unread.join(', ')}` : state;
   const notes = [
     noTools.length ? `sin tools.txt: ${noTools.join(', ')}` : '',
     unfinished.length ? `sin RESULTADO: ${unfinished.join(', ')}` : '',
     unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : '',
     ...failedChecks.map(({ id, labels }) => `${id} falla en ${labels.join(', ')}`),
   ].filter(Boolean);
-  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${state}`, ...notes].join(' · ');
+  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${stated}`, ...notes].join(' · ');
 }
 
 export function verdict(batteryPath, outDir, steps, fs) {
   const rows = readScenarios(batteryPath, fs);
-  const checks = readChecks(batteryPath, rows, fs);
-  const lines = selectSteps(rows, steps).map((row) => judge(row, outDir, checks, fs));
+  const rubric = readRubric(batteryPath, rows, fs);
+  const lines = selectSteps(rows, steps).map((row) => judge(row, outDir, rubric, fs));
   return { lines, red: lines.some((line) => line.includes('· rojo')), noEvidence: lines.some((line) => line.includes('· sin evidencia')) };
 }
 

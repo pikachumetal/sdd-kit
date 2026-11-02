@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { BatteryError, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
@@ -150,10 +150,83 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     expect(verdict(TABLE, OUT, [], fs).lines).toEqual(['k1 · 1/2 · umbral 2/2 · rojo · K1 falla en k1-2', 'k2 · 1/2 · umbral 1/2 · verde · K1 falla en k2-1']);
   });
 
-  it('deja a mano las filas de juicio', () => {
-    const fs = withRubric('| J1 Juicio | k1 | `tools.txt` tiene `node --test` |');
+  it('puerta verde y nombra sus filas', () => {
+    const fs = withRubric('| J1 Juicio | k1 | `tools.txt` tiene `node --test` |', '| J2 Otro | k1 | algo en prosa |');
     tools(fs, 'k1-1', finished(CHAINED));
     tools(fs, 'k1-2', finished(CHAINED));
+    tools(fs, 'k2-1', finished(CHAINED));
+    tools(fs, 'k2-2', finished(CHAINED));
+    const result = verdict(TABLE, OUT, [], fs);
+    expect(result.lines[0]).toBe('k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1, J2');
+    expect(result.red).toBe(false);
+    expect(result.noEvidence).toBe(false);
+  });
+
+  it('nombra solo las filas que cubren el escenario', () => {
+    const fs = withRubric('| J1 Juicio | k1 | algo en prosa |');
+    for (const label of ['k1-1', 'k1-2', 'k2-1', 'k2-2']) tools(fs, label, finished(CLEAN));
+    expect(verdict(TABLE, OUT, [], fs).lines).toEqual(['k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1', 'k2 · 2/2 · umbral 1/2 · verde']);
+  });
+
+  it('un rojo y un «sin evidencia» no nombran filas sin leer', () => {
+    const fs = withRubric('| J1 Juicio | k1, k2 | algo en prosa |', '| K6 Sin suite | k1 | `tools: /node --test/` presente |');
+    tools(fs, 'k1-1', finished(CHAINED));
+    tools(fs, 'k1-2', finished(CHAINED));
+    tools(fs, 'k2-1', finished(CLEAN));
+    expect(verdict(TABLE, OUT, [], fs).lines).toEqual(['k1 · 0/2 · umbral 2/2 · rojo · K6 falla en k1-1, k1-2', 'k2 · 1/2 · umbral 1/2 · sin evidencia · sin tools.txt: k2-2']);
+  });
+
+  it.each([
+    ['todos', ['puerta verde · sin leer: J1', 'puerta verde · sin leer: J1']],
+    ['todos menos k2', ['puerta verde · sin leer: J1', 'verde']],
+    ['todos menos k1 y k2', ['verde', 'verde']],
+    ['k2, turno 2', ['verde', 'puerta verde · sin leer: J1']],
+    ['k1 (GREEN)', ['puerta verde · sin leer: J1', 'verde']],
+    ['ver arriba', ['puerta verde · sin leer: J1', 'puerta verde · sin leer: J1']],
+  ])('una fila en prosa con Escenarios «%s» cubre lo que dice, y sin ids, todos', (cell, expected) => {
+    const fs = withRubric(`| J1 Juicio | ${cell} | algo en prosa |`);
+    for (const label of ['k1-1', 'k1-2', 'k2-1', 'k2-2']) tools(fs, label, finished(CLEAN));
+    const states = verdict(TABLE, OUT, [], fs).lines.map((line: string) => line.split(' · ').slice(3).join(' · '));
+    expect(states).toEqual(expected);
+  });
+
+  const RETRO = '| R1 Retro | k1 | `file: walkthrough.md /^Retro: corrección repetida → /` |';
+  const LINE = 'Retro: corrección repetida → fila';
+  const kept = (fs: MemoryFs, label: string, text: string) => fs.write(join(OUT, label, 'walkthrough.md'), text);
+
+  it('solo tools y file da verde', () => {
+    const fs = withRubric(RETRO, '| K6 Sin suite | k1 | `tools: /node --test/` presente |');
+    for (const label of ['k1-1', 'k1-2']) {
+      tools(fs, label, finished(CLEAN));
+      kept(fs, label, `# Walkthrough\n\n${LINE}\n`);
+    }
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
+  });
+
+  it('file: la línea solo en el chat da rojo', () => {
+    const fs = withRubric(RETRO);
+    tools(fs, 'k1-1', finished(CLEAN));
+    kept(fs, 'k1-1', `${LINE}\n`);
+    tools(fs, 'k1-2', `${CLEAN}\n\n=== RESULTADO (1 turnos, 0.1 $)\n${LINE}\n`);
+    const result = verdict(TABLE, OUT, [], fs);
+    expect(result.lines[0]).toBe('k1 · 1/2 · umbral 2/2 · rojo · R1 falla en k1-2');
+    expect(result.red).toBe(true);
+  });
+
+  it('file: el fichero sin la línea da rojo', () => {
+    const fs = withRubric(RETRO);
+    for (const label of ['k1-1', 'k1-2']) tools(fs, label, finished(CLEAN));
+    kept(fs, 'k1-1', `${LINE}\n`);
+    kept(fs, 'k1-2', `no empieza: ${LINE}\n`);
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 1/2 · umbral 2/2 · rojo · R1 falla en k1-2');
+  });
+
+  it('file: casa una línea con CRLF', () => {
+    const fs = withRubric('| R1 Retro | k1 | `file: walkthrough.md /^Retro: fin$/` |');
+    for (const label of ['k1-1', 'k1-2']) {
+      tools(fs, label, finished(CLEAN));
+      kept(fs, label, '# Walkthrough\r\nRetro: fin\r\nmás\r\n');
+    }
     expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
   });
 
@@ -171,8 +244,21 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     ['sin presente ni ausente', '| K6 Mal | k1 | `tools: /x/` |', 'K6: comprobación mal escrita'],
     ['con una regex que no compila', '| K6 Mal | k1 | `tools: /(/` presente |', 'K6: comprobación mal escrita'],
     ['con un escenario que no existe', '| K6 Mal | k9 | `tools: /x/` presente |', 'K6: escenario desconocido: k9'],
+    ['file: con barras en el fichero', '| K6 Mal | k1 | `file: a/b.md /x/` |', 'K6: comprobación mal escrita'],
+    ['file: sin regex', '| K6 Mal | k1 | `file: b.md` |', 'K6: comprobación mal escrita'],
+    ['file: con una regex que no compila', '| K6 Mal | k1 | `file: b.md /(/` |', 'K6: comprobación mal escrita'],
+    ['file: con un escenario que no existe', '| K6 Mal | k9 | `file: b.md /x/` |', 'K6: escenario desconocido: k9'],
   ])('rechaza una comprobación %s: callada, no correría', (_name, row, message) => {
     expect(() => verdict(TABLE, OUT, [], withRubric(row))).toThrow(new BatteryError(message));
+  });
+});
+
+describe('las baterías reales', () => {
+  const batteries = resolve(import.meta.dirname, '../../../../tests/batteries');
+  it.each(readdirSync(batteries))('verdict lee la rúbrica de %s sin tomar ninguna fila por mal escrita', (name) => {
+    const fs = memoryFs();
+    fs.write(TABLE, readFileSync(join(batteries, name, 'battery.md'), 'utf8'));
+    expect(verdict(TABLE, OUT, [], fs).lines.length).toBeGreaterThan(0);
   });
 });
 
@@ -190,8 +276,8 @@ describe('la batería de sdd-propose', () => {
     expect(judged('node --test 2>&1 | tail -8', 'pnpm install --offline')).toBe('ws3 · 1/2 · umbral 2/2 · rojo · WS3 falla en ws3-2');
   });
 
-  it('da verde a ws3 con pnpm install antes de node --test', () => {
-    expect(judged('pnpm install --offline', 'node --test')).toBe('ws3 · 2/2 · umbral 2/2 · verde');
+  it('da puerta verde a ws3 con pnpm install antes de node --test: WS y L las lee el hilo', () => {
+    expect(judged('pnpm install --offline', 'node --test')).toBe('ws3 · 2/2 · umbral 2/2 · puerta verde · sin leer: WS, L');
   });
 });
 
