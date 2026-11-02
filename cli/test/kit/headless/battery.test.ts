@@ -407,6 +407,50 @@ describe('runBattery', () => {
     expect(fake.launched).toEqual([]);
   });
 
+  it('con SCENARIOS lanza un solo sujeto sin abortar por la salida guardada de otro, y da solo su veredicto', async () => {
+    const fs = toyFs();
+    tools(fs, 'r2-1', finished('>>> Skill: sdd-kit:sdd-propose'));
+    const fake = fakeDeps(fs);
+    const code = await runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['f1-1']);
+    expect(fake.log.filter((line) => / · umbral /.test(line)).map((line) => line.split(' ')[0])).toEqual(['f1']);
+    expect(code).toBe(1);
+  });
+
+  it('SCENARIOS da el código solo de lo filtrado: un rojo guardado de otro no lo tiñe', async () => {
+    const fs = toyFs();
+    tools(fs, 'f1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    const fake = fakeDeps(fs);
+    expect(await runBattery(env({ SCENARIOS: 'r2' }), CWD, fake.deps)).toBe(0);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['r2-1']);
+  });
+
+  it('SCENARIOS rechaza un id que no está en la tabla', async () => {
+    const fake = fakeDeps(toyFs());
+    await expect(runBattery(env({ SCENARIOS: 'nope' }), CWD, fake.deps)).rejects.toThrow(new BatteryError('escenario desconocido: nope', 2));
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('SCENARIOS y STEPS se cruzan: sin cruce, código 3 y ningún sujeto', async () => {
+    const fake = fakeDeps(toyFs());
+    await expect(runBattery(env({ STEPS: 'roadmap', SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toMatchObject({ code: 3, message: `sin escenarios en ${TABLE}` });
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('SCENARIOS y STEPS se cruzan: lanza solo lo que está en los dos', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ STEPS: 'roadmap', SCENARIOS: 'r2 f1' }), CWD, fake.deps);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['r2-1']);
+  });
+
+  it('SCENARIOS no relanza en silencio un escenario ya medido', async () => {
+    const fs = toyFs();
+    tools(fs, 'f1-1', finished('marca'));
+    const fake = fakeDeps(fs);
+    await expect(runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toThrow(`ya existe f1-1 en ${OUT}: borra esa carpeta o cambia PHASE`);
+    expect(fake.launched).toEqual([]);
+  });
+
   it('pasa la copia del kit en ruta absoluta respecto al cwd de quien lanza', async () => {
     const fs = toyFs();
     const fake = fakeDeps(fs);
