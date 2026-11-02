@@ -4,7 +4,7 @@ feature: 0291
 title: La pasada de fix para si el arreglo cambia una decisión de la spec
 mode: lite
 profile: delegate
-status: approved
+status: done
 created: 2026-11-02
 author: Àngel Delgado
 approvers:

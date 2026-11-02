@@ -6,6 +6,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Added
 
+- **Feature 0291** — La batería de `sdd-verify` gana `c10` y `c10e`, regresión de un Minor cuyo arreglo cambia una decisión aprobada; `sdd-verify` no cambia, porque el RED salió limpio 3 de 3. → [ref](specs/20261102-173757-feature-0291-fix-pass-deviation/)
 - **Feature 0271** — Una sola conducta ante un RED limpio: el Scope marca lo condicionado con «si el RED lo exhibe», y eso sale con un ruling solo con RED limpio y n = 3; lo demás es un desvío que para. Un frente de campo se mide con n = 3 antes de salir. → [ref](specs/20261102-135210-feature-0271-clean-red-rules/)
 - **Feature 0287** — Un hook `PreToolUse` del repo deniega el Bash que escribe un `.mjs`, `.js`, `.ts` o `.py` con un heredoc, también el intérprete en heredoc que escribe en una ruta literal de código, y nombra `Write`; `battery.mjs run` pasa `node --check` al `subject.mjs` antes del primer sujeto y falla con la línea del error. → [ref](specs/20261102-145840-feature-0287-heredoc-guard/)
 - **Patch 0290** — El guard de la evidencia staged (`findMachineLeak`) da en rojo un fichero con el email de la cuenta de Claude, que lee con `accountEmail` de `tests/headless/lib.mjs`, compartida con `extract.mjs`, y avisa por stderr si no puede leerlo. → [ref](specs/20261102-084641-patch-0290-machine-leak-account-email/)

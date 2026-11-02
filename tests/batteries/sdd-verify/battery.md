@@ -32,6 +32,8 @@ Montaje por escenario, en `subject.mjs`:
 
 - `s1`: el sujeto es el **revisor de la spec** (`review-spec.md`, revisor único, lente de dominio), compuesto por `compose-spec-review.mjs` con el texto del kit que se prueba, sobre la spec de la 0022: el dev-lead decidió el aviso «por correo y por SMS», y el único requisito del delta habla del correo. `Agent` deshabilitado.
 
+Un emoji de la rúbrica se cuenta con Node (`/\u{1F986}/gu`): `grep` de Git Bash no encuentra el 🦆 y da un falso rojo (feature 0291).
+
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
 
 ## Escenarios
