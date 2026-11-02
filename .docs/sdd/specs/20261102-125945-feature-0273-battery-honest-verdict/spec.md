@@ -4,7 +4,7 @@ feature: 0273
 title: battery.mjs dice lo que de verdad comprobó
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-02
 author: Àngel Delgado
 approvers:
@@ -27,7 +27,7 @@ Validación: agente — herramienta de pruebas sin usuario humano, verificada co
 Review de spec propuesta: ninguna — señales: contrato público (la forma de la fila `file:` y el código de salida de `run.mjs`) · tamaño: ~120 líneas en 7 ficheros
 - Mínimo razonable: ninguna; la revisión final de rama mira lo mismo sobre el código.
 
-1. Forma de la línea: `<id> · <pasan>/<n> · umbral <u> · puerta verde · sin leer: <filas>`, con el primer token de la columna «Fila» separados por `, `. Las notas existentes van después. Sustituye al `puerta verde · conducta sin leer` del roadmap: el dev-lead pidió nombrar las filas.
+1. Forma de la línea: `<id> · <pasan>/<n> · umbral <u> · puerta verde · sin leer: <filas>`, con los ids que abren la columna «Fila» (`L Idioma` da `L`; `S1, S2, R1` los tres) separados por `, `. Las notas existentes van después. Sustituye al `puerta verde · conducta sin leer` del roadmap: el dev-lead pidió nombrar las filas.
 2. Un rojo o un «sin evidencia» no cambian de texto ni nombran filas sin leer: solo el `verde` se matiza, porque es la palabra que se leía mal.
 3. `puerta verde` sale con código 0: los códigos del veredicto no cambian (el dev-lead: «Un rojo sigue saliendo con 1. Lo nuevo es el texto»). Consecuencia: 0 ya no significa «conducta comprobada» si hay filas sin leer; lo dice la cabecera.
 4. Qué escenarios cubre una fila en prosa, porque esa columna es texto libre (`todos`, `todos menos r1, r5 y t1a`, `u1, turno 2`, `l1 (GREEN)`): `todos` cubre todos; `todos menos …`, todos menos los nombrados; si no, los ids conocidos que nombra la celda; y una celda sin ningún id conocido cubre todos. Ante la duda sobra un `puerta verde`, nunca un `verde`: en `s1, s2, l1, w1 (en l2, en inglés, no se puntúa…)`, `l2` queda como sin leer aunque no se puntúe, y lo acepto. Las filas `tools:` y `file:` siguen exigiendo la lista estricta de ids.
@@ -114,6 +114,8 @@ Review de spec propuesta: ninguna — señales: contrato público (la forma de l
 | `.docs/sdd/tech-stack.md` | 21790 / 24579 (19663 × 1,25) | 2789 | sin cambio |
 
 ## Enmiendas
+
+- 2026-11-02 — Decisión 1: se nombran todos los ids de una celda «Fila», no solo el primero — la revisión final vio `S1,` en una fila de `sdd-propose` y quedaban sin nombrar S2, S3, R1 y P1 — aprobada (opción «Apruebo la enmienda»)
 
 ## Aprobaciones
 

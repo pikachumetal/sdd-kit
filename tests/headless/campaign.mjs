@@ -298,26 +298,25 @@ function finalReport(config, deps) {
   deps.log(`sujetos de la campaña: ${subjects} · coste acumulado: ${formatCost(totalSpent(config, deps.fs, cut))} $`);
 }
 
+export const hasResult = (text) => text.includes('=== RESULTADO');
+
 // Solo lo lanzado en esta ejecución: el resumen de coste acumula las fases anteriores, y con ellas una tanda vacía parecía medida.
 function measuredCode(config, deps, launched) {
   if (launched.length === 0) {
     deps.log(`sin sujetos: ${config.scenarios.map((scenario) => `${scenario}-${config.subject}`).join(', ')}`);
     return NOT_MEASURED;
   }
-  const hasResult = (label) => {
+  const measured = (label) => {
     const path = join(config.out, `${label}.tools.txt`);
-    return deps.fs.exists(path) && deps.fs.read(path).includes('=== RESULTADO');
+    return deps.fs.exists(path) && hasResult(deps.fs.read(path));
   };
-  const missing = launched.filter((label) => !hasResult(label));
+  const missing = launched.filter((label) => !measured(label));
   if (missing.length === 0) return 0;
   deps.log(`sin RESULTADO: ${missing.join(', ')}`);
   return NOT_MEASURED;
 }
 
-export async function runCampaign(config, deps) {
-  deps.fs.mkdir(config.live);
-  deps.fs.mkdir(config.otherLive);
-  await sweepCut(config, deps);
+async function launchScenarios(config, deps) {
   const running = [];
   const launched = [];
   for (const scenario of config.scenarios) {
@@ -331,6 +330,14 @@ export async function runCampaign(config, deps) {
       launched.push(subject.label);
     }
   }
+  return { running, launched };
+}
+
+export async function runCampaign(config, deps) {
+  deps.fs.mkdir(config.live);
+  deps.fs.mkdir(config.otherLive);
+  await sweepCut(config, deps);
+  const { running, launched } = await launchScenarios(config, deps);
   await Promise.all(running);
   const code = measuredCode(config, deps, launched);
   finalReport(config, deps);

@@ -57,6 +57,19 @@ async function processesNaming(folder: string): Promise<number[]> {
 }
 
 // Lanzan procesos de node de verdad: con la máquina cargada pasan de los 5 s por omisión.
+it('sale con 3 y nombra la etiqueta de un sujeto que no deja nada', { timeout: 30_000 }, () => {
+  const result = runCampaign({ ...campaignEnv('process.exit(0);\n'), SCENARIOS: 'a' });
+  expect(result.status, result.stderr).toBe(3);
+  expect(result.stdout).toContain('sin RESULTADO: a-1');
+});
+
+it('battery.mjs verdict sale con 3 y lo dice con una tabla sin escenarios', { timeout: 30_000 }, () => {
+  const table = writeFile(join(root, 'battery.md'), '| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n');
+  const result = spawnSync(process.execPath, [join(kitRoot, 'tests', 'headless', 'battery.mjs'), 'verdict', table, root], { env: cleanGitEnv, encoding: 'utf8', windowsHide: true });
+  expect(result.status, result.stderr).toBe(3);
+  expect(result.stdout).toContain(`sin escenarios en ${table}`);
+});
+
 it('lanza, cuenta e informa con un sujeto en node', { timeout: 30_000 }, () => {
   const env = campaignEnv(FAKE_SUBJECT);
   const result = runCampaign(env);

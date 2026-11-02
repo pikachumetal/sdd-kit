@@ -14,7 +14,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CampaignError, readConfig, runCampaign } from './campaign.mjs';
+import { CampaignError, hasResult, readConfig, runCampaign } from './campaign.mjs';
 
 export class BatteryError extends Error {
   constructor(message, code = 1) {
@@ -63,7 +63,7 @@ const orderCheck = (first, second) => (text) => {
   return firstAt >= 0 && (secondAt < 0 || firstAt < secondAt);
 };
 
-// Al contrario que `tools: … presente`, falla si no está: el sujeto guarda la línea, no la dice en el chat (r1 de la 0277).
+// Al contrario que `tools: … presente`, falla si no está: el sujeto guarda la línea, no la dice en el chat.
 const fileCheck = (name, pattern) => ({ label }, { outDir, fs }) => {
   const path = join(outDir, label, name);
   return !fs.exists(path) || !pattern.test(fs.read(path).replaceAll('\r\n', '\n'));
@@ -97,12 +97,17 @@ function parseCheck(row, known) {
 }
 
 // Celda de texto libre: lo que no se entiende cubre de más, porque un «puerta verde» de más no engaña y un «verde» de más sí.
+// ponytail: un rango en prosa («k1 a k3») cubre solo sus extremos; si una rúbrica los usa, tratar la celda como «todos».
 function proseCovers(cell, known) {
-  const named = cell.split(/[^\w-]+/).filter((token) => known.has(token));
-  if (/^todos\s+menos\b/.test(cell)) return (id) => !named.includes(id);
-  if (/^todos\b/.test(cell) || named.length === 0) return () => true;
+  const plain = cell.replaceAll('`', '');
+  const named = plain.split(/[^\w-]+/).filter((token) => known.has(token));
+  if (/^todos\s+menos\b/i.test(plain)) return (id) => !named.includes(id);
+  if (/^todos\b/i.test(plain) || named.length === 0) return () => true;
   return (id) => named.includes(id);
 }
+
+// Una celda puede juntar varias filas: «S1, S2, R1 Juntas».
+const rowIds = (fila) => fila.match(/^[^\s,]+(?:,\s+[^\s,]+)*/)?.[0] ?? fila;
 
 // Una fila cuya celda «Falla si…» empieza por `tools: o `file: es una comprobación; mal escrita es un error, porque callada no correría.
 function readRubric(batteryPath, rows, fs) {
@@ -111,7 +116,7 @@ function readRubric(batteryPath, rows, fs) {
   const byMachine = (row) => /^`(tools|file):/.test(row['Falla si…']);
   return {
     checks: table.filter(byMachine).map((row) => parseCheck(row, known)),
-    prose: table.filter((row) => !byMachine(row)).map((row) => ({ id: row.Fila.split(' ')[0], covers: proseCovers(row.Escenarios, known) })),
+    prose: table.filter((row) => !byMachine(row)).map((row) => ({ id: rowIds(row.Fila), covers: proseCovers(row.Escenarios, known) })),
   };
 }
 
@@ -146,7 +151,7 @@ function readRuns(row, outDir, fs) {
     const path = join(outDir, `${row.Id}-${i + 1}.tools.txt`);
     return { label: `${row.Id}-${i + 1}`, text: fs.exists(path) ? fs.read(path) : undefined };
   });
-  const finished = ({ text }) => text?.includes('=== RESULTADO');
+  const finished = ({ text }) => text !== undefined && hasResult(text);
   const labels = (runs) => runs.map(({ label }) => label);
   return {
     runs: all.filter(finished),
@@ -161,36 +166,43 @@ function scenarioState({ passed, missing, needed, kitFailed }) {
   return missing ? 'sin evidencia' : 'verde';
 }
 
-function judge(row, outDir, { checks, prose }, fs) {
+function failedChecksOf(row, runs, checks, place) {
+  return checks
+    .filter((check) => check.scenarioIds.includes(row.Id))
+    .map((check) => ({ id: check.id, labels: runs.filter((run) => check.fails(run, place)).map(({ label }) => label) }))
+    .filter(({ labels }) => labels.length > 0);
+}
+
+function statedVerdict(state, prose, id) {
+  const unread = state === 'verde' ? prose.filter(({ covers }) => covers(id)).map((row) => row.id) : [];
+  return unread.length ? `puerta verde · sin leer: ${unread.join(', ')}` : state;
+}
+
+function judge(row, { outDir, fs, rubric: { checks, prose } }) {
   const n = Number(row.n);
   const [needed] = row.Umbral.split('/').map(Number);
   const { runs, noTools, unfinished } = readRuns(row, outDir, fs);
   const unloaded = runs.filter(({ text }) => kitMissing(text)).map(({ label }) => label);
-  const failedChecks = checks
-    .filter((check) => check.scenarioIds.includes(row.Id))
-    .map((check) => ({ id: check.id, labels: runs.filter((run) => check.fails(run, { outDir, fs })).map(({ label }) => label) }))
-    .filter(({ labels }) => labels.length > 0);
+  const failedChecks = failedChecksOf(row, runs, checks, { outDir, fs });
   // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito.
   const passed = runs.filter(
     ({ label, text }) =>
       !unloaded.includes(label) && !failedChecks.some(({ labels }) => labels.includes(label)) && (row.Esperado === ANY || firstSkill(text) === row.Esperado),
   ).length;
   const state = scenarioState({ passed, missing: n - runs.length, needed, kitFailed: unloaded.length > 0 });
-  const unread = state === 'verde' ? prose.filter(({ covers }) => covers(row.Id)).map(({ id }) => id) : [];
-  const stated = unread.length ? `puerta verde · sin leer: ${unread.join(', ')}` : state;
   const notes = [
     noTools.length ? `sin tools.txt: ${noTools.join(', ')}` : '',
     unfinished.length ? `sin RESULTADO: ${unfinished.join(', ')}` : '',
     unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : '',
     ...failedChecks.map(({ id, labels }) => `${id} falla en ${labels.join(', ')}`),
   ].filter(Boolean);
-  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${stated}`, ...notes].join(' · ');
+  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${statedVerdict(state, prose, row.Id)}`, ...notes].join(' · ');
 }
 
 export function verdict(batteryPath, outDir, steps, fs) {
   const rows = readScenarios(batteryPath, fs);
   const rubric = readRubric(batteryPath, rows, fs);
-  const lines = selectSteps(rows, steps).map((row) => judge(row, outDir, rubric, fs));
+  const lines = selectSteps(rows, steps).map((row) => judge(row, { outDir, fs, rubric }));
   return { lines, red: lines.some((line) => line.includes('· rojo')), noEvidence: lines.some((line) => line.includes('· sin evidencia')) };
 }
 

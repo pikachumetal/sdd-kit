@@ -168,6 +168,21 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     expect(result.noEvidence).toBe(false);
   });
 
+  it('nombra todas las filas de una celda «Fila» con varias', () => {
+    const fs = withRubric('| S1, S2, R1 Juntas | k1 | algo en prosa |');
+    for (const label of ['k1-1', 'k1-2']) tools(fs, label, finished(CLEAN));
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: S1, S2, R1');
+  });
+
+  it('file: una regex de dos líneas casa con CRLF', () => {
+    const fs = withRubric('| R1 Retro | k1 | `file: walkthrough.md /^a\\nb$/` |');
+    for (const label of ['k1-1', 'k1-2']) {
+      tools(fs, label, finished(CLEAN));
+      fs.write(join(OUT, label, 'walkthrough.md'), 'a\r\nb\r\n');
+    }
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
+  });
+
   it('nombra solo las filas que cubren el escenario', () => {
     const fs = withRubric('| J1 Juicio | k1 | algo en prosa |');
     for (const label of ['k1-1', 'k1-2', 'k2-1', 'k2-2']) tools(fs, label, finished(CLEAN));
@@ -189,6 +204,9 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     ['k2, turno 2', ['verde', 'puerta verde · sin leer: J1']],
     ['k1 (GREEN)', ['puerta verde · sin leer: J1', 'verde']],
     ['ver arriba', ['puerta verde · sin leer: J1', 'puerta verde · sin leer: J1']],
+    ['Todos menos k2', ['puerta verde · sin leer: J1', 'verde']],
+    ['`todos` menos k2', ['puerta verde · sin leer: J1', 'verde']],
+    ['Todos', ['puerta verde · sin leer: J1', 'puerta verde · sin leer: J1']],
   ])('una fila en prosa con Escenarios «%s» cubre lo que dice, y sin ids, todos', (cell, expected) => {
     const fs = withRubric(`| J1 Juicio | ${cell} | algo en prosa |`);
     for (const label of ['k1-1', 'k1-2', 'k2-1', 'k2-2']) tools(fs, label, finished(CLEAN));
@@ -260,19 +278,18 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
 });
 
 describe('la cabecera de battery.mjs', () => {
-  const header = readFileSync(resolve(import.meta.dirname, '../../../../tests/headless/battery.mjs'), 'utf8')
-    .split(/\r?\n/)
-    .filter((line) => line.startsWith('//'))
-    .join('\n');
+  const lines = readFileSync(resolve(import.meta.dirname, '../../../../tests/headless/battery.mjs'), 'utf8').split(/\r?\n/);
+  const header = lines.slice(0, lines.findIndex((line) => !line.startsWith('//'))).join('\n');
 
-  it.each(['git archive', 'SUBJECT_CAP acumula entre fases', 'el id de un escenario choca dentro de una fase', 'puerta verde', 'file:'])('nombra «%s»', (text) => {
+  it.each(['git archive', 'SUBJECT_CAP acumula entre fases', 'el id de un escenario choca dentro de una fase', 'ya existe', 'puerta verde', 'file:'])('nombra «%s»', (text) => {
     expect(header).toContain(text);
   });
 });
 
 describe('las baterías reales', () => {
   const batteries = resolve(import.meta.dirname, '../../../../tests/batteries');
-  it.each(readdirSync(batteries))('verdict lee la rúbrica de %s sin tomar ninguna fila por mal escrita', (name) => {
+  const names = readdirSync(batteries, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  it.each(names)('verdict lee la rúbrica de %s sin tomar ninguna fila por mal escrita', (name) => {
     const fs = memoryFs();
     fs.write(TABLE, readFileSync(join(batteries, name, 'battery.md'), 'utf8'));
     expect(verdict(TABLE, OUT, [], fs).lines.length).toBeGreaterThan(0);

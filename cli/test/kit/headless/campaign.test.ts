@@ -487,6 +487,29 @@ describe('el código de salida de una campaña', () => {
     expect(fake.log).toContain('sin sujetos: a-1');
   });
 
+  it('devuelve 3 si el techo no deja lanzar ninguno', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'green', 'out', 'z-1.tools.txt'), tools(0.5));
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SUBJECT_CAP: '1' }), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1');
+  });
+
+  it('devuelve 3 si todas las etiquetas ya existían', async () => {
+    const fs = kitFs();
+    fs.write(join(OUT, 'a-1.tools.txt'), tools(0.5));
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1');
+  });
+
+  it('devuelve 0 con un techo parcial y lo lanzado con RESULTADO', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b', SUBJECT_CAP: '1' }), CWD, fs), fake.deps)).toBe(0);
+    expect(fake.launched).toHaveLength(1);
+  });
+
   it('devuelve 3 y nombra la etiqueta del sujeto sin tools.txt', async () => {
     const fs = kitFs();
     const fake = fakeDeps(fs, { unsaved: true });
