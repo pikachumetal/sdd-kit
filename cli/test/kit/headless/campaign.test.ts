@@ -153,7 +153,7 @@ describe('readConfig', () => {
     expect([env.RUNS_DIR, env.SPEC_DIR, env.KIT_DIR]).toEqual([RUNS, SPEC, KIT]);
   });
 
-  it('exige SUBJECT_CAP y COST_CAP, que salen de la previsión de la spec', () => {
+  it('sin previsión legible exige SUBJECT_CAP, y siempre COST_CAP', () => {
     expect(() => readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SUBJECT_CAP (previsión de la spec)'));
     expect(() => readConfig(baseEnv({ COST_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define COST_CAP (previsión de la spec)'));
   });
@@ -164,6 +164,79 @@ describe('readConfig', () => {
 
   it('reparte COST_CAP entre SUBJECT_CAP si no hay SUBJECT_COST', () => {
     expect(readConfig(baseEnv({ SUBJECT_CAP: '4', COST_CAP: '6' }), CWD, kitFs()).subjectCost).toBe('1.5');
+  });
+});
+
+describe('el techo de la previsión de la spec', () => {
+  const SPEC_FILE = join(SPEC, 'spec.md');
+  const forecast = (sum: string) => `# Spec\n\n## Previsión de coste\n\n| Tanda | Sujetos (batería) | $ |\n| --- | --- | --- |\n| RED | prosa | 1 |\n| Suma | ${sum} | 3 |\n\n## Enmiendas\n`;
+  const STOP = (cap: number) => `techo de ${cap} sujetos de la previsión de ${SPEC_FILE} alcanzado: decide el dev-lead; subirlo exige enmendar la spec`;
+  const NO_FORECAST = (cap: number) => `aviso: sin previsión legible en ${SPEC_FILE} (escribe el total en la fila Suma, columna de sujetos): uso SUBJECT_CAP=${cap}`;
+
+  function specFs(text: string): MemoryFs {
+    const fs = kitFs();
+    fs.write(SPEC_FILE, text);
+    return fs;
+  }
+
+  async function launchAbc(fs: MemoryFs, overrides: Env = {}) {
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b c', ...overrides }), CWD, fs), fake.deps);
+    return { labels: fake.launched.map((request) => request.args[1]), log: fake.log };
+  }
+
+  it('una previsión de 2 sujetos para en el tercero, nombra la previsión y no la sube un SUBJECT_CAP mayor', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('2')));
+    expect(labels).toEqual(['a-1', 'b-1']);
+    expect(log).toContain(STOP(2));
+    expect(log).toContain(`aviso: SUBJECT_CAP=10 no sube el techo: manda la previsión de 2 sujetos de ${SPEC_FILE}`);
+  });
+
+  it('con previsión legible no exige SUBJECT_CAP', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('2')), { SUBJECT_CAP: undefined });
+    expect(labels).toEqual(['a-1', 'b-1']);
+    expect(log).toContain(STOP(2));
+    expect(log.filter((line) => line.startsWith('aviso:'))).toEqual([]);
+  });
+
+  it('lee «33 sujetos» y reparte COST_CAP entre el techo de la previsión', () => {
+    const config = readConfig(baseEnv({ SUBJECT_CAP: undefined, COST_CAP: '66' }), CWD, specFs(forecast('33 sujetos')));
+    expect(config.subjectCap).toBe(33);
+    expect(config.subjectCost).toBe('2');
+  });
+
+  it('un SUBJECT_CAP menor manda, con la parada de siempre', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('2')), { SUBJECT_CAP: '1' });
+    expect(labels).toEqual(['a-1']);
+    expect(log).toContain('techo de 1 sujetos alcanzado: decide el dev-lead');
+    expect(log.filter((line) => line.startsWith('aviso:'))).toEqual([]);
+  });
+
+  it('una previsión de 0 para en el primero, y el resumen no da NaN', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('0')), { SUBJECT_CAP: undefined });
+    expect(labels).toEqual([]);
+    expect(log).toContain(STOP(0));
+    expect(log.join('\n')).not.toContain('NaN');
+  });
+
+  it.each([
+    ['sin spec.md', null],
+    ['con la celda vacía', forecast('')],
+    ['con la celda en prosa', forecast('hasta 4 sujetos, 4 $ de techo; real: 6 sujetos')],
+    ['con una Suma fuera de la previsión', '# Spec\n\n## Topes\n\n| Suma | 9 | 3 |\n\n## Previsión de coste\n\nNinguna.\n\n## Otra\n\n| Suma | 9 | 3 |\n'],
+  ])('%s usa SUBJECT_CAP y avisa', async (_case, text) => {
+    const { labels, log } = await launchAbc(text === null ? kitFs() : specFs(text), { SUBJECT_CAP: '2' });
+    expect(labels).toEqual(['a-1', 'b-1']);
+    expect(log).toContain(NO_FORECAST(2));
+    expect(log).toContain('techo de 2 sujetos alcanzado: decide el dev-lead');
+  });
+
+  it('sin previsión ni SUBJECT_CAP sigue pidiéndolo', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, specFs(forecast('')))).toThrow(new CampaignError('define SUBJECT_CAP (previsión de la spec)'));
+  });
+
+  it('un SUBJECT_CAP inválido se rechaza también con previsión', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_CAP: 'abc' }), CWD, specFs(forecast('2')))).toThrow('SUBJECT_CAP tiene que ser un entero positivo: abc');
   });
 });
 
