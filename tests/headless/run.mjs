@@ -13,6 +13,7 @@
 // Cada sujeto: SUBJECT_SH <kit> <escenario>-<n> <escenario> <salida>, un .mjs sobre tests/headless/lib.mjs que lanza node;
 // KIT_DIR va en ruta absoluta, y sin cli/bin/sdd.js en la copia no lanza.
 // Al acabar imprime el coste por carpeta de salida (red, green, green-premature…) y los cortados.
+// Sale con 3 si esta ejecución no midió nada: no lanzó ningún sujeto («sin sujetos: <etiquetas>») o uno no dejó RESULTADO («sin RESULTADO: <etiquetas>»).
 // El RED de un patch se lanza con SPEC_DIR en .temp/<id>/ del repo hasta que reproduce: el scratchpad pasa del tope
 // de ruta de las salidas. Solo entonces se reserva el id y se copia red/ a la carpeta del patch.
 // Al acabar cada sujeto se paran los procesos cuya línea de órdenes nombra su carpeta; sin ninguno en curso, también

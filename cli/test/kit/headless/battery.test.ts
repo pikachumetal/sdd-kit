@@ -259,6 +259,17 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
   });
 });
 
+describe('la cabecera de battery.mjs', () => {
+  const header = readFileSync(resolve(import.meta.dirname, '../../../../tests/headless/battery.mjs'), 'utf8')
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith('//'))
+    .join('\n');
+
+  it.each(['git archive', 'SUBJECT_CAP acumula entre fases', 'el id de un escenario choca dentro de una fase', 'puerta verde', 'file:'])('nombra «%s»', (text) => {
+    expect(header).toContain(text);
+  });
+});
+
 describe('las baterías reales', () => {
   const batteries = resolve(import.meta.dirname, '../../../../tests/batteries');
   it.each(readdirSync(batteries))('verdict lee la rúbrica de %s sin tomar ninguna fila por mal escrita', (name) => {
