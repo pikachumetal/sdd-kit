@@ -14,23 +14,23 @@ approvers:
 
 # Spec — El repaso de coherencia parte también del Scope
 
-🦆 Hoy, si una spec añade `--planta` a `libres` y no declara que eso cambia la capacidad `cli`, el repaso no lo ve y salta en la revisión final, o en una parada tuya. Con esto, quien escribe la spec cruza lo que su Scope añade con el índice de capacidades y mete `cli` en el delta antes de enseñártela. Y si retira una skill cuyo «paso 3» citan dos requisitos sin nombrarla, esos dos salen en «Lo que se retira». La skill no crece: 5.303 palabras hoy, 5.302 después.
+🦆 Hoy, si una spec retira una skill cuyo «paso 3» citan dos requisitos sin nombrarla, esos dos se escapan, porque se busca el nombre. Con esto, quien escribe la spec busca también esos pasos, y los dos salen en «Lo que se retira» antes de enseñártela. Lo de declarar `cli` cuando el Scope añade una opción no cambia: medido, los sujetos ya lo hacen. La skill no crece: 5.303 palabras antes, 5.301 después.
 
 Validación: agente — `validation.mode: field` en `sdd-kit.json`: RED/GREEN con sujetos y el uso real.
 
 ## Capacidades
 
-- Modificadas: `feature-flow` — «La spec se repasa antes del gate» gana el cruce del Scope con el índice y la búsqueda de los pasos numerados de lo que se retira.
+- Modificadas: `feature-flow` — «La spec se repasa antes del gate» gana la búsqueda de los pasos numerados de lo que se retira.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-1. **Leo «el saldo no sube» como «la cuenta de `SKILL.md` no pasa de 5.303»; no bajo a 5.250.** El tope nominal da −53 de margen hoy y seguirá en −52: el exceso queda a la vista en «Topes de palabras», sin usar el 25 % de holgura como sitio. Bajar a 5.250 supondría recortar instrucciones ajenas a esta feature, cada una con su RED.
+1. **Leo «el saldo no sube» como «la cuenta de `SKILL.md` no pasa de 5.303»; no bajo a 5.250.** El tope nominal da −53 de margen antes y −51 después: el exceso queda a la vista en «Topes de palabras», sin usar el 25 % de holgura como sitio. Bajar a 5.250 supondría recortar instrucciones ajenas a esta feature, cada una con su RED.
 2. **Los dos frentes van con `Entra, si el RED lo exhibe:`.** Son de ticket y sin medir, y es lo que pide la plantilla. Un RED limpio con n = 3 saca ese frente sin desvío. Si salen limpios los dos, `SKILL.md` no cambia, «Está hecho» no se cumple por edición, y paro a contártelo antes de cerrar.
-3. **Texto de la regla** (los literales, en Approach). Lo pagan: el porqué «a requirement can have more than one entry…» (−20), «and nobody else searches them» (−5), «Without review, nobody else rereads the spec» (−7; la tabla de racionalizaciones ya dice «No review is no reviewer, not no reading») y compactar «search all its occurrences… change them all» (−2). Solo quitan porqués, ninguna instrucción, y lo vigilan los controles.
+3. **Texto de la regla** (el literal, en Approach). Lo pagan: el porqué «a THEN left with the old value is the contradiction you were looking for» (−14; la tabla de racionalizaciones ya cuenta esa contradicción), «and nobody else searches them» (−5) y compactar «search all its occurrences… change them all» (−2). Solo quitan porqués, ninguna instrucción, y lo vigilan los controles.
 4. **Requisito nuevo en líneas `AND` añadidas**: las del vivo no se tocan, y `capability merge` no pierde ninguna.
-5. **Dos escenarios nuevos, `co5` y `co6`, con sus filas de rúbrica `CO5` y `CO6`**, en moldes derivados de `reservas`: el de `co5` lleva `capabilities/cli.md` y una spec con `--planta` en el Scope y sin `cli`; el de `co6`, una skill con pasos numerados y dos requisitos que citan «paso 3» sin nombrarla. Como `co1`, la petición solo dice «Termina el paso 4 y preséntamela para aprobar»: no trae la orden.
+5. **Dos escenarios nuevos, `co5` y `co6`, con sus filas de rúbrica `CO5` y `CO6`**, en moldes derivados de `reservas` con 14 capacidades: el de `co5` lleva `capabilities/cli.md` y una spec con `--planta` en el Scope y sin `cli`; el de `co6`, una skill con pasos numerados y dos requisitos de una capacidad que el delta no declara, que citan «paso 2» sin nombrarla. Como `co1`, la petición solo dice «Termina el paso 4 y preséntamela para aprobar»: no trae la orden.
 6. **Salidas correctas de cada fila**: en `CO5`, `cli` en el delta (`### Capacidad: \`cli\``); decirlo en ✋ sin añadirlo falla. En `CO6`, los dos requisitos con su destino en «Lo que se retira o cambia de forma».
-7. **Controles tras el GREEN**: `s1`, `t1` y `sp1`, un sujeto por escenario: son los que miden las frases que adelgazo.
+7. **Controles tras el GREEN**: `s1`, `t1` y `sp1`, con el n de su batería: son los que miden las frases que adelgazo.
 8. **`sdd capability merge` a prueba sobre una copia en el scratchpad de la sesión**, ignorado por git, porque tus instrucciones llevan ahí los temporales; la skill dice «fuera del repo». Resultado: `feature-flow.md: sustituido «La spec se repasa antes del gate»`.
 - Política de modelos: sin revisores de spec (lite) · ejes de la revisión final según `sdd-verify`: Spec opus+high, Código sonnet+high · sujetos en Sonnet, por tandas, en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar; lo que no nombra se confirma aparte.
 
@@ -54,10 +54,9 @@ El repaso parte de cada `MODIFIED` y de lo que se retira, así que lo no declara
 
 ## Scope
 
-- Entra, si el RED lo exhibe: el «Coherence pass» cruza cada verbo, opción o fichero del Scope con el índice de capacidades.
-- Entra, si el RED lo exhibe: al retirar algo, el repaso busca también los pasos numerados que tenía.
+- Entra, si el RED lo exhibe: al retirar algo, el repaso busca también los pasos numerados que tenía. RED: 1/3 con requisitos en una capacidad no declarada.
 - Entra: `co5`, `co6`, sus moldes y filas en `tests/batteries/sdd-propose/` y la fila de procedencia, con la evidencia del RED, midan lo que midan.
-- No entra: un verbo nuevo de la CLI para el cruce; otras comprobaciones del paso 4; `capability merge`, arreglado en la 0270.
+- No entra: el cruce del Scope con el índice de capacidades (RED limpio, 6/6, Enmiendas); un verbo nuevo de la CLI para el cruce; otras comprobaciones del paso 4; `capability merge`, arreglado en la 0270.
 
 ## Lo que se retira o cambia de forma
 
@@ -71,15 +70,14 @@ El repaso parte de cada `MODIFIED` y de lo que se retira, así que lo no declara
 
 En `skills/sdd-propose/SKILL.md`, línea del «Coherence pass»:
 
-- Cruce, tras el `MODIFIED`: «Cross each verb, option or file of the Scope with `capability index`: one that a capability describes puts that capability in the delta, since `capability merge` only tests what's declared.»
-- Retirada: «are not `MODIFIED`s: search each name, its numbered steps and each id in…»
+- Retirada, tras la búsqueda de cada nombre e id: «For a retired skill's numbered steps, also `grep -rnE "(paso|step) <n>\b" capabilities/`: each bare hit goes in that table.»
 
-Si un frente sale limpio con n = 3, se quita su frase y el saldo se recuenta.
+El cruce del Scope no se escribe: su RED salió limpio.
 
 ## Dónde se prueba
 
-- Cruce con el índice: `co5`, RED n = 3, GREEN n = 2, sujetos Sonnet, sin la orden en la petición.
-- Pasos de lo retirado: `co6`, igual.
+- Cruce con el índice: `co5`, control: RED n = 3 en dos moldes, Sonnet, sin la orden en la petición.
+- Pasos de lo retirado: `co6`, RED n = 3, GREEN y REFACTOR n = 2, igual.
 - Lo adelgazado: controles `s1`, `t1` y `sp1`.
 - Saldo: `cli/test/kit/word-budget.test.ts` y el conteo final en el walkthrough.
 
@@ -98,7 +96,6 @@ Si un frente sale limpio con n = 3, se quita su frase y el saldo se recuenta.
 - WHEN el agente termina el paso 4, con o sin review de spec
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
 - AND para cada `MODIFIED` busca en el código dónde se implementa lo que cambia y lista en el Scope cada fichero que lo implementa, o dice por qué queda fuera: con «Búsqueda por cliente» en `src/search.js` y en `src/phone.js` y un Scope que solo nombra el primero, el Scope pasa a nombrar los dos
-- AND cruza cada verbo, opción o fichero del Scope con `sdd capability index`, y la capacidad que lo describe entra en el delta: con `--planta` añadida a `libres` en el Scope, `capabilities/cli.md` que describe `libres` y un delta sin `cli`, el delta pasa a llevar `cli` antes del gate
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
 - AND si la spec retira algo o cambia la forma o el sitio de un documento (un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija), busca su nombre en `capabilities/`, en los documentos del proyecto y, en un kit de skills, en `skills/`, y escribe cada resultado en «Lo que se retira o cambia de forma», con su destino: el delta, el Scope o una decisión con su motivo; con la etiqueta `- Real:` pasada a `- Esfuerzo real:` en `patch-template.md` y dos requisitos de `estimation` que la nombran, los dos van al delta como `MODIFIED`
 - AND al retirar algo con pasos numerados busca también esos pasos: con una skill retirada cuyo «paso 3» citan dos requisitos sin nombrarla, los dos salen en esa sección con su destino
@@ -115,12 +112,12 @@ Si un frente sale limpio con n = 3, se quita su frase y el saldo se recuenta.
 
 ## Topes de palabras
 
-Conteo: `split(/\s+/)` de `word-budget.test.ts`, sobre el borrador aplicado a una copia. Balance en `SKILL.md`: +10 en la frase del `MODIFIED` (+30 del cruce, −20 del porqué), −2, −2 (+3 de los pasos, −5) y −7 = **−1**.
+Conteo: `split(/\s+/)` de `word-budget.test.ts`, sobre el borrador aplicado a una copia. Balance en `SKILL.md`: +19 de la frase del `grep`, −5, −14 y −2 = **−2**: 5.303 → 5.301.
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
-| `skills/sdd-propose/SKILL.md` | 5.303 / 5.250 nominal (6.562 con holgura) | −53 nominal | sin cambio: queda en 5.302 |
-| `skills/sdd-propose` completa | 13.891 / 14.200 nominal (17.750 con holgura) | 309 | sin cambio: baja 1 |
+| `skills/sdd-propose/SKILL.md` | 5.303 / 5.250 nominal (6.562 con holgura) | −53 nominal | sin cambio: queda en 5.301 |
+| `skills/sdd-propose` completa | 13.891 / 14.200 nominal (17.750 con holgura) | 309 | sin cambio: baja 2 |
 
 ## Previsión de coste
 
@@ -137,7 +134,8 @@ Precio por sujeto: ~0,70 $, de la fila `CO4` de la batería y de `estimation.md`
 
 ## Enmiendas
 
-- Ninguna.
+- 2026-11-02 — sale el frente del cruce del Scope, con su `AND` del delta y su frase del Approach; el «Entra» pasa a «No entra» — RED `co5` limpio 3/3 en dos moldes, con la marca de la spec — sin aprobar (aplica literal «El frente se saca solo si la spec lo marcó condicionado»).
+- 2026-11-02 — cambia lo que paga el saldo y la frase de la retirada pasa a una orden con su `grep`, con el mismo `AND` — GREEN y REFACTOR con «its numbered steps» se quedaron en 1/2; lo decide la constitution, Art. II — sin aprobar (aplica literal «el saldo… no sube… lista lo que lo paga»).
 
 ## Aprobaciones
 

@@ -19,12 +19,25 @@ const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
 const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
 const F28 = '.docs/sdd/specs/20261008-130000-feature-0028-close-notice-pending';
+const F29 = '.docs/sdd/specs/20261008-140000-feature-0029-room-floors';
+const F30 = '.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice';
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
 s.copy(join(HERE, 'mold-reservas'));
 s.putKitMarker(MARKER);
 const MOLD = cell('Molde');
+const fillerCapabilities = () => {
+  const purposes = {
+    billing: 'Qué se factura a cada departamento por usar las salas.', calendar: 'Los días laborables y festivos del edificio.', cleaning: 'Los turnos de limpieza de las salas.',
+    equipment: 'El material de cada sala: proyector, pizarra, sillas.', visitors: 'Las visitas externas y sus acreditaciones.', keys: 'Quién recoge y devuelve las llaves.',
+    notifications: 'Los correos que recibe quien reserva.', permissions: 'Qué puede hacer cada rol.', history: 'El registro de reservas pasadas.', catering: 'Los pedidos de café y comida para una reunión.',
+    parking: 'Las plazas de aparcamiento de las visitas.', incidents: 'Las averías que se avisan desde una sala.',
+  };
+  for (const [name, purpose] of Object.entries(purposes)) {
+    s.put(`.docs/sdd/capabilities/${name}.md`, `# Capacidad — ${name}\n\n## Propósito\n\n${purpose}\n\n## Requisitos\n\n### Lo básico de ${name}\n\n- GIVEN el edificio en uso\n- WHEN alguien lo consulta\n- THEN ve lo vigente\n`);
+  }
+};
 const molds = {
   reservas() {},
   'reservas-main'() {},
@@ -120,6 +133,26 @@ const molds = {
     const root = 'tests/batteries/aviso-cierre/mold-cierre';
     for (const name of ['README.md', 'src/app.js', 'src/rooms.js', 'test/app.test.js', 'docs/guia.md', 'docs/salas.md', '.docs/sdd/roadmap.md']) s.put(`${root}/${name}`, `# ${name}\n`);
     s.put(`${root}/.docs/sdd/pendientes.md`, '# Pendientes\n\n- 0011: responsables de sala\n');
+  },
+  // La 0029 añade una opción a libres, que describe cli, con un delta en rooms y reports (ticket de la feature 0116 §1).
+  // Con solo dos capacidades, los tres sujetos de la primera tanda las leyeron enteras: el relleno obliga a elegir.
+  'reservas-cli'() {
+    fillerCapabilities();
+    copyFileSync(join(FIX, 'cli-capability.md'), at('.docs/sdd/capabilities/cli.md'));
+    copyFileSync(join(FIX, 'rooms-capability.md'), at('.docs/sdd/capabilities/rooms.md'));
+    s.put('.docs/sdd/capabilities/reports.md', '# Capacidad — reports\n\n## Propósito\n\nEl informe de ocupación de salas que usa conserjería.\n\n## Requisitos\n\n### El informe cuenta las reservas activas\n\n- GIVEN dos reservas activas y una cancelada\n- WHEN se pide el informe de ocupación\n- THEN cuenta dos\n');
+    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0029 | **Las salas tienen planta** | ⏳ |\n| 1 |'));
+  },
+  // La 0030 retira una skill: dos requisitos citan su «paso 2» sin nombrarla, y otros dos, el paso 2 de otra skill (ticket de la feature 0206 §4).
+  // Los dos van en una capacidad que el delta no declara: en closing, los tres sujetos de la primera tanda los leyeron de paso.
+  'reservas-retira'() {
+    fillerCapabilities();
+    copyFileSync(join(FIX, 'closing-capability.md'), at('.docs/sdd/capabilities/closing.md'));
+    copyFileSync(join(FIX, 'quality-gate-capability.md'), at('.docs/sdd/capabilities/quality-gate.md'));
+    s.put('skills/aviso-cierre/SKILL.md', '---\nname: aviso-cierre\ndescription: Usar al cerrar una feature.\n---\n\n# aviso-cierre\n\n1. Di qué se cierra.\n2. Corre el gate.\n');
+    s.put('skills/aviso-apertura/SKILL.md', '---\nname: aviso-apertura\ndescription: Usar al abrir una feature.\n---\n\n# aviso-apertura\n\n1. Di qué se abre.\n2. Di en qué rama se trabaja.\n');
+    s.put('skills/resumen-cierre/SKILL.md', '---\nname: resumen-cierre\ndescription: Usar al acabar el cierre de una feature.\n---\n\n# resumen-cierre\n\n1. Cuenta los commits de la rama.\n2. Lista las filas del roadmap que salda.\n');
+    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0030 | **Retirar la skill aviso-cierre** | ⏳ |\n| 1 |'));
   },
   'reservas-adr'() {
     mkdirSync(at('.docs/sdd/decisions'), { recursive: true });
@@ -280,6 +313,14 @@ steps.co1 = () => {
   branch('feature/0013-cancel-many-days');
   s.put(`${F13}/spec.md`, readFileSync(join(FIX, 'spec-0013.md'), 'utf8'));
 };
+steps.co5 = () => {
+  branch('feature/0029-room-floors');
+  s.put(`${F29}/spec.md`, readFileSync(join(FIX, 'spec-0029.md'), 'utf8'));
+};
+steps.co6 = () => {
+  branch('feature/0030-retire-close-notice');
+  s.put(`${F30}/spec.md`, readFileSync(join(FIX, 'spec-0030.md'), 'utf8'));
+};
 steps.co2 = () => branch('feature/0014-notice-room');
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
@@ -310,12 +351,12 @@ s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);
 for (const kept of ['spec', 'plan', 'tasks']) {
-  for (const folder of [F10, F11, F13, F28]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
+  for (const folder of [F10, F11, F13, F28, F29, F30]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
 }
 // Las carpetas del molde y de los fixtures son de 2026-10-08 o antes: la que crea el sujeto es la de fecha mayor.
 const specs = at('.docs/sdd/specs');
 const newest = existsSync(specs) ? readdirSync(specs).sort().at(-1) : undefined;
-const ours = [F10, F11, F13, F28].map((folder) => folder.split('/').at(-1));
+const ours = [F10, F11, F13, F28, F29, F30].map((folder) => folder.split('/').at(-1));
 if (newest && !ours.includes(newest) && !/task-000|patch-0007/.test(newest)) {
   for (const [file, name] of [['spec.md', 'spec-new.md'], ['patch.md', 'patch-new.md'], ['plan.md', 'plan-new.md']]) {
     if (existsSync(join(specs, newest, file))) s.keep(join(specs, newest, file), name);
