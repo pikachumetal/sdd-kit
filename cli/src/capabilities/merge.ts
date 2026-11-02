@@ -6,6 +6,7 @@ import {
   saveDocument, type Document,
 } from './document.ts';
 import { readLines, readText } from '../cli/files.ts';
+import { writtenRequirementProblems } from './check.ts';
 import { capabilitiesDir } from './files.ts';
 import {
   declaredCapabilities, deltaEntries, equalsIgnoringCase, isPatch, requirementsOf, sectionLines, type Declared, type Delta,
@@ -61,12 +62,21 @@ function lostLines(existingBody: string[], entryLines: string[]): string[] {
   return live.filter((line) => !kept.includes(line) && !retired.includes(line));
 }
 
-function entryProblem(entry: Delta, artifactName: string): string | undefined {
+// Una línea que ya está en el vivo se aprobó al fusionarse: no hay hueco que rellenar en ella.
+function liveLines(capabilities: string, entry: Delta): Set<string> {
+  const file = join(capabilities, `${entry.capability}.md`);
+  if (entry.kind !== 'MODIFIED' || !existsSync(file)) return new Set();
+  return new Set(findRequirement(readDocument(file), entry.title)?.body.map((line) => line.trimEnd()));
+}
+
+function entryProblem(entry: Delta, run: Run): string | undefined {
+  const { artifactName } = run;
   if (entry.kind !== 'RULES' && !entry.title) {
     return `${artifactName}: no leo el título de «${entry.header}»: escríbelo como «#### ${entry.writtenKind} — <título>», con raya`;
   }
   const body = mergeableLines(entry.lines);
-  const gap = [entry.capability, entry.title, ...body]
+  const live = liveLines(run.capabilitiesDir, entry);
+  const gap = [entry.capability, entry.title, ...body.filter((line) => !live.has(line))]
     .flatMap((text) => removeInlineCode(text).match(GAP) ?? [])
     .find((candidate) => TEMPLATE_GAPS.has(candidate));
   if (gap) return `${artifactName}: «${gap}» es un hueco de la plantilla: rellénalo o borra lo que no aplique`;
@@ -234,8 +244,12 @@ export function mergeDelta(sddPath: string, artifactPath: string): MergeResult {
   const run = newRun(sddPath, artifactPath);
   if (!run.entries.length) return { lines: ['Sin delta que fusionar'], code: 0 };
   for (const entry of run.entries) {
-    const problem = entryProblem(entry, run.artifactName);
+    const problem = entryProblem(entry, run);
     if (problem) run.errors.push(problem);
+    else if (entry.kind === 'ADDED' || entry.kind === 'MODIFIED') {
+      const written = writtenRequirementProblems(entry.title, mergeableLines(entry.lines));
+      run.errors.push(...written.map((line) => `${run.artifactName}: ${line}`));
+    }
   }
   const documents = [...entriesByCapability(run.entries).values()].map((entries) => mergeCapability(run, entries));
   if (run.errors.length) return { lines: run.errors, code: 1 };

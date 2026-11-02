@@ -72,8 +72,10 @@ function scenarioProblems(lines: string[]): string[] {
   });
 }
 
-function looseLineProblems(lines: string[]): string[] {
-  const problems: string[] = [];
+type LooseLine = { title: string; number: number; text: string };
+
+function looseLines(lines: string[]): LooseLine[] {
+  const loose: LooseLine[] = [];
   let title: string | null = null;
   let inRequirements = false;
   for (const [index, line] of lines.entries()) {
@@ -83,10 +85,23 @@ function looseLineProblems(lines: string[]): string[] {
       title = null;
     } else if (heading) title = heading[1].trim();
     else if (inRequirements && title && line.trim() && !/^(- |>|\s)/.test(line)) {
-      problems.push(`línea suelta en «${title}» (línea ${index + 1}): «${line.trim()}»`);
+      loose.push({ title, number: index + 1, text: line.trim() });
     }
   }
-  return problems;
+  return loose;
+}
+
+function looseLineProblems(lines: string[]): string[] {
+  return looseLines(lines).map(({ title, number, text }) => `línea suelta en «${title}» (línea ${number}): «${text}»`);
+}
+
+// Sin número de línea: el requisito aún no está en ningún fichero al que apuntar.
+export function writtenRequirementProblems(title: string, body: string[]): string[] {
+  const block = ['## Requisitos', `### ${title}`, ...body];
+  return [
+    ...looseLines(block).map(({ text }) => `línea suelta en «${title}»: «${text}»`),
+    ...scenarioProblems(block),
+  ];
 }
 
 function markPrefix(written: string): string {

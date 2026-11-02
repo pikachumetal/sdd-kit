@@ -590,6 +590,71 @@ describe('tables in a merged capability', () => {
   });
 });
 
+describe('template gaps in a MODIFIED against the live requirement', () => {
+  const escapedGap = '- AND cada capacidad tiene su subsección `### Capacidad: \\`<nombre>\\`` en el delta';
+  const live = bookings.replace(/^(- THEN la reserva queda guardada.*)$/m, (line) => `${line}\n${escapedGap}`);
+  const withLine = (line: string) => `${modified}\n${line}`;
+
+  it('a line copied literally from the live requirement merges', async () => {
+    const sdd = bookingsFolder([withLine(escapedGap)], live);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+    expect(result.code).toBe(0);
+    const content = readCapability(sdd);
+    expect(content).toContain(escapedGap);
+    expect(content).toContain('a nombre del usuario');
+  });
+
+  it.each([
+    ['a new line', withLine('- AND el aviso sale en <nombre>')],
+    ['a changed line', withLine(`${escapedGap}, sin duda`)],
+  ])('%s with the gap fails and writes nothing', async (_case, entry) => {
+    const sdd = bookingsFolder([entry], live);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['spec.md: «<nombre>» es un hueco de la plantilla: rellénalo o borra lo que no aplique']);
+    expect(result.code).toBe(1);
+    expect(readCapability(sdd)).toBe(live);
+  });
+
+  it('an ADDED does not get the exemption', async () => {
+    const sdd = bookingsFolder([`${added}\n${escapedGap}`], live);
+    const result = await merge(sdd);
+    expect(result.lines).toContain('spec.md: «<nombre>» es un hueco de la plantilla: rellénalo o borra lo que no aplique');
+    expect(result.code).toBe(1);
+  });
+});
+
+describe('what check would reject in the requirement merge writes', () => {
+  it('a loose line fails, names it and writes nothing', async () => {
+    const sdd = bookingsFolder([`${added}\nPrueba en una copia de .docs/sdd`]);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['spec.md: línea suelta en «Cancelar una reserva»: «Prueba en una copia de .docs/sdd»']);
+    expect(result.code).toBe(1);
+    expect(readCapability(sdd)).toBe(bookings);
+  });
+
+  it('a loose line in a MODIFIED fails too', async () => {
+    const sdd = bookingsFolder([`${modified}\nPrueba en una copia de .docs/sdd`]);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['spec.md: línea suelta en «Reservar una franja»: «Prueba en una copia de .docs/sdd»']);
+    expect(result.code).toBe(1);
+    expect(readCapability(sdd)).toBe(bookings);
+  });
+
+  it('an incomplete scenario fails with the words of check and writes nothing', async () => {
+    const sdd = bookingsFolder([added.replace(/^- WHEN .*\n/m, '')]);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['spec.md: «Cancelar una reserva» no tiene escenario completo (falta - WHEN)']);
+    expect(result.code).toBe(1);
+    expect(readCapability(sdd)).toBe(bookings);
+  });
+
+  it('a problem in a requirement the delta does not touch does not stop it', async () => {
+    const dirty = bookings.replace('### Consultar salas libres\n', '### Consultar salas libres\nLínea vieja\n');
+    expect((await merge(bookingsFolder([added], dirty))).code).toBe(0);
+  });
+});
+
 describe('a MODIFIED that copies fewer AND and THEN than the live requirement', () => {
   const fourAnds = bookings.replace(
     /^(- THEN la reserva queda guardada.*)$/m,
