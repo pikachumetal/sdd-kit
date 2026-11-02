@@ -52,7 +52,7 @@ function resolveSubjectCap(env, fs) {
     return { subjectCap: manual, capNotice: `aviso: sin previsión legible en ${specPath} (escribe el total en la fila Suma, columna de sujetos): uso SUBJECT_CAP=${manual}` };
   }
   if (manual !== null && manual < forecast) return { subjectCap: manual };
-  const capNotice = manual > forecast ? `aviso: SUBJECT_CAP=${manual} no sube el techo: manda la previsión de ${forecast} sujetos de ${specPath}` : undefined;
+  const capNotice = manual !== null && manual > forecast ? `aviso: SUBJECT_CAP=${manual} no sube el techo: manda la previsión de ${forecast} sujetos de ${specPath}` : undefined;
   return { subjectCap: forecast, forecastPath: specPath, capNotice };
 }
 

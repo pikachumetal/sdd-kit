@@ -10,7 +10,7 @@
 // Por escenario: espera mientras haya MAX_PARALLEL (5) sujetos en curso bajo RUNS_DIR, de esta fase o de otra; no lanza
 // una etiqueta que ya tiene tools.txt en su fase o está en curso («ya existe <etiqueta>: sube SUBJECT»); y no lanza más
 // si existe RUNS_DIR/stop («parada a petición»), si se llega al techo de sujetos o si lo gastado más
-// (en curso + 1) × SUBJECT_COST (COST_CAP / SUBJECT_CAP) pasa de COST_CAP.
+// (en curso + 1) × SUBJECT_COST (COST_CAP / techo de sujetos) pasa de COST_CAP.
 // Cada sujeto: SUBJECT_SH <kit> <escenario>-<n> <escenario> <salida>, un .mjs sobre tests/headless/lib.mjs que lanza node;
 // KIT_DIR va en ruta absoluta, y sin cli/bin/sdd.js en la copia no lanza.
 // Al acabar imprime el coste por carpeta de salida (red, green, green-premature…) y los cortados.

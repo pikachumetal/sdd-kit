@@ -437,6 +437,12 @@ describe('runBattery', () => {
     expect(fake.launched).toEqual([]);
   });
 
+  it('SCENARIOS y STEPS se cruzan: lanza solo lo que está en los dos', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ STEPS: 'roadmap', SCENARIOS: 'r2 f1' }), CWD, fake.deps);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['r2-1']);
+  });
+
   it('SCENARIOS no relanza en silencio un escenario ya medido', async () => {
     const fs = toyFs();
     tools(fs, 'f1-1', finished('marca'));

@@ -153,7 +153,7 @@ describe('readConfig', () => {
     expect([env.RUNS_DIR, env.SPEC_DIR, env.KIT_DIR]).toEqual([RUNS, SPEC, KIT]);
   });
 
-  it('exige SUBJECT_CAP y COST_CAP, que salen de la previsión de la spec', () => {
+  it('sin previsión legible exige SUBJECT_CAP, y siempre COST_CAP', () => {
     expect(() => readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SUBJECT_CAP (previsión de la spec)'));
     expect(() => readConfig(baseEnv({ COST_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define COST_CAP (previsión de la spec)'));
   });
