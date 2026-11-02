@@ -6,12 +6,12 @@ Las fuentes de las que el kit copia texto (los avisos de abajo) o toma conceptos
 
 | Fuente | Repo | Versión vista | Fecha |
 | --- | --- | --- | --- |
-| superpowers | [obra/superpowers](https://github.com/obra/superpowers) | `v7.0.0` | 2026-10-10 |
-| OpenSpec | [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) | `v1.14.1` | 2026-10-14 |
-| Spec Kit | [github/spec-kit](https://github.com/github/spec-kit) | `v1.2.0` | 2026-10-14 |
-| mattpocock/skills | [mattpocock/skills](https://github.com/mattpocock/skills) | `v1.3.1` | 2026-10-14 |
+| superpowers | [obra/superpowers](https://github.com/obra/superpowers) | `v7.0.1` | 2026-11-02 |
+| OpenSpec | [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) | `v1.16.0` | 2026-11-02 |
+| Spec Kit | [github/spec-kit](https://github.com/github/spec-kit) | `v1.2.6` | 2026-11-02 |
+| mattpocock/skills | [mattpocock/skills](https://github.com/mattpocock/skills) | `v1.3.2` | 2026-11-02 |
 | MADR | [adr/madr](https://github.com/adr/madr) | `4.0.0` | 2026-10-07 |
-| impeccable | [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | `skill-v4.5.2` | 2026-10-14 |
+| impeccable | [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | `skill-v4.8.0` | 2026-11-02 |
 | Wondel | [wondelai/skills](https://github.com/wondelai/skills) | `v1.8.0` | 2026-10-14 |
 
 ## Skills y plantillas del kit
