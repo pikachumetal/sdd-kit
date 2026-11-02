@@ -126,6 +126,56 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
   const CHAINED = '>>> Bash: gh run list --workflow ci.yml; node --test 2>&1 | tail -8\n<<< ok';
   const CLEAN = '>>> Bash: gh run list --workflow ci.yml\n<<< ok';
 
+  const said = (fs: MemoryFs, label: string, text: string) => fs.write(join(OUT, `${label}.texts.txt`), text);
+
+  it.each([
+    ['el emoji literal', '`text: /🦆/`'],
+    ['el emoji escapado', '`text: /\\u{1F986}/`'],
+    ['el emoji en una clase', '`text: /[🦆✋]/`'],
+  ])('text: %s pasa con 🦆 en texts.txt y da rojo sin él', (_name, check) => {
+    const fs = withRubric(`| D1 Pato | k1 | ${check} |`);
+    for (const label of ['k1-1', 'k1-2']) tools(fs, label, finished(CLEAN));
+    said(fs, 'k1-1', '🦆 Cambia el separador\n');
+    said(fs, 'k1-2', 'Cambia el separador\n');
+    const result = verdict(TABLE, OUT, [], fs);
+    expect(result.lines[0]).toBe('k1 · 1/2 · umbral 2/2 · rojo · D1 falla en k1-2');
+    expect(result.red).toBe(true);
+  });
+
+  it('text: con el emoji en todos los sujetos da verde: cuenta como comprobada por máquina', () => {
+    const fs = withRubric('| D1 Pato | k1 | `text: /🦆/` |');
+    for (const label of ['k1-1', 'k1-2']) {
+      tools(fs, label, finished(CLEAN));
+      said(fs, label, '🦆 Cambia el separador\n');
+    }
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
+  });
+
+  it('text: una fila en prosa junto a ella sigue sin contar como comprobada', () => {
+    const fs = withRubric('| D1 Pato | k1 | `text: /🦆/` |', '| J1 Juicio | k1 | el 🦆 explica el cambio |');
+    for (const label of ['k1-1', 'k1-2']) {
+      tools(fs, label, finished(CLEAN));
+      said(fs, label, '🦆 Cambia el separador\n');
+    }
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1');
+  });
+
+  it('text: sin texts.txt da rojo, y lo que solo está en tools.txt no cuenta', () => {
+    const fs = withRubric('| D1 Pato | k1 | `text: /🦆/` |');
+    tools(fs, 'k1-1', finished('>>> Bash: echo 🦆\n<<< 🦆'));
+    tools(fs, 'k1-2', finished(CLEAN));
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 0/2 · umbral 2/2 · rojo · D1 falla en k1-1, k1-2');
+  });
+
+  it('text: casa una línea con CRLF', () => {
+    const fs = withRubric('| D1 Pato | k1 | `text: /^🦆 fin$/` |');
+    for (const label of ['k1-1', 'k1-2']) {
+      tools(fs, label, finished(CLEAN));
+      said(fs, label, 'antes\r\n🦆 fin\r\ndespués\r\n');
+    }
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
+  });
+
   it('una fila «presente» tumba al sujeto que encadena el comando en la misma llamada', () => {
     const fs = withRubric('| K6 Sin suite | k1 | `tools: /node --test/` presente |');
     tools(fs, 'k1-1', finished(CLEAN));
@@ -272,6 +322,9 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     ['file: sin regex', '| K6 Mal | k1 | `file: b.md` |', 'K6: comprobación mal escrita'],
     ['file: con una regex que no compila', '| K6 Mal | k1 | `file: b.md /(/` |', 'K6: comprobación mal escrita'],
     ['file: con un escenario que no existe', '| K6 Mal | k9 | `file: b.md /x/` |', 'K6: escenario desconocido: k9'],
+    ['text: sin regex', '| K6 Mal | k1 | `text: x` |', 'K6: comprobación mal escrita'],
+    ['text: con una regex que no compila', '| K6 Mal | k1 | `text: /(/` |', 'K6: comprobación mal escrita'],
+    ['text: con un escenario que no existe', '| K6 Mal | k9 | `text: /x/` |', 'K6: escenario desconocido: k9'],
   ])('rechaza una comprobación %s: callada, no correría', (_name, row, message) => {
     expect(() => verdict(TABLE, OUT, [], withRubric(row))).toThrow(new BatteryError(message));
   });
@@ -281,7 +334,7 @@ describe('la cabecera de battery.mjs', () => {
   const lines = readFileSync(resolve(import.meta.dirname, '../../../../tests/headless/battery.mjs'), 'utf8').split(/\r?\n/);
   const header = lines.slice(0, lines.findIndex((line) => !line.startsWith('//'))).join('\n');
 
-  it.each(['git archive', 'SUBJECT_CAP acumula entre fases', 'el id de un escenario choca dentro de una fase', 'ya existe', 'puerta verde', 'file:'])('nombra «%s»', (text) => {
+  it.each(['git archive', 'SUBJECT_CAP acumula entre fases', 'el id de un escenario choca dentro de una fase', 'ya existe', 'puerta verde', 'file:', 'text:'])('nombra «%s»', (text) => {
     expect(header).toContain(text);
   });
 });
@@ -404,6 +457,50 @@ describe('runBattery', () => {
     tools(fs, 'r1-1', finished('marca'));
     const fake = fakeDeps(fs);
     await expect(runBattery(env({ STEPS: 'roadmap' }), CWD, fake.deps)).rejects.toThrow(`ya existe r1-1 en ${OUT}: borra esa carpeta o cambia PHASE`);
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('con SCENARIOS lanza un solo sujeto sin abortar por la salida guardada de otro, y da solo su veredicto', async () => {
+    const fs = toyFs();
+    tools(fs, 'r2-1', finished('>>> Skill: sdd-kit:sdd-propose'));
+    const fake = fakeDeps(fs);
+    const code = await runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['f1-1']);
+    expect(fake.log.filter((line) => / · umbral /.test(line)).map((line) => line.split(' ')[0])).toEqual(['f1']);
+    expect(code).toBe(1);
+  });
+
+  it('SCENARIOS da el código solo de lo filtrado: un rojo guardado de otro no lo tiñe', async () => {
+    const fs = toyFs();
+    tools(fs, 'f1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    const fake = fakeDeps(fs);
+    expect(await runBattery(env({ SCENARIOS: 'r2' }), CWD, fake.deps)).toBe(0);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['r2-1']);
+  });
+
+  it('SCENARIOS rechaza un id que no está en la tabla', async () => {
+    const fake = fakeDeps(toyFs());
+    await expect(runBattery(env({ SCENARIOS: 'nope' }), CWD, fake.deps)).rejects.toThrow(new BatteryError('escenario desconocido: nope', 2));
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('SCENARIOS y STEPS se cruzan: sin cruce, código 3 y ningún sujeto', async () => {
+    const fake = fakeDeps(toyFs());
+    await expect(runBattery(env({ STEPS: 'roadmap', SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toMatchObject({ code: 3, message: `sin escenarios en ${TABLE}` });
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('SCENARIOS y STEPS se cruzan: lanza solo lo que está en los dos', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ STEPS: 'roadmap', SCENARIOS: 'r2 f1' }), CWD, fake.deps);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['r2-1']);
+  });
+
+  it('SCENARIOS no relanza en silencio un escenario ya medido', async () => {
+    const fs = toyFs();
+    tools(fs, 'f1-1', finished('marca'));
+    const fake = fakeDeps(fs);
+    await expect(runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toThrow(`ya existe f1-1 en ${OUT}: borra esa carpeta o cambia PHASE`);
     expect(fake.launched).toEqual([]);
   });
 

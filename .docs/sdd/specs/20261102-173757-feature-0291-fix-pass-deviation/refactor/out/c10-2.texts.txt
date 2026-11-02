@@ -1,0 +1,38 @@
+--- [22]
+La revisión final queda parada: uno de los tres hallazgos cambia la spec aprobada y necesita la aprobación de Laura. Los otros dos están arreglados en `960084c`, y `node --test` da 7/7. La re-revisión única aún no ha salido, porque va justo antes de la validación y debe cubrir también este cambio.
+
+## Hallazgos
+
+| Eje | Hallazgo | Estado |
+| --- | --- | --- |
+| Código, importante | `"sala ocupada "` con un espacio al final se rechazaba como motivo no válido | Arreglado: se recorta el motivo. El test falló primero y ahora pasa |
+| Spec, menor | El test de `canceladas` solo pasaba si antes corría el de `cancelar` | Arreglado: cada test carga su propio módulo. Ejecutado en solitario fallaba y ahora pasa |
+| Código, menor | El separador ` — ` de `canceladas` se ve mal en consola `cp850` | **Parado: es una desviación de la spec** |
+
+`fb8eb3b` registra `tasks.md`, donde también corregí el commit de la Task 1 (`12d491c`).
+
+## 🦆 Qué hay que decidir
+En recepción, el listado se lee `Norte lun ÔÇö sala ocupada`, porque su consola no representa bien la raya. El revisor propone usar un guion normal: `Norte lun - sala ocupada`. Pero la raya no es un descuido: está en la decisión 4 de la spec y en el resultado que aprobó Laura, así que cambiarla no me corresponde a mí.
+
+## ✋ Tu decisión
+**¿Apruebas cambiar el separador a ` - `?** Recomiendo que sí: la spec no da ningún motivo para preferir la raya, y quien la sufre es quien usa el listado a diario.
+
+- **Si apruebas:** añado una task final con el cambio y su test, y lanzo la re-revisión antes de la validación.
+- **Si no apruebas:** revierto la enmienda y queda como ruling que la raya se mantiene.
+
+La enmienda ya está escrita en `spec.md` sin commitear (decisión 4, resultado esperado y «Enmiendas»). El código y el test siguen con la raya.
+
+## Otros puntos a tener en cuenta
+- **`canceladas` sale vacío desde la línea de comandos:** las reservas viven en memoria, así que cada ejecución de `node src/app.js` empieza de cero. Lo he comprobado: el comando imprime solo una línea en blanco. Los tests pasan porque cancelan y listan dentro del mismo proceso, así que el motivo no queda guardado entre comandos, que es justo lo que pide la spec. Ningún eje lo señaló y no lo he tocado; sin arreglarlo, la 0010 no cumple su objetivo fuera de los tests, así que conviene decidirlo con el separador.
+- **Eje Arquitectura:** no salió, como decía el plan. La única señal es el campo en memoria `booking.reason`, que la spec ya declaraba.
+- **Modelos de la revisión:** los informes no dicen qué modelo usó cada eje, y así consta en `tasks.md`.
+- **Versión del kit:** esta sesión avisa de que carga el 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+## Rulings I made
+1. **Recortar el motivo no es una desviación:** `"sala ocupada "` sigue siendo un motivo de la lista y ningún resultado de la spec cambia. Si se prefiere estricto, se revierte una línea y su test.
+2. **Test de cancelar sin `--motivo`:** la spec lo exige y no tenía test, así que lo añadí. Pasó a la primera, por lo que no demuestra ningún fallo. Si sobra, cuesta un test.
+3. **Eje Arquitectura:** no lo subo pese a la señal de datos, porque la spec ya la declaraba. Si fuera un error, faltaría esa revisión, y el problema de persistencia de arriba toca justo esa zona.
+
+## Deferred minors
+Ninguno: con `review.minors: fix`, el único menor abierto es el del separador.
+

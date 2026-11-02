@@ -9,7 +9,7 @@
 //   await s.resume('<mensaje>');                                  // segundo turno sobre la misma sesión
 //   await s.converse(<hoja de la persona>, <turnos máximos>);     // la persona (haiku) contesta hasta que el sujeto deja de preguntar
 //   s.show('feature/0013:.docs/sdd/roadmap.md', 'roadmap.md');    // un fichero de otra rama, con las reglas de keep
-//   s.seedTranscript('feature/0042', ['<fecha ISO> <user|assistant> <texto>', …]); // transcripts del trabajo; se borran al acabar
+//   s.seedTranscript('feature/0042', ['<fecha ISO> <user|assistant|assistant!> <texto>', …]); // transcripts del trabajo (assistant! cierra el turno); se borran al acabar
 //   s.ports();                                                    // puertos del sujeto (PORT y los del stream); la limpieza para lo que arrancó con él
 // s.env es una copia del entorno: un molde fija ahí lo suyo antes de launch (s.env.MAX_TURNS ||= '30'; s.env.TURN2 = '…').
 // Variables: RUNS_DIR (obligatoria, en el scratchpad o en .temp/ del repo; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
@@ -311,10 +311,11 @@ function seedTranscript(s, fs, { branch, entries }) {
   const records = entries.filter((line) => line.trim()).map((line, i) => {
     const [timestamp, type, ...rest] = line.split(' ');
     const text = rest.join(' ');
-    const message = type === 'assistant'
-      ? { model: 'claude-sonnet-5', id: `seed-${i + 1}`, role: 'assistant', content: [{ type: 'text', text }], usage }
+    const closes = type === 'assistant!';
+    const message = type.startsWith('assistant')
+      ? { model: 'claude-sonnet-5', id: `seed-${i + 1}`, role: 'assistant', content: [{ type: 'text', text }], usage, ...(closes ? { stop_reason: 'end_turn' } : {}) }
       : { role: 'user', content: text };
-    return JSON.stringify({ type, timestamp, gitBranch: branch, message });
+    return JSON.stringify({ type: type.replace('!', ''), timestamp, gitBranch: branch, message });
   });
   fs.write(join(dir, `seed-${n}.jsonl`), lines(records));
 }

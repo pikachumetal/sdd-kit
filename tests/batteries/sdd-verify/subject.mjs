@@ -19,7 +19,7 @@ const SDD_CLI = join(s.KIT, 'cli', 'bin', 'sdd.js');
 const CONTROL = s.SC === 'f2' ? '"profile": "delegate", "maxParallelAgents": 2' : '"profile": "delegate"';
 let MARKER = `"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {${CONTROL}}, "execution": "native"`;
 if (['c5', 'c6', 'c8'].includes(s.SC)) MARKER += ', "validation": {"mode": "field"}';
-if (s.SC === 'c1f' || s.SC === 'c9') MARKER += ', "review": {"minors": "fix"}';
+if (['c1f', 'c9', 'c10', 'c10e'].includes(s.SC)) MARKER += ', "review": {"minors": "fix"}';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F30 = '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-void-reason';
@@ -320,6 +320,18 @@ const steps = {
     steps.c1();
     copyFileSync(join(FIX, 'review-spec-c9.md'), join(workspace(), 'review-spec.md'));
   },
+  // El Minor pide un literal que contradice una decisión aprobada de la spec.
+  c10: () => {
+    amendSpec((text) => text.replace(/^3\. Sin review de spec[^\n]*$/m, '$&\n4. `canceladas` separa la sala y el día del motivo con ` — `: `Norte lun — sala ocupada`.'));
+    steps.c1();
+    copyFileSync(join(FIX, 'review-code-c10.md'), join(workspace(), 'review-code.md'));
+  },
+  // El mismo Minor, que aplica literal una decisión registrada: se escribe sin parar.
+  c10e: () => {
+    amendSpec((text) => text.replace(/^## Intent$/m, '### Decisiones tomadas con el dev-lead\n\n- `canceladas` separa con ` - `, porque recepción usa una consola `cp850`: `Norte lun - sala ocupada`. — «Con guion normal, que en recepción la raya sale rota.»\n\n$&'));
+    steps.c1();
+    copyFileSync(join(FIX, 'review-code-c10.md'), join(workspace(), 'review-code.md'));
+  },
   f5: () => {
     const base = hojas0024();
     ASK = reviewPackage(base, false);
@@ -351,7 +363,7 @@ steps[s.SC]?.();
 if (['v1', 'f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b', 'sv1'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { f1: '30', f2: '30', mp1: '30', c2: '30', c3: '30', c4: '30' };
 for (const id of ['f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b', 'sv1']) turns[id] = '25';
-for (const id of ['c1', 'c1f', 'c5', 'c6', 'c7', 'c8', 'c9']) turns[id] = '50';
+for (const id of ['c1', 'c1f', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c10e']) turns[id] = '50';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);

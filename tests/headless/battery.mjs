@@ -2,15 +2,15 @@
 // Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n>, una línea por escenario
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
 //      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas>|rojo|sin evidencia: la puerta y las filas de máquina
-//      BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
-//      node battery.mjs run                 lanza la batería, entera o por tramos, y da el veredicto
+//      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
+//      node battery.mjs run                 lanza la batería, entera, por tramos o por escenarios, y da el veredicto de lo lanzado
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia o no hay escenarios.
 // Con 0 y `puerta verde`, la conducta sigue sin leer: las filas en prosa las lee el hilo. `verde` solo si todas sus filas son de máquina:
-// `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea.
+// `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea, y `text: /<regex>/`, que falla si <salida>/<etiqueta>.texts.txt falta o no casa, también con emoji.
 // Lo que hace fallar el primer lanzamiento: KIT_DIR es una copia sin .docs/ ni tests/, sacada con git archive <commit> skills .claude-plugin agents cli hooks;
-// SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda; y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
+// SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda, y la previsión de la spec manda sobre él (cabecera de run.mjs); y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -64,8 +64,8 @@ const orderCheck = (first, second) => (text) => {
 };
 
 // Al contrario que `tools: … presente`, falla si no está: el sujeto guarda la línea, no la dice en el chat.
-const fileCheck = (name, pattern) => ({ label }, { outDir, fs }) => {
-  const path = join(outDir, label, name);
+const savedCheck = (saved, pattern) => ({ label }, { outDir, fs }) => {
+  const path = join(outDir, saved(label));
   return !fs.exists(path) || !pattern.test(fs.read(path).replaceAll('\r\n', '\n'));
 };
 
@@ -78,7 +78,10 @@ function compileCheck(cell) {
   const order = cell.match(/^`tools: \/(.+)\/ antes de \/(.+)\/`$/);
   if (order) return onTools(orderCheck(regex(order[1]), regex(order[2])));
   const file = cell.match(/^`file: ([^\s`/\\]+) \/(.+)\/`$/);
-  if (file) return fileCheck(file[1], regex(file[2], 'm'));
+  if (file) return savedCheck((label) => join(label, file[1]), regex(file[2], 'm'));
+  // Con `u`, un emoji es un carácter: `\u{1F986}` y `[🦆✋]` casan (ticket de la 0291 §1, un grep de Git Bash no lo encontró).
+  const said = cell.match(/^`text: \/(.+)\/`$/);
+  if (said) return savedCheck((label) => `${label}.texts.txt`, regex(said[1], 'mu'));
   throw new SyntaxError(cell);
 }
 
@@ -109,16 +112,25 @@ function proseCovers(cell, known) {
 // Una celda puede juntar varias filas: «S1, S2, R1 Juntas».
 const rowIds = (fila) => fila.match(/^[^\s,]+(?:,\s+[^\s,]+)*/)?.[0] ?? fila;
 
-// Una fila cuya celda «Falla si…» empieza por `tools: o `file: es una comprobación; mal escrita es un error, porque callada no correría.
+// Una fila cuya celda «Falla si…» empieza por `tools:, `file: o `text: es una comprobación; mal escrita es un error, porque callada no correría.
 function readRubric(batteryPath, rows, fs) {
   const known = new Set(rows.map((row) => row.Id));
   const table = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
-  const byMachine = (row) => /^`(tools|file):/.test(row['Falla si…']);
+  const byMachine = (row) => /^`(tools|file|text):/.test(row['Falla si…']);
   return {
     checks: table.filter(byMachine).map((row) => parseCheck(row, known)),
     prose: table.filter((row) => !byMachine(row)).map((row) => ({ id: rowIds(row.Fila), covers: proseCovers(row.Escenarios, known) })),
   };
 }
+
+function selectScenarios(rows, ids) {
+  if (ids.length === 0) return rows;
+  const unknown = ids.find((id) => !rows.some((row) => row.Id === id));
+  if (unknown) throw new BatteryError(`escenario desconocido: ${unknown}`, 2);
+  return rows.filter((row) => ids.includes(row.Id));
+}
+
+const words = (value) => (value ?? '').split(/\s+/).filter(Boolean);
 
 function selectSteps(rows, steps) {
   if (steps.length === 0) return rows;
@@ -199,12 +211,13 @@ function judge(row, { outDir, fs, rubric: { checks, prose } }) {
   return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${statedVerdict(state, prose, row.Id)}`, ...notes].join(' · ');
 }
 
-export function verdict(batteryPath, outDir, steps, fs) {
-  const rows = readScenarios(batteryPath, fs);
-  const rubric = readRubric(batteryPath, rows, fs);
-  const lines = selectSteps(rows, steps).map((row) => judge(row, { outDir, fs, rubric }));
+function judgeRows(batteryPath, selected, { outDir, fs }) {
+  const rubric = readRubric(batteryPath, readScenarios(batteryPath, fs), fs);
+  const lines = selected.map((row) => judge(row, { outDir, fs, rubric }));
   return { lines, red: lines.some((line) => line.includes('· rojo')), noEvidence: lines.some((line) => line.includes('· sin evidencia')) };
 }
+
+export const verdict = (batteryPath, outDir, steps, fs) => judgeRows(batteryPath, selectSteps(readScenarios(batteryPath, fs), steps), { outDir, fs });
 
 // Sin evidencia no es verde: con 0, un script leería que todos pasan.
 function exitCode({ lines, red, noEvidence }) {
@@ -241,23 +254,25 @@ export function batteryPlan(env, cwd, fs) {
   const dir = batteryDir(env);
   const table = join(dir, 'battery.md');
   if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
-  const steps = (env.STEPS ?? '').split(/\s+/).filter(Boolean);
-  const rows = selectSteps(readScenarios(table, fs), steps);
+  const all = readScenarios(table, fs);
+  // El id se valida contra la tabla entera: fuera del tramo pedido es un cruce vacío, no un id desconocido.
+  const wanted = selectScenarios(all, words(env.SCENARIOS));
+  const rows = selectSteps(all, words(env.STEPS)).filter((row) => wanted.includes(row));
   if (rows.length === 0) throw new BatteryError(noScenarios(table), 3);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
-  return { table, steps, rows, launchEnv, config };
+  return { table, rows, launchEnv, config };
 }
 
 export async function runBattery(env, cwd, deps) {
-  const { table, steps, rows, launchEnv, config } = batteryPlan(env, cwd, deps.fs);
+  const { table, rows, launchEnv, config } = batteryPlan(env, cwd, deps.fs);
   const failure = deps.syntaxError(launchEnv.SUBJECT_SH);
   if (failure) throw new BatteryError(`subject.mjs no compila:\n${failure}`);
   refuseSavedLabels(rows, config.out, deps.fs);
   const launch = (overrides) => runCampaign(readConfig({ ...launchEnv, ...overrides }, cwd, deps.fs), deps);
   const maxN = Math.max(0, ...rows.map((row) => Number(row.n)));
   for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launch);
-  const result = verdict(table, config.out, steps, deps.fs);
+  const result = judgeRows(table, rows, { outDir: config.out, fs: deps.fs });
   for (const line of result.lines) deps.log(line);
   return exitCode(result);
 }

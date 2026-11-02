@@ -272,29 +272,35 @@
 | 2026-11-02 | 0271 | docs | 2 | 1.26 | 0.63 | 23324k | 2738k | 20.81 | 13.66 | 20261102-135210-feature-0271-clean-red-rules |
 | 2026-11-02 | 0287 | infra/tooling | 1.5 | 0.45 | 0.3 | 8582k | 2267k | 0.01 | 8.37 | 20261102-145840-feature-0287-heredoc-guard |
 | 2026-11-02 | 0194 | docs | 2 | 1.54 | 0.77 | 15604k | 3551k | 23.76 | 12.75 | 20261102-163922-feature-0194-roadmap-whats-next |
+| 2026-11-02 | 0280 | infra/tooling | 1.2 | 0.36 | 0.3 | 6174k | 1591k | no aplica | 6.32 | 20261102-163940-feature-0280-campaign-subject-cap |
+| 2026-11-02 | 0192 | infra/tooling | 1.5 | 1.1 | 0.73 | 27644k | 4888k | 2.82 | 19.18 | 20261102-164419-feature-0192-phase-timing-breakdown |
+| 2026-11-02 | 0291 | docs | 1.5 | 1.19 | 0.79 | 12586k | 1535k | 13.64 | 8.41 | 20261102-173757-feature-0291-fix-pass-deviation |
+| 2026-11-02 | 0281 | docs | 1.5 | 1 | 0.67 | 11678k | 1891k | 10.54 | 8.88 | 20261102-173845-feature-0281-coherence-pass-scope |
+| 2026-11-02 | 0295 | patch | 0.4 | 0.05 | 0.13 | 1694k | no aplica | no aplica | 1.78 | 20261102-192226-patch-0295-rubric-text-row |
+| 2026-11-02 | 0293 | patch | 0.5 | 0.06 | 0.12 | 1510k | no aplica | no aplica | 1.69 | 20261102-193802-patch-0293-precommit-clean-git-env |
 
-**Factor de calibración** (ratio mediano real/estimado, 232 artefactos): **0.57** · media 0.72
+**Factor de calibración** (ratio mediano real/estimado, 238 artefactos): **0.57** · media 0.71
 
-- p25–p75: 0.36–0.88
+- p25–p75: 0.36–0.86
 - p80: 1 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 25 % · sobreestimadas: 66 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.26 · mediana 0.82
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.46
+- Error absoluto (h): media 1.24 · mediana 0.8
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.47
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 92 | 40 % |
-| 0.5–0.8 | 69 | 30 % |
-| 0.8–1.25 | 50 | 22 % |
-| 1.25–2 | 13 | 6 % |
+| <0.5 | 95 | 40 % |
+| 0.5–0.8 | 72 | 30 % |
+| 0.8–1.25 | 50 | 21 % |
+| 1.25–2 | 13 | 5 % |
 | ≥2 | 8 | 3 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 101 | 0.57 | 0.4–0.8 |
-| infra/tooling | 62 | 0.49 | 0.36–0.73 |
-| patch | 67 | 0.76 | 0.29–1.2 |
+| docs | 103 | 0.57 | 0.4–0.8 |
+| infra/tooling | 64 | 0.49 | 0.36–0.73 |
+| patch | 69 | 0.75 | 0.28–1.2 |
 | tooling | 1 | 0.6 | — |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -314,6 +320,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 120 | 226.59 | 0.53 | 624.49 | 1914.39 |
+| sin publicar | 126 | 230.35 | 0.53 | 651.49 | 1960.65 |
 
 > Ver `estimation.md`.

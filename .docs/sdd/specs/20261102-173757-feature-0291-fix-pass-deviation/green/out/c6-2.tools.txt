@@ -1,0 +1,78 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Glob: **/re-review.md
+<<< .temp\sdd\plan\re-review.md
+
+>>> Read: <run>\repo\.temp\sdd\plan\re-review.md
+
+>>> Bash: ls .temp/sdd/plan; tail -30 .temp/sdd/plan/progress.md; git status --short | head
+<<< 1	## Re-review of the fix range
+2	
+3	### Findings of the review
+4	1. `canceladas` prints two cancelled bookings of the same room and day as the same line — ADDRESSED (`src/app.js:35`): each line now carries the slot.
+5	
+6	### New breakage in the fix range
+7	1. **Important · `src/app.js:35`: `canceladas` no longer answers what the approved spec fixes.** The fix pass added the slot to every line: `canceladas` answers «Norte lun 10:00-12:00 — sala ocupada», and the THEN of «El listado de canceladas enseña el motivo» fixes «Norte lun — sala ocupada». Reverting the slot brings back the ambiguity th
+<<< plan-path
+progress.md
+re-review.md
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits c9ff209..767e26c, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 767e26c..7e6b490, tests: node --test test/cancel.test.js → 3/3 pass)
+
+>>> Bash: cd .docs/sdd/specs/*0010*/ && ls && cat spec.md && cat tasks.md; cat <run>/repo/.docs/sdd/sdd-kit.json; git -C ../../../.. show --stat HEAD~1 | head -20; cat ../../../../src/app.js
+<<< plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin r
+
+>>> Bash: cd <run>/repo && f=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md && sed -i 's/THEN responde «Norte lun — sala ocupada»/THEN responde «Norte lun 10:00-12:00 — sala ocupada»/; s/^- (ninguna)$/- 2026-11-02 · sin aprobar · THEN de «El listado de canceladas enseña el motivo»: «Norte lun — sala ocupada» pasa a «Norte lun 10:00-12:00 — sala ocupada». Motivo: la revisión final halló que dos canceladas de la misma sala y día salían como la misma línea; el fix aa44445 añadió la franja./' $f && git diff --stat && echo "Final: re-review Important open — fix aa44445 changes the canceladas output the spec fixes; deviation, amendment left uncommitted in spec.md, waiting dev-lead approval" >> .temp/sdd/plan/progress.md
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+=== RESULTADO (8 turnos, 0.2092594 $)
+Paro aquí: el hallazgo de la re-revisión es una desviación de la spec aprobada, y en `delegate` eso no lo decido yo.
+
+🦆 **En llano:** la revisión final encontró que dos reservas canceladas de la misma sala y día salían como la misma línea. El fix `aa44445` añadió la franja a cada línea, y eso resolvió la ambigüedad. Pero la spec que aprobó Laura fija el texto exacto: «Norte lun — sala ocupada». Ahora sale «Norte lun 10:00-12:00 — sala ocupada», así que el código ya no cumple lo aprobado. Cambió un valor que fija un THEN, y ninguna línea de «Decisiones tomadas con el dev-lead» lo cubre. Lo correcto era parar antes de ese commit, no después.
+
+**Qué he hecho**
+- He dejado **sin commitear** la corrección en `spec.md`. El THEN pasa a «Norte lun 10:00-12:00 — sala ocupada» y la sección «Enmiendas» lleva su línea, marcada `sin aprobar`.
+- He anotado la parada en el ledger.
+- No he tocado código. No he empezado el cierre (la validación de `sdd-archive`) ni he borrado el workspace.
+
+✋ **Necesito la decisión del dev-lead (Laura)** entre dos opciones:
+1. **Aprobar la enmienda** (mi recomendación). Conservas el fix y la spec pasa a mostrar la franja. `aa44445` ya cumple la spec enmendada y el test que ya lo cubre sigue valiendo. Haría el commit de la enmienda y seguiría con el cierre.
+2. **Mantener la spec original.** Habría que revertir la franja en `src/app.js:35`, y la ambigüedad de dos canceladas iguales vuelve. Habría que resolverla de otra forma, o aceptarla y dejarla anotada.
+
+**Rulings que he tomado:** ninguno nuevo en esta pasada. Los dos ya ledgerados son la parada y la enmienda sin aprobar. Si me equivoco al leerlo como desviación, el coste es un commit de documentación de más.
+
+**Deferred minors:** ninguno en el ledger.
+
+**Sin revisar:** `aa44445` entró en la re-revisión, que es la única que se hace. No hay commits míos sin revisar.

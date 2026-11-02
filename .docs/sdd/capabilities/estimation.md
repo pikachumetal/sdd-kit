@@ -137,7 +137,8 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 - GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-archive`, en un proyecto con `.docs/sdd/estimation.md`
 - WHEN se rellena la sección 2 del walkthrough o la §5 de `patch.md`
-- THEN `Esfuerzo real` (en los dos) y `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` (en el walkthrough) son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit
+- THEN `Esfuerzo real` (en los dos) y `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` (en el walkthrough) son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta del artefacto>`, ejecutado desde el kit
+- AND `timing.json` queda en la carpeta del artefacto, y entra en el commit de cierre
 - AND en otro harness, las cuatro dicen «no medido», con el motivo, y el esfuerzo real se aproxima con las marcas de los commits y se dice
 
 ### El log lee las features y las tasks heredadas
@@ -224,10 +225,71 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - AND un hueco dentro de una espera cuenta solo como espera
 - AND sin huecos, la línea acaba en `(<n> esperas)`, como hoy
 
+### El cierre guarda el desglose por fase de la sesión
+
+- GIVEN el transcript de una feature con `sdd-propose` a las 13:48, el commit de apertura a las 14:54, `sdd-implement` a las 14:54, `sdd task start` de la task 1 a las 14:57, `sdd-verify` a las 15:35 y `sdd-retro` a las 15:59
+- WHEN se ejecuta `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`
+- THEN `<carpeta>/timing.json` lleva `version: 1` y las fases `apertura`, `implementacion`, `revision` y `cierre`, en ese orden, cada una con `agentSeconds`, `execSeconds`, `waitSeconds`, `idleSeconds` y `ceremony` (`true` salvo en `implementacion`)
+- AND `implementacion` lleva `tasks` con la task 1, `source: "events"`
+- AND `|agente + ejecución + espera + hueco − reloj|`, sumado en todas las fases, es de 60 s o menos, o del 1 % del reloj si es mayor, y `withinMargin` es `true`
+- AND agente + ejecución de todas las fases da el `Esfuerzo real` de la cuarta línea, con la misma salida en las cuatro líneas que sin `--artifact`
+- AND fuera del margen, el fichero lleva `withinMargin: false`, la CLI avisa por stderr con las dos cifras y sale con 0
+- AND sin `--artifact` no escribe ningún fichero
+- AND regenerarlo sin cambios en los transcripts ni en la rama deja el fichero idéntico
+- AND las claves del fichero van en inglés y los nombres de fase, sin tilde: es un contrato que leen otros verbos
+
+### Una fase sin eventos no da cifra
+
+- GIVEN el transcript de una feature sin ninguna invocación de `sdd-archive` ni de `sdd-retro`, con la rama sin fusionar
+- WHEN se ejecuta `sdd session tokens --artifact <carpeta>`
+- THEN la fase `cierre` lleva `measured: false`, sus tiempos son `null` y `reason` es `sin eventos: su tiempo queda en revision`
+- AND la suma sigue dentro del margen: ese tiempo está en `revision`
+- AND un transcript sin `sdd task start` y con los commits de la rama distintos de las tasks del plan da `implementacion` sin `tasks`
+- AND con tantos commits entre apertura y cierre como tasks tiene el plan, y sin `sdd task start`, `tasks` sale con `source: "commits"`
+- AND sin transcripts, `timing.json` es `{ "version": 1, "measured": false, "reason": "sin transcripts de Claude Code para <ruta>" }`
+
+### El gate se atribuye por el comando del «Gate de cierre»
+
+- GIVEN un `tech-stack.md` con `- **Gate de cierre**: \`moon run kit:test-headless cli:typecheck cli:test --affected --base develop\``, y en la fase `cierre` una llamada `moon run kit:test-headless cli:typecheck cli:test --affected --base develop 2>&1 | tail -5` de 240 s y otra `npx vitest run test/session/` de 30 s
+- WHEN se escribe `timing.json`
+- THEN `cierre` lleva `gateSeconds: 240`, y `execSeconds` incluye los 270 s
+- AND `gateCommand` es el literal del gate
+- AND una llamada `moon run cli:test` no suma en `gateSeconds`
+- AND sin «Gate de cierre» declarado, `gateCommand` y `gateSeconds` son `null`
+
+### Cada fase lleva su estimado
+
+- GIVEN un `plan.md` con `- Esfuerzo spec + plan: 0,5h`, `- Estimación de implementación: 1h`, `- Estimación de revisión: 0,25h` y `- Estimación de cierre: 0,25h`
+- WHEN se escribe `timing.json` en su carpeta
+- THEN `estimateHours` es 0.5, 1, 0.25 y 0.25 en las fases, por ese orden
+- AND un `plan.md` sin las dos últimas líneas da `estimateHours: null` en `revision` y `cierre`
+- AND una carpeta lite, sin `plan.md`, con `- Esfuerzo spec: 0,5h` y `- Estimación de implementación: 1h` en `spec.md`, da 0.5 y 1, y `null` en `revision` y `cierre`
+- AND una carpeta sin `plan.md` ni esas líneas da `estimateHours: null` en todas
+
+### El log suma los tiempos por fase y el % de ceremonia
+
+- GIVEN dos carpetas con `timing.json` medido: la A con `apertura` 600 s de agente y 300 de ejecución, estimado 0,5 h, e `implementacion` 900 de agente y 2.700 de ejecución, estimado 1 h; la B igual en `implementacion` y con `apertura` `measured: false`
+- WHEN se ejecuta `sdd estimation log`
+- THEN el log lleva `## Tiempos por fase` con la cabecera `| Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |`
+- AND la fila `apertura` tiene n 1, agente 0.17, ejecución 0.08, espera 0, gate 0, 11 % del trabajo, estimado 0.5, real 0.25 y ratio 0.5, con `sí` en Ceremonia
+- AND la fila `implementación` tiene n 2, 89 % del trabajo, `no` en Ceremonia, estimado 2, real 2 y ratio 1
+- AND bajo la tabla, `Ceremonia: 20 % del trabajo (1 tareas, 1 fuera por una fase sin eventos).`: solo cuenta la A, 900 s de 4.500 s de trabajo
+- AND la tabla principal del log y su ratio son los mismos que sin `timing.json`
+- AND una carpeta con `withinMargin: false` no entra, y el log avisa por stderr con su nombre
+- AND sin ningún `timing.json` medido, la sección dice `Sin datos: ninguna tarea tiene timing.json.`
+
+### La causa de una desviación cita las esperas medidas
+
+- GIVEN una feature con dos esperas en el transcript, de 45 min a las 14:59Z y de 12 min a las 15:40Z
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN imprime `- Esperas y huecos: 14:59Z 45 min; 15:40Z 12 min`, la última línea, también tras `Medición`
+- AND sin esperas ni huecos, con «no medido» o en `--json`, esa línea no sale
+- AND con una desviación de más del ±30 %, `sdd-archive` escribe en «Causa de la desviación» esas horas y minutos, o «sin medir»
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el esfuerzo real y las esperas, de los transcripts de Claude Code; para una rama sin transcripts propios, de los transcripts de los demás worktrees del repo, entre la creación de la rama (su reflog) y su último merge en `merge.into`; el log, generado, en la carpeta de `estimation.md`.
-- **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee.
-- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes. Un hueco sin actividad pasa de 60 min.
-- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas. La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout.
-- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el desglose por fase, en `timing.json` de cada carpeta de artefactos, y el estimado de cada fase, en su `plan.md`; el esfuerzo real y las esperas, de los transcripts de Claude Code; para una rama sin transcripts propios, de los transcripts de los demás worktrees del repo, entre la creación de la rama (su reflog) y su último merge en `merge.into`; el log, generado, en la carpeta de `estimation.md`.
+- **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee; las claves de `timing.json` en inglés y sus nombres de fase sin tilde, como contrato que leen otros verbos.
+- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes. Un hueco sin actividad pasa de 60 min. Las fases suman el reloj con un margen de 60 s o del 1 % del reloj, lo que sea mayor.
+- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe, un documento presente en sus dos rutas, y un `timing.json` fuera del margen (al escribirlo y, con la tarea fuera de la tabla, al generar el log). La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout.
+- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos. El «Gate de cierre» de `operations.md` manda sobre el de `tech-stack.md`.

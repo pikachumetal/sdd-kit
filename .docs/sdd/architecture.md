@@ -66,12 +66,12 @@
 
 ## Documentos de `.docs/sdd/`
 
-Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art. XI), y tiene quien lo escribe, quien lo lee y una cota. Medidas del 2026-09-30, en palabras. Donde dice «sin cota», el documento crece con cada cierre y nada lo frena todavía.
+Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art. XI), y tiene quien lo escribe, quien lo lee y una cota. Donde dice «sin cota», el documento crece con cada cierre y nada lo frena todavía.
 
 | Documento | Tipo | Lo escribe | Lo lee | Cota |
 | --- | --- | --- | --- | --- |
 | `roadmap.md` | estado | `sdd-roadmap` y los cierres de feature, patch y release | los arranques, `sdd-roadmap` y los cierres | `sdd roadmap check`: solo las secciones de la plantilla, solo tablas, y las filas saldadas salen en el corte |
-| `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-explore`, por el índice | la forma, con `sdd capability check`; **sin cota** de tamaño (`feature-flow`, 7.927 palabras y 71 requisitos): propuesta «documentos acotados» |
+| `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-explore`, por el índice | la forma, con `sdd capability check`; **sin cota** de tamaño: propuesta «documentos acotados» |
 | `constitution.md` | estado | el dev-lead, por una feature | toda sesión que arranca una feature | tope de palabras (`word-budget.test.ts`) |
 | `mission.md`, `architecture.md`, `estimation.md` | estado | el dev-lead y los cierres | toda sesión que arranca una feature | tope de palabras (`word-budget.test.ts`) |
 | `tech-stack.md` | estado, hoy usado como diario | los cierres, con lo aprendido | toda sesión que arranca una feature | tope de palabras (`word-budget.test.ts`; no cabe en una lectura): un aprendizaje nuevo sustituye o condensa otro |
@@ -79,7 +79,7 @@ Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art
 | `estimation-log.md` | generado | `sdd estimation log` | `plan-writing.md`, para estimar | una fila por cierre; nadie lo edita |
 | `sdd-kit.json` | estado | `sdd-config`, las init y las migraciones | todas las skills | sus claves son las del catálogo de `sdd-config` |
 | `decisions/NNNN-<slug>.md` | ADR | la feature que toma o sustituye la decisión | quien toca sus `rutas`, con `sdd decision index --files` | inmutable: solo cambia `status` al sustituirse; forma: `sdd decision check` |
-| `specs/<carpeta>/` | evento | el arranque y el cierre de cada feature, patch o propuesta | su propia sesión, y quien busca un porqué | una carpeta por evento; no se edita tras el cierre, salvo adendas fechadas |
+| `specs/<carpeta>/` | evento | el arranque y el cierre de cada feature, patch o propuesta | su propia sesión, y quien busca un porqué | una carpeta por evento; no se edita tras el cierre, salvo adendas fechadas; su `timing.json` lo genera `sdd session tokens --artifact` |
 | `field-reports/` | evento | `sdd-feedback`, copiado literal | el triaje del roadmap | un fichero por ticket; no se edita |
 | `releases/vX.Y.Z/` | evento | `sdd-end-release` y `sdd-retro` | las personas, el corte siguiente y `sdd-roadmap` | una carpeta por release |
 | `tests/*.md` (fuera de `.docs/`) | evento | la campaña RED/GREEN de cada edición de skill | la revisión final y quien reabre la regla | un fichero por campaña |

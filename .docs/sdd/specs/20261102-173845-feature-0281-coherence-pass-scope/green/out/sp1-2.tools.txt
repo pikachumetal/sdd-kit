@@ -1,0 +1,331 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/specs .docs/sdd/capabilities docs 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0281-coherence-pass-scope/.temp/k1/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0281-coherence-pass-scope\.temp\k1\skills\sdd-propose\references\spec-writing.md
+<<< .:
+.
+..
+.docs
+.git
+docs
+package.json
+PRODUCT.md
+README.md
+scripts
+src
+test
+
+.docs/sdd:
+.
+..
+capabilities
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+.docs/sdd/capabilities:
+.
+..
+bookings.md
+
+.docs/sdd/specs:
+.
+..
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+
+docs:
+.
+..
+guia.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json:
+<<< 1	# Writing the spec
+2	
+3	Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the sp
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/bookings.md .docs/sdd/roadmap.md .docs/sdd/tech-stack.md; cat docs/guia.md; ls .docs/sdd/specs/*; grep -rniE "anular|anula|void|cancelar" --exclude-dir=.git --exclude-dir=node_modules . -l; cat package.json
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0281-coherence-pass-scope\.temp\k1\skills\sdd-propose\references\nombrado.md
+<<< 1	## Nombrado de carpetas de spec
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+7	- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit
+<<< # Capacidad — bookings
+
+## Propósito
+
+Reservar, cancelar y anular salas desde la línea de comandos.
+
+## Requisitos
+
+### Cancelar una reserva propia
+
+- GIVEN una reserva activa de Norte el lunes
+- WHEN la persona ejecuta `cancelar Norte lun`
+- THEN la reserva queda cancelada y responde `cancelada Norte lun`
+- AND sin reserva ese día responde `sin reserva Norte lun`
+
+### Anular una reserva
+
+- GIVEN una reserva activa de Norte el lunes
+- WHEN el responsable ejecuta `anular Norte lun`
+- THEN la reserva queda anulada y responde `anulada Norte lun`
+
+## Reglas de la capacidad
+
+
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/*.js; grep -niE "anular|anula|void|cancelar" README.md PRODUCT.md .docs/sdd/changelog.md .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/operations.md .docs/sdd/estimation.md .docs/sdd/specs/*/*; ls scripts; git branch -a; node "D:/code/.worktrees/sdd-kit/feature-0281-coherence-pass-scope/.temp/k1/cli/bin/sdd.js" id claim --project-root "$PWD"
+
+>>> Glob: **/spec-template.md
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0281-coherence-pass-scope\.temp\k1\skills\sdd-propose\references\control-profiles.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+<<< D:\code\.worktrees\sdd-kit\feature-0281-coherence-pass-scope\.temp\k1\skills\sdd-templates\templates\spec-template.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+
+>>> Bash: cd "<run>/repo" && cat scripts/lint.mjs PRODUCT.md README.md .docs/sdd/operations.md .docs/sdd/constitution.md; wc -w docs/guia.md; cat .docs/sdd/specs/*task-0006*/spec.md; grep -rniE "voided|anulad|voidBooking" --exclude-dir=.git . | grep -v "^./src"; cat "D:/code/.worktrees/sdd-kit/feature-0281-coherence-pass-scope/.temp/k1/skills/sdd-templates/templates/spec-template.md"
+<<< import { readFileSync } from 'node:fs';
+
+const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const tabs = source.split('\n').filter((line) => line.includes('\t')).length;
+if (tabs > 0) {
+  console.error(`lint: ${tabs} líneas con tabuladores en src/app.js`);
+  process.exit(1);
+}
+console.log('lint: sin hallazgos');
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reu
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0281-coherence-pass-scope\.temp\k1\skills\sdd-propose\references\review-spec.md
+<<< 1	# Review de la spec — rúbrica de complejidad y revisor adversarial
+2	
+3	Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gate. En modo lite no se aplica.
+4	
+5	## 1. Cuenta las señales (observables en la spec)
+6	
+7	| Señal | Se cumple si… |
+8	| --- | --- |
+9	| Capacidad nueva | «✋ Decisiones que he tomado yo» declara una capacidad nueva en `capabilities/` |
+10	| Contrato público | el delta toca una API, un formato de fichero o una interfaz que consume otro módulo o sistema |
+11	| `MODIFIED` / `REMOVED` | el delta cambia o quita un requisito existente |
+12	| Tres o 
+
+>>> Bash: cd "<run>/repo" && ts=$(date -u +%Y%m%d-%H%M%S) && d=".docs/sdd/specs/$ts-feature-0012-retire-void" && mkdir -p "$d" && echo "$ts" && cat > "$d/spec.md" <<'EOF'
+---
+id: TS-feature-0012-retire-void
+feature: 0012
+title: Retirar el comando anular
+mode: full
+status: draft
+created: 2026-11-02
+author: Fixture
+approvers:
+  - name: TBD
+    approved_at: null
+---
+
+# Spec — Retirar el comando anular
+
+🦆 Hoy `anular Norte lun` anula la reserva de otra persona y responde `anulada Norte lun`. Tras este cambio ese comando deja de existir: `anular Norte lun` responde `salas`, como cualquier comando desconocido. `cancelar Norte lun` sigue igual (`cancelada Norte lun` o `sin reserva Norte lun`). El requisito «Cancelar una reserva propia» pasa a llamarse «Cancelar una reserva», y la guía y el README dejan de nombrar `anular`.
+
+Validación: dev-lead — es un comando que usa una persona: se prueba ejecutándolo.
+
+## Capacidades
+
+- Modificadas: `bookings` — se retira el requisito «Anular una reserva» y «Cancelar una reserva propia» pasa a «Cancelar una reserva»
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+```text
+Review de spec propuesta: ninguna — señales: MODIFIED/REMOVED (se quita un requisito y se renombra otro) · tamaño: ~15 líneas en 6 ficheros
+- Mínimo razonable: ninguna — deja sin mirar solo el barrido de `anular` fuera de la spec, que ya hizo el repaso de coherencia
+```
+
+1. `anular` no tiene mensaje propio de «comando retirado»: cae en la respuesta de cualquier comando desconocido (`salas`) — es lo que hace hoy `run` y no añade comportamiento nuevo.
+2. El renombrado es solo del título: los escenarios de `cancelar` no cambian (ni el comportamiento ni sus literales).
+3. En la guía solo se quita la línea de `anular`; la de `cancelar` se queda como está («cancela tu reserva»), aunque el requisito ya no diga «propia».
+4. Se quita del `PRODUCT.md` el término **Anulación**; **Cancelación** no se toca.
+5. El README pasa a «Comandos: `cancelar`; guía en docs/guia.md».
+6. Se borra `voidBooking` y el estado `voided`: no hay datos persistentes (las reservas viven en memoria), así que no hay migración.
+7. **Conflicto con la fila 0011** («Anular reservas de otros», solo el responsable): su enunciado presupone un `anular` que esta feature retira. No toco la fila (es planificación, de `sdd-roadmap`); te lo señalo para que decidas qué pasa con la 0011.
+8. El historial (`changelog.md`, «Releases cerradas» del roadmap) mantiene «Cancelar una reserva propia»: es lo que se entregó en v0.3.0.
+- Política de modelos: sin revisores de spec · revisión final: Spec opus+high, Código sonnet+high · sin otros despachos en paralelo.
+
+### Decisiones tomadas con el dev-lead
+
+- Se retira el comando `anular` — «se retira el comando anular»
+- El requisito pasa a llamarse «Cancelar una reserva» — «el requisito «Cancelar una reserva propia» pasa a llamarse «Cancelar una reserva»»
+- Se actualiza `docs/guia.md` — «la guía docs/guia.md se actualiza»
+- Perfil `delegate` — «Perfil delegate»
+
+## Intent
+
+Hoy el comando `anular` existe en el código, la guía, el README y la capacidad `bookings`. El roadmap decidió retirarlo (fila 0012). Éxito: `anular` no aparece como comando en ningún sitio, `cancelar` se comporta igual y el gate sigue verde.
+
+## Scope
+
+- Entra: quitar `voidBooking` y la rama `anular` de `src/app.js`; un test que fije que `anular` ya no existe; actualizar `docs/guia.md`, `README.md` y `PRODUCT.md`; el delta de `bookings` (retirar «Anular una reserva», renombrar «Cancelar una reserva propia», ajustar el propósito).
+- No entra: la fila 0011 y cualquier otro cambio en `cancelar`; quién puede cancelar; el historial (`changelog.md`, «Releases cerradas»).
+
+## Lo que se retira o cambia de forma
+
+| Qué | Dónde aparece | Destino |
+| --- | --- | --- |
+| Comando `anular` y `voidBooking` / estado `voided` | `src/app.js:23-28`, `src/app.js:35` | Scope (código) |
+| Requisito «Anular una reserva» | `.docs/sdd/capabilities/bookings.md:17` | delta, `REMOVED` |
+| Requisito «Cancelar una reserva propia» | `.docs/sdd/capabilities/bookings.md:9` | delta, `REMOVED` + `ADDED` «Cancelar una reserva» (decisión del dev-lead) |
+| Propósito «Reservar, cancelar y anular salas…» | `.docs/sdd/capabilities/bookings.md:5` | Scope: lo ajusta el cierre a «Reservar y cancelar salas desde la línea de comandos» |
+| Línea de `anular` | `docs/guia.md:8` | Scope (guía); el tope de 60 palabras de `test/` se cumple al acortar |
+| «`cancelar` y `anular`» | `README.md:5` | Scope, decisión 5 |
+| Término **Anulación** | `PRODUCT.md:10` | Scope, decisión 4 |
+| «Cancelar una reserva propia» | `.docs/sdd/changelog.md:20`, roadmap «Releases cerradas» | se queda: historial, decisión 8 |
+| «Anular reservas de otros» (usa `anular`) | `.docs/sdd/roadmap.md`, fila 0011 | decisión 7: lo decide el dev-lead |
+
+- Filas que implementa: 0012 → la nombran `docs/guia.md:8` («lo retira la 0012», que desaparece con la línea) y `roadmap.md`, fila 0012 (la cierra el archivo) | comprobado con `grep -rn 0012` fuera de `specs/`
+
+## Approach
+
+Se borra la función y la rama del comando; `run` ya devuelve `salas` para lo desconocido. Se escribe antes el test que falla hoy (`anular` ≠ `salas`). La guía y los demás documentos se editan como dice la tabla.
+
+## Dónde se prueba
+
+- `anular` ya no existe: `run('anular', ['Norte','lun'])` → `salas`, en `test/`, como los tests de `cancelar` actuales.
+- `cancelar` no cambia: los tests de `test/cancel.test.js` actuales.
+- La guía no nombra `anular` y cabe en su tope: el test de palabras de `test/` existente.
+
+## Términos y ADR
+
+- Términos resueltos: ninguno
+- ADR candidatas: ninguna
+
+## Topes de palabras
+
+| Fichero | Medido / tope | Margen | Tope propuesto |
+| --- | --- | --- | --- |
+| `docs/guia.md` | 42 / 60 | 18 | sin cambio (la edición lo acorta) |
+
+## Delta de comportamiento
+
+### Capacidad: `bookings`
+
+#### REMOVED — Cancelar una reserva propia
+
+- motivo: pasa a llamarse «Cancelar una reserva»
+
+#### ADDED — Cancelar una reserva
+
+- GIVEN una reserva activa de Norte el lunes
+- WHEN la persona ejecuta `cancelar Norte lun`
+- THEN la reserva queda cancelada y responde `cancelada Norte lun`
+- AND sin reserva ese día responde `sin reserva Norte lun`
+
+#### REMOVED — Anular una reserva
+
+- motivo: se retira el comando `anular` (fila 0012)
+
+## Enmiendas
+
+## Aprobaciones
+
+| Nombre | Fecha | Estado |
+| --- | --- | --- |
+| | | pendiente |
+EOF
+sed -i "s/TS-feature/$ts-feature/" "$d/spec.md"
+cp -r .docs/sdd /tmp/sddcopy && node "D:/code/.worktrees/sdd-kit/feature-0281-coherence-pass-scope/.temp/k1/cli/bin/sdd.js" capability merge --path /tmp/sddcopy --artifact "$d/spec.md"; grep -n "^###\|^- " /tmp/sddcopy/capabilities/bookings.md | head -30; grep -rn 0012 --exclude-dir=.git --exclude-dir=specs . ; wc -w docs/guia.md
+<<< 20261102-170646
+spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»
+grep: /tmp/sddcopy/capabilities/bookings.md: No such file or directory
+./.docs/sdd/roadmap.md:9:| 0012 | **Retirar anular**: el comando anular desaparece | ⏳ |
+./docs/guia.md:8:- `anular <sala> <día>`: anula la reserva de otra persona; lo retira la 0012.
+42 docs/guia.md
+
+>>> Bash: cd "<run>/repo" && T="$(cygpath -m "$TEMP")/sddcopy-0012" && rm -rf "$T" && cp -r .docs/sdd "$T" && d=$(ls -d .docs/sdd/specs/*retire-void) && node "D:/code/.worktrees/sdd-kit/feature-0281-coherence-pass-scope/.temp/k1/cli/bin/sdd.js" capability merge --path "$T" --artifact "$d/spec.md"; grep -n "^###\|^## " "$T/capabilities/bookings.md"; git status --short
+<<< bookings.md: quitado «Cancelar una reserva propia»
+bookings.md: añadido «Cancelar una reserva»
+bookings.md: quitado «Anular una reserva»
+3:## Propósito
+7:## Requisitos
+9:### Cancelar una reserva
+16:## Reglas de la capacidad
+?? .docs/sdd/specs/20261102-170646-feature-0012-retire-void/
+
+>>> Bash: cd "<run>/repo" && f=$(ls .docs/sdd/specs/*retire-void/spec.md) && sed -i 's/^- Política de modelos:/- Fusión de prueba (copia en carpeta temporal): `bookings.md: quitado «Cancelar una reserva propia» · añadido «Cancelar una reserva» · quitado «Anular una reserva»`; el Propósito no lo toca la fusión y lo ajusta el cierre.\n- Política de modelos:/' "$f" && grep -n "Fusión" "$f"
+<<< 39:- Fusión de prueba (copia en carpeta temporal): `bookings.md: quitado «Cancelar una reserva propia» · añadido «Cancelar una reserva» · quitado «Anular una reserva»`; el Propósito no lo toca la fusión y lo ajusta el cierre.
+
+=== RESULTADO (15 turnos, 0.4015770000000001 $)
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`). La rama `feature/0012-retire-void` tiene su fila pendiente en el roadmap, así que la fila es el enunciado.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+Ahora: la spec está escrita y esperando tu aprobación. Queda: plan e implementación (~2 tasks), luego tu validación.
+
+Está en `.docs/sdd/specs/20261102-170646-feature-0012-retire-void/spec.md`. No hay `sdd-kit.local.json` y `sdd id claim` confirmó la 0012 sin remoto.
+
+**🦆** Hoy `anular Norte lun` anula la reserva de otra persona. Tras el cambio ese comando no existe y responde `salas`, como cualquier comando desconocido. `cancelar Norte lun` sigue igual. El requisito pasa a llamarse «Cancelar una reserva», y la guía, el README y `PRODUCT.md` dejan de nombrar `anular`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. `anular` no tiene mensaje de «comando retirado»: cae en `salas`, como cualquier comando desconocido.
+2. El renombrado cambia solo el título. Los escenarios de `cancelar` quedan iguales.
+3. En la guía solo quito la línea de `anular`. La de `cancelar` sigue diciendo «cancela tu reserva», aunque el requisito ya no diga «propia».
+4. Quito el término **Anulación** de `PRODUCT.md`. **Cancelación** no se toca.
+5. El README queda: «Comandos: `cancelar`; guía en docs/guia.md».
+6. Borro `voidBooking` y el estado `voided`. Las reservas viven en memoria, así que no hay migración.
+7. **Conflicto con la fila 0011** («Anular reservas de otros»): su enunciado presupone el `anular` que retiramos. No toco la fila; decide tú qué hacer con ella.
+8. `changelog.md` y «Releases cerradas» conservan «Cancelar una reserva propia», porque es lo que se entregó en v0.3.0.
+
+- **Review de spec:** ninguna. Solo hay una señal, MODIFIED/REMOVED, y el cambio ocupa unas 15 líneas en 6 ficheros.
+- **Fusión de prueba** del delta sobre una copia en una carpeta temporal: quita «Cancelar una reserva propia», añade «Cancelar una reserva» y quita «Anular una reserva». Los tres cambios salieron bien. El Propósito («…cancelar y anular…») no lo toca la fusión y lo ajusta el cierre.
+- **Guía:** `docs/guia.md` mide 42 palabras sobre un tope de 60, y la edición la acorta.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios

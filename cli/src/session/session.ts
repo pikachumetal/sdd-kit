@@ -3,7 +3,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { readText } from '../cli/files.ts';
 import { parseJsonFile } from '../cli/json-file.ts';
-import { readClock, type Clock } from './clock.ts';
+import { clockOf, readTimelines, type Clock, type Timeline } from './clock.ts';
 import { elapsedMinutes, isInProgress, modelTotals, readResponses, type ModelTotals, type Selector } from './usage.ts';
 
 export interface Dispatch {
@@ -17,6 +17,7 @@ export interface Session {
   thread: ModelTotals;
   dispatches: Dispatch[];
   clock: Clock | null;
+  timelines: Timeline[];
 }
 
 function entries(folder: string, kind: 'file' | 'directory'): string[] {
@@ -68,7 +69,8 @@ export function readSession(folders: string[], selector: Selector): Session {
   const { files, agents } = sessionFiles(folders, selector);
   const thread = files.flatMap((file) => readResponses(file, selector));
   const dispatches = agents.map((file) => readDispatch(file, selector)).filter((dispatch): dispatch is Dispatch => dispatch !== null);
-  return { thread: modelTotals(thread), dispatches, clock: readClock(files, selector) };
+  const timelines = readTimelines(files, selector);
+  return { thread: modelTotals(thread), dispatches, clock: clockOf(timelines, selector), timelines };
 }
 
 export const isEmpty = (session: Session): boolean => session.thread.size === 0 && session.dispatches.length === 0;
