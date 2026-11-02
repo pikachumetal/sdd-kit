@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { accountEmail } from '../../../tests/headless/lib.mjs';
 import { cleanGitEnv, kitRoot, run } from './process.ts';
 
 export interface EvidenceFile {
@@ -56,8 +57,9 @@ export function findLeak(evidence: EvidenceFile[], pattern: RegExp): string[] {
   return evidence.filter((file) => pattern.test(file.text)).map((file) => file.path);
 }
 
-export function findMachineLeak(evidence: EvidenceFile[]): string[] {
-  const identity = [gitUserConfig('user.name'), gitUserConfig('user.email')]
+// Con el email de la cuenta de Claude, que el sujeto ve en su contexto: en la CI no hay cuenta, y avisa (patch 0290).
+export function findMachineLeak(evidence: EvidenceFile[], env: NodeJS.ProcessEnv = cleanGitEnv): string[] {
+  const identity = [gitUserConfig('user.name', env), gitUserConfig('user.email', env), accountEmail(env)]
     .filter((value) => value !== '')
     .map((value) => new RegExp(escapeRegExp(value), 'i'));
   const patterns = [USER_PATH_PATTERN, machineUserPattern(), ...identity];
