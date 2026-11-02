@@ -1,0 +1,99 @@
+--- [3]
+Ahora: retomo la 0010 tras la revisión final. Queda: leer los informes, cerrar la revisión y pasar a la validación, ~10 min.
+
+--- [19]
+Estoy aplicando la pasada de fix de la revisión final: el primer intento de editar `src/app.js` no cambió nada, así que lo hago con Edit.
+
+--- [23]
+Los dos tests nuevos están en RED por la razón esperada. Ahora el GREEN, y en la spec el THEN con su enmienda.
+
+--- [37]
+Estoy lanzando la única re-revisión del rango del fix (`66c0443..5979243`) con Opus en segundo plano, en su worktree desanclado.
+
+--- [41]
+Mientras revisa, dejo preparado `tasks.md` con la revisión final, la pasada de fix y los rulings.
+
+--- [45]
+La re-revisión sigue en marcha en segundo plano. Hasta que vuelva no cierro la revisión ni borro el workspace.
+
+Estado hasta ahora:
+- **Pasada de fix:** commit `5979243`, con la suite en 6/6.
+  - Los espacios alrededor del motivo ya no lo invalidan (Important). El test que lo reproduce estaba en RED antes del cambio.
+  - `canceladas` separa con ` - ` (Minor). También tenía su test en RED primero.
+  - Los tests ya no dependen del orden (Minor): `resetBookings()` corre en `beforeEach`.
+- **Enmienda sin aprobar:** el THEN del listado decía «—», pero la decisión con el dev-lead pedía ` - ` por la consola `cp850`. Lo corregí en `spec.md`, con su línea en «Enmiendas» marcada `sin aprobar`. Si Laura prefería la raya, es un cambio de una línea.
+- **`tasks.md`:** ya tiene la revisión final, la pasada de fix y los rulings. Sigue sin commitear.
+
+Cuando llegue el informe de la re-revisión anoto su veredicto en `tasks.md`, retiro el worktree de revisión, borro el workspace y paso a `sdd-archive`.
+
+--- [50]
+### Finding Verdicts
+
+1. **[Código · Important] src/app.js:14-17, el motivo conserva los espacios.** ADDRESSED. En src/app.js:21, `reasonOf` ahora devuelve `params[index + 1]?.trim()`. Lo probé por consola en el worktree:
+   - `node src/app.js cancelar Norte lun --motivo "sala ocupada "` responde «cancelada Norte lun (sala ocupada)».
+   - Sin `--motivo` sigue respondiendo «motivo no válido: cambio de planes, sala ocupada, otro»: `reasonOf` devuelve `undefined` y `includes` lo rechaza.
+   - Con `--motivo` como último argumento, `?.` evita el TypeError y responde lo mismo.
+   - Con `--motivo "  "` el recorte deja `''` y también responde «motivo no válido».
+
+   El test nuevo de test/cancel.test.js:15-17 sí distingue el fix: sin el recorte respondería «motivo no válido» en lugar de «sin reserva Sur mar». Lo que no hace es reproducir el caso del hallazgo (Norte lun con éxito). Lo dejo como observación Minor abajo.
+
+2. **[Código · Minor] src/app.js:36, el separador « — » se rompe en cp850.** ADDRESSED.
+   - src/app.js:41 ahora separa con `' - '`.
+   - El THEN de la spec ahora dice «Norte lun - sala ocupada». Coincide literalmente con la decisión de «Decisiones tomadas con el dev-lead» (`Norte lun - sala ocupada`, separador `` ` - ` ``).
+   - La enmienda tiene fecha 2026-11-02, estado `sin aprobar`, y solo cambia «—» por « - », citando esa decisión. En el diff de spec.md solo cambian la línea del THEN y la de Enmiendas. Ningún otro GIVEN, WHEN, THEN o AND cambia, y la tabla de Aprobaciones sigue igual. La enmienda no añade nada más.
+   - El test de test/cancel.test.js:21 cambia su aserción a « - ». Ese cambio es justo el que pide la enmienda.
+
+3. **[Spec · Minor] test/cancel.test.js:13, el test de `canceladas` depende del orden.** ADDRESSED.
+   - test/cancel.test.js:5 llama a `beforeEach(() => resetBookings())`.
+   - El test de `canceladas` (test/cancel.test.js:19-22) cancela ahora su propia reserva antes de hacer la aserción, así que ya no depende del test de `cancelar`.
+   - `resetBookings` (src/app.js:7-9) restaura el mismo array con `splice` y `seed()`, y el estado inicial es idéntico al de antes. Producción no lo llama: solo lo importa test/cancel.test.js. test/app.test.js no depende del estado que modifica, y `node --test` ejecuta cada fichero en su propio proceso.
+
+El diff de test/cancel.test.js parece reescribir el fichero entero, pero es un cambio de fin de línea. Ignorando espacios en blanco, solo cambia lo descrito arriba.
+
+### New Breakage in the Fix Diff
+None.
+
+### Out-of-Scope Observations
+- **[Spec · Important, previo al fix] Falta un test para el AND «sin `--motivo` responde lo mismo».** Ese AND de la spec («motivo no válido: cambio de planes, sala ocupada, otro») no tiene test en test/cancel.test.js. El código lo cumple: lo comprobé por consola. Pero el fix ha tocado justo `reasonOf`, que es el camino de ese AND, y ningún test lo protege. No lo ha introducido este fix y no estaba entre los hallazgos, así que no cuenta en el veredicto de esta ronda. Si el eje Spec lo considera dentro de su alcance, conviene añadir el test.
+- **[Minor] El test del recorte no reproduce el caso reportado.** test/cancel.test.js:15-17 usa `Sur mar`, que no tiene reserva, y comprueba «sin reserva Sur mar». Así prueba que el motivo pasa la validación, pero no que la cancelación guarde «sala ocupada» recortado. Con `Norte lun` y «cancelada Norte lun (sala ocupada)» sería más directo.
+- El texto de interfaz nuevo o cambiado está en castellano. No se incumple ninguna restricción de código.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [62]
+Estoy cerrando la revisión final y empezando el cierre: commit de `tasks.md`, borrar el workspace, pre-checks y smoke para la validación.
+
+--- [65]
+Las dos tasks y la revisión final están cerradas, pero el cierre se para en la validación: necesito que pruebes la feature antes de fusionar. No toqué ni el walkthrough, ni el roadmap, ni las capabilities.
+
+🦆 Cancelar ahora exige un motivo de una lista cerrada (cambio de planes, sala ocupada, otro) y lo guarda con la reserva. `canceladas` lista cada cancelada con su motivo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun - sala ocupada».
+
+**✋ Me salí del plan en…**
+- **Separador del listado:** el THEN decía «—», pero la decisión con Laura pedía ` - ` por la consola `cp850`. Puse ` - ` en la spec y en el código. La enmienda está en `spec.md` marcada `sin aprobar`. Si preferías la raya, es un cambio de una línea.
+- **Falta un test:** el AND «sin `--motivo` responde lo mismo» no tiene test propio. El revisor comprobó por consola que el código lo cumple. No añadí un commit sin revisar después de la re-revisión, así que queda pendiente.
+- **Tareas de la revisión final:** el arreglo de los espacios alrededor del motivo, el separador y el aislamiento de los tests de `cancel.test.js` (con un `resetBookings()` nuevo, usado solo en tests) están en `5979243`. La re-revisión con Opus sobre `66c0443..5979243` los dio por resueltos y sin roturas nuevas.
+
+**Lo que ejecuté**
+
+| THEN | Evidencia |
+| --- | --- |
+| Cancelar con motivo de la lista | ejecución real: «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real: «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real: la misma respuesta |
+| Listado de canceladas | suite. Cada invocación de la CLI parte de cero, así que no se puede ver desde la consola. |
+
+La suite `node --test` dio 6/6 sobre `04b9b32`.
+
+**Para validar** (desde la raíz del repo):
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"`. Debe responder «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"`. Debe responder «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun`. Debe responder lo mismo que el paso 2.
+4. En una consola `cp850`, `node src/app.js canceladas`. Cada invocación empieza con las reservas de origen, así que el listado sale vacío. Para ver el separador, usa la suite: `node --test`.
+
+Dime qué probaste y si funciona, o si lo difieres con su disparador. Con eso sigo con el resto del cierre.
+
+Aún falta decidir el merge: `.docs/sdd/sdd-kit.json` no declara `merge.into` ni `merge.noFf`, y `sdd merge --check` se detuvo por eso. Dime a qué rama fusiono y si con `--no-ff`.
+
+**No terminado.** Falta la validación, el walkthrough, el roadmap, las capabilities y el merge. No borres el worktree `<run>/repo`.
+
