@@ -19,9 +19,9 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`); el mé
 | r3 | sdd-roadmap | Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona). | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
 | r4 | sdd-roadmap | Lo de exportar a calendario tiene que ir antes que los avisos por correo. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | 0074, control |
 | r5 | sdd-roadmap | Apunta en el roadmap lo del filtro por sala, no lo arranques todavía. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | `using-sdd-green.md`, control tras la revisión final |
-| r8 | sdd-roadmap | qué sigue | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0194: «qué sigue» entraba por `sdd-explore`, 5 de 5 en su RED |
 | r6 | sdd-roadmap | Dame el prompt de la 0013. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0161: «dame el prompt de la <id>» entraba por `sdd-consult` (`tests/sdd-explore-0161-red.md`, m1) |
 | r7 | sdd-roadmap | Tria lo que hay por triar en la deuda. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: triar entra por sdd-roadmap |
+| r8 | sdd-roadmap | qué sigue | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0194: «qué sigue» entraba por `sdd-explore`, 5 de 5 en su RED |
 | f1 | sdd-propose | Mete un filtro por sala en el comando libres. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | 0074, control |
 | f2 | sdd-propose | Let's build a waitlist for when a room is full. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 1 de 3 |
 | f3 | sdd-propose | Es una tontería: que al reservar se pueda poner una nota. Hazlo rápido. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 2 de 3 |

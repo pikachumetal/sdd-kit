@@ -157,6 +157,23 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - AND lee la retro de la última carpeta `vX.Y.Z` que tenga `retro.md`; una `feedback.md` de una release anterior no se lee
 - AND sin `retro.md` el inventario sigue sin ella
 
+### «Qué sigue» propone primero las piezas abiertas de una familia a medias
+
+- GIVEN el molde `salas-3-family`, con `ROADMAP.md`: en Now, 0020 y 0021 ⏳ sin familia, y 0012 ✅ de la propuesta 0010; en Next, 0022 ⏳ sin familia, y de la propuesta 0010, 0014 ⏳ con la rama `feature/0014-room-ranking` abierta, 0015 ⏳ tras 0014 y 0013 ⏳ tras 0012
+- WHEN el usuario escribe «qué sigue» o «dame la siguiente»
+- THEN `sdd-roadmap` propone primero la 0013, por delante de 0020 y 0021, y da su prompt de arranque en la forma de `launch-prompt-template.md`
+- AND dice que la 0014 no se ofrece porque tiene rama abierta, y la 0015 porque espera a la 0014
+- AND no escribe, no reserva, no publica ni commitea, y no arranca nada
+- AND en un roadmap 2.x, con 0030 «partida en 0031, 0032 y 0033» en «Próximo», 0031 con `parent: 0030` y la rama `feature/0031-room-tariff` abierta, 0032 con `parent: 0030`, tras 0031, y 0033 con `parent: 0030`, por detrás de 0020 y 0021, propone primero la 0033, no ofrece 0030, 0031 ni 0032 y dice por qué, y no crea `ROADMAP.md`
+
+### Sin familia a medias, «qué sigue» sigue el orden de Now
+
+- GIVEN el molde `salas-3-nofamily`: en Now, 0019 ⏳ con la rama `feature/0019-favorite-rooms` abierta, 0020 y 0021 ⏳; en Next, 0012 y 0013 ⏳ de la propuesta 0010, sin ninguna pieza empezada
+- WHEN el usuario escribe «qué sigue»
+- THEN `sdd-roadmap` propone primero la 0020 y da su prompt
+- AND dice que la 0019 no se ofrece porque tiene rama abierta
+- AND con Now sin nada que ofrecer, sigue por Next; una fila de Later no se ofrece; sin nada que ofrecer, lo dice
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz (2.x: `.docs/sdd/roadmap.md`); la deuda, en `.docs/sdd/steering/debt.md` (2.x: «Deuda técnica» del roadmap). La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md` (2.x: bajo `specs/`). El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.

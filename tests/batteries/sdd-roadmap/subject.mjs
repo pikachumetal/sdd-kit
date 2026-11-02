@@ -54,7 +54,7 @@ function layer3Family() {
   const proposal = join(s.R, P10_3);
   const row = '| 3 | 0013 | Aviso semanal a los responsables | 0012 |';
   const text = readLf(proposal);
-  if (!text.includes(row)) s.die('la propuesta 0010 cambió: no hay dónde añadir piezas al reparto');
+  if (!text.split('\n').includes(row)) s.die('la propuesta 0010 cambió: no hay dónde añadir piezas al reparto');
   writeFileSync(proposal, text.replace(row, `${row}\n| 4 | 0014 | Ranking de salas | 0012 |\n| 5 | 0015 | Informe trimestral | 0014 |`));
 }
 

@@ -4,7 +4,7 @@ feature: 0194
 title: sdd-roadmap, entrada «qué sigue»
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-02
 author: Àngel Delgado
 approvers:
@@ -151,6 +151,10 @@ A ~0,20 $ por sujeto Sonnet (7,61 $ en 39 sujetos, walkthrough de la 0276; el RE
 | Suma | 104 | 20,18 |
 
 ## Enmiendas
+
+- 2026-11-02 — El criterio «las baterías no bajan de su umbral» se cierra sin cumplir en `m2`, `c2` y `m3` — por fila, `m2` 1/6 frente a 3/6 de `develop` y en la puerta 3/6 frente a 4/6; `c2` 4/6 frente a 1/2; `m3` 1/2 en las dos — aprobada: «1», con las cifras corregidas y la regla «si `develop` da ~3-4 de 6, es la variación conocida y cierro»
+- 2026-11-02 — La entrada «Give a row's prompt» gana «An open «Tras» doesn't stop it» — la palabra «blocked» de la entrada nueva hizo que `m1` negara un prompt pedido por id; mantiene el requisito vigente de `planning` — Task 2, sin cambio de THEN
+- 2026-11-02 — Previsión de coste superada: 23,76 $ frente a 20,18 $ — tandas de `m2` y `c2` y el control de la pasada de fix — aprobada: «1», hasta ~24 $
 
 ## Aprobaciones
 

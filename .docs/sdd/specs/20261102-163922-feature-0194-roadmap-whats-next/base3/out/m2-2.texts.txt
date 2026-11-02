@@ -1,0 +1,75 @@
+--- [2]
+Esto son tres funcionalidades a la vez (informe de ocupación, exportación a Excel y aviso semanal), así que según las reglas del proyecto entra por `sdd-roadmap`. Cargo la skill.
+
+--- [5]
+Empiezo por el paso 1: leer el estado real del roadmap y la configuración.
+
+--- [17]
+Estoy escribiendo la propuesta y las filas del roadmap; la propuesta ya está creada, pero las filas aún no entraron en `roadmap.md`, así que las añado ahora.
+
+--- [21]
+Los dos fallos del validador están en líneas que no he tocado (formato heredado), así que no los arreglo y los dejo anotados. Publico la reserva.
+
+--- [24]
+Dejé el roadmap y la propuesta escritos, pero **sin confirmar en git**. El paso de publicar falló con «destino con cambios». `develop` está desprotegida en este mismo árbol de trabajo y mis ediciones aún no están confirmadas, así que `sdd roadmap publish` se negó. Los ids 0008–0011 siguen sin estar reservados para otros worktrees. Si me dices que confirme los dos ficheros con un `git commit` normal, lo hago. No lo hice por mi cuenta porque no me lo habías pedido.
+
+## Qué queda en el roadmap
+Es un proyecto con roadmap en formato 2.x (`.docs/sdd/roadmap.md`). He añadido tres filas a «Próximo» y la propuesta `0008` en `.docs/sdd/specs/20261102-210000-proposal-0008-occupancy-reports/proposal.md`.
+
+| Id | Qué | Va después de |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala | — |
+| 0010 | Exportar el informe a Excel (.xlsx) | 0009 |
+| 0011 | Aviso semanal a los responsables | 0010 y fila 1 |
+
+## Los detalles que he decidido yo
+Están en la propuesta, cada uno con un ejemplo con datos, y se pueden enmendar:
+- **Horario útil:** de lunes a viernes, de 08:00 a 20:00 (60 h por sala y semana).
+- **Ocupación:** horas reservadas entre horas útiles, en porcentaje. Norte con la reserva del lunes de 10 a 12 sale al 3,3 %.
+- **Periodo:** la semana natural anterior. Las reservas semanales cuentan en cada semana.
+- **Excel:** un `.xlsx` real generado sin dependencias, porque el stack no admite ninguna.
+- **Responsables:** una lista de correos en un fichero del proyecto, porque las reservas no tienen propietario.
+- **Aviso:** lo lanza el comando `salas aviso-semanal`, y programarlo cada lunes es cosa del cron del servidor. Va después de la fila 1 («Avisos por correo antes de la reserva») porque reutiliza su mecanismo de envío. Esto retrasa el aviso hasta que exista el correo, así que revísalo.
+
+## Avisos
+- `sdd roadmap check` da dos fallos, en la cabecera de «Deuda técnica» y en el título de «Releases cerradas». Están en líneas que ya estaban así y no las toqué. Los arreglará la migración.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+## Prompt para arrancar la 0009
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0009 con sdd-propose, carril feature: un comando de informe que calcula la ocupación de cada sala (horas reservadas / horas útiles) para la semana anterior.
+
+Alcance:
+- src/app.js: nuevo comando de informe y su cálculo
+- test/app.test.js: pruebas con los ejemplos de la propuesta
+
+Fuera de alcance:
+- exportar a Excel: 0010
+- aviso semanal: 0011
+
+Decisiones ya tomadas:
+- Horario útil lunes a viernes de 08:00 a 20:00 (60 h por sala y semana), porque el cliente delegó los detalles
+- Las reservas semanales (--cada-semana) cuentan en cada semana del periodo
+- Salas ordenadas de más a menos ocupada y, a igualdad, por nombre; las de 0,0 % también salen
+- Sin dependencias externas
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261102-210000-proposal-0008-occupancy-reports/proposal.md, §Reglas de negocio
+
+Nada que saldar.
+
+Está hecho cuando el comando imprime Norte 3,3 % y Sur 0,0 % para una semana con solo la reserva de Norte del lunes de 10:00 a 12:00, y `node --test` pasa.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

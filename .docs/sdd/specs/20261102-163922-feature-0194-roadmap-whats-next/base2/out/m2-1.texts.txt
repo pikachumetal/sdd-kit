@@ -1,0 +1,67 @@
+--- [2]
+Son tres funcionalidades a la vez (informe de ocupación, exportación a Excel y aviso semanal), así que según el kit entra por `sdd-roadmap`, no por `sdd-propose`. Lo cargo.
+
+--- [5]
+Empiezo por el estado real del proyecto.
+
+--- [21]
+Los dos fallos del validador están en líneas que no he tocado (la cabecera de «Deuda técnica» y el título de la release cerrada). Los dejo como forma heredada y publico la reserva.
+
+--- [24]
+`roadmap publish` se negó porque `develop` está sacada en este mismo worktree y el único cambio sin confirmar es el mío. Confirmo esos dos ficheros con git directamente.
+
+--- [26]
+Dejé el módulo de informes en el roadmap como propuesta 0008, con tres filas en «Próximo». Todavía no he arrancado ninguna ni he escrito código. Está en el commit `b47d99b` de `develop`.
+
+Los dos primeros avisos del kit pueden afectar a lo que sigue:
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Commit hecho a mano:** `roadmap publish` se negó, porque `develop` está sacada en este worktree y mis ficheros aún no estaban confirmados. Hice el commit con git directamente, así que no pasó por el bloqueo de `sdd merge`.
+- **Validador:** `sdd roadmap check` da dos fallos en líneas que no toqué: la cabecera de «Deuda técnica» y el título de «v0.3.0». Son forma heredada de una migración pendiente.
+
+| Id | Feature | Tras |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala (`salas informe`) | — |
+| 0010 | Exportar el informe a Excel | 0009 |
+| 0011 | Aviso semanal a los responsables | 0009 |
+
+Como me dejaste los detalles, decidí esto. Está en `.docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md`, con ejemplos con datos:
+- **Ocupación:** horas reservadas entre horas disponibles, con horario de lunes a viernes de 08:00 a 20:00 (60 h por sala y semana). Ese horario no existe hoy en el código, lo inventé yo, y conviene confirmarlo con el cliente. Las reservas semanales cuentan cada semana y las canceladas no cuentan.
+- **Excel:** un CSV con `;`, UTF-8 con BOM y coma decimal, que Excel en castellano abre con doble clic. Descarté el `.xlsx` real porque obligaría a escribir un zip a mano, contra la regla de «sin dependencias» del tech-stack. Si el cliente exige `.xlsx`, sería una fila nueva.
+- **Responsables:** un fichero `responsables.json` con sala y correo. Una sala sin responsable no genera aviso.
+- **Aviso semanal:** `salas aviso-semanal` compone y entrega los avisos de una vez, y lo lanza el cron del servidor (por ejemplo, viernes a las 18:00).
+- **Entrega:** el aviso reutiliza el canal de la fila 1, «Avisos por correo antes de la reserva», que sigue pendiente. Hasta que exista, escribe un bloque por responsable en la salida estándar.
+
+La primera en arrancar es la 0009, con este prompt:
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+```
+Arranca la 0009 con sdd-propose, carril feature: el comando `salas informe [AAAA-Www]` que lista la ocupación de cada sala en una semana (por defecto, la actual).
+
+Alcance:
+- src/app.js y test/app.test.js: cálculo y salida del informe, una línea por sala, también las de 0 %
+
+Fuera de alcance:
+- exportar a Excel: 0010
+- aviso semanal y responsables: 0011
+
+Decisiones ya tomadas:
+- ocupación = horas reservadas / horas disponibles, con horario L-V 08:00-20:00 (60 h por sala y semana), porque no hay otro horario definido
+- las reservas semanales cuentan en cada semana y las canceladas no cuentan
+- sin dependencias externas, por el tech-stack
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md, §Reglas de negocio y §Reparto
+
+Nada que saldar.
+
+Está hecho cuando `salas informe 2026-W45` imprime `Norte  3,3 %` y `Sur  0,0 %` con la reserva de lunes 10:00-12:00 de Norte, y `node --test` pasa.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

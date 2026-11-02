@@ -3,7 +3,7 @@ id: 20261102-163922-feature-0194-roadmap-whats-next
 feature: 0194
 title: Plan de implementación — sdd-roadmap, entrada «qué sigue»
 spec: ./spec.md
-status: draft
+status: done
 created: 2026-11-02
 ---
 

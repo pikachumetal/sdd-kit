@@ -297,6 +297,12 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - THEN el kit está cargado, el hook de sesión inyecta `using-sdd` sin ningún aviso, y el agente entra por `sdd-kit:sdd-propose`
 - AND el hook del proyecto `.claude/hooks/sdd-kit-loaded.mjs` no escribe `AVISO sdd-kit: esta sesión no tiene cargadas las skills del kit.`
 
+### «Qué sigue» y «dame la siguiente» entran por `sdd-roadmap`
+
+- GIVEN un proyecto con `.docs/sdd/` y el hook de sesión activo
+- WHEN el usuario escribe «qué sigue» o «dame la siguiente», sin nombrar ninguna skill
+- THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`, no `sdd-kit:sdd-explore`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: no aplica.
