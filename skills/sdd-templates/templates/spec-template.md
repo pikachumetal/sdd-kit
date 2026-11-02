@@ -86,6 +86,7 @@ Validación: <dev-lead | agente> — <porqué>
 ## Dónde se prueba
 
 > Una línea por comportamiento: dónde se prueba y como qué prueba existente, en la costura existente más alta, y cuantas menos costuras mejor.
+
 - <comportamiento>: <superficie y patrón> — p. ej. «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
 
 ## Términos y ADR

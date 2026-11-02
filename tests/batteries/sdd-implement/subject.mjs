@@ -228,10 +228,10 @@ function baseMovesReadme(from, to) {
 }
 const FREE_LINE = '- `libres <franja>`: las salas libres en esa franja.';
 
-// La 0026 con su frase del paso 2 condicionada al RED; el aviso del paso 1, sin marca, como en a2.
 const SCOPE_0026 = '- Entra: una frase en el paso 2 de `skills/guardar-nota/SKILL.md`: el nombre del fichero no lleva la fecha; y el aviso de título vacío en el paso 1.';
 const MARKED_0026 = '- Entra: el aviso de título vacío en el paso 1 de `skills/guardar-nota/SKILL.md`.\n- Entra, si el RED lo exhibe: una frase en el paso 2 de esa skill: el nombre del fichero no lleva la fecha.';
 function openCleanFront(cleanH0) {
+  if (cleanH0 === CLEAN_H0 || cleanH0.includes('2 de 2')) s.die('h0 sin su muestra');
   const spec = readLf(join(FIX, 'spec-0026.md'));
   if (!spec.includes(SCOPE_0026)) s.die('sin el Scope de la 0026 en la fixture');
   openFeature('0026-note-title-date', { folder: F26, spec: spec.replace(SCOPE_0026, MARKED_0026), plan: fixture('plan-0026.md') });
@@ -406,10 +406,10 @@ steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(j
 if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps[s.SC]?.();
 
-const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1'];
-if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1'];
+if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_WITHOUT_AGENT].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
-for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_0186]) turns[id] = '40';
+for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_WITHOUT_AGENT]) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
 await s.launch(ASK);

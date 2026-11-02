@@ -1,6 +1,6 @@
 # GREEN — feature 0271, una sola línea de conducta ante un RED limpio
 
-Salidas en `green/`, `green-propose/`, `refactor-propose/` y `green-plan/` de `.docs/sdd/specs/20261102-135210-feature-0271-clean-red-rules/`.
+Salidas en `green/`, `green-propose/` y `refactor-propose/` de `.docs/sdd/specs/20261102-135210-feature-0271-clean-red-rules/`.
 
 | Escenario | Fila | n | Resultado | Lectura |
 | --- | --- | --- | --- | --- |
@@ -10,6 +10,7 @@ Salidas en `green/`, `green-propose/`, `refactor-propose/` y `green-plan/` de `.
 | `b2` (control de la fila de excusas que sale) | B2 | 2 | 2/2 | Paran con las líneas de la base y de la task. |
 | `cr1`, hueco «frente de campo sin medir» | CR1 | 2 | 0/2 | Uno la usa para fallos hipotéticos, otro la borra: el hueco no decía que el propio cambio es el frente. |
 | `cr1`, REFACTOR: «lo de un ticket sin medir, aunque sea todo el cambio» | CR1 | 2 | 2/2 | Los dos marcan el paso 1. Forma (Art. II): hueco, no recordatorio. |
+| `plan-writing.md` no cambia: sus dos frentes salen con RED limpio (ver el RED); sin GREEN | CR2A, CR2B | — | — | Medido en `cr2` y `cr3`. |
 
 ## `tech-stack.md`, leído contra la regla
 

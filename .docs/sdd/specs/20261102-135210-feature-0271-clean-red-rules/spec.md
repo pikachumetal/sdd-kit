@@ -4,7 +4,7 @@ feature: 0271
 title: Una sola línea de conducta ante un RED limpio
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-02
 author: Àngel Delgado
 approvers:
@@ -14,7 +14,7 @@ approvers:
 
 # Spec — Una sola línea de conducta ante un RED limpio
 
-🦆 Hoy, si la prueba previa de una regla sale sin fallo, cada documento manda algo distinto: uno pide dos sujetos, otro repetir, otro parar, y una tanda de un solo sujeto llegó a sacar un frente que sí fallaba (8,42 $ y dos paradas en la 0186). Con esta feature, la spec puede marcar un punto «si el RED lo exhibe». Si está marcado y sale limpio con tres sujetos, el agente lo quita, lo apunta y sigue; sin la marca, para y te pregunta. Un frente con caso de campo siempre se mide con tres sujetos antes de salir, y si la petición de la prueba ya empujaba al fallo, se mide también sin esa frase. El plan deja de fijar «para» por su cuenta y, si da por cubierto un THEN con un molde, tiene que haberlo abierto.
+🦆 Hoy, si la prueba previa de una regla sale sin fallo, cada documento manda algo distinto: uno pide dos sujetos, otro repetir, otro parar, y una tanda de un solo sujeto llegó a sacar un frente que sí fallaba (8,42 $ y dos paradas en la 0186). Con esta feature, la spec puede marcar un punto «si el RED lo exhibe». Si está marcado y sale limpio con tres sujetos, el agente lo quita, lo apunta y sigue; sin la marca, para y te pregunta. Un frente con caso de campo siempre se mide con tres sujetos antes de salir, y si la petición de la prueba ya empujaba al fallo, se mide también sin esa frase.
 
 Validación: agente — `validation.mode: field`: son reglas del kit, y lo medible (sujetos, tests, conteo) lo mide el agente; el uso real llega por los tickets.
 
@@ -25,10 +25,10 @@ Validación: agente — `validation.mode: field`: son reglas del kit, y lo medib
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-Review de spec propuesta: ninguna — señales: `MODIFIED` (dos requisitos) · tamaño: ~40 líneas en 5 ficheros
+Review de spec propuesta: ninguna — señales: `MODIFIED` (un requisito) · tamaño: ~40 líneas en 5 ficheros
 - Mínimo razonable: ninguna; la revisión final en ejes sigue, y el repaso de coherencia lo hice yo.
 
-`sdd capability merge` sobre una copia: sale con 0; sustituye dos requisitos y añade dos.
+`sdd capability merge` sobre una copia: sale con 0; sustituye un requisito y añade uno.
 
 1. **`control-profiles.md` entra como quinta pieza, aunque la petición nombra cuatro.** Dice «Un desvío cambia la spec aprobada: … el Scope» sin excepción, así que contradiría a `sdd-implement`. Lleva una cláusula y la paga la misma skill.
 2. **`n = 3` es un suelo, no una garantía.** Con el 1 de 6 de la 0059, tres sujetos cazan el fallo solo el 42 % de las veces (1 − (5/6)³). Por eso se conserva «mirar de dónde sacó cada sujeto la conducta»: si fue de una fuente incidental, otra tanda. Es lo único que añado al criterio de la petición.
@@ -72,7 +72,7 @@ Seis features pagaron por cómo se trata un RED limpio: la 0186 sacó un frente 
 | Skill o documento | Entra | Sale, y por qué puede salir |
 | --- | --- | --- |
 | `sdd-implement` | la cláusula de «Deviation»: «A Scope item marked «si el RED lo exhibe» with a clean RED at n = 3 goes out with a `Ruling:`; anything else is a deviation.» (~27) | la fila de excusas «It doesn't change the spec, so it's a ruling» (~44): texto del kit que repite «Scope brakes» y su red flag; control `b2` |
-| `sdd-propose` | la cláusula de «Desvío» (~25) y, si salen del RED, las dos frases de `plan-writing.md` (~35) | la sección «Commits» de `plan-writing.md` (~37), que repiten `commit-milestones.md` y el Step 4 de `plan-template.md`; «A task whose test only reads…» (~14), literal en §4 de `plan-template.md`; y «Arbitra así la contradicción entre…» de `control-profiles.md` (~25), que explica la regla sin añadir ninguna |
+| `sdd-propose` | la cláusula de «Desvío» (~25) | «Arbitra así la contradicción entre…» de `control-profiles.md` (~25), que explica la regla sin añadir ninguna; `plan-writing.md` no cambia |
 | `sdd-templates` | la línea de Scope de `spec-template.md` (~15) | «Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí.» (~12), que repite el bloque de «Capacidades»; y «Cambiarla durante la implementación es un desvío.» (~7), que ya está en la lista de «Deviation» |
 | `tech-stack.md` | la regla reescrita (~+40) | «Un RED limpio con n=2…» (~50, fundida) y lo que se quita de la línea 84 |
 
@@ -92,10 +92,9 @@ Seis features pagaron por cómo se trata un RED limpio: la 0186 sacó un frente 
 
 Cada arreglo sustituye texto. La línea de conducta, de principio a fin:
 
-1. Un frente con caso de campo se mide con n = 3 antes de la spec, o entra en el Scope con «si el RED lo exhibe». Sin caso de campo, la muestra de hoy, antes de la spec.
+1. Un frente con caso de campo se mide con n = 3 antes de la spec, o entra en el Scope con «si el RED lo exhibe». Sin caso de campo, la de su batería, antes de la spec.
 2. Si la petición del molde propone el fallo, el escenario lleva un gemelo sin esa frase.
 3. Con RED limpio y n = 3, lo marcado sale con un `Ruling:`; lo no marcado es un desvío y para.
-4. Un plan no fija qué hacer ante un RED limpio: remite a esa regla.
 
 ## Dónde se prueba
 
@@ -168,7 +167,7 @@ Precio por sujeto: 1,04 $ en `sdd-implement` con Opus (0186: 44,71 $ en 43 sujet
 
 ## Enmiendas
 
-- 2026-11-02 — Salen los dos frentes marcados de `plan-writing.md`, con su delta en `feature-flow` y su saldo: `cr2` limpio 3 de 3 en CR2A y CR2B — regla de esta spec: lo marcado, con RED limpio y n = 3, sale con un ruling — ruling, sin parada; `CR2B`, posible falso negativo por el molde pequeño, va a la deuda.
+- 2026-11-02 — Salen los dos frentes marcados de `plan-writing.md`, con su delta en `feature-flow` y lo que los pagaba en el saldo: `cr2` limpio 3 de 3 en CR2A y CR2B — regla de esta spec: lo marcado, con RED limpio y n = 3, sale con un ruling — ruling, sin parada; `CR2B` se repite en `cr3`, con un molde grande y sin ruta, limpio 3 de 3; sigue como posible falso negativo en sesión larga, y va a la deuda.
 
 ## Aprobaciones
 
