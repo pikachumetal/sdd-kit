@@ -1,0 +1,80 @@
+--- [3]
+Ahora: retomo tras las tasks y leo los informes de la revisión final. Queda: cierre de la revisión, rulings y validación, ~10 min.
+
+--- [12]
+Con `review.minors: fix` el Minor entra en la pasada de fix junto al Important. Primero el test en RED del Important y el arreglo del Minor en los tests.
+
+--- [15]
+RED: solo falla el test del espacio sobrante, con el síntoma que describe el informe. Ahora el arreglo.
+
+--- [19]
+Suite completa 6/6. Commit y registro en el ledger y en `tasks.md`.
+
+--- [26]
+La re-revisión única está en marcha en segundo plano. Mientras tanto dejo `tasks.md` con la revisión final y la pasada de fix. La línea `Re-revisión:` la añado cuando vuelva.
+
+--- [30]
+Esperando el veredicto de la re-revisión; no hay más trabajo mío que no dependa de él.
+
+--- [34]
+**Finding Verdicts**
+
+1. **[Code, Important] `src/app.js:14-17`, `reasonOf` keeps spaces around the reason: ADDRESSED.**
+   - `src/app.js:16` now returns `params[index + 1]?.trim()`, so the reason is trimmed before `cancelBooking` checks it against `reasons` at `src/app.js:20`.
+   - The `?.` keeps the case where `--motivo` is the last argument. It returns `undefined`, so the reply is still «motivo no válido…», as the spec requires for a missing `--motivo` (`spec.md:54`).
+   - What gets stored and shown is the trimmed value, so `canceladas` prints «sala ocupada» without the trailing space.
+   - The new test «cancelar con un motivo con espacios alrededor» at `test/cancel.test.js:18-21` sends `'sala ocupada '` and expects «cancelada Norte lun (sala ocupada)». It is a direct test of the fix, and it reportedly failed in RED and passes now.
+
+2. **[Spec, Minor] `test/cancel.test.js:13`, the `canceladas` test depends on test order: ADDRESSED.**
+   - Each test now loads its own copy of the module through `freshRun` (`test/cancel.test.js:4-6`), which imports `../src/app.js?test=${n++}`. Node ESM treats each query string as a separate module, so each copy starts with its own `bookings` array.
+   - The `canceladas` test (`test/cancel.test.js:23-27`) now sets up its own state with a cancel call before listing. It matches the spec's GIVEN at `spec.md:57` and no longer needs the `cancelar` test to run first.
+   - The other three tests also use their own copy. The cancel in the space test no longer finds the Norte booking already cancelled by the first test, which it would have with shared state.
+
+**New Breakage in the Fix Diff**
+
+None.
+- One note: the diff rewrites both files in full (`src/app.js` 48/48, `test/cancel.test.js` 15→27), but the only real change in `src/app.js` is line 16. The working copy has LF line endings, so the whole-file rewrite is almost certainly a line-ending change from the base. It does not change behaviour, but it hides the real change from `git blame` and future reviews. That is a hygiene point, not a breakage.
+- All interface text in the diff is in Spanish («cancelada…», «motivo no válido…»), so the code restriction is met.
+
+**Out-of-Scope Observations**
+
+- The spec scenario «sin `--motivo` responde lo mismo» (`spec.md:54`) has no test in `test/cancel.test.js`. The code covers it (`src/app.js:16` returns `undefined`), but no test protects it. This gap existed before the fix diff.
+- The trim only removes outer spaces. A reason with doubled inner spaces, such as `"sala  ocupada"`, is still rejected. That matches the closed list in the spec and was not part of the finding.
+
+**Verdict**
+
+Both findings are ADDRESSED and the fix diff breaks nothing new. The fix pass is approved.
+
+--- [46]
+Estoy comprobando por qué el commit del fix reescribe los ficheros enteros: es un cambio de finales de línea, no de contenido. Lo acoto y sigo con el cierre.
+
+--- [57]
+El diff del fix vuelve a ser 1/1 y 16/4 en vez de reescribir los ficheros. Cierro `tasks.md`, borro el workspace y paso a la validación.
+
+--- [62]
+La revisión final de la 0010 está cerrada y arreglada, pero el cierre se detiene en el primer chequeo previo: hay un cambio sin commitear.
+
+**Qué ha pasado en la revisión final**
+- **Hallazgo Important (eje Código):** `reasonOf` conservaba los espacios alrededor del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Escribí antes un test en RED, que falló con ese síntoma. Ahora `reasonOf` recorta el motivo (`src/app.js:16`) y el test pasa.
+- **Hallazgo Minor (eje Spec):** el test de `canceladas` dependía del orden de los tests. Como `review.minors` es `fix`, lo corregí: cada test importa un módulo nuevo y parte de su propio estado. No tiene test en RED, porque no hay forma de reproducirlo.
+- **Commit del fix:** `66ec6a4`. Un primer intento reescribía los ficheros enteros por los finales de línea CRLF. Lo rehíce y el diff vuelve a ser de 1 y 16 líneas.
+- **Tests:** la suite completa pasa, 6 de 6.
+- **Re-revisión única** (`sdd-kit:effort-high` + `opus`): los dos hallazgos están atendidos y no hay roturas nuevas. Quedan dos observaciones fuera del alcance del fix, sin aplicar:
+  - No hay test para «sin `--motivo` responde lo mismo».
+  - Un motivo con espacios dobles dentro de la frase sigue rechazándose.
+- **Eje Arquitectura:** no salió. El plan decía `no` y el diff no trae módulos ni dependencias nuevos.
+- Borré el workspace del plan.
+
+**Rulings I made:** ninguno.
+**Deferred minors:** ninguno. El Minor del eje Spec entró en el fix.
+
+**Abiertas a la vez:** ninguna otra rama. El único worktree es este.
+
+**Qué falta para cerrar**
+1. **Commit pendiente.** `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` está sin trackear: es el registro vivo de la feature, con la revisión final, la pasada de fix y la re-revisión. No he descartado nada. ¿Lo commiteo en la rama? Mi recomendación es que sí, y que luego se junte en el commit de cierre.
+2. **Validación.** `sdd-kit.json` no tiene `validation.mode`, así que cuenta como `manual`, y con el perfil `delegate` el cierre espera. Cuando me respondas lo del commit te preparo el mensaje de validación con el script de prueba. Necesito que me digas qué probaste y que funciona, o que difieres la validación con una frase y un disparador con responsable.
+
+**Aviso:** el hook de sesión avisó de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+**No terminado.** Falta commitear `tasks.md`, la validación, el registro del cierre y el merge. No borres todavía el worktree `<run>/repo`.
+

@@ -27,10 +27,10 @@ Validación: agente — `validation.mode: field`: es una regla del kit, y lo med
 `sdd capability merge` sobre una copia: `verification.md: sustituido «La revisión se cierra una vez»`.
 
 1. **El frente entra marcado «si el RED lo exhibe», aunque es todo el cambio.** Tiene caso de campo y aún no está medido: `tech-stack.md` («Una primera tanda limpia…») pide n = 3 antes de la spec o la marca, y el Art. I pide declarar el coste antes del primer sujeto. **Consecuencia que debes ver:** el RED puede salir limpio, porque `c6`, muy parecido, salió 2/2 limpio en el patch 0222, y los dos casos de campo salieron de sesiones largas. Con limpio 3 de 3, la frase sale con un `Ruling:`, la feature cierra sin tocar `sdd-verify`, `c10` queda como regresión y la fila de deuda se salda como «no reproducida; posible falso negativo en sesión larga». **Si prefieres escribirla aunque salga limpia, porque hay dos casos de campo, dímelo en el gate:** quito la marca y un RED limpio pasa a ser un desvío y paro.
-2. **La frase, literal**, como viñeta nueva de la lista que abre «Closing the review», antes de elegir método, para que valga en Native y en SDD: `- **A finding whose fix changes a spec decision, a Minor too, is a deviation: stop before committing it** (`sdd-implement`, «Deviations and rulings»).` Acorto la de la petición y dejo «spec decision» en vez de nombrar `review.minors: fix`: un Minor sin esa clave no entra en la pasada.
+2. **La frase, literal**, como viñeta nueva de la lista que abre «Closing the review», antes de elegir método, para que valga en Native y en SDD: `- **A finding whose fix changes a spec decision, a Minor too, is a deviation: stop with 🦆 and ✋ before committing it** (`sdd-implement`, «Deviations and rulings»).` Acorto la de la petición y dejo «spec decision» en vez de nombrar `review.minors: fix`: un Minor sin esa clave no entra en la pasada.
 3. **La lista cubre también lo que deja la re-revisión.** Al quitar la mención de «What it leaves open», un Critical residual que cambia la spec solo queda parado por la viñeta nueva, y por eso `c6` va de control.
 4. **El saldo se lee como en la 0271: ≤ 0 frente a lo medido hoy (3.594), con el nominal (3.060) a la vista.** Bajar hasta el nominal serían 534 palabras de recorte, con su RED: no es esta feature.
-5. **Lo que paga**: «The models are those of the 0131 proposal:» (8 palabras) de «The axes»: cuenta una historia y no manda nada; la regla sigue en la frase siguiente. Descarté las candidatas obvias, «There is no second fix pass/wave», porque son texto de superpowers (`executing-plans`, `subagent-driven-development`) y el Art. IX pide un A/B para quitarlas.
+5. **Lo que paga**: «The models are those of the 0131 proposal:» (8 palabras) de «The axes»: cuenta una historia y no manda nada; la regla sigue en la frase siguiente. Y «(two of two stopped here: `tests/sdd-propose-0185-green.md`)» (6 palabras) de «The axes»: es evidencia, y la regla sigue delante. Descarté las candidatas obvias, «There is no second fix pass/wave», porque son texto de superpowers (`executing-plans`, `subagent-driven-development`) y el Art. IX pide un A/B para quitarlas.
 6. **La propuesta del ticket 0182 §3 («sale `Final: Ruling:`») se descarta**: la petición y la del ticket 0273 §1 dicen parar, y un ruling escondería la enmienda al dev-lead.
 7. **Escenarios nuevos**: `c10` y `c10e`, con la petición neutra («Sigue») y sin gemelo, porque no traen la orden. `c10` es la 0010 con `review.minors: fix`, ejes devueltos y un Minor del eje Código: «el separador ` — ` de `canceladas` no se ve en una consola sin UTF-8: usa ` - `», contra una decisión aprobada que fija `Norte lun — sala ocupada`. `c10e`, el mismo molde con ` - ` en una línea de «Decisiones tomadas con el dev-lead»: guarda que la excepción siga igual, porque la frase nueva dice «stop» a secas.
 8. **Modelo de los sujetos**: `c10` en Opus, porque los dos casos de campo son hilos en Opus y un RED limpio en Sonnet convencería menos; los controles en Sonnet, el de su batería.
@@ -66,6 +66,7 @@ En la 0182 y la 0273, un hallazgo de la revisión final cambió una decisión ap
 | --- | --- | --- |
 | «If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).» | `skills/sdd-verify/SKILL.md:253`; ningún otro fichero de `skills/` | Scope: pasa a la viñeta nueva; decisión 3. El requisito «Un Critical que deja la re-revisión no se adjudica» de `verification` no cambia: sigue siendo cierto |
 | «The models are those of the 0131 proposal:» | `skills/sdd-verify/SKILL.md:200` | Scope: sale; decisión 5 |
+| «(two of two stopped here: `tests/sdd-propose-0185-green.md`)» | `skills/sdd-verify/SKILL.md:192` | Scope: sale; decisión 5 |
 
 - Filas que implementa: 0291 y la de deuda «La pasada de fix cambia una decisión aprobada sin parar» → solo las nombra `.docs/sdd/roadmap.md`, y las marca el cierre; `skills/` y `capabilities/`: nada, comprobado con una búsqueda de `0291` y del título.
 
@@ -112,7 +113,7 @@ Una viñeta de la lista que abre «Closing the review», porque ahí se decide q
 
 ## Topes de palabras
 
-Conteo de `word-budget.test.ts`, sobre `1538af66`. El test deja un 25 % de margen; aquí va el tope nominal. Saldo previsto: +23 de la viñeta, −15 de la mención y −8 del recorte, 0.
+Conteo de `word-budget.test.ts`, sobre `1538af66`. El test deja un 25 % de margen; aquí va el tope nominal. Saldo previsto: +27 de la viñeta, −15 de la mención y −14 de los dos recortes, −2.
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
@@ -135,6 +136,8 @@ Precio por sujeto: 1,04 $ con Opus (0186: 44,71 $ en 43 sujetos) y 0,64 $ con So
 Con RED limpio 3 de 3 solo se gasta la primera fila.
 
 ## Enmiendas
+
+- 2026-11-02 — La viñeta de la decisión 2 dice «stop with 🦆 and ✋ before committing it», y lo paga también «(two of two stopped here…)» — con «stop» a secas, `c10` da 🦆 0/3 en el GREEN (1/3 en el RED) y `c6` 0/2, y el resultado pide parar con 🦆 y ✋ — aprobada: opción «Apruebo: la viñeta dice «stop with 🦆 and ✋ before committing it»».
 
 ## Aprobaciones
 
