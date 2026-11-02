@@ -69,6 +69,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0289** — Revisión de las fuentes vigiladas antes del corte: superpowers v7.0.1, OpenSpec v1.16.0, Spec Kit v1.2.6, mattpocock/skills v1.3.2 e impeccable skill-v4.8.0, con `moon run kit:upstream` en verde; lo que se trae va a las filas 0296 y 0297. → [ref](specs/20261102-210125-feature-0289-upstream-review/)
 - **Feature 0281** — El repaso de coherencia de `sdd-propose` busca con `grep` en `capabilities/` los pasos numerados de lo que se retira, también citados a secas; el cruce del Scope con el índice no se escribe porque su RED salió limpio. → [ref](specs/20261102-173845-feature-0281-coherence-pass-scope/)
 - **Feature 0273** — `battery.mjs` dice `puerta verde · sin leer: <filas>` con filas de rúbrica en prosa y `verde` solo con todas las filas de máquina, una fila `file:` comprueba un fichero que deja el sujeto, `run.mjs` sale con 3 y nombra la etiqueta si no midió nada, y la cabecera avisa de `KIT_DIR`, `SUBJECT_CAP` y el id. → [ref](specs/20261102-125945-feature-0273-battery-honest-verdict/)
 - **Patch 0286** — Un conflicto de `sdd merge --sync` en Markdown en el que los dos lados solo añaden lo junta el agente, repite el gate y lo nombra, y `--sync` va en una llamada propia; un hook que rechaza la resolución ya no se informa como conflicto. → [ref](specs/20261101-220737-patch-0286-sync-additive-conflicts/)
