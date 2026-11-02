@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-11-02
 branch: patch/0288-rc2-fake-gh
-commit: <hash>
+commit: 25af5af0
 ---
 
 # Patch 0288 — el `gh` falso no llega al sujeto cuando el lanzador hereda `ORIGINAL_PATH`
@@ -71,9 +71,12 @@ Mismo mecanismo en otros escenarios: todos los que usan `ghFake` (`ci1`, `ci2`, 
 | 3 | Fila `K6` de `rc2` leída a mano en `green/out/rc2-{1,2}.tools.txt` | ✅ 2/2: ningún comando corre `node --test`; solo sale en la línea `**Suites**` del tech-stack que lee el sujeto |
 | 4 | `## llamadas a gh` en `green/out/{rc1,rc2}-{1,2}.state.txt` | ✅ los cuatro: `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`, y el sujeto recibe el `success` del `gh` falso |
 
+Validación en campo: 2026-11-02 · test RED→GREEN de `claudeEnv` y `test/kit/headless/` 142/142 · `release-ci` con `ORIGINAL_PATH` heredada, `rc1` 2/2 y `rc2` 2/2, `K6` leída a mano 2/2 (ejecución real) · el gate de cierre corre en la base integrada, porque `patch/0290` está abierta a la vez
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-02T08:57Z
-- Esfuerzo real:
+- Esfuerzo real: 0,33 h — reloj de la sesión 0,33 h desde 2026-11-02T08:43Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: −34 % sobre las 0,5 h. Una sonda con `CLAUDE_BIN` (el `claude` real con los argumentos y el entorno del sujeto, y una petición de una línea en haiku) separó el entorno del modelo sin lanzar sujetos enteros, y el fix fue de una línea
 - Coste de sujetos: 0,96 $ en 5 sujetos Sonnet y 4 sondas Haiku — diagnóstico 0,28 $ (un `rc2` real 0,27 $; sondas < 0,01 $); verificación `release-ci` 0,68 $
