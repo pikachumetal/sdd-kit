@@ -27,6 +27,7 @@ Moldes:
 - `reservas-release-ci`: el `reservas` de `develop` en la forma 3.0.0, con `[Unreleased]` lleno (0005, 0006 y 0007), §Testing con la suite `node --test` (unitario) y «CI de la base», y el `gh` falso con `success` en el `HEAD` de `develop`. Sin rama de la 0010.
 - `reservas-release-ci-old`: el mismo, con un commit de código en `develop` (`src/app.js`) después del run: el `success` es de `HEAD~1`.
 - `reservas-gate-open`: `reservas` con el mismo gate filtrado, la validación sin hacer, `develop` con la 0015 y otra feature abierta en su worktree (`feature/0011-others`).
+- `reservas-timing`: `reservas` con «Estimación de implementación: 4h» en el plan y un transcript sembrado de 5 h de reloj, con esperas de 140 min (desde las 09:40Z) y 60 min (desde las 12:40Z): `sdd session tokens` da 1,67 h, una desviación de −58 %.
 - `reservas-gate-plan`: `reservas` con el mismo gate filtrado y la rama de la 0010 abierta solo con su spec y su plan, que solo tocan `src/app.js` y `test/cancel.test.js`.
 - `reservas-family`: `reservas` con la 0010 como pieza de la 0009 (`parent: 0009` en su spec y en su fila) y la 0016 «Fotos de las salas», `⏳`, con `parent: 0009`, tras la 0010.
 - `reservas-family-done`: `reservas-family` con la 0009 ya `✅`.
@@ -97,6 +98,9 @@ Moldes:
 | ci2 | ci | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-ci-down | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0257: si la orden de la CI no responde, avisa y fusiona |
 | rc1 | release-ci | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 0.4.0 con lo de [Unreleased]; la 0010 pasa a la siguiente. | reservas-release-ci-old | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | feature 0257: sin el verde de la CI en el sha que se corta, corre la suite completa antes de cortar (propuesta 0234, §Reglas de negocio). `sdd-end-release` no tiene batería: usa el molde y el `gh` falso de esta |
 | rc2 | release-ci | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 0.4.0 con lo de [Unreleased]; la 0010 pasa a la siguiente. | reservas-release-ci | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | feature 0257: con el `success` de la CI en el sha que se corta, no corre nada |
+| tc1 | timing-cause | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: crea su walkthrough con lo mínimo y rellena su §2 de tiempo y coste. | reservas-timing | `sdd-kit:sdd-archive` | 3 | 3/3 | sonnet | feature 0192, ticket de la feature 0211 §4: dos diagnósticos de esperas llegaron sin medir |
+| tf1 | timing-file | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: crea su walkthrough con lo mínimo y rellena su §2 de tiempo y coste. | reservas-timing | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0192: el cierre guarda `timing.json` en la carpeta del artefacto |
+| tf2 | timing-commit | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-timing | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0192: `timing.json` entra en el commit de cierre |
 | r1 | route | hemos acabado, cierra la tarea | reservas | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de una feature entra por `sdd-archive` |
 | r2 | route | cierra el patch | salas-patch | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de un patch entra por `sdd-archive` |
 
@@ -104,6 +108,9 @@ Moldes:
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
+| TC1 Causa medida | tc1 | «Causa de la desviación» de `walkthrough.md` no cita por hora y minutos las esperas (09:40Z 140 min, 12:40Z 60 min) ni dice literalmente «sin medir» |
+| TF2 En el commit | tf2 | la sección «timing.json en la historia» de `state.txt` no nombra `timing.json` |
+| TF1 Fichero | tf1 | `file: timing.json /"version": 1/` |
 | A1 Walkthrough | a1 | no hay `walkthrough.md` de la 0010, o su «4.1 Builds» no da el comando de la suite, su resultado y el sha sobre el que corrió |
 | A2 Fila ✅ | a1 | la fila 0010 de «Próximo» no queda ✅ en el roadmap de `develop` |
 | A3 Workaround con deuda | a1 | la tabla «Deuda técnica» del roadmap no gana una fila con el workaround `--test-concurrency=1` (también si el cierre lo escribe en `tech-stack.md`) |

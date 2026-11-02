@@ -6,6 +6,7 @@ import type { Row } from './artifacts.ts';
 import { calibrationSection } from './calibration.ts';
 import type { Warn } from './fields.ts';
 import { formatNumber } from './numbers.ts';
+import { phaseSection } from './phases.ts';
 import { releaseTable } from './releases.ts';
 import { readText } from '../cli/files.ts';
 import { MISSING } from './text.ts';
@@ -46,7 +47,7 @@ function formatRow(row: Row): string {
   return `| ${row.date} | ${row.id} | ${row.type} | ${hours} | ${costs} | ${row.folder} |`;
 }
 
-function formatLog(rows: Row[], docsPath: string): string {
+function formatLog(rows: Row[], docsPath: string, warn: Warn): string {
   const lines = [
     HEADER,
     '# Estimation log (estimado vs real)',
@@ -55,6 +56,7 @@ function formatLog(rows: Row[], docsPath: string): string {
     '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...rows.map(formatRow),
     ...calibrationSection(rows, (all) => releaseTable(all, docsPath)),
+    ...phaseSection(changeFolders(docsPath), warn),
   ];
   return `${lines.join('\n')}\n`;
 }
@@ -73,7 +75,7 @@ export function generateEstimationLog(root: string, warn: Warn): GeneratedLog {
   const rows = changeFolders(docsPath)
     .flatMap((folder) => readRows(folder, warn))
     .sort((first, second) => first.folder.localeCompare(second.folder));
-  return { text: formatLog(rows, docsPath), rowCount: rows.length, docsPath };
+  return { text: formatLog(rows, docsPath, warn), rowCount: rows.length, docsPath };
 }
 
 export function buildEstimationLog(root: string, warn: Warn = (message) => void process.stderr.write(`${message}\n`)): string {

@@ -79,7 +79,7 @@ describe('session tokens mide el esfuerzo real', () => {
   it('es la cuarta línea del informe', async () => {
     const { output } = await measure(worktreeWith({ s5: firstSession }), ['--branch', branch]);
     const labels = output.split('\n').filter((text) => text.startsWith('- ')).map((text) => text.split(':')[0]);
-    expect(labels).toEqual(['- Tokens del hilo', '- Tokens de subagentes', '- Coste de la sesión', '- Esfuerzo real']);
+    expect(labels.slice(0, 4)).toEqual(['- Tokens del hilo', '- Tokens de subagentes', '- Coste de la sesión', '- Esfuerzo real']);
   });
 
   it('suma dos sesiones de la rama desde el inicio de la más antigua', async () => {
