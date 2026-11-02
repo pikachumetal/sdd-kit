@@ -47,8 +47,43 @@ function salas0013() {
   s.put(`${P10}/proposal.md`, readFileSync(join(HERE, 'proposal-0010.md'), 'utf8'));
 }
 
+// El reparto de la propuesta 0010 con las dos piezas más que trae la familia a medias.
+function layer3Family() {
+  layer3();
+  s.copy(join(HERE, 'mold-salas-3-family'));
+  const proposal = join(s.R, P10_3);
+  const row = '| 3 | 0013 | Aviso semanal a los responsables | 0012 |';
+  const text = readLf(proposal);
+  if (!text.split('\n').includes(row)) s.die('la propuesta 0010 cambió: no hay dónde añadir piezas al reparto');
+  writeFileSync(proposal, text.replace(row, `${row}\n| 4 | 0014 | Ranking de salas | 0012 |\n| 5 | 0015 | Informe trimestral | 0014 |`));
+}
+
+// 2.x: la familia solo ha empezado por una pieza en curso, y su madre sigue ⏳.
+function salasFamily2x() {
+  const row = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
+  const roadmap = readLf(ROADMAP);
+  if (!roadmap.split('\n').includes(row)) s.die('el roadmap del molde salas cambió: no hay dónde poner la familia');
+  const rows = [
+    '| 0020 | Filtrar salas por aforo: `libres --aforo 8` lista solo las que caben | ⏳ |',
+    '| 0021 | Recordatorio al cancelar: avisa a quien estaba en espera | ⏳ |',
+    '| 0030 | Cobro a externos — partida en 0031, 0032 y 0033 | ⏳ |',
+    '| 0031 | Cobro: tarifa por sala — `parent: 0030` | ⏳ |',
+    '| 0032 | Cobro: factura mensual — `parent: 0030`, tras 0031 | ⏳ |',
+    '| 0033 | Cobro: recibo por correo — `parent: 0030` | ⏳ |',
+  ];
+  writeFileSync(ROADMAP, roadmap.replace(row, rows.join('\n')));
+}
+
+const OPEN_BRANCH = { 'salas-3-family': 'feature/0014-room-ranking', 'salas-family-2x': 'feature/0031-room-tariff', 'salas-3-nofamily': 'feature/0019-favorite-rooms' };
+
 const molds = {
   salas: () => {},
+  'salas-3-family': layer3Family,
+  'salas-family-2x': salasFamily2x,
+  'salas-3-nofamily': () => {
+    layer3();
+    s.copy(join(HERE, 'mold-salas-3-nofamily'));
+  },
   'salas-3': layer3,
   'salas-3-retro': () => {
     layer3();
@@ -99,6 +134,8 @@ const molds = {
 const mold = moldFrom(cell, s, molds);
 mold();
 s.initRepo();
+const openBranch = OPEN_BRANCH[cell('Molde')];
+if (openBranch) s.git('branch', openBranch);
 
 if (s.SC === 'id3') s.env.TURN2 = 'Súbela a Next.';
 if (s.SC === 'rl1') s.env.TURN2 = 'Dame el prompt de esa fila.';

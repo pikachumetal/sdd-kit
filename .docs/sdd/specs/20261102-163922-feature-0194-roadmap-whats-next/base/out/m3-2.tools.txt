@@ -1,0 +1,129 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: git branch --all; ls; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/debt.md; git show develop:ROADMAP.md
+<<< * develop
+  main
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; git log --oneline -5; ls docs docs/qa; cat package.json; ls src test; cat .docs/sdd/steering/debt.md >/dev/null; ls .docs/sdd .docs/sdd/changes 2>&1
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+d1d8942 feat: base del molde
+docs:
+qa/
+
+docs/qa:
+2026-10-12-informe.md
+{"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+.docs/sdd:
+changes/
+constitution.md
+mission.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/changes:
+20261001-090000-proposal-0010-reports/
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -40; cat CHANGELOG.md | head -20; ls bin 2>&1
+<<< Exit code 2
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', 
+
+>>> Bash: node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -3; node src/app.js exportar | iconv -f utf-8 -t latin1 2>&1 | head -1; echo; git log --oneline --all -- src | head
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,d�a,franja
+
+d1d8942 feat: base del molde
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base/skills/sdd-templates/templates" && cat debt-template.md; node ../../../cli/bin/sdd.js id next --project-root "<run>/repo" 2>&1 | head
+<<< # Deuda técnica — <proyecto>
+
+> Documento de estado de la deuda técnica: dice dónde está cada ítem hoy, no su historia. Lo escribe `sdd-roadmap`, al triar, y los cierres (`sdd-archive`), que quitan de «Lista» lo que saldan; lo leen `sdd-roadmap`, `sdd-debugging`, los cierres y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar. Solo ingeniería: las peticiones de producto van a Later de `ROADMAP.md`.
+>
+> **Las cuatro secciones y sus cabeceras van literales**, en este orden. Una celda vacía se escribe `—`. Un `|` dentro de una celda se escribe `\|`.
+>
+> **Fecha**: `AAAA-MM-D
+
+=== RESULTADO (8 turnos, 0.1658613 $)
+Aún no he escrito nada. En el perfil `delegate` toca proponer el triaje y esperar tu decisión.
+
+Reproduje los dos hallazgos del informe de QA del 2026-10-12 ejecutando la app.
+
+| Ítem | Propuesta | Por qué |
+| --- | --- | --- |
+| `salas libres --planta 2` lista también salas de la planta 1 | **Lista** | Se reproduce y el fallo está en el código. |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | **En espera** | No se reproduce. |
+
+**1. `salas libres --planta 2`: pasa a «Lista»**
+- **Evidencia:** `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- **Causa:** `defecto del producto`. `roomsOnFloor` en `src/app.js` filtra con `floors[room] <= floor` en vez de `===`.
+- **Impacto:** medio. Es un resultado equivocado en un comando de uso diario.
+- **Remedio temporal:** `ninguno`. Busqué y no hay otra forma de filtrar por planta.
+- **Arreglo:** `—`, porque es un defecto del producto.
+- **Destino:** una fila nueva en Now, `Carril: patch`, tamaño S. Es un cambio de una línea con un solo test nuevo. El id se reserva con `sdd id next --reserve` al escribir, y el siguiente libre ahora sería 0014.
+
+**2. CSV sin tildes: pasa a «En espera»**
+- **Falta:** `reproducirlo`.
+- **Causa:** `sin determinar`.
+- **Impacto:** medio.
+- **Qué vi:** `node src/app.js exportar` emite UTF-8 válido, con `í` como `c3 ad`. El código tampoco ha cambiado nunca (un solo commit).
+- **Versión dudosa:** el informe habla de la 1.4.2, pero la última del changelog es la 1.4.1.
+- **Hipótesis sin comprobar:** el síntoma `d?a` encaja con abrir el CSV en Excel, que sin BOM lo lee como ANSI. Hace falta el entorno del informe para confirmarlo.
+- **Fecha de entrada:** 2026-11-02.
+
+Después correría `sdd roadmap check` y publicaría con `sdd roadmap publish` sobre `develop`. La fila nueva tendría su prompt de lanzamiento.
+
+Dos cosas más:
+- **Fila ya en espera:** la de «reservas de más de 8 h» (2026-07-01) no caduca todavía, porque el changelog no tiene ningún release `X.Y.0` posterior. Queda como está.
+- **Sin actualizar:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+
+¿Lo escribo así, o prefieres cambiar algo (p. ej. pasar el CSV a «Lista» con un arreglo de BOM, o dejar el patch en Next)?

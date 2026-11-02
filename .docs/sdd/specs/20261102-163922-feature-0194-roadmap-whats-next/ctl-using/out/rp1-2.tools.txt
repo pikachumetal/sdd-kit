@@ -1,0 +1,143 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0194-roadmap-whats-next\.temp\claude\D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next\2a3673f5-2000-462a-9b57-b318c053ea59\scratchpad\kit\skills\sdd-implement\references\patch-flow.md
+<<< 1	# The patch flow
+2	
+3	A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/SKILL.md#is-it-really-a-patch)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
+4	
+5	One todo per step. Resuming, start at the first step whose output `patch.md` or the branch lacks, never with a second `patch.md`.
+6	
+7	1. **Root cause, MANDATORY in a failure** (the intent, in a
+
+>>> Glob: **/*
+<<< .docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md
+<<< 1	---
+2	solution: causa raíz
+3	---
+4	
+5	# Patch 0021 — cancelar una reserva que no existe
+6	
+7	## 1. Síntoma
+8	
+9	«Si cancelo una reserva que no existe me dice cancelada igual.»
+10	
+11	## 2. Causa raíz
+12	
+13	`run` en src/app.js:12 devuelve `cancelada` sin mirar `bookings`.
+14	
+15	## 3. Fix
+16	
+17	Si no hay reserva de ese día y franja, responde `no existe`; el test `cancelar respeta el día` pasa a usar `lun 10:00-12:00`. Decisiones: texto, dev-lead.
+18	
+19	## 4. Verificación
+20	
+21	Pendiente.
+22	
+23	## 5. Tiempo
+24	
+25	- Inicio: 2026-09-21T09:00:00Z
+26	
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline -5 && git diff --stat
+<<< ?? .docs/sdd/specs/20260921-090000-patch-0021-cancel-missing/
+bc0b3ec feat: base del molde salas
+
+>>> Bash: cd "<run>/repo" && git ls-files && cat -n src/app.js && cat package.json && ls test* 2>/dev/null
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+     1	const [command, ...args] = process.argv.slice(2);
+     2	const rooms = ['Norte', 'Sur'];
+     3	const boo
+
+>>> Bash: cd "<run>/repo" && cat -n test/app.test.js; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; cat .docs/sdd/sdd-kit.json; git branch --show-current
+<<<      1	import { test } from 'node:test';
+     2	import assert from 'node:assert/strict';
+     3	import { run } from '../src/app.js';
+     4	
+     5	test('libres excluye la sala reservada en la franja', () => {
+     6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+     7	});
+     8	
+     9	test('reservar --cada-semana crea la reserva semanal', () => {
+    10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+    11	});
+    12	
+    13	test('cancelar respeta el día', () => {
+    14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelad
+
+>>> Edit: <run>\repo\test\app.test.js
+<<< The file <run>\repo\test\app.test.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -25
+<<< ✖ failing tests:
+
+test at test\app.test.js:17:1
+✖ cancelar una reserva que no existe responde no existe (0.9667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'cancelada mar 10:00-12:00'
+  - 'no existe'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/app.test.js:18:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+     
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -12; git diff --numstat
+<<< ✔ libres excluye la sala reservada en la franja (3.779ms)
+✔ reservar --cada-semana crea la reserva semanal (0.2075ms)
+✔ cancelar respeta el día (4.3185ms)
+✔ cancelar una reserva que no existe responde no existe (0.2358ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 304.354
+5	1	src/app.js
+5	1	test/app.test.js
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md
+<<< The file <run>\repo\.docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (14 turnos, 0.27063390000000004 $)
+Retomé el patch 0021 en el paso 4 y el fix ya está hecho y verificado. No lo he commiteado: dime si lo hago.
+
+- **Estado de ayer:** solo existía `patch.md` (síntoma, causa raíz y fix escritos). El código y los tests no estaban tocados.
+- **Causa raíz:** `run` en `src/app.js:12` devolvía `cancelada …` sin mirar `bookings`, como decía el `patch.md`.
+- **RED:** añadí el test `cancelar una reserva que no existe responde no existe` y falló con `cancelada mar 10:00-12:00`.
+- **Fix:** `cancelar` responde `no existe` si no hay reserva de ese día y franja (`src/app.js`).
+- **Test existente:** `cancelar respeta el día` usa ahora `lun 10:00-12:00`, como fija el `patch.md`.
+- **Verificación:** `node --test` da 4 de 4 en verde. El diff sin tests son 5 líneas en 1 fichero, muy por debajo del umbral de 10 ficheros o 300 líneas.
+- **`patch.md`:** actualicé el apartado 4 con el comando y los resultados.
+
+Pendiente:
+- **Tiempo:** el apartado 5 solo tiene `Inicio`. Falta el esfuerzo real, que no puedo medir yo; dime la cifra o te propongo una.
+- **Commit:** un único commit con el código, los tests y `patch.md`, mencionando el patch 0021. El tipo sería `fix`. Después vendría el cierre con `sdd-archive`.
+
+El hook de sesión avisa de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code, porque `/reload-plugins` no aplica una actualización de ámbito proyecto. No afecta a este fix, pero el cierre usaría las skills viejas.
