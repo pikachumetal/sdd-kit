@@ -272,8 +272,9 @@
 | 2026-11-02 | 0271 | docs | 2 | 1.26 | 0.63 | 23324k | 2738k | 20.81 | 13.66 | 20261102-135210-feature-0271-clean-red-rules |
 | 2026-11-02 | 0287 | infra/tooling | 1.5 | 0.45 | 0.3 | 8582k | 2267k | 0.01 | 8.37 | 20261102-145840-feature-0287-heredoc-guard |
 | 2026-11-02 | 0280 | infra/tooling | 1.2 | 0.36 | 0.3 | 6174k | 1591k | no aplica | 6.32 | 20261102-163940-feature-0280-campaign-subject-cap |
+| 2026-11-02 | 0281 | docs | 1.5 | 1 | 0.67 | 11678k | 1891k | 10.54 | 8.88 | 20261102-173845-feature-0281-coherence-pass-scope |
 
-**Factor de calibración** (ratio mediano real/estimado, 232 artefactos): **0.56** · media 0.72
+**Factor de calibración** (ratio mediano real/estimado, 233 artefactos): **0.56** · media 0.72
 
 - p25–p75: 0.36–0.88
 - p80: 1 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
@@ -284,15 +285,15 @@
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 93 | 40 % |
-| 0.5–0.8 | 68 | 29 % |
-| 0.8–1.25 | 50 | 22 % |
+| 0.5–0.8 | 69 | 30 % |
+| 0.8–1.25 | 50 | 21 % |
 | 1.25–2 | 13 | 6 % |
 | ≥2 | 8 | 3 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 100 | 0.57 | 0.4–0.8 |
+| docs | 101 | 0.57 | 0.4–0.8 |
 | infra/tooling | 63 | 0.49 | 0.35–0.73 |
 | patch | 67 | 0.76 | 0.29–1.2 |
 | tooling | 1 | 0.6 | — |
@@ -314,6 +315,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 120 | 225.41 | 0.52 | 600.73 | 1907.96 |
+| sin publicar | 121 | 226.41 | 0.53 | 611.27 | 1916.84 |
 
 > Ver `estimation.md`.

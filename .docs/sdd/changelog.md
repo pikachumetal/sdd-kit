@@ -65,6 +65,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0281** — El repaso de coherencia de `sdd-propose` busca con `grep` en `capabilities/` los pasos numerados de lo que se retira, también citados a secas; el cruce del Scope con el índice no se escribe porque su RED salió limpio. → [ref](specs/20261102-173845-feature-0281-coherence-pass-scope/)
 - **Feature 0273** — `battery.mjs` dice `puerta verde · sin leer: <filas>` con filas de rúbrica en prosa y `verde` solo con todas las filas de máquina, una fila `file:` comprueba un fichero que deja el sujeto, `run.mjs` sale con 3 y nombra la etiqueta si no midió nada, y la cabecera avisa de `KIT_DIR`, `SUBJECT_CAP` y el id. → [ref](specs/20261102-125945-feature-0273-battery-honest-verdict/)
 - **Patch 0286** — Un conflicto de `sdd merge --sync` en Markdown en el que los dos lados solo añaden lo junta el agente, repite el gate y lo nombra, y `--sync` va en una llamada propia; un hook que rechaza la resolución ya no se informa como conflicto. → [ref](specs/20261101-220737-patch-0286-sync-additive-conflicts/)
 - **Patch 0275** — La fila `r1` de la batería de `using-sdd` pasa a n = 4 y umbral 2/4, y un rojo de enrutado tras una edición se contrasta con un A/B contra el texto anterior. → [ref](specs/20261101-170209-patch-0275-r1-threshold/)
