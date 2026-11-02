@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-11-02
 branch: patch/0270-capability-merge-fixes
-commit: pendiente
+commit: c7b1db44
 ---
 
 # Patch 0270 — `sdd capability merge` compara los huecos con el vivo y rechaza lo que check rechazaría
@@ -65,6 +65,12 @@ Validación en campo: 2026-11-02 · RED→GREEN en `test/capability` 146/146 · 
 
 - Estimación: 0,5 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-02T13:49Z
+- Esfuerzo real: 0,09 h — reloj de la sesión 0,09 h desde 2026-11-02T13:48Z, sin 0 min de espera al dev-lead (0 esperas)
+- Tokens del hilo: 2.219.281 — claude-opus-5-5 2.219.281
+- Tokens de subagentes: no aplica
+- Coste de la sesión: 2,44 $ (hilo 2,44 $)
+- Coste de sujetos: no aplica
+- Desvío: −82 % frente a los 0,5 h. La petición traía la causa y las dos soluciones fijadas, y el fix salió a la primera, sin una segunda vuelta de diagnóstico.
 
 ## 6. Delta de capacidad
 
