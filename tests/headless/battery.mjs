@@ -1,16 +1,20 @@
 // Lee la tabla de escenarios de una batería (tests/batteries/<skill>/battery.md), la lanza y da su veredicto.
 // Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n>, una línea por escenario
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
-//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|rojo|sin evidencia: la puerta y las filas `tools: /<regex>/`
+//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas>|rojo|sin evidencia: la puerta y las filas de máquina
 //      BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
 //      node battery.mjs run                 lanza la batería, entera o por tramos, y da el veredicto
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
-// run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia.
+// run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia o no hay escenarios.
+// Con 0 y `puerta verde`, la conducta sigue sin leer: las filas en prosa las lee el hilo. `verde` solo si todas sus filas son de máquina:
+// `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea.
+// Lo que hace fallar el primer lanzamiento: KIT_DIR es una copia sin .docs/ ni tests/, sacada con git archive <commit> skills .claude-plugin agents cli hooks;
+// SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda; y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CampaignError, readConfig, runCampaign } from './campaign.mjs';
+import { CampaignError, hasResult, readConfig, runCampaign } from './campaign.mjs';
 
 export class BatteryError extends Error {
   constructor(message, code = 1) {
@@ -59,12 +63,22 @@ const orderCheck = (first, second) => (text) => {
   return firstAt >= 0 && (secondAt < 0 || firstAt < secondAt);
 };
 
+// Al contrario que `tools: … presente`, falla si no está: el sujeto guarda la línea, no la dice en el chat.
+const fileCheck = (name, pattern) => ({ label }, { outDir, fs }) => {
+  const path = join(outDir, label, name);
+  return !fs.exists(path) || !pattern.test(fs.read(path).replaceAll('\r\n', '\n'));
+};
+
+const onTools = (check) => ({ text }) => check(text);
+
 function compileCheck(cell) {
-  const regex = (source) => new RegExp(source.replaceAll('\\|', '|'));
+  const regex = (source, flags) => new RegExp(source.replaceAll('\\|', '|'), flags);
   const presence = cell.match(/^`tools: \/(.+)\/` (presente|ausente)$/);
-  if (presence) return presenceCheck(regex(presence[1]), presence[2] === 'presente');
+  if (presence) return onTools(presenceCheck(regex(presence[1]), presence[2] === 'presente'));
   const order = cell.match(/^`tools: \/(.+)\/ antes de \/(.+)\/`$/);
-  if (order) return orderCheck(regex(order[1]), regex(order[2]));
+  if (order) return onTools(orderCheck(regex(order[1]), regex(order[2])));
+  const file = cell.match(/^`file: ([^\s`/\\]+) \/(.+)\/`$/);
+  if (file) return fileCheck(file[1], regex(file[2], 'm'));
   throw new SyntaxError(cell);
 }
 
@@ -82,11 +96,28 @@ function parseCheck(row, known) {
   return { id, scenarioIds, fails };
 }
 
-// Una fila cuya celda «Falla si…» empieza por `tools: es una comprobación; mal escrita es un error, porque callada no correría.
-function readChecks(batteryPath, rows, fs) {
+// Celda de texto libre: lo que no se entiende cubre de más, porque un «puerta verde» de más no engaña y un «verde» de más sí.
+// ponytail: un rango en prosa («k1 a k3») cubre solo sus extremos; si una rúbrica los usa, tratar la celda como «todos».
+function proseCovers(cell, known) {
+  const plain = cell.replaceAll('`', '');
+  const named = plain.split(/[^\w-]+/).filter((token) => known.has(token));
+  if (/^todos\s+menos\b/i.test(plain)) return (id) => !named.includes(id);
+  if (/^todos\b/i.test(plain) || named.length === 0) return () => true;
+  return (id) => named.includes(id);
+}
+
+// Una celda puede juntar varias filas: «S1, S2, R1 Juntas».
+const rowIds = (fila) => fila.match(/^[^\s,]+(?:,\s+[^\s,]+)*/)?.[0] ?? fila;
+
+// Una fila cuya celda «Falla si…» empieza por `tools: o `file: es una comprobación; mal escrita es un error, porque callada no correría.
+function readRubric(batteryPath, rows, fs) {
   const known = new Set(rows.map((row) => row.Id));
-  const rubric = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
-  return rubric.filter((row) => row['Falla si…'].startsWith('`tools:')).map((row) => parseCheck(row, known));
+  const table = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
+  const byMachine = (row) => /^`(tools|file):/.test(row['Falla si…']);
+  return {
+    checks: table.filter(byMachine).map((row) => parseCheck(row, known)),
+    prose: table.filter((row) => !byMachine(row)).map((row) => ({ id: rowIds(row.Fila), covers: proseCovers(row.Escenarios, known) })),
+  };
 }
 
 function selectSteps(rows, steps) {
@@ -120,7 +151,7 @@ function readRuns(row, outDir, fs) {
     const path = join(outDir, `${row.Id}-${i + 1}.tools.txt`);
     return { label: `${row.Id}-${i + 1}`, text: fs.exists(path) ? fs.read(path) : undefined };
   });
-  const finished = ({ text }) => text?.includes('=== RESULTADO');
+  const finished = ({ text }) => text !== undefined && hasResult(text);
   const labels = (runs) => runs.map(({ label }) => label);
   return {
     runs: all.filter(finished),
@@ -135,15 +166,24 @@ function scenarioState({ passed, missing, needed, kitFailed }) {
   return missing ? 'sin evidencia' : 'verde';
 }
 
-function judge(row, outDir, checks, fs) {
+function failedChecksOf(row, runs, checks, place) {
+  return checks
+    .filter((check) => check.scenarioIds.includes(row.Id))
+    .map((check) => ({ id: check.id, labels: runs.filter((run) => check.fails(run, place)).map(({ label }) => label) }))
+    .filter(({ labels }) => labels.length > 0);
+}
+
+function statedVerdict(state, prose, id) {
+  const unread = state === 'verde' ? prose.filter(({ covers }) => covers(id)).map((row) => row.id) : [];
+  return unread.length ? `puerta verde · sin leer: ${unread.join(', ')}` : state;
+}
+
+function judge(row, { outDir, fs, rubric: { checks, prose } }) {
   const n = Number(row.n);
   const [needed] = row.Umbral.split('/').map(Number);
   const { runs, noTools, unfinished } = readRuns(row, outDir, fs);
   const unloaded = runs.filter(({ text }) => kitMissing(text)).map(({ label }) => label);
-  const failedChecks = checks
-    .filter((check) => check.scenarioIds.includes(row.Id))
-    .map((check) => ({ id: check.id, labels: runs.filter(({ text }) => check.fails(text)).map(({ label }) => label) }))
-    .filter(({ labels }) => labels.length > 0);
+  const failedChecks = failedChecksOf(row, runs, checks, { outDir, fs });
   // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito.
   const passed = runs.filter(
     ({ label, text }) =>
@@ -156,21 +196,23 @@ function judge(row, outDir, checks, fs) {
     unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : '',
     ...failedChecks.map(({ id, labels }) => `${id} falla en ${labels.join(', ')}`),
   ].filter(Boolean);
-  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${state}`, ...notes].join(' · ');
+  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${statedVerdict(state, prose, row.Id)}`, ...notes].join(' · ');
 }
 
 export function verdict(batteryPath, outDir, steps, fs) {
   const rows = readScenarios(batteryPath, fs);
-  const checks = readChecks(batteryPath, rows, fs);
-  const lines = selectSteps(rows, steps).map((row) => judge(row, outDir, checks, fs));
+  const rubric = readRubric(batteryPath, rows, fs);
+  const lines = selectSteps(rows, steps).map((row) => judge(row, { outDir, fs, rubric }));
   return { lines, red: lines.some((line) => line.includes('· rojo')), noEvidence: lines.some((line) => line.includes('· sin evidencia')) };
 }
 
 // Sin evidencia no es verde: con 0, un script leería que todos pasan.
-function exitCode({ red, noEvidence }) {
+function exitCode({ lines, red, noEvidence }) {
   if (red) return 1;
-  return noEvidence ? 3 : 0;
+  return noEvidence || lines.length === 0 ? 3 : 0;
 }
+
+const noScenarios = (table) => `sin escenarios en ${table}`;
 
 function batteryDir(env) {
   if (env.BATTERY_DIR) return env.BATTERY_DIR;
@@ -201,6 +243,7 @@ export function batteryPlan(env, cwd, fs) {
   if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
   const steps = (env.STEPS ?? '').split(/\s+/).filter(Boolean);
   const rows = selectSteps(readScenarios(table, fs), steps);
+  if (rows.length === 0) throw new BatteryError(noScenarios(table), 3);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
   return { table, steps, rows, launchEnv, config };
@@ -245,7 +288,7 @@ async function main([command, batteryPath, ...rest]) {
   } else if (command === 'verdict') {
     const [outDir, ...steps] = rest;
     const result = verdict(batteryPath, outDir, steps, fileFs);
-    console.log(result.lines.join('\n'));
+    console.log(result.lines.length ? result.lines.join('\n') : noScenarios(batteryPath));
     process.exitCode = exitCode(result);
   } else if (command === 'run') {
     const { realDeps, stopOnSignal } = await import('./real-deps.mjs');
