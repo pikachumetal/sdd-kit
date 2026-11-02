@@ -447,7 +447,8 @@ function pinIdentity(s, deps) {
   }
 }
 
-function claudeEnv(env) {
+// Git Bash de login rehace el PATH desde una ORIGINAL_PATH heredada: el sujeto perdería no-claude/ y lo que anteponga el molde.
+function claudeEnv({ ORIGINAL_PATH: _inherited, ...env }) {
   const pathKey = Object.keys(env).find((name) => name.toLowerCase() === 'path') ?? 'PATH';
   return { ...env, [pathKey]: [join(HEADLESS, 'no-claude'), env[pathKey]].filter(Boolean).join(delimiter), ...GIT_IDENTITY };
 }
