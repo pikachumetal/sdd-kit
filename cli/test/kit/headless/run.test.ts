@@ -70,6 +70,25 @@ it('battery.mjs verdict sale con 3 y lo dice con una tabla sin escenarios', { ti
   expect(result.stdout).toContain(`sin escenarios en ${table}`);
 });
 
+it('battery.mjs run para antes del primer sujeto si subject.mjs no compila, con la línea del error', { timeout: 30_000 }, () => {
+  const table = '| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n| a | p | x | m | `cualquiera` | 1 | 1/1 | sonnet | toy |\n';
+  const dir = join(root, 'battery');
+  writeFile(join(dir, 'battery.md'), table);
+  writeFile(join(dir, 'subject.mjs'), "const a = 1;\nconst b = 'sin cerrar\n';\n");
+  const { SUBJECT_SH: _unused, SCENARIOS: _unusedToo, ...env } = campaignEnv(FAKE_SUBJECT);
+  const result = spawnSync(process.execPath, [join(kitRoot, 'tests', 'headless', 'battery.mjs'), 'run'], { env: { ...env, BATTERY_DIR: dir, PHASE: 'broken' }, encoding: 'utf8', windowsHide: true });
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain('subject.mjs no compila:');
+  expect(result.stderr).toMatch(/subject\.mjs:2\b/);
+  expect(result.stderr).toContain('SyntaxError');
+  expect(existsSync(join(env.RUNS_DIR as string, 'broken', 'live'))).toBe(false);
+  expect(result.stdout).not.toContain('sujetos de la campaña');
+});
+
+it('syntaxError no da nada con un fichero que compila', () => {
+  expect(realDeps().syntaxError(writeFile(join(root, 'ok.mjs'), 'export const a = 1;\n'))).toBeNull();
+});
+
 it('lanza, cuenta e informa con un sujeto en node', { timeout: 30_000 }, () => {
   const env = campaignEnv(FAKE_SUBJECT);
   const result = runCampaign(env);

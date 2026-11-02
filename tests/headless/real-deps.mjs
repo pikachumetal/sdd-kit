@@ -48,6 +48,15 @@ async function processes() {
   });
 }
 
+// Hasta la línea del error: lo que sigue es la pila de node y su versión.
+function syntaxError(path) {
+  const { status, stderr } = spawnSync(process.execPath, ['--check', path], { encoding: 'utf8', windowsHide: true });
+  if (status === 0) return null;
+  const lines = stderr.trim().split(/\r?\n/);
+  const errorLine = lines.findIndex((line) => /^\w*Error\b/.test(line));
+  return (errorLine < 0 ? lines : lines.slice(0, errorLine + 1)).join('\n');
+}
+
 export function realDeps() {
   const io = { out: (line) => console.log(line), err: (line) => console.error(line), json: (value) => console.log(JSON.stringify(value)) };
   const owner = { branch: 'orquestador de sujetos', worktree: '' };
@@ -60,6 +69,7 @@ export function realDeps() {
     launch,
     processes,
     kill: killProcess,
+    syntaxError,
   };
 }
 

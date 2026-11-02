@@ -354,6 +354,7 @@ function fakeDeps(fs: MemoryFs) {
     },
     processes: async () => [],
     kill: () => undefined,
+    syntaxError: (_path: string): string | null => null,
   };
   return { deps, log, launched };
 }
@@ -371,6 +372,19 @@ const env = (overrides: Record<string, string> = {}) => ({
 });
 
 describe('runBattery', () => {
+  it('no lanza ningún sujeto si subject.mjs no compila, y da la línea del error', async () => {
+    const fake = fakeDeps(toyFs());
+    const checked: string[] = [];
+    fake.deps.syntaxError = (path: string) => {
+      checked.push(path);
+      return `${path}:39\nSyntaxError: Invalid or unexpected token`;
+    };
+    const subject = join(DIR, 'subject.mjs');
+    await expect(runBattery(env(), CWD, fake.deps)).rejects.toMatchObject({ code: 1, message: `subject.mjs no compila:\n${subject}:39\nSyntaxError: Invalid or unexpected token` });
+    expect(checked).toEqual([subject]);
+    expect(fake.launched).toEqual([]);
+  });
+
   it('lanza solo el tramo pedido, cada índice con el modelo de su escenario', async () => {
     const fs = toyFs();
     const fake = fakeDeps(fs);
