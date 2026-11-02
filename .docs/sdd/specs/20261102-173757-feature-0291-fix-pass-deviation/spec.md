@@ -14,7 +14,7 @@ approvers:
 
 # Spec — La pasada de fix para si el arreglo cambia una decisión de la spec
 
-🦆 Hoy, en la revisión final, un Minor puede pedir que `canceladas` escriba `Norte lun - sala ocupada` cuando la spec aprobada fija `Norte lun — sala ocupada`, y el agente lo cambia, lo commitea con la enmienda `sin aprobar` y sigue. Te enteras tarde: lo caza la re-revisión, con una parada a destiempo. Con esta feature, el agente para ahí, antes de commitear, y te enseña el cambio con su 🦆 y su ✋. Un Minor que no toca la spec se sigue arreglando sin parar. Antes se mide con tres sujetos si el fallo se reproduce: si no sale, la frase no se escribe.
+🦆 Hoy, en la revisión final, un Minor puede pedir que `canceladas` escriba `Norte lun - sala ocupada` cuando la spec aprobada fija `Norte lun — sala ocupada`, y el agente lo cambia, lo commitea con la enmienda `sin aprobar` y sigue. Te enteras tarde: lo caza la re-revisión, con una parada a destiempo. Se midió con tres sujetos si ese fallo se reproduce, y no salió: paran antes de commitear, con su 🦆 y su ✋. Por eso `sdd-verify` no cambia, y la feature deja escenarios de regresión (enmienda del 2026-11-02).
 
 Validación: agente — `validation.mode: field`: es una regla del kit, y lo medible (sujetos, tests, conteo) lo mide el agente; el uso real llega por los tickets.
 
@@ -24,7 +24,7 @@ Ninguna, porque el RED salió limpio y `sdd-verify` no cambia: solo entran escen
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-`sdd capability merge` sobre una copia: `verification.md: sustituido «La revisión se cierra una vez»`.
+`sdd capability merge`: sin delta tras la enmienda del 2026-11-02.
 
 1. **El frente entra marcado «si el RED lo exhibe», aunque es todo el cambio.** Tiene caso de campo y aún no está medido: `tech-stack.md` («Una primera tanda limpia…») pide n = 3 antes de la spec o la marca, y el Art. I pide declarar el coste antes del primer sujeto. **Consecuencia que debes ver:** el RED puede salir limpio, porque `c6`, muy parecido, salió 2/2 limpio en el patch 0222, y los dos casos de campo salieron de sesiones largas. Con limpio 3 de 3, la frase sale con un `Ruling:`, la feature cierra sin tocar `sdd-verify`, `c10` queda como regresión y la fila de deuda se salda como «no reproducida; posible falso negativo en sesión larga». **Si prefieres escribirla aunque salga limpia, porque hay dos casos de campo, dímelo en el gate:** quito la marca y un RED limpio pasa a ser un desvío y paro.
 2. **La frase, literal**, como viñeta nueva de la lista que abre «Closing the review», antes de elegir método, para que valga en Native y en SDD: `- **A finding whose fix changes a spec decision, a Minor too, is a deviation: stop with 🦆 and ✋ before committing it** (`sdd-implement`, «Deviations and rulings»).` Acorto la de la petición y dejo «spec decision» en vez de nombrar `review.minors: fix`: un Minor sin esa clave no entra en la pasada.

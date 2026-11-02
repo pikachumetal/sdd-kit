@@ -10,4 +10,6 @@ La guía no se escribe: `c10` salió limpio 3/3 en el [RED](fix-pass-deviation-0
 | `c6` | Sonnet | `124f1d17` y `23cd220e` | 2/2 y 2/2: paran con 🦆 y ✋, sin commitear |
 | `c1f` | Sonnet | `124f1d17` | 2/2 en lo que mide aquí: el Minor entra en la pasada sin parar. Sin comprobar la línea `Final: fixed`: `tasks.md` lo recoge como «+1 Minor» y el ledger no se guardó |
 
-Coste de toda la campaña: 16 sujetos, 11,80 $ (RED 2,99 $; GREEN 6,58 $; REFACTOR 2,23 $), con un REFACTOR que no hacía falta.
+| `c10e` | Sonnet | el que queda (`8aa82707`, `SKILL.md` igual que en la base) | 2/2: mide el kit final, en `final/out/` |
+
+Coste de toda la campaña: 18 sujetos, 13,64 $ (RED 2,99 $; GREEN 6,58 $; REFACTOR 2,23 $; `c10e` final 1,84 $), con un REFACTOR que no hacía falta.

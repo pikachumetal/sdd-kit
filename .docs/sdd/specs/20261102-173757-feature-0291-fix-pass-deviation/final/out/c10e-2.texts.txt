@@ -1,0 +1,89 @@
+--- [3]
+Ahora: retomo tras las dos tasks y leo los informes de la revisión final. Queda: triaje, pasada de fix si hace falta, cierre y validación, ~10 min.
+
+--- [19]
+El RED falla por la causa correcta. Pero el test del recorte depende del orden: la reserva de Norte ya está cancelada. Lo hago independiente usando una sala sin reserva.
+
+--- [24]
+RED: 2 tests fallan sin el fix; GREEN: 6/6 con él. Commit, ledger y `tasks.md`.
+
+--- [27]
+Ahora: lanzo la única re-review de la pasada de fix (opus + high). Queda: cerrar `tasks.md`, borrar el workspace y archivar, ~5 min.
+
+--- [41]
+La re-revisión sigue en marcha. El vigía en segundo plano terminó sin salida, porque lo lancé con `&` dentro del comando de fondo, y no hay ningún aviso de silencio. Espero el informe del revisor sin sondear.
+
+--- [48]
+## Veredictos de los hallazgos
+
+**1. [Código, Important] `reasonOf` no recortaba los espacios: ADDRESSED.**
+- `src/app.js:16` ahora es `params[index + 1]?.trim()`. Por tanto `" sala ocupada "` pasa por `reasons.includes` (`src/app.js:20`) y se guarda como `sala ocupada`.
+- El `?.` mantiene igual el caso de `--motivo` como último argumento: llega `undefined` y la respuesta sigue siendo «motivo no válido…», como pide el AND del spec en `spec.md:58`.
+- El nuevo test `test/cancel.test.js:13-15` falla sin el arreglo (devuelve «motivo no válido…») y pasa con él. RED→GREEN real.
+
+**2. [Código, Minor] Separador ` — ` en `canceladas`: ADDRESSED.**
+- `src/app.js:35` ahora usa ` - `.
+- Coincide con lo decidido con el dev-lead (`spec.md:29`) y con el THEN enmendado (`spec.md:63`).
+- La aserción `test/cancel.test.js:19` espera `Norte lun - sala ocupada`.
+- No queda ningún `—` en `src/` ni en `test/`.
+
+**3. [Spec, Minor] El test de `canceladas` dependía del orden: ADDRESSED.**
+- `test/cancel.test.js:18` cancela él mismo Norte lun antes de pedir el listado, así que pasa también si se ejecuta solo.
+- Si el primer test ya ha corrido, esa cancelación devuelve «sin reserva Norte lun» sin efectos, y el listado sigue teniendo una sola línea. Pasa en ambos casos.
+
+## Errores nuevos introducidos por el arreglo
+
+Ninguno.
+
+## Observaciones fuera de alcance
+
+- **La enmienda está `sin aprobar` (`spec.md:67`).** El arreglo cambió el THEN de un spec ya aprobado (`spec.md:63`) y, con él, la aserción de `test/cancel.test.js:19`. En el fondo es correcto: aplica al pie de la letra lo decidido con el dev-lead (`spec.md:29`), y el THEN anterior lo contradecía. Aun así, la tabla de Aprobaciones solo tiene la aprobación del 2026-10-08. Laura (dev-lead) tiene que aprobar la enmienda antes de cerrar la feature; es un paso del cierre, no un fallo del código.
+- **El test del recorte no cubre el caso descrito en el hallazgo (Minor, calidad del test).** `test/cancel.test.js:14` usa Sur mar, que no tiene reserva. Por eso solo comprueba que el motivo recortado supera la validación (respuesta «sin reserva Sur mar»). No comprueba la salida de éxito «cancelada Norte lun (sala ocupada)» ni que se guarde recortado. Por cómo está escrito el código, ambas cosas se cumplen, pero ningún test las comprueba para una entrada con espacios. No bloquea.
+- **`cancelBooking`, la función exportada (`src/app.js:19`), no recorta.** Solo recorta la entrada por `run`. Hoy nada más llama a `cancelBooking`, así que solo lo dejo anotado.
+
+No he ejecutado tests: lo que dice el informe (2 en rojo antes del arreglo, 6/6 después) cuadra con lo que leo en el diff. En rojo estarían el nuevo test del recorte y el de `canceladas` por el separador.
+
+## Veredicto
+
+Los tres hallazgos están resueltos y el arreglo no rompe nada nuevo. Para cerrar la feature falta que Laura apruebe la enmienda del THEN registrada en `spec.md:67`.
+
+Ficheros relevantes:
+- `<run>/review-0010-59f0765/src/app.js`
+- `<run>/review-0010-59f0765/test/cancel.test.js`
+- `<run>/review-0010-59f0765/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+
+--- [51]
+Ahora: invoco `sdd-archive` para la validación.
+
+--- [57]
+🦆 Ahora cancelar pide un motivo de la lista, y `canceladas` lo enseña en una línea que no se rompe en la consola de recepción. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada "` (con el espacio final) responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun - sala ocupada».
+
+**✋ Me salí del plan en…**
+- Cambié el THEN de «El listado de canceladas enseña el motivo»: pasó de «—» a « - ». La spec ya fijaba « - » en «Decisiones tomadas con el dev-lead» (consola `cp850`) y el THEN lo contradecía. Está en «Enmiendas» como `sin aprobar`: **necesito que lo apruebes**.
+- La pasada de fix de la revisión final arregló 3 hallazgos y todos están en el commit `59f0765`: el motivo con espacios (Important), el separador ` — ` (Minor) y un test que dependía del orden (Minor). Los dos Minor entraron porque `review.minors` está en `fix`.
+- La re-revisión (opus + high) dio los 3 como resueltos y sin roturas nuevas. Quedan 2 Minor aplazados: el test del recorte no comprueba la salida de éxito con espacios, y `cancelBooking` exportada no recorta (solo lo hace `run`).
+
+**Humo (un THEN por fila)**
+
+| THEN | Evidencia |
+| --- | --- |
+| Cancelar con motivo de la lista | ejecución real: «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real: `--motivo "me aburro"` responde «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | suite (no lo provoqué a mano) |
+| `canceladas` enseña el motivo | ejecución real: «Norte lun - sala ocupada» |
+
+Suite: `node --test test/` pasa 6/6 sobre `69bf350`.
+
+**Qué hace falta de ti**
+1. Prueba a mano `cancelar Norte lun --motivo "sala ocupada"` y después `canceladas`. Dime qué probaste y si funciona.
+2. Aprueba o rechaza la enmienda del separador.
+
+**Todavía no cierro ni fusiono.** El modo de validación es manual, así que hasta que respondas no escribo el walkthrough, el roadmap ni la fusión. Además, `sdd merge --check` dice que a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Esa fusión no se puede hacer hasta que se declaren o me digas a qué rama va.
+
+**Rulings I made**
+- Fix pass: el THEN de `canceladas` pasó de «—» a « - », porque la decisión con el dev-lead fija « - » (`cp850`). Si me equivoco, cuesta un carácter en código, test y spec.
+
+**Deferred minors**
+- El test del recorte usa Sur mar (sin reserva) y no comprueba la salida de éxito con espacios.
+- `cancelBooking` exportada no recorta; solo recorta `run`, y hoy nadie más la llama.
+

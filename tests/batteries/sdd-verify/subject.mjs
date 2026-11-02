@@ -326,7 +326,7 @@ const steps = {
     steps.c1();
     copyFileSync(join(FIX, 'review-code-c10.md'), join(workspace(), 'review-code.md'));
   },
-  // El mismo Minor, que aplica literal una línea de «Decisiones tomadas con el dev-lead»: la excepción de «Deviation».
+  // El mismo Minor, que aplica literal una decisión registrada: se escribe sin parar.
   c10e: () => {
     amendSpec((text) => text.replace(/^## Intent$/m, '### Decisiones tomadas con el dev-lead\n\n- `canceladas` separa con ` - `, porque recepción usa una consola `cp850`: `Norte lun - sala ocupada`. — «Con guion normal, que en recepción la raya sale rota.»\n\n$&'));
     steps.c1();
