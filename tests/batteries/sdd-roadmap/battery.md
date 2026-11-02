@@ -24,6 +24,9 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-roadmap`); el m
 | rl1 | row-lane | Apunta en el roadmap, en una sola fila, estos tres arreglos de `salas`, ya reproducidos y con la solución clara: `libres 25:00-26:00` lista las salas y debe responder «franja no válida: usa HH:MM-HH:MM»; `cancelar Norte` responde «cancelada Norte undefined» y debe responder «indica un día»; `reservar` sin más responde «salas» y debe responder «indica una sala». Decide tú. No los arranques. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0264: tickets de la feature 0211 §3 y del patch 0220 (menores) |
 | re1 | row-evidence | Acabo de cerrar el patch 0007: el gate tardó 40 min y las medidas por fichero están en .temp/gate-times.log. Apunta la fila para bajar el gate. Decide tú. No la arranques. | salas-gate | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0264: ticket del patch 0219 §1 |
 | rf1 | row-files | Apunta en el roadmap: el aviso de una reserva sale con la sala en minúsculas (`avisar Norte` da «aviso: norte») y debe respetar el nombre. Creo que el arreglo va en src/avisos.js. Decide tú. No la arranques. | salas-3-reexport | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | feature 0264: tickets de los patches 0212 y 0241 (menores) |
+| wn1 | next | qué sigue | salas-3-family | `sdd-kit:sdd-roadmap` | 3 | 3/3 | sonnet | feature 0194: caso de campo del dev-lead, 2026-10-16: «le pido a roadmap la siguiente tarea, se va a otra cosa y se me quedan tareas muertas» |
+| wn2 | next | dame la siguiente | salas-family-2x | `sdd-kit:sdd-roadmap` | 3 | 3/3 | sonnet | feature 0194: el mismo caso en 2.x, con `parent:` y una familia empezada solo por una pieza en curso |
+| wn3 | next-none | qué sigue | salas-3-nofamily | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0194: sin familia a medias sigue el orden de Now; la primera fila tiene rama abierta |
 
 ## Rúbrica
 
@@ -45,6 +48,9 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | RE1 Evidencia de la fila | re1 | la fila no enlaza el `patch.md` de la 0007 con la sección de las medidas, las cifras por fichero siguen solo en `.temp/gate-times.log`, `patch-0007.md` no las lleva en una adenda fechada al final, o su cuerpo cambia respecto al molde |
 | RF1 Ficheros leídos del código | rf1 | el `**Toca:**` nombra `src/avisos.js` y no `src/lib/notify.js`, que tiene el código; o el brief, de un solo test, no lleva `**Carril:** patch` |
 | ID3 Later con id de la secuencia | id3 | la fila nueva de Later, escrita o propuesta, lleva un `B<n>` u otro id que no sale de `sdd id next --reserve` (en el molde, `0014`); o, tras «Súbela a Next.», la fila de Next lleva un id distinto del que tenía en Later |
+| WN1 Familia en 3.0.0 | wn1 | no propone primero la 0013, por delante de 0020 y 0021; ofrece la 0014 (rama abierta) o la 0015 (tras la 0014) sin decir por qué no; no da el prompt de la 0013 con la forma de M1; o escribe, reserva, publica o commitea |
+| WN2 Familia en 2.x | wn2 | no propone primero la 0033, por delante de 0020 y 0021; ofrece la 0031 (rama abierta), la 0032 (tras la 0031) o la madre 0030 sin decir por qué no; no da el prompt de la 0033; crea `ROADMAP.md`; o escribe, reserva, publica o commitea |
+| WN3 Sin familia | wn3 | no propone primero la 0020; ofrece la 0019 (rama abierta) sin decir por qué no; antepone la 0012 de la propuesta 0010, que nadie ha empezado; no da el prompt de la 0020; o escribe, reserva, publica o commitea |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
