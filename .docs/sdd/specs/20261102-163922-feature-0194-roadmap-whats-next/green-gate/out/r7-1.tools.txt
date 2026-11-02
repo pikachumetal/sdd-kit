@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls -a; ls .docs/sdd .docs/sdd/steering; git branch --all; cat .docs/sdd/steering/debt.md; git show develop:ROADMAP.md
+<<< Exit code 128
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+* develop
+  main
+cat: .docs/sdd/steering/debt.md: No such file or directory
+fatal: path 'ROADMAP.md' does not exist in 'develop'
+
+>>> Bash: cat .docs/sdd/roadmap.md; ls .docs/sdd/specs
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: grep -rniE "franja|slot|hora" src test | head -30; git log --oneline | head
+<<< src/app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+src/app.js:5:function freeRooms(slot) {
+src/app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+test/app.test.js:5:test('libres excluye la sala reservada en la franja', () => {
+01cf327 feat: base del molde salas
+
+>>> Bash: cat src/app.js; node -e "const a=require('./src/app.js');console.log(Object.keys(a));console.log(a.freeRooms&&a.freeRooms('basura'))"
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: node src/app.js libres basura; node src/app.js libres 25:99-xx; node src/app.js libres 10:00-12:00
+<<< Norte, Sur
+Norte, Sur
+Sur
+
+=== RESULTADO (8 turnos, 0.1438605 $)
+No he escrito nada todavía: te propongo el triaje y espero tu decisión.
+
+**Qué hay por triar.** El proyecto está en forma 2.x (`.docs/sdd/roadmap.md`, sin `ROADMAP.md` ni `debt.md`), así que no existe una sección «Por triar». La única deuda es la fila «Sin validación del formato de franja horaria», con impacto Bajo y plan «Patch cuando moleste». Esa fila aún no tiene `**Actuar**`, `**Esperar 2.º ticket**` ni `**Descartada**` en «Destino». No hay más filas de deuda, ni tickets, ni ramas `feature/*`.
+
+**Reproducción.** La reproduje con `node src/app.js libres basura`, y con `25:99-xx`. Las dos órdenes devuelven `Norte, Sur`, es decir, aceptan cualquier texto como franja y lo tratan como una franja libre. Con `10:00-12:00` devuelve `Sur`, que es correcto. La causa está en `src/app.js:5`, donde `freeRooms` compara la franja sin validarla.
+
+**Propuesta.** Dejar la fila como `**Esperar 2.º ticket**`, con causa `defecto del producto`.
+- Está reproducida, pero es un único caso, y la regla pide un segundo caso o la evidencia de una fila «Lista» para actuar.
+- El impacto es Bajo y el plan que ya tenías (patch cuando moleste) encaja con esperar.
+- La fila quedaría así: `**Esperar 2.º ticket** · causa: defecto del producto — falta un 2.º caso`.
+
+**Alternativa.** Pasarla a `**Actuar**` con una fila «Próximo» tipo `Patch:` con id reservado (`sdd id next --reserve`). Con tu confirmación escribo ese Destino con la evidencia de la reproducción de arriba. Con `basura` y `25:99-xx` como entradas rechazadas por la validación, serían menos de 2 tests de comportamiento nuevo, así que cuenta como patch.
+
+**Una pregunta de forma.** `sdd-kit.json` declara la versión 3.0.0, pero el roadmap sigue en la forma 2.x. No cambio de forma por mi cuenta. Si quieres migrar a `ROADMAP.md` y `debt.md`, eso se hace con `sdd-upgrade`. Además, la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que conviene actualizar el plugin antes.
+
+¿Con cuál sigo: esperar el segundo caso (mi recomendación) o actuar con un patch?

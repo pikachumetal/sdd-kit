@@ -1,6 +1,6 @@
 ---
 name: sdd-roadmap
-description: Use when something must go into the roadmap of a project with .docs/sdd/ without doing it yet — «organízalo para el equipo», «apunta en el roadmap», «no lo arranques», items the PM created in the tracker (Azure DevOps, Jira), including the ones assigned to you to do, notes from a client meeting, «reordena», «la X va tras la Y», «el cliente ha cambiado una regla de algo ya planificado, actualiza lo que haga falta», «prepara la release N», «qué entra en la siguiente entrega», «dame el prompt de la <id>» — or to triage the technical debt or a ticket («tria el ticket», «triaje de la deuda», the «Por triar» rows). Not for doing the work now (that is sdd-propose) nor for closing a release (that is sdd-end-release).
+description: Use when something must go into the roadmap of a project with .docs/sdd/ without doing it yet — «organízalo para el equipo», «apunta en el roadmap», «no lo arranques», items the PM created in the tracker (Azure DevOps, Jira), including the ones assigned to you to do, notes from a client meeting, «reordena», «la X va tras la Y», «el cliente ha cambiado una regla de algo ya planificado, actualiza lo que haga falta», «prepara la release N», «qué entra en la siguiente entrega», «dame el prompt de la <id>», «qué sigue», «dame la siguiente» — or to triage the technical debt or a ticket («tria el ticket», «triaje de la deuda», the «Por triar» rows). Not for doing the work now (that is sdd-propose) nor for closing a release (that is sdd-end-release).
 ---
 
 # sdd-roadmap
@@ -11,7 +11,7 @@ The kit has three verbs: **plan** (`sdd-roadmap`) → **do** (`sdd-propose`) →
 
 **Central principle: proposing is not deciding.** You bring the changes in order with your recommendation; what goes in, in what order and what is discarded is the user's decision.
 
-**`sdd-roadmap` starts nothing: no branch, no feature folder, no spec, no code.** It ends in the roadmap, and in `proposal.md` if needed. The final message says which row goes first and gives its launch prompt; with «dame el prompt de la <id>», it gives only that prompt.
+**`sdd-roadmap` starts nothing: no branch, no feature folder, no spec, no code.** It ends in the roadmap, and in `proposal.md` if needed. The final message says which row goes first and gives its launch prompt.
 
 ## Which form
 
@@ -35,12 +35,13 @@ With `ROADMAP.md` at the root, the project is on the **3.0.0 form**: Now, Next a
 Look at what the request brings, in this order:
 
 1. **Give a row's prompt** — «dame el prompt de la <id>»: read the row, its proposal with its amendments and `.docs/sdd/sdd-kit.json`, check with step 1 whether its branch is open, and give the launch prompt traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md). Nothing else: you don't write, reserve, publish or commit. If the row is closed (✅, 🧪) or in flight (🔄 or an open `feature/<id>-*` branch), say so instead of giving the prompt (`tests/sdd-explore-0161-red.md`, m1). A Later row gives no prompt: say it is in Later and that raising it to Next writes its brief.
-2. **Tracker items** — `ids.mode: tracker` in `.docs/sdd/sdd-kit.json` and ticket ids in the request.
-3. **A meeting** — notes or minutes of a meeting with the client.
-4. **Prepare a release** — «prepara la release N», «qué entra en la siguiente entrega».
-5. **Reorder or change** — it only talks about rows that already exist: «reordena», «la X va tras la Y», «quita la Z», or it changes the definition of an existing proposal.
-6. **Triage** — «tria el ticket», «triaje de la deuda», or the rows of «Por triar» in `debt.md`.
-7. Everything else, by size: **Something concrete** if it fits in one feature; **Something big** if it foresees more than one (the same threshold `sdd-propose` uses to propose splitting: more than 5 internal tasks, or 4 or 5 that touch different capabilities or surfaces —DB, UI, API— or any with a migration; with 3 or fewer, never).
+2. **What comes next** — «qué sigue», «dame la siguiente». After step 1, offer first the open rows carrying the `parent:` or `proposal:` of something started (a piece closed or in flight), then Now in order, then Next (2.x: «Próximo» in order). Never offer, and say why: in flight, blocked («Tras» open or 🔒), a split mother («partida en …»), Later. Give the first one's prompt as in entry 1, without waiting; naming another gives that one's. Nothing to offer: say so. You write nothing.
+3. **Tracker items** — `ids.mode: tracker` in `.docs/sdd/sdd-kit.json` and ticket ids in the request.
+4. **A meeting** — notes or minutes of a meeting with the client.
+5. **Prepare a release** — «prepara la release N», «qué entra en la siguiente entrega».
+6. **Reorder or change** — it only talks about rows that already exist: «reordena», «la X va tras la Y», «quita la Z», or it changes the definition of an existing proposal.
+7. **Triage** — «tria el ticket», «triaje de la deuda», or the rows of «Por triar» in `debt.md`.
+8. Everything else, by size: **Something concrete** if it fits in one feature; **Something big** if it foresees more than one (the same threshold `sdd-propose` uses to propose splitting: more than 5 internal tasks, or 4 or 5 that touch different capabilities or surfaces —DB, UI, API— or any with a migration; with 3 or fewer, never).
 
 Against `sdd-propose` the verb decides: doing it now («añade», «hazme», «arréglalo») is `sdd-propose`; leaving it noted («apunta», «organízalo», «planifica», «no lo arranques») is this skill.
 
@@ -147,6 +148,3 @@ The rules:
 | «The proposal's example was incomplete; I rewrite it» | The proposal is historical: the change goes to «Enmiendas» with its date. Rewriting it erases what was agreed before (p10). |
 | «Now that the change is clear, I start the feature and write the spec» | Planning is not doing. `sdd-roadmap` ends in the roadmap (p10). |
 | «The note is on the topic of the feature in flight; I group it in its row» | Its branch is editing that row and that spec. Grouping it there causes the conflict on closing and changes an approved scope: it goes to a new row «tras» it. |
-| «The roadmap of my worktree is the real state» | It is your base's. Another branch may have closed, split or reserved; without reading it, you repeat ids or extend closed features. |
-| «I put the next free number to get ahead» | A made-up id is confused with a reserved one forever. The id comes from the tracker or from `sdd id next --reserve`. |
-| «The report says it fails and cites the line; it goes to Lista» | A report is a claim, not a reproduction: «Lista» needs the command and its output, or «En espera» with `reproducirlo` (`tests/sdd-roadmap-0150-red.md`, m3). |
