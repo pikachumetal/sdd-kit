@@ -130,6 +130,7 @@ molds.t5b = molds.t3;
 molds.o2 = molds.o1;
 molds.w2 = molds.w1;
 molds.w3 = molds.w1;
+molds.w4 = molds.w1;
 molds[s.SC]?.();
 s.initRepo();
 
@@ -343,6 +344,8 @@ const steps = {
     s.R = join(s.RUN, 'wt');
     // El RED de la Task 1 a medio escribir, sin commitear; se escribe aquí para que ningún glob de tests del kit lo recoja.
     if (s.SC === 'w2') writeFileSync(at('test/rooms-half.test.js'), HALF_RED);
+    // La apertura sigue staged: el sujeto tiene pendientes a la vez su commit y la línea base.
+    if (s.SC === 'w4') s.git('reset', '-q', '--soft', 'HEAD~1');
   },
   h2: () => {
     writeFileSync(join(s.RUN, 'plan-sdd.md'), asSubagent(join(FIX, 'plan-0010.md')));
@@ -360,6 +363,7 @@ steps.e1 = () => {
 steps.p1 = steps.t2;
 steps.w2 = steps.w1;
 steps.w3 = steps.w1;
+steps.w4 = steps.w1;
 for (const id of ['t1a', 't1b', 't1c']) steps[id] = steps.r1b;
 steps.o2 = steps.o1;
 steps.u2 = steps.u1;
@@ -384,8 +388,8 @@ if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit
 steps[s.SC]?.();
 
 const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];
-if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
-const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', h2: '80' };
+if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_0186]) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -6,6 +6,9 @@ import { DomainError } from '../../src/cli/args.ts';
 import { generateEstimationLog } from '../../src/estimation/log.ts';
 import { estimationLogPath } from '../../src/cli/layout.ts';
 import { row, walkthrough } from './helpers.ts';
+
+// estimation log llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
+vi.setConfig({ testTimeout: 20_000 });
 
 function projectAt(files: Record<string, string>): string {
   const root = mkdtempSync(join(tmpdir(), 'sdd-estimation-layout-'));

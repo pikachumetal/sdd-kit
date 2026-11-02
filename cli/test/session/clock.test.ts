@@ -1,9 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
 import { line, measure, newWorktree, type Worktree } from './helpers.ts';
+
+// Los verbos de session llaman a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
+vi.setConfig({ testTimeout: 20_000 });
 
 const branch = 'feature/0181';
 const usage = { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 };

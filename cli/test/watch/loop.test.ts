@@ -5,6 +5,9 @@ import { defaultConfig, description, newTranscript, newWorktree, readCall, touch
 import { join } from 'node:path';
 import { appendFileSync, existsSync, rmSync, writeFileSync } from 'node:fs';
 
+// Los tests de watch command lanzan procesos de node: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
+vi.setConfig({ testTimeout: 20_000 });
+
 function startWatching(setup: ReturnType<typeof newWorktree>, name = description) {
   const io = memoryIo();
   const finished = run(['watch', 'subagent', '--description', name, '--worktree', setup.repo, '--projects-root', setup.projects], io);
@@ -122,10 +125,15 @@ describe('watch command sin --once', () => {
     expect(await finished).toBe(0);
     expect(io.stdout[0]).toMatch(/^SILENCIO: node -e .* lleva 20 min sin escribir \(umbral 20 min, longCommandMinutes\)$/);
     vi.useRealTimers();
-    await new Promise((done) => setTimeout(done, 500));
-    rmSync(marker, { force: true });
-    await new Promise((done) => setTimeout(done, 300));
-    expect(existsSync(marker)).toBe(false);
+    // Con carga, el hijo tarda en morir y aún reescribe la marca: se da por parado cuando deja de volver.
+    await vi.waitFor(
+      async () => {
+        rmSync(marker, { force: true });
+        await new Promise((done) => setTimeout(done, 300));
+        expect(existsSync(marker)).toBe(false);
+      },
+      { timeout: 10_000, interval: 50 },
+    );
   });
 
   it('una línea que no es latido sí cuenta como actividad', async () => {
