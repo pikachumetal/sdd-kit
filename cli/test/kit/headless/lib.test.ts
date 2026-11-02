@@ -555,6 +555,14 @@ describe('Lanzar claude (lib.mjs)', () => {
     expect(fs.read(join(RUNS, 'red', 'a-1.err'))).toBe('');
   });
 
+  it('no pasa a claude la ORIGINAL_PATH heredada, con la que Git Bash rehace el PATH sin no-claude/', async () => {
+    const { subject, claudeCalls } = start({ Path: join(CWD, 'bin'), ORIGINAL_PATH: '/c/bin' });
+
+    await subject.launch('x');
+
+    expect(claudeCalls[0].env).not.toHaveProperty('ORIGINAL_PATH');
+  });
+
   it('fija la identidad Fixture en la config local del molde antes de lanzar claude', async () => {
     const order: string[] = [];
     const { subject, calls } = start({}, kitFs(), {
