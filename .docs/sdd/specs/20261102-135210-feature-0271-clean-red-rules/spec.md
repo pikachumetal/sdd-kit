@@ -21,7 +21,7 @@ Validación: agente — `validation.mode: field`: son reglas del kit, y lo medib
 ## Capacidades
 
 - Modificadas: `control-profiles` — el desvío deja fuera lo marcado como condicionado, con RED limpio y n = 3.
-- Modificadas: `feature-flow` — el Scope marca lo condicionado al RED, y el self-review abre lo que da por cubierto un THEN.
+- Modificadas: `feature-flow` — el Scope marca lo condicionado al RED.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -84,7 +84,6 @@ Seis features pagaron por cómo se trata un RED limpio: la 0186 sacó un frente 
 | «Un RED limpio con n=2 puede ser suerte» | `tech-stack.md`, «Baterías por skill» | Scope: se funde en «Una primera tanda limpia…», con su evidencia |
 | «se vuelve a pedir la aprobación» sin distinguir la marca | `tech-stack.md`, «Un baseline que no falla…» | Scope: distingue marcado y sin marcar |
 | fila «It doesn't change the spec, so it's a ruling» | `skills/sdd-implement/SKILL.md`, tabla final | Scope: la regla sigue en «Scope brakes» y en la red flag |
-| sección «Commits» | `skills/sdd-propose/references/plan-writing.md` | Scope: la regla sigue en `commit-milestones.md` y `plan-template.md` |
 | «Cambiarla durante la implementación es un desvío» | `spec-template.md`, «Dónde se prueba» | Scope: la regla sigue en «Deviation» de `sdd-implement` |
 
 - Filas que implementa: 0271 y la de deuda «Un RED limpio con n = 1 saca de la spec un frente que falla» → solo las nombra `.docs/sdd/roadmap.md`, y las marca el cierre; `skills/` y `capabilities/`: nada, comprobado con una búsqueda de `0271` y de los títulos de esas reglas.
@@ -142,21 +141,6 @@ Cada arreglo sustituye texto. La línea de conducta, de principio a fin:
 - WHEN el agente escribe el Scope antes de medirlo
 - THEN el frente va en una línea `Entra, si el RED lo exhibe:`, separada de los `Entra:`
 
-#### MODIFIED — El self-review del plan asigna cada cláusula de un THEN a lo que la observa
-
-- GIVEN una spec con «THEN el agente ha preguntado el umbral · AND la sección lleva la respuesta», y una task cuyo test solo mide lo escrito
-- WHEN el agente escribe §4 del plan
-- THEN §4 lleva una línea por cláusula, cada una con su task y el test o la fila de medición que la observa: `THEN ha preguntado → Task 2, escenario n1 (turno 1)` y `AND la sección lleva la respuesta → Task 2, n1 (spec-new.md)`
-- AND una cláusula que nada observa dice `sin observar: <motivo>`, y el plan lo avisa en sus decisiones antes de ejecutar
-- AND si la spec trae la tabla «regla retirada → dónde vive ahora», §4 lleva una línea por fila con su task y el test que busca la regla en su destino
-- AND una línea que da por cubierta una cláusula con un molde o una sonda que ya existen sale de haberlos abierto, y si lo que dice de ellos no está, la línea no lleva ✓
-
-#### ADDED — Un paso de RED limpio del plan remite a la regla
-
-- GIVEN un plan con un paso que mide el RED de un frente
-- WHEN el agente escribe qué pasa si sale limpio
-- THEN el paso remite a «Deviations and rulings» de `sdd-implement` y no fija «para» ni «sigue» por su cuenta
-
 ## Topes de palabras
 
 Conteo de `word-budget.test.ts`, sobre `760feee7`. El test deja un 25 % de margen; aquí va el tope nominal.
@@ -183,6 +167,8 @@ Precio por sujeto: 1,04 $ en `sdd-implement` con Opus (0186: 44,71 $ en 43 sujet
 | Suma | 33 sujetos | 28,57 |
 
 ## Enmiendas
+
+- 2026-11-02 — Salen los dos frentes marcados de `plan-writing.md`, con su delta en `feature-flow` y su saldo: `cr2` limpio 3 de 3 en CR2A y CR2B — regla de esta spec: lo marcado, con RED limpio y n = 3, sale con un ruling — ruling, sin parada; `CR2B`, posible falso negativo por el molde pequeño, va a la deuda.
 
 ## Aprobaciones
 
