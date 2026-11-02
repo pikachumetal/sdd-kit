@@ -49,6 +49,20 @@ const words = (value) => (value ? value.split(/\s+/).filter(Boolean) : []);
 // Los moldes escriben sus fixtures editadas en LF, como las dejaban sus versiones anteriores.
 export const readLf = (path) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
 
+// El email de la cuenta llega al sujeto en el contexto de arranque. La clave no es una interfaz documentada,
+// así que su ausencia se dice. Sin el error de JSON.parse, que cita trozos del fichero. Por process.stderr:
+// Vitest calla console.error en un test que pasa, y en el pre-commit el aviso no se vería.
+export function accountEmail(env = process.env) {
+  try {
+    const email = JSON.parse(readFileSync(join(env.CLAUDE_CONFIG_DIR || homedir(), '.claude.json'), 'utf8')).oauthAccount?.emailAddress;
+    if (email && typeof email === 'string') return email;
+  } catch {
+    // sin fichero o ilegible: el mismo aviso que sin la clave
+  }
+  process.stderr.write('no se pudo leer oauthAccount.emailAddress de .claude.json: el email de la cuenta queda sin comprobar\n');
+  return '';
+}
+
 export function runsDirAllowed(runs) {
   return comparable(runs).includes('scratchpad') || isInside(runs, join(REPO_ROOT, '.temp'));
 }

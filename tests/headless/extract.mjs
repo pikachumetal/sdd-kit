@@ -5,8 +5,7 @@
 //      node extract.mjs last <stream.jsonl>           el texto del último result, sin limpiar: lo lee la persona, no se commitea
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { accountEmail } from './lib.mjs';
 
 // Una línea que no parsea no tumba el extractor: en la 0168 dejó texts.txt a medias (feature 0168).
 const readStream = (path) =>
@@ -60,18 +59,6 @@ const gitConfig = (key) => {
 // Como palabra entera: un nombre corto («Ana») no casa dentro de otra palabra («Analizar»).
 const wholeWord = (value) => new RegExp(`(?<![\\p{L}\\p{N}])${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'u');
 const identity = [gitConfig('user.name'), gitConfig('user.email')].filter(Boolean).map(wholeWord);
-// El email de la cuenta llega al sujeto en el contexto de arranque. La clave no es una interfaz documentada,
-// así que su ausencia se dice. Sin el error de JSON.parse, que cita trozos del fichero.
-const accountEmail = () => {
-  try {
-    const email = JSON.parse(readFileSync(join(process.env.CLAUDE_CONFIG_DIR || homedir(), '.claude.json'), 'utf8')).oauthAccount?.emailAddress;
-    if (email && typeof email === 'string') return email;
-  } catch {
-    // sin fichero o ilegible: el mismo aviso que sin la clave
-  }
-  console.error('no se pudo leer oauthAccount.emailAddress de .claude.json: el email de la cuenta queda sin comprobar');
-  return '';
-};
 const account = accountEmail();
 const accountPattern = account && wholeWord(account);
 const refuse = (what) => {
