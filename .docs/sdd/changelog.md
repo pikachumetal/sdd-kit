@@ -125,6 +125,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **0285** — Los tests de `cli:test` que esperan a `git` o a `node` tienen un tope de 20 s por fichero y ya no dan `Test timed out in 5000ms` con 8 suites a la vez. → [ref](specs/20261102-120757-feature-0285-load-test-timeouts/)
 - **Patch 0288** — El lanzador de sujetos no pasa a `claude` la `ORIGINAL_PATH` heredada: con ella, Git Bash rehacía el `PATH` del sujeto sin `no-claude/` ni el `gh` falso del molde, y `rc2` de `sdd-archive` caía en `K6`. → [ref](specs/20261102-085747-patch-0288-rc2-fake-gh/)
 - **Patch 0267** — El lanzador de sujetos fija la identidad Fixture en la config local del molde: la línea `Git user` del contexto de arranque de Claude Code ignora `GIT_CONFIG_*`, y un sujeto que escribía ese nombre perdía `tools.txt` y `texts.txt`. Salda «El sujeto de una batería escribe la identidad de git de la máquina y pierde su evidencia». → [ref](specs/20261031-164208-patch-0267-subject-git-identity/)
 - **Patch 0265** — El veredicto de `battery.mjs` ya no confunde que falte evidencia con un fallo: un sujeto sin `tools.txt` o sin RESULTADO sale «sin evidencia», con salida 3 si nada queda en rojo; el `no se guarda` de los lanzadores dice la causa; y una fila de la rúbrica puede exigir un orden con `` `tools: /A/ antes de /B/` ``, que `ws3` lleva para instalar antes del primer `node --test`. → [ref](specs/20261031-160141-patch-0265-battery-no-evidence-verdict/)

@@ -266,20 +266,21 @@
 | 2026-11-01 | 0286 | patch | 2 | 0.55 | 0.28 | — | — | 4.42 | — | 20261101-220737-patch-0286-sync-additive-conflicts |
 | 2026-11-02 | 0290 | patch | 0.5 | 0.18 | 0.36 | — | — | no aplica | 2.83 | 20261102-084641-patch-0290-machine-leak-account-email |
 | 2026-11-02 | 0288 | patch | 0.5 | 0.33 | 0.66 | — | — | 0.96 | — | 20261102-085747-patch-0288-rc2-fake-gh |
+| 2026-11-02 | 0285 | infra/tooling | 0.75 | 0.6 | 0.8 | 9001k | 1207k | 0.73 | 5.47 | 20261102-120757-feature-0285-load-test-timeouts |
 | 2026-11-02 | 0273 | infra/tooling | 1.5 | 0.53 | 0.35 | 11783k | 2329k | no aplica | 9.35 | 20261102-125945-feature-0273-battery-honest-verdict |
 
-**Factor de calibración** (ratio mediano real/estimado, 227 artefactos): **0.56** · media 0.72
+**Factor de calibración** (ratio mediano real/estimado, 228 artefactos): **0.57** · media 0.72
 
 - p25–p75: 0.36–0.9
 - p80: 1.01 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 25 % · sobreestimadas: 66 % · infraestimadas: 9 %
+- Dentro de ±25 %: 25 % · sobreestimadas: 65 % · infraestimadas: 9 %
 - Error absoluto (h): media 1.27 · mediana 0.85
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.57
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.62
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 90 | 40 % |
-| 0.5–0.8 | 66 | 29 % |
+| <0.5 | 90 | 39 % |
+| 0.5–0.8 | 67 | 29 % |
 | 0.8–1.25 | 50 | 22 % |
 | 1.25–2 | 13 | 6 % |
 | ≥2 | 8 | 4 % |
@@ -288,7 +289,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 99 | 0.57 | 0.39–0.81 |
-| infra/tooling | 60 | 0.49 | 0.36–0.73 |
+| infra/tooling | 61 | 0.49 | 0.36–0.74 |
 | patch | 66 | 0.78 | 0.3–1.2 |
 | tooling | 1 | 0.6 | — |
 
@@ -309,6 +310,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 115 | 222.65 | 0.53 | 579.18 | 1871.7 |
+| sin publicar | 116 | 223.25 | 0.53 | 579.91 | 1877.17 |
 
 > Ver `estimation.md`.
