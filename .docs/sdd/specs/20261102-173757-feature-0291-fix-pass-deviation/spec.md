@@ -64,9 +64,9 @@ En la 0182 y la 0273, un hallazgo de la revisión final cambió una decisión ap
 
 | Qué | Dónde aparece | Destino |
 | --- | --- | --- |
-| «If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).» | `skills/sdd-verify/SKILL.md:253`; ningún otro fichero de `skills/` | Scope: pasa a la viñeta nueva; decisión 3. El requisito «Un Critical que deja la re-revisión no se adjudica» de `verification` no cambia: sigue siendo cierto |
-| «The models are those of the 0131 proposal:» | `skills/sdd-verify/SKILL.md:200` | Scope: sale; decisión 5 |
-| «(two of two stopped here: `tests/sdd-propose-0185-green.md`)» | `skills/sdd-verify/SKILL.md:192` | Scope: sale; decisión 5 |
+| «If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).» | `skills/sdd-verify/SKILL.md:253`; ningún otro fichero de `skills/` | Sin cambio: salió con la enmienda del 2026-11-02. El requisito «Un Critical que deja la re-revisión no se adjudica» de `verification` no cambia: sigue siendo cierto |
+| «The models are those of the 0131 proposal:» | `skills/sdd-verify/SKILL.md:200` | Sin cambio: salió con la enmienda del 2026-11-02 |
+| «(two of two stopped here: `tests/sdd-propose-0185-green.md`)» | `skills/sdd-verify/SKILL.md:192` | Sin cambio: salió con la enmienda del 2026-11-02 |
 
 - Filas que implementa: 0291 y la de deuda «La pasada de fix cambia una decisión aprobada sin parar» → solo las nombra `.docs/sdd/roadmap.md`, y las marca el cierre; `skills/` y `capabilities/`: nada, comprobado con una búsqueda de `0291` y del título.
 
