@@ -1,0 +1,46 @@
+--- [4]
+Ahora: leo la spec de la 0029 y las referencias del paso 4 para hacer la pasada de coherencia. Queda: pasada de coherencia, prueba del delta y presentarte la spec, ~10 min.
+
+--- [28]
+Ahora: paso 4 terminado, la spec espera tu aprobación. Queda: tu respuesta al gate. Después escribo el plan y sigo con `sdd-implement` (~15 min).
+
+`Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)`
+`Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»`
+`Para otro perfil: «perfil <otro> para esta feature»`
+
+El kit cargado es el 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+## 🦆 Spec 0029 — Ocupación por planta
+
+Cada sala tiene planta: Norte y Sur en la 0, Este en la 1. El informe sale agrupado, `planta 0: 2` y luego `planta 1: 1`. Además `libres 10:00-12:00 --planta 1` responde `Este`.
+
+La spec está en `.docs/sdd/specs/20261008-140000-feature-0029-room-floors/spec.md`. En la pasada de coherencia encontré cuatro fallos y los corregí:
+
+- **`cli` faltaba.** El requisito vigente de `libres` dice que no acepta opciones, y `--planta` lo contradice. Ahora hay un `MODIFIED` en `cli`.
+- **El informe era un `ADDED`.** En realidad cambia el requisito «El informe cuenta las reservas activas», así que pasó a `MODIFIED`.
+- **`Este` no existe en `src/app.js`.** La capacidad `rooms` dice que existe, pero el código solo tiene Norte y Sur. Entra en la lista, en la planta 1.
+- **El test actual de `libres` se rompería.** Con `Este` en la lista, `libres 10:00-12:00` pasa a responder `Sur, Este`, así que ese test se actualiza.
+
+También quité de la spec dos cosas que ya no encajaban:
+
+- El escenario de `rooms` hablaba de un filtro, y ahora habla de la planta de una sala.
+- Una línea de «Decisiones tomadas con el dev-lead» atribuía una frase tuya que no consta, y ahora dice «ninguna todavía».
+
+La prueba del delta con `capability merge` salió bien (exit 0) sobre una copia fuera del repo; `capabilities/` no cambia.
+
+No propongo review: cuento 2 señales (`MODIFIED` y tres capacidades), con ~40 líneas en 5 ficheros. Tampoco propongo dividir, porque son unas 4 tasks en la misma superficie y sin migración.
+
+### ✋ Decisiones que he tomado yo — valida estas
+1. Las plantas son enteros y la baja es la 0.
+2. El informe ordena de menor a mayor planta, y el THEN lo fija.
+3. `Este` entra en el código, en la planta 1, y el test de `libres` se actualiza.
+4. `--planta` con una planta sin salas responde vacío. No valido que `<n>` sea un entero.
+5. `libres` acepta `--planta <n>` y nada más.
+6. **Pregunta abierta:** el código no tiene hoy un comando del informe. ¿Lo crea esta feature con un nombre que elijas (p. ej. `informe`), o se genera por otra vía que no veo? Si no contestas, lo dejo al plan sin tocar `cli` y lo anoto como enmienda.
+7. «Planta» entra como término en `PRODUCT.md` al cerrar.
+8. El filtro `--planta` va más allá de la fila 0029 del roadmap. La fila se cierra con las tres partes al archivar.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**. Indica también el comando del informe (decisión 6).
+2. **Cambios**.
+

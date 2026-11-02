@@ -1,9 +1,16 @@
 import { roundHalfAwayFromZero, formatNumber } from './numbers.ts';
+import type { PhaseName } from './timing-file.ts';
 
 export type Warn = (message: string) => void;
 
 export const ESTIMATE_LABEL = String.raw`Estimaci[oó]n de implementaci[oó]n(?: \([^)]*\))?|Estimaci[oó]n`;
 export const REAL_LABEL = String.raw`Esfuerzo real de implementaci[oó]n|Esfuerzo real|Real`;
+export const PHASE_ESTIMATE_LABELS: Record<PhaseName, string> = {
+  apertura: String.raw`Esfuerzo spec \+ plan|Esfuerzo spec`,
+  implementacion: 'Estimaci[oó]n de implementaci[oó]n',
+  revision: 'Estimaci[oó]n de revisi[oó]n',
+  cierre: 'Estimaci[oó]n de cierre',
+};
 export const THREAD_TOKENS_LABEL = 'Tokens del hilo';
 export const SUBAGENT_TOKENS_LABEL = 'Tokens de subagentes|Coste de subagentes';
 export const SUBJECT_COST_LABEL = 'Coste de los sujetos headless|Coste de sujetos';
