@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { findMachineLeak, machineUserPattern, readEvidence, selectEvidencePath, stagedEvidence } from './privacy.ts';
 import { cleanGitEnv } from './process.ts';
 
-// Cada comprobación llama a git varias veces: con varias suites a la vez en la máquina, un test de menos de 2 s solo llegó a casi 10 s.
+// Cada comprobación llama a git varias veces: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
 vi.setConfig({ testTimeout: 20_000 });
 
 const ACCOUNT_EMAIL = 'cuenta.falsa@example.net';

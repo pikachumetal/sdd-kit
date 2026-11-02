@@ -4,7 +4,7 @@ feature: 0285
 title: Los tests de cli:test no vencen a 5 s con varias suites a la vez
 mode: lite
 profile: delegate
-status: approved
+status: done
 created: 2026-11-02
 author: Àngel Delgado
 approvers:

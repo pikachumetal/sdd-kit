@@ -6,7 +6,7 @@ import { run } from '../../src/main.ts';
 import { build, buildFixture, project, repoRoot, row, walkthrough } from './helpers.ts';
 import type { Time } from './helpers.ts';
 
-// estimation log llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo llegó a casi 10 s.
+// estimation log llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
 vi.setConfig({ testTimeout: 20_000 });
 
 const ratios = [0.2, 0.3, 0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 0.6, 0.7, 0.8, 1.0, 1.1, 1.2, 1.3, 1.5, 2.0, 3.0];

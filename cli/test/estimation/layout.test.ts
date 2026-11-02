@@ -7,7 +7,7 @@ import { generateEstimationLog } from '../../src/estimation/log.ts';
 import { estimationLogPath } from '../../src/cli/layout.ts';
 import { row, walkthrough } from './helpers.ts';
 
-// estimation log llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo llegó a casi 10 s.
+// estimation log llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
 vi.setConfig({ testTimeout: 20_000 });
 
 function projectAt(files: Record<string, string>): string {

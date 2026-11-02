@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { gitSync } from '../src/git/git.ts';
 import { sweepRunFolders } from './temp-setup.ts';
 
-// Llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo llegó a casi 10 s.
+// Llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
 vi.setConfig({ testTimeout: 20_000 });
 
 const HOUR_MS = 60 * 60 * 1000;

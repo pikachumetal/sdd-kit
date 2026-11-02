@@ -5,7 +5,7 @@ import { defaultConfig, description, newTranscript, newWorktree, readCall, touch
 import { join } from 'node:path';
 import { appendFileSync, existsSync, rmSync, writeFileSync } from 'node:fs';
 
-// Lanza procesos de node: con varias suites a la vez en la máquina, un test de menos de 2 s solo llegó a casi 10 s.
+// Los tests de watch command lanzan procesos de node: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
 vi.setConfig({ testTimeout: 20_000 });
 
 function startWatching(setup: ReturnType<typeof newWorktree>, name = description) {

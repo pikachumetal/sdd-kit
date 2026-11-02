@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { runSdd, sddFolder } from '../capability/helpers.ts';
 import { checkProject, lineOf, validDebt, validRoadmap } from './project.ts';
 
-// roadmap check llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo llegó a casi 10 s.
+// roadmap check llama a git: con varias suites a la vez en la máquina, un test de menos de 2 s solo pasó de 4 s.
 vi.setConfig({ testTimeout: 20_000 });
 
 const proseRule = 'fuera de «Releases cerradas» el roadmap solo lleva tablas';
