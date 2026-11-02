@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-02
 branch: patch/0290-machine-leak-account-email
-commit: <hash>
+commit: 8df40f04
 ---
 
 # Patch 0290 — findMachineLeak compara también con el email de la cuenta
@@ -53,9 +53,15 @@ Comprobado lo que da por existente: `findMachineLeak` en `cli/test/kit/privacy.t
 | 6 | Ejecución real del guard: evidencia staged con el email de un `.claude.json` falso (`CLAUDE_CONFIG_DIR`) | ✅ rojo, nombra solo `red/leak.txt`; 0 apariciones del valor en la salida |
 | 7 | Ejecución real sin la clave, evidencia staged limpia | ❌ primero: pasaba sin aviso visible, porque Vitest calla `console.error` en un test que pasa. RED con el espía en `process.stderr.write`; ✅ después: pasa y el aviso sale en la salida |
 
-Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 303/303 · cli:typecheck: corrió 1/1 · cli:test: corrió 1861/1873, 12 saltados (93 s)
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 303/303 · cli:typecheck: corrió 1/1 · cli:test: corrió 1861/1873, 12 saltados (93 s, sobre 8df40f04)
+
+Validación en campo: 2026-11-02 · gate verde, RED/GREEN de los 2 tests nuevos y del aviso, guard staged con un `.claude.json` falso y comprobación con la cuenta real sin imprimir el valor. No probado: el aviso en la CI real, que no tiene cuenta.
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,17 h del gate de cierre (10 min, patch 0286)
 - Inicio: 2026-11-02T08:46Z
+- Esfuerzo real: 0,18 h — reloj de la sesión 0,18 h desde 2026-11-02T08:45Z, sin 0 min de espera al dev-lead (0 esperas). Medido antes de los registros de cierre. Desvío de más del 30 % a la baja: la petición traía la solución, el sitio de la lectura y el test, sin sujetos ni causa que investigar.
+- Gate de cierre: 93 s (`moon run kit:test-headless cli:typecheck cli:test --affected --base develop`)
+- Coste de la sesión: 2,83 $ (hilo 2,83 $, claude-opus-5-5) — `sdd session tokens`
+- Coste de sujetos: no aplica
