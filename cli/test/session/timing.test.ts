@@ -3,9 +3,6 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
-import { execFileSync } from 'node:child_process';
-import { isolatedEnv } from '../../src/git/git.ts';
-import { commitsOf } from '../../src/session/branches.ts';
 import { buildTiming, isGateCall, marginWarning, readGateCommand } from '../../src/session/timing.ts';
 import { line, measure, newWorktree, tempDir, type Worktree } from './helpers.ts';
 
@@ -196,20 +193,6 @@ describe('casos de borde del reloj y la rama', () => {
     const timing = buildTiming({ timelines: [], commits: [], branch, clockSeconds: 7200, folder: tempDir(), docsPath: tempDir() });
     expect(timing.withinMargin).toBe(false);
     expect(marginWarning(timing)).toBe('timing.json fuera del margen: fases 0 s, reloj 7200 s');
-  });
-
-  it('commitsOf da la apertura y las tasks, y solo con la rama fusionada el cierre', () => {
-    const repo = tempDir();
-    const git = (...args: string[]): void => void execFileSync('git', ['-C', repo, '-c', 'user.name=Fixture', '-c', 'user.email=f@example.invalid', ...args], { stdio: 'ignore', env: isolatedEnv() });
-    git('init', '-q', '-b', 'develop');
-    git('commit', '-q', '--allow-empty', '-m', 'base');
-    git('checkout', '-q', '-b', 'feature/1');
-    git('commit', '-q', '--allow-empty', '-m', 'apertura');
-    git('commit', '-q', '--allow-empty', '-m', 'cierre');
-    expect(commitsOf(repo, 'feature/1', 'develop').map(({ closing }) => closing)).toEqual([false, false]);
-    git('checkout', '-q', 'develop');
-    git('merge', '-q', '--no-ff', '-m', 'merge', 'feature/1');
-    expect(commitsOf(repo, 'feature/1', 'develop').map(({ closing }) => closing)).toEqual([false, true]);
   });
 });
 

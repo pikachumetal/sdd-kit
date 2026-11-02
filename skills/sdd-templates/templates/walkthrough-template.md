@@ -29,8 +29,8 @@ created: <YYYY-MM-DD>
 - Compactación: <`no` · `sí, en la Task <N> → <Native | SDD> desde la Task <M>` · `sí, en la Task <N> → Native` si no quedaba ninguna después, sacado de la línea `Ruling: compactación` del ledger>
 - Modelo del hilo: <modelo y effort; si cambiaron durante la feature, los de cada fase en esta misma línea: «Opus 5.5, effort medium (spec y plan) → Sonnet 5, effort medium (ejecución)»; «effort no registrado» en la fase cuyo effort no sabes, nunca uno supuesto>
 - Tokens del hilo: <N> — <modelo> <N>; … | no medido (<motivo>) *(esta línea, la de subagentes y la del coste se pegan tal cual de `sdd session tokens --path <worktree> --branch <rama de la feature>`, que lee los transcripts de Claude Code. Fuera de Claude Code no hay transcripts: «no medido (sin transcripts de Claude Code)»)*
-- Tokens de subagentes: <total> en <n> despachos — <descripción> <modelo> <tokens> / <min> min; … | no aplica *(la línea abre con el total sumado: el log lee esa primera cifra, no la lista)*
-- Coste de la sesión: <X> $ (hilo <a> $ + subagentes <b> $) | sin precio (<motivo>) | no medido (<motivo>) *(«sin precio» si falta la tabla `pricing` de `sdd-kit.json` o un modelo en ella: el script no inventa precios)*
+- Tokens de subagentes: <total> en <n> despachos — <descripción> <modelo> <tokens> / <min> min; … | no aplica
+- Coste de la sesión: <X> $ (hilo <a> $ + subagentes <b> $) | sin precio (<motivo>) | no medido (<motivo>)
 - Coste de sujetos: <X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica
 - Review de spec: <no | 1 revisor (dominio|técnica) | 2 revisores> · hallazgos <N>, aceptados <M>
 

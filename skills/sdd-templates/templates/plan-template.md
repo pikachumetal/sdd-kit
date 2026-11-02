@@ -178,6 +178,8 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Esfuerzo spec + plan: <Xh>
 - Estimación de implementación: <Yh>
+- Estimación de revisión: <Zh>
+- Estimación de cierre: <Zh>
 - Base de la estimación: <nº de tasks, complejidad, incertidumbres, referencia del estimation-log>
 - Confianza: alta / media / baja
 
