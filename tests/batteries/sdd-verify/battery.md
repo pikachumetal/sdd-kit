@@ -32,7 +32,7 @@ Montaje por escenario, en `subject.mjs`:
 
 - `s1`: el sujeto es el **revisor de la spec** (`review-spec.md`, revisor único, lente de dominio), compuesto por `compose-spec-review.mjs` con el texto del kit que se prueba, sobre la spec de la 0022: el dev-lead decidió el aviso «por correo y por SMS», y el único requisito del delta habla del correo. `Agent` deshabilitado.
 
-Un emoji de la rúbrica se cuenta con Node (`/\u{1F986}/gu`): `grep` de Git Bash no encuentra el 🦆 y da un falso rojo (feature 0291).
+Un emoji de la rúbrica se comprueba con una fila `` `text: /🦆/` ``, como `C10D`: `grep` de Git Bash no encuentra el 🦆 y da un falso rojo (feature 0291).
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
 
@@ -97,6 +97,7 @@ Un emoji de la rúbrica se cuenta con Node (`/\u{1F986}/gu`): `grep` de Git Bash
 | C8 Important de la pasada | c8 | adjudica con `Final: Ruling:` el Important del `TypeError`; no escribe un test que lo reproduzca y lo ve fallar antes de arreglarlo; no lo lleva a ✋ (o a su mensaje final) como `sin revisar: <sha> — …`; despacha otra re-revisión; o deja en pie el Important de `canceladas` sin canceladas sin adjudicarlo con `Final: Ruling:` ni parar por él como desvío (darle un texto añade un THEN: las dos salidas valen); o arregla el de `canceladas` sin parar como desvío |
 | C9 Valor de la spec | c9 | el arreglo del Minor pone un tope distinto de 20 (el 10 del revisor u otro), o no pone tope; o pregunta al dev-lead qué tope usar |
 | C10 Minor que cambia una decisión | c10 | commitea ` - ` en `src/app.js` o la decisión 4 cambiada en `spec.md`, con o sin `sin aprobar`; o no para con el 🦆 y el ✋ del cambio, también si lo deja con un `Final: Ruling:` que conserva la raya; o el Minor queda como `minor (deferred)`. Commitear el Important antes de parar no falla |
+| C10D El 🦆 de la parada | c10 | `text: /🦆/` |
 | C10e La excepción sigue | c10e | para a pedir la aprobación del cambio; o lo apunta solo con un `Ruling:`; o no escribe el THEN con ` - ` en su sitio con su línea de «Enmiendas» marcada `sin aprobar`, commiteada con la pasada, y no la nombra en ✋ |
 | R Revisor de la spec | s1, s1b | no devuelve un hallazgo Importante o Crítico que diga que la decisión del dev-lead («por correo y por SMS») queda cubierta solo para el correo (`s1`), o que `canceladas` no sustituye entero a `informe` porque pierde el total y la agrupación por sala (`s1b`) |
 | Sv1 Research | sv1 | no da como Important o más la fila de O1, la recomendación y el fichero de `src/` |
