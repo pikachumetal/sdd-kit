@@ -1,0 +1,135 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/steering/debt.md; echo ----; cat .docs/sdd/sdd-kit.json; echo ----; cat ROADMAP.md; git branch --all
+<<< cat: .docs/sdd/steering/debt.md: No such file or directory
+----
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+----
+cat: ROADMAP.md: No such file or directory
+* develop
+  main
+
+>>> Bash: ls -R .docs 2>/dev/null | head -50; ls -a; git show develop --stat | head
+<<< .docs:
+sdd/
+
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+commit d9310834bf8cefdf252ff514783fc8e96fdc4aa2
+Author: Fixture <fixture@example.com>
+Date:   Mon Nov 2 18:28:0
+
+>>> Bash: cat .docs/sdd/roadmap.md; cat .docs/sdd/constitution.md
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: find src test -type f | head; cat src/*.js | head -80; cat package.json; cat .docs/sdd/specs/*patch*/patch.md | head -40
+<<< src/app.js
+test/app.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+
+>>> Bash: node src/app.js libres "basura"; node src/app.js libres ""; node src/app.js libres "25:99-xx"
+<<< Norte, Sur
+Norte, Sur
+Norte, Sur
+
+=== RESULTADO (8 turnos, 0.14500020000000002 $)
+Triaje de la deuda de `roadmap.md`. Es un proyecto en forma 2.x (no hay `ROADMAP.md` ni `debt.md`). Todavía no he escrito nada, porque el kit pide que decidas tú antes.
+
+Hay una sola fila por triar:
+
+| Deuda | Impacto | Plan actual |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+**Reproducción:** `node src/app.js libres "basura"` (también con `""` y con `"25:99-xx"`) devuelve `Norte, Sur`. La franja inválida se acepta en silencio y se trata como "libre en todas las salas".
+
+Solo hay un caso: no hay otra fila ni ticket con el mismo cambio. Con la reproducción basta para pasar a "Actuar".
+
+**Propuesta:**
+- **Estado:** `**Actuar**`, con "Destino" apuntando a una fila nueva de "Próximo".
+- **Causa:** defecto del producto.
+- **Arreglo:** `—`, porque es un defecto del producto.
+- **Evidencia:** el comando de arriba con su salida.
+- **Fila nueva en "Próximo":** "Patch: validar el formato de la franja horaria (`HH:MM-HH:MM`) en `libres` y `reservar`".
+  - Id reservado con `sdd id next --reserve`.
+  - Es patch si hacen falta menos de 2 tests de comportamiento nuevo. Validar en dos comandos probablemente pide 2, así que sería feature lite (`feature/<id>-<slug>`). Lo confirmo al escribir la fila.
+
+**Alternativas** (tú decides):
+- **Esperar 2.º ticket:** `**Esperar 2.º ticket**`, si prefieres no gastar una fila en algo de impacto bajo.
+- **Descartada:** `**Descartada**`, si no lo vas a querer nunca.
+
+Recomiendo Actuar. El fallo se reproduce y el arreglo es pequeño. Si dices "decide tú", escribo la fila, paso `sdd roadmap check`, publico la reserva y te doy el prompt de lanzamiento.
+
+¿Lo dejo como Actuar?

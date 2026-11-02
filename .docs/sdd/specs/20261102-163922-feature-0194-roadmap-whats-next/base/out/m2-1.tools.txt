@@ -1,0 +1,215 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; git branch --all; ls ROADMAP.md .docs/sdd/roadmap.md .docs/sdd/steering 2>&1; git show develop:ROADMAP.md 2>&1 | head -50
+<<< .
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+* develop
+  main
+ls: cannot access 'ROADMAP.md': No such file or directory
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.docs/sdd/roadmap.md
+fatal: path 'ROADMAP.md' does not exist in 'develop'
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/roadmap.md; ls -R .docs src test | head -50; cat package.json; K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base"; ls "$K/skills/sdd-templates/templates" | head -40; node "$K/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cd "<run>/repo" && K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base"; cat .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/constitution.md; cat src/app.js; cat "$K/skills/sdd-templates/templates/proposal-template.md" "$K/skills/sdd-templates/templates/roadmap-template.md" "$K/skills/sdd-templates/templates/launch-prompt-template.md"
+<<< # Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, 
+
+>>> Bash: cd "<run>/repo" && K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base"; node "$K/cli/bin/sdd.js" id next --project-root . --reserve --count 4; git status --short; head -12 .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+<<< 0008
+0009
+0010
+0011
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+
+>>> Bash: cd "<run>/repo" && d=.docs/sdd/specs/20261102-100000-proposal-0008-reports && mkdir -p $d && cat > $d/proposal.md <<'EOF'
+---
+id: 20261102-100000-proposal-0008-reports
+proposal: 0008
+title: Módulo de informes
+source: interview
+created: 2026-11-02
+---
+
+# Propuesta — Módulo de informes
+
+## Por qué
+
+El cliente quiere ver cuánto se usa cada sala, llevarse el dato a Excel y que los responsables de cada sala reciban un resumen semanal sin pedirlo. Hoy `src/app.js` solo lista salas libres y reserva o cancela; no hay ningún informe. El cliente delegó los detalles («decide tú»): las decisiones marcadas con *(decisión tomada)* son del agente y se pueden enmendar.
+
+## Reglas de negocio
+
+- Ocupación de una sala en una semana = horas reservadas / horas disponibles. *(decisión tomada)* Horas disponibles: lunes a viernes, 08:00-20:00, o sea 60 h por sala y semana. Ejemplo: Norte con una reserva lun 10:00-12:00 → 2 h / 60 h = 3,3 % (se muestra con un decimal).
+- Una sala sin reservas sale con 0,0 %, no se omite. Ejemplo: Sur sin reservas → Sur 0 h, 0,0 %.
+- El informe es por semana natural (lunes a domingo) y por defecto la última semana completa. *(decisión tomada)* Ejemplo: hoy martes 2026-11-03 → informe de 2026-10-26 a 2026-11-01.
+- La exportación a Excel es un `.xlsx` con una fila por sala (sala, horas reservadas, horas disponibles, ocupación). *(decisión tomada)* Sin dependencias externas, según `tech-stack.md`: el fichero se genera a mano con `node:zlib`. Ejemplo: Norte 2 h, 60 h, 3,3 % y Sur 0 h, 60 h, 0,0 % → dos filas bajo la cabecera.
+- El aviso semanal lo recibe cada responsable solo con las salas que tiene asignadas. *(decisión tomada)* Los responsables se declaran en un fichero `responsables.json` junto a la app: `{"Norte": ["ana@ejemplo.com"]}`. Ejemplo: Ana lleva Norte → su correo trae solo la línea de Norte; una sala sin responsable no manda nada.
+- El aviso sale los lunes y lo lanza el cron del servidor del usuario con un comando de la CLI; la app no deja ningún proceso residente. *(decisión tomada)* Ejemplo: lunes 2026-11-02 → `avisar-semana` envía el informe de 2026-10-26 a 2026-11-01.
+- El aviso reutiliza el envío de correo de la fila 1 («Avisos por correo antes de la reserva»), no crea otro. Ejemplo: sin la fila 1 hecha, el aviso semanal no se arranca.
+
+## Capacidades que toca
+
+- `room-occupancy-report` — nueva: el cálculo y el comando de informe.
+- `report-excel-export` — nueva: la salida `.xlsx`.
+- `weekly-report-notice` — nueva: responsables y envío semanal.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0009 | Informe de ocupación por sala | — |
+| 2 | 0010 | Exportar el informe a Excel | 0009 |
+| 3 | 0011 | Aviso semanal a los responsables | 0009 y fila 1 |
+
+## Acta
+
+No aplica: entrevista.
+
+## Enmiendas
+
+Ninguna.
+EOF
+python - <<'EOF'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| 1 | Avisos por correo antes de la reserva | ⏳ |\n","| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0009 | Informe de ocupación por sala (comando de la CLI); `proposal: 0008` | ⏳ |\n| 0010 | Exportar el informe de ocupación a Excel (.xlsx); tras 0009, `proposal: 0008` | ⏳ |\n| 0011 | Aviso semanal de ocupación a los responsables de sala; tras 0009 y tras 1, `proposal: 0008` | ⏳ |\n")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base"; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 20: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: cd "<run>/repo" && K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base"; node "$K/cli/bin/sdd.js" roadmap publish --project-root . --message "docs: roadmap del módulo de informes (0008-0011)
+
+Decisiones delegadas por el cliente («decide tú»), anotadas en la propuesta: ocupación lun-vie 08:00-20:00, xlsx sin dependencias, responsables en responsables.json, aviso lanzado por cron, aviso tras la fila 1.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md .docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md; git log --oneline -3; git status --short
+<<< destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+b500db2 feat: base del molde
+ M .docs/sdd/roadmap.md
+?? .docs/sdd/specs/20261102-100000-proposal-0008-reports/
+
+>>> Bash: cd "<run>/repo" && git add .docs/sdd/roadmap.md .docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md && git commit -q -m "docs: roadmap del módulo de informes (0008-0011)
+
+Decisiones delegadas por el cliente («decide tú»), anotadas en la propuesta: ocupación lun-vie 08:00-20:00, xlsx sin dependencias, responsables en responsables.json, aviso lanzado por cron, aviso tras la fila 1.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md', LF will be replaced by CRLF the next time Git touches it
+d88f430 docs: roadmap del módulo de informes (0008-0011)
+b500db2 feat: base del molde
+
+=== RESULTADO (10 turnos, 0.24919260000000004 $)
+He dejado el módulo de informes planificado en el roadmap, sin escribir código ni abrir ninguna rama. Son tres filas nuevas (0009, 0010 y 0011) y una propuesta (0008). Todo está confirmado en `develop` (`d88f430`).
+
+**Filas añadidas a «Próximo»**
+- **0009, informe de ocupación por sala.** Es un comando de la CLI y va primero.
+- **0010, exportar a Excel.** Va después de 0009.
+- **0011, aviso semanal a los responsables.** Va después de 0009 y de la fila 1 (avisos por correo), porque reutiliza su envío de correo.
+
+**Decisiones que tomé por ti**
+Están en `.docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md`, cada una con un ejemplo con datos. Se pueden cambiar con una enmienda.
+- **Ocupación:** horas reservadas entre 60 h por sala y semana (lunes a viernes, 08:00-20:00). Una sala sin reservas sale con 0,0 %.
+- **Periodo:** semana natural, y por defecto la última completa.
+- **Excel:** un `.xlsx` con una fila por sala. Se genera a mano con `node:zlib`, porque el stack no admite dependencias externas.
+- **Responsables:** se declaran en un fichero `responsables.json` junto a la app. Cada uno recibe solo sus salas.
+- **Aviso:** lo lanza el cron del servidor cada lunes con un comando de la CLI. La app no deja ningún proceso residente.
+
+Si la fila 1 va a tardar, dime y desacoplo el aviso 0011 de ella.
+
+**Problemas con el kit**
+- `sdd roadmap check` falla por dos líneas que no escribí yo: la cabecera de «Deuda técnica» y el título `v0.3.0` en «Releases cerradas». Las dejé como estaban. Las corrige la migración del roadmap a la forma de la plantilla.
+- `sdd roadmap publish` se negó porque `develop` está sacada en este mismo worktree y tenía mis cambios sin confirmar. Hice el commit a mano, solo con `roadmap.md` y `proposal.md`.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- `mission.md` dice que la herramienta la usa solo una persona, y ahora hay responsables de sala que reciben correos. Quizá convenga actualizarla.
+
+**Prompt de arranque de la 0009**
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0009 con sdd-propose, carril feature: un comando de la CLI que calcula la ocupación por sala de una semana.
+
+Alcance:
+- src/app.js: comando nuevo de informe, con test en test/app.test.js
+
+Fuera de alcance:
+- la exportación a Excel: 0010
+- el aviso semanal a los responsables: 0011
+
+Decisiones ya tomadas:
+- Ocupación = horas reservadas / 60 h por sala y semana (lunes a viernes, 08:00-20:00), porque el cliente delegó el detalle y hay que fijar una base de cálculo.
+- Una sala sin reservas sale con 0,0 %, no se omite.
+- El informe es por semana natural y por defecto la última completa.
+- Un decimal en el porcentaje: Norte con lun 10:00-12:00 → 2 h / 60 h = 3,3 %.
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md, §Reglas de negocio
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y el comando devuelve, con la reserva de lunes de Norte, "Norte 2 h 3,3 %" y "Sur 0 h 0,0 %".
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

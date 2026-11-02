@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: ls; cat .docs/sdd/steering/debt.md 2>&1 | head -80; cat .docs/sdd/sdd-kit.json; git branch --all; git show develop:ROADMAP.md 2>&1 | head -60
+<<< CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a Excel tarda 40 s con 1.000 reservas: cuatro veces el límite de 10 s | [ticket de soporte](../../../docs/tickets/2026-10-11-exportar-excel.md) | 2026-10-11 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+
+## Descarta
+
+>>> Bash: cat docs/tickets/2026-10-11-exportar-excel.md; ls docs/tickets src test; cat package.json; grep -rn -i "export" src | head -20
+<<< # Ticket — la exportación a Excel es lenta
+
+Abierto por el equipo de soporte el 2026-10-11.
+
+La exportación a Excel tarda 40 s con 1.000 reservas, cuatro veces el límite de 10 s que fijó la feature 0012. Lo midió la propia 0012 al cerrarse: está en su [walkthrough](../../.docs/sdd/changes/20261002-090000-feature-0012-excel-export/walkthrough.md), §2.
+
+Propuesta: un patch antes de la release.
+docs/tickets:
+2026-10-11-exportar-excel.md
+
+src:
+app.js
+
+test:
+app.test.js
+{"type": "module"}
+src/app.js:14:function exportCsv() {
+src/app.js:19:export function run(cmd, params) {
+src/app.js:22:  i
+
+>>> Bash: cat src/app.js; cat .docs/sdd/changes/20261002-090000-feature-0012-excel-export/walkthrough.md; cat test/app.test.js | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+=== RESULTADO (6 turnos, 0.13467410000000002 $)
+He mirado la única fila de «Por triar» y propongo dejarla en **«En espera»**. No he escrito nada todavía: con el perfil `delegate` espero tu decisión.
+
+**La fila:** «La exportación a Excel tarda 40 s con 1.000 reservas». El origen es el ticket de soporte del 2026-10-11.
+
+**Por qué no puede ir a «Lista»**
+- **No se reproduce.**
+  - El ticket cita el walkthrough de la 0012, §2. Ese walkthrough dice lo contrario: 1.000 reservas tardan 4 s y 5.000 tardan 9 s, con límite de 10 s. Los 40 s no aparecen en ninguna medida.
+  - En el repo no existe `bench/excel.js`, el comando que usó la medición.
+  - Tampoco hay un `exportar-excel` en `src/app.js`. Solo hay un `exportar` que devuelve CSV de una lista en memoria.
+- **No hay un segundo caso.** Solo existe este ticket, así que no hay nada que fusionar.
+
+**Propuesta para la fila en «En espera»**
+
+| Campo | Valor |
+| --- | --- |
+| Causa | `sin determinar` |
+| Origen | el ticket de soporte |
+| Impacto | la exportación puede superar el límite de 10 s de la 0012 |
+| Falta | `reproducirlo`: pedir a soporte con qué datos y qué comando midieron los 40 s. También hay que aclarar si el walkthrough se midió sobre otra base o con otra versión |
+| Fecha | 2026-11-02 |
+
+**Lo que no haría:** el patch que propone el ticket, porque sin reproducción no hay nada que arreglar.
+
+Si lo apruebas, la escribo en `debt.md`, paso `sdd roadmap check` y publico el commit en `develop`. No se crea ninguna fila en Now ni en Next, así que no hay prompt de lanzamiento. ¿La muevo así, o prefieres otro estado?

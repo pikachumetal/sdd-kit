@@ -1,0 +1,111 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: cancel|anula
+
+>>> Glob: .docs/sdd/**/*.md
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\tech-stack.md
+<<< Found 5 files
+test\app.test.js
+src\app.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|anula
+<<< 25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Grep: cancel
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+<<< 10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+=== RESULTADO (10 turnos, 0.11251389999999999 $)
+Es mucho más simple de lo que cabría esperar: **ahora mismo cancelar casi no hace nada**.
+
+**Lo que hay en el código** (`src/app.js:12`)
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+`cancelar <día> <franja>` solo devuelve el texto «cancelada mar 10:00». No toca el array `bookings` (`src/app.js:3`), no busca nada y no comprueba si la reserva existe. Tampoco hay noción de «reserva propia»: las reservas son `{ room, day, slot }` y no guardan usuario.
+
+**Lo que dice la documentación**
+- `roadmap.md:31`: la release v0.3.0 incluyó «Cancelar una reserva propia».
+- `roadmap.md:25` y `patch-0007-cancel/patch.md`: el patch 0007 corrigió que la cancelación borraba reservas de otro día con la misma hora. Su causa raíz fue «comparación solo por hora», y dice «Fix y test de regresión. Verificado».
+- El único test (`test/app.test.js:13`, «cancelar respeta el día») solo comprueba que la cadena devuelta incluye el día y la hora.
+
+**Lo que deduzco**
+- El código actual no coincide con lo que cuentan el roadmap y el patch. Ni hay lógica de borrado ni comparación por día, y el test de regresión no demuestra que el bug esté arreglado, porque no hay nada que borrar.
+- Puede que esa lógica nunca se llegara a escribir, que se perdiera en algún merge o que este repo sea un molde simplificado. El último commit es «base del molde salas», así que lo último es lo más probable. No lo puedo confirmar con lo que hay aquí.
+
+Si cancelar tiene que funcionar de verdad, es trabajo nuevo y no una consulta. Eso entraría por el roadmap, como patch o como feature según lo que se quiera: borrar de `bookings` por sala, día y franja, o además la noción de «propia». Dime si quieres que lo apunte.

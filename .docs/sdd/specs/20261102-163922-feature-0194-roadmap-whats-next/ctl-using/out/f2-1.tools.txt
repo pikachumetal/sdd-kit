@@ -1,0 +1,99 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -60; git branch --show-current; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+develop
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md; done; ls .docs/sdd/specs; cat package.json; find src test -type f
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; ls node_modules 2>&1 | head -1; K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/skills/sdd-propose/references"; cat "$K/spec-writing.md"
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit"; sed -n 1,60p "$K/skills/sdd-propose/references/control-profiles.md"; sed -n 1,60p "$K/skills/sdd-propose/references/nombrado.md"
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de integración 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.2036424 $)
+Ahora: I've read the project docs and the code I need to classify. This is a feature, so I'm starting the interview. Queda: a few design questions, then the spec for your approval, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, default del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+I read no `sdd-kit.local.json`, so there are no local keys to ignore. There is also no roadmap row for this, so it will get a new id (`sequence` mode) once the scope is clear.
+
+**What I understood, correct me:**
+- Today `src/app.js` only has `libres`, a weekly `reservar` and `cancelar`. Nothing yet refuses a booking when a room is taken.
+- You want a waitlist: when someone tries to book a room that is full for a slot, they join a queue for that room and slot.
+- Interface text in Spanish, tests first with `node --test`, no dependencies.
+- I foresee about 3 tasks (join the queue, view and leave the queue, promotion when a slot frees up). That's one surface, so I wouldn't split it.
+
+❓ **What happens when a booked slot is cancelled and someone is waiting?**
+Today `cancelar` only prints `cancelada <día> <franja>`. The first person in the queue could get the room automatically, or just be told it's free.
+1️⃣ **Automatic promotion.** `cancelar lun 10:00-12:00` prints `cancelada lun 10:00-12:00; Norte pasa a <quien esperaba> (1.º en espera)`. The room is booked straight away. The cost: someone gets a booking they might no longer want, and they have to cancel it.
+2️⃣ **Notify only.** The same cancel prints `cancelada lun 10:00-12:00; Norte libre, 1.º en espera: <quien esperaba>`. The person still has to run `reservar`, and someone else could take the slot first.
+3️⃣ **Hold for a limited time.** The room stays held for the first in line for N minutes. This is the most complex option, and it needs clocks and expiry, which this CLI doesn't have.
+
+➡️ **I recommend 1️⃣**, because this is a command-line tool with no push notifications. A message printed at cancel time is easy to miss, and the slot would go unclaimed. In exchange, someone can get a booking they didn't confirm.

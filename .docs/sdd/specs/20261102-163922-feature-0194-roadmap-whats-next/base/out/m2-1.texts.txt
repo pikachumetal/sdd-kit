@@ -1,0 +1,67 @@
+--- [11]
+Estoy registrando el módulo de informes en el roadmap: una propuesta y tres filas, con los ids ya reservados (0008 a 0011). Ahora escribo los ficheros.
+
+--- [16]
+`sdd roadmap publish` se negó porque `develop` está sacada en este mismo worktree y mis cambios aún no estaban confirmados. Estoy en `develop`, así que confirmo a mano solo esos dos ficheros.
+
+--- [18]
+He dejado el módulo de informes planificado en el roadmap, sin escribir código ni abrir ninguna rama. Son tres filas nuevas (0009, 0010 y 0011) y una propuesta (0008). Todo está confirmado en `develop` (`d88f430`).
+
+**Filas añadidas a «Próximo»**
+- **0009, informe de ocupación por sala.** Es un comando de la CLI y va primero.
+- **0010, exportar a Excel.** Va después de 0009.
+- **0011, aviso semanal a los responsables.** Va después de 0009 y de la fila 1 (avisos por correo), porque reutiliza su envío de correo.
+
+**Decisiones que tomé por ti**
+Están en `.docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md`, cada una con un ejemplo con datos. Se pueden cambiar con una enmienda.
+- **Ocupación:** horas reservadas entre 60 h por sala y semana (lunes a viernes, 08:00-20:00). Una sala sin reservas sale con 0,0 %.
+- **Periodo:** semana natural, y por defecto la última completa.
+- **Excel:** un `.xlsx` con una fila por sala. Se genera a mano con `node:zlib`, porque el stack no admite dependencias externas.
+- **Responsables:** se declaran en un fichero `responsables.json` junto a la app. Cada uno recibe solo sus salas.
+- **Aviso:** lo lanza el cron del servidor cada lunes con un comando de la CLI. La app no deja ningún proceso residente.
+
+Si la fila 1 va a tardar, dime y desacoplo el aviso 0011 de ella.
+
+**Problemas con el kit**
+- `sdd roadmap check` falla por dos líneas que no escribí yo: la cabecera de «Deuda técnica» y el título `v0.3.0` en «Releases cerradas». Las dejé como estaban. Las corrige la migración del roadmap a la forma de la plantilla.
+- `sdd roadmap publish` se negó porque `develop` está sacada en este mismo worktree y tenía mis cambios sin confirmar. Hice el commit a mano, solo con `roadmap.md` y `proposal.md`.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- `mission.md` dice que la herramienta la usa solo una persona, y ahora hay responsables de sala que reciben correos. Quizá convenga actualizarla.
+
+**Prompt de arranque de la 0009**
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0009 con sdd-propose, carril feature: un comando de la CLI que calcula la ocupación por sala de una semana.
+
+Alcance:
+- src/app.js: comando nuevo de informe, con test en test/app.test.js
+
+Fuera de alcance:
+- la exportación a Excel: 0010
+- el aviso semanal a los responsables: 0011
+
+Decisiones ya tomadas:
+- Ocupación = horas reservadas / 60 h por sala y semana (lunes a viernes, 08:00-20:00), porque el cliente delegó el detalle y hay que fijar una base de cálculo.
+- Una sala sin reservas sale con 0,0 %, no se omite.
+- El informe es por semana natural y por defecto la última completa.
+- Un decimal en el porcentaje: Norte con lun 10:00-12:00 → 2 h / 60 h = 3,3 %.
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261102-100000-proposal-0008-reports/proposal.md, §Reglas de negocio
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y el comando devuelve, con la reserva de lunes de Norte, "Norte 2 h 3,3 %" y "Sur 0 h 0,0 %".
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+
