@@ -79,7 +79,7 @@ function formRules() {
   writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
 }
 
-s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
+s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
 s.putKitMarker(MARKER);
 const molds = {
   r1: () => (cp('app-0012.js', 'src/app.js'), cp('cancel-task1.test.js', 'test/cancel.test.js')),
@@ -121,6 +121,8 @@ const molds = {
   b1: () => cp('readme-0027.md', 'README.md'),
 };
 molds.g2 = molds.g1;
+molds.a3 = molds.a2;
+molds.a4 = molds.a2;
 molds.b2 = molds.b1;
 molds.b3 = molds.b1;
 molds.r2 = molds.r1;
@@ -226,6 +228,17 @@ function baseMovesReadme(from, to) {
 }
 const FREE_LINE = '- `libres <franja>`: las salas libres en esa franja.';
 
+// La 0026 con su frase del paso 2 condicionada al RED; el aviso del paso 1, sin marca, como en a2.
+const SCOPE_0026 = '- Entra: una frase en el paso 2 de `skills/guardar-nota/SKILL.md`: el nombre del fichero no lleva la fecha; y el aviso de título vacío en el paso 1.';
+const MARKED_0026 = '- Entra: el aviso de título vacío en el paso 1 de `skills/guardar-nota/SKILL.md`.\n- Entra, si el RED lo exhibe: una frase en el paso 2 de esa skill: el nombre del fichero no lleva la fecha.';
+function openCleanFront(cleanH0) {
+  const spec = readLf(join(FIX, 'spec-0026.md'));
+  if (!spec.includes(SCOPE_0026)) s.die('sin el Scope de la 0026 en la fixture');
+  openFeature('0026-note-title-date', { folder: F26, spec: spec.replace(SCOPE_0026, MARKED_0026), plan: fixture('plan-0026.md') });
+  s.put(`${F26}/red/h0.txt`, cleanH0);
+  s.put(`${F26}/red/h1.txt`, RED_H1);
+}
+
 function seedApp(extra = (text) => text) {
   edit('src/app.js', (text) => extra(text).replace('function freeRooms', `${SEED_LINE}function freeRooms`));
   s.commit('feat(bookings): seed para cargar reservas');
@@ -259,6 +272,12 @@ const steps = {
     s.put(`${F26}/red/h0.txt`, CLEAN_H0);
     s.put(`${F26}/red/h1.txt`, RED_H1);
   },
+  a3: () => openCleanFront(CLEAN_H0
+    .replace('| h0-2 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n', (row) => `${row}${row.replace('h0-2', 'h0-3')}`)
+    .replace('RED: 2 de 2 limpios', 'RED: 3 de 3 limpios')),
+  a4: () => openCleanFront(CLEAN_H0
+    .replace('| h0-2 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n', '')
+    .replace('RED: 2 de 2 limpios', 'RED: 1 de 1 limpio')),
   b1: () => baseMovesReadme('Escribe a salas@example.com.', 'Abre una incidencia en el portal de soporte.'),
   b2: () => baseMovesReadme(FREE_LINE, '- `libres <franja> [--planta <n>]`: las salas libres en esa franja, por planta.'),
   b3: () => {
@@ -387,7 +406,7 @@ steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(j
 if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps[s.SC]?.();
 
-const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];
+const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1'];
 if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_0186]) turns[id] = '40';

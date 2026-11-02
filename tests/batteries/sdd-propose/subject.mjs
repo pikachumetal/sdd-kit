@@ -270,6 +270,10 @@ steps.co1 = () => {
 steps.co2 = () => branch('feature/0014-notice-room');
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
+steps.cr1 = () => {
+  s.put('.docs/sdd/field-reports/20260914-aviso.md', '# Ticket — aviso de cierre\n\n## 1. El aviso no dice qué queda pendiente\n\n- **Qué pasó**: al cerrar la 0005, el aviso dijo qué se cerraba, y la persona no supo que quedaba una fila abierta.\n- **Coste**: una parada del dev-lead.\n');
+  branch('feature/0028-close-notice-pending');
+};
 steps.pw1 = () => {
   branch('feature/0017-saturday-note');
   s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
