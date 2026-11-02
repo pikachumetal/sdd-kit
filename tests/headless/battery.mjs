@@ -251,6 +251,8 @@ export function batteryPlan(env, cwd, fs) {
 
 export async function runBattery(env, cwd, deps) {
   const { table, steps, rows, launchEnv, config } = batteryPlan(env, cwd, deps.fs);
+  const failure = deps.syntaxError(launchEnv.SUBJECT_SH);
+  if (failure) throw new BatteryError(`subject.mjs no compila:\n${failure}`);
   refuseSavedLabels(rows, config.out, deps.fs);
   const launch = (overrides) => runCampaign(readConfig({ ...launchEnv, ...overrides }, cwd, deps.fs), deps);
   const maxN = Math.max(0, ...rows.map((row) => Number(row.n)));
