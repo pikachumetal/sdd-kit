@@ -4,7 +4,7 @@ feature: 0192
 title: Desglose de tiempos por fase — agente, ejecución, espera y % de ceremonia
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-02
 author: Claude (Opus 5.5)
 approvers:
@@ -185,6 +185,14 @@ Lo decidido por el dev-lead, tal cual: las fronteras salen de los eventos del ki
 - AND una carpeta con `withinMargin: false` no entra, y el log avisa por stderr con su nombre
 - AND sin ningún `timing.json` medido, la sección dice `Sin datos: ninguna tarea tiene timing.json.`
 
+#### ADDED — La causa de una desviación cita las esperas medidas
+
+- GIVEN una feature con dos esperas en el transcript, de 45 min a las 14:59Z y de 12 min a las 15:40Z
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN imprime `- Esperas y huecos: 14:59Z 45 min; 15:40Z 12 min`, la última línea, también tras `Medición`
+- AND sin esperas ni huecos, con «no medido» o en `--json`, esa línea no sale
+- AND con una desviación de más del ±30 %, `sdd-archive` escribe en «Causa de la desviación» esas horas y minutos, o «sin medir»
+
 #### MODIFIED — El cierre rellena los tokens y el coste de la sesión (antes: "`sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit")
 
 - GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-archive`, en un proyecto con `.docs/sdd/estimation.md`
@@ -230,7 +238,11 @@ Precio: 0,75 $ por sujeto de un turno (`estimation.md`, 0,6–0,9 $; `p2` de la 
 
 ## Enmiendas
 
-- 2026-11-02 — sale el frente condicionado de la decisión 13: el requisito «La causa de una desviación cita las esperas medidas», la línea `Esperas y huecos` y la cita en `sdd-archive` y en el walkthrough; la fila de deuda se queda — RED de `tc1` limpio con n = 3 (`tests/phase-timing-red.md`) — aplica la decisión del dev-lead: «El frente se saca solo si la spec lo marcó condicionado» — Task 1
+- 2026-11-02 — el frente condicionado de la decisión 13 entra — el RED de `tc1` lo exhibe 3/3 con el criterio del plan; se sacó en la Task 1 con el criterio ablandado, y lo corrigió el eje Spec (`tests/phase-timing-red.md`) — sin aprobar: aplica «Entra, si el RED lo exhibe» — pasada de fix
+- 2026-11-02 — decisión 9: del literal del gate solo se quitan `--affected`, `--base` y `--head` con su valor; las demás opciones cuentan, y cada segmento de un gate compuesto tiene que aparecer — quitar todas las opciones reducía `node --test test/` a `node`, hallazgo del eje Spec; ningún THEN cambia — sin aprobar — pasada de fix
+- 2026-11-02 — decisión 12: una tarea con cualquier fase sin eventos sale de la línea de ceremonia, también `implementacion`; sin tareas, la línea da `—` — con la implementación sin medir, el % salía 100 — sin aprobar — pasada de fix
+- 2026-11-02 — decisión 14: el fixture lleva también `message.role`, `message.id`, `message.model` y un `usage` fijo, que necesita el lector de respuestas; ninguno es un dato personal — hallazgo del eje Spec — sin aprobar — pasada de fix
+- 2026-11-02 — decisión 17: `timing.json` va como cláusula en la fila `specs/<carpeta>/` de `architecture.md`, no en una fila propia: es parte de ese artefacto — sin aprobar — Task 3
 
 ## Aprobaciones
 

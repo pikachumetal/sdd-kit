@@ -94,6 +94,23 @@ describe('el log suma los tiempos por fase', () => {
     expect(warnings).toEqual([]);
   });
 
+  it('una implementación sin eventos también saca la tarea de la línea', () => {
+    const files = { [`specs/${folderA}/walkthrough.md`]: walkthrough(folderA), [`specs/${folderA}/timing.json`]: timing([phase('apertura', { agent: 600 }), unmeasured('implementacion')]) };
+    expect(sectionOf(build(project(files)).text)).toContain('Ceremonia: — (0 tareas, 1 fuera por una fase sin eventos).');
+  });
+
+  it.each([['null', 'null'], ['un número', '42'], ['sin fases', '{"measured":true,"withinMargin":true}'], ['fase sin tiempos', '{"measured":true,"withinMargin":true,"phases":[{"name":"apertura","measured":true}]}']])('un timing.json con %s avisa y no entra', (_label, content) => {
+    const { text, warnings } = build(project({ [`specs/${folderA}/walkthrough.md`]: walkthrough(folderA), [`specs/${folderA}/timing.json`]: content }));
+    expect(sectionOf(text)).toContain('Sin datos: ninguna tarea tiene timing.json.');
+    expect(warnings.join('\n')).toContain(folderA);
+  });
+
+  it('una versión desconocida avisa y no entra', () => {
+    const { text, warnings } = build(project({ [`specs/${folderA}/walkthrough.md`]: walkthrough(folderA), [`specs/${folderA}/timing.json`]: timing([phase('apertura', { agent: 600 })], { version: 2 }) }));
+    expect(sectionOf(text)).toContain('Sin datos: ninguna tarea tiene timing.json.');
+    expect(warnings.join('\n')).toContain(`versión desconocida, fuera de la tabla de fases: ${folderA}`);
+  });
+
   it('sin ningún timing.json dice que no hay datos', () => {
     expect(sectionOf(build(project({ [`specs/${folderA}/walkthrough.md`]: walkthrough(folderA) })).text)).toContain('Sin datos: ninguna tarea tiene timing.json.');
   });

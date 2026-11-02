@@ -6,8 +6,8 @@ const HOUR = 3_600_000;
 const MINUTE = 60_000;
 const at = (minutes: number): number => minutes * MINUTE;
 
-function call(name: string, minute: number, input: Record<string, unknown> = {}, minutes = 0): ToolCall {
-  return { name, input, from: at(minute), to: at(minute + minutes) };
+function call(name: string, minute: number, input: Record<string, unknown> = {}): ToolCall {
+  return { name, input, from: at(minute), to: at(minute) };
 }
 
 const skill = (name: string, minute: number): ToolCall => call('Skill', minute, { skill: name });
@@ -43,6 +43,18 @@ describe('fronteras de fase', () => {
 
   it('sdd-retro abre el cierre', () => {
     expect(startsOf([skill('sdd-kit:sdd-verify', 30), skill('sdd-kit:sdd-retro', 45)]).cierre).toBe(at(45));
+  });
+
+  it('un cierre anterior a la implementación no la adelanta', () => {
+    const { implementacion, cierre } = startsOf([skill('sdd-kit:sdd-retro', 5), skill('sdd-kit:sdd-implement', 10), skill('sdd-kit:sdd-archive', 40)]);
+    expect([implementacion, cierre]).toEqual([at(10), at(40)]);
+  });
+
+  it.each([
+    'git commit -m "sdd task start plan 9"',
+    'echo sdd task start plan 9',
+  ])('%s no es un evento de task', (command) => {
+    expect(startsOf([call('Bash', 5, { command })]).implementacion).toBeNull();
   });
 
   it('el commit de cierre solo abre el cierre si es el evento más temprano', () => {
@@ -107,6 +119,13 @@ describe('reparto por fase', () => {
     const calls = [skill('sdd-kit:sdd-implement', 5), skill('sdd-kit:sdd-verify', 50)];
     const { tasks } = phase('implementacion', timeline(calls, 60), 2, commits);
     expect(tasks!.map((item) => [item.task, item.source, item.done])).toEqual([[1, 'commits', true], [2, 'commits', true]]);
+  });
+
+  it('las tasks de los commits no pasan del final de la implementación', () => {
+    const commits: Commit[] = [{ time: at(5), closing: false }, { time: at(20), closing: false }, { time: at(55), closing: false }];
+    const calls = [skill('sdd-kit:sdd-implement', 5), skill('sdd-kit:sdd-verify', 50)];
+    const { tasks } = phase('implementacion', timeline(calls, 60), 2, commits);
+    expect(tasks![1]!.agentSeconds).toBe(1800);
   });
 
   it('si no coinciden, no hay tasks', () => {

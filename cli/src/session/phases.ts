@@ -1,12 +1,9 @@
+import { PHASE_NAMES, type PhaseName, type TaskTimes } from '../estimation/timing-file.ts';
+import type { BranchCommit } from './branches.ts';
 import type { Span, Timeline } from './clock.ts';
 
-export const PHASE_NAMES = ['apertura', 'implementacion', 'revision', 'cierre'] as const;
-export type PhaseName = (typeof PHASE_NAMES)[number];
 
-export interface Commit {
-  time: number;
-  closing: boolean;
-}
+export type Commit = BranchCommit;
 
 interface Stamp {
   name: string;
@@ -31,15 +28,6 @@ export interface PhaseStarts {
   cierre: number | null;
 }
 
-export interface TaskTimes {
-  task: number;
-  source: 'events' | 'commits';
-  done: boolean;
-  agentSeconds: number;
-  execSeconds: number;
-  waitSeconds: number;
-}
-
 export interface PhaseTimes {
   name: PhaseName;
   ceremony: boolean;
@@ -53,16 +41,19 @@ export interface PhaseTimes {
   tasks?: TaskTimes[];
 }
 
-const TASK_COMMAND = /\bsdd(?:\.js)?["']?\s+task (start|done)\b[^\n;&|]*?\s(\d+)(?=\s|$)/g;
+const COMMAND_SEGMENTS = /&&|;|\||\n/;
+const TASK_COMMAND = /^(?:&\s*)?(?:node\s+)?["']?[^\s"']*\bsdd(?:\.js)?["']?\s+task (start|done)\s+\S+\s+(\d+)(?=\s|$)/;
 const SKILL_PREFIX = /^sdd-kit:/;
 const earliest = (times: number[]): number | null => (times.length === 0 ? null : Math.min(...times));
 const byTime = <T extends { time: number }>(first: T, second: T): number => first.time - second.time;
 
 function readCall(events: KitEvents, call: Timeline['calls'][number]): void {
   if (call.name === 'Skill') events.skills.push({ name: String(call.input.skill ?? '').replace(SKILL_PREFIX, ''), time: call.from });
-  for (const [, verb, number] of String(call.input.command ?? '').matchAll(TASK_COMMAND)) {
-    if (verb === 'done') events.taskDones.add(Number(number));
-    else events.taskStarts.push({ task: Number(number), time: call.from });
+  for (const segment of String(call.input.command ?? '').split(COMMAND_SEGMENTS)) {
+    const match = TASK_COMMAND.exec(segment.trim());
+    if (match === null) continue;
+    if (match[1] === 'done') events.taskDones.add(Number(match[2]));
+    else events.taskStarts.push({ task: Number(match[2]), time: call.from });
   }
 }
 
@@ -76,14 +67,14 @@ export function kitEvents(timelines: Timeline[], commits: Commit[]): KitEvents {
 
 const skillTimes = (events: KitEvents, ...names: string[]): number[] => events.skills.filter(({ name }) => names.includes(name)).map(({ time }) => time);
 
-function closingStart(events: KitEvents): number | null {
+function closingStart(events: KitEvents, after: number): number | null {
   const closingCommits = events.commits.filter(({ closing }) => closing).map(({ time }) => time);
-  return earliest([...skillTimes(events, 'sdd-archive', 'sdd-retro'), ...closingCommits]);
+  return earliest([...skillTimes(events, 'sdd-archive', 'sdd-retro'), ...closingCommits].filter((time) => time > after));
 }
 
-function reviewStart(events: KitEvents, closing: number | null): number | null {
+function reviewStart(events: KitEvents, after: number, closing: number | null): number | null {
   const lastTask = events.taskStarts.at(-1)?.time ?? -Infinity;
-  const verifies = skillTimes(events, 'sdd-verify').filter((time) => time > lastTask && time < (closing ?? Infinity));
+  const verifies = skillTimes(events, 'sdd-verify').filter((time) => time > Math.max(lastTask, after) && time < (closing ?? Infinity));
   return verifies.at(-1) ?? null;
 }
 
@@ -95,8 +86,10 @@ function implementationStart(events: KitEvents): number | null {
 }
 
 export function phaseStarts(events: KitEvents): PhaseStarts {
-  const cierre = closingStart(events);
-  return { implementacion: implementationStart(events), revision: reviewStart(events, cierre), cierre };
+  const implementacion = implementationStart(events);
+  const after = implementacion ?? -Infinity;
+  const cierre = closingStart(events, after);
+  return { implementacion, revision: reviewStart(events, after, cierre), cierre };
 }
 
 function merged(spans: Span[]): Span[] {
@@ -148,20 +141,27 @@ interface TaskSpan extends Span {
 }
 
 function spansFromEvents(events: KitEvents, end: number): TaskSpan[] {
-  const seen = new Set<number>();
-  const starts = events.taskStarts.filter(({ task }) => !seen.has(task) && seen.add(task));
+  const firstStarts = new Map<number, TaskStamp>();
+  for (const stamp of events.taskStarts) if (!firstStarts.has(stamp.task)) firstStarts.set(stamp.task, stamp);
+  const starts = [...firstStarts.values()];
   return starts.map(({ task, time }, index) => ({ task, source: 'events', done: events.taskDones.has(task), from: time, to: starts[index + 1]?.time ?? end }));
 }
 
 // Con las tasks sin eventos, la historia de la rama las da: apertura, un commit por task y cierre.
-function spansFromCommits(events: KitEvents, start: number, tasksInPlan: number): TaskSpan[] {
+function spansFromCommits(events: KitEvents, window: Span, tasksInPlan: number): TaskSpan[] {
   const interior = events.commits.filter(({ closing }) => !closing).slice(1);
   if (tasksInPlan === 0 || interior.length !== tasksInPlan) return [];
-  return interior.map(({ time }, index) => ({ task: index + 1, source: 'commits', done: true, from: interior[index - 1]?.time ?? start, to: time }));
+  return interior.map(({ time }, index) => ({ task: index + 1, source: 'commits', done: true, from: interior[index - 1]?.time ?? window.from, to: Math.min(time, window.to) }));
 }
 
-function tasksIn(timelines: Timeline[], events: KitEvents, window: Span, tasksInPlan: number): TaskTimes[] | undefined {
-  const spans = events.taskStarts.length > 0 ? spansFromEvents(events, window.to) : spansFromCommits(events, window.from, tasksInPlan);
+interface TaskSource {
+  events: KitEvents;
+  window: Span;
+  tasksInPlan: number;
+}
+
+function tasksIn(timelines: Timeline[], { events, window, tasksInPlan }: TaskSource): TaskTimes[] | undefined {
+  const spans = events.taskStarts.length > 0 ? spansFromEvents(events, window.to) : spansFromCommits(events, window, tasksInPlan);
   if (spans.length === 0) return undefined;
   return spans.map(({ task, source, done, from, to }) => {
     const { agentSeconds, execSeconds, waitSeconds } = secondsIn(timelines, { from, to });
@@ -183,7 +183,7 @@ export function breakdown(timelines: Timeline[], events: KitEvents, tasksInPlan:
     if (opens[name] === null) return emptyPhase(name, present.filter((other) => PHASE_NAMES.indexOf(other) < PHASE_NAMES.indexOf(name)).at(-1)!);
     const next = present[present.indexOf(name) + 1];
     const window = { from: opens[name]!, to: next === undefined ? Infinity : opens[next]! };
-    const tasks = name === 'implementacion' ? tasksIn(timelines, events, window, tasksInPlan) : undefined;
+    const tasks = name === 'implementacion' ? tasksIn(timelines, { events, window, tasksInPlan }) : undefined;
     return { name, ceremony: name !== 'implementacion', measured: true, window, ...secondsIn(timelines, window), ...(tasks === undefined ? {} : { tasks }) };
   });
 }

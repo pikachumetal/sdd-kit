@@ -102,7 +102,7 @@ function readAgentEntry(state: ClockState, entry: Json, time: number): void {
   for (const block of blocksOf(entry)) {
     if (!sameText(block.type, 'tool_use')) continue;
     const id = String(block.id);
-    state.calls.set(id, { name: String(block.name), input: (block.input ?? {}) as Json, from: time, to: time });
+    state.calls.set(id, { name: String(block.name), input: { skill: block.input?.skill, command: block.input?.command }, from: time, to: time });
     if (state.answered.has(id)) state.running.set(id, time);
     if (sameText(block.name, 'AskUserQuestion')) state.questions.set(id, time);
   }

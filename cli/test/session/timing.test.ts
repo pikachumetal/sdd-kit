@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { memoryIo } from '../../src/cli/io.ts';
+import { generateEstimationLog } from '../../src/estimation/log.ts';
 import { run } from '../../src/main.ts';
 import { buildTiming, isGateCall, marginWarning, readGateCommand } from '../../src/session/timing.ts';
 import { line, measure, newWorktree, tempDir, type Worktree } from './helpers.ts';
@@ -137,6 +138,18 @@ describe('el gate se atribuye por su comando', () => {
     expect(isGateCall(command, GATE)).toBe(expected);
   });
 
+  it.each([
+    ['node --test test/', 'node --test test/ 2>&1', true],
+    ['node --test test/', 'node cli/bin/sdd.js session tokens', false],
+    ['pnpm --dir cli test', 'pnpm install', false],
+    ['moon run --affected kit:a cli:test', 'moon run cli:test', false],
+    ['moon run --affected kit:a cli:test', 'moon run kit:a cli:test --base origin/develop', true],
+    ['npm test && npm run e2e', 'npm test && npm run e2e', true],
+    ['npm test && npm run e2e', 'npm test', false],
+  ])('gate %s, llamada %s → %s', (gate, command, expected) => {
+    expect(isGateCall(command, gate)).toBe(expected);
+  });
+
   it('sin gate declarado, gateCommand y gateSeconds son null', async () => {
     const { timing } = await timingOf(worktreeWith(flow, null));
     expect(timing.gateCommand).toBeNull();
@@ -175,6 +188,27 @@ describe('cada fase lleva su estimado', () => {
     expect(estimates((await timingOf(worktreeWith(flow))).timing)).toEqual([null, null, null, null]);
   });
 
+  it('con plan, no lee la spec', async () => {
+    const folder = tempDir();
+    writeFileSync(join(folder, 'spec.md'), '- Estimación de cierre: 3h\n');
+    writeFileSync(join(folder, 'plan.md'), '- Estimación de implementación: 1h\n');
+    await measure(worktreeWith(flow), ['--branch', branch, '--artifact', folder]);
+    expect(estimates(JSON.parse(readFileSync(join(folder, 'timing.json'), 'utf8')))).toEqual([null, 1, null, null]);
+  });
+
+  it('lee la plantilla del plan, sin tocar y rellenada', async () => {
+    const template = readFileSync(join(import.meta.dirname, '../../../skills/sdd-templates/templates/plan-template.md'), 'utf8');
+    expect(estimates((await timingOf(worktreeWith(flow), { file: 'plan.md', text: template })).timing)).toEqual([null, null, null, null]);
+    const filled = template.replace('<Xh>', '0,5h').replace('<Yh>', '1h').replace('- Estimación de revisión: <Zh>', '- Estimación de revisión: 0,25h').replace('- Estimación de cierre: <Zh>', '- Estimación de cierre: 0,5h');
+    expect(estimates((await timingOf(worktreeWith(flow), { file: 'plan.md', text: filled })).timing)).toEqual([0.5, 1, 0.25, 0.5]);
+  });
+
+  it('lee la plantilla de la spec en lite, rellenada', async () => {
+    const template = readFileSync(join(import.meta.dirname, '../../../skills/sdd-templates/templates/spec-template.md'), 'utf8');
+    const filled = template.replace('- Esfuerzo spec: <Xh>', '- Esfuerzo spec: 0,5h').replace('- Estimación de implementación: <Yh>', '- Estimación de implementación: 1h');
+    expect(estimates((await timingOf(worktreeWith(flow), { file: 'spec.md', text: filled })).timing)).toEqual([0.5, 1, null, null]);
+  });
+
   it('los eventos de task mandan sobre los encabezados del plan', async () => {
     const text = `${full}\n### Task 1 — a\n\n### Task 2 — b\n`;
     const { timing } = await timingOf(worktreeWith(flow), { file: 'plan.md', text });
@@ -190,9 +224,52 @@ describe('casos de borde del reloj y la rama', () => {
   });
 
   it('fuera del margen lo marca y avisa, sin cambiar la salida', () => {
-    const timing = buildTiming({ timelines: [], commits: [], branch, clockSeconds: 7200, folder: tempDir(), docsPath: tempDir() });
+    const timing = buildTiming({ timelines: [], commits: [], branch, clockSeconds: 7200, folder: tempDir(), docsPath: tempDir(), warn: () => undefined });
     expect(timing.withinMargin).toBe(false);
     expect(marginWarning(timing)).toBe('timing.json fuera del margen: fases 0 s, reloj 7200 s');
+  });
+});
+
+describe('el contrato entre escritor y lector', () => {
+  it('lo que escribe session tokens lo suma estimation log', async () => {
+    const root = tempDir();
+    const folder = join(root, '.docs/sdd/specs/20261102-100000-feature-0192-x');
+    mkdirSync(folder, { recursive: true });
+    await measure(worktreeWith(flow), ['--branch', branch, '--artifact', folder]);
+    const warnings: string[] = [];
+    const { text } = generateEstimationLog(root, (message) => warnings.push(message));
+    expect(warnings).toEqual([]);
+    expect(text).toMatch(/\| cierre \| 1 \| [\d.]+ \| [\d.]+ \| 0 \| 0\.07 \| /);
+    expect(text).toContain('Ceremonia: ');
+    expect(text).not.toContain('NaN');
+  });
+});
+
+describe('--artifact a una carpeta que no existe', () => {
+  it('imprime las líneas y da un error en castellano', async () => {
+    const worktree = worktreeWith(flow);
+    const io = memoryIo();
+    const code = await run(['session', 'tokens', '--path', worktree.path, '--projects-root', worktree.projects, '--branch', branch, '--artifact', join(tempDir(), 'no-existe')], io);
+    expect(code).not.toBe(0);
+    expect(io.stdout.join('\n')).toContain('- Esfuerzo real:');
+    expect(io.stderr.join('\n')).toContain('no existe la carpeta del artefacto');
+  });
+});
+
+describe('la línea de esperas y huecos', () => {
+  const typed = (time: string): Entry => ({ type: 'user', timestamp: at(time), gitBranch: branch, message: { role: 'user', content: 'sigue' } });
+  const closed = (time: string): Entry => agent(time, [{ type: 'text', text: 'listo' }], 'end_turn');
+
+  it('cita cada espera por hora y minutos, la última', async () => {
+    const { output } = await measure(worktreeWith([typed('14:00:00'), closed('14:59:00'), typed('15:44:00'), closed('15:40:00'), closed('16:00:00'), typed('16:12:00'), closed('16:20:00')]), ['--branch', branch]);
+    expect(output.split('\n').at(-1)).toMatch(/^- Esperas y huecos: 14:59Z 45 min; /);
+  });
+
+  it('no sale sin esperas ni huecos, ni en --json', async () => {
+    const noStops = [typed('10:00:00'), agent('10:05:00', [{ type: 'text', text: 'sigo' }])];
+    expect(line((await measure(worktreeWith(noStops), ['--branch', branch])).output, 'Esperas y huecos')).toBeUndefined();
+    const json = await measure(worktreeWith([closed('14:59:00'), typed('15:44:00'), closed('15:50:00')]), ['--branch', branch, '--json']);
+    expect(json.output).not.toContain('Esperas y huecos');
   });
 });
 

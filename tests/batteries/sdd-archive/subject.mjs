@@ -399,6 +399,7 @@ const startEnv = (broken) => {
 function timing0010() {
   moldReservas();
   done0010();
+  s.put('.docs/sdd/estimation.md', '# Estimación\n\nEl plan estima y el cierre mide.\n');
   appendFileSync(at(`${F10}/plan.md`), '\n## Estimación y esfuerzo\n\n- Tipo: backend\n- Esfuerzo spec + plan: 0,5h\n- Estimación de implementación: 4h\n');
   s.commit('docs(sdd): estimación de la 0010');
   s.seedTranscript('feature/0010-cancel-reason', [
@@ -559,5 +560,6 @@ s.save([
   `## petición\n${ASK}\n## entorno al acabar el sujeto\n${envAtEnd}\n`,
   existsSync(join(GH_BIN, 'gh.json')) ? `## llamadas a gh\n${existsSync(join(GH_BIN, 'gh.log')) ? readFileSync(join(GH_BIN, 'gh.log'), 'utf8') : 'ninguna\n'}` : '',
   `## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all', '--graph')}## etiquetas\n${s.git('tag', '-n1')}`,
+  `## timing.json en la historia\n${gitQuiet('log', '--all', '--name-only', '--format=', '--', `${F10}/timing.json`)}`,
   `## roadmap en develop\n${gitQuiet('show', 'develop:.docs/sdd/roadmap.md')}## bookings en develop\n${gitQuiet('show', `develop:${CAP}`)}## tech-stack en develop\n${tail}`,
 ].join(''));

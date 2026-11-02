@@ -23,15 +23,15 @@ export const sessionTokensVerb: Verb = {
       projectsRoots: Array.isArray(roots) ? roots.map(String) : [],
     };
     const measurement = measureSession(options);
+    if (args.values.json === true) io.json(toJson(measurement));
+    else textLines(measurement).forEach((line) => io.out(line));
     const artifact = text(args, 'artifact');
     if (artifact !== null) {
-      const timing = timingOf(measurement, options, artifact);
+      const timing = timingOf(measurement, options, { folder: artifact, warn: io.err });
       writeTiming(artifact, timing);
       const warning = marginWarning(timing);
       if (warning !== null) io.err(warning);
     }
-    if (args.values.json === true) io.json(toJson(measurement));
-    else textLines(measurement).forEach((line) => io.out(line));
     return 0;
   },
 };

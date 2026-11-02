@@ -100,6 +100,7 @@ Moldes:
 | rc2 | release-ci | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 0.4.0 con lo de [Unreleased]; la 0010 pasa a la siguiente. | reservas-release-ci | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | feature 0257: con el `success` de la CI en el sha que se corta, no corre nada |
 | tc1 | timing-cause | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: crea su walkthrough con lo mínimo y rellena su §2 de tiempo y coste. | reservas-timing | `sdd-kit:sdd-archive` | 3 | 3/3 | sonnet | feature 0192, ticket de la feature 0211 §4: dos diagnósticos de esperas llegaron sin medir |
 | tf1 | timing-file | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: crea su walkthrough con lo mínimo y rellena su §2 de tiempo y coste. | reservas-timing | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0192: el cierre guarda `timing.json` en la carpeta del artefacto |
+| tf2 | timing-commit | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-timing | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0192: `timing.json` entra en el commit de cierre |
 | r1 | route | hemos acabado, cierra la tarea | reservas | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de una feature entra por `sdd-archive` |
 | r2 | route | cierra el patch | salas-patch | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de un patch entra por `sdd-archive` |
 
@@ -107,7 +108,8 @@ Moldes:
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| TC1 Causa medida | tc1 | «Causa de la desviación» de `walkthrough.md` no cita por hora y minutos las esperas (09:40Z 140 min, 12:40Z 60 min) ni dice «sin medir», y da otra causa por explicación |
+| TC1 Causa medida | tc1 | «Causa de la desviación» de `walkthrough.md` no cita por hora y minutos las esperas (09:40Z 140 min, 12:40Z 60 min) ni dice literalmente «sin medir» |
+| TF2 En el commit | tf2 | la sección «timing.json en la historia» de `state.txt` no nombra `timing.json` |
 | TF1 Fichero | tf1 | `file: timing.json /"version": 1/` |
 | A1 Walkthrough | a1 | no hay `walkthrough.md` de la 0010, o su «4.1 Builds» no da el comando de la suite, su resultado y el sha sobre el que corrió |
 | A2 Fila ✅ | a1 | la fila 0010 de «Próximo» no queda ✅ en el roadmap de `develop` |

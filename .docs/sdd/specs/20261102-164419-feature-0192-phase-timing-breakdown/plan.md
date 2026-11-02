@@ -3,7 +3,7 @@ id: 20261102-164419-feature-0192-phase-timing-breakdown
 feature: 0192
 title: Plan de implementación — Desglose de tiempos por fase
 spec: ./spec.md
-status: approved
+status: done
 created: 2026-11-02
 ---
 
