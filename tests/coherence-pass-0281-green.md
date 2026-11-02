@@ -11,3 +11,5 @@ Salidas en `green/`, `refactor/` y `refactor2/` de la carpeta de la spec. Fila `
 Los fallos de las dos primeras tandas son el del RED: `grep` solo del nombre. Reescribir la frase no lo movió; una orden con su comando, sí (Art. II). En `refactor2`, los dos sujetos separan el «paso 2» de `aviso-apertura`, que no se retira.
 
 Saldo de `skills/sdd-propose/SKILL.md`: 5.303 → 5.301, medido con `split(/\s+/)`. Coste de la campaña: 9,82 $ de 27 sujetos, frente a 13,30 $ previstos para 19.
+
+Tras la revisión final, la frase cubre todo lo retirado con pasos y el `grep` casa plural y mayúscula (`grep -rniE "(pasos?|steps?) <n>\b"`). Medición en `final/`: `co6` 2/2; `co6-1` cita los requisitos por su línea de `quality-gate.md`, con destino, y `co6-2` por su línea y su `MODIFIED`. Campaña: 10,54 $ de 29 sujetos. La muestra de `co6` con el texto final es n = 4 contando `refactor2`, con la frase anterior del `grep`: 4/4.

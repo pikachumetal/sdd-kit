@@ -28,7 +28,7 @@ Validación: agente — `validation.mode: field` en `sdd-kit.json`: RED/GREEN co
 2. **Los dos frentes van con `Entra, si el RED lo exhibe:`.** Son de ticket y sin medir, y es lo que pide la plantilla. Un RED limpio con n = 3 saca ese frente sin desvío. Si salen limpios los dos, `SKILL.md` no cambia, «Está hecho» no se cumple por edición, y paro a contártelo antes de cerrar.
 3. **Texto de la regla** (el literal, en Approach). Lo pagan: el porqué «a THEN left with the old value is the contradiction you were looking for» (−14; la tabla de racionalizaciones ya cuenta esa contradicción), «and nobody else searches them» (−5) y compactar «search all its occurrences… change them all» (−2). Solo quitan porqués, ninguna instrucción, y lo vigilan los controles.
 4. **Requisito nuevo en líneas `AND` añadidas**: las del vivo no se tocan, y `capability merge` no pierde ninguna.
-5. **Dos escenarios nuevos, `co5` y `co6`, con sus filas de rúbrica `CO5` y `CO6`**, en moldes derivados de `reservas` con 14 capacidades: el de `co5` lleva `capabilities/cli.md` y una spec con `--planta` en el Scope y sin `cli`; el de `co6`, una skill con pasos numerados y dos requisitos de una capacidad que el delta no declara, que citan «paso 2» sin nombrarla. Como `co1`, la petición solo dice «Termina el paso 4 y preséntamela para aprobar»: no trae la orden.
+5. **Dos escenarios nuevos, `co5` y `co6`, con sus filas de rúbrica `CO5` y `CO6`**, en moldes derivados de `reservas` con 15 y 14 capacidades: el de `co5` lleva `capabilities/cli.md` y una spec con `--planta` en el Scope y sin `cli`; el de `co6`, una skill con pasos numerados y dos requisitos de una capacidad que el delta no declara, que citan «paso 2» sin nombrarla. Como `co1`, la petición solo dice «Termina el paso 4 y preséntamela para aprobar»: no trae la orden.
 6. **Salidas correctas de cada fila**: en `CO5`, `cli` en el delta (`### Capacidad: \`cli\``); decirlo en ✋ sin añadirlo falla. En `CO6`, los dos requisitos con su destino en «Lo que se retira o cambia de forma».
 7. **Controles tras el GREEN**: `s1`, `t1` y `sp1`, con el n de su batería: son los que miden las frases que adelgazo.
 8. **`sdd capability merge` a prueba sobre una copia en el scratchpad de la sesión**, ignorado por git, porque tus instrucciones llevan ahí los temporales; la skill dice «fuera del repo». Resultado: `feature-flow.md: sustituido «La spec se repasa antes del gate»`.
@@ -62,7 +62,7 @@ El repaso parte de cada `MODIFIED` y de lo que se retira, así que lo no declara
 
 | Qué | Dónde aparece | Destino |
 | --- | --- | --- |
-| Los porqués de la decisión 3 | solo `skills/sdd-propose/SKILL.md:62`: comprobado con `grep -rnE "more than one entry\|nobody else searches\|nobody else rereads" cli/test skills tests/batteries .docs/sdd/capabilities` | Scope; ningún requisito ni test los nombra |
+| Los porqués de la decisión 3 | solo `skills/sdd-propose/SKILL.md:62`: comprobado con `grep -rnE "left with the old value\|nobody else searches" cli/test skills tests/batteries .docs/sdd/capabilities` | Scope; ningún requisito ni test los nombra |
 
 - Filas que implementa: 0281 y la deuda «El repaso de coherencia no ve una capacidad que cambia sin `MODIFIED`» → `roadmap.md`:69 y :682, que marca el cierre; las listas «tras …» de las filas 0198 y 0152 (:135 y :136) solo citan el id y se quedan. `capabilities/`, `skills/`, `cli/test/` y `tests/`: nada, comprobado con `grep -rln 0281`.
 
@@ -70,7 +70,7 @@ El repaso parte de cada `MODIFIED` y de lo que se retira, así que lo no declara
 
 En `skills/sdd-propose/SKILL.md`, línea del «Coherence pass»:
 
-- Retirada, tras la búsqueda de cada nombre e id: «For a retired skill's numbered steps, also `grep -rnE "(paso|step) <n>\b" capabilities/`: each bare hit goes in that table.»
+- Retirada, tras la búsqueda de cada nombre e id: «For anything retired with numbered steps, also `grep -rniE "(pasos?|steps?) <n>\b" capabilities/`: each bare hit goes in that table.»
 
 El cruce del Scope no se escribe: su RED salió limpio.
 

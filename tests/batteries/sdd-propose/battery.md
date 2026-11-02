@@ -119,7 +119,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | WS3 Instala antes del primer test | ws3 | `tools: /node --test/ antes de /pnpm (install\|i)\b/` |
 | CO1 `ADDED` contra un vivo | co1 | la spec que deja y su mensaje no nombran «Un comando con varios días trata cada día aparte»; vale acotar el AND, llevar su `MODIFIED` o preguntarlo como desvío de lo escrito |
 | CO2 Tope de la carpeta | co2 | `spec-new.md` no lleva «Topes de palabras» con `docs/plantillas` y lo medido (52 / 60) |
-| CO5 `cli` en el delta | co5 | `spec.md` no lleva `cli` como subsección del delta (`### Capacidad: \`cli\``) ni en «Capacidades»; decirlo en el ✋ o en el mensaje sin añadirlo falla |
+| CO5 `cli` en el delta | co5 | `spec.md` no lleva `cli` como subsección del delta (`### Capacidad: \`cli\``); decirlo en «Capacidades», en el ✋ o en el mensaje sin esa subsección falla |
 | CO6 Pasos de lo retirado | co6 | «Lo que se retira o cambia de forma» de `spec.md` no lista «El gate corre una sola vez» y «Un gate en rojo para el cierre» con su destino; o lista como afectados «La apertura avisa de la rama» o «El resumen va al final», que citan el paso 2 de otra skill |
 | PW1 Recorte nombrado | pw1 | commitea un recorte de otro texto de `docs/guia.md` que `patch-new.md` §3 no nombra; o commitea con `test/words.test.js` en rojo; salidas correctas: nombrarlo en §3, o parar y preguntar |
 | CO3 Inputs de la tarea | co3 | ni el ✋ ni el Scope señalan que los `inputs` de `fast` no cubren lo que lee `test/paths.test.js` (`git ls-files`, el repo entero) |
@@ -141,7 +141,7 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Paso 4: al retirar una skill, `grep` de sus pasos numerados | ticket de la feature 0206 §4 (feature 0281): RED `co6` 1/3; GREEN y REFACTOR 1 1/2, buscando solo el nombre; REFACTOR 2, la orden con su `grep`, 2/2 (`tests/coherence-pass-0281-green.md`) | co6 |
+| Paso 4: al retirar algo con pasos numerados, `grep` de esos pasos | ticket de la feature 0206 §4 (feature 0281): RED `co6` 1/3; GREEN y REFACTOR 1 1/2, buscando solo el nombre; REFACTOR 2, la orden con su `grep`, 2/2 (`tests/coherence-pass-0281-green.md`) | co6 |
 | Paso 4 (sin regla propia): lo que el Scope añade y una capacidad describe entra en el delta | ticket de la feature 0116 §1 (feature 0281): RED `co5` limpio 6/6 en dos moldes (`tests/coherence-pass-0281-red.md`); el caso de campo fue en una sesión larga | co5 (control) |
 | `plan-writing.md`, sin regla propia: un paso de RED limpio remite a la marca, y §4 abre el molde que da por cubierto un THEN | tickets de las features 0276 §2, 0277 §5 y 0282 §2 (feature 0271): RED `cr2` y `cr3` limpios 3/3, salen con un ruling; CR2B, posible falso negativo en sesión larga | cr2, cr3 (control) |
 | `spec-template.md`: línea `Entra, si el RED lo exhibe:` en el Scope | ticket de la feature 0163 §1 (feature 0271): RED `cr1` 0/3; GREEN 0/2 con «frente de campo sin medir»; REFACTOR, «aunque sea todo el cambio», 2/2 | cr1 |

@@ -134,17 +134,17 @@ const molds = {
     for (const name of ['README.md', 'src/app.js', 'src/rooms.js', 'test/app.test.js', 'docs/guia.md', 'docs/salas.md', '.docs/sdd/roadmap.md']) s.put(`${root}/${name}`, `# ${name}\n`);
     s.put(`${root}/.docs/sdd/pendientes.md`, '# Pendientes\n\n- 0011: responsables de sala\n');
   },
-  // La 0029 añade una opción a libres, que describe cli, con un delta en rooms y reports (ticket de la feature 0116 §1).
-  // Con solo dos capacidades, los tres sujetos de la primera tanda las leyeron enteras: el relleno obliga a elegir.
+  // Una opción nueva en libres, que describe cli, con un delta en rooms y reports.
+  // Con pocas capacidades el sujeto las lee todas: el relleno obliga a elegir.
   'reservas-cli'() {
     fillerCapabilities();
     copyFileSync(join(FIX, 'cli-capability.md'), at('.docs/sdd/capabilities/cli.md'));
     copyFileSync(join(FIX, 'rooms-capability.md'), at('.docs/sdd/capabilities/rooms.md'));
-    s.put('.docs/sdd/capabilities/reports.md', '# Capacidad — reports\n\n## Propósito\n\nEl informe de ocupación de salas que usa conserjería.\n\n## Requisitos\n\n### El informe cuenta las reservas activas\n\n- GIVEN dos reservas activas y una cancelada\n- WHEN se pide el informe de ocupación\n- THEN cuenta dos\n');
+    copyFileSync(join(FIX, 'reports-capability.md'), at('.docs/sdd/capabilities/reports.md'));
     edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0029 | **Las salas tienen planta** | ⏳ |\n| 1 |'));
   },
-  // La 0030 retira una skill: dos requisitos citan su «paso 2» sin nombrarla, y otros dos, el paso 2 de otra skill (ticket de la feature 0206 §4).
-  // Los dos van en una capacidad que el delta no declara: en closing, los tres sujetos de la primera tanda los leyeron de paso.
+  // Una skill retirada: dos capacidades citan su «paso 2» sin nombrarla, y otras dos líneas, el paso 2 de otra skill.
+  // Las dos citas van en una capacidad que el delta no declara: en la declarada, el sujeto las lee de paso.
   'reservas-retira'() {
     fillerCapabilities();
     copyFileSync(join(FIX, 'closing-capability.md'), at('.docs/sdd/capabilities/closing.md'));
