@@ -143,7 +143,7 @@ const molds = {
     copyFileSync(join(FIX, 'reports-capability.md'), at('.docs/sdd/capabilities/reports.md'));
     edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0029 | **Las salas tienen planta** | ⏳ |\n| 1 |'));
   },
-  // Una skill retirada: dos capacidades citan su «paso 2» sin nombrarla, y otras dos líneas, el paso 2 de otra skill.
+  // Una skill retirada: dos requisitos citan su «paso 2» sin nombrarla, y otras dos líneas, el paso 2 de otra skill.
   // Las dos citas van en una capacidad que el delta no declara: en la declarada, el sujeto las lee de paso.
   'reservas-retira'() {
     fillerCapabilities();
