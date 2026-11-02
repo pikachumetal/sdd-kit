@@ -101,6 +101,12 @@ describe('verdict', () => {
     expect(verdict(TABLE, OUT, ['duda'], fs).lines).toEqual(['d1 · 1/2 · umbral 1/2 · rojo · el kit no cargó en d1-2']);
   });
 
+  it('no da líneas con una tabla sin escenarios', () => {
+    const fs = memoryFs();
+    fs.write(TABLE, '| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n');
+    expect(verdict(TABLE, OUT, [], fs).lines).toEqual([]);
+  });
+
   it('rechaza un paso desconocido', () => {
     expect(() => verdict(TABLE, OUT, ['nope'], toyFs())).toThrow(new BatteryError('paso desconocido: nope', 2));
   });
@@ -370,6 +376,14 @@ describe('runBattery', () => {
     const fs = toyFs();
     const fake = fakeDeps(fs);
     expect(await runBattery(env({ STEPS: 'feature' }), CWD, fake.deps)).toBe(1);
+  });
+
+  it('sale con 3 y lo dice si la tabla no tiene ningún escenario', async () => {
+    const fs = toyFs();
+    fs.write(TABLE, '| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n');
+    const fake = fakeDeps(fs);
+    await expect(runBattery(env(), CWD, fake.deps)).rejects.toMatchObject({ code: 3, message: `sin escenarios en ${TABLE}` });
+    expect(fake.launched).toEqual([]);
   });
 
   it('sale con 3 si falta evidencia y nada queda en rojo: no dice que todos pasan', async () => {

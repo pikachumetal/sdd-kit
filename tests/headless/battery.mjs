@@ -191,10 +191,12 @@ export function verdict(batteryPath, outDir, steps, fs) {
 }
 
 // Sin evidencia no es verde: con 0, un script leería que todos pasan.
-function exitCode({ red, noEvidence }) {
+function exitCode({ lines, red, noEvidence }) {
   if (red) return 1;
-  return noEvidence ? 3 : 0;
+  return noEvidence || lines.length === 0 ? 3 : 0;
 }
+
+const noScenarios = (table) => `sin escenarios en ${table}`;
 
 function batteryDir(env) {
   if (env.BATTERY_DIR) return env.BATTERY_DIR;
@@ -225,6 +227,7 @@ export function batteryPlan(env, cwd, fs) {
   if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
   const steps = (env.STEPS ?? '').split(/\s+/).filter(Boolean);
   const rows = selectSteps(readScenarios(table, fs), steps);
+  if (rows.length === 0) throw new BatteryError(noScenarios(table), 3);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
   return { table, steps, rows, launchEnv, config };
@@ -269,7 +272,7 @@ async function main([command, batteryPath, ...rest]) {
   } else if (command === 'verdict') {
     const [outDir, ...steps] = rest;
     const result = verdict(batteryPath, outDir, steps, fileFs);
-    console.log(result.lines.join('\n'));
+    console.log(result.lines.length ? result.lines.join('\n') : noScenarios(batteryPath));
     process.exitCode = exitCode(result);
   } else if (command === 'run') {
     const { realDeps, stopOnSignal } = await import('./real-deps.mjs');

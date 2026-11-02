@@ -460,3 +460,59 @@ describe('procesos del sujeto', () => {
     expect(fake.killed).toEqual([{ pid: 77, tree: true }, { pid: 61, tree: true }]);
   });
 });
+
+describe('el código de salida de una campaña', () => {
+  const OUT = join(SPEC, 'red', 'out');
+
+  it('devuelve 0 con todos con RESULTADO', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(0);
+  });
+
+  it('devuelve 3 y nombra las etiquetas sin ningún sujeto', async () => {
+    const fs = kitFs();
+    fs.write(join(RUNS, 'stop'), '');
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1, b-1');
+  });
+
+  it('devuelve 3 sin ningún sujeto aunque otra fase ya tenga los suyos', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'green', 'out', 'a-1.tools.txt'), tools(0.5));
+    fs.write(join(RUNS, 'stop'), '');
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1');
+  });
+
+  it('devuelve 3 y nombra la etiqueta del sujeto sin tools.txt', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { unsaved: true });
+    expect(await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin RESULTADO: a-1');
+  });
+
+  it('devuelve 3 y nombra solo la etiqueta del sujeto sin RESULTADO', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { unsaved: true });
+    const launch = fake.deps.launch;
+    fake.deps.launch = (request: LaunchRequest) => {
+      const started = launch(request);
+      const label = request.args[1];
+      fs.write(join(OUT, `${label}.tools.txt`), label === 'a-1' ? '>>> Bash: ls\n' : tools(0.5));
+      return started;
+    };
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin RESULTADO: a-1');
+  });
+
+  it('una etiqueta ya existente no cuenta como sin RESULTADO', async () => {
+    const fs = kitFs();
+    fs.write(join(OUT, 'a-1.tools.txt'), '>>> Bash: ls\n');
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(0);
+    expect(fake.log.filter((line) => line.startsWith('sin RESULTADO'))).toEqual([]);
+  });
+});
