@@ -52,9 +52,9 @@ async function processes() {
 function syntaxError(path) {
   const { status, stderr } = spawnSync(process.execPath, ['--check', path], { encoding: 'utf8', windowsHide: true });
   if (status === 0) return null;
-  const lines = stderr.trim().split(/\r?\n/);
+  const lines = (stderr ?? '').trim().split(/\r?\n/);
   const errorLine = lines.findIndex((line) => /^\w*Error\b/.test(line));
-  return (errorLine < 0 ? lines : lines.slice(0, errorLine + 1)).join('\n');
+  return (errorLine < 0 ? lines : lines.slice(0, errorLine + 1)).join('\n') || 'node --check falló sin mensaje';
 }
 
 export function realDeps() {

@@ -75,7 +75,7 @@ it('battery.mjs run para antes del primer sujeto si subject.mjs no compila, con 
   const dir = join(root, 'battery');
   writeFile(join(dir, 'battery.md'), table);
   writeFile(join(dir, 'subject.mjs'), "const a = 1;\nconst b = 'sin cerrar\n';\n");
-  const { SUBJECT_SH: _unused, SCENARIOS: _unusedToo, ...env } = campaignEnv(FAKE_SUBJECT);
+  const { SUBJECT_SH: _subjectSh, SCENARIOS: _scenarios, ...env } = campaignEnv(FAKE_SUBJECT);
   const result = spawnSync(process.execPath, [join(kitRoot, 'tests', 'headless', 'battery.mjs'), 'run'], { env: { ...env, BATTERY_DIR: dir, PHASE: 'broken' }, encoding: 'utf8', windowsHide: true });
   expect(result.status).toBe(1);
   expect(result.stderr).toContain('subject.mjs no compila:');

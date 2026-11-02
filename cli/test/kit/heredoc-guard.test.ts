@@ -1,8 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { heredocCodeTarget } from '../../../.claude/hooks/heredoc-guard.mjs';
-import { kitRoot } from './process.ts';
 
 const script = (...lines: string[]) => lines.join('\n');
 
@@ -29,8 +26,16 @@ describe('heredocCodeTarget: lo que se para', () => {
     ['python con open', script("python3 <<'EOF'", "open('x.py', 'w').write(text)", 'EOF'), 'x.py'],
     ['python con Path', script("python - <<'EOF'", "Path('x.ts').write_text(text)", 'EOF'), 'x.ts'],
     ['python con Path en una variable', script("py <<'EOF'", "p = Path(r'x.py')", 'p.write_text(text)', 'EOF'), 'x.py'],
+    ['variable con más órdenes en su línea', script("node <<'EOF'", "const p = 'x.ts'; let s = readFileSync(p, 'utf8');", 'writeFileSync(p, s);', 'EOF'), 'x.ts'],
+    ['intérprete con 2>&1 tras el heredoc', script("python3 - <<'EOF' 2>&1", "open('x.py', 'w').write(text)", 'EOF'), 'x.py'],
+    ['intérprete con 2>/dev/null antes del heredoc', script("node 2>/dev/null <<'EOF'", "writeFileSync('x.mjs', a)", 'EOF'), 'x.mjs'],
+    ['intérprete con un flag corto', script("python3 -u - <<'EOF'", "open('x.py', 'w').write(text)", 'EOF'), 'x.py'],
   ])('%s', (_name, command, target) => {
     expect(heredocCodeTarget(command)).toBe(target);
+  });
+
+  it('nombra una ruta de Windows sin comillas tal como se escribió', () => {
+    expect(heredocCodeTarget(script("cat > D:\\code\\x.mjs <<'EOF'", 'a', 'EOF'))).toBe('D:\\code\\x.mjs');
   });
 });
 
@@ -45,6 +50,11 @@ describe('heredocCodeTarget: lo que pasa', () => {
     ['node que lee código y escribe otra cosa', script("node <<'EOF'", "const a = readFileSync('a.ts', 'utf8');", "writeFileSync('b.md', a);", 'EOF')],
     ['node que no escribe', script("node <<'EOF'", "console.log(readFileSync('a.mjs', 'utf8'));", 'EOF')],
     ['ruta calculada', script("node <<'EOF'", "writeFileSync(join(dir, 'x.mjs'), a);", 'EOF')],
+    ['ruta calculada con plantilla', script("node <<'EOF'", 'writeFileSync(`${dir}/x.mjs`, a);', 'EOF')],
+    ['variable con una ruta derivada', script("python <<'EOF'", "p = Path('cli/x.ts').parent / 'b.md'", 'p.write_text(a)', 'EOF')],
+    ['variable reasignada', script("node <<'EOF'", "let f = 'a.ts';", "f = 'b.md';", 'writeFileSync(f, a);', 'EOF')],
+    ['delimitador escapado', script('cat > notas.md <<\\EOF', 'a', 'EOF', 'node x.mjs')],
+    ['un número suelto no es un descriptor', script("node 2 <<'EOF'", "writeFileSync('x.mjs', a)", 'EOF')],
     ['python que abre para leer', script("python <<'EOF'", "print(open('x.py').read())", 'EOF')],
     ['node con script, el heredoc es su entrada', script("node run.mjs <<'EOF'", "writeFileSync('x.mjs', a)", 'EOF')],
     ['otro programa con su entrada', script("sqlite3 db <<'EOF'", "writeFileSync('x.mjs', a)", 'EOF')],
@@ -59,10 +69,3 @@ describe('heredocCodeTarget: lo que pasa', () => {
   });
 });
 
-describe('.claude/settings.json', () => {
-  it('registra el hook como PreToolUse de Bash, con node', () => {
-    const { PreToolUse } = JSON.parse(readFileSync(join(kitRoot, '.claude', 'settings.json'), 'utf8')).hooks;
-    const entry = PreToolUse.find((candidate: { matcher: string }) => candidate.matcher === 'Bash');
-    expect(entry.hooks[0].command).toMatch(/^node\s.*heredoc-guard\.mjs/);
-  });
-});

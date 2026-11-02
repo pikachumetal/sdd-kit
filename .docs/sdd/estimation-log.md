@@ -269,18 +269,19 @@
 | 2026-11-02 | 0285 | infra/tooling | 0.75 | 0.6 | 0.8 | 9001k | 1207k | 0.73 | 5.47 | 20261102-120757-feature-0285-load-test-timeouts |
 | 2026-11-02 | 0273 | infra/tooling | 1.5 | 0.53 | 0.35 | 11783k | 2329k | no aplica | 9.35 | 20261102-125945-feature-0273-battery-honest-verdict |
 | 2026-11-02 | 0270 | patch | 0.5 | 0.09 | 0.18 | 2219k | no aplica | no aplica | 2.44 | 20261102-134956-patch-0270-capability-merge-fixes |
+| 2026-11-02 | 0287 | infra/tooling | 1.5 | 0.45 | 0.3 | 8582k | 2267k | 0.01 | 8.37 | 20261102-145840-feature-0287-heredoc-guard |
 
-**Factor de calibración** (ratio mediano real/estimado, 229 artefactos): **0.56** · media 0.72
+**Factor de calibración** (ratio mediano real/estimado, 230 artefactos): **0.56** · media 0.72
 
 - p25–p75: 0.36–0.89
-- p80: 1.01 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p80: 1 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 25 % · sobreestimadas: 66 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.27 · mediana 0.84
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.57
+- Error absoluto (h): media 1.26 · mediana 0.85
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.46
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 91 | 40 % |
+| <0.5 | 92 | 40 % |
 | 0.5–0.8 | 67 | 29 % |
 | 0.8–1.25 | 50 | 22 % |
 | 1.25–2 | 13 | 6 % |
@@ -290,7 +291,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 99 | 0.57 | 0.39–0.81 |
-| infra/tooling | 61 | 0.49 | 0.36–0.74 |
+| infra/tooling | 62 | 0.49 | 0.36–0.73 |
 | patch | 67 | 0.76 | 0.29–1.2 |
 | tooling | 1 | 0.6 | — |
 
@@ -311,6 +312,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 117 | 223.34 | 0.53 | 579.91 | 1879.61 |
+| sin publicar | 118 | 223.79 | 0.52 | 579.92 | 1887.98 |
 
 > Ver `estimation.md`.

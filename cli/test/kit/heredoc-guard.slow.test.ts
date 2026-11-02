@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { kitRoot, run } from './process.ts';
@@ -24,5 +25,13 @@ describe('heredoc-guard.mjs', () => {
     ['una entrada sin comando', '{}'],
   ])('deja pasar %s, sin salida y con 0', (_name, input) => {
     expect(runHook(input)).toEqual({ output: '', code: 0 });
+  });
+});
+
+describe('.claude/settings.json', () => {
+  it('registra el hook como PreToolUse de Bash, con node', () => {
+    const { PreToolUse } = JSON.parse(readFileSync(join(kitRoot, '.claude', 'settings.json'), 'utf8')).hooks;
+    const entry = PreToolUse.find((candidate: { matcher: string }) => candidate.matcher === 'Bash');
+    expect(entry.hooks[0].command).toMatch(/^node\s.*heredoc-guard\.mjs/);
   });
 });

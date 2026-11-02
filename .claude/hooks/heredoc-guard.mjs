@@ -20,7 +20,6 @@ function closingQuote(text, from) {
   return end;
 }
 
-// Salta lo que abre `$(` dentro de comillas dobles: ahí dentro las comillas no cierran las de fuera.
 function closingParen(text, from) {
   let depth = 1;
   for (let i = from; i < text.length; i++) {
@@ -30,6 +29,7 @@ function closingParen(text, from) {
   throw new UnreadableCommand();
 }
 
+// Salta lo que abre `$(`: ahí dentro las comillas no cierran las de fuera.
 function closingDoubleQuote(text, from) {
   for (let i = from; i < text.length; i++) {
     if (text[i] === '\\') i++;
@@ -64,6 +64,7 @@ class CommandReader {
     this.pipeline = [newCommand()];
     this.word = null;
     this.expecting = null;
+    this.stripTabs = false;
     this.pending = [];
   }
 
@@ -75,7 +76,7 @@ class CommandReader {
     if (this.word === null) return;
     const word = this.word.value;
     if (this.expecting === 'redirect') this.command.redirects.push(word);
-    else if (this.expecting === 'heredoc') this.pending.push({ delimiter: word, stripTabs: this.stripTabs, command: this.command });
+    else if (this.expecting === 'heredoc') this.pending.push({ delimiter: word.replaceAll('\\', ''), stripTabs: this.stripTabs, command: this.command });
     else if (this.expecting !== 'skip') this.command.words.push(word);
     this.expecting = null;
     this.word = null;
@@ -116,6 +117,8 @@ class CommandReader {
   }
 
   readGreaterThan() {
+    const isDescriptor = /^\d+$/.test(this.word?.value ?? '');
+    if (isDescriptor) this.word = null;
     this.endWord();
     this.position += this.text[this.position + 1] === '>' ? 2 : 1;
     if (this.text[this.position] === '&') {
@@ -172,7 +175,7 @@ class CommandReader {
 
   readEscape() {
     const escaped = this.text[this.position + 1] ?? '';
-    if (escaped !== '\n') this.append(escaped);
+    if (escaped !== '\n') this.append(`\\${escaped}`);
     this.position += 2;
   }
 
@@ -187,9 +190,12 @@ class CommandReader {
   }
 }
 
+// Una variable reasignada o con una expresión detrás no dice qué ruta escribe: da null.
 function literalOfVariable(body, name) {
-  const assignment = new RegExp(`\\b${name}\\s*=\\s*(?:Path\\(\\s*)?${STRING}`);
-  return body.match(assignment)?.[2] ?? null;
+  const anyAssignment = new RegExp(`(?:^|[^\\w.$])${name}\\s*=(?!=)`, 'gm');
+  if ((body.match(anyAssignment) ?? []).length !== 1) return null;
+  const literal = new RegExp(`(?:^|[^\\w.$])${name}\\s*=\\s*(?:Path\\(\\s*)?${STRING}\\s*\\)?\\s*(?:[;,]|$)`, 'm');
+  return body.match(literal)?.[2] ?? null;
 }
 
 // La ruta del primer argumento: un literal, o una variable asignada a un literal. Una calculada da null.
@@ -214,14 +220,19 @@ function writtenPaths(body) {
   return paths;
 }
 
-const codePathWritten = (body) => writtenPaths(body).find((path) => path && CODE_FILE.test(path)) ?? null;
+const codePathWritten = (body) => writtenPaths(body).find((path) => path && CODE_FILE.test(path) && !path.includes('${')) ?? null;
+
+function withoutLeadingAssignments(words) {
+  const first = words.findIndex((word) => !ASSIGNMENT.test(word));
+  return first < 0 ? [] : words.slice(first);
+}
 
 function readsStdinScript(command) {
-  const [program, ...args] = command.words.filter((word, i, words) => !(ASSIGNMENT.test(word) && words.slice(0, i).every((before) => ASSIGNMENT.test(before))));
+  const [program, ...args] = withoutLeadingAssignments(command.words);
   if (!program) return false;
   const name = program.replaceAll('\\', '/').split('/').at(-1).replace(/\.exe$/i, '').toLowerCase();
   if (!INTERPRETERS.has(name)) return false;
-  return args.every((arg) => arg === '-' || (arg.startsWith('--') && arg.includes('=')));
+  return args.every((arg) => arg === '-' || /^-\w$/.test(arg) || (arg.startsWith('--') && arg.includes('=')));
 }
 
 function targetOfPipeline(pipeline) {
