@@ -1,0 +1,4 @@
+# SDD ledger — plan: .docs/sdd/specs/20261014-130000-feature-0026-note-title-date/plan.md
+Pre-flight | Task 1 consigo misma | el plan dice «los dos cambios» y h0 no exhibe el fallo; la spec condiciona la frase al RED y la constitution prohíbe guidance sin baseline fallando | ver Ruling
+Task 1: Ruling: h0 limpio (1 de 1), la frase del paso 2 no se escribe, aunque el plan diga «los dos cambios» — la spec la admite solo «si el RED lo exhibe» y la constitution veta guidance sin fallo en el baseline; el THEN ya se cumple sin ella — si es errónea: añadir una frase y su humo
+Task 1: Ruling: commit 17f886c hecho sin humo en verde y sin línea complete — el claude anidado está bloqueado en este entorno («claude anidado bloqueado en un sujeto») y no hay herramienta de subagentes; no se sortea el bloqueo. Art. I y el contrato de cierre exigen relanzar h1 — si es errónea: el aviso no corrige el fallo y toca una ronda de REFACTOR

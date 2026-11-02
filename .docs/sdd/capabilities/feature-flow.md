@@ -791,6 +791,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND los scripts de medida y las salidas en bruto quedan en la carpeta de la spec
 - AND cada task corre en Native, con su salida en bruto como evidencia y sin tests RED
 
+### El Scope marca lo condicionado al RED
+
+- GIVEN una spec que edita una skill, con el frente «la nota sin fecha» que viene de un ticket y aún no se ha medido
+- WHEN el agente escribe el Scope antes de medirlo
+- THEN el frente va en una línea `Entra, si el RED lo exhibe:`, separada de los `Entra:`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.

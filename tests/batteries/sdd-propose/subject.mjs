@@ -18,6 +18,7 @@ const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"h
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
 const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
+const F28 = '.docs/sdd/specs/20261008-130000-feature-0028-close-notice-pending';
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
@@ -107,6 +108,18 @@ const molds = {
     edit('.docs/sdd/constitution.md', (text) => `${text}5. Ninguna edición de una skill sin su prueba con sujetos (RED → GREEN). La previsión de coste (sujetos, minutos y dólares) se declara antes del primer sujeto y la spec la repite; si la prueba la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead.\n`);
     edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Sujetos: Sonnet. Un sujeto de \`aviso-cierre\` cuesta ~0,70 $, porque cierra una feature entera.\n`);
     s.put('.docs/sdd/specs/20260915-090000-patch-0006-aviso/patch.md', '# Patch — aviso\n\nRED y GREEN de `aviso-cierre`, 4 sujetos, ~1,24 $ (~0,31 $ por sujeto).\n');
+  },
+  // mold-c lleva un pendientes.md que solo se ve abriéndolo.
+  'reservas-skills-molde'() {
+    molds['reservas-skills']();
+    s.put('tests/batteries/aviso-cierre/mold-c/pendientes.md', '# Pendientes\n\n- 0011: responsables de sala\n');
+  },
+  // Un molde de varios ficheros cuya lista de pendientes va en una carpeta oculta.
+  'reservas-skills-suite'() {
+    molds['reservas-skills']();
+    const root = 'tests/batteries/aviso-cierre/mold-cierre';
+    for (const name of ['README.md', 'src/app.js', 'src/rooms.js', 'test/app.test.js', 'docs/guia.md', 'docs/salas.md', '.docs/sdd/roadmap.md']) s.put(`${root}/${name}`, `# ${name}\n`);
+    s.put(`${root}/.docs/sdd/pendientes.md`, '# Pendientes\n\n- 0011: responsables de sala\n');
   },
   'reservas-adr'() {
     mkdirSync(at('.docs/sdd/decisions'), { recursive: true });
@@ -270,6 +283,21 @@ steps.co1 = () => {
 steps.co2 = () => branch('feature/0014-notice-room');
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
+steps.cr1 = () => {
+  s.put('.docs/sdd/field-reports/20260914-aviso.md', '# Ticket — aviso de cierre\n\n## 1. El aviso no dice qué queda pendiente\n\n- **Qué pasó**: al cerrar la 0005, el aviso dijo qué se cerraba, y la persona no supo que quedaba una fila abierta.\n- **Coste**: una parada del dev-lead.\n');
+  branch('feature/0028-close-notice-pending');
+};
+steps.cr2 = () => {
+  branch('feature/0028-close-notice-pending');
+  s.put(`${F28}/spec.md`, readFileSync(join(FIX, 'spec-0028.md'), 'utf8'));
+};
+const NAMED_MOLD = '`c1` de `tests/batteries/aviso-cierre/battery.md`, cuyo molde `mold-c` no tiene `pendientes.md`, así que el sujeto saca lo pendiente de la skill.';
+steps.cr3 = () => {
+  const spec = readLf(join(FIX, 'spec-0028.md'));
+  if (!spec.includes(NAMED_MOLD)) s.die('sin la línea del molde en la fixture');
+  branch('feature/0028-close-notice-pending');
+  s.put(`${F28}/spec.md`, spec.replace(NAMED_MOLD, '`c1`, en un molde sin lista de pendientes.').replace('GIVEN un cierre sin `pendientes.md` en el molde', 'GIVEN un cierre en un molde sin lista de pendientes'));
+};
 steps.pw1 = () => {
   branch('feature/0017-saturday-note');
   s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
@@ -282,12 +310,12 @@ s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);
 for (const kept of ['spec', 'plan', 'tasks']) {
-  for (const folder of [F10, F11, F13]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
+  for (const folder of [F10, F11, F13, F28]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
 }
 // Las carpetas del molde y de los fixtures son de 2026-10-08 o antes: la que crea el sujeto es la de fecha mayor.
 const specs = at('.docs/sdd/specs');
 const newest = existsSync(specs) ? readdirSync(specs).sort().at(-1) : undefined;
-const ours = [F10, F11, F13].map((folder) => folder.split('/').at(-1));
+const ours = [F10, F11, F13, F28].map((folder) => folder.split('/').at(-1));
 if (newest && !ours.includes(newest) && !/task-000|patch-0007/.test(newest)) {
   for (const [file, name] of [['spec.md', 'spec-new.md'], ['patch.md', 'patch-new.md'], ['plan.md', 'plan-new.md']]) {
     if (existsSync(join(specs, newest, file))) s.keep(join(specs, newest, file), name);

@@ -39,7 +39,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-> Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. **Exhaustiva**: cada valor de la spec sale de la entrevista, del roadmap o de ti, y los tuyos están todos aquí —un texto de respuesta o de aviso, un tope, un orden, un nombre de comando que nadie dijo—, aunque también aparezcan en un THEN. Un texto va con su literal: «importe no válido: usa dos decimales», no «avisa del formato». Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-propose/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
+> Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. **Exhaustiva**: cada valor de la spec sale de la entrevista, del roadmap o de ti, y los tuyos están todos aquí —un texto de respuesta o de aviso, un tope, un orden, un nombre de comando que nadie dijo—, aunque también aparezcan en un THEN. Un texto va con su literal: «importe no válido: usa dos decimales», no «avisa del formato». El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-propose/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
 
 1. <decisión> — <por qué>
 - Política de modelos (solo en `delegate`): <revisores de la spec con modelo, o ninguno> · <ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan> · <otros despachos en paralelo: sujetos, por tandas> · en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar que pidan las instrucciones del usuario; lo que no nombra se confirma aparte
@@ -66,6 +66,7 @@ Validación: <dev-lead | agente> — <porqué>
 ## Scope
 
 - Entra: <…>
+- Entra, si el RED lo exhibe: <lo de un ticket sin medir, aunque sea todo el cambio>
 - No entra: <…>
 
 ## Lo que se retira o cambia de forma
@@ -84,7 +85,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Dónde se prueba
 
-> Una línea por comportamiento: dónde se prueba y como qué prueba existente, en la costura existente más alta, y cuantas menos costuras mejor. Cambiarla durante la implementación es un desvío.
+> Una línea por comportamiento: dónde se prueba y como qué prueba existente, en la costura existente más alta, y cuantas menos costuras mejor.
 
 - <comportamiento>: <superficie y patrón> — p. ej. «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
 
