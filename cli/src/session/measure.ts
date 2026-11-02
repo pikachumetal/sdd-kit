@@ -1,5 +1,8 @@
 import type { Json } from '../cli/records.ts';
 import { resolve } from 'node:path';
+import { docsFolder } from '../cli/layout.ts';
+import { commitsOf } from './branches.ts';
+import { buildTiming, unmeasuredTiming, type Timing } from './timing.ts';
 import { readPrices, sessionCost, type SessionCost } from './cost.ts';
 import { notMeasuredLines, reportLines, mainModel } from './format.ts';
 import { formatMinute, type Clock } from './clock.ts';
@@ -50,6 +53,17 @@ export function measureSession(options: MeasureOptions): Measurement {
   if (windowed !== null) return windowed;
   if (folders.length === 0) return { kind: 'notMeasured', reason: `sin transcripts de Claude Code para ${worktreePath}` };
   return { kind: 'notMeasured', reason: `sin respuestas de ${options.branch || 'ninguna rama'} en los transcripts` };
+}
+
+export function timingOf(measurement: Measurement, options: MeasureOptions, folder: string): Timing {
+  if (measurement.kind === 'notMeasured') return unmeasuredTiming(measurement.reason);
+  const { timelines, clock } = measurement.session;
+  if (clock === null) return unmeasuredTiming('sin respuestas del hilo en los transcripts');
+  const worktreePath = resolve(options.path);
+  const repo = options.branch === '' ? null : repositoryOf(worktreePath, options.projectsRoots.length > 0 ? options.projectsRoots : defaultProjectsRoots());
+  const commits = repo === null || repo.into === null ? [] : commitsOf(repo.root, options.branch, repo.into);
+  const clockSeconds = Math.round(clock.clockMillis / 1000);
+  return buildTiming({ timelines, commits, branch: options.branch, clockSeconds, folder, docsPath: docsFolder(worktreePath) });
 }
 
 function windowLine({ folder, from }: WindowInfo): string {

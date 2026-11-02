@@ -395,7 +395,25 @@ const startEnv = (broken) => {
   s.put('.docs/sdd/sdd-kit.local.json', '{"validation": {"startEnvironment": true}}\n');
 };
 
+// La 0010 con 4 h de implementación estimadas y un transcript de 5 h de reloj: 200 min son esperas, y el real sale muy por debajo.
+function timing0010() {
+  moldReservas();
+  done0010();
+  appendFileSync(at(`${F10}/plan.md`), '\n## Estimación y esfuerzo\n\n- Tipo: backend\n- Esfuerzo spec + plan: 0,5h\n- Estimación de implementación: 4h\n');
+  s.commit('docs(sdd): estimación de la 0010');
+  s.seedTranscript('feature/0010-cancel-reason', [
+    '2026-10-08T09:00:00.000Z user arranca la 0010',
+    '2026-10-08T09:30:00.000Z assistant spec escrita',
+    '2026-10-08T09:40:00.000Z assistant! ¿apruebas la spec?',
+    '2026-10-08T12:00:00.000Z user sí',
+    '2026-10-08T12:40:00.000Z assistant! implementada, ¿sigo con la revisión?',
+    '2026-10-08T13:40:00.000Z user sigue',
+    '2026-10-08T14:00:00.000Z assistant! revisión limpia',
+  ]);
+}
+
 const molds = {
+  'reservas-timing': timing0010,
   reservas: () => (moldReservas(), done0010()),
   'reservas-family': () => (moldReservas(), done0010(), family0010()),
   'reservas-family-done': () => {
@@ -533,6 +551,7 @@ for (const migration of files('skills/sdd-upgrade/references/migrations', /^v.*\
 for (const kept of ['ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));
 for (const adr of files('.docs/sdd/decisions', /\.md$/)) keepIf(`.docs/sdd/decisions/${adr}`, adr);
 keepIf('.docs/sdd/steering/operations.md', 'operations.md');
+keepIf(`${F10}/timing.json`, 'timing.json');
 for (const doc of ['roadmap', 'tech-stack', 'changelog']) keepIf(`.docs/sdd/${doc}.md`, `${doc}.md`);
 const techStack = gitQuiet('show', 'develop:.docs/sdd/tech-stack.md');
 const tail = techStack ? `${techStack.replace(/\n$/, '').split('\n').slice(-20).join('\n')}\n` : '';

@@ -185,15 +185,6 @@ Lo decidido por el dev-lead, tal cual: las fronteras salen de los eventos del ki
 - AND una carpeta con `withinMargin: false` no entra, y el log avisa por stderr con su nombre
 - AND sin ningún `timing.json` medido, la sección dice `Sin datos: ninguna tarea tiene timing.json.`
 
-#### ADDED — La causa de una desviación cita las esperas medidas
-
-- Se valida en: solo si el RED de `c1` lo exhibe (decisión 13); si no, este requisito sale de la spec
-- GIVEN una feature con dos esperas en el transcript, de 45 min a las 14:59Z y de 12 min a las 15:40Z
-- WHEN se ejecuta `sdd session tokens --branch <rama>`
-- THEN imprime `- Esperas y huecos: 14:59Z 45 min; 15:40Z 12 min`, la última línea, también tras `Medición`
-- AND sin esperas ni huecos, con «no medido» o en `--json`, esa línea no sale
-- AND con una desviación de más del ±30 %, `sdd-archive` escribe en «Causa de la desviación» esas horas y minutos, o «sin medir»
-
 #### MODIFIED — El cierre rellena los tokens y el coste de la sesión (antes: "`sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit")
 
 - GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-archive`, en un proyecto con `.docs/sdd/estimation.md`
@@ -239,7 +230,7 @@ Precio: 0,75 $ por sujeto de un turno (`estimation.md`, 0,6–0,9 $; `p2` de la 
 
 ## Enmiendas
 
-_Ninguna._
+- 2026-11-02 — sale el frente condicionado de la decisión 13: el requisito «La causa de una desviación cita las esperas medidas», la línea `Esperas y huecos` y la cita en `sdd-archive` y en el walkthrough; la fila de deuda se queda — RED de `tc1` limpio con n = 3 (`tests/phase-timing-red.md`) — aplica la decisión del dev-lead: «El frente se saca solo si la spec lo marcó condicionado» — Task 1
 
 ## Aprobaciones
 

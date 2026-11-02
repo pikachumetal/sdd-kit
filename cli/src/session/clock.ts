@@ -3,6 +3,7 @@ import { readText } from '../cli/files.ts';
 import { inRange, readResponses, type Selector } from './usage.ts';
 
 export interface Clock {
+  clockMillis: number;
   hours: number;
   clockHours: number;
   start: string;
@@ -13,13 +14,21 @@ export interface Clock {
   sessions: number;
 }
 
-interface Timeline {
-  first: number;
-  last: number;
-  waitMillis: number;
-  waits: number;
-  idleMillis: number;
-  idleGaps: number;
+export interface Span {
+  from: number;
+  to: number;
+}
+
+export interface ToolCall extends Span {
+  name: string;
+  input: Json;
+}
+
+export interface Timeline extends Span {
+  waitSpans: Span[];
+  idleSpans: Span[];
+  runSpans: Span[];
+  calls: ToolCall[];
 }
 
 interface ClockState {
@@ -27,11 +36,11 @@ interface ClockState {
   previous: number | null;
   questions: Map<string, number>;
   answered: Set<string>;
-  running: Set<string>;
-  waitMillis: number;
-  waits: number;
-  idleMillis: number;
-  idleGaps: number;
+  running: Map<string, number>;
+  calls: Map<string, ToolCall>;
+  waitSpans: Span[];
+  idleSpans: Span[];
+  runSpans: Span[];
 }
 
 const TASK_NOTIFICATION = '<task-notification>';
@@ -82,38 +91,43 @@ function answeredTools(entries: Json[]): Set<string> {
   return new Set(results.map((block) => String(block.tool_use_id)));
 }
 
-function addWait(state: ClockState, since: number, until: number): void {
-  state.waitMillis += until - since;
-  state.waits += 1;
-}
-
 function addIdle(state: ClockState, entry: Json, time: number): void {
   const gap = state.previous === null ? 0 : time - state.previous;
   if (state.turnClosedAt !== null || state.running.size > 0 || gap <= IDLE_MILLIS || isTaskNotification(entry)) return;
-  state.idleMillis += gap;
-  state.idleGaps += 1;
+  state.idleSpans.push({ from: state.previous!, to: time });
 }
 
 function readAgentEntry(state: ClockState, entry: Json, time: number): void {
   state.turnClosedAt = closesTurn(entry) ? time : null;
   for (const block of blocksOf(entry)) {
     if (!sameText(block.type, 'tool_use')) continue;
-    if (state.answered.has(String(block.id))) state.running.add(String(block.id));
-    if (sameText(block.name, 'AskUserQuestion')) state.questions.set(String(block.id), time);
+    const id = String(block.id);
+    state.calls.set(id, { name: String(block.name), input: (block.input ?? {}) as Json, from: time, to: time });
+    if (state.answered.has(id)) state.running.set(id, time);
+    if (sameText(block.name, 'AskUserQuestion')) state.questions.set(id, time);
   }
+}
+
+// Una pregunta al usuario es espera, no ejecución: lo que tarda es el dev-lead.
+function closeTool(state: ClockState, id: string, time: number): void {
+  const started = state.running.get(id);
+  state.running.delete(id);
+  const call = state.calls.get(id);
+  if (call !== undefined) call.to = time;
+  const asked = state.questions.get(id);
+  state.questions.delete(id);
+  if (asked !== undefined) state.waitSpans.push({ from: asked, to: time });
+  else if (started !== undefined) state.runSpans.push({ from: started, to: time });
 }
 
 function readUserEntry(state: ClockState, entry: Json, time: number): void {
   for (const block of blocksOf(entry)) {
     if (!sameText(block.type, 'tool_result')) continue;
-    state.running.delete(String(block.tool_use_id));
-    const asked = state.questions.get(String(block.tool_use_id));
-    if (asked === undefined) continue;
-    addWait(state, asked, time);
-    state.questions.delete(String(block.tool_use_id));
+    closeTool(state, String(block.tool_use_id), time);
   }
   if (state.turnClosedAt === null) return;
-  if (isTypedByUser(entry)) addWait(state, state.turnClosedAt, time);
+  if (isTypedByUser(entry)) state.waitSpans.push({ from: state.turnClosedAt, to: time });
+  if (isTaskNotification(entry)) state.runSpans.push({ from: state.turnClosedAt, to: time });
   // El hueco que acaba en el aviso de una tarea en segundo plano es trabajo, no espera al dev-lead.
   if (isTypedByUser(entry) || isTaskNotification(entry)) state.turnClosedAt = null;
 }
@@ -131,11 +145,11 @@ function initialState(entries: Json[]): ClockState {
     previous: null,
     questions: new Map(),
     answered: answeredTools(entries),
-    running: new Set(),
-    waitMillis: 0,
-    waits: 0,
-    idleMillis: 0,
-    idleGaps: 0,
+    running: new Map(),
+    calls: new Map(),
+    waitSpans: [],
+    idleSpans: [],
+    runSpans: [],
   };
 }
 
@@ -151,35 +165,41 @@ function timeline(file: string, range: Range): Timeline | null {
     else readUserEntry(state, entry, times[index]!);
     state.previous = times[index]!;
   });
-  const { waitMillis, waits, idleMillis, idleGaps } = state;
-  return { first: range.from ?? times.reduce(earlier), last: times.reduce(later), waitMillis, waits, idleMillis, idleGaps };
+  const { waitSpans, idleSpans, runSpans, calls } = state;
+  return { from: range.from ?? times.reduce(earlier), to: times.reduce(later), waitSpans, idleSpans, runSpans, calls: [...calls.values()] };
 }
 
 export const formatMinute = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;
 
 // En la ventana, los transcripts se solapan con su inicio común: el reloj es de pared, no la suma de cada uno.
 function clockMillisOf(timelines: Timeline[], { window }: Selector): number {
-  if (window !== undefined) return Math.max(...timelines.map((item) => item.last)) - window.from;
-  return timelines.reduce((total, item) => total + item.last - item.first, 0);
+  if (window !== undefined) return Math.max(...timelines.map((item) => item.to)) - window.from;
+  return timelines.reduce((total, item) => total + item.to - item.from, 0);
 }
 
-export function readClock(files: string[], selector: Selector): Clock | null {
-  const timelines = files
+const spansMillis = (spans: Span[]): number => spans.reduce((total, span) => total + span.to - span.from, 0);
+
+export function readTimelines(files: string[], selector: Selector): Timeline[] {
+  return files
     .filter((file) => readResponses(file, selector).length > 0)
     .map((file) => timeline(file, rangeOf(selector)))
     .filter((item): item is Timeline => item !== null);
+}
+
+export function clockOf(timelines: Timeline[], selector: Selector): Clock | null {
   if (timelines.length === 0) return null;
   const clockMillis = clockMillisOf(timelines, selector);
-  const waitMillis = timelines.reduce((total, item) => total + item.waitMillis, 0);
-  const idleMillis = timelines.reduce((total, item) => total + item.idleMillis, 0);
+  const waitMillis = timelines.reduce((total, item) => total + spansMillis(item.waitSpans), 0);
+  const idleMillis = timelines.reduce((total, item) => total + spansMillis(item.idleSpans), 0);
   return {
+    clockMillis,
     hours: roundToHundredths((clockMillis - waitMillis - idleMillis) / MILLIS_PER_HOUR),
     clockHours: roundToHundredths(clockMillis / MILLIS_PER_HOUR),
-    start: formatMinute(timelines.map((item) => item.first).reduce(earlier)),
+    start: formatMinute(timelines.map((item) => item.from).reduce(earlier)),
     waitMinutes: Math.round(waitMillis / MILLIS_PER_MINUTE),
-    waits: timelines.reduce((total, item) => total + item.waits, 0),
+    waits: timelines.reduce((total, item) => total + item.waitSpans.length, 0),
     idleMinutes: Math.round(idleMillis / MILLIS_PER_MINUTE),
-    idleGaps: timelines.reduce((total, item) => total + item.idleGaps, 0),
+    idleGaps: timelines.reduce((total, item) => total + item.idleSpans.length, 0),
     sessions: timelines.length,
   };
 }
