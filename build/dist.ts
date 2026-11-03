@@ -19,14 +19,14 @@ export const WHITELIST: readonly string[] = [
 ];
 
 const MARK_OPENER = '<!-- kit:';
-const WHOLE_LINE_MARK = /^\s*<!-- kit:(?:(?!-->).)*-->\s*$/;
+export const WHOLE_LINE_MARK = /^\s*<!-- kit:(?:(?!-->).)*-->\s*$/;
 // Sin tope de sangría: una valla dentro de una lista anidada va sangrada cuatro espacios o más.
-const FENCE = /^\s*(`{3,}|~{3,})/;
+export const FENCE = /^\s*(`{3,}|~{3,})/;
 const MISPLACED = 'marca mal puesta: una marca va sola en su línea, <!-- kit: … -->, fuera del frontmatter y de un bloque de código';
 
-type Block = 'frontmatter' | 'text' | { fence: string };
+export type Block = 'frontmatter' | 'text' | { fence: string };
 
-function nextBlock(block: Block, content: string, index: number): Block {
+export function nextBlock(block: Block, content: string, index: number): Block {
   if (block === 'frontmatter') return index > 0 && content.trimEnd() === '---' ? 'text' : 'frontmatter';
   const fence = FENCE.exec(content)?.[1];
   if (block === 'text') return fence ? { fence } : 'text';
