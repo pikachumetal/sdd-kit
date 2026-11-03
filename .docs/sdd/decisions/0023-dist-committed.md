@@ -32,7 +32,7 @@ Hasta la 2.3.4, la entrada del marketplace era `"source": "."`, y Claude Code co
 - Cada cambio de `skills/`, `agents/`, `hooks/` o `cli/` se commitea dos veces, la fuente y su copia en `dist/`. Para que no pese:
   - `.gitattributes` marca `dist/**` con `-diff linguist-generated`, así que el diff de una rama no sale doble.
   - `.ignore` lleva `dist/`, así que `rg` y el Grep del agente no lo buscan salvo que se nombre.
-- Quien sube la versión o edita la fuente reconstruye con `moon run kit:build`, o el pre-commit falla.
+- Quien sube la versión o edita la fuente reconstruye con `moon run kit:build`, o el pre-commit falla. Un edit hecho en `dist/` o un conflicto de merge en `dist/` se resuelven en la fuente y con `moon run kit:build`, nunca a mano: el build sobrescribe `dist/`.
 
 ### Confirmación
 

@@ -6,7 +6,8 @@
 // Las variables van solo al proceso de claude: la terminal que lo lanza no se queda con ellas.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BuildError, buildInto } from './build/dist.ts';
+import { buildInto } from './build/dist.ts';
+import { BuildError } from './build/errors.ts';
 import { COMMAND_NOT_FOUND, runInherited } from './cli/src/tasks/command.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));

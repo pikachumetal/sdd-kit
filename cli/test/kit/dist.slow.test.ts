@@ -1,24 +1,11 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
 import { buildInto, listSources } from '../../../build/dist.ts';
 import { cleanGitEnv, kitRoot, run } from './process.ts';
+import { tempDirs, writeTree } from './temp-tree.ts';
 
-const roots: string[] = [];
-
-function tempDir(prefix: string): string {
-  const dir = mkdtempSync(join(tmpdir(), prefix));
-  roots.push(dir);
-  return dir;
-}
-
-function writeTree(root: string, files: Record<string, string>): void {
-  for (const [path, content] of Object.entries(files)) {
-    mkdirSync(dirname(join(root, path)), { recursive: true });
-    writeFileSync(join(root, path), content);
-  }
-}
+const tempDir = tempDirs();
 
 function git(cwd: string, args: string[]): void {
   const result = run('git', ['-C', cwd, '-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args]);
@@ -34,10 +21,6 @@ function toyRepo(): string {
   writeTree(root, { 'skills/a/new.md': '# nuevo\n', 'skills/a/node_modules/x.js': 'x\n' });
   return root;
 }
-
-afterEach(() => {
-  for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
-});
 
 describe('build de dist/ con git', () => {
   it('takes only tracked or addable files of the whitelist', async () => {

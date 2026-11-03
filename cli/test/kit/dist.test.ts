@@ -1,37 +1,16 @@
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join, relative } from 'node:path';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildDist, listSources, stripMarks, syncDir, WHITELIST } from '../../../build/dist.ts';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { describe, expect, it, vi } from 'vitest';
+import { buildDist, listSources, relativeFiles as unsortedFiles, stripMarks, syncDir, WHITELIST } from '../../../build/dist.ts';
 import { filesUnder, repoRoot } from './kit-files.ts';
+import { tempDirs, writeTree } from './temp-tree.ts';
 
 const MISPLACED = 'marca mal puesta: una marca va sola en su línea, <!-- kit: … -->, fuera del frontmatter y de un bloque de código';
 const MARK = '<!-- kit: 0186 · sustituye: «x» -->';
 
-const roots: string[] = [];
-
-function tempDir(prefix: string): string {
-  const dir = mkdtempSync(join(tmpdir(), prefix));
-  roots.push(dir);
-  return dir;
-}
-
-function writeTree(root: string, files: Record<string, string>): void {
-  for (const [path, content] of Object.entries(files)) {
-    mkdirSync(dirname(join(root, path)), { recursive: true });
-    writeFileSync(join(root, path), content);
-  }
-}
-
-function relativeFiles(root: string): string[] {
-  return filesUnder(root, () => true).map((path) => relative(root, path).replaceAll('\\', '/')).sort();
-}
-
+const tempDir = tempDirs();
+const relativeFiles = (root: string): string[] => unsortedFiles(root).sort();
 const lf = (text: string): string => text.replace(/\r\n/g, '\n');
-
-afterEach(() => {
-  for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
-});
 
 describe('stripMarks', () => {
   it('strips a whole-line kit mark with its LF and CRLF', () => {
@@ -53,6 +32,16 @@ describe('stripMarks', () => {
     expect(() => stripMarks('a\n<!-- kit: a --> x\n', 'x.md')).toThrow(`x.md:2: ${MISPLACED}`);
     expect(() => stripMarks('a\nb\n<!-- kit: a\n', 'x.md')).toThrow(`x.md:3: ${MISPLACED}`);
     expect(() => stripMarks(`---\nname: x\n${MARK}\n---\nb\n`, 'x.md')).toThrow(`x.md:3: ${MISPLACED}`);
+  });
+
+  it('fails on text after a closed mark', () => {
+    expect(() => stripMarks('<!-- kit: a --> texto -->\n', 'x.md')).toThrow(`x.md:1: ${MISPLACED}`);
+    expect(() => stripMarks('<!-- kit: a --><!-- kit: b -->\n', 'x.md')).toThrow(`x.md:1: ${MISPLACED}`);
+  });
+
+  it('keeps a kit mark inside a fence nested in a list', () => {
+    const text = `- paso:\n\n    \`\`\`text\n    ${MARK}\n    \`\`\`\n`;
+    expect(stripMarks(text, 'x.md')).toBe(text);
   });
 });
 

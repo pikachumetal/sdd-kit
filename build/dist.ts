@@ -4,6 +4,7 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFile
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { git } from '../cli/src/git/git.ts';
+import { BuildError } from './errors.ts';
 
 export const WHITELIST: readonly string[] = [
   '.claude-plugin/plugin.json',
@@ -17,11 +18,10 @@ export const WHITELIST: readonly string[] = [
   'THIRD_PARTY_NOTICES.md',
 ];
 
-export class BuildError extends Error {}
-
 const MARK_OPENER = '<!-- kit:';
-const WHOLE_LINE_MARK = /^\s*<!-- kit:.*-->\s*$/;
-const FENCE = /^ {0,3}(`{3,}|~{3,})/;
+const WHOLE_LINE_MARK = /^\s*<!-- kit:(?:(?!-->).)*-->\s*$/;
+// Sin tope de sangría: una valla dentro de una lista anidada va sangrada cuatro espacios o más.
+const FENCE = /^\s*(`{3,}|~{3,})/;
 const MISPLACED = 'marca mal puesta: una marca va sola en su línea, <!-- kit: … -->, fuera del frontmatter y de un bloque de código';
 
 type Block = 'frontmatter' | 'text' | { fence: string };
@@ -72,7 +72,7 @@ export function buildDist(repoRoot: string, files: string[], outDir: string): vo
   }
 }
 
-function relativeFiles(root: string): string[] {
+export function relativeFiles(root: string): string[] {
   if (!existsSync(root)) return [];
   return readdirSync(root, { recursive: true, encoding: 'utf8' })
     .filter((path) => statSync(join(root, path)).isFile())

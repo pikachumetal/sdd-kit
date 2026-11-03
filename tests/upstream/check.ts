@@ -2,6 +2,7 @@
 // El package.json de esta carpeta ("type": "module") evita que Node avise por stderr y ensucie la salida.
 import { existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { BuildError } from '../../build/errors.ts';
 import { readRegistry, type Entry, type Registry, type Source } from '../../build/sources.ts';
 import { git } from '../../cli/src/git/git.ts';
 
@@ -63,8 +64,7 @@ async function findClones(dir: string): Promise<Map<string, string>> {
 
 const firstLine = (text: string): string => text.split(/\r?\n/).find((line) => line.trim() !== '')?.trim().replace(/\.$/, '') ?? 'sin detalle';
 
-async function prepareSource(name: string, source: Source, clone: string | undefined, dir: string): Promise<SourceClone | string> {
-  if (!clone) return `${name}: sin clone de ${source.repo} en ${dir}.`;
+async function prepareSource(name: string, source: Source, clone: string): Promise<SourceClone | string> {
   const fetch = await git(clone, ['fetch', '--tags', '--force', '--quiet', 'origin']);
   if (fetch.code !== 0) return `${name}: no se pudo actualizar el clone: ${firstLine(fetch.stderr)}.`;
   const tags = (await git(clone, ['tag', '--list'])).stdout.split(/\r?\n/).filter(Boolean);
@@ -86,6 +86,7 @@ async function checkEntry(entry: Entry, { name, clone, newest }: SourceClone): P
   if (gone.length > 0) return gone;
   const diff = await git(clone, ['diff', '--quiet', entry.version, newest, '--', ...entry.paths]);
   if (diff.code === 0) return [];
+  if (diff.code !== 1) return [`${where}: git diff falló: ${firstLine(diff.stderr)}`];
   return [`${where}: ${entry.version} → ${newest}, cambian sus rutas: git -C ${clone} diff ${entry.version} ${newest} -- ${entry.paths.join(' ')}`];
 }
 
@@ -95,7 +96,8 @@ async function checkRegistry(registry: Registry, dir: string): Promise<string[]>
   for (const [name, source] of Object.entries(registry.sources)) {
     const entries = registry.entries.filter((entry) => entry.source === name);
     if (entries.length === 0) continue;
-    const prepared = await prepareSource(name, source, clones.get(source.repo.toLowerCase()), dir);
+    const clone = clones.get(source.repo.toLowerCase());
+    const prepared = clone ? await prepareSource(name, source, clone) : `${name}: sin clone de ${source.repo} en ${dir}.`;
     if (typeof prepared === 'string') problems.push(prepared);
     else for (const entry of entries) problems.push(...(await checkEntry(entry, prepared)));
   }
@@ -112,7 +114,13 @@ async function main(argv: string[]): Promise<number> {
   const dir = process.env.SDD_UPSTREAM_DIR;
   if (!dir) return report(['Falta SDD_UPSTREAM_DIR: la carpeta con los clones de las fuentes vigiladas.']);
   if (!existsSync(registryPath)) return report([`Sin el registro de fuentes en ${registryPath}.`]);
-  const registry = readRegistry(registryPath);
+  let registry: Registry;
+  try {
+    registry = readRegistry(registryPath);
+  } catch (error) {
+    if (error instanceof BuildError) return report([error.message]);
+    throw error;
+  }
   const problems = await checkRegistry(registry, dir);
   return problems.length > 0 ? report(problems) : report([`Fuentes al día: ${registry.entries.length} entradas.`], 0);
 }
