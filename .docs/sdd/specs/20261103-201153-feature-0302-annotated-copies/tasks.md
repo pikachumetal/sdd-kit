@@ -17,14 +17,14 @@ created: 2026-11-03
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | La marca y las comprobaciones puras | done | — | |
-| 2 | El registro fichero a fichero | in_progress | — | |
+| 2 | El registro fichero a fichero | done | — | |
 | 3 | `kit:copies` contra los clones | pending | — | |
 | 4 | `kit:copies-update` y el experimento de 7.0.0 a 7.0.1 | pending | — | |
 
 ## Verificación por task
 
 - [x] Task 1 — `pnpm --dir cli exec vitest run test/kit/copies.test.ts test/kit/dist.test.ts`
-- [ ] Task 2 — `pnpm --dir cli exec vitest run test/kit/notices.test.ts test/kit/dist.test.ts test/kit/word-budget.test.ts` y `test/kit/upstream-watch.slow.test.ts`
+- [x] Task 2 — `pnpm --dir cli exec vitest run test/kit/notices.test.ts test/kit/dist.test.ts test/kit/word-budget.test.ts` y `test/kit/upstream-watch.slow.test.ts`
 - [ ] Task 3 — `pnpm --dir cli exec vitest run test/kit/copies.slow.test.ts` y `moon run kit:copies`
 - [ ] Task 4 — `pnpm --dir cli exec vitest run test/kit/copies.test.ts test/kit/copies.slow.test.ts`
 

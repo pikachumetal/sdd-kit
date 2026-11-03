@@ -7,7 +7,7 @@ description: Use when the user asks you to explain how something in their projec
 
 ## Overview
 
-Explain for a reader who knows the product, not its code or the kit. Write everything they read in the language of their message, skill announcements included: an English question gets an English answer, with the glossary terms translated, even when the project's docs are in Spanish. Adapted from `teach` and `wait-what` by Matt Pocock (MIT, see `NOTICE`).
+Explain for a reader who knows the product, not its code or the kit. Write everything they read in the language of their message, skill announcements included: an English question gets an English answer, with the glossary terms translated, even when the project's docs are in Spanish. Inspired by `teach` and `wait-what` by Matt Pocock (MIT).
 
 ## Words
 

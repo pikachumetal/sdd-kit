@@ -16,6 +16,8 @@ interface ToyEntry {
   version: string;
   paths?: string[];
   kit?: string[];
+  pending?: string;
+  from?: { source: string; version: string; path: string }[];
 }
 
 function git(args: string[]): string {
@@ -57,7 +59,7 @@ function newRegistry(root: string, entries: ToyEntry[], repo = 'acme/juguete'): 
   const path = join(root, 'upstream.json');
   const registry = {
     sources: { Juguete: { repo, tagPrefix: 'v', license: 'MIT', copyright: 'Copyright (c) 2026 Acme' } },
-    entries: entries.map(({ version, paths = ['a.md'], kit = ['skills/juguete/'] }) => ({ kind: 'copy', source: 'Juguete', version, paths, kit })),
+    entries: entries.map(({ version, paths = ['a.md'], kit = ['skills/juguete/'], ...rest }) => ({ kind: 'copy', source: 'Juguete', version, paths, kit, ...rest })),
   };
   writeFileSync(path, JSON.stringify(registry, null, 2));
   return path;
@@ -139,8 +141,29 @@ describe('Vigilancia de fuentes (tests/upstream/check.ts)', () => {
     const root = newRoot();
     const source = newSource(root, ['v1.0.0']);
     release(source.origin, 'v2.0.0', { 'a.md': 'a cambiada\n' });
-    const result = runCheck(newRegistry(root, [{ version: 'v1.0.0', kit: ['skills/a/', 'skills/b/'] }]), source.upstream);
+    const result = runCheck(newRegistry(root, [{ version: 'v1.0.0', kit: ['skills/a/', 'skills/b/'], pending: '0312' }]), source.upstream);
     expect(result.output).toMatch(/^Juguete · skills\/a\/, skills\/b\/: v1\.0\.0 → v2\.0\.0, cambian sus rutas: /);
+  });
+
+  it('watches the from of an entry', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v1.0.0']);
+    release(source.origin, 'v1.1.0', { 'c.md': 'c\n' });
+    release(source.origin, 'v2.0.0', { 'c.md': 'c cambiada\n' });
+    const from = [{ source: 'Juguete', version: 'v1.1.0', path: 'c.md' }];
+    expect(runCheck(newRegistry(root, [{ version: 'v1.0.0', kit: ['skills/juguete/SKILL.md'], from }]), source.upstream)).toEqual({
+      output: `Juguete · skills/juguete/SKILL.md: v1.1.0 → v2.0.0, cambian sus rutas: git -C ${source.clone} diff v1.1.0 v2.0.0 -- c.md`,
+      code: 1,
+    });
+  });
+
+  it('rejects a copy without pending with more than one file', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v1.0.0']);
+    expect(runCheck(newRegistry(root, [{ version: 'v1.0.0', kit: ['skills/a/', 'skills/b/'] }]), source.upstream)).toEqual({
+      output: 'upstream.json: la entrada 1 es una copia sin pending con más de un fichero; una copia anotada va fichero a fichero',
+      code: 1,
+    });
   });
 
   it('S3 otras familias y prereleases no cuentan', () => {
