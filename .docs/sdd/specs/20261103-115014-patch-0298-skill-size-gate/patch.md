@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-03
 branch: patch/0298-skill-size-gate
-commit: <hash>
+commit: 4ee21f58
 ---
 
 # Patch 0298 — Un `SKILL.md` de 20.000 bytes o más pone la release en rojo
@@ -47,9 +47,11 @@ Lo que da por existente, comprobado: `git -C <SDD_UPSTREAM_DIR>/superpowers show
 | 4 | `.github/workflows/ci.yml` y `.githooks/` no nombran `skill-size`; `cli:test` y `cli:test-min` corren el test de la comprobación, no la comprobación | ✅ |
 | 5 | `pnpm exec tsc --noEmit` en `cli/` | ✅ |
 
+Validación en campo: 2026-11-03 · RED→GREEN en `skill-size.test.ts` 3/3 · `moon run kit:skill-size` en rojo con las cinco skills y su tamaño (ejecución real) · el gate de cierre corre en la base integrada, porque `develop` va un commit por delante
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-03T11:50Z
-- Esfuerzo real: 
+- Esfuerzo real: 0,06 h — reloj de la sesión 0,06 h desde 2026-11-03T11:49Z, sin 0 min de espera al dev-lead (0 esperas). Desvío frente a 0,5 h: la petición fijaba límite, mensaje, tarea y ficheros, y la fuente son 30 líneas; sin esperas ni huecos
 - Coste de sujetos: no aplica
