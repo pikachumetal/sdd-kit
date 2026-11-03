@@ -47,6 +47,17 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - **Verificada**: sin verificar.
 - **Criterio de aceptación**: GIVEN una rama que solo cambia `.docs/` WHEN el hilo llena el encargo del eje Código THEN no edita ninguna sección de la plantilla, y el encargo pide enlaces, frontmatter y contradicciones entre documentos.
 
+### 3. El cierre dio un prompt de arranque improvisado, sin la plantilla y desde la sesión que no le toca
+
+- **Qué pasó**: en el mensaje final, el paso 9.5 de `sdd-archive` me llevó a dar el prompt de la 0300. Lo escribí a mano, sin la forma de `launch-prompt-template.md`: sin título con emoji, sin `***Nombre:***`, `***Base:***` ni `***Carril:***`, y sin los bloques «Fuera de alcance», «Decisiones ya tomadas» y «Salda». El dev-lead lo paró: «que tipo de prompt es ese ... no cumple con como generar prompts» y «ya me lo generara el develop no tu».
+- **Fuente**: `skills/sdd-archive/references/records.md`, «What's next in the family» («followed by its launch prompt in the form of `launch-prompt-template.md`»); `skills/sdd-templates/templates/launch-prompt-template.md`; `CLAUDE.md` del repo, regla 4 («Los da el kit (`sdd-roadmap` y `sdd-explore`) con la forma de … `launch-prompt-template.md`») y regla 6 (la sesión `develop` copia el ticket y lo tría).
+- **Dónde en el kit**: `skills/sdd-archive/SKILL.md` paso 9.5 y `references/records.md`, «What's next in the family».
+- **Por qué el kit no lo evitó**: la regla existía y no la apliqué: `records.md` nombra la plantilla, pero no la abrí. Además, el paso 9.5 pide el prompt en el cierre de toda rama, y en este repo el cierre de una feature lo tría la sesión `develop` (regla 6), que es la que da el prompt siguiente con `sdd-roadmap`.
+- **Coste**: una parada del dev-lead, con su corrección.
+- **Propuesta**: en el paso 9.5 de `sdd-archive`, sustituir «and its launch prompt» por una frase que lo dé por `sdd-roadmap` («dame el prompt de la <id>»), donde ya vive la plantilla, en vez de redactarlo en el cierre. Con eso, el repo no necesita una excepción para la sesión `develop`.
+- **Verificada**: sí — contrastado con `skills/sdd-archive/SKILL.md` paso 9.5 y `skills/sdd-templates/templates/launch-prompt-template.md`.
+- **Criterio de aceptación**: GIVEN el cierre de una pieza de una propuesta con piezas libres WHEN `sdd-archive` escribe el mensaje final THEN nombra la pieza recomendada y no redacta un prompt sin la forma de `launch-prompt-template.md`.
+
 ## Lo que hice por iniciativa propia
 
 - Medí las palabras del cambio de la constitution antes de presentar la spec. La primera versión de la frase del Art. IX la dejaba en 2.238 palabras, sobre su tope de 2.236; la reescribí antes del gate y quedó en 2.232. Funcionó: el gate no tuvo que tocar el tope.
