@@ -1,0 +1,60 @@
+import { existsSync } from 'node:fs';
+import { UsageError, lockTimeoutOption, requiredOption, requiredRootOption, text } from '../cli/args.ts';
+import { readLines } from '../cli/files.ts';
+import { docsFolder } from '../cli/layout.ts';
+import type { Verb } from '../cli/verbs.ts';
+import { configuredMergeInto } from '../merge/policy.ts';
+import { VERSION, causesReport, previousRetro, renderCauses } from './causes.ts';
+import { checkRoadmap } from './check.ts';
+import { debtPath } from './debt.ts';
+import { publish, resolveProjectRoot } from './publish.ts';
+
+export const roadmapCheckVerb: Verb = {
+  noun: 'roadmap',
+  verb: 'check',
+  summary: 'Valida que el roadmap y la deuda tienen la forma de su plantilla',
+  options: { path: { type: 'string' }, 'project-root': { type: 'string' }, json: { type: 'boolean' } },
+  async run(args, io) {
+    const { errors, warnings, lines, code } = checkRoadmap(requiredRootOption(args, 'path', docsFolder));
+    if (args.values.json) io.json({ valid: errors.length === 0, errors, warnings });
+    else lines.forEach((line) => io.out(line));
+    return code;
+  },
+};
+
+export const roadmapCausesVerb: Verb = {
+  noun: 'roadmap',
+  verb: 'causes',
+  summary: 'Agrupa la deuda por causa y dice qué sigue abierto desde la retro anterior',
+  options: { path: { type: 'string' }, 'project-root': { type: 'string' }, version: { type: 'string' }, json: { type: 'boolean' } },
+  async run(args, io) {
+    const docsPath = requiredRootOption(args, 'path', docsFolder);
+    const version = text(args, 'version') ?? '';
+    if (!VERSION.test(version)) throw new UsageError('--version debe ser X.Y.Z');
+    if (!existsSync(debtPath(docsPath))) {
+      io.err('roadmap causes: no existe steering/debt.md');
+      return 2;
+    }
+    const report = causesReport(readLines(debtPath(docsPath)), previousRetro(docsPath, version), version);
+    if (args.values.json) io.json({ causes: report.causes, open: report.open, closedSinceLast: report.closedSinceLast });
+    else renderCauses(report).forEach((line) => io.out(line));
+    return 0;
+  },
+};
+
+export const roadmapPublishVerb: Verb = {
+  noun: 'roadmap',
+  verb: 'publish',
+  summary: 'Publica ficheros de .docs/sdd/ y los documentos de la raíz en la rama de integración, bajo el cerrojo de merge',
+  options: { message: { type: 'string' }, into: { type: 'string' }, 'project-root': { type: 'string' }, 'lock-timeout': { type: 'string' } },
+  positionals: ['FILES...'],
+  async run(args, io) {
+    const projectRoot = resolveProjectRoot(text(args, 'project-root') ?? '.');
+    const into = text(args, 'into') ?? configuredMergeInto(projectRoot);
+    if (into === null) throw new UsageError('falta la rama de integración: pasa --into o define merge.into en .docs/sdd/sdd-kit.json');
+    if (args.positionals.length === 0) throw new UsageError('falta al menos un fichero que publicar');
+    const message = requiredOption(args, 'message');
+    await publish({ projectRoot, files: args.positionals, message, into, lockTimeoutMinutes: lockTimeoutOption(args) }, io);
+    return 0;
+  },
+};

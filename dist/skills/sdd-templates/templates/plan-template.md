@@ -1,0 +1,205 @@
+---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Plan de implementación — <título de la spec>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+---
+
+# Plan de implementación — <título>
+
+> Se escribe siguiendo `plan-writing.md` de `sdd-propose`. El método lo recomienda su handoff y va en la línea
+> `Ejecución` de abajo, para el plan entero.
+> Borra los bloques de ayuda (`>`) al redactar.
+
+## Decisiones que he tomado yo — valida estas
+
+> Una línea por decisión: **modelo y effort por task** (y por qué; la revisión final de rama no sigue esta política ni se quita en Native: sus ejes van con el modelo de `sdd-verify` —Spec y Arquitectura con `sdd-kit:effort-high` + `opus`, Código con `sdd-kit:effort-high` + `sonnet`—, también con una sola task, y «no hay subagentes que auditar» no vale, porque es la única revisión independiente de Native), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos**, **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero) y el **Review Focus** en una línea que lo resume («Review Focus: <n> entradas que la spec no fija, con su comportamiento esperado; ver la sección»): cada entrada fija un comportamiento que la spec calla.
+
+1. <decisión> — <por qué>
+
+**Goal**: <una frase con el objetivo de implementación>
+
+**Architecture**: <2-3 frases sobre el enfoque técnico y por qué>
+
+**Tech Stack**: <el del proyecto — ver `.docs/sdd/tech-stack.md`; recorta a lo que toca esta feature>
+
+**Spec**: `./spec.md`
+
+**Ejecución**: <native | subagent>, porque <motivo del plan> (el motivo pesa la dependencia entre las interfaces de las tasks, cuántas son, el coste de un error que llegue a la rama y si el plan cabe en un contexto, sin umbral: «native, porque 3 tasks encadenadas por la interfaz de Ledger, un error lo caza el test de su task y el plan cabe en un contexto») · o, con `execution` fijado en `sdd-kit.json` o `sdd-kit.local.json`: <valor>, fijado en <sdd-kit.json | sdd-kit.local.json>, el fichero que lo fija · con native, añade: Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con el método SDD de sdd-implement sobre el mismo ledger. · con native, añade también: La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.
+
+**Eje Arquitectura**: <sí — <la frontera que cruza> | no — <motivo>> (sí si el diff añade un módulo, una dependencia en un manifest, un contrato entre módulos o datos; lo juzga `plan-writing.md` de `sdd-propose` contra `architecture.md`, y en la revisión final el hilo solo puede subirlo: «no — solo cambia el texto de `cancelar`» · «sí — dependencia nueva `zod` en `package.json`»)
+
+## Restricciones globales
+
+> Dos bloques. Una línea por restricción; "ninguna" si un bloque no tiene.
+>
+> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha le entrega el bloque «De código» — ver `sdd-implement`.
+
+### De código
+
+> Viaja al implementador y a cada revisor. Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— y el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código ni que citen documentos —constitution, spec, task, capacidad—, clean code, umbrales). Si la constitution del proyecto no tiene artículo de calidad, escribe aquí las dos reglas de comentarios igualmente.
+>
+> El gate completo del proyecto (la suite entera, el lint de todo el repo) **no va aquí**: este bloque viaja a cada implementador y lo convertiría en obligación de cada task. Cada task declara su verificación; el gate va en §3, una vez.
+
+- <restricción, con el valor exacto de la spec>
+
+### De proceso
+
+> El bloque «De proceso» es para quien despacha: no viaja al encargo de ningún revisor. Aquí van la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto), el **modo de ejecución** por defecto y las reglas de atribución de commits.
+
+- <regla de proceso>
+
+## Review Focus
+
+> La pide `plan-writing.md` de `sdd-propose` en todo plan, y `sdd-verify` se la pasa literal al eje Spec de la revisión final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero. Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda.
+
+- <entrada o condición> → <comportamiento esperado> · Task <n>, `<nombre del test>` — p. ej. `GET /bookings?status=Foo` → 400 con los estados válidos, no la lista entera · Task 1, `Rejects_unknown_status`
+
+---
+
+## Phase -1 — Pre-Implementation Gates
+
+- [ ] **Simplicity gate**: ¿se puede hacer más simple?
+- [ ] **YAGNI gate**: ¿se abstrae algo con menos de 3 usos reales?
+- [ ] **Brownfield gate** *(si el proyecto es brownfield)*: ¿retrocompatible? ¿respeta el patrón del módulo? ¿sin refactor oportunista fuera de scope?
+- [ ] **Constitution check**: el plan respeta los artículos relevantes de `.docs/sdd/constitution.md`.
+
+---
+
+## 1. Decisiones técnicas
+
+### 1.1 Estructura de ficheros
+
+> Los valores de comportamiento (tiempos, límites, cuotas, avisos) viven solo en `capabilities/`. Si una task documenta `tech-stack.md`, `architecture.md` o `environments.md`, dice dónde está la pieza técnica y enlaza la capacidad, sin copiar el valor.
+
+**Crear**:
+
+- `path/al/fichero` — responsabilidad.
+
+**Modificar**:
+
+- `path/al/existente` — qué cambia.
+
+**NO se tocan** (constancia de lo que deliberadamente queda intacto):
+
+- `path/...` — por qué se deja como está.
+
+### 1.2 Modelo de datos *(si aplica)*
+
+Cambios de schema; si es grande → `data-model.md`.
+
+### 1.3 Migraciones *(si aplica)*
+
+Mecanismo y nomenclatura del proyecto (ver `tech-stack.md` y skills de nivel 2).
+
+### 1.4 Contratos API *(si aplica)*
+
+Endpoints, shape request/response.
+
+### 1.5 UX *(si aplica)*
+
+> Frontend: componentes, wireframes o capturas.
+
+### 1.6 Dependencias
+
+> Specs previas, servicios externos, librerías.
+
+### 1.7 Riesgos
+
+> Lo técnico vive aquí.
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+| --- | --- | --- | --- |
+
+### 1.8 Rollout
+
+> Cómo llega a producción: toggle, orden de despliegue, entrega al cliente. "Directo" si no hay nada especial.
+
+### 1.9 Excepciones a la constitution
+
+> Si el plan necesita desviarse de un artículo: artículo · por qué · plan de remediación · aprobado por. "Ninguna" si no hay.
+
+---
+
+## 2. Tasks
+
+Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada una.
+
+> Cada task es ejecutable y acotada, y verifica solo lo que toca: sus superficies dicen qué
+> comandos corre (`tech-stack.md` §Testing: TDD si hay tests automáticos; smoke manual documentado
+> si no los hay). El gate completo corre una vez, en §3. Si hay más de una task → crear `tasks.md`
+> (registro vivo).
+>
+> **Tasks verticales** (orientación, no regla): en un plan que cambia una aplicación, cada task acaba en algo que el usuario puede probar en ella: una rebanada que atraviesa las capas que necesita (migración, API, pantalla), no una capa. Si una task no puede, su línea «Se prueba en la aplicación» dice por qué: una base común que usan varias funcionalidades, una migración de datos sin cambio visible o un refactor. Las capas de una sola funcionalidad no son base común: «BD y API de facturas» con la pantalla de subida en la task siguiente es partir por capas; la primera task lleva la subida de punta a punta, de la tabla al botón. Sin tamaño fijo en horas.
+>
+> **Dependencias**: las tasks se ejecutan en orden, sin paralelo. Cada una declara en `**Tras**:` la task que la bloquea, o `—` si no la bloquea ninguna: «Quitar Sur de favoritas» lleva `Tras: Task 1` si la Task 1 es «Marcar Sur como favorita».
+
+### Task 1 — <nombre>
+
+**Tras**: <Task N que la bloquea | —>
+**Modelo**: <modelo **y** effort, los dos explícitos, con el despacho literal: `subagent_type: sdd-kit:effort-<low|medium|high>` + `model: <sonnet|opus>` — `Agent` no tiene parámetro de effort y, sin tipo, el subagente hereda el de la sesión. Con Haiku, que no admite effort: `general-purpose` + `model: haiku`. Si el harness no expone el effort (kit sin sus agentes, otro harness): «effort: no disponible en este harness, hereda el de la sesión». Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
+**Tests RED**: <hilo principal · `ruta/del/test`, escritos antes de despachar y sin commitear: van en el commit de la task; Native: TDD del propio hilo>
+
+> Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
+
+**Evidencia** *(con `mode: spike`, en vez de Tests RED)*: <objetivo · salida en bruto y script que la saca, en la carpeta de la spec · fila de `research.md`, calcado de su plantilla>
+
+**Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
+**Verificación**: <los comandos de esas superficies y ninguno más; cada uno sale con un código distinto de 0 si algo falla (con Pester, `-CI`), sin códigos de color (`NO_COLOR=1`), y con la línea de resumen que imprime, literal, copiada de una ejecución: `node --test test/cancel.test.js` → `ℹ fail 0` (su última línea es `ℹ duration_ms`, que no dice si pasó) · con Vitest, `Tests  12 passed (12)` · sin tests automáticos, el smoke manual con su resultado esperado>
+**Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · criterio en frases medibles, p. ej. «la tarjeta muestra cliente, total y estado» · pantalla de referencia, si no es la de `§Frontend`>
+**Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
+**Se prueba en la aplicación**: <omitir si el plan no cambia ninguna aplicación · qué hace el usuario y qué ve al acabar la task, con los datos de la spec: «el gestor sube `marzo.pdf` y lo ve en el listado de facturas como Pendiente» · o «no, porque <base común | migración | refactor>: <motivo>»>
+
+> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve, con el criterio escrito antes del código; la hace el hilo principal en un navegador, con el método de `sdd-implement/references/frontend-verification.md` (detector de `§Frontend`, capturas con rúbrica). Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
+
+**Interfaces**:
+- Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
+- Produce: <lo que las tasks siguientes usan de esta: nombres, firmas y formatos exactos>
+
+> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4») ni pide leer otra task o el plan entero: tras una compactación, un implementador con el contexto vacío la hace con su texto, los ficheros que nombra y las Restricciones globales; `Tras` es la única excepción, porque solo nombra la task que la bloquea. Copia aquí las firmas, tablas y textos que necesita.
+
+**Ficheros**: crear/modificar `path/...`
+
+- [ ] **Step 1: Implementación** — por cada pieza, la firma exacta (nombre, parámetros, retorno), el fichero y los valores de la spec que fija; por cada test, su nombre y sus asserts como código, con esos valores. El cuerpo lo escribe el implementador: el plan lo lleva solo para un algoritmo que la firma y los tests no determinan, o para un texto exacto que fija la spec. Sin placeholders.
+- [ ] **Step 2: Build** — el build de las superficies de la task. Esperado: verde, sin errores.
+- [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
+- [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-implement/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
+
+> Un cuerpo que la firma y los tests ya determinan es una transcripción, también en §1: el implementador lo escribiría igual. Basta con la firma (`MapGet("/bookings", (BookingsDb db, int page = 1, string? status = null))` en `BookingsEndpoints.cs`), los valores (`status` sin distinguir mayúsculas y minúsculas, 400 si no es un estado) y los tests que los fijan, con sus asserts como código (`Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)`).
+
+---
+
+## Estimación y esfuerzo *(OBLIGATORIO si existe `.docs/sdd/estimation.md` — no borrar)*
+
+> Se rellena al cerrar spec+plan. Unidad: horas (admite decimales).
+
+- Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
+- Esfuerzo spec + plan: <Xh>
+- Estimación de implementación: <Yh>
+- Estimación de revisión: <Zh>
+- Estimación de cierre: <Zh>
+- Base de la estimación: <nº de tasks, complejidad, incertidumbres, referencia del estimation-log>
+- Confianza: alta / media / baja
+
+---
+
+## 3. Validación final
+
+- [ ] Gate de cierre, una vez y en el hilo principal: <el «Gate de cierre» de `operations.md` §Testing, literal; sin él, el de `tech-stack.md` §Testing; sin ninguno, el de la constitution; si no hay ninguno, `no declarado`, apuntado en las decisiones del plan. Nunca un comando que no salga de ahí>
+- [ ] Verificación de los criterios de éxito de la spec (§2)
+- [ ] Spec satisfecha: cada requisito tiene su task (ver Self-review)
+- [ ] Cierre de rama según el flujo del proyecto (`sdd-archive`)
+
+---
+
+## 4. Self-review (cobertura spec → tasks)
+
+> Una línea por cláusula, no por requisito: el THEN y cada AND, cada uno con lo que lo observa. Una task cuyo test solo mira lo escrito no cubre «ha preguntado…». Si nada lo observa, dilo antes de ejecutar, en las decisiones del plan.
+
+- <THEN o AND de la spec> → Task <n>, <test o fila de medición que lo observa>. ✓
+- <cláusula que nada observa> → sin observar: <motivo> (avisado en las decisiones). ⚠
+- <fila de la tabla «regla retirada → dónde vive ahora» de la spec> → Task <n>, <test que busca la regla en su destino>. ✓
+- <aspecto sin cambios> → N/A (confirmado en spec). ✓
+- <línea del Review Focus> → Task <n>, test <nombre> (o la verificación que la cubre). ✓

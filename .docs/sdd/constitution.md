@@ -76,9 +76,9 @@ Los cambios no triviales del kit pasan por su propio flujo (arranque de feature 
 
 ## Art. VIII — Una sola fuente de plantillas
 
-Las plantillas canónicas viven solo en `skills/sdd-templates/templates/`. Ninguna copia, ni en este repo ni en los proyectos: al crear un artefacto se calca del skill `sdd-templates`.
+Las plantillas canónicas viven solo en `skills/sdd-templates/templates/`. Ninguna copia a mano, ni en este repo ni en los proyectos: al crear un artefacto se calca del skill `sdd-templates`, y la de `dist/` la genera el build y un test la compara.
 
-*Por qué*: las copias de cada proyecto derivaban de las del kit sin que nadie se enterara. [ADR 0008](decisions/0008-single-template-source.md)
+*Por qué*: las copias de cada proyecto derivaban de las del kit sin que nadie se enterara. [ADR 0008](decisions/0008-single-template-source.md) · [ADR 0023](decisions/0023-dist-committed.md)
 
 ## Art. IX — Fuentes y fork
 
