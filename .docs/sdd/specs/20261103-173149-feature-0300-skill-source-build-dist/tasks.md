@@ -18,8 +18,8 @@ created: 2026-11-03
 | --- | --- | --- | --- | --- |
 | 1 | Build, `dist/` y marketplace | done | 63d27d13 | |
 | 2 | La sesión de desarrollo y la copia para sujetos desde `dist/` | done | 31004bf3 | |
-| 3 | El registro de fuentes y los avisos generados | done | — | |
-| 4 | Prueba de instalación, byte a byte y glosario | pending | — | |
+| 3 | El registro de fuentes y los avisos generados | done | f92e19cb | |
+| 4 | Prueba de instalación, byte a byte y glosario | done | — | |
 
 ## Verificación por task
 
