@@ -281,19 +281,20 @@
 | 2026-11-02 | 0289 | docs | 0.5 | 0.34 | 0.68 | 20770k | 1722k | no aplica | 9.35 | 20261102-210125-feature-0289-upstream-review |
 | 2026-11-03 | 0298 | patch | 0.5 | 0.06 | 0.12 | — | — | no aplica | — | 20261103-115014-patch-0298-skill-size-gate |
 | 2026-11-03 | 0299 | docs | 3.5 | 0.95 | 0.27 | 40136k | 19563k | no aplica | 24.29 | 20261103-130212-feature-0299-own-skills-audit |
+| 2026-11-03 | 0303 | docs | 0.5 | 0.32 | 0.64 | 12133k | 3256k | no aplica | 7.6 | 20261103-162611-feature-0303-adr-three-rules |
 
-**Factor de calibración** (ratio mediano real/estimado, 241 artefactos): **0.56** · media 0.71
+**Factor de calibración** (ratio mediano real/estimado, 242 artefactos): **0.57** · media 0.71
 
 - p25–p75: 0.36–0.84
-- p80: 0.99 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 25 % · sobreestimadas: 66 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.24 · mediana 0.8
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.48
+- p80: 0.98 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 25 % · sobreestimadas: 67 % · infraestimadas: 9 %
+- Error absoluto (h): media 1.23 · mediana 0.8
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.47
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 97 | 40 % |
-| 0.5–0.8 | 73 | 30 % |
+| 0.5–0.8 | 74 | 31 % |
 | 0.8–1.25 | 50 | 21 % |
 | 1.25–2 | 13 | 5 % |
 | ≥2 | 8 | 3 % |
@@ -301,7 +302,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 105 | 0.57 | 0.4–0.8 |
+| docs | 106 | 0.58 | 0.4–0.8 |
 | infra/tooling | 64 | 0.49 | 0.36–0.73 |
 | patch | 70 | 0.71 | 0.27–1.2 |
 | tooling | 1 | 0.6 | — |
@@ -323,7 +324,7 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 129 | 231.7 | 0.53 | 651.49 | 1994.29 |
+| sin publicar | 130 | 232.02 | 0.53 | 651.49 | 2001.89 |
 
 > Ver `estimation.md`.
 
@@ -331,9 +332,9 @@
 
 | Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| apertura | 6 | 0.37 | 0.19 | 0.95 | 0 | 22 % | sí | 2.75 | 0.57 | 0.19 |
-| implementación | 6 | 0.44 | 0.31 | 0 | 0 | 30 % | no | 5.5 | 0.76 | 0.12 |
-| revisión | 3 | 0.35 | 0.83 | 0.22 | 0 | 46 % | sí | 1 | 1.18 | 1.18 |
-| cierre | 5 | 0.03 | 0.03 | 0 | 0 | 2 % | sí | 1 | 0.06 | 0.03 |
+| apertura | 7 | 0.46 | 0.21 | 1 | 0 | 23 % | sí | 3.25 | 0.67 | 0.19 |
+| implementación | 7 | 0.48 | 0.34 | 0 | 0 | 29 % | no | 6 | 0.83 | 0.12 |
+| revisión | 4 | 0.41 | 0.91 | 0.33 | 0 | 46 % | sí | 1 | 1.32 | 1.18 |
+| cierre | 6 | 0.04 | 0.03 | 0 | 0 | 2 % | sí | 1 | 0.07 | 0.03 |
 
-Ceremonia: 74 % del trabajo (2 tareas, 4 fuera por una fase sin eventos).
+Ceremonia: 75 % del trabajo (3 tareas, 4 fuera por una fase sin eventos).
