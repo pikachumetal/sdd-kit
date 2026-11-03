@@ -92,8 +92,8 @@ describe('Hook SessionStart del repo', () => {
       expect(json.hookSpecificOutput.additionalContext).toMatch(/caché/);
     });
 
-    it('additionalContext manda contrastar con skills/<nombre>/SKILL.md de la rama', () => {
-      expect(json.hookSpecificOutput.additionalContext).toContain('skills/<nombre>/SKILL.md');
+    it('additionalContext manda contrastar con dist/skills/<nombre>/SKILL.md de la rama', () => {
+      expect(json.hookSpecificOutput.additionalContext).toContain('dist/skills/<nombre>/SKILL.md');
     });
 
     it('systemMessage nombra las skills y los agentes', () => {
@@ -140,7 +140,7 @@ describe('Hook SessionStart del repo', () => {
     });
 
     it('da al agente la misma instrucción', () => {
-      expect(json.hookSpecificOutput.additionalContext).toContain('skills/<nombre>/SKILL.md');
+      expect(json.hookSpecificOutput.additionalContext).toContain('dist/skills/<nombre>/SKILL.md');
     });
   });
 
@@ -185,7 +185,7 @@ describe('start-kit-session.mjs', () => {
     expect(call).toEqual({
       tmp: join(root, '.temp'),
       root,
-      args: ['--settings', '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}', '--plugin-dir', root, '--model', 'sonnet'],
+      args: ['--settings', '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}', '--plugin-dir', join(root, 'dist'), '--model', 'sonnet'],
     });
   });
 
@@ -202,7 +202,9 @@ describe('start-kit-session.mjs', () => {
   });
 
   it('says so when claude is not on the PATH', () => {
-    const env: NodeJS.ProcessEnv = { ...cleanGitEnv, PATH: dirname(process.execPath) };
+    // git sí: el script construye dist/ antes de buscar claude.
+    const gitDir = dirname(run(process.platform === 'win32' ? 'where' : 'which', ['git']).output.split(/\r?\n/)[0]);
+    const env: NodeJS.ProcessEnv = { ...cleanGitEnv, PATH: [dirname(process.execPath), gitDir].join(delimiter) };
     expect(run(process.execPath, [launcherPath], { env })).toEqual({ output: 'start-kit-session: no encuentro claude en el PATH.', code: 127 });
   });
 });

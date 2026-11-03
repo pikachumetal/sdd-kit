@@ -201,7 +201,7 @@ function checkInputs(s, fs, { kit, skill, cwd }) {
   if (!fs.exists(join(s.KIT, 'skills', skill, 'SKILL.md'))) s.die(`sin la skill ${skill} en la copia del kit ${s.KIT} (task 0040)`);
   // Con .docs/, el sujeto leyó la spec de lo que se medía.
   if (fs.exists(join(s.KIT, '.docs')) || fs.exists(join(s.KIT, 'tests'))) {
-    s.die('la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin agents cli hooks');
+    s.die('la copia del kit lleva .docs/ o tests/: sácala con git archive <commit>:dist (antes de la feature 0300: git archive <commit> skills .claude-plugin agents cli hooks)');
   }
 }
 

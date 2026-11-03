@@ -145,7 +145,7 @@ Para probar el kit desde tu clon, arranca Claude Code con el plugin del working 
 node start-kit-session.mjs
 ```
 
-El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir <raíz del clon>` y pasa detrás los argumentos que le des (por ejemplo, `--model sonnet`).
+El script construye `dist/` desde tu working tree (`moon run kit:build` hace lo mismo), lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir <raíz del clon>/dist` y pasa detrás los argumentos que le des (por ejemplo, `--model sonnet`).
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 

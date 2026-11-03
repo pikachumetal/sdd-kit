@@ -16,8 +16,8 @@ created: 2026-11-03
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Build, `dist/` y marketplace | done | — | |
-| 2 | La sesión de desarrollo y la copia para sujetos desde `dist/` | pending | — | |
+| 1 | Build, `dist/` y marketplace | done | 63d27d13 | |
+| 2 | La sesión de desarrollo y la copia para sujetos desde `dist/` | done | — | |
 | 3 | El registro de fuentes y los avisos generados | pending | — | |
 | 4 | Prueba de instalación, byte a byte y glosario | pending | — | |
 

@@ -140,7 +140,7 @@ describe('readConfig', () => {
 
   it('aborta si la copia del kit no lleva cli/bin/sdd.js', () => {
     expect(() => readConfig(baseEnv(), CWD, memoryFs())).toThrow(
-      'la copia del kit no lleva cli/: sácala con git archive <commit> skills .claude-plugin agents cli hooks',
+      'la copia del kit no lleva cli/: sácala con git archive <commit>:dist (antes de la feature 0300: git archive <commit> skills .claude-plugin agents cli hooks)',
     );
   });
 

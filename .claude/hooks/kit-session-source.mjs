@@ -8,7 +8,7 @@
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
-const sourceContext = 'Las skills y los agentes sdd-kit:* de esta sesión no salen de la rama actual: vienen de la caché del plugin o de otra carpeta. Antes de ejecutar un paso de una skill cargada, contrasta su texto con skills/<nombre>/SKILL.md de la rama; si difieren, manda el de la rama. Si una skill no resuelve (Unknown skill), léela con Read de skills/<nombre>/SKILL.md de la rama y sigue su checklist.';
+const sourceContext = 'Las skills y los agentes sdd-kit:* de esta sesión no salen de la rama actual: vienen de la caché del plugin o de otra carpeta. Antes de ejecutar un paso de una skill cargada, contrasta su texto con dist/skills/<nombre>/SKILL.md de la rama, tras moon run kit:build; si difieren, manda el de la rama. Si una skill no resuelve (Unknown skill), léela con Read de dist/skills/<nombre>/SKILL.md de la rama y sigue su checklist.';
 const hooksMessage = 'Los hooks de git de este clon no están activos: el pre-commit no corre. Actívalos una vez por clon con: git config core.hooksPath .githooks';
 const hooksContext = 'git config core.hooksPath no devuelve .githooks: el pre-commit no corre en esta sesión, y un commit creado no prueba que pasó. No escribas «pre-commit en verde» sin haber ejecutado sus comprobaciones.';
 
