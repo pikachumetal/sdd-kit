@@ -72,6 +72,8 @@ Sin review de spec: el carril spike no la lleva (la rúbrica de `review-spec.md`
 
 ## Enmiendas
 
+- 2026-11-03 — Freno de la decisión 3: con la definición de la decisión 2 salen 915 candidatos (59 + 778 + 78), no 285; el umbral de 5 frases por pareja que puse en la Task 1 lo esquivaba. Los 630 bloques bajo el umbral (`out/shared-low.md`) se leen con 3 subagentes Sonnet, effort medium, unos 210 cada uno, y entran en el research con el resto — aprobada: «1» (a la opción «Leerlos con 3 subagentes Sonnet con effort medium… 3-6 $ y unos 30 min»)
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |

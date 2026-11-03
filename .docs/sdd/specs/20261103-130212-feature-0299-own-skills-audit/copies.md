@@ -3,12 +3,12 @@
 - **K1 · contradicción · unidad** — ya en `fork-audit.md` §1: «only these» de superpowers y la quinta clase del kit en el mismo párrafo; la frase de la fuente la volvió a pegar `e7ddf254`. Candidato E22.
   - A: `skills/sdd-implement/SKILL.md:18` · `0bf5e6d1` · «Four things stop you, and only these: an irreversible or destructive operation; a security-sensitive action; a side effect outside this worktree that norms say you ask about first (a merge, a push to a shared branch, a publish); and a plan so broken that every path forward is a guess.»
   - B: `skills/sdd-implement/SKILL.md:18` · `0bf5e6d1` · «The kit's own stops are a fifth class, not an exception to the four: a **deviation** from the approved spec, a **scope brake** and, in `pair`, the stop after each task ([Deviations and rulings](#deviations-and-rulings)).»
-- **K2 · excepción pegada · skill** — ya en `fork-audit.md` §2, y la misma regla en tres sitios más: la re-revisión única de la revisión final con opus. Candidatos E25, S103 y S104.
+- **K2 · excepción pegada · unidad** — ya en `fork-audit.md` §2, y la misma regla en tres sitios más: la re-revisión única de la revisión final con opus. Candidatos E25, S103 y S104. Distancia de la pareja: la misma frase; la repetición en otros tres sitios (B-D) es `otra skill`.
   - A: `skills/sdd-implement/SKILL.md:200` · `1d89f543` · «Scoped re-reviews of small fix diffs take a cheap-to-mid tier —except the single re-review of the final review, which `sdd-verify` sends with `sdd-kit:effort-high` + `opus`.»
   - B: `skills/sdd-implement/references/re-review-prompt.md:3` · `1d89f543` · «After the final review it is the single re-review of `sdd-verify` («Closing the review»): `sdd-kit:effort-high` + `opus`, `[FINDINGS]` carries the open findings of every axis, each with its axis, followed by the «What to Check» of the axes that went out, and `[BRIEF_FILE]` is the paths of `spec.md` and `plan.md`.»
   - C: `skills/sdd-verify/SKILL.md:249` · `1d89f543` · «**The single re-review.** Right before you present the validation —with `validation.mode: field`, before you go on to the closing— dispatch ONE re-review in the background, with its silence watch: `sdd-kit:effort-high` + `opus`; the header of [encargo-revision.md](references/encargo-revision.md) and [re-review-prompt.md](../sdd-implement/references/re-review-prompt.md), filled with the open findings of every axis and the «What to Check» of the axes that went out; over `sdd review package <plan> <last reviewed> HEAD`, in its own detached worktree at `HEAD`.»
   - D: `skills/sdd-verify/references/encargo-revision.md:3` · `649f1a99` · «El encargo de **cada eje de la revisión final**, el de su **pasada de fix** en SDD y el de su **re-revisión** empiezan así, antes del encargo del eje ([`sdd-verify`](../SKILL.md), «Final review»).»
-- **K3 · excepción pegada · otra sección** — «except in a patch» lo añadió `144a9b2f` (fix de la revisión final de la 0206) a la regla de `31783aa5`; la misma línea se exige otra vez en el paso 2 del Setup, con una frase que solo existe por el RED («Preparo el workspace» isn't it). Candidatos E21 y T12.
+- **K3 · excepción pegada · unidad** — «except in a patch» lo añadió `144a9b2f` (fix de la revisión final de la 0206) a la regla de `31783aa5`; la misma línea se exige otra vez en el paso 2 del Setup, con una frase que solo existe por el RED («Preparo el workspace» isn't it). Candidatos E21 y T12. Distancia de la pareja: la misma frase; la repetición del paso 2 (B) es `otra sección`.
   - A: `skills/sdd-implement/SKILL.md:14` · `3a111ffa` · «**Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` of [Setup](#setup), step 2.»
   - B: `skills/sdd-implement/SKILL.md:40` · `e7ddf254` · ««Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`).»
 - **K4 · excepción pegada · unidad** — la regla absoluta (`39868b02`: parar antes de commitear una ronda que añade un AND, «also when you didn't write the AND») recibe en `b66381e7` (0222) «One case goes on», sin cambiar la absoluta. Candidato T21.
@@ -35,7 +35,7 @@
   - B: `skills/sdd-propose/references/control-profiles.md:103` · `9963d5bf` · «Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HEAD <integración>) <integración> -- .docs/sdd/roadmap.md`, buscando la fila de la feature en curso.»
 - **K11 · misma regla en dos sitios · otra skill** — cómo se presenta la verificación visual (criterio, detector por viewport, medidas, capturas), en la parada de `pair` de `sdd-implement`, en el humo de `sdd-archive`, en `patch-flow.md` y en `frontend-verification.md`. Candidatos S2, S36, S69 y S115.
   - A: `skills/sdd-implement/SKILL.md:297` · `ad0aadfe` · «With «Verificación visual», before the script show the criterion, the detector output per viewport with each finding fixed or justified, each measurement with its value and the expected one if the criterion fixes a value, and each screenshot's path, or «composición no medida» or «no probado» with its reason.»
-  - B: `skills/sdd-archive/SKILL.md:31` · `90486b63` · «**The smoke**, in every mode: one row per THEN (spike: per objective), its evidence `suite`, `ejecución real` or `no probado`.»
+  - B: `skills/sdd-archive/SKILL.md:31` · `90486b63` · «With «Verificación visual», the message carries the criterion, the detector's output per viewport with each finding fixed or justified, each measurement with its value and the expected one if the criterion fixes a value, and each screenshot's path, or «composición no medida» or «no probado» with its reason ([frontend-verification.md](../sdd-implement/references/frontend-verification.md)).»
   - C: `skills/sdd-implement/references/patch-flow.md:18` · `33d0d0b7` · «In a visual adjustment, the verification is **one screenshot per touched screen in a real browser before the change and another after** —the Playwright MCP or a script with the `playwright` package—, without tests: a unit test doesn't see the layout.»
   - D: `skills/sdd-implement/references/frontend-verification.md:35` · `7461d95d` · «Con `Detector: ninguno`, sigue con las capturas y la rúbrica, y la presentación lleva, literal: «composición no medida: `tech-stack.md` no declara detector en §Frontend».»
 - **K12 · misma regla en dos sitios · otra skill** — un patch que interpreta requisitos era una feature, en `patch-flow.md` y en la cláusula de escalado de `sdd-archive` (además del árbol de `sdd-propose`). Candidato S30.
@@ -47,6 +47,8 @@
 - **K14 · misma regla en dos sitios · otra skill** — el squash del cierre y qué pasa con los shas de su tramo, en `sdd-archive` y en `commit-milestones.md`. Candidato S114.
   - A: `skills/sdd-archive/SKILL.md:48` · `01be8f1d` · «`Feature only:` squash the close into one commit from the last task's, with the fixes of the final review and the validation ([commit-milestones.md](../sdd-implement/references/commit-milestones.md)).»
   - B: `skills/sdd-implement/references/commit-milestones.md:44` · `f5d52697` · «El cierre no tiene hito siguiente, y el squash borra los shas de su tramo.»
+- **K37 · texto de la fuente quitado (regla 1) · —** — ya en `fork-audit.md` §3: «Rulings, not stalls» pierde «a cap you would have asked to exceed — decide them» de superpowers 7.0.0, sin que la frase ni la tabla de la 0147 digan por qué. No es uno de los cuatro tipos de la spec: rompe la regla 1.
+  - A: `skills/sdd-implement/SKILL.md:303` · `e7ddf254` · «**Rulings, not stalls.** A running plan does not wait on a human for what a ruling settles.»
 
 ### sdd-propose
 
@@ -75,9 +77,6 @@
 - **K21 · misma regla en dos sitios · skill** — ✋ lleva todo valor que no salió de la entrevista ni del roadmap, en el paso 4 y en `spec-writing.md`. Candidato S31.
   - A: `skills/sdd-propose/SKILL.md:63` · `01be8f1d` · «⛔ **APPROVAL GATE** — per the current profile ([gate table](references/control-profiles.md)): in `pair` and `delegate` present the spec **starting with its 🦆 (from `sdd-rubber-duck` in short mode, also under the title of `spec.md`) and with «✋ Decisiones que he tomado yo — valida estas»**, with every value that didn't come from the interview or the roadmap, even if it's in a THEN (`tests/sdd-start-feature-0146-red.md`) — and WAIT for the user's explicit approval.»
   - B: `skills/sdd-propose/references/spec-writing.md:17` · `89cc7e5d` · «**✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN.»
-- **K22 · texto que solo existe por un ticket · unidad** — la frase con cita repite la anterior («open review-spec.md and apply its rubric…»): el RED se arregló diciéndolo dos veces. Candidato T43.
-  - A: `skills/sdd-propose/SKILL.md:61` · `01be8f1d` · «Spec review level *(full mode)*: open [review-spec.md](references/review-spec.md) and apply its rubric before the coherence pass, also if you decide the review yourself; the reviewer's brief is there.»
-  - B: `skills/sdd-propose/SKILL.md:61` · `01be8f1d` · «Deciding the level without opening it is the failure (`tests/spec-review-weight-green.md`).»
 - **K23 · misma regla en dos sitios · otra sección** — «el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`…», dos veces en `control-profiles.md`. Candidato S11.
   - A: `skills/sdd-propose/references/control-profiles.md:62` · `f0fc3c4a` · «La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada.»
   - B: `skills/sdd-propose/references/control-profiles.md:237` · `f0fc3c4a` · «El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada: sería concederse a sí mismo el atajo.»
@@ -87,7 +86,7 @@
 
 ### sdd-archive
 
-- **K25 · excepción pegada · otra sección** — `5abd84b8` (pasada de fix de la 0263) añadió «except with `field` or `Validación: agente`» a dos filas de racionalizaciones de `7d0b66cd`; la regla de la validación en campo vive además en el paso 1, en el paso 4 de `sdd-propose` y en `control-profiles.md`. Candidatos E13, E14, E42, S54 y S125.
+- **K25 · excepción pegada · unidad** — `5abd84b8` (pasada de fix de la 0263) añadió «except with `field` or `Validación: agente`» a dos filas de racionalizaciones de `7d0b66cd`; la regla de la validación en campo vive además en el paso 1, en el paso 4 de `sdd-propose` y en `control-profiles.md`. Candidatos E13, E14, E42, S54 y S125. Distancia de la pareja: la misma frase en cada fila; la repetición de la regla (C-E) es `otra sección` y `otra skill`.
   - A: `skills/sdd-archive/SKILL.md:89` · `5abd84b8` · «Without it the change waits, except with `field` or `Validación: agente`; «lo pruebo mañana» with an owned trigger is a deferred validation (🧪).»
   - B: `skills/sdd-archive/SKILL.md:96` · `5abd84b8` · «"The `merge` block and `delegate` let me merge without asking" | They authorize the merge, not the validation: in `delegate` validation stops, except with `field` or `Validación: agente`.»
   - C: `skills/sdd-archive/SKILL.md:28` · `0f749671` · «**With `validation.mode: field`** in `.docs/sdd/sdd-kit.json` ([field validation](../sdd-propose/references/control-profiles.md#validación-en-campo)), in any profile: you don't ask, don't offer to defer and don't give a script, even if the user is away or only said «cierra».»
@@ -110,6 +109,9 @@
 - **K30 · misma regla en dos sitios · otra skill** — cuál es el último sha revisado (`Re-revisión:` o `Revisión final:`), en `sdd-archive` y en `sdd-verify`. Candidato S67.
   - A: `skills/sdd-archive/SKILL.md:24` · `f5d52697` · «Compare `HEAD` with the last reviewed commit: the second sha of `Re-revisión:`; if none, the `sobre` of `Revisión final:`; if the line says «juntada en el cierre», the closing commit.»
   - B: `skills/sdd-verify/SKILL.md:263` · `3b1f1a80` · «**The last reviewed sha** is the second sha of the `Re-revisión:` line; without one, the `sobre` of `Revisión final:`; and if the line says «juntada en el cierre», the closing commit.»
+- **K38 · excepción pegada · unidad** — `97ee8641` (cierre de la 0236) añadió «, unless it is a file of «Sin filtro»» a «no run without the filter for it» de `161195a3`. Candidato E9, descartado como predicado en la primera pasada y reclasificado al rastrearlo (hallazgo 4 del eje Spec).
+  - A: `skills/sdd-archive/SKILL.md:51` · `97ee8641` · «What only the base touched passed the close that brought it: no run without the filter for it, unless it is a file of «Sin filtro».»
+  - B: `skills/sdd-archive/SKILL.md:51` · `97ee8641` · «What only the base touched passed the close that brought it: no run without the filter for it, unless it is a file of «Sin filtro».»
 
 ### sdd-verify
 
@@ -128,7 +130,7 @@
 
 ### sdd-tdd
 
-- **K34 · excepción pegada · sección** — ya en `fork-audit.md` §4: «Fix test» de la fuente seguido de la regla del test recibido.
+- **K34 · excepción pegada · unidad** — ya en `fork-audit.md` §4: «Fix test» de la fuente seguido de la regla del test recibido.
   - A: `skills/sdd-tdd/SKILL.md:125` · `bc8113f6` · «Fix test.»
   - B: `skills/sdd-tdd/SKILL.md:125` · `bc8113f6` · «A test you received: report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».»
 - **K35 · misma regla en dos sitios · sección** — un error de compilación sobre el símbolo que crea la task cuenta como fallo, añadido por el kit en la checklist y en el paso. Candidato S95.

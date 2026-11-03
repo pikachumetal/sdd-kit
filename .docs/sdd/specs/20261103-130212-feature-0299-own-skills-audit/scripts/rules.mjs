@@ -111,15 +111,16 @@ function exceptionReport(units, cite) {
   return out;
 }
 
-function sharedReport(units, cite) {
-  return sharedRuns(units)
-    .filter((run) => run.phrases.size >= MIN_SHARED_PHRASES)
+function sharedReports(units, cite) {
+  const entries = sharedRuns(units)
     .sort((x, y) => y.phrases.size - x.phrases.size)
-    .flatMap((run, i) => [
+    .map((run, i) => ({ size: run.phrases.size, lines: [
       `- S${i + 1} · ${run.phrases.size} frases · ${distance(run.a, run.b)} · ${cite(run.a)} ↔ ${cite(run.b)}`,
       `  - «${clip(run.a.text)}»`,
       `  - «${clip(run.b.text)}»`,
-    ]);
+    ] }));
+  const pick = (keep) => entries.filter((e) => keep(e.size)).flatMap((e) => e.lines);
+  return { shared: pick((n) => n >= MIN_SHARED_PHRASES), 'shared-low': pick((n) => n < MIN_SHARED_PHRASES) };
 }
 
 function ticketReport(units, cite) {
@@ -131,13 +132,13 @@ function main() {
   const blames = new Map(files.map((f) => [f, blameOf(f)]));
   const units = files.flatMap(unitsOf).filter((u) => norm(u.text).length >= 6);
   const cite = makeCite(blames);
-  const reports = { exceptions: exceptionReport(units, cite), shared: sharedReport(units, cite), tickets: ticketReport(units, cite) };
+  const reports = { exceptions: exceptionReport(units, cite), ...sharedReports(units, cite), tickets: ticketReport(units, cite) };
   mkdirSync(outDir, { recursive: true });
   for (const [name, lines] of Object.entries(reports)) {
     writeFileSync(join(outDir, `${name}.md`), `# ${name} — skills/ en ${commit}\n\n${lines.join('\n')}\n`);
   }
   const count = (lines, prefix) => lines.filter((l) => l.startsWith(`- ${prefix}`)).length;
-  console.log(`ficheros: ${files.length} · unidades: ${units.length} · excepciones: ${count(reports.exceptions, 'E')} · compartidas: ${count(reports.shared, 'S')} · tickets: ${count(reports.tickets, 'T')}`);
+  console.log(`ficheros: ${files.length} · unidades: ${units.length} · excepciones: ${count(reports.exceptions, 'E')} · compartidas: ${count(reports.shared, 'S')} (+${count(reports['shared-low'], 'S')} bajo el umbral) · tickets: ${count(reports.tickets, 'T')}`);
 }
 
 main();
