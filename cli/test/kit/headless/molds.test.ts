@@ -31,11 +31,9 @@ const cases: MoldCase[] = readdirSync(BATTERIES).flatMap((battery, b) => {
     .map((row: Record<string, string>, m: number) => ({ battery, id: row.Id, mold: row.Molde, runs: join(root, `${b}-${m}`) }));
 });
 
-// La copia que saca git archive, sin tar: el tar del PATH puede ser el de Git Bash, que lee «D:» como un host.
+// La copia que saca git archive <commit>:dist, sin tar: el tar del PATH puede ser el de Git Bash, que lee «D:» como un host.
 beforeAll(() => {
-  for (const folder of ['skills', '.claude-plugin', 'agents', 'cli', 'hooks']) {
-    cpSync(join(kitRoot, folder), join(kit, folder), { recursive: true, filter: (source) => !/[\\/]node_modules$/.test(source) });
-  }
+  cpSync(join(kitRoot, 'dist'), kit, { recursive: true });
 });
 
 afterAll(() => rmSync(root, { recursive: true, force: true }));

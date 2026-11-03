@@ -8,8 +8,11 @@
 ├── README.md                    (instalación y catálogo)
 ├── .claude-plugin/
 │   ├── plugin.json              (manifest del plugin, versión)
-│   └── marketplace.json         (marketplace self-hosted, source ".")
-├── skills/
+│   └── marketplace.json         (marketplace self-hosted, source "./dist")
+├── dist/                        (lo único que viaja en el plugin: lo genera `moon run kit:build` con `build/dist.ts`; nunca se edita a mano, ADR 0023)
+├── build/                       (herramientas del repo que no viajan: el build de dist/ y los avisos de terceros desde upstream.json)
+├── upstream.json                (registro de fuentes: cada copia y concepto de otro repo, con su versión y sus rutas; no viaja)
+├── skills/                      (fuente de las skills: admite marcas `<!-- kit: … -->`, que el build quita)
 │   ├── using-sdd/SKILL.md          (puerta de entrada: la inyecta el hook SessionStart)
 │   ├── sdd-init/SKILL.md
 │   ├── sdd-upgrade/SKILL.md       (+ references/migrations/, una por versión)

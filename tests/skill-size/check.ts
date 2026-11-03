@@ -15,13 +15,13 @@ const LIMIT = 20_000;
 const REPO_ROOT = resolve(import.meta.dirname, '../..');
 
 export function checkSkillSize(repoRoot: string): { code: number; lines: string[] } {
-  const skillsDir = join(repoRoot, 'skills');
+  const skillsDir = join(repoRoot, 'dist', 'skills');
   const lines: string[] = [];
   for (const name of readdirSync(skillsDir).sort()) {
     const skill = join(skillsDir, name, 'SKILL.md');
     if (!existsSync(skill)) continue;
     const size = statSync(skill).size;
-    if (size >= LIMIT) lines.push(`FALLA: skills/${name}/SKILL.md ocupa ${size} bytes (límite: menos de ${LIMIT})`);
+    if (size >= LIMIT) lines.push(`FALLA: dist/skills/${name}/SKILL.md ocupa ${size} bytes (límite: menos de ${LIMIT})`);
   }
   if (lines.length > 0) return { code: 1, lines: [...lines, 'Mueve a su references/ lo que la skill solo necesita a veces.'] };
   return { code: 0, lines: [`OK: todos los SKILL.md ocupan menos de ${LIMIT} bytes`] };

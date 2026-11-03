@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -35,14 +35,30 @@ function invokeKitSessionHook(sessionRoot: string | null, projectDir: string): R
 
 const parse = (result: RunResult): HookOutput => JSON.parse(result.output);
 
-// Un `claude` falso al principio del PATH apunta lo que recibe y sale con 7.
-function launchWithFakeClaude(tmpDir: string | undefined, args: string[]): { call: ClaudeCall; result: RunResult } {
+// Un `claude` falso al principio del PATH apunta lo que recibe en `seen` y sale con 7.
+function fakeClaude(): { bin: string; seen: string } {
   const bin = mkdtempSync(join(tmpdir(), 'fake-claude-'));
   const seen = join(bin, 'seen.json');
   const fake = join(bin, 'fake.mjs');
   writeFileSync(fake, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(seen)}, JSON.stringify({ tmp: process.env.CLAUDE_CODE_TMPDIR ?? null, root: process.env.SDD_KIT_SESSION_ROOT ?? null, args: process.argv.slice(2) }));\nprocess.exit(7);\n`);
   writeFileSync(join(bin, 'claude.cmd'), `@"${process.execPath}" "${fake}" %*\r\n`);
   writeFileSync(join(bin, 'claude'), `#!/bin/sh\nexec "${process.execPath}" "${fake}" "$@"\n`, { mode: 0o755 });
+  return { bin, seen };
+}
+
+// El script, build/ y lo que importan, en un repo de juguete cuya fuente lleva una marca mal puesta.
+function toyKitWithMisplacedMark(): string {
+  const root = mkdtempSync(join(tmpdir(), 'toy-kit-'));
+  const pieces = ['start-kit-session.mjs', 'build/dist.ts', 'build/errors.ts', 'build/package.json', 'cli/package.json', 'cli/src/git/git.ts', 'cli/src/tasks/command.ts'];
+  for (const piece of pieces) cpSync(join(kitRoot, piece), join(root, piece));
+  mkdirSync(join(root, 'skills', 'a'), { recursive: true });
+  writeFileSync(join(root, 'skills', 'a', 'SKILL.md'), '# a\nx <!-- kit: a -->\n');
+  run('git', ['-C', root, 'init', '-q']);
+  return root;
+}
+
+function launchWithFakeClaude(tmpDir: string | undefined, args: string[]): { call: ClaudeCall; result: RunResult } {
+  const { bin, seen } = fakeClaude();
   const env: NodeJS.ProcessEnv = { ...cleanGitEnv, PATH: `${bin}${delimiter}${process.env.PATH}` };
   delete env.CLAUDE_CODE_TMPDIR;
   delete env.SDD_KIT_SESSION_ROOT;
@@ -92,8 +108,8 @@ describe('Hook SessionStart del repo', () => {
       expect(json.hookSpecificOutput.additionalContext).toMatch(/caché/);
     });
 
-    it('additionalContext manda contrastar con skills/<nombre>/SKILL.md de la rama', () => {
-      expect(json.hookSpecificOutput.additionalContext).toContain('skills/<nombre>/SKILL.md');
+    it('additionalContext manda contrastar con dist/skills/<nombre>/SKILL.md de la rama', () => {
+      expect(json.hookSpecificOutput.additionalContext).toContain('dist/skills/<nombre>/SKILL.md');
     });
 
     it('systemMessage nombra las skills y los agentes', () => {
@@ -140,7 +156,7 @@ describe('Hook SessionStart del repo', () => {
     });
 
     it('da al agente la misma instrucción', () => {
-      expect(json.hookSpecificOutput.additionalContext).toContain('skills/<nombre>/SKILL.md');
+      expect(json.hookSpecificOutput.additionalContext).toContain('dist/skills/<nombre>/SKILL.md');
     });
   });
 
@@ -185,7 +201,7 @@ describe('start-kit-session.mjs', () => {
     expect(call).toEqual({
       tmp: join(root, '.temp'),
       root,
-      args: ['--settings', '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}', '--plugin-dir', root, '--model', 'sonnet'],
+      args: ['--settings', '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}', '--plugin-dir', join(root, 'dist'), '--model', 'sonnet'],
     });
   });
 
@@ -201,8 +217,20 @@ describe('start-kit-session.mjs', () => {
     expect(launchWithFakeClaude(undefined, []).result.code).toBe(7);
   });
 
+  it('does not launch claude when the build fails', () => {
+    const root = toyKitWithMisplacedMark();
+    const { bin, seen } = fakeClaude();
+    const result = run(process.execPath, [join(root, 'start-kit-session.mjs')], { env: { ...cleanGitEnv, PATH: `${bin}${delimiter}${process.env.PATH}` } });
+    expect(result.code).toBe(1);
+    expect(result.output).toContain('skills/a/SKILL.md:2: marca mal puesta');
+    expect(result.output).toContain('start-kit-session: arregla la fuente y vuelve a lanzarlo; dist/ no se ha tocado.');
+    expect(existsSync(seen)).toBe(false);
+  });
+
   it('says so when claude is not on the PATH', () => {
-    const env: NodeJS.ProcessEnv = { ...cleanGitEnv, PATH: dirname(process.execPath) };
+    // git sí: el script construye dist/ antes de buscar claude.
+    const gitDir = dirname(run(process.platform === 'win32' ? 'where' : 'which', ['git']).output.split(/\r?\n/)[0]);
+    const env: NodeJS.ProcessEnv = { ...cleanGitEnv, PATH: [dirname(process.execPath), gitDir].join(delimiter) };
     expect(run(process.execPath, [launcherPath], { env })).toEqual({ output: 'start-kit-session: no encuentro claude en el PATH.', code: 127 });
   });
 });

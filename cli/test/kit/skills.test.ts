@@ -91,9 +91,9 @@ describe('manifests del plugin', () => {
     expect(marketplace.allowCrossMarketplaceDependenciesOn).toBeUndefined();
   });
 
-  it('marketplace.json publica el plugin desde la raíz del repo, con description', () => {
+  it('marketplace.json publica el plugin desde dist/, con description', () => {
     const entry = marketplace.plugins.find((candidate: { name: string }) => candidate.name === plugin.name);
-    expect(entry?.source).toBe('.');
+    expect(entry?.source).toBe('./dist');
     expect(marketplace.description).toBeTruthy();
   });
 });

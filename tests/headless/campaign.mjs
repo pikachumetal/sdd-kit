@@ -13,7 +13,7 @@ const REQUIRED = [
   ['COST_CAP', 'define COST_CAP (previsión de la spec)'],
   ['RUNS_DIR', 'define RUNS_DIR (scratchpad)'],
 ];
-const KIT_WITHOUT_CLI = 'la copia del kit no lleva cli/: sácala con git archive <commit> skills .claude-plugin agents cli hooks';
+const KIT_WITHOUT_CLI = 'la copia del kit no lleva cli/: sácala con git archive <commit>:dist (antes de la feature 0300: git archive <commit> skills .claude-plugin agents cli hooks)';
 const LAUNCH_POLL_MS = 1000;
 const MAX_RUNS_DIR = 100;
 // El mismo que da battery.mjs cuando solo falta evidencia.

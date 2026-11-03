@@ -1,4 +1,4 @@
-// Arranca Claude Code con las skills del working tree y el plugin publicado deshabilitado.
+// Arranca Claude Code con las skills de dist/, construidas desde el working tree, y el plugin publicado deshabilitado.
 // Sin esto, el .claude/settings.json del repo activa sdd-kit@sdd-kit y las skills salen de la caché.
 // Los argumentos extra pasan tal cual: node start-kit-session.mjs --model sonnet
 // Para reanudar una sesión, el script con los mismos argumentos más --resume o --continue
@@ -6,9 +6,21 @@
 // Las variables van solo al proceso de claude: la terminal que lo lanza no se queda con ellas.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildInto } from './build/dist.ts';
+import { BuildError } from './build/errors.ts';
 import { COMMAND_NOT_FOUND, runInherited } from './cli/src/tasks/command.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
+const dist = join(root, 'dist');
+// Arrancar con el dist/ anterior escondería que la sesión no sigue la rama.
+try {
+  await buildInto(root, dist);
+} catch (error) {
+  if (!(error instanceof BuildError)) throw error;
+  console.error(error.message);
+  console.error('start-kit-session: arregla la fuente y vuelve a lanzarlo; dist/ no se ha tocado.');
+  process.exit(1);
+}
 // SDD_KIT_SESSION_ROOT le dice al hook SessionStart del repo que la sesión salió de aquí.
 process.env.SDD_KIT_SESSION_ROOT = root;
 // CLAUDE_CODE_TMPDIR lleva el scratchpad y las salidas en segundo plano a .temp/, que muere con el worktree;
@@ -18,5 +30,5 @@ if (!process.env.CLAUDE_CODE_TMPDIR) process.env.CLAUDE_CODE_TMPDIR = join(root,
 process.on('SIGINT', () => {});
 
 const settings = '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}';
-process.exitCode = await runInherited(['claude', '--settings', settings, '--plugin-dir', root, ...process.argv.slice(2)], process.cwd());
+process.exitCode = await runInherited(['claude', '--settings', settings, '--plugin-dir', dist, ...process.argv.slice(2)], process.cwd());
 if (process.exitCode === COMMAND_NOT_FOUND) console.error('start-kit-session: no encuentro claude en el PATH.');
