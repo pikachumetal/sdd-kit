@@ -1,41 +1,26 @@
-// Uso: node tests/upstream/check.ts [<ruta de THIRD_PARTY_NOTICES.md>], con SDD_UPSTREAM_DIR apuntando a la carpeta de los clones.
+// Uso: node tests/upstream/check.ts [<ruta de upstream.json>], con SDD_UPSTREAM_DIR apuntando a la carpeta de los clones.
 // El package.json de esta carpeta ("type": "module") evita que Node avise por stderr y ensucie la salida.
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { readRegistry, type Entry, type Registry, type Source } from '../../build/sources.ts';
 import { git } from '../../cli/src/git/git.ts';
-
-interface Source {
-  name: string;
-  repo: string;
-  seen: string;
-}
 
 interface ParsedTag {
   prefix: string;
   version: number[];
 }
 
-const TABLE_HEADER = '| Fuente | Repo | Versión vista | Fecha |';
-const DEFAULT_NOTICES = resolve(import.meta.dirname, '../../THIRD_PARTY_NOTICES.md');
+interface SourceClone {
+  name: string;
+  clone: string;
+  newest: string;
+}
 
-const cells = (line: string): string[] => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+const DEFAULT_REGISTRY = resolve(import.meta.dirname, '../../upstream.json');
 
 function repoOfUrl(url: string): string | null {
   const match = /github\.com[/:]([^/\s)]+)\/([^/\s)]+?)(?:\.git)?(?:[)\s]|$)/i.exec(url);
   return match ? `${match[1]}/${match[2]}`.toLowerCase() : null;
-}
-
-function parseSources(markdown: string): Source[] | null {
-  const lines = markdown.split(/\r?\n/);
-  const start = lines.findIndex((line) => line.trim() === TABLE_HEADER);
-  if (start < 0) return null;
-  const sources: Source[] = [];
-  for (const line of lines.slice(start + 2)) {
-    if (!line.startsWith('|')) break;
-    const [name, repoCell, seenCell] = cells(line);
-    sources.push({ name, repo: repoOfUrl(repoCell) ?? repoCell, seen: seenCell.replace(/^`(.*)`$/, '$1') });
-  }
-  return sources;
 }
 
 // Prefijo distinto es otra familia de tags (OpenSpec publica `v1.14.1` y `@fission-ai/openspec@1.14.1`); un sufijo es prerelease.
@@ -49,15 +34,13 @@ function isNewer(candidate: number[], current: number[]): boolean {
   return index >= 0 && candidate[index] > current[index];
 }
 
-function newestTag(tags: string[], seen: string): string {
-  const seenTag = parseTag(seen);
-  if (!seenTag) return seen;
-  let newest = { tag: seen, version: seenTag.version };
+function newestTag(tags: string[], prefix: string): string | null {
+  let newest: { tag: string; version: number[] } | null = null;
   for (const tag of tags) {
     const parsed = parseTag(tag);
-    if (parsed?.prefix === seenTag.prefix && isNewer(parsed.version, newest.version)) newest = { tag, version: parsed.version };
+    if (parsed?.prefix === prefix && (newest === null || isNewer(parsed.version, newest.version))) newest = { tag, version: parsed.version };
   }
-  return newest.tag;
+  return newest?.tag ?? null;
 }
 
 // Se lee la configuración cruda: `git remote get-url` aplicaría `url.<base>.insteadOf`.
@@ -80,15 +63,43 @@ async function findClones(dir: string): Promise<Map<string, string>> {
 
 const firstLine = (text: string): string => text.split(/\r?\n/).find((line) => line.trim() !== '')?.trim().replace(/\.$/, '') ?? 'sin detalle';
 
-async function checkSource(source: Source, clone: string | undefined, dir: string): Promise<string | null> {
-  if (!clone) return `${source.name}: sin clone de ${source.repo} en ${dir}.`;
+async function prepareSource(name: string, source: Source, clone: string | undefined, dir: string): Promise<SourceClone | string> {
+  if (!clone) return `${name}: sin clone de ${source.repo} en ${dir}.`;
   const fetch = await git(clone, ['fetch', '--tags', '--force', '--quiet', 'origin']);
-  if (fetch.code !== 0) return `${source.name}: no se pudo actualizar el clone: ${firstLine(fetch.stderr)}.`;
+  if (fetch.code !== 0) return `${name}: no se pudo actualizar el clone: ${firstLine(fetch.stderr)}.`;
   const tags = (await git(clone, ['tag', '--list'])).stdout.split(/\r?\n/).filter(Boolean);
-  if (!tags.includes(source.seen)) return `${source.name}: la versión vista ${source.seen} no es un tag del clone.`;
-  const newest = newestTag(tags, source.seen);
-  if (newest === source.seen) return null;
-  return `${source.name}: vista ${source.seen}, última ${newest}. Revisa: git -C ${clone} diff ${source.seen}..${newest}`;
+  const newest = newestTag(tags, source.tagPrefix);
+  if (newest === null) return `${name}: el clon ${clone} no tiene tags ${source.tagPrefix}X.Y.Z`;
+  return { name, clone, newest };
+}
+
+async function exists(clone: string, revision: string): Promise<boolean> {
+  return (await git(clone, ['cat-file', '-e', revision])).code === 0;
+}
+
+async function checkEntry(entry: Entry, { name, clone, newest }: SourceClone): Promise<string[]> {
+  if (!(await exists(clone, `${entry.version}^{commit}`))) return [`${name}: falta ${entry.version} en el clon ${clone}`];
+  if (entry.version === newest) return [];
+  const where = `${name} · ${entry.kit.join(', ')}`;
+  const gone: string[] = [];
+  for (const path of entry.paths) if (!(await exists(clone, `${newest}:${path}`))) gone.push(`${where}: la ruta ${path} no existe en ${newest}`);
+  if (gone.length > 0) return gone;
+  const diff = await git(clone, ['diff', '--quiet', entry.version, newest, '--', ...entry.paths]);
+  if (diff.code === 0) return [];
+  return [`${where}: ${entry.version} → ${newest}, cambian sus rutas: git -C ${clone} diff ${entry.version} ${newest} -- ${entry.paths.join(' ')}`];
+}
+
+async function checkRegistry(registry: Registry, dir: string): Promise<string[]> {
+  const clones = await findClones(dir);
+  const problems: string[] = [];
+  for (const [name, source] of Object.entries(registry.sources)) {
+    const entries = registry.entries.filter((entry) => entry.source === name);
+    if (entries.length === 0) continue;
+    const prepared = await prepareSource(name, source, clones.get(source.repo.toLowerCase()), dir);
+    if (typeof prepared === 'string') problems.push(prepared);
+    else for (const entry of entries) problems.push(...(await checkEntry(entry, prepared)));
+  }
+  return problems;
 }
 
 function report(lines: string[], code = 1): number {
@@ -97,18 +108,13 @@ function report(lines: string[], code = 1): number {
 }
 
 async function main(argv: string[]): Promise<number> {
-  const noticesPath = argv[0] ?? DEFAULT_NOTICES;
+  const registryPath = argv[0] ?? DEFAULT_REGISTRY;
   const dir = process.env.SDD_UPSTREAM_DIR;
   if (!dir) return report(['Falta SDD_UPSTREAM_DIR: la carpeta con los clones de las fuentes vigiladas.']);
-  const sources = parseSources(existsSync(noticesPath) ? readFileSync(noticesPath, 'utf8') : '');
-  if (!sources) return report([`Sin la tabla de «Fuentes vigiladas» en ${noticesPath}.`]);
-  const clones = await findClones(dir);
-  const problems: string[] = [];
-  for (const source of sources) {
-    const problem = await checkSource(source, clones.get(source.repo.toLowerCase()), dir);
-    if (problem) problems.push(problem);
-  }
-  return problems.length > 0 ? report(problems) : report([`Fuentes al día: ${sources.length}.`], 0);
+  if (!existsSync(registryPath)) return report([`Sin el registro de fuentes en ${registryPath}.`]);
+  const registry = readRegistry(registryPath);
+  const problems = await checkRegistry(registry, dir);
+  return problems.length > 0 ? report(problems) : report([`Fuentes al día: ${registry.entries.length} entradas.`], 0);
 }
 
 process.exitCode = await main(process.argv.slice(2));
