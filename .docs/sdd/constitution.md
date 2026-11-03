@@ -82,9 +82,9 @@ Las plantillas canónicas viven solo en `skills/sdd-templates/templates/`. Ningu
 
 ## Art. IX — Fuentes y fork
 
-El kit es un fork propio. Copia y adapta de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator, con su aviso en `THIRD_PARTY_NOTICES.md` (fuente, versión y licencia). Una pieza copiada es del kit: la mantiene el kit y se prueba con el Art. I. Conserva el texto de su fuente, cuya evidencia vale para el Principio 1, salvo donde el kit trabaja distinto, lo amplía o trae algo de otro kit; quitarlo sin esos motivos exige un A/B que demuestre que funciona sin él.
+El kit es un fork propio. Copia y adapta de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator, con su aviso en `THIRD_PARTY_NOTICES.md` (fuente, versión y licencia). Una pieza copiada es del kit: la mantiene el kit y se prueba con el Art. I. Parte de su fuente sin tocar lo que funciona: la evidencia de la fuente vale para el Principio 1, y quitar una frase sin sustituirla exige un A/B que demuestre que funciona sin ella. Lo que el kit hace distinto sustituye la frase de la fuente; nunca se añade al lado contradiciéndola. Un problema, en una copia o en una skill propia, se arregla mejorando la frase que falla, no añadiendo otra.
 
-*Por qué*: vestir superpowers con overrides costaba una revisión por cada versión suya y dejaba fuera lo mejor de otros métodos. [ADR 0009](decisions/0009-fork-instead-of-dressing-superpowers.md) · [ADR 0013](decisions/0013-fork-keeps-source-text.md)
+*Por qué*: vestir superpowers con overrides costaba una revisión por cada versión suya y dejaba fuera lo mejor de otros métodos; y una frase del kit junto a la de su fuente deja dos reglas que se contradicen. [ADR 0009](decisions/0009-fork-instead-of-dressing-superpowers.md) · [ADR 0022](decisions/0022-three-rules-for-kit-text.md)
 
 ## Art. X — Calidad de código
 
