@@ -294,6 +294,31 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 3: Verificación** — el comando de «Verificación». Esperado: 2 conflictos en el experimento.
 - [ ] **Step 4: Commit de la task** — `feat(kit): kit:copies-update fusiona una copia con git merge-file`.
 
+### Task 5 — enmienda 2026-11-03: marcas dentro de una valla
+
+**Tras**: Task 4
+**Modelo**: la sesión (Native).
+**Tests RED**: hilo principal · `cli/test/kit/dist.test.ts` y `cli/test/kit/copies.test.ts`.
+**Superficies**: tooling
+**Verificación**: `pnpm --dir cli exec vitest run test/kit/dist.test.ts test/kit/copies.test.ts` → `Tests  <n> passed (<n>)`
+
+**Interfaces**:
+- Consume: `stripMarks` de `build/dist.ts`; el `Reader` de `tests/copies/annotated.ts`.
+- Produce: nada nuevo; cambia qué es una marca dentro de una valla.
+
+**Ficheros**: modificar `build/dist.ts`, `tests/copies/annotated.ts`, `cli/test/kit/dist.test.ts` y `cli/test/kit/copies.test.ts`; `dist/` no cambia, porque ninguna skill tiene marcas.
+
+- [ ] **Step 1: Implementación**:
+  - `isMarkToDrop` quita una línea entera `<!-- kit: … -->` también dentro de una valla. Un `<!-- kit:` con texto delante o detrás dentro de una valla se sigue copiando tal cual; fuera sigue siendo «marca mal puesta».
+  - El `Reader` lee una marca de línea entera también dentro de una valla. Dentro de una valla, un bloque no acaba en una línea en blanco: acaba en `fin` o en la marca siguiente.
+  - Tests:
+    - en `dist.test.ts`, `keeps a kit mark inside a fenced code block` pasa a `strips a whole-line kit mark inside a fenced code block`, con `x <!-- kit: a` todavía copiado tal cual;
+    - en `copies.test.ts`, `treats a mark inside a fence as text` pasa a `reads a mark inside a fence`;
+    - `ends a block inside a fence only at fin` es nuevo: un cambio en un ejemplo dentro de una valla con líneas en blanco, cerrado con `fin`, da verde.
+- [ ] **Step 2: Build** — `pnpm --dir cli exec tsc --noEmit -p .` y `node build/dist.ts`. Esperado: sin errores, y `dist/` sin cambios.
+- [ ] **Step 3: Verificación** — el comando de «Verificación». Después se repite la prueba real de la decisión 12 con `code-reviewer-prompt.md` y `sdd-parallel-agents/SKILL.md`, y su resultado va al walkthrough.
+- [ ] **Step 4: Commit de la task** — `feat(kit): una marca vale también dentro de una valla de código`.
+
 ---
 
 ## Estimación y esfuerzo
@@ -340,5 +365,6 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
   - las entradas agrupadas, los ports, los `NOTICE` y `word-budget` → Task 2;
   - lo que se exporta de `build/dist.ts` → Task 1;
   - `code-reviewer-prompt.md:210`, la ADR 0022 y `checks.mjs` → sin cambio aquí: la 0312 o «se queda». ✓
-- Decisión 12 de la spec (la copia real) → Task 3, Step 3, en el walkthrough. ✓
+- Decisión 12 de la spec (la copia real) → Task 3, Step 3, y Task 5, Step 3, en el walkthrough. ✓
+- Enmienda 2026-11-03 (marcas dentro de una valla; AND nuevo de la gramática; MODIFIED de «La skill que carga el agente sale limpia del build») → Task 5, `strips a whole-line kit mark inside a fenced code block`, `reads a mark inside a fence` y `ends a block inside a fence only at fin`. ✓
 - Review Focus → Task 1, `treats a mark inside a fence as text`, `concatenates the cites of two blocks at one site` y `compares files without frontmatter`; Task 4, `rewrites only the versions it merged`. ✓

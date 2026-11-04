@@ -85,7 +85,7 @@ describe('checkCopy: el diff contra el original', () => {
     const original = 'Line one.\n\nLine two.\n';
     expect(check(original, { original })).toEqual([]);
     expect(check('Line one.\n\nLine 2.\n', { original })).toEqual([
-      `${FILE}:2: falta texto del original sin marca quita: «Line two.»`,
+      `${FILE}:1: falta texto del original sin marca quita: «Line two.»`,
       `${FILE}:3: texto que no es del original ni está en un bloque del kit`,
     ]);
   });
@@ -189,13 +189,20 @@ describe('checkCopy: la gramática de la marca', () => {
     expect(check(replaceLine(BASE, '## Setup\n', `## Setup\n${fenced}`))).toEqual([]);
   });
 
-  it('treats a mark inside a fence as text', () => {
-    const original = 'Intro.\n\n```text\n<!-- kit: 0186 -->\nexample\n```\n';
-    expect(check(original, { original })).toEqual([]);
-    expect(check(original.replace('example', 'changed'), { original })).toEqual([
-      `${FILE}:4: falta texto del original sin marca quita: «example»`,
-      `${FILE}:5: texto que no es del original ni está en un bloque del kit`,
+  const FENCED = 'Intro.\n\n```text\nfirst line\n\nsecond line\nthird line\n```\n\nAfter.\n';
+
+  it('reads a mark inside a fence', () => {
+    const annotated = FENCED.replace('third line\n', '<!-- kit: 0186 · sustituye: «third» -->\nfourth line\n');
+    expect(check(annotated, { original: FENCED })).toEqual([]);
+    expect(check(FENCED.replace('third', 'fourth'), { original: FENCED })).toEqual([
+      `${FILE}:6: falta texto del original sin marca quita: «third line»`,
+      `${FILE}:7: texto que no es del original ni está en un bloque del kit`,
     ]);
+  });
+
+  it('ends a block inside a fence only at fin', () => {
+    const annotated = FENCED.replace('first line\n\nsecond line\n', '<!-- kit: 0186 · sustituye: «first…second» -->\nprimera line\n\nsegunda line\n<!-- kit: fin -->\n');
+    expect(check(annotated, { original: FENCED })).toEqual([]);
   });
 });
 

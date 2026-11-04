@@ -31,6 +31,7 @@ interface KitBlock {
   index: number;
   last: number;
   content: string[];
+  fenced: boolean;
 }
 
 interface TextLine {
@@ -157,8 +158,10 @@ class Reader {
   read(): Annotated {
     let region: Region = this.result.lines[0]?.trimEnd() === '---' ? 'frontmatter' : 'text';
     this.result.lines.forEach((line, index) => {
+      const next = nextBlock(region, line, index);
+      if (typeof region === 'object' && next === 'text' && this.open?.fenced) this.close(index - 1);
       if (region !== 'frontmatter') this.take(line, index, region === 'text');
-      region = nextBlock(region, line, index);
+      region = next;
     });
     this.close(this.result.lines.length - 1);
     return this.result;
@@ -170,19 +173,19 @@ class Reader {
 
   private take(line: string, index: number, inText: boolean): void {
     if (inText && CONFLICT.test(line)) this.problem(index, MESSAGES.conflict);
-    if (inText && WHOLE_LINE_MARK.test(line)) return this.takeMark(line, index);
+    if (WHOLE_LINE_MARK.test(line)) return this.takeMark(line, index, !inText);
     if (!this.open) return void this.result.text.push({ index, text: line });
     if (inText && line.trim() === '') return this.close(index);
     this.open.content.push(line);
   }
 
-  private takeMark(line: string, index: number): void {
+  private takeMark(line: string, index: number, fenced: boolean): void {
     const hadOpen = this.open !== null;
     this.close(index - 1);
     const parsed = parseMark(line);
     if ('error' in parsed) return this.problem(index, parsed.error);
     if ('fin' in parsed) return hadOpen ? undefined : this.problem(index, MESSAGES.orphanEnd);
-    this.open = { mark: parsed.mark, index, last: index, content: [] };
+    this.open = { mark: parsed.mark, index, last: index, content: [], fenced };
     if (parsed.mark.kind === 'quita') this.close(index);
   }
 
@@ -282,24 +285,19 @@ interface CiteState {
   cursor: number;
 }
 
-function resaidFragment(mark: Mark, block: KitBlock): string | undefined {
-  const content = normalize(block.content.join(' '));
-  return fragmentsOf(mark.cite ?? '').find((fragment) => content.includes(fragment));
-}
-
 function checkCite(context: Context, block: KitBlock, state: CiteState): boolean {
   const { mark } = block;
-  const line = block.index + 1;
-  const fragments = fragmentsOf(mark.cite ?? '');
-  if (!citePattern(mark.cite ?? '').test(context.original)) return report(context, line, MESSAGES.stale(mark, context.input.label), mark.fixes), false;
-  const resaid = resaidFragment(mark, block);
-  const shown = fragments.length > 1 ? `${fragments[0]}…` : (mark.cite ?? '');
-  if (resaid) return report(context, line, MESSAGES.resaid(mark, shown, resaid), mark.fixes), false;
-  const pattern = new RegExp(citePattern(mark.cite ?? '').source, 'g');
+  const cite = mark.cite ?? '';
+  const fail = (message: string): boolean => (report(context, block.index + 1, message, mark.fixes), false);
+  if (!citePattern(cite).test(context.original)) return fail(MESSAGES.stale(mark, context.input.label));
+  const fragments = fragmentsOf(cite);
+  const resaid = MESSAGES.resaid(mark, fragments.length > 1 ? `${fragments[0]}…` : cite, fragments[0]);
+  const pattern = new RegExp(citePattern(cite).source, 'g');
   pattern.lastIndex = state.cursor;
   const match = pattern.exec(state.removedText);
   const indexes = match ? spanWords(state.removedWords, match.index, match.index + match[0].length) : [];
-  if (!match || overcites(indexes, state.kept)) return report(context, line, MESSAGES.mismatch(mark, strictRemoved(state.removedWords, state.kept)), mark.fixes), false;
+  if (indexes.length > 0 && indexes.every((index) => state.kept.has(index))) return fail(resaid);
+  if (!match || overcites(indexes, state.kept)) return fail(MESSAGES.mismatch(mark, strictRemoved(state.removedWords, state.kept)));
   indexes.forEach((index) => state.covered.add(index));
   state.cursor = match.index + match[0].length;
   return true;
@@ -353,9 +351,29 @@ function absoluteNear(annotated: Annotated, block: KitBlock): string | undefined
   return undefined;
 }
 
+const isBlank = (line: string): boolean => line.trim() === '';
+
+// Ancla en las líneas con texto: una línea en blanco tras un bloque no parte en dos lo que el bloque quita.
+function anchorPairs(texts: string[], original: string[]): [number, number][] {
+  const keep = (lines: string[]): number[] => lines.flatMap((line, index) => (isBlank(line) ? [] : [index]));
+  const [a, b] = [keep(texts), keep(original)];
+  return lcsPairs(a.map((index) => texts[index]), b.map((index) => original[index])).map(([i, j]) => [a[i], b[j]]);
+}
+
+function blankPairs(texts: string[], original: string[], anchors: [number, number][]): [number, number][] {
+  const pairs: [number, number][] = [];
+  const bounds = [[-1, -1], ...anchors, [texts.length, original.length]];
+  for (let k = 1; k < bounds.length; k++) {
+    const between = (lines: string[], from: number, to: number): number[] => lines.flatMap((line, index) => (index > from && index < to && isBlank(line) ? [index] : []));
+    const [a, b] = [between(texts, bounds[k - 1][0], bounds[k][0]), between(original, bounds[k - 1][1], bounds[k][1])];
+    a.slice(0, b.length).forEach((index, n) => pairs.push([index, b[n]]));
+  }
+  return pairs;
+}
+
 function sitesOf(annotated: Annotated, original: string[]): Site[] {
   const texts = annotated.text.map((line) => line.text);
-  const pairs = [[-1, -1], ...lcsPairs(texts, original), [texts.length, original.length]];
+  const pairs = [[-1, -1], ...anchorPairs(texts, original), [texts.length, original.length]];
   const sites: Site[] = [];
   for (let k = 1; k < pairs.length; k++) {
     const [prevText, prevOriginal] = pairs[k - 1];
@@ -369,7 +387,9 @@ function sitesOf(annotated: Annotated, original: string[]): Site[] {
 }
 
 function unmatchedLines(annotated: Annotated, original: string[]): number[] {
-  const matched = new Set(lcsPairs(annotated.text.map((line) => line.text), original).map(([index]) => index));
+  const texts = annotated.text.map((line) => line.text);
+  const anchors = anchorPairs(texts, original);
+  const matched = new Set([...anchors, ...blankPairs(texts, original, anchors)].map(([index]) => index));
   return annotated.text.filter((_, index) => !matched.has(index)).map((line) => line.index + 1);
 }
 

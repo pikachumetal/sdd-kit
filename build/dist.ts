@@ -36,7 +36,7 @@ export function nextBlock(block: Block, content: string, index: number): Block {
 
 function isMarkToDrop(block: Block, content: string, location: string): boolean {
   if (!content.includes(MARK_OPENER)) return false;
-  if (typeof block === 'object') return false;
+  if (typeof block === 'object') return WHOLE_LINE_MARK.test(content);
   if (block === 'text' && WHOLE_LINE_MARK.test(content)) return true;
   throw new BuildError(`${location}: ${MISPLACED}`);
 }

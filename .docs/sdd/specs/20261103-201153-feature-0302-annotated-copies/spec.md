@@ -54,7 +54,7 @@ Review de spec hecha: dos revisores en paralelo, pedidos por el dev-lead («1»,
 2. **La marca.** Es una línea entera, como las que ya quita el build de la 0300, y la leen las mismas funciones de `build/dist.ts`, exportadas (vallas, frontmatter y marca de línea entera):
    - Abre un bloque: `<!-- kit: <tarea>[ · sustituye: «S» | · quita: «S»][ · de: <fuente> <ruta>][ · arregla: <fila>] -->`. `<tarea>` es un id de cuatro cifras (`0186`) o un commit (`4597d47e`).
    - Cierra un bloque: `<!-- kit: fin -->`, la única marca sin tarea. Si no, el bloque acaba en la primera línea en blanco fuera de una valla, o en la marca siguiente. Un cambio a mitad de párrafo necesita `fin`: sin él, el bloque se queda con el resto del párrafo. Un bloque de varios párrafos, también.
-   - Un bloque cubre líneas enteras. Un cambio dentro de una valla envuelve la valla entera, porque una marca dentro de una valla se copia tal cual.
+   - Un bloque cubre líneas enteras. Una marca también vale dentro de una valla: el build la quita igual, y ahí el bloque acaba en `fin` o en la marca siguiente, nunca en una línea en blanco, porque un prompt en una valla lleva líneas en blanco dentro. *(Enmienda 2026-11-03: antes, un cambio dentro de una valla envolvía la valla entera.)*
    - `quita: «S»` no tiene contenido: el bloque acaba en la propia marca. Quitar sin sustituir exige el A/B de la regla 1 de la ADR 0022, y eso lo comprueba la revisión final, no la marca.
    - `de: <fuente> <ruta>`: `<fuente>` es la clave de `sources` de `upstream.json` (`Wondel`), y `<ruta>`, la del original, sin espacios. El bloque entero es texto de ese original; si el kit mezcla texto suyo, son dos bloques.
    - `arregla: <fila>` dice qué fila arregla un rojo que cae en ese bloque. El rojo sigue: solo deja de ser un rojo sin dueño.
@@ -184,6 +184,7 @@ El éxito se mide en un fixture: un borrado sin `quita` y una `sustituye` vieja 
 | `mattpocock/skills` fuera del `NOTICE` de `sdd-verify` | «(both MIT, see `NOTICE`)», `skills/sdd-verify/references/code-reviewer-prompt.md:210` | 0312: es una de las siete líneas con versión en el texto (§2 del ticket de la 0300) |
 | Lo que cuenta el tope de palabras de una skill (`skills/` → `dist/skills/`) | `cli/test/kit/word-budget.test.ts:64-68` | decisión 16 |
 | `kit:upstream` solo vigila `paths`; `<kit>` de carpeta en su mensaje | `tests/upstream/check.ts:83`; requisito «El corte compara cada entrada del registro con su fuente» | delta, `MODIFIED`: vigila también `from`, y `<kit>` es un fichero en una copia sin `pending` |
+| Una marca de línea entera dentro de una valla se copia tal cual (enmienda 2026-11-03) | `build/dist.ts:37-42` (`isMarkToDrop`); `cli/test/kit/dist.test.ts:22` (`keeps a kit mark inside a fenced code block`) y `:42` (`keeps a kit mark inside a fence nested in a list`); requisito «La skill que carga el agente sale limpia del build» | delta, `MODIFIED`: también se quita; el test pasa a comprobarlo |
 | `nextBlock`, `FENCE` y `WHOLE_LINE_MARK`, internos de `build/dist.ts` | `build/dist.ts:22-35` | decisión 2: exportados y compartidos con `tests/copies/` |
 | «hasta que la 0302 lo pase a marcas en la fuente anotada» | `.docs/sdd/decisions/0022-three-rules-for-kit-text.md:40` | nada: la ADR es inmutable, y la 0312 (`parent: 0302`) es quien lo pasa |
 | Prototipo de las comprobaciones (a) y (c) | `specs/20261103-170656-proposal-0301-kit-three-rules/review-scripts/checks.mjs` | se queda: es evidencia de la review; lo sustituye `tests/copies/` |
@@ -257,6 +258,7 @@ Las comprobaciones son funciones puras sobre texto (la fuente anotada, el origin
 - AND una S con `«`, `»` o `-->` da `<fichero>:<línea>: la cita de la marca no puede llevar «, » ni -->: sáltalos con …`
 - AND un `de: <fuente> <ruta>` que no está en el `from` de su entrada da `<fichero>:<línea>: el bloque dice de <fuente> <ruta>, que no está en el from de su entrada`
 - AND un bloque sin `fin` acaba en la primera línea en blanco fuera de una valla, también si la valla lleva líneas en blanco dentro
+- AND una marca dentro de una valla abre un bloque, que acaba en `fin` o en la marca siguiente, y sus líneas en blanco son del bloque
 
 #### ADDED — Lo que dice kit:copies de cada copia
 
@@ -317,6 +319,16 @@ Las comprobaciones son funciones puras sobre texto (la fuente anotada, el origin
 - THEN falla con `skills/sdd-grilling/SKILL.md dice see NOTICE, y la skill no tiene NOTICE: una skill sin copias no lo genera`
 - AND la forma sin comillas invertidas, «see NOTICE», cuenta igual
 
+#### MODIFIED — La skill que carga el agente sale limpia del build (antes: "un `<!-- kit:` dentro de un bloque de código se copia tal cual")
+
+- GIVEN `skills/sdd-tdd/SKILL.md` con una línea `<!-- kit: 0186 · sustituye: «…» -->` encima de un bloque
+- WHEN se ejecuta `moon run kit:build`
+- THEN `dist/skills/sdd-tdd/SKILL.md` es esa fuente sin esa línea, y lo demás byte a byte
+- AND una fuente sin marcas sale idéntica en `dist/`
+- REMOVED AND un `<!-- kit:` dentro de un bloque de código se copia tal cual
+- AND una línea entera `<!-- kit: … -->` dentro de un bloque de código también se quita; un `<!-- kit:` con texto delante o detrás dentro de un bloque de código se copia tal cual
+- AND una línea con `<!-- kit:` y texto delante o detrás, sin cerrar, o en el frontmatter, para el build con `<fichero>:<línea>: marca mal puesta: una marca va sola en su línea, <!-- kit: … -->, fuera del frontmatter y de un bloque de código`, y `dist/` no cambia
+
 #### MODIFIED — El corte compara cada entrada del registro con su fuente (antes: solo las `paths` de cada entrada)
 
 - GIVEN un concepto de OpenSpec revisado en `v1.16.0`, con sus rutas, y un tag `v1.17.0` en el clon
@@ -358,7 +370,7 @@ Las comprobaciones son funciones puras sobre texto (la fuente anotada, el origin
 
 ## Enmiendas
 
-Ninguna.
+- 2026-11-03 — una marca vale también dentro de una valla de código: el build la quita y el bloque acaba en `fin` o en la marca siguiente (decisión 2, AND nuevo de «La marca del kit se escribe con su gramática» y `MODIFIED` de «La skill que carga el agente sale limpia del build») — la prueba real de la decisión 12 lo exhibió: en `code-reviewer-prompt.md` todo el prompt de superpowers va en una valla, y en `sdd-parallel-agents` el kit cambia un ejemplo dentro de un ```text; sin la enmienda, esos cambios solo se marcan envolviendo la valla entera en un bloque, y ni el diff ni `git merge-file` ven nada dentro (Task 5) — aprobada: «1» (opción «Apruebo la enmienda: Task 5 al final»)
 
 ## Aprobaciones
 

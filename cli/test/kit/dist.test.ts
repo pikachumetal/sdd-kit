@@ -19,11 +19,11 @@ describe('stripMarks', () => {
     expect(stripMarks(`a\n  ${MARK}  \nb\n`, 'x.md')).toBe('a\nb\n');
   });
 
-  it('keeps a kit mark inside a fenced code block', () => {
+  it('strips a whole-line kit mark inside a fenced code block', () => {
     for (const fence of ['```', '~~~', '   ```markdown']) {
       const close = fence.trim().slice(0, 3);
-      const text = `a\n${fence}\n${MARK}\nx <!-- kit: a\n${close}\nb\n`;
-      expect(stripMarks(text, 'x.md')).toBe(text);
+      const inside = `a\n${fence}\n%s\nx <!-- kit: a\n${close}\nb\n`;
+      expect(stripMarks(inside.replace('%s', MARK), 'x.md')).toBe(inside.replace('%s\n', ''));
     }
   });
 
@@ -39,9 +39,9 @@ describe('stripMarks', () => {
     expect(() => stripMarks('<!-- kit: a --><!-- kit: b -->\n', 'x.md')).toThrow(`x.md:1: ${MISPLACED}`);
   });
 
-  it('keeps a kit mark inside a fence nested in a list', () => {
-    const text = `- paso:\n\n    \`\`\`text\n    ${MARK}\n    \`\`\`\n`;
-    expect(stripMarks(text, 'x.md')).toBe(text);
+  it('strips a kit mark inside a fence nested in a list', () => {
+    const fenced = (inside: string): string => `- paso:\n\n    \`\`\`text\n${inside}    \`\`\`\n`;
+    expect(stripMarks(fenced(`    ${MARK}\n`), 'x.md')).toBe(fenced(''));
   });
 });
 
