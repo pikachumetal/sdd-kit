@@ -118,6 +118,7 @@ if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile
 elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
 elif [ -f package-lock.json ]; then npm ci
 elif [ -f package.json ]; then npm install; fi
+<!-- kit: fin -->
 
 # Rust
 if [ -f Cargo.toml ]; then cargo build; fi

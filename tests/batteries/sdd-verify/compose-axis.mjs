@@ -28,9 +28,15 @@ function legacyBrief() {
   return header + howTo + '\n' + focus + dedent(fencedAfter(reviewer, 'prompt: |', 'prompt: |'), 4);
 }
 
+// Las marcas del kit no viajan: el encargo sale como lo deja el build.
+const withoutMarks = (text) => text.split('\n').filter((line) => !/^\s*<!-- kit:(?:(?!-->).)*-->\s*$/.test(line)).join('\n');
+
 function sourceText() {
   const fork = join(opt.kit, `skills/sdd-verify/references/${opt.axis}-reviewer-prompt.md`);
-  return existsSync(fork) ? fencedAfter(readFileSync(fork, 'utf8'), '# ', '```text') : legacyBrief();
+  if (!existsSync(fork)) return legacyBrief();
+  const text = withoutMarks(readFileSync(fork, 'utf8'));
+  // El encargo de código sigue la forma de code-reviewer.md de superpowers: las instrucciones van en prompt: |, sangradas.
+  return text.includes('  prompt: |') ? dedent(fencedAfter(text, 'prompt: |', 'prompt: |'), 4) : fencedAfter(text, '# ', '```text');
 }
 
 function briefValues() {

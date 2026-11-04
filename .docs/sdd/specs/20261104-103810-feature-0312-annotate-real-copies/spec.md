@@ -133,6 +133,7 @@ Las seis copias del kit siguen con `pending: "0312"`: `kit:copies` solo dice «s
   - `upstream.json`: sin `pending: "0312"`, `notCopied`, las entradas de `sdd-agent-writing` repartidas, y las de mattpocock `code-review` y `rubber-duck` en v1.3.2;
   - `THIRD_PARTY_NOTICES.md`, los `NOTICE` y `dist/`, regenerados;
   - la procedencia de `tests/batteries/sdd-agent-writing/battery.md`, al reparto nuevo, y el humo de la decisión 11;
+  - los tres `*-reviewer-prompt.md` de `sdd-verify` con la forma de `code-reviewer.md` (enmienda del 2026-11-04), y `tests/batteries/sdd-verify/compose-axis.mjs`, que lee esa forma y salta las marcas;
   - las filas de deuda de la decisión 5, si salen.
 - No entra:
   - arreglar un A+C o una excepción pegada que salga en rojo: 0307 para `sdd-tdd` y `sdd-verify`, o su fila nueva;
@@ -240,8 +241,11 @@ Cada paso cambiado de lo que sigue el agente, con su escenario o el motivo de no
 | `sdd-agent-writing` | `## Flowcharts` y `## Bulletproofing Against Rationalization` detrás de un puntero | sin escenario: la batería no mide diagramas ni refuerzo, y el texto es el de la fuente con su evidencia (regla 1 de la ADR 0022) |
 | `sdd-tdd`, `sdd-debugging`, `sdd-worktrees`, `sdd-parallel-agents`, `sdd-verify` | la versión de la atribución, los saltos de línea del original y, en `sdd-worktrees`, la cabecera en su párrafo | sin medir: el texto sale igual palabra a palabra salvo una atribución que ningún paso sigue (ADR 0019, decisión 15 de la 0302) |
 | `sdd-propose`, `sdd-implement`, `sdd-archive` | solo la palabra de la versión en su atribución | sin medir: la misma razón |
+| `sdd-verify`, los tres `*-reviewer-prompt.md` | el tipo, el modelo y la descripción del despacho pasan de la frase de encima al recuadro, con la forma de `code-reviewer.md` (`Subagent (<tipo>, model: <modelo>):`, `description:`, `prompt: |`), y las instrucciones van sangradas bajo `prompt: |` | sin escenario: el encargo que compone `compose-axis.mjs` para cada eje sale igual byte a byte que antes; el despacho tiene la forma del ejemplo de `sdd-parallel-agents`, `Subagent (sdd-kit:effort-medium, model: sonnet)` |
 
 ## Enmiendas
+
+- **2026-11-04, Task 2 (freno de alcance).** Los tres `*-reviewer-prompt.md` anotados con las líneas exactas del original volvían a sangrar entre 72 y 79 líneas. El kit había sacado las instrucciones de la cabecera `prompt: |` de `code-reviewer.md` y les había quitado la sangría. Dev-lead: «sí, adelante así». Se refería a que el encargo de código, que es un fork de `code-reviewer.md`, vuelve a su forma: la cabecera de superpowers con el tipo y el modelo del kit, y la sangría. Los encargos de spec y de arquitectura iban a pasar a propios. Al ir a hacerlo apareció un hecho nuevo: el de arquitectura copia literal la tabla de `clean-architecture` de Wondel, y un fichero propio no genera `NOTICE`, así que la tabla perdería su aviso de licencia. Por eso los dos llevan la misma forma que el de código y siguen siendo copias. Conservan el 62 % y el 57 % del original, y `kit:copies` no da ningún rojo. Así queda lo que ya decía el Scope aprobado: 16 copias. El encargo de cada eje sale igual byte a byte, lo mide `compose-axis.mjs`.
 
 ## Aprobaciones
 

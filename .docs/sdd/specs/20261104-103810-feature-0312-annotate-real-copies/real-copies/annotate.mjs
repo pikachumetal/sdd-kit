@@ -93,9 +93,20 @@ function paragraphsOf(content) {
   return paragraphs.filter((p) => p.length).map((p) => p.join('\n'));
 }
 
-function pushBlocks(mark, content, closing) {
+// Dentro de un recuadro una línea en blanco no cierra un bloque: lo cierra fin, y la línea en blanco sigue siendo texto.
+function inFence() {
+  let fence = null;
+  for (const line of out) {
+    const opener = line.startsWith('<!-- kit:') ? null : line.match(/^ {0,3}(`{3,}|~{3,})/)?.[1];
+    if (opener && (!fence || opener.startsWith(fence))) fence = fence ? null : opener;
+  }
+  return fence !== null;
+}
+
+function pushBlocks(mark, content, closing, kitBlank = false) {
   paragraphsOf(content).forEach((paragraph, index) => out.push(...(index ? ['', `<!-- kit: ${task} -->`] : [mark]), paragraph));
-  out.push(...closing);
+  const fenced = inFence() && closing[0] === '';
+  out.push(...(!fenced ? closing : kitBlank ? [...closing, '<!-- kit: fin -->'] : ['<!-- kit: fin -->', ...closing]));
 }
 
 // Un añadido sin tramo del original: va al final del párrafo anterior si el kit lo pega a él,
@@ -104,20 +115,25 @@ function insert(kEnd) {
   const content = kitText(kw, kCursor, kEnd);
   const blanks = [];
   if (!opensParagraph(kw[kCursor].pre)) while (out.at(-1) === '') blanks.push(out.pop());
+  // Una línea en blanco que el original no tiene va tras una marca: la que cierra un bloque no es texto.
+  else if (out.length > k.front.length && out.at(-1) !== '') out.push(`<!-- kit: ${task} -->`, '');
   const blankBehind = blanks.length > 0 || kEnd === kw.length || opensParagraph(kw[kEnd].pre);
-  pushBlocks(`<!-- kit: ${task} -->`, content, blankBehind ? (blanks.length ? blanks : ['']) : ['<!-- kit: fin -->']);
+  pushBlocks(`<!-- kit: ${task} -->`, content, blankBehind ? (blanks.length ? blanks : ['']) : ['<!-- kit: fin -->'], blanks.length === 0);
   kCursor = kEnd;
 }
 
 function flush(kEnd) {
   if (region.length === 0 && kEnd > kCursor) return insert(kEnd);
   const content = kitText(kw, kCursor, kEnd);
+  // El kit une su contenido al párrafo anterior: la línea en blanco del original que los separaba sale (unir párrafos pasa).
+  if (content && kCursor > 0 && !opensParagraph(kw[kCursor].pre)) while (out.at(-1) === '') out.pop();
   const cite = removedCite(kEnd);
   const blankAfter = region.length > 0 && o.body[region.at(-1)] === '';
-  const close = blankAfter ? [''] : ['<!-- kit: fin -->'];
+  const kitBlankAfter = kEnd < kw.length && opensParagraph(kw[kEnd].pre);
+  const close = blankAfter || kitBlankAfter ? [''] : ['<!-- kit: fin -->'];
   if (cite && !content) out.push(`<!-- kit: ${task} · quita: «${cite}» -->`, ...(blankAfter ? [''] : []));
-  else if (cite) pushBlocks(`<!-- kit: ${task} · sustituye: «${cite}» -->`, content, close);
-  else if (content) pushBlocks(`<!-- kit: ${task} -->`, content, close);
+  else if (cite) pushBlocks(`<!-- kit: ${task} · sustituye: «${cite}» -->`, content, close, !blankAfter);
+  else if (content) pushBlocks(`<!-- kit: ${task} -->`, content, close, !blankAfter);
   else if (blankAfter) out.push('');
   region = [];
   kCursor = kEnd;
