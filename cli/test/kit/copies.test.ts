@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { checkCopy, checkVerbatim, formatProblem, keptShare, markTask, type CopyInput } from '../../../tests/copies/annotated.ts';
+import { conflictBlocks, mergeCopy } from '../../../tests/copies/update.ts';
+import { repoRoot } from './kit-files.ts';
 
 const ORIGINAL = `---
 name: subagent-driven-development
@@ -258,6 +262,29 @@ describe('keptShare', () => {
     expect(keptShare(words(20, 'a'), original)).toBe(38);
     expect(keptShare(original, original)).toBe(100);
     expect(keptShare('', original)).toBe(0);
+  });
+});
+
+describe('mergeCopy: el experimento de 7.0.0 a 7.0.1', () => {
+  const fixture = (name: string): string => readFileSync(join(repoRoot, 'cli/test/fixtures/copies', name), 'utf8');
+
+  it('merges the 7.0.0 experiment into 7.0.1 with its two conflicts', async () => {
+    const { text, conflicts } = await mergeCopy(fixture('sdd-annotated-v7.0.0.md'), fixture('sdd-v7.0.0.md'), fixture('sdd-v7.0.1.md'), ['v7.0.0', 'v7.0.1']);
+    expect(conflicts).toBe(2);
+    const regions = text.split(/^<<<<<<< kit$/m).slice(1).map((part) => part.split(/^>>>>>>> v7\.0\.1$/m)[0]);
+    expect(regions[0]).toContain("- Check for this plan's ledger with `sdd task status`.");
+    expect(regions[1]).toContain('**Reproduce before fixing**');
+    const outside = text.split(/^<<<<<<< kit$[\s\S]*?^>>>>>>> v7\.0\.1$/m).join('');
+    for (const block of ['Seven things stop you, and only these', '**Your first message after loading this skill**', 'A scoped re-review takes a cheap-to-mid tier', '`sdd-worktrees` to create one or verify the existing one.'])
+      expect(outside).toContain(block);
+  });
+
+  it('lists the blocks inside each conflict', () => {
+    const text = 'a\n<<<<<<< kit\n<!-- kit: 4597d47e · sustituye: «x» -->\nkit\n=======\ntheirs\n>>>>>>> v7.0.1\nb\n<<<<<<< kit\nours\n=======\ntheirs\n>>>>>>> v7.0.1\n';
+    expect(conflictBlocks(text)).toEqual([
+      { line: 2, tasks: ['4597d47e'] },
+      { line: 9, tasks: [] },
+    ]);
   });
 });
 

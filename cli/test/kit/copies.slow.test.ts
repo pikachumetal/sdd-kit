@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -55,6 +55,80 @@ function runCheck(registry: string, upstream: string): RunResult {
 }
 
 const newRoot = (): string => mkdtempSync(join(tmpdir(), 'copies-'));
+
+const update = join(kitRoot, 'tests', 'copies', 'update.ts');
+
+function runUpdate(registry: string, upstream: string, source: string, tag: string): RunResult {
+  return run(process.execPath, [update, source, tag, registry], { env: { ...cleanGitEnv, SDD_UPSTREAM_DIR: upstream } });
+}
+
+const V1 = '# Skill A\n\nFirst paragraph.\n\nSecond paragraph.\n';
+const V2 = '# Skill A\n\nFirst paragraph.\n\nSecond paragraph.\n\nThird paragraph.\n';
+const KIT = '# Skill A\n\n<!-- kit: 0302 · sustituye: «First paragraph.» -->\nThe kit paragraph.\n\nSecond paragraph.\n';
+const kitFile = (root: string): string => readFileSync(join(root, 'repo', 'skills/sdd-a/SKILL.md'), 'utf8');
+const registryOf = (path: string): { entries: { version: string }[] } => JSON.parse(readFileSync(path, 'utf8'));
+
+describe('kit:copies-update (tests/copies/update.ts)', () => {
+  it('merges a copy and bumps its version', () => {
+    const root = newRoot();
+    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 }, 'v1.1.0': { 'skills/a/SKILL.md': V2 } });
+    const registry = newRepo(root, [{ kit: 'skills/sdd-a/SKILL.md' }], { 'skills/sdd-a/SKILL.md': KIT });
+    expect(runUpdate(registry, join(root, 'upstream'), 'Juguete', 'v1.1.0')).toEqual({ output: 'skills/sdd-a/SKILL.md: v1.0.0 → v1.1.0, 0 conflictos', code: 0 });
+    expect(kitFile(root)).toBe(`${KIT}\nThird paragraph.\n`);
+    expect(registryOf(registry).entries[0].version).toBe('v1.1.0');
+  });
+
+  it('lists the blocks inside each conflict and kit:copies reports the unresolved conflict', () => {
+    const root = newRoot();
+    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 }, 'v1.1.0': { 'skills/a/SKILL.md': V1.replace('First paragraph.', 'First paragraph, rewritten.') } });
+    const registry = newRepo(root, [{ kit: 'skills/sdd-a/SKILL.md' }], { 'skills/sdd-a/SKILL.md': KIT });
+    expect(runUpdate(registry, join(root, 'upstream'), 'Juguete', 'v1.1.0')).toEqual({
+      output: 'skills/sdd-a/SKILL.md: v1.0.0 → v1.1.0, 1 conflictos\nskills/sdd-a/SKILL.md:3: conflicto con el bloque 0302; si te quedas con la versión de la fuente, el bloque se pierde',
+      code: 1,
+    });
+    expect(runCheck(registry, join(root, 'upstream')).output).toContain('skills/sdd-a/SKILL.md:3: conflicto de git merge-file sin resolver');
+  });
+
+  it('skips a copy whose original moved', () => {
+    const root = newRoot();
+    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 }, 'v1.1.0': { 'skills/b/SKILL.md': V1 } });
+    git(['-C', join(root, 'upstream', 'juguete'), 'rm', '-q', 'skills/a/SKILL.md']);
+    git(['-C', join(root, 'upstream', 'juguete'), '-c', 'user.name=test', '-c', 'user.email=test@example.com', 'commit', '-q', '-m', 'v1.2.0']);
+    git(['-C', join(root, 'upstream', 'juguete'), 'tag', 'v1.2.0']);
+    const registry = newRepo(root, [{ kit: 'skills/sdd-a/SKILL.md' }], { 'skills/sdd-a/SKILL.md': KIT });
+    expect(runUpdate(registry, join(root, 'upstream'), 'Juguete', 'v1.2.0')).toEqual({
+      output: 'skills/sdd-a/SKILL.md: su original skills/a/SKILL.md no existe en v1.2.0: mapéalo antes de actualizar',
+      code: 1,
+    });
+    expect(registryOf(registry).entries[0].version).toBe('v1.0.0');
+  });
+
+  it('writes nothing when merge-file fails', () => {
+    const root = newRoot();
+    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 }, 'v1.1.0': { 'skills/a/SKILL.md': 'binary\0content\n' } });
+    const registry = newRepo(root, [{ kit: 'skills/sdd-a/SKILL.md' }], { 'skills/sdd-a/SKILL.md': KIT });
+    const before = readFileSync(registry, 'utf8');
+    const result = runUpdate(registry, join(root, 'upstream'), 'Juguete', 'v1.1.0');
+    expect(result.code).toBe(1);
+    expect(result.output).toMatch(/^skills\/sdd-a\/SKILL\.md: git merge-file falló/);
+    expect(kitFile(root)).toBe(KIT);
+    expect(readFileSync(registry, 'utf8')).toBe(before);
+  });
+
+  it('leaves a pending copy untouched and rewrites only the versions it merged', () => {
+    const root = newRoot();
+    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1, 'skills/a/other.md': 'x\n' }, 'v1.1.0': { 'skills/a/SKILL.md': V2 } });
+    const registry = newRepo(root, [{ kit: 'skills/sdd-a/SKILL.md' }, { kit: 'skills/sdd-a/other.md', path: 'skills/a/other.md', pending: '0312' }], {
+      'skills/sdd-a/SKILL.md': KIT,
+      'skills/sdd-a/other.md': 'kit other\n',
+    });
+    const expected = JSON.parse(readFileSync(registry, 'utf8'));
+    expected.entries[0].version = 'v1.1.0';
+    expect(runUpdate(registry, join(root, 'upstream'), 'Juguete', 'v1.1.0').code).toBe(0);
+    expect(readFileSync(registry, 'utf8')).toBe(`${JSON.stringify(expected, null, 2)}\n`);
+    expect(readFileSync(join(root, 'repo', 'skills/sdd-a/other.md'), 'utf8')).toBe('kit other\n');
+  });
+});
 
 describe('kit:copies (tests/copies/check.ts)', () => {
   it('reports a pending copy in one line', () => {
