@@ -140,6 +140,7 @@ Lo que cambia en `writing-skills/SKILL.md` de la 7.0.2, aparte de lo que se muev
   - el Reader de `kit:copies` cierra un bloque en la primera línea en blanco aunque lleve `fin`;
   - dentro de un recuadro, un bloque añadido se come líneas del original sin que nadie avise;
   - un `own` no genera `NOTICE` aunque lleve texto literal de terceros.
+- **sin revisar**: el commit posterior al cierre que hace que `cli/test/kit/worktrees-setup.slow.test.ts` lea el bloque bash de `dist/skills/sdd-worktrees/SKILL.md`, que es lo que carga el agente. Leyendo `skills/` se llevaba también las marcas de la fuente anotada, y bash daba «syntax error near unexpected token newline» en el CI de la rama (`cli:test-min`, run 41861969567). En local, `moon run cli:test-min` → 2665 passed (2677), 129/129 ficheros.
 - Las references que siguen en castellano van a la fila que reescribe su skill (develop, `c69f5e6d`).
 
 ## 5. Aprendizajes
