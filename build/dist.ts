@@ -63,22 +63,28 @@ function includedLines(name: string, location: string, readInclude: IncludeReade
   return withNewline.split(/(?<=\n)/).filter(Boolean).map((text) => ({ text, source: null }));
 }
 
-function renderLine(block: Block, line: string, index: number, context: { file: string; readInclude: IncludeReader }): OutputLine[] {
+interface RenderState {
+  block: Block;
+  file: string;
+  readInclude: IncludeReader;
+}
+
+function renderLine(line: string, index: number, state: RenderState): OutputLine[] {
   const content = line.replace(/\r?\n$/, '');
-  const location = `${context.file}:${index + 1}`;
+  const location = `${state.file}:${index + 1}`;
   const include = INCLUDE_MARK.exec(content)?.[1];
-  if (include !== undefined && block === 'text') return includedLines(include, location, context.readInclude);
-  if (include !== undefined && typeof block === 'object') throw new BuildError(`${location}: una inclusión va en el texto, fuera de un bloque de código`);
-  return isMarkToDrop(block, content, location) ? [] : [{ text: line, source: index }];
+  if (include !== undefined && state.block === 'text') return includedLines(include, location, state.readInclude);
+  if (include !== undefined && typeof state.block === 'object') throw new BuildError(`${location}: una inclusión va en el texto, fuera de un bloque de código`);
+  return isMarkToDrop(state.block, content, location) ? [] : [{ text: line, source: index }];
 }
 
 export function renderLines(text: string, file: string, readInclude: IncludeReader): OutputLine[] {
   const lines = text.split(/(?<=\n)/);
-  let block: Block = lines[0]?.trimEnd() === '---' ? 'frontmatter' : 'text';
+  const state: RenderState = { block: lines[0]?.trimEnd() === '---' ? 'frontmatter' : 'text', file, readInclude };
   const rendered: OutputLine[] = [];
   lines.forEach((line, index) => {
-    rendered.push(...renderLine(block, line, index, { file, readInclude }));
-    block = nextBlock(block, line.replace(/\r?\n$/, ''), index);
+    rendered.push(...renderLine(line, index, state));
+    state.block = nextBlock(state.block, line.replace(/\r?\n$/, ''), index);
   });
   return rendered;
 }

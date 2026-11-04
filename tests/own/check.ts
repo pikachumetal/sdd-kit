@@ -1,12 +1,11 @@
 // Uso: node tests/own/check.ts (moon run kit:own). Las comprobaciones de las skills propias sobre lo que viaja en dist/.
-import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { INCLUDE_MARK, listSources } from '../../build/dist.ts';
 import { BuildError } from '../../build/errors.ts';
 import { kindOf, readRegistry, type Registry } from '../../build/sources.ts';
 import { formatProblem, type Problem } from '../copies/annotated.ts';
 import { exceptionProblems } from './exceptions.ts';
-import { skillLines } from './kit-text.ts';
+import { readLf, skillLines } from './kit-text.ts';
 import { repeatedLines } from './repeated.ts';
 import { spanishProblems } from './spanish.ts';
 
@@ -18,8 +17,8 @@ export interface OwnReport {
 function includeInCopyProblems(repoRoot: string, files: string[], registry: Registry): Problem[] {
   const copies = files.filter((file) => file.endsWith('.md') && ['copy', 'pending'].includes(kindOf(registry, file) ?? ''));
   return copies.flatMap((file) =>
-    readFileSync(join(repoRoot, file), 'utf8')
-      .split(/\r?\n/)
+    readLf(join(repoRoot, file))
+      .split('\n')
       .flatMap((line, index) => (INCLUDE_MARK.test(line) ? [{ file, line: index + 1, message: `una inclusión es solo de las propias, y ${file} es una copia` }] : [])),
   );
 }

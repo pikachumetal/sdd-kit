@@ -1,10 +1,10 @@
 // Una racha de palabras que el kit dice en dos skills: la regla vive en dos sitios.
-import { elementsOf, skillOf, withoutCode, type Element, type SkillLine } from './kit-text.ts';
+import { elementsOf, skillOf, TEMPLATES, withoutCode, type Element, type SkillLine } from './kit-text.ts';
 
 const RUN = 10;
 const WORD = /[\p{L}\p{N}'’-]+/gu;
 const HAS_LETTER = /[\p{L}\p{N}]/u;
-const EXCLUDED = ['dist/skills/sdd-templates/templates/', 'dist/skills/sdd-upgrade/references/migrations/'];
+const EXCLUDED = [TEMPLATES, 'dist/skills/sdd-upgrade/references/migrations/'];
 const REMEDY = 'déjala en un solo sitio, en includes/ si la necesitan varias propias';
 
 interface Word {
@@ -69,22 +69,30 @@ function flaggedOccurrences(words: Word[][], occurrences: Occurrence[]): Occurre
   return occurrences.filter((a) => occurrences.some((b) => canPair(run(a), run(b))));
 }
 
-function runStarts(flagged: Map<number, Set<number>>): Map<string, string> {
-  const startOf = new Map<string, string>();
+const keyOf = (occurrence: Occurrence): string => `${occurrence.element}:${occurrence.index}`;
+
+// Cada racha flagged apunta a la primera de su tramo seguido: una racha de 12 palabras es un solo sitio.
+function runStarts(flagged: Map<number, Set<number>>): Map<string, Occurrence> {
+  const startOf = new Map<string, Occurrence>();
   for (const [element, indexes] of flagged) {
     for (const index of [...indexes].sort((a, b) => a - b)) {
-      const previous = startOf.get(`${element}:${index - 1}`);
-      startOf.set(`${element}:${index}`, previous ?? `${element}:${index}`);
+      const previous = startOf.get(keyOf({ element, index: index - 1 }));
+      startOf.set(keyOf({ element, index }), previous ?? { element, index });
     }
   }
   return startOf;
 }
 
-function siteOf(words: Word[][], start: string): Site {
-  const [element, index] = start.split(':').map(Number);
-  const word = words[element][index];
+function siteOf(words: Word[][], start: Occurrence): Site {
+  const word = words[start.element][start.index];
   return { file: word.line.file, line: word.line.line };
 }
+
+const firstWords = (words: Word[][], start: Occurrence): string =>
+  words[start.element]
+    .slice(start.index, start.index + RUN)
+    .map((word) => word.text)
+    .join(' ');
 
 const bySite = (a: Site, b: Site): number => (a.file === b.file ? a.line - b.line : a.file < b.file ? -1 : 1);
 
@@ -93,32 +101,40 @@ function joinSites(sites: Site[]): string {
   return names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} y ${names.at(-1)}`;
 }
 
-function groupsOf(words: Word[][]): Map<string, string[]> {
+function flaggedByText(words: Word[][]): { hitsByText: Occurrence[][]; flagged: Map<number, Set<number>> } {
   const flagged = new Map<number, Set<number>>();
-  const keys: Occurrence[][] = [];
+  const hitsByText: Occurrence[][] = [];
   for (const occurrences of shingles(words).values()) {
     const hits = flaggedOccurrences(words, occurrences);
     if (hits.length === 0) continue;
-    keys.push(hits);
+    hitsByText.push(hits);
     for (const hit of hits) flagged.set(hit.element, (flagged.get(hit.element) ?? new Set()).add(hit.index));
   }
+  return { hitsByText, flagged };
+}
+
+// Dos tramos que comparten alguna racha de 10 palabras van en la misma línea.
+function groupsOf(words: Word[][]): Occurrence[][] {
+  const { hitsByText, flagged } = flaggedByText(words);
   const startOf = runStarts(flagged);
+  const start = (hit: Occurrence): Occurrence => startOf.get(keyOf(hit)) ?? hit;
   const runs = new Runs();
-  for (const hits of keys) for (const hit of hits.slice(1)) runs.union(startOf.get(`${hits[0].element}:${hits[0].index}`)!, startOf.get(`${hit.element}:${hit.index}`)!);
-  const groups = new Map<string, string[]>();
-  for (const start of new Set(startOf.values())) groups.set(runs.find(start), [...(groups.get(runs.find(start)) ?? []), start]);
-  return groups;
+  for (const hits of hitsByText) for (const hit of hits.slice(1)) runs.union(keyOf(start(hits[0])), keyOf(start(hit)));
+  const groups = new Map<string, Occurrence[]>();
+  for (const run of new Set(startOf.values())) {
+    const root = runs.find(keyOf(run));
+    groups.set(root, [...(groups.get(root) ?? []), run]);
+  }
+  return [...groups.values()];
 }
 
 export function repeatedLines(lines: SkillLine[]): string[] {
   const kept = lines.filter((line) => skillOf(line.file) !== null && !EXCLUDED.some((prefix) => line.file.startsWith(prefix)));
   const words = elementsOf(kept).map(wordsOf);
-  return [...groupsOf(words).values()]
+  return groupsOf(words)
     .map((starts) => {
       const sorted = starts.map((start) => ({ start, site: siteOf(words, start) })).sort((a, b) => bySite(a.site, b.site));
-      const [element, index] = sorted[0].start.split(':').map(Number);
-      const first = words[element].slice(index, index + RUN).map((word) => word.text).join(' ');
-      return { site: sorted[0].site, text: `${joinSites(sorted.map((entry) => entry.site))} repiten «${first}»: ${REMEDY}` };
+      return { site: sorted[0].site, text: `${joinSites(sorted.map((entry) => entry.site))} repiten «${firstWords(words, sorted[0].start)}»: ${REMEDY}` };
     })
     .sort((a, b) => bySite(a.site, b.site))
     .map((entry) => entry.text);

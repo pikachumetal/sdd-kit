@@ -1,6 +1,6 @@
 // La prosa en castellano que queda en una skill: las skills se escriben en inglés.
 import type { Problem } from '../copies/annotated.ts';
-import type { SkillLine } from './kit-text.ts';
+import { TEMPLATES, type SkillLine } from './kit-text.ts';
 
 // Palabras gramaticales, y las de los títulos y etiquetas del kit que el inglés no tiene: un título corto no lleva otra señal.
 const ES = new Set(
@@ -15,8 +15,9 @@ const ES = new Set(
 const EN = new Set('the of and to in is it that for on with as be by this are or not an if when each before after what from which its you your does do has have'.split(' '));
 const SPANISH_LETTER = /[áéíóúñ¿¡]/i;
 const SPANISH_ENDING = /(?:ción|ciones|sión|siones|encia|encias|ancia|ancias|dades|mente|ajes?|ivos?|ivas?|ados|adas|idos|idas)$/;
-const TEMPLATES = 'dist/skills/sdd-templates/templates/';
 const ABBREVIATE_AFTER = 12;
+const MIN_SPANISH_WITH_ENGLISH = 3;
+const SPANISH_OVER_ENGLISH = 2;
 
 function prose(text: string): string {
   return text
@@ -32,7 +33,7 @@ export function isSpanish(text: string): boolean {
   const es = words.filter((word) => ES.has(word) || SPANISH_ENDING.test(word)).length;
   const en = words.filter((word) => EN.has(word)).length;
   if (en === 0) return es >= 1 || SPANISH_LETTER.test(kept);
-  return es >= 3 && es > 2 * en;
+  return es >= MIN_SPANISH_WITH_ENGLISH && es > SPANISH_OVER_ENGLISH * en;
 }
 
 function abbreviated(text: string): string {

@@ -80,7 +80,7 @@ export function watchedRefs(entry: Entry): WatchedRef[] {
 
 const covers = (path: string, file: string): boolean => (path.endsWith('/') ? file.startsWith(path) : file === path);
 
-// Una copia fichero a fichero gana a la carpeta pending que la contiene, como en classify.
+// Una copia sin pending gana a la carpeta pending que la contiene; una copia con pending es pending, también si su kit es un fichero.
 export function kindOf(registry: Registry, file: string): 'own' | 'copy' | 'pending' | null {
   if ((registry.own ?? []).some((path) => covers(path, file))) return 'own';
   const copies = registry.entries.filter((entry) => entry.kind === 'copy' && entry.kit.some((path) => covers(path, file)));

@@ -168,6 +168,12 @@ describe('kit:own: la absoluta con excepción', () => {
     expect(result.lines).toEqual([message('dist/skills/example-a/SKILL.md:6', 'never', 'unless')]);
   });
 
+  it('does not cut after an abbreviation inside parentheses or quotes', () => {
+    const result = report({ files: skill('example-a', 'Never skip it (e.g. for a typo) unless asked.\n\nOnly this "i.e. that" except here.\n') });
+
+    expect(result.lines).toEqual([message('dist/skills/example-a/SKILL.md:6', 'never', 'unless'), message('dist/skills/example-a/SKILL.md:8', 'only', 'except')]);
+  });
+
   it('does not cut inside a «…» quote', () => {
     const result = report({ files: skill('example-a', 'Always ask «is it done. Really?» instead of guessing.\n') });
 
@@ -283,6 +289,6 @@ describe('kit:own: lo que dice', () => {
     const root = tempDir('own-');
     writeTree(root, skill('example-a', 'Alpha.\n'));
 
-    expect(() => ownReport(root, ['skills/example-a/SKILL.md'])).toThrow(/upstream\.json/);
+    expect(() => ownReport(root, ['skills/example-a/SKILL.md'])).toThrow(/no such file or directory.*upstream\.json/);
   });
 });

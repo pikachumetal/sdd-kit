@@ -12,7 +12,7 @@
 // La fase, en caracteres: tras compactar vuelven juntas la skill que dirige y las que manda invocar, cada una ya cortada.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { nextBlock, type Block } from '../../build/dist.ts';
+import { elementsOf, textLines } from '../own/kit-text.ts';
 import { splitSentences } from '../own/sentences.ts';
 
 const LIMIT = 20_000;
@@ -21,22 +21,12 @@ const REPO_ROOT = resolve(import.meta.dirname, '../..');
 const INVOKE_BEFORE = /(?:invoke|load|\*\*REQUIRED SUB-SKILL:\*\*)\s+`(?:sdd-kit:)?([a-z0-9-]+)`/gi;
 const SKILL_AFTER = /`(?:sdd-kit:)?([a-z0-9-]+)`[^`]*?with (?:the )?`Skill`/g;
 
-function proseOf(text: string): string {
-  const lines = text.replace(/\r\n/g, '\n').split('\n');
-  let block: Block = lines[0]?.trimEnd() === '---' ? 'frontmatter' : 'text';
-  return lines
-    .filter((line, index) => {
-      const next = nextBlock(block, line, index);
-      const kept = block === 'text' && next === 'text';
-      block = next;
-      return kept;
-    })
-    .join('\n');
-}
+const sentencesOf = (text: string): string[] =>
+  elementsOf(textLines(text)).flatMap((element) => splitSentences(element.parts.map((part) => part.text).join(' ')).map((sentence) => sentence.text));
 
 export function invokedSkills(text: string, self: string, names: string[]): string[] {
-  const found = splitSentences(proseOf(text)).flatMap((sentence) =>
-    [...sentence.text.matchAll(INVOKE_BEFORE), ...sentence.text.matchAll(SKILL_AFTER)].sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).map((match) => match[1]),
+  const found = sentencesOf(text).flatMap((sentence) =>
+    [...sentence.matchAll(INVOKE_BEFORE), ...sentence.matchAll(SKILL_AFTER)].sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).map((match) => match[1]),
   );
   return [...new Set(found)].filter((name) => name !== self && names.includes(name));
 }
@@ -68,6 +58,7 @@ function phaseLines(texts: Map<string, string>): string[] {
   });
   const over = phases.filter((phase) => phase.total > PHASE_LIMIT);
   if (over.length > 0) return over.map((phase) => `FALLA: la fase de ${phase.name} (${phase.invoked.join(', ')}) suma ${phase.total} caracteres (límite: ${PHASE_LIMIT})`);
+  if (phases.length === 0) return [];
   const largest = phases.reduce((max, phase) => (phase.total > max.total ? phase : max), phases[0]);
   return [`OK: ninguna fase pasa de ${PHASE_LIMIT} caracteres (la mayor, ${largest.name}: ${largest.total})`];
 }
@@ -80,6 +71,6 @@ export function checkSkillSize(repoRoot: string): { code: number; lines: string[
 
 if (resolve(process.argv[1] ?? '') === import.meta.filename) {
   const { code, lines } = checkSkillSize(REPO_ROOT);
-  for (const line of lines) (line.startsWith('FALLA') || line.startsWith('Mueve') ? console.error : console.log)(line);
+  for (const line of lines) (code === 0 ? console.log : console.error)(line);
   process.exitCode = code;
 }

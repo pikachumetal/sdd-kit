@@ -6,7 +6,7 @@ import { splitSentences } from './sentences.ts';
 const ABSOLUTE = /\b(only|never|always|must|every)\b/i;
 const EXCEPTION = /\b(except|unless|instead of)\b/i;
 
-export interface LocatedSentence {
+interface LocatedSentence {
   file: string;
   line: number;
   text: string;
@@ -26,7 +26,7 @@ function sentencesOfElement(element: Element): LocatedSentence[] {
   });
 }
 
-export function sentencesOf(lines: SkillLine[]): LocatedSentence[] {
+function sentencesOf(lines: SkillLine[]): LocatedSentence[] {
   return elementsOf(lines.filter((line) => line.kit)).flatMap(sentencesOfElement);
 }
 
