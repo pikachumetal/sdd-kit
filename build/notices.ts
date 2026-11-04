@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'no
 import { join, resolve } from 'node:path';
 import { buildInto } from './dist.ts';
 import { BuildError } from './errors.ts';
-import { readRegistry, type Entry, type Registry, type Source } from './sources.ts';
+import { mergeRefs, readRegistry, watchedRefs, type Entry, type Registry, type Source, type WatchedRef } from './sources.ts';
 
 const NOTICES_FILE = 'THIRD_PARTY_NOTICES.md';
 const SOURCES_HEADING = '## Fuentes';
@@ -43,35 +43,38 @@ function licenseText(name: string, source: Source): string {
   return `MIT License\n\n${source.copyright}\n\n${MIT_PERMISSION}`;
 }
 
-function noticeBlock(registry: Registry, entry: Entry): string {
-  const source = registry.sources[entry.source];
-  const origin = `https://github.com/${source.repo}, ${versionLabel(entry.version)} (${entry.paths.join(', ')})`;
-  return `Portions of this skill are adapted from ${origin},\ndistributed under the following license:\n\n${licenseText(entry.source, source)}`;
+function noticeBlock(registry: Registry, ref: WatchedRef): string {
+  const source = registry.sources[ref.source];
+  const origin = `https://github.com/${source.repo}, ${versionLabel(ref.version)} (${ref.paths.join(', ')})`;
+  return `Portions of this skill are adapted from ${origin},\ndistributed under the following license:\n\n${licenseText(ref.source, source)}`;
 }
 
 export function renderNotice(registry: Registry, skillDir: string): string | null {
   const copies = registry.entries.filter((entry) => entry.kind === 'copy' && entry.kit.some((path) => skillDirOf(path) === skillDir));
   if (copies.length === 0) return null;
-  return copies.map((entry) => noticeBlock(registry, entry)).join('\n');
+  return mergeRefs(copies.flatMap(watchedRefs))
+    .map((ref) => noticeBlock(registry, ref))
+    .join('\n');
 }
 
-function sourcesRow(registry: Registry, entry: Entry): string {
-  const source = registry.sources[entry.source];
+function sourcesRow(registry: Registry, entry: Entry, ref: WatchedRef): string {
+  const source = registry.sources[ref.source];
   const license = source.copyright ? `${source.license}, ${source.copyright}` : source.license;
   const cells = [
     backticked(entry.kit),
-    `[${entry.source}](https://github.com/${source.repo})`,
+    `[${ref.source}](https://github.com/${source.repo})`,
     entry.kind === 'copy' ? 'copia' : 'concepto',
-    `\`${entry.version}\``,
-    backticked(entry.paths),
+    `\`${ref.version}\``,
+    backticked(ref.paths),
     license,
   ];
-  return `| ${cells.join(' | ')} |${entry.note ? ` ${entry.note} |` : ' |'}`;
+  const note = ref.source === entry.source ? entry.note : undefined;
+  return `| ${cells.join(' | ')} |${note ? ` ${note} |` : ' |'}`;
 }
 
 export function renderSourcesTable(registry: Registry): string {
   const header = ['| Fichero del kit | Fuente | Tipo | Versión | Rutas de la fuente | Licencia | Nota |', '| --- | --- | --- | --- | --- | --- | --- |'];
-  const rows = registry.entries.map((entry) => sourcesRow(registry, entry));
+  const rows = registry.entries.flatMap((entry) => watchedRefs(entry).map((ref) => sourcesRow(registry, entry, ref)));
   return [SOURCES_HEADING, '', ...header, ...rows, ''].join('\n');
 }
 
@@ -95,6 +98,15 @@ export function noticeFiles(registry: Registry, repoRoot: string): Map<string, s
   const current = existsSync(noticesPath) ? readFileSync(noticesPath, 'utf8') : '';
   files.set(NOTICES_FILE, withSourcesTable(current, renderSourcesTable(registry)));
   return files;
+}
+
+const SEE_NOTICE = /see `?NOTICE`?/;
+
+export function seeNoticeWithout(repoRoot: string, files: string[]): string[] {
+  return files
+    .filter((file) => SEE_NOTICE.test(readFileSync(join(repoRoot, file), 'utf8')))
+    .filter((file) => !existsSync(join(repoRoot, `${skillDirOf(file)}/NOTICE`)))
+    .map((file) => `${file} dice see NOTICE, y la skill no tiene NOTICE: una skill sin copias no lo genera`);
 }
 
 // Un NOTICE de una skill sin copias en el registro viajaría con una versión vieja.

@@ -283,8 +283,9 @@
 | 2026-11-03 | 0299 | docs | 3.5 | 0.95 | 0.27 | 40136k | 19563k | no aplica | 24.29 | 20261103-130212-feature-0299-own-skills-audit |
 | 2026-11-03 | 0303 | docs | 0.5 | 0.32 | 0.64 | 12133k | 3256k | no aplica | 7.6 | 20261103-162611-feature-0303-adr-three-rules |
 | 2026-11-03 | 0300 | infra/tooling | 4 | 1.3 | 0.33 | 96266k | 15530k | no aplica | 37.49 | 20261103-173149-feature-0300-skill-source-build-dist |
+| 2026-11-04 | 0302 | infra/tooling | 3 | 2.05 | 0.68 | 141474k | 13853k | no aplica | 56.31 | 20261103-201153-feature-0302-annotated-copies |
 
-**Factor de calibración** (ratio mediano real/estimado, 243 artefactos): **0.56** · media 0.71
+**Factor de calibración** (ratio mediano real/estimado, 244 artefactos): **0.57** · media 0.71
 
 - p25–p75: 0.36–0.84
 - p80: 0.97 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
@@ -295,8 +296,8 @@
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 98 | 40 % |
-| 0.5–0.8 | 74 | 30 % |
-| 0.8–1.25 | 50 | 21 % |
+| 0.5–0.8 | 75 | 31 % |
+| 0.8–1.25 | 50 | 20 % |
 | 1.25–2 | 13 | 5 % |
 | ≥2 | 8 | 3 % |
 
@@ -304,7 +305,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 106 | 0.58 | 0.4–0.8 |
-| infra/tooling | 65 | 0.49 | 0.35–0.73 |
+| infra/tooling | 66 | 0.49 | 0.35–0.73 |
 | patch | 70 | 0.71 | 0.27–1.2 |
 | tooling | 1 | 0.6 | — |
 
@@ -325,7 +326,7 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 131 | 233.32 | 0.53 | 651.49 | 2039.38 |
+| sin publicar | 132 | 235.37 | 0.53 | 651.49 | 2095.69 |
 
 > Ver `estimation.md`.
 
@@ -333,9 +334,9 @@
 
 | Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| apertura | 8 | 0.76 | 0.34 | 1.04 | 0 | 26 % | sí | 4.75 | 1.1 | 0.22 |
-| implementación | 8 | 0.68 | 0.62 | 0 | 0.03 | 31 % | no | 10 | 1.31 | 0.12 |
-| revisión | 5 | 0.51 | 1.16 | 0.33 | 0 | 40 % | sí | 1.75 | 1.67 | 0.87 |
-| cierre | 7 | 0.05 | 0.06 | 0 | 0.03 | 3 % | sí | 1.5 | 0.11 | 0.05 |
+| apertura | 9 | 1.25 | 0.54 | 1.75 | 0 | 29 % | sí | 7.25 | 1.79 | 0.24 |
+| implementación | 9 | 1.16 | 0.86 | 0.18 | 0.06 | 32 % | no | 13 | 2.02 | 0.15 |
+| revisión | 6 | 0.73 | 1.52 | 0.33 | 0 | 36 % | sí | 2.25 | 2.26 | 0.94 |
+| cierre | 8 | 0.09 | 0.08 | 0 | 0.03 | 3 % | sí | 2 | 0.17 | 0.07 |
 
-Ceremonia: 70 % del trabajo (4 tareas, 4 fuera por una fase sin eventos).
+Ceremonia: 68 % del trabajo (5 tareas, 4 fuera por una fase sin eventos).

@@ -7,7 +7,7 @@ description: Use when another sdd-kit skill reaches a step that needs decisions 
 
 ## Overview
 
-Write everything the user reads, skill announcements included, in their language. Adapted from `grilling` by Matt Pocock (MIT, see `NOTICE`).
+Write everything the user reads, skill announcements included, in their language. Inspired by `grilling` by Matt Pocock (MIT).
 
 Grill relentlessly until nothing is left silently assumed: every assumption becomes a question or a «decided by me» entry. Ask next the decision that reshapes most others; one that depends on a decision still open waits. Facts are your job; decisions are the user's.
 

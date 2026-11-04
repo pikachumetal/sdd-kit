@@ -63,7 +63,7 @@ function words(text: string): number {
 }
 
 function skillWords(skill: string): number {
-  return markdownFiles(join(repoRoot, 'skills', skill))
+  return markdownFiles(join(repoRoot, 'dist', 'skills', skill))
     .filter((path) => !isMigration(path))
     .reduce((sum, path) => sum + words(readFileSync(path, 'utf8')), 0);
 }
@@ -85,7 +85,7 @@ describe('topes de palabras', () => {
   });
 
   it.each(skills)('%s: SKILL.md cabe en su tope', (skill) => {
-    expectWithin(words(readText(`skills/${skill}/SKILL.md`)), skillBudgets[skill].skillMd);
+    expectWithin(words(readText(`dist/skills/${skill}/SKILL.md`)), skillBudgets[skill].skillMd);
   });
 
   it.each(skills)('%s: la skill completa cabe en su tope', (skill) => {
