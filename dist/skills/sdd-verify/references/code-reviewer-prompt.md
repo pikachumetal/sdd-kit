@@ -207,7 +207,7 @@ For each issue:
 - Avoid giving a clear verdict
 ```
 
-The «Quick Diagnostic» tables are from `wondelai/skills` 1.8.0, and the two rules that bind them from `code-review` of `mattpocock/skills` v1.3.1 (both MIT, see `NOTICE`).
+The «Quick Diagnostic» tables are from `wondelai/skills`, and the two rules that bind them from `code-review` of `mattpocock/skills` (both MIT, see `NOTICE`).
 
 ## Example Output
 

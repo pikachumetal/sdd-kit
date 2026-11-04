@@ -2,7 +2,7 @@
 // de cada skill con copias. Uso: node build/notices.ts (moon run kit:notices), que los escribe y reconstruye dist/.
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { buildInto } from './dist.ts';
+import { buildInto, WHOLE_LINE_MARK } from './dist.ts';
 import { BuildError } from './errors.ts';
 import { mergeRefs, readRegistry, watchedRefs, type Entry, type Registry, type Source, type WatchedRef } from './sources.ts';
 
@@ -107,6 +107,29 @@ export function seeNoticeWithout(repoRoot: string, files: string[]): string[] {
     .filter((file) => SEE_NOTICE.test(readFileSync(join(repoRoot, file), 'utf8')))
     .filter((file) => !existsSync(join(repoRoot, `${skillDirOf(file)}/NOTICE`)))
     .map((file) => `${file} dice see NOTICE, y la skill no tiene NOTICE: una skill sin copias no lo genera`);
+}
+
+const MIGRATIONS_DIR = 'skills/sdd-upgrade/references/migrations/';
+
+function sourceVersionPattern(registry: Registry): RegExp {
+  const escape = (name: string): string => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const names = Object.entries(registry.sources).flatMap(([key, source]) => [key, source.repo]);
+  return new RegExp(`\`?(?:${names.map(escape).join('|')})\`?\\s+v?\\d+(?:\\.\\d+)+`);
+}
+
+// Las migraciones son historia: citan las versiones que tocaba cada release.
+export function versionsInText(repoRoot: string, files: string[], registry: Registry): string[] {
+  const pattern = sourceVersionPattern(registry);
+  return files
+    .filter((file) => !file.startsWith(MIGRATIONS_DIR) && !file.endsWith('/NOTICE'))
+    .flatMap((file) =>
+      readFileSync(join(repoRoot, file), 'utf8')
+        .split('\n')
+        .flatMap((line, index) => {
+          const found = WHOLE_LINE_MARK.test(line) ? null : pattern.exec(line);
+          return found ? [`${file}:${index + 1}: la versión de una fuente vive en upstream.json, no en el texto: «${found[0]}»`] : [];
+        }),
+    );
 }
 
 // Un NOTICE de una skill sin copias en el registro viajaría con una versión vieja.

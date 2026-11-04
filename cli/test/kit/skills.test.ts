@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { WHOLE_LINE_MARK } from '../../../build/dist.ts';
 import { filesUnder, frontmatter, isMigration, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
 
 const skillsRoot = join(repoRoot, 'skills');
@@ -64,7 +65,9 @@ describe('skills de superpowers citadas', () => {
   // El recuento y la lista son el contrato; el énfasis y la frase de cierre son redacción.
   const sentence = /invoca \*{0,2}(\d+) skills? de superpowers\*{0,2}: (.*?)\./.exec(readText('README.md'));
   const declared = sortedUnique([...(sentence?.[2] ?? '').matchAll(/`([a-z-]+)`/g)].map((match) => match[1]));
-  const cited = sortedUnique(skillMarkdown().flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
+  // Lo que cita una marca del kit es el original que sustituye, y la marca no viaja.
+  const loaded = (path: string): string => readFileSync(path, 'utf8').split('\n').filter((line) => !WHOLE_LINE_MARK.test(line)).join('\n');
+  const cited = sortedUnique(skillMarkdown().flatMap((path) => [...loaded(path).matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
 
   it('el README declara la misma lista que citan las skills', () => {
     expect(declared).toEqual(cited);

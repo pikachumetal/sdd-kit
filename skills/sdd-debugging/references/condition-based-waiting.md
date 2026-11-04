@@ -79,6 +79,7 @@ async function waitFor<T>(
 }
 ```
 
+<!-- kit: 0312 · sustituye: «this directory» -->
 See `condition-based-waiting-example.ts` in `references/` for complete implementation with domain-specific helpers (`waitForEvent`, `waitForEventCount`, `waitForEventMatch`) from actual debugging session.
 
 ## Common Mistakes

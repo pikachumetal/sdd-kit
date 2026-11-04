@@ -7,7 +7,7 @@ description: Use when a feature or a patch is implemented and has to be closed i
 
 ## Overview
 
-Closing a change is a **Definition of Done**: a checklist that keeps the project's documents from going stale and closes the improvement loop. **Closing = running the WHOLE checklist**, not noticing the code is there. Write everything the user reads in the language of their message. One trunk for every lane, with short branches marked `Feature only:`, `Patch only:` and `Hotfix only:`; a step without a mark applies to all. The merge step forks `finishing-a-development-branch` of superpowers 7.0.0 (MIT, see `NOTICE`).
+Closing a change is a **Definition of Done**: a checklist that keeps the project's documents from going stale and closes the improvement loop. **Closing = running the WHOLE checklist**, not noticing the code is there. Write everything the user reads in the language of their message. One trunk for every lane, with short branches marked `Feature only:`, `Patch only:` and `Hotfix only:`; a step without a mark applies to all. The merge step forks `finishing-a-development-branch` of superpowers (MIT, see `NOTICE`).
 
 **Violating the letter of the checklist is violating its spirit.** Skipping a step «because it's small» or «because there's a rush» is when the documents start to drift.
 

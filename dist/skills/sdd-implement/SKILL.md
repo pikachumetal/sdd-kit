@@ -7,7 +7,7 @@ description: Use when sdd-propose hands off a confirmed patch, or an approved sp
 
 ## Overview
 
-Execute the approved plan, task by task, and leave a record that survives your own forgetting. Write everything the user reads in the language of their message. Forked from `executing-plans` and `subagent-driven-development` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+Execute the approved plan, task by task, and leave a record that survives your own forgetting. Write everything the user reads in the language of their message. Forked from `executing-plans` and `subagent-driven-development` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** the plan already did the thinking. Execute it exactly, prove each step with a test you watched fail and then pass, and leave a record that survives your own forgetting.
 

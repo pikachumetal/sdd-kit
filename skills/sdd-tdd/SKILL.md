@@ -3,11 +3,14 @@ name: sdd-tdd
 description: Use when sdd-implement or an implementer brief reaches code to write or a test to add, to keep it test-first. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
+<!-- kit: 0312 · sustituye: «Test-Driven Development (TDD)» -->
 # sdd-tdd
 
 ## Overview
 
-Write the test first. Watch it fail. Write minimal code to pass. Write everything the user reads in the language of their message. Forked from `test-driven-development` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+Write the test first. Watch it fail. Write minimal code to pass.
+<!-- kit: 0312 -->
+Write everything the user reads in the language of their message. Forked from `test-driven-development` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
@@ -21,6 +24,7 @@ Write the test first. Watch it fail. Write minimal code to pass. Write everythin
 - Refactoring
 - Behavior changes
 
+<!-- kit: 0312 · sustituye: «**Exceptions (ask your…- Configuration files» -->
 **Exceptions** — the kit's lanes skip the cycle: a **config** change runs its gate instead (`sdd-propose`), and a **spike** task carries «Evidencia» instead of RED tests. Anything else you think is an exception (throwaway prototypes, generated code) is a question: the thread stops as at a deviation; an implementer returns `NEEDS_CONTEXT`.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
@@ -49,7 +53,9 @@ digraph tdd_cycle {
     red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
     verify_red [label="Verify fails\ncorrectly", shape=diamond];
     green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
+<!-- kit: 0312 · sustituye: «passes\nAll» -->
     verify_green [label="Verify passes\nVerificación green", shape=diamond];
+<!-- kit: fin -->
     refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
     next [label="Next", shape=ellipse];
 
@@ -67,6 +73,7 @@ digraph tdd_cycle {
 
 ### RED - Write Failing Test
 
+<!-- kit: 0312 -->
 **Who writes it in the kit**: the RED tests encode the spec's THEN and are written before the task's code, by the thread (`sdd-implement`). If they reached you already written —you are the implementer, or the thread after writing them—, they are the contract: you don't change an assertion, a test name or a datum. A test you add yourself follows the whole cycle.
 
 Write one minimal test showing what should happen.
@@ -111,20 +118,28 @@ Vague name, tests mock not code
 
 ### Verify RED - Watch It Fail
 
-**MANDATORY. Never skip.** Also for a RED you received: run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
+**MANDATORY. Never skip.**
+<!-- kit: 0312 · arregla: 0307 -->
+Also for a RED you received: run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
 
 ```bash
 npm test path/to/test.test.ts
 ```
 
 Confirm:
+<!-- kit: 0312 · sustituye: «errors)» -->
 - Test fails (not errors; a compile or import error on the symbol the task creates counts as failing)
+<!-- kit: fin -->
 - Failure message is expected
 - Fails because feature missing (not typos)
 
-**Test passes?** You're testing existing behavior. Fix test. A test you received: report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».
+**Test passes?** You're testing existing behavior. Fix test.
+<!-- kit: 0312 -->
+A test you received: report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».
 
-**Test errors?** Fix error, re-run until it fails correctly. A compile or import error on the symbol the task creates is the right failure.
+**Test errors?** Fix error, re-run until it fails correctly.
+<!-- kit: 0312 -->
+A compile or import error on the symbol the task creates is the right failure.
 
 ### GREEN - Minimal Code
 
@@ -172,7 +187,9 @@ Don't add features, refactor other code, or "improve" beyond the test.
 npm test path/to/test.test.ts
 ```
 
+<!-- kit: 0312 · sustituye: «Confirm:» -->
 Confirm, with the task's «Verificación» commands:
+<!-- kit: fin -->
 - Test passes
 - Other tests still pass
 - Output pristine (no errors, warnings)
@@ -181,7 +198,11 @@ Confirm, with the task's «Verificación» commands:
 
 **Other tests fail?** Fix now.
 
-**"Other tests" means the task's «Verificación».** The full suite is the closing gate, and the thread runs it at the baseline of `sdd-worktrees` and once in the final validation: a scope statement in your task bounds what you run. Any failure that run shows —including one you didn't cause— goes in your report by name; a red test you watched scroll past and didn't mention is a report falsified by omission.
+<!-- kit: 0312 · sustituye: «project's suite, not…test you wrote…not a green…Before you call…change done, run…project's test command…test` — whatever…repo uses) even…test file. A…the deliverable, not your verification.…— including…cause —» -->
+**"Other tests" means the task's «Verificación».** The full suite is the closing gate, and the thread runs it at the baseline of `sdd-worktrees` and once in the final validation: a scope statement in your task bounds what you run. Any failure that run shows —including one you didn't cause— goes in your report by name; a red
+<!-- kit: fin -->
+test you watched scroll past and didn't mention is a report falsified
+by omission.
 
 ### REFACTOR - Clean Up
 
@@ -204,7 +225,9 @@ Next failing test for next feature.
 | **Clear** | Name describes behavior | `test('test1')` |
 | **Shows intent** | Demonstrates desired API | Obscures what code should do |
 
+<!-- kit: 0312 · sustituye: «[writing-good-tests.md](writing-good-tests.md)…honest:» -->
 When writing or changing any test, read [writing-good-tests.md](references/writing-good-tests.md) for the rules that keep tests honest (an E2E also reads [writing-e2e.md](references/writing-e2e.md): what it waits for, and what to do when it's flaky):
+<!-- kit: fin -->
 - Name the production change that would make the test fail — before writing it
 - Assert on real behavior, never on mock behavior
 - Keep test-only code in test utilities, out of production classes
@@ -230,7 +253,10 @@ When writing or changing any test, read [writing-good-tests.md](references/writi
 
 - Code before test
 - Test after implementation
-- Test passes immediately (a RED you received: report it, see Verify RED)
+- Test passes immediately
+<!-- kit: 0312 -->
+(a RED you received: report it, see Verify RED)
+<!-- kit: fin -->
 - Can't explain why test failed
 - Tests added "later"
 - Rationalizing "just this once"
@@ -289,7 +315,10 @@ Before marking work complete:
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
-- [ ] All tests pass (the task's «Verificación»)
+- [ ] All tests pass
+<!-- kit: 0312 · arregla: 0307 -->
+(the task's «Verificación»)
+<!-- kit: fin -->
 - [ ] Output pristine (no errors, warnings)
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
@@ -300,13 +329,16 @@ Can't check all boxes? You skipped TDD. Start over.
 
 | Problem | Solution |
 |---------|----------|
+<!-- kit: 0312 · sustituye: «your human partner.» -->
 | Don't know how to test | Write wished-for API. Write assertion first. Ask the user (an implementer: `NEEDS_CONTEXT`). |
+<!-- kit: fin -->
 | Test too complicated | Design too complicated. Simplify interface. |
 | Must mock everything | Code too coupled. Use dependency injection. |
 | Test setup huge | Extract helpers. Still complex? Simplify design. |
 
 ## Debugging Integration
 
+<!-- kit: 0312 · sustituye: «Write» -->
 Bug found? Find its cause with `sdd-debugging`, then write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
 
 Never fix bugs without a test.
@@ -318,4 +350,6 @@ Production code → test exists and failed first
 Otherwise → not TDD
 ```
 
+<!-- kit: 0312 · sustituye: «your human partner's permission.» -->
 No exceptions without the user's permission (an implementer: `NEEDS_CONTEXT`).
+<!-- kit: fin -->

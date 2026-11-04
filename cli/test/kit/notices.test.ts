@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { listSources } from '../../../build/dist.ts';
-import { noticeFiles, renderNotice, renderSourcesTable, seeNoticeWithout } from '../../../build/notices.ts';
+import { noticeFiles, renderNotice, renderSourcesTable, seeNoticeWithout, versionsInText } from '../../../build/notices.ts';
 import { classify, readRegistry, validateRegistry, type Registry } from '../../../build/sources.ts';
 import { repoRoot } from './kit-files.ts';
 
@@ -118,6 +118,31 @@ describe('avisos de terceros desde upstream.json', () => {
       expect(seeNoticeWithout(root, ['skills/a/SKILL.md', 'skills/b/SKILL.md', 'skills/c/SKILL.md'])).toEqual([
         'skills/a/SKILL.md dice see NOTICE, y la skill no tiene NOTICE: una skill sin copias no lo genera',
         'skills/b/SKILL.md dice see NOTICE, y la skill no tiene NOTICE: una skill sin copias no lo genera',
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('every skill text is free of source versions', async () => {
+    const registry = readRegistry(join(repoRoot, 'upstream.json'));
+    const files = (await listSources(repoRoot)).filter((path) => /^skills\/.+\.md$/.test(path));
+    expect(versionsInText(repoRoot, files, registry)).toEqual([]);
+    const root = mkdtempSync(join(tmpdir(), 'source-version-'));
+    try {
+      const texts: [string, string][] = [
+        ['skills/a/SKILL.md', 'Forked from x of superpowers 7.0.0 (MIT)'],
+        ['skills/b/SKILL.md', 'from `wondelai/skills` 1.8.0'],
+        ['skills/c/SKILL.md', '<!-- kit: 0312 · sustituye: «superpowers 7.0.0» -->'],
+        ['skills/sdd-upgrade/references/migrations/v2.0.0.md', 'superpowers 7.0.0'],
+      ];
+      for (const [path, text] of texts) {
+        mkdirSync(join(root, path, '..'), { recursive: true });
+        writeFileSync(join(root, path), text);
+      }
+      expect(versionsInText(root, texts.map(([path]) => path), registry)).toEqual([
+        'skills/a/SKILL.md:1: la versión de una fuente vive en upstream.json, no en el texto: «superpowers 7.0.0»',
+        'skills/b/SKILL.md:1: la versión de una fuente vive en upstream.json, no en el texto: «`wondelai/skills` 1.8.0»',
       ]);
     } finally {
       rmSync(root, { recursive: true, force: true });

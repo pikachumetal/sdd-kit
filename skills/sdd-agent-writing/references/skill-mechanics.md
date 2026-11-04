@@ -1,6 +1,6 @@
 # Skill mechanics
 
-What changes when the document is a skill. From `writing-for-agents` (invocation) and `writing-skills` of superpowers 7.0.0 (form and discovery).
+What changes when the document is a skill. From `writing-for-agents` (invocation) and `writing-skills` of superpowers (form and discovery).
 
 ### Invocation
 

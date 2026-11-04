@@ -48,7 +48,9 @@ retried 5 times and the 6th attempt never happens."
 contains an exact line proves only that the source is the source. Run
 scripts against controlled inputs and assert outputs, side effects, or
 exit codes. Documents that instruct agents are tested by the consuming
+<!-- kit: 0312 · sustituye: «(superpowers:writing-skills);» -->
 agent's behavior (the kit's skill tests); prose for humans earns no
+<!-- kit: fin -->
 test at all.
 
 **Your code, not the framework.** Test the contract your code makes at
@@ -93,7 +95,9 @@ expect(screen.getByRole('navigation')).toBeInTheDocument();
 expect(screen.getByTestId('sidebar-mock')).toBeInTheDocument();
 ```
 
+<!-- kit: 0312 · sustituye: «**your human partner's» -->
 **The user's correction:** "Are we testing the behavior of a
+<!-- kit: fin -->
 mock?"
 
 **Mock at the right level.** Learn every side effect of the real method
@@ -129,7 +133,9 @@ class own this resource's lifecycle? Wrong answers → test utility.
 **Prefer real components over complex mocks.** When mock setup outgrows
 the test logic, mocks miss methods the real components have, or tests
 break when the mock changes, switch to an integration test with real
+<!-- kit: 0312 · sustituye: «**your human partner's» -->
 components. **The user's question:** "Do we need to be using a
+<!-- kit: fin -->
 mock here?"
 
 ### Gate Function

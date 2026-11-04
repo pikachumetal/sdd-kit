@@ -84,7 +84,7 @@ pass, review it in passes yourself and say so in your report.
 | Is the component graph cycle-free? | Circular dependencies exist | Apply ADP: DIP or new components to break every cycle |
 | Does Main (composition root) wire all dependencies? | Concrete classes instantiated in inner circles | Move construction to Main; use DI or factories |
 
-The table is from `wondelai/skills` 1.8.0 (MIT, see `NOTICE`).
+The table is from `wondelai/skills` (MIT, see `NOTICE`).
 
 ## Calibration
 
