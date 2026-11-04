@@ -1,0 +1,60 @@
+---
+id: 20261104-103810-feature-0312-annotate-real-copies
+title: Tasks — Las copias del kit, anotadas contra su fuente y subidas a su último tag
+spec: ./spec.md
+plan: ./plan.md
+created: 2026-11-04
+---
+
+# Tasks — Las copias del kit, anotadas contra su fuente y subidas a su último tag (registro vivo)
+
+- **Spec**: `./spec.md`
+- **Plan**: `./plan.md`
+- **Rama**: `feature/0312-annotate-real-copies`
+
+## Estado de las tasks
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Las copias de superpowers con una sola fuente, y la versión fuera del texto | done | 32255562 | dos rojos de sdd-tdd → 0307 |
+| 2 | `sdd-verify` | done | 57be1a76 | los tres encargos con la forma de code-reviewer.md (enmienda del 2026-11-04) |
+| 3 | El renombrado en `kit:copies-update`, y `sdd-agent-writing` anotada en su versión de hoy | done | 269a0957 | renamedPath; tres copias de sdd-agent-writing sin rojos, dist/ igual byte a byte |
+| 4 | La subida a v7.0.2 y v1.3.2, el reparto de `sdd-agent-writing` y el humo | done | ab30d921 | v7.0.2 y v1.3.2; seis copias de sdd-agent-writing; humo p1 y b1 1/1, 0,47 $ |
+
+Revisión final: Spec opus+high, con arreglos · Código sonnet+high, con arreglos · Arquitectura no (plan), sobre ab30d921
+Pasada de fix: juntada en el cierre, 10 hallazgos (suite 2158/2158, copies.slow 19/19, kit:copies)
+Re-revisión: ab30d921..pasada de fix (juntada en el cierre), sdd-kit:effort-high + opus, 10/10 resueltos y 1 Important nuevo, arreglado en el hilo: revisado en el hilo, cierre · real-copies/*.mjs · 6 líneas de comentario
+
+## Rulings
+
+- Task 1: Ruling: el patrón de versionsInText lleva también una comilla invertida opcional delante — el trozo que cita el aviso es «`wondelai/skills` 1.8.0», como el literal de la spec; el patrón de la spec solo nombraba la de detrás — si es incorrecto: el aviso cita un carácter de más
+- Task 1: Ruling: cli/test/kit/skills.test.ts («skills de superpowers citadas») contaba las citas «superpowers:<skill>» de las marcas sustituye como skills que el kit invoca; ahora salta las líneas de marca, porque la marca no viaja — la tabla «Lo que se retira» de la spec no lo nombraba (tercer caso de los tickets 0300 §1 y 0302 §2) — si es incorrecto: el README tendría que listar skills que ningún agente lee
+- Task 1: Ruling: el borrador de la 0302 juntaba el contenido de cada bloque en una línea y partía mal las vallas; annotate.mjs conserva los separadores del kit, pega un añadido al párrafo anterior cuando el kit lo pega, y parte en un bloque por párrafo porque kit:copies cierra un bloque en la primera línea en blanco aunque lleve fin (decisión 2 de la 0302 decía que un bloque de varios párrafos se cierra con fin) — si es incorrecto: más marcas de las necesarias en un bloque de varios párrafos
+- Task 2: Ruling: la base (develop 6b109691) cambia una fila de deuda del roadmap que menciona la 0312, no la fila de la 0312 ni ningún fichero de la task — sigo sin freno — si es incorrecto: una fila de deuda reescrita que esta feature no lee
+- Task 2: Ruling: dev-lead (2026-11-04, «sí, adelante así») — el encargo de código vuelve a la forma de code-reviewer.md (Subagent/description/prompt: | con sangría); los de spec y arquitectura iban a propios, pero el de arquitectura copia literal la tabla de clean-architecture de Wondel y un propio no genera NOTICE: llevan la misma forma y siguen como copias (62 % y 57 %, sin rojos), Scope de 16 copias intacto; enmienda en spec.md
+- Task 2: Ruling: el Expected de compare-dist («solo la palabra de la versión») no vale para los tres encargos: cambian la frase de despacho y la cabecera del recuadro; compose-axis.mjs compone cada eje igual byte a byte que en 32255562 (spec f3, code f4, architecture f4)
+- Task 2: Ruling: annotate.mjs no cerraba con fin un bloque dentro de un recuadro, donde la línea en blanco no cierra, y el bloque se comía las líneas del original siguientes sin que kit:copies lo viera; arreglado (fin, y la línea en blanco del original queda como texto) y corregido el caso de la Task 1 en skills/sdd-worktrees/SKILL.md:121 — hallazgo para el ticket: kit:copies no detecta líneas del original dentro de un bloque añadido
+- Task 2: Ruling: compose-axis.mjs leía skills/ con las marcas dentro del recuadro y con la forma text de antes: ahora salta las marcas y lee prompt: | con dedent 4, como legacyBrief
+- Task 3: Ruling: el RED «treats a rewrite below git's rename threshold as missing» pasa antes del cambio (hoy toda ruta que falta da «no existe»): queda como guarda de regresión del umbral; el RED del renombrado falló como se esperaba
+- Task 3: Ruling: los RED no cambian; cambian dos tests existentes («skips a copy whose original moved» y «leaves the from of a skipped copy»), que simulaban el movimiento con un fichero idéntico en otra ruta, y eso ahora es un renombrado que se sigue (decisión 7): su fichero nuevo pasa a UNRELATED y el primero se llama «skips a copy whose original is gone»
+- Task 3: Ruling: annotate.mjs — tres arreglos sin cambiar la salida de las Tasks 1 y 2: la línea en blanco tras el frontmatter cuando el kit abre con un bloque; inFence contaba mal un recuadro dentro de un párrafo de bloque (fin huérfano y bloque que se come líneas en skill-testing.md); lo quitado entre dos líneas en blanco deja una sola, y al final, ninguna
+- Task 3: Ruling: skill-mechanics.md:86 quita una de las dos líneas en blanco que el original tiene bajo «## Directory Structure», para que dist/ salga igual byte a byte; dist/ de los tres ficheros de sdd-agent-writing, igual byte a byte que en 57be1a76, y solo cambian su NOTICE y THIRD_PARTY_NOTICES (persuasion-principles.md en el from)
+- Task 3: Ruling: develop (c69f5e6d y mensajes del 2026-11-04) — los fallos del Reader de kit:copies (fin tras línea en blanco; líneas del original dentro de un bloque en un recuadro) y el NOTICE de un own con texto literal no se tocan en esta rama: fila propuesta tras la 0312
+- Task 4: Ruling: la base (origin/develop) cambia filas 0296, 0306, 0307 y una de deuda del roadmap, y la propuesta 0301 (enmienda de las references en castellano); ni la fila de la 0312 ni ningún fichero de la task — sigo sin freno
+- Task 4: Ruling: kit:copies-update superpowers v7.0.2 — 13 copias con 0 conflictos y sin cambio de texto; skill-testing.md sigue el renombrado («pasa a skills/writing-skills/references/testing-skills-with-subagents.md en v7.0.2»); skill-mechanics.md 3 conflictos y skill-testing.md 2. mattpocock/skills v1.3.2: SKILL.md 0 conflictos, sin cambio de texto
+- Task 4: Ruling: los conflictos de skill-mechanics.md y skill-testing.md no se resuelven en el fusionado: el reparto de la decisión 8 rehace los seis ficheros desde el kit de 269a0957, con lo nuevo de la 7.0.2 por git merge-file sección a sección (base 7.0.0) y anotados contra su original de v7.0.2 (build-split.mjs y fix-split.mjs del scratchpad); el resultado es el mismo que resolver cada conflicto con la decisión 12 y deja el reparto en un paso
+- Task 4: Ruling: conflictos por la decisión 12 — flowcharts: el kit (siguen quitados graphviz-conventions.dot, los comandos y la línea nueva de render-graphs.js); bulletproofing «Psychology note» y skill-testing «Why this works»: la 7.0.2 (su puntero a persuasion-principles.md vale); skill-testing «REQUIRED BACKGROUND … superpowers:test-driven-development» y «Complete worked example»: el kit, que hoy los quita; «Part of superpowers:writing-skills» → «Part of sdd-agent-writing», la sustitución de siempre
+- Task 4: Ruling: los títulos que el kit bajó un nivel al meter testing-skills-with-subagents.md y persuasion-principles.md en secciones de skill-testing.md vuelven al nivel de la fuente, con su título original; las dos frases del Overview que el kit juntaba en un párrafo vuelven a su párrafo
+- Task 4: Ruling: conserva — skill-mechanics 90 %, discovery 98 %, flowcharts 67 %, bulletproofing 96 %, persuasion-principles 100 %, skill-testing 96 %; ningún párrafo del kit de hoy se pierde salvo los que la spec cambia (punteros a «Persuasion principles» y «Testing with subagents», el «in skill-mechanics.md» de la lista y el título de skill-testing.md)
+- Task 4: Ruling: cli/test/kit/skills.test.ts «enlaza todos sus references/ desde SKILL.md» daba rojo con las cuatro copias nuevas, a las que se llega por los punteros de skill-mechanics.md como en la fuente: el test cuenta ahora las references alcanzables desde SKILL.md, por enlace o por nombre («See persuasion-principles.md in this directory»); un fichero que nada nombra sigue en rojo. Se descarta alargar SKILL.md con cuatro enlaces
+- Task 4: Ruling: el humo corre con n = 1 de la decisión 11 sobre una copia de la batería (.temp/b0312, n y umbral 1/1 en p1 y b1), porque la tabla lleva n = 2; KIT_DIR es una copia de dist/ en .temp/k0312, como manda tech-stack.md para un GREEN sin commitear
+- Task 4: Ruling: humo GREEN p1 1/1 (R1: deja escrito scenario.md y no da la skill por hecha; R2: description solo de cuándo usarla) y b1 1/1 (R6: tanda de REFACTOR y partida de controles y pasada de fix), puerta verde, 2 sujetos, 0,47 $; las escrituras de p1 en .claude/skills/ las denegó el permiso del harness y el sujeto lo dijo — hallazgo para el ticket; la copia temporal tests/batteries/aw0312 se borró
+- Final: Ruling: el paquete de la receta excluye además dist/** — es la salida generada de kit:build y kit:notices, que el pre-commit compara con skills/; con dist/ el paquete dobla su tamaño sin texto nuevo que revisar — si es incorrecto: un fallo del build que solo se vería en dist/, cubierto por el pre-commit
+- Final: Ruling: Spec Important 1 (humo p1 sin evidencia de R2) — la description sí está en el transcript del sujeto: green/out/p1-1.writes.md la saca del input de cada Write («Use when a SQL migration in db/migrations/ is created or changed, or when one is about to be applied, merged or reported as done.»), solo condiciones de disparo, R2 pasa; que el sujeto no abriera discovery.md es lo que diseña la 7.0.2: la regla corta de la description vive en «## Writing SKILL.md» de skill-mechanics.md y el detalle tras el puntero — sin relanzar p1 — si es incorrecto: un R2 que solo se ve abriendo discovery.md, que mediría el humo de la 0306 o el corte
+- Final: Ruling: Spec Minor 4 (dos tests que la tabla «Lo que se retira» daba por iguales cambian) — Ruling de la Task 3: un fichero idéntico en otra ruta es ahora un renombrado que se sigue; los tests siguen probando «no existe… mapéalo» con un original que desaparece, con la misma aserción — al walkthrough — si es incorrecto: ninguno, la conducta probada es la misma
+- Final: Ruling: Spec Minor 5 y Código Minor 5 (la regla «enlaza todos sus references/» se relaja: vale el nombre suelto en otra reference) — es el único modo de la fuente («See persuasion-principles.md in this directory»), el nombre tiene que ser un fichero que existe en references/, y uno que nada nombra sigue en rojo — al walkthrough — si es incorrecto: un huérfano con el mismo nombre que un ejemplo citado, que nadie usa hoy
+- Final: Ruling: Código Minor 3 (renamedPath exportada sin uso fuera) — es la interfaz que «Produce» el plan de la Task 3; los tests la cubren por la CLI — si es incorrecto: un export de más
+- Final: Ruling: Código Minor 6 (el filtro de NOTICE de versionsInText sin llamador que lo pase; una versión por línea) — la regla de la spec excluye NOTICE y el test lo prueba con migrations/; una línea con dos versiones da un aviso, y la segunda sale al quitar la primera — si es incorrecto: una pasada más
+- Final: Ruling: Código Minor 9 (los dos avisos de sdd-tdd) — llevan arregla 0307, como dice la decisión 5
+- Final: Ruling: re-revisión Minor (build-split.mjs: una expresión de ~300 caracteres con tres replace) — guion de un solo uso, evidencia congelada con la spec — si es incorrecto: cuesta leerlo al repetir el reparto
+- Final: Ruling: re-revisión fuera de alcance (plan.md:149 con el patrón sin la comilla de delante) — el plan es registro de lo planeado; la Ruling de la Task 1 y la spec corregida llevan el patrón real — si es incorrecto: ninguno, el código y la capacidad mandan

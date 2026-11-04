@@ -1,6 +1,6 @@
 # Writing the spec
 
-Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+Adapted from superpowers `brainstorming` (MIT, see NOTICE).
 
 You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
 

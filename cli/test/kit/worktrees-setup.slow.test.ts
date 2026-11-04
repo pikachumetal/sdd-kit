@@ -6,7 +6,7 @@ import { readText } from './kit-files.ts';
 import { run } from './process.ts';
 
 // El bloque bash del Step 2 («Project Setup») de sdd-worktrees, tal cual lo lee el agente (patch 0253).
-const setupBlock = /^## Step 2: Project Setup\n[\s\S]*?^```bash\n([\s\S]*?)^```/m.exec(readText('skills/sdd-worktrees/SKILL.md').replace(/\r\n/g, '\n'))![1];
+const setupBlock = /^## Step 2: Project Setup\n[\s\S]*?^```bash\n([\s\S]*?)^```/m.exec(readText('dist/skills/sdd-worktrees/SKILL.md').replace(/\r\n/g, '\n'))![1];
 
 // En Windows, `bash` del PATH puede ser el de WSL: se usa el de Git, junto a `git --exec-path`.
 const bash = process.platform === 'win32' ? join(dirname(dirname(dirname(run('git', ['--exec-path']).output))), 'bin', 'bash.exe') : 'bash';

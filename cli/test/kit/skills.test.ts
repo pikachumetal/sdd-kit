@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { WHOLE_LINE_MARK } from '../../../build/dist.ts';
 import { filesUnder, frontmatter, isMigration, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
 
 const skillsRoot = join(repoRoot, 'skills');
@@ -12,6 +13,23 @@ const realProjectNames = ['Alybo', 'SifAcademy', 'SifRest', '\\bMDT\\b', '\\bQua
 
 function relativeLinks(text: string): string[] {
   return [...text.matchAll(/\]\(((?:references|templates|scripts)\/[^)#]+)\)/g)].map((match) => match[1]);
+}
+
+// Las references/ a las que se llega desde SKILL.md, directo o por el puntero de otra reference, enlace o nombre
+// («See persuasion-principles.md in this directory»), como el reparto de writing-skills de superpowers 7.0.2.
+function reachableReferences(skill: string, skillText: string): Set<string> {
+  const reached = new Set(relativeLinks(skillText).map((link) => link.replace(/^references\//, '')));
+  const pending = [...reached];
+  for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
+    const path = join(skillsRoot, skill, 'references', name);
+    if (!existsSync(path) || !statSync(path).isFile()) continue;
+    for (const [link] of readFileSync(path, 'utf8').matchAll(/(?<![\w/-])[a-z0-9-]+\.md\b/g)) {
+      if (reached.has(link)) continue;
+      reached.add(link);
+      pending.push(link);
+    }
+  }
+  return reached;
 }
 
 function skillMarkdown(): string[] {
@@ -45,8 +63,8 @@ describe.each(skills)('skill %s', (skill) => {
   });
 
   it.skipIf(!existsSync(join(skillsRoot, skill, 'references')))('enlaza todos sus references/ desde SKILL.md', () => {
-    const linked = relativeLinks(text).map((link) => link.replace(/^references\//, ''));
-    const orphans = readdirSync(join(skillsRoot, skill, 'references')).filter((name) => name.endsWith('.md') && !linked.includes(name));
+    const reached = reachableReferences(skill, text);
+    const orphans = readdirSync(join(skillsRoot, skill, 'references')).filter((name) => name.endsWith('.md') && !reached.has(name));
     expect(orphans).toEqual([]);
   });
 });
@@ -64,7 +82,9 @@ describe('skills de superpowers citadas', () => {
   // El recuento y la lista son el contrato; el énfasis y la frase de cierre son redacción.
   const sentence = /invoca \*{0,2}(\d+) skills? de superpowers\*{0,2}: (.*?)\./.exec(readText('README.md'));
   const declared = sortedUnique([...(sentence?.[2] ?? '').matchAll(/`([a-z-]+)`/g)].map((match) => match[1]));
-  const cited = sortedUnique(skillMarkdown().flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
+  // Lo que cita una marca del kit es el original que sustituye, y la marca no viaja.
+  const loaded = (path: string): string => readFileSync(path, 'utf8').split('\n').filter((line) => !WHOLE_LINE_MARK.test(line)).join('\n');
+  const cited = sortedUnique(skillMarkdown().flatMap((path) => [...loaded(path).matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
 
   it('el README declara la misma lista que citan las skills', () => {
     expect(declared).toEqual(cited);

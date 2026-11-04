@@ -5,7 +5,7 @@ description: Use when creating a new skill — «quiero una skill para las migra
 
 # sdd-agent-writing
 
-Write everything the user reads in their language. Adapted from `writing-for-agents` by Matt Pocock and `writing-skills` of superpowers 7.0.0 (MIT, see `NOTICE`).
+Write everything the user reads in their language. Adapted from `writing-for-agents` by Matt Pocock and `writing-skills` of superpowers (MIT, see `NOTICE`).
 
 Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable, since the agent takes the same _process_ every run rather than producing the same output.
 

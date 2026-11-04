@@ -3,11 +3,13 @@ name: sdd-parallel-agents
 description: Use when an sdd-kit skill dispatches two or more independent agents at once — the spec reviewers of review-spec.md, or the axes of the final review of sdd-verify — to dispatch them in parallel within the project's agent cap. Invoked from there; not the entry of a change (that is sdd-propose), and not for plan tasks (sdd-implement runs them one after another).
 ---
 
+<!-- kit: 0312 · sustituye: «Dispatching Parallel Agents» -->
 # sdd-parallel-agents
 
 ## Overview
 
-Write everything the user reads in the language of their message. Forked from `dispatching-parallel-agents` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+<!-- kit: 0312 -->
+Write everything the user reads in the language of their message. Forked from `dispatching-parallel-agents` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
@@ -40,6 +42,7 @@ digraph when_to_use {
 - Multiple subsystems broken independently
 - Each problem can be understood without context from others
 - No shared state between investigations
+<!-- kit: 0312 -->
 - In the kit: the two spec reviewers of `review-spec.md`, and the axes of the final review of `sdd-verify`, each reading the same package with its own lens
 
 **Don't use when:**
@@ -47,6 +50,7 @@ digraph when_to_use {
 - Need to understand full system state
 - Agents would interfere with each other
 
+<!-- kit: 0312 -->
 **Not for plan tasks:** two tasks of an approved plan don't go here even if they look independent: `sdd-implement` runs them one after another. The kit has no plan tasks in parallel.
 
 ## The Pattern
@@ -73,18 +77,23 @@ Each agent gets:
 Issue all three subagent dispatches in the same response — they run in parallel:
 
 ```text
+<!-- kit: 0312 · sustituye: «(general-purpose):…(general-purpose):…(general-purpose):» -->
 Subagent (sdd-kit:effort-medium, model: sonnet): "Fix agent-tool-abort.test.ts failures"
 Subagent (sdd-kit:effort-medium, model: sonnet): "Fix batch-completion-behavior.test.ts failures"
 Subagent (sdd-kit:effort-medium, model: sonnet): "Fix tool-approval-race-conditions.test.ts failures"
+<!-- kit: fin -->
 # All three run concurrently.
 ```
 
 Multiple dispatch calls in one response = parallel execution. One per response = sequential.
 
+<!-- kit: 0312 -->
 **Model and effort on every dispatch**: the `model` and the agent type `sdd-kit:effort-<level>` the calling skill names; omitted, both inherit the session's. If the harness doesn't expose the type, dispatch with the `model` and «effort: no disponible en este harness, hereda el de la sesión».
 
+<!-- kit: 0312 -->
 **The project's cap**: never more agents at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (3 if absent). With more domains than the cap, dispatch in batches: the next batch when the previous one returns.
 
+<!-- kit: 0312 -->
 **An approved model policy is the confirmation**: in `delegate`, if the approved spec's ✋ carries the `Política de modelos:` line and it names these dispatches, its approval is the confirmation any user instruction asks before parallelizing: dispatch without asking again. A dispatch or a model the line doesn't name is confirmed as the instruction asks.
 
 ### 4. Review and Integrate

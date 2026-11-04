@@ -26,6 +26,7 @@ interface Merged {
 interface Planned {
   entry: Entry;
   merged: Merged;
+  renamed?: string;
 }
 
 interface Request {
@@ -74,16 +75,26 @@ function conflictLines(file: string, merged: Merged): string[] {
   );
 }
 
+// La ruta nueva de un original que git ve renombrado entre los dos tags, con su umbral de parecido; null si no lo ve.
+export async function renamedPath(clone: string, older: string, newer: string, path: string): Promise<string | null> {
+  const result = await git(clone, ['diff', '--name-status', '-M', '--diff-filter=R', older, newer]);
+  const rename = result.stdout.split('\n').map((line) => line.split('\t')).find(([, from]) => from === path);
+  return rename?.[2] ?? null;
+}
+
 async function planEntry(entry: Entry, target: Target): Promise<Planned | string> {
   const [file] = entry.kit;
   const [path] = entry.paths;
-  const newer = await showAt(target.clone, target.tag, path);
+  const current = await showAt(target.clone, target.tag, path);
+  const renamed = current === null ? await renamedPath(target.clone, entry.version, target.tag, path) : null;
+  const newer = renamed ? await showAt(target.clone, target.tag, renamed) : current;
   if (newer === null) return `${file}: su original ${path} no existe en ${target.tag}: mapéalo antes de actualizar`;
   const older = await showAt(target.clone, entry.version, path);
   if (older === null) return `${file}: su original ${path} no existe en ${entry.version}`;
   try {
     const kit = readFileSync(resolve(target.repoRoot, file), 'utf8');
-    return { entry, merged: await mergeCopy({ kit, older, newer }, [entry.version, target.tag]) };
+    const merged = await mergeCopy({ kit, older, newer }, [entry.version, target.tag]);
+    return renamed ? { entry, merged, renamed } : { entry, merged };
   } catch (error) {
     if (error instanceof BuildError) throw new BuildError(`${file}: ${error.message}`);
     throw error;
@@ -110,9 +121,14 @@ function bumpFrom(entries: Entry[], { source, tag }: Request): string[] {
   return lines;
 }
 
+const renameLine = ({ entry, renamed }: Planned, tag: string): string[] =>
+  renamed ? [`${entry.kit[0]}: su original ${entry.paths[0]} pasa a ${renamed} en ${tag}`] : [];
+
 function reportMerges(planned: (Planned | string)[], tag: string): string[] {
   return planned.flatMap((plan) =>
-    typeof plan === 'string' ? [plan] : [`${plan.entry.kit[0]}: ${plan.entry.version} → ${tag}, ${plan.merged.conflicts} conflictos`, ...conflictLines(plan.entry.kit[0], plan.merged)],
+    typeof plan === 'string'
+      ? [plan]
+      : [...renameLine(plan, tag), `${plan.entry.kit[0]}: ${plan.entry.version} → ${tag}, ${plan.merged.conflicts} conflictos`, ...conflictLines(plan.entry.kit[0], plan.merged)],
   );
 }
 
@@ -125,7 +141,10 @@ async function updateSource(registryPath: string, request: Request): Promise<{ l
   const lines = reportMerges(planned, request.tag);
   const merged = planned.filter((plan): plan is Planned => typeof plan !== 'string');
   for (const { entry, merged: result } of merged) writeFileSync(resolve(target.repoRoot, entry.kit[0]), result.text);
-  for (const { entry } of merged) entry.version = request.tag;
+  for (const { entry, renamed } of merged) {
+    entry.version = request.tag;
+    if (renamed) entry.paths[0] = renamed;
+  }
   const skipped = new Set(due.filter((_, index) => typeof planned[index] === 'string'));
   const bumped = bumpFrom(annotated.filter((entry) => !skipped.has(entry)), request);
   if (merged.length + bumped.length > 0) writeFileSync(registryPath, `${JSON.stringify(registry, null, 2)}\n`);

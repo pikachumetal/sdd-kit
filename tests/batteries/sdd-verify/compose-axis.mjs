@@ -3,6 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { WHOLE_LINE_MARK } from '../../../build/dist.ts';
 
 const names = ['kit', 'superpowers', 'axis', 'scenario', 'package', 'sha', 'dir', 'adrs', 'caps', 'comments'];
 const { values: opt } = parseArgs({ options: Object.fromEntries(names.map((name) => [name, { type: 'string', default: '' }])) });
@@ -28,9 +29,15 @@ function legacyBrief() {
   return header + howTo + '\n' + focus + dedent(fencedAfter(reviewer, 'prompt: |', 'prompt: |'), 4);
 }
 
+// Las marcas del kit no viajan: el encargo sale como lo deja el build.
+const withoutMarks = (text) => text.split('\n').filter((line) => !WHOLE_LINE_MARK.test(line)).join('\n');
+
 function sourceText() {
   const fork = join(opt.kit, `skills/sdd-verify/references/${opt.axis}-reviewer-prompt.md`);
-  return existsSync(fork) ? fencedAfter(readFileSync(fork, 'utf8'), '# ', '```text') : legacyBrief();
+  if (!existsSync(fork)) return legacyBrief();
+  const text = withoutMarks(readFileSync(fork, 'utf8'));
+  // El encargo de código sigue la forma de code-reviewer.md de superpowers: las instrucciones van en prompt: |, sangradas.
+  return text.includes('  prompt: |') ? dedent(fencedAfter(text, 'prompt: |', 'prompt: |'), 4) : fencedAfter(text, '# ', '```text');
 }
 
 function briefValues() {

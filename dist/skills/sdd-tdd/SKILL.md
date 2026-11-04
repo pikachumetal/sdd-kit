@@ -7,7 +7,8 @@ description: Use when sdd-implement or an implementer brief reaches code to writ
 
 ## Overview
 
-Write the test first. Watch it fail. Write minimal code to pass. Write everything the user reads in the language of their message. Forked from `test-driven-development` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+Write the test first. Watch it fail. Write minimal code to pass.
+Write everything the user reads in the language of their message. Forked from `test-driven-development` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
@@ -111,7 +112,8 @@ Vague name, tests mock not code
 
 ### Verify RED - Watch It Fail
 
-**MANDATORY. Never skip.** Also for a RED you received: run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
+**MANDATORY. Never skip.**
+Also for a RED you received: run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
 
 ```bash
 npm test path/to/test.test.ts
@@ -122,9 +124,11 @@ Confirm:
 - Failure message is expected
 - Fails because feature missing (not typos)
 
-**Test passes?** You're testing existing behavior. Fix test. A test you received: report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».
+**Test passes?** You're testing existing behavior. Fix test.
+A test you received: report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».
 
-**Test errors?** Fix error, re-run until it fails correctly. A compile or import error on the symbol the task creates is the right failure.
+**Test errors?** Fix error, re-run until it fails correctly.
+A compile or import error on the symbol the task creates is the right failure.
 
 ### GREEN - Minimal Code
 
@@ -181,7 +185,9 @@ Confirm, with the task's «Verificación» commands:
 
 **Other tests fail?** Fix now.
 
-**"Other tests" means the task's «Verificación».** The full suite is the closing gate, and the thread runs it at the baseline of `sdd-worktrees` and once in the final validation: a scope statement in your task bounds what you run. Any failure that run shows —including one you didn't cause— goes in your report by name; a red test you watched scroll past and didn't mention is a report falsified by omission.
+**"Other tests" means the task's «Verificación».** The full suite is the closing gate, and the thread runs it at the baseline of `sdd-worktrees` and once in the final validation: a scope statement in your task bounds what you run. Any failure that run shows —including one you didn't cause— goes in your report by name; a red
+test you watched scroll past and didn't mention is a report falsified
+by omission.
 
 ### REFACTOR - Clean Up
 
@@ -230,7 +236,8 @@ When writing or changing any test, read [writing-good-tests.md](references/writi
 
 - Code before test
 - Test after implementation
-- Test passes immediately (a RED you received: report it, see Verify RED)
+- Test passes immediately
+(a RED you received: report it, see Verify RED)
 - Can't explain why test failed
 - Tests added "later"
 - Rationalizing "just this once"
@@ -289,7 +296,8 @@ Before marking work complete:
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
-- [ ] All tests pass (the task's «Verificación»)
+- [ ] All tests pass
+(the task's «Verificación»)
 - [ ] Output pristine (no errors, warnings)
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered

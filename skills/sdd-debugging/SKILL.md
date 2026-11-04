@@ -3,11 +3,13 @@ name: sdd-debugging
 description: Use when an sdd-kit skill meets a failure to explain — a bug in a patch, a step whose Expected doesn't match because the code fails — before proposing a fix. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
+<!-- kit: 0312 · sustituye: «Systematic Debugging» -->
 # sdd-debugging
 
 ## Overview
 
-Write everything the user reads in the language of their message. Forked from `systematic-debugging` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+<!-- kit: 0312 -->
+Write everything the user reads in the language of their message. Forked from `systematic-debugging` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
 
@@ -49,6 +51,7 @@ You MUST complete each phase before proceeding to the next.
 
 ### Phase 1: Root Cause Investigation
 
+<!-- kit: 0312 -->
 **First, read the project's debt** (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of a 2.x roadmap) and compare the failure by meaning. A row that covers it: say so, with its «Remedio temporal». That isn't the root cause: the row stays open, and this process goes on.
 
 **BEFORE attempting ANY fix:**
@@ -80,10 +83,12 @@ You MUST complete each phase before proceeding to the next.
    For EACH component boundary:
      - Log what data enters component
      - Log what data exits component
+<!-- kit: 0312 · sustituye: «propagation» -->
      - Verify environment/config propagation: print each variable
        you name (GIT_DIR, GIT_INDEX_FILE…), never a prefix
        (env | grep GIT) or the whole environment: they copy
        secrets (GITHUB_PERSONAL_ACCESS_TOKEN) into the transcript
+<!-- kit: fin -->
      - Check state at each layer
 
    Run once to gather evidence showing WHERE it breaks
@@ -116,6 +121,7 @@ You MUST complete each phase before proceeding to the next.
 
    **WHEN error is deep in call stack:**
 
+<!-- kit: 0312 · sustituye: «`root-cause-tracing.md` in this directory» -->
    See [root-cause-tracing.md](references/root-cause-tracing.md) for the complete backward tracing technique.
 
    **Quick version:**
@@ -124,6 +130,7 @@ You MUST complete each phase before proceeding to the next.
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
 
+<!-- kit: 0312 -->
 **In a patch**, write the result of this phase in §2 of `patch.md` —the why, with its evidence in the code— before Phase 4: a cause written after the fix describes the fix, not what you found.
 
 ### Phase 2: Pattern Analysis
@@ -176,6 +183,7 @@ You MUST complete each phase before proceeding to the next.
 
 ### Phase 4: Implementation
 
+<!-- kit: 0312 · sustituye: «symptom:**» -->
 **Fix the root cause, not the symptom.** In a patch, Phase 4 starts with §2 of `patch.md` already written. If it isn't, stop and write it first.
 
 1. **Create Failing Test Case**
@@ -183,6 +191,7 @@ You MUST complete each phase before proceeding to the next.
    - Automated test if possible
    - One-off test script if no framework
    - MUST have before fixing
+<!-- kit: 0312 · sustituye: «`superpowers:test-driven-development`» -->
    - Use the `sdd-tdd` skill for writing proper failing tests
 
 2. **Implement Single Fix**
@@ -195,6 +204,7 @@ You MUST complete each phase before proceeding to the next.
    - Test passes now?
    - No other tests broken?
    - Issue actually resolved?
+<!-- kit: 0312 · sustituye: «Use…`superpowers:verification-before-completion` skill» -->
    - Run the verification and read its output before claiming success
 
 4. **If Fix Doesn't Work**
@@ -216,6 +226,7 @@ You MUST complete each phase before proceeding to the next.
    - Are we "sticking with it through sheer inertia"?
    - Should we refactor architecture vs. continue fixing symptoms?
 
+<!-- kit: 0312 · sustituye: «your human partner…fixes**» -->
    **Discuss with the user before attempting more fixes**: the thread stops as at a deviation from the approved approach ([control-profiles.md](../sdd-propose/references/control-profiles.md)); an implementer returns `BLOCKED` with the three attempts and what each one showed
 
    This is NOT a failed hypothesis - this is a wrong architecture.
@@ -239,6 +250,7 @@ If you catch yourself thinking:
 
 **If 3+ fixes failed:** Question the architecture (see Phase 4.5)
 
+<!-- kit: 0312 · sustituye: «your human partner's» -->
 ## The user's Signals You're Doing It Wrong
 
 **Watch for these redirections:**
@@ -285,8 +297,11 @@ If systematic investigation reveals issue is truly environmental, timing-depende
 
 ## Supporting Techniques
 
+<!-- kit: 0312 · sustituye: «this directory:…**`root-cause-tracing.md`**…**`defense-in-depth.md`**…**`condition-based-waiting.md`**» -->
 These techniques are part of systematic debugging and available in `references/`:
 
+<!-- kit: 0312 -->
 - **[root-cause-tracing.md](references/root-cause-tracing.md)** - Trace bugs backward through call stack to find original trigger
 - **[defense-in-depth.md](references/defense-in-depth.md)** - Add validation at multiple layers after finding root cause
 - **[condition-based-waiting.md](references/condition-based-waiting.md)** - Replace arbitrary timeouts with condition polling
+<!-- kit: fin -->

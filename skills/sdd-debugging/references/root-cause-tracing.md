@@ -98,6 +98,7 @@ npm test 2>&1 | grep 'DEBUG git init'
 
 If something appears during tests but you don't know which test:
 
+<!-- kit: 0312 · sustituye: «Use…bisection script `find-polluter.sh`…tests one-by-one, stops…See script for usage.» -->
 Bisect by hand: run the test files one at a time, in the suite's order, and check after each whether the pollution (the stray file, the changed state) appeared. The first file after which it appears is the polluter.
 
 ## Real Example: Empty projectDir

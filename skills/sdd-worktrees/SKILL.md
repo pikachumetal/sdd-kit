@@ -3,14 +3,19 @@ name: sdd-worktrees
 description: Use when sdd-implement sets up the isolated workspace to implement an approved plan — detects an existing worktree or creates one, runs the project's environment setup and checks a clean baseline. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
+<!-- kit: 0312 · sustituye: «Using Git Worktrees» -->
 # sdd-worktrees
 
 ## Overview
 
-Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available. Write everything the user reads in the language of their message. Forked from `using-git-worktrees` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
+
+<!-- kit: 0312 -->
+Write everything the user reads in the language of their message. Forked from `using-git-worktrees` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
 
+<!-- kit: 0312 · sustituye: «start:**…using-git-worktrees» -->
 **Announce at start**, in the user's language: "I'm using the sdd-worktrees skill to set up an isolated workspace."
 
 ## Step 0: Detect Existing Isolation
@@ -38,6 +43,7 @@ Report with branch state:
 
 **If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
 
+<!-- kit: 0312 -->
 Never implement on `main` without the user's explicit consent.
 
 Has the user already indicated their worktree preference in your instructions? If not, ask for consent before creating a worktree:
@@ -106,11 +112,13 @@ cd "$path"
 Auto-detect and run appropriate setup:
 
 ```bash
+<!-- kit: 0312 · sustituye: «Node.js» -->
 # Node.js: the lockfile names the package manager
 if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile
 elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
 elif [ -f package-lock.json ]; then npm ci
 elif [ -f package.json ]; then npm install; fi
+<!-- kit: fin -->
 
 # Rust
 if [ -f Cargo.toml ]; then cargo build; fi
@@ -123,14 +131,18 @@ if [ -f pyproject.toml ]; then poetry install; fi
 if [ -f go.mod ]; then go mod download; fi
 ```
 
+<!-- kit: 0312 -->
 **The worktree's environment** *(if `.docs/sdd/environments.md` exists)*: after the dependencies, run its `env:setup` with the runner it declares; it leaves the `.sdd-env.json` marker in `active`. Every implementer brief says where that marker is (`tests/entorno-worktree-red.md`, F1). Without `environments.md`, the dependencies are the whole setup.
 
 ## Step 3: Verify Clean Baseline
 
+<!-- kit: 0312 · sustituye: «clean: ```bash # Use project-appropriate…npm test /…/ pytest /…test ./... ```…Report failures,» -->
 Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up. It runs as «Running a gate» of `sdd-verify` says, in `git worktree add --detach ../baseline-<id> HEAD`, never in your tree, where your RED tests land (the sandbox fallback aside): Step 2 there, removed when done, red or green (`env:clean` first if `env:setup` ran).
 
+<!-- kit: 0312 -->
 **A gate that filters by a base** (`--affected --base <ref>`) runs nothing on a fresh branch and exits 0. Run, without the filter, only its tasks whose inputs —per the tool, `moon task <t>`— include files the spec's Scope or the plan names; the rest go in the report, the `Gate:` line of `sdd-verify`, as `<tarea>: saltada (fuera del Scope de la spec)`. Never report ready from a filter that ran no task; if no task reads the Scope's files (a change only to `.docs/`), name them all skipped, say so, and report ready (`tests/affected-gate-red.md`, w2).
 
+<!-- kit: 0312 -->
 **If tests fail:** run it again in a worktree detached at the integration branch, removed likewise. If it fails there too, the red isn't this branch's: search its first error lines in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap) and quote the row, or open one in «Por triar» (in 2.x, «Deuda técnica») with the evidence. Then report the failures with that verdict and ask whether to proceed or investigate.
 
 **If tests pass:** Report ready.
@@ -139,7 +151,9 @@ Run tests to ensure workspace starts clean, with the project's closing gate: `Ga
 
 ```
 Worktree ready at <full-path>
+<!-- kit: 0312 · sustituye: «Tests passing (<N> tests, 0 failures)» -->
 Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué>)
+<!-- kit: fin -->
 Ready to implement <feature-name>
 ```
 
@@ -157,8 +171,10 @@ Ready to implement <feature-name>
 | Neither exists | Check instruction file, then default `.worktrees/` |
 | Directory not ignored | Add to .gitignore + commit |
 | Permission error on create | Sandbox fallback, work in place |
+<!-- kit: 0312 -->
 | `.docs/sdd/environments.md` exists | `env:setup` after dependencies (Step 2) |
 | Tests fail during baseline | Report failures + ask |
+<!-- kit: fin -->
 | No package.json/Cargo.toml | Skip dependency install |
 
 ## Common Rationalizations
@@ -169,4 +185,6 @@ Ready to implement <feature-name>
 | "`git worktree add` is quicker than hunting for a native tool" | A native tool (e.g. `EnterWorktree`) owns placement, branching, and cleanup. Bypassing it is the #1 mistake — it creates phantom state your harness can't see or manage. |
 | "The worktree directory is surely ignored already" | Run `git check-ignore`. An unignored worktree directory commits the whole tree into the repo. |
 | "Any directory name works" | Explicit instructions beat an existing project-local directory, which beats the `.worktrees/` default. |
+<!-- kit: 0312 · sustituye: «your human partner's» -->
 | "The workspace is fresh — baseline tests can wait" | A dirty baseline makes every later failure ambiguous. Run the tests now; proceeding past failures is the user's call. |
+<!-- kit: fin -->
