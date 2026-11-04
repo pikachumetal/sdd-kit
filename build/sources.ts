@@ -80,6 +80,14 @@ export function watchedRefs(entry: Entry): WatchedRef[] {
 
 const covers = (path: string, file: string): boolean => (path.endsWith('/') ? file.startsWith(path) : file === path);
 
+// Una copia fichero a fichero gana a la carpeta pending que la contiene, como en classify.
+export function kindOf(registry: Registry, file: string): 'own' | 'copy' | 'pending' | null {
+  if ((registry.own ?? []).some((path) => covers(path, file))) return 'own';
+  const copies = registry.entries.filter((entry) => entry.kind === 'copy' && entry.kit.some((path) => covers(path, file)));
+  if (copies.some((entry) => entry.pending === undefined)) return 'copy';
+  return copies.length > 0 ? 'pending' : null;
+}
+
 // Una copia con pending y kit de carpeta solo clasifica lo que nada más clasifica: su carpeta puede contener copias ya fichero a fichero.
 export function classify(registry: Registry, files: string[]): string[] {
   const copies = registry.entries.filter((entry) => entry.kind === 'copy');
