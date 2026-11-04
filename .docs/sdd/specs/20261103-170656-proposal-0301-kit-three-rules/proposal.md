@@ -51,17 +51,18 @@ Los nueve problemas: (1) el kit pone su frase al lado de la de la fuente (A+C); 
 | 1 | 0303 | ADR de las tres reglas, que sustituye a la 0013 y a la consecuencia de la 0019 | — |
 | 2 | 0300 | Base: fuente intermedia, build, `dist/` con lista blanca, registro único de fuentes y conceptos; ninguna frase cambia | — |
 | 3 | 0302 | Las copias anotadas contra su fuente: diff cubierto, A+C, añadidos junto a absolutas, forma de línea, mapeo de ficheros y actualización con `git merge-file` | 0300, 0303 |
+| 3b | 0312 | Aplicar la maquinaria de la 0302 a las copias: anotarlas, subirlas al último tag de su fuente y resolver los §2 y §3 del ticket de la 0300 | 0302 |
 | 4 | 0304 | Las comprobaciones de las propias y del tamaño: una regla en un solo sitio, excepciones pegadas, tamaño por skill y por fase | 0300, 0303 |
 | 5 | 0296 | `sdd-implement` partida: puerta propia y dos copias de superpowers 7.0.1 | 0302, 0304 |
 | 6 | 0305 | `sdd-archive` rehecha | 0302, 0304 |
 | 7 | 0306 | `sdd-propose` rehecha, con sus `references/` como copia o propia | 0302, 0304 |
-| 8 | 0307 | `sdd-verify` y `sdd-tdd`: la frase que falla, sustituida | 0302, 0304 |
+| 8 | 0307 | `sdd-verify` y `sdd-tdd`: la frase que falla, sustituida | 0302, 0312, 0304 |
 | 9 | 0308 | `sdd-roadmap` y `sdd-config`: la frase que falla, sustituida | 0304 |
 | 10 | 0309 | `sdd-templates`: una forma por regla y la fuente única | 0304 |
 | 11 | 0310 | `sdd-init`, `sdd-explore`, `sdd-end-release`, `sdd-feedback` y `add-to-changelog`: la frase que falla, sustituida | 0304 |
 | 12 | 0313 | `cli/src/tasks` al día con los scripts de superpowers 7.0.2 | 0302 |
 | 13 | 0314 | `sdd-grilling` con `brainstorming` de superpowers 7.0.2 | 0302, 0304 |
-| 14 | 0311 | Cierre: las comprobaciones al pre-commit y a la CI, revisar contra el kit nuevo 0297, 0284, 0198 y 0152, y cortar la 3.0.0 | 0296, 0305, 0306, 0307, 0308, 0309, 0310, 0313, 0314 |
+| 14 | 0311 | Cierre: las comprobaciones al pre-commit y a la CI, revisar contra el kit nuevo 0297, 0284, 0198 y 0152, y cortar la 3.0.0 | 0296, 0312, 0305, 0306, 0307, 0308, 0309, 0310, 0313, 0314 |
 
 ## Acta
 
@@ -71,3 +72,4 @@ No aplica: entrevista (sesión de coordinación `develop`, 2026-11-03).
 
 - **2026-11-04 — Cada copia parte del último tag de su fuente cuando arranca su feature** (dev-lead: «ok a las cinco, adelante», a la propuesta de la sesión `develop` tras salir superpowers v7.0.2). Regla «Copia o propia»: antes, `sdd-implement-native` de `executing-plans` 7.0.1 y `sdd-implement-subagent` de `subagent-driven-development` 7.0.1; ahora, del último tag cuando arranca la 0296 (hoy v7.0.2, que en esas dos skills solo añade «by its absolute path, from the working tree you're executing in» a cada llamada a un script). Ejemplo: superpowers saca v7.0.3 antes de arrancar la 0296 → la 0296 parte de v7.0.3, sin otra enmienda. Lo mismo vale para la fila 5 del reparto.
 - **2026-11-04 — Dos features nuevas en el reparto, por superpowers v7.0.2** (dev-lead, la misma frase). 0313: el port `cli/src/tasks` sigue en v6.4.2, y la 7.0.2 trae `sdd-repo` (el repo del directorio actual, `-C DIR`), los ids `A1`, `6b` y `2.1` en `task-brief` y las rutas de Windows. 0314: `brainstorming` 7.0.2 cambia cómo se pregunta, y la parte de las preguntas del kit vive en `sdd-grilling`, que la 0299 dejó entre las que se quedan. La 0306 compara `spec-writing.md` con `brainstorming` 7.0.2, y la 0309 lleva las alternativas al `## Approach` de la spec. La 0311 va tras las dos nuevas.
+- **2026-11-04 — La 0302 se parte en dos** (dev-lead, 2026-11-03, al arrancarla: «1»; lo registra la sesión `develop` al triar el [ticket de la 0302](../../field-reports/20261104-102149-feature-0302-annotated-copies.md)). Fila 3 del reparto: antes, la 0302 hacía la maquinaria y anotaba las copias; ahora, la 0302 hace la maquinaria (la marca, `kit:copies`, `upstream.json` fichero a fichero y `kit:copies-update`) y la 0312, tras ella, aplica todo a las copias. Ejemplo: `sdd-tdd` anotada contra superpowers v7.0.2 → 0312, no 0302. La 0307 y la 0311 van también tras la 0312.
