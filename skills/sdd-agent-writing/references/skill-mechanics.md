@@ -133,10 +133,9 @@ budgets, and cross-referencing other skills.
 ## Flowcharts
 
 When you add or change a flowchart in a skill, read
-<!-- kit: 0312 · sustituye: «[references/flowcharts.md](references/flowcharts.md)» -->
+<!-- kit: 0312 · sustituye: «[references/flowcharts.md](references/flowcharts.md)…place, the graphviz…to render one.» -->
 [flowcharts.md](flowcharts.md) first: when a flowchart
-<!-- kit: fin -->
-earns its place, the graphviz conventions, and how to render one.
+earns its place.
 
 ## Code Examples
 
@@ -339,8 +338,13 @@ Full pressure-scenario runs are the final gate, but they are slow and expensive 
 
 Micro-tests verify wording; they do not replace pressure scenarios for discipline skills.
 
-<!-- kit: 0312 · sustituye: «[references/testing-skills-with-subagents.md](references/testing-skills-with-subagents.md)…- How to…- Meta-testing techniques» -->
+<!-- kit: 0312 · sustituye: «[references/testing-skills-with-subagents.md](references/testing-skills-with-subagents.md)» -->
 **Testing methodology:** See [skill-testing.md](skill-testing.md) for the complete testing methodology:
+<!-- kit: fin -->
+- How to write pressure scenarios
+- Pressure types (time, sunk cost, authority, exhaustion)
+- Plugging holes systematically
+- Meta-testing techniques
 
 ## Anti-Patterns
 

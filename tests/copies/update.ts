@@ -85,9 +85,9 @@ export async function renamedPath(clone: string, older: string, newer: string, p
 async function planEntry(entry: Entry, target: Target): Promise<Planned | string> {
   const [file] = entry.kit;
   const [path] = entry.paths;
-  const moved = (await showAt(target.clone, target.tag, path)) === null;
-  const renamed = moved ? await renamedPath(target.clone, entry.version, target.tag, path) : null;
-  const newer = await showAt(target.clone, target.tag, renamed ?? path);
+  const current = await showAt(target.clone, target.tag, path);
+  const renamed = current === null ? await renamedPath(target.clone, entry.version, target.tag, path) : null;
+  const newer = renamed ? await showAt(target.clone, target.tag, renamed) : current;
   if (newer === null) return `${file}: su original ${path} no existe en ${target.tag}: mapéalo antes de actualizar`;
   const older = await showAt(target.clone, entry.version, path);
   if (older === null) return `${file}: su original ${path} no existe en ${entry.version}`;
@@ -143,7 +143,7 @@ async function updateSource(registryPath: string, request: Request): Promise<{ l
   for (const { entry, merged: result } of merged) writeFileSync(resolve(target.repoRoot, entry.kit[0]), result.text);
   for (const { entry, renamed } of merged) {
     entry.version = request.tag;
-    if (renamed) entry.paths = [renamed];
+    if (renamed) entry.paths[0] = renamed;
   }
   const skipped = new Set(due.filter((_, index) => typeof planned[index] === 'string'));
   const bumped = bumpFrom(annotated.filter((entry) => !skipped.has(entry)), request);

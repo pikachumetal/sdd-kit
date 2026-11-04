@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { WHOLE_LINE_MARK } from '../../../build/dist.ts';
 import { filesUnder, frontmatter, isMigration, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
@@ -22,7 +22,7 @@ function reachableReferences(skill: string, skillText: string): Set<string> {
   const pending = [...reached];
   for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
     const path = join(skillsRoot, skill, 'references', name);
-    if (!existsSync(path)) continue;
+    if (!existsSync(path) || !statSync(path).isFile()) continue;
     for (const [link] of readFileSync(path, 'utf8').matchAll(/(?<![\w/-])[a-z0-9-]+\.md\b/g)) {
       if (reached.has(link)) continue;
       reached.add(link);
@@ -63,7 +63,8 @@ describe.each(skills)('skill %s', (skill) => {
   });
 
   it.skipIf(!existsSync(join(skillsRoot, skill, 'references')))('enlaza todos sus references/ desde SKILL.md', () => {
-    const orphans = readdirSync(join(skillsRoot, skill, 'references')).filter((name) => name.endsWith('.md') && !reachableReferences(skill, text).has(name));
+    const reached = reachableReferences(skill, text);
+    const orphans = readdirSync(join(skillsRoot, skill, 'references')).filter((name) => name.endsWith('.md') && !reached.has(name));
     expect(orphans).toEqual([]);
   });
 });

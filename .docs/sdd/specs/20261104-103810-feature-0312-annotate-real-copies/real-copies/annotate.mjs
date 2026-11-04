@@ -1,7 +1,7 @@
-// Borrador de anotación de una copia del kit contra su original (feature 0312, a partir del de la 0302).
+// Borrador de anotación de una copia del kit contra su original.
 // node annotate.mjs <original> <kit> <out> <tarea>
 // Las líneas del original cuyas palabras sobreviven seguidas quedan como texto de la fuente; lo demás pasa a bloques del kit.
-// Frente al borrador de la 0302: el contenido de un bloque conserva los saltos de línea y la sangría del kit, y un bloque
+// El contenido de un bloque conserva los saltos de línea y la sangría del kit, y un bloque
 // cuyo tramo del original acaba en una línea en blanco acaba en ella, sin `fin`.
 import { readFileSync, writeFileSync } from 'node:fs';
 

@@ -1,4 +1,4 @@
-// Compara ficheros de dist/ con los de develop párrafo a párrafo, con los espacios de cada párrafo normalizados (feature 0312).
+// Compara ficheros de dist/ con los de develop párrafo a párrafo, con los espacios de cada párrafo normalizados.
 // node compare-dist.mjs [--base <ref>] <ruta de dist/>…
 // Un salto de línea dentro de un párrafo no cuenta; un párrafo partido, juntado o con otras palabras, sí.
 import { execFileSync } from 'node:child_process';

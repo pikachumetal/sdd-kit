@@ -3,6 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { WHOLE_LINE_MARK } from '../../../build/dist.ts';
 
 const names = ['kit', 'superpowers', 'axis', 'scenario', 'package', 'sha', 'dir', 'adrs', 'caps', 'comments'];
 const { values: opt } = parseArgs({ options: Object.fromEntries(names.map((name) => [name, { type: 'string', default: '' }])) });
@@ -29,7 +30,7 @@ function legacyBrief() {
 }
 
 // Las marcas del kit no viajan: el encargo sale como lo deja el build.
-const withoutMarks = (text) => text.split('\n').filter((line) => !/^\s*<!-- kit:(?:(?!-->).)*-->\s*$/.test(line)).join('\n');
+const withoutMarks = (text) => text.split('\n').filter((line) => !WHOLE_LINE_MARK.test(line)).join('\n');
 
 function sourceText() {
   const fork = join(opt.kit, `skills/sdd-verify/references/${opt.axis}-reviewer-prompt.md`);

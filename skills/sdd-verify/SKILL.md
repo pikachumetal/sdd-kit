@@ -312,4 +312,3 @@ In both, the reproduce-before-fixing rule of the fix loop applies.
 
 <!-- kit: 0312 -->
 **`tasks.md`.** When the axes return, write `Revisión final: Spec opus+high, <verdict> · Código sonnet+high, <verdict> · Arquitectura <opus+high, <verdict> | no (plan)>, sobre <sha corto>`, with the `HEAD` they reviewed (without `tasks.md`, in the validation's presentation). A raised axis reads `Arquitectura opus+high, <verdict> (subido: <reason>)`, and a check an axis couldn't make adds `, <n> sin verificar` to its verdict. After the fix pass, `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`. At most one `Re-revisión:` line.
-
