@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Entry } from '../../../build/sources.ts';
 import { ownReport } from '../../../tests/own/check.ts';
+import { isSpanish } from '../../../tests/own/spanish.ts';
+import { repoRoot } from './kit-files.ts';
 import { tempDirs, writeTree } from './temp-tree.ts';
 
 const tempDir = tempDirs();
@@ -204,6 +208,67 @@ describe('kit:own: la inclusión en una copia', () => {
       'skills/example-a/SKILL.md:6: una inclusión es solo de las propias, y skills/example-a/SKILL.md es una copia',
       'skills/example-b/SKILL.md:8: una inclusión es solo de las propias, y skills/example-b/SKILL.md es una copia',
     ]);
+  });
+});
+
+describe('isSpanish', () => {
+  const sample = readFileSync(join(repoRoot, 'cli/test/fixtures/own/spanish-sample.md'), 'utf8').replace(/\r\n/g, '\n').split('\n');
+  const section = (name: string): string[] => {
+    const start = sample.indexOf(`## ${name}`) + 1;
+    const end = sample.findIndex((line, index) => index > start && /^## (es|en)$/.test(line));
+    return sample.slice(start, end < 0 ? undefined : end).filter((line) => line.trim() !== '');
+  };
+
+  it('classifies every line of the sample', () => {
+    const missed = section('es').filter((line) => !isSpanish(line));
+    const wrong = section('en').filter((line) => isSpanish(line));
+
+    expect({ missed, wrong }).toEqual({ missed: [], wrong: [] });
+  });
+});
+
+describe('kit:own: la prosa en castellano', () => {
+  const english = 'An English line.\n\nAnother one.\n\nA third.\n\n';
+  const message = (site: string, line: string): string => `${site}: prosa en castellano; las skills van en inglés: «${line}»`;
+
+  it('reports a line in Spanish with its dist line', () => {
+    const files = { ...skill('example-a', 'English.\n'), 'skills/example-a/references/profiles.md': `${english}- **\`pair\`** — para en todos los gates de la tabla.\n` };
+
+    expect(report({ files }).lines).toEqual([message('dist/skills/example-a/references/profiles.md:7', '- **`pair`** — para en todos los gates de la tabla.')]);
+  });
+
+  it('reports a short heading', () => {
+    expect(report({ files: skill('example-a', '## Restricciones de código\n') }).lines).toEqual([message('dist/skills/example-a/SKILL.md:6', '## Restricciones de código')]);
+  });
+
+  it('abbreviates a long line to 12 words', () => {
+    const line = 'Cada documento es de estado, un artefacto de evento o una ADR, y tiene quien lo escribe.';
+    expect(report({ files: skill('example-a', `${line}\n`) }).lines).toEqual([
+      message('dist/skills/example-a/SKILL.md:6', 'Cada documento es de estado, un artefacto de evento o una ADR,…'),
+    ]);
+  });
+
+  it('ignores Spanish in inline code and «…» quotes', () => {
+    expect(report({ files: skill('example-a', 'Open with `Ahora: <qué haces>` and a counter like «van 7 de 15».\n') }).code).toBe(0);
+  });
+
+  it('ignores templates, code blocks and the frontmatter but the description', () => {
+    const files = {
+      ...skill('example-a', '```text\nPara otro perfil: di cuál y para qué.\n```\n'),
+      'skills/sdd-templates/templates/spec-template.md': 'Una línea de la plantilla en castellano para el equipo.\n',
+    };
+    expect(report({ files, own: [...OWN, 'skills/sdd-templates/'] }).code).toBe(0);
+
+    const described = { 'skills/example-a/SKILL.md': '---\nname: example-a\ndescription: Úsala cuando el usuario pide una de las cosas.\n---\n\nEnglish.\n' };
+    expect(report({ files: described }).lines).toEqual([
+      message('dist/skills/example-a/SKILL.md:3', 'description: Úsala cuando el usuario pide una de las cosas.'),
+    ]);
+  });
+
+  it('names includes/<nombre>.md:<línea> for an include', () => {
+    const files = { ...skill('example-a', '<!-- kit: incluye rule -->\n'), 'includes/rule.md': 'Intro.\n\nSe escribe una vez y se incluye en las dos.\n' };
+
+    expect(report({ files }).lines).toEqual([message('includes/rule.md:3', 'Se escribe una vez y se incluye en las dos.')]);
   });
 });
 

@@ -29,6 +29,15 @@ Formato: ruta · líneas marcadas / líneas con texto.
 | `skills/sdd-upgrade/references/migrations/v2.3.4.md` | 5/7 |
 | `skills/sdd-upgrade/references/migrations/v3.0.0.md` | 84/123 |
 | `skills/sdd-verify/references/encargo-revision.md` | 15/16 |
+| `skills/sdd-roadmap/SKILL.md` | 1 (lo añade la 0304) |
+
+`skills/sdd-roadmap/SKILL.md:29`, «| En espera | `**Esperar 2.º ticket** · …` |», entra al contrastar `kit:own` con este inventario (Task 3 de la 0304). Es el nombre en castellano de un estado del roadmap, escrito sin citar en una celda de una skill en inglés, y la heurística de `develop` no lo veía porque la línea es corta. Lo arregla quien reescriba `sdd-roadmap` (0308), citándolo como literal.
+
+## Contraste con kit:own (feature 0304, Task 3)
+
+- La heurística de `develop` sobre la muestra de `cli/test/fixtures/own/spanish-sample.md` (RED): ningún falso positivo; se deja 11 de las 24 líneas en castellano, todas títulos o líneas cortas («## Perfiles», «## Verificación», «| Si existe… | Entonces… |», «**Escribe**: …»). Una de las 24, «- Timestamp: `Get-Date …` (PowerShell).», estaba mal etiquetada (sin el código no tiene castellano) y salió de la muestra.
+- La de `kit:own` (GREEN) suma tres señales: sin palabras gramaticales del inglés, basta una del castellano, una terminación que el inglés no tiene (-ción, -encia, -ajes, -ivo…) o una tilde, una ñ, ¿ o ¡; y una lista corta de palabras de los títulos del kit (perfiles, revisor, escribe…). Con «todo» en la lista daba 6 falsos positivos («one todo per step»), y salió.
+- Sobre el kit de la rama: 550 rojos en 22 ficheros, los 21 de arriba más `sdd-roadmap/SKILL.md:29`.
 
 ## La heurística de develop
 

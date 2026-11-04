@@ -8,6 +8,7 @@ import { formatProblem, type Problem } from '../copies/annotated.ts';
 import { exceptionProblems } from './exceptions.ts';
 import { skillLines } from './kit-text.ts';
 import { repeatedLines } from './repeated.ts';
+import { spanishProblems } from './spanish.ts';
 
 export interface OwnReport {
   code: number;
@@ -27,7 +28,7 @@ export function ownReport(repoRoot: string, files: string[]): OwnReport {
   const registry = readRegistry(join(repoRoot, 'upstream.json'));
   const lines = skillLines(repoRoot, files, registry);
   const repeated = repeatedLines(lines);
-  const problems = [...exceptionProblems(lines), ...includeInCopyProblems(repoRoot, files, registry)];
+  const problems = [...exceptionProblems(lines), ...spanishProblems(lines), ...includeInCopyProblems(repoRoot, files, registry)];
   if (repeated.length + problems.length === 0) return { code: 0, lines: [`Skills al día: ${new Set(lines.map((line) => line.file)).size} ficheros.`] };
   return { code: 1, lines: [...repeated, ...problems.map(formatProblem)] };
 }
