@@ -15,6 +15,23 @@ function relativeLinks(text: string): string[] {
   return [...text.matchAll(/\]\(((?:references|templates|scripts)\/[^)#]+)\)/g)].map((match) => match[1]);
 }
 
+// Las references/ a las que se llega desde SKILL.md, directo o por el puntero de otra reference, enlace o nombre
+// («See persuasion-principles.md in this directory»), como el reparto de writing-skills de superpowers 7.0.2.
+function reachableReferences(skill: string, skillText: string): Set<string> {
+  const reached = new Set(relativeLinks(skillText).map((link) => link.replace(/^references\//, '')));
+  const pending = [...reached];
+  for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
+    const path = join(skillsRoot, skill, 'references', name);
+    if (!existsSync(path)) continue;
+    for (const [link] of readFileSync(path, 'utf8').matchAll(/(?<![\w/-])[a-z0-9-]+\.md\b/g)) {
+      if (reached.has(link)) continue;
+      reached.add(link);
+      pending.push(link);
+    }
+  }
+  return reached;
+}
+
 function skillMarkdown(): string[] {
   return markdownFiles(skillsRoot).filter((path) => !isMigration(path));
 }
@@ -46,8 +63,7 @@ describe.each(skills)('skill %s', (skill) => {
   });
 
   it.skipIf(!existsSync(join(skillsRoot, skill, 'references')))('enlaza todos sus references/ desde SKILL.md', () => {
-    const linked = relativeLinks(text).map((link) => link.replace(/^references\//, ''));
-    const orphans = readdirSync(join(skillsRoot, skill, 'references')).filter((name) => name.endsWith('.md') && !linked.includes(name));
+    const orphans = readdirSync(join(skillsRoot, skill, 'references')).filter((name) => name.endsWith('.md') && !reachableReferences(skill, text).has(name));
     expect(orphans).toEqual([]);
   });
 });

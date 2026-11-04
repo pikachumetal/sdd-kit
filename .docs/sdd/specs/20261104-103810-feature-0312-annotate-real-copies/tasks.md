@@ -18,5 +18,5 @@ created: 2026-11-04
 | --- | --- | --- | --- | --- |
 | 1 | Las copias de superpowers con una sola fuente, y la versión fuera del texto | done | 32255562 | dos rojos de sdd-tdd → 0307 |
 | 2 | `sdd-verify` | done | 57be1a76 | los tres encargos con la forma de code-reviewer.md (enmienda del 2026-11-04) |
-| 3 | El renombrado en `kit:copies-update`, y `sdd-agent-writing` anotada en su versión de hoy | done | | renamedPath; tres copias de sdd-agent-writing sin rojos, dist/ igual byte a byte |
-| 4 | La subida a v7.0.2 y v1.3.2, el reparto de `sdd-agent-writing` y el humo | pending | | |
+| 3 | El renombrado en `kit:copies-update`, y `sdd-agent-writing` anotada en su versión de hoy | done | 269a0957 | renamedPath; tres copias de sdd-agent-writing sin rojos, dist/ igual byte a byte |
+| 4 | La subida a v7.0.2 y v1.3.2, el reparto de `sdd-agent-writing` y el humo | done | | v7.0.2 y v1.3.2; seis copias de sdd-agent-writing; humo p1 y b1 1/1, 0,47 $ |

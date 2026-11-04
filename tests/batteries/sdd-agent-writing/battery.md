@@ -44,10 +44,11 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-agent-writing`)
 
 | Regla | Fuente | Fallo o motivo |
 | --- | --- | --- |
-| Texto de estilo de `SKILL.md` | `writing-for-agents` v1.3.1, entra | texto de la fuente (ADR 0013) |
-| Invocación, forma, descubrimiento y refuerzo de `skill-mechanics.md` | `SKILL-MECHANICS.md` y `writing-skills` 7.0.0, entran | texto de la fuente; controles f1 y h1 |
-| Prueba, sujetos y persuasión de `skill-testing.md` | `writing-skills` y `testing-skills-with-subagents` 7.0.0, entran | texto de la fuente; controles b2 y c1 |
-| Rutas de plataforma, `render-graphs.js`, `graphviz-conventions.dot`, `examples/` y «Discovery Workflow» | se descartan | el kit trabaja distinto: solo plugin de Claude Code, sin esas herramientas |
+| Texto de estilo de `SKILL.md` | `writing-for-agents` de `mattpocock/skills`, entra | texto de la fuente (ADR 0013) |
+| Invocación, forma y prueba de `skill-mechanics.md` | `SKILL-MECHANICS.md` y `writing-skills/SKILL.md`, entran | texto de la fuente; controles f1 y h1 |
+| Descubrimiento, diagramas, refuerzo y persuasión: `discovery.md`, `flowcharts.md`, `bulletproofing.md` y `persuasion-principles.md` | `writing-skills/references/` de superpowers, entran fichero a fichero, tras un puntero de `skill-mechanics.md` como en la fuente | texto de la fuente; controles f1, h1 y c1 |
+| Sujetos de `skill-testing.md` | `writing-skills/references/testing-skills-with-subagents.md`, entra | texto de la fuente; controles b2 y c1 |
+| Rutas de plataforma, `render-graphs.js`, `graphviz-conventions.dot`, `CLAUDE_MD_TESTING.md` y «Discovery Workflow» | se descartan | el kit trabaja distinto: solo plugin de Claude Code, sin esas herramientas |
 | `anthropic-best-practices.md` | se descarta | documentación oficial, no texto de la skill; queda su puntero (decisión 2 de la spec) |
 | «TDD Mapping» de `writing-skills` | sigue en `skill-mechanics.md` | texto de la fuente |
 | Una skill no está hecha sin un escenario | del kit | p1, RED: 0 de 2 lo dejaron |
