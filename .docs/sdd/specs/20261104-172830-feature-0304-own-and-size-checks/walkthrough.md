@@ -101,6 +101,7 @@ Es la lista de rojos con la que arrancan las filas que los ponen en verde (0296,
 ### 4.3 Residuales / deuda generada
 
 - `cli/test/kit/skills.test.ts` lee `skills/` y no `dist/`, así que el texto de `includes/*.md` queda sin validar (enlaces, `references/` huérfanos) cuando exista la primera inclusión real (nota del eje Código). Va en el ticket.
+- El CI de la rama sobre la base integrada dio rojo en `cli/test/merge/lock-and-base.slow.test.ts` («el segundo proceso espera…»). Aislado pasa en la rama y en `origin/develop` (10/10 en los dos), y la rama no toca `cli/src/merge` ni `cli/test/merge`: «No se repite». Va a su fila de deuda en el roadmap.
 - Con `core.autocrlf=true`, `dist/` sale «M» en `git status` sin diff de contenido: `dist/** eol=lf`, y el build copia en CRLF los `cli/src/` del working copy, que no tienen regla de EOL. Va en el ticket.
 
 ## 5. Aprendizajes
