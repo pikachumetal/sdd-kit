@@ -41,16 +41,56 @@ function isMarkToDrop(block: Block, content: string, location: string): boolean 
   throw new BuildError(`${location}: ${MISPLACED}`);
 }
 
-export function stripMarks(text: string, file: string): string {
+// Sin includes/ a mano, una inclusión en el texto sale vacía, como cualquier otra marca.
+export const stripMarks = (text: string, file: string): string =>
+  renderLines(text, file, () => '')
+    .map((line) => line.text)
+    .join('');
+
+export const INCLUDE_MARK = /^\s*<!-- kit: incluye ([a-z0-9-]+) -->\s*$/;
+
+export interface OutputLine {
+  text: string;
+  source: number | null;
+}
+
+export type IncludeReader = (name: string) => string | null;
+
+function includedLines(name: string, location: string, readInclude: IncludeReader): OutputLine[] {
+  const content = readInclude(name);
+  if (content === null) throw new BuildError(`${location}: la inclusión ${name} no existe: crea includes/${name}.md`);
+  const withNewline = content.endsWith('\n') || content === '' ? content : `${content}\n`;
+  return withNewline.split(/(?<=\n)/).filter(Boolean).map((text) => ({ text, source: null }));
+}
+
+function renderLine(block: Block, line: string, index: number, context: { file: string; readInclude: IncludeReader }): OutputLine[] {
+  const content = line.replace(/\r?\n$/, '');
+  const location = `${context.file}:${index + 1}`;
+  const include = INCLUDE_MARK.exec(content)?.[1];
+  if (include !== undefined && block === 'text') return includedLines(include, location, context.readInclude);
+  if (include !== undefined && typeof block === 'object') throw new BuildError(`${location}: una inclusión va en el texto, fuera de un bloque de código`);
+  return isMarkToDrop(block, content, location) ? [] : [{ text: line, source: index }];
+}
+
+export function renderLines(text: string, file: string, readInclude: IncludeReader): OutputLine[] {
   const lines = text.split(/(?<=\n)/);
   let block: Block = lines[0]?.trimEnd() === '---' ? 'frontmatter' : 'text';
-  const kept: string[] = [];
+  const rendered: OutputLine[] = [];
   lines.forEach((line, index) => {
-    const content = line.replace(/\r?\n$/, '');
-    if (!isMarkToDrop(block, content, `${file}:${index + 1}`)) kept.push(line);
-    block = nextBlock(block, content, index);
+    rendered.push(...renderLine(block, line, index, { file, readInclude }));
+    block = nextBlock(block, line.replace(/\r?\n$/, ''), index);
   });
-  return kept.join('');
+  return rendered;
+}
+
+export function includesFrom(repoRoot: string): IncludeReader {
+  return (name) => {
+    const path = join(repoRoot, 'includes', `${name}.md`);
+    if (!existsSync(path)) return null;
+    const content = readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
+    if (content.includes(MARK_OPENER)) throw new BuildError(`includes/${name}.md: una inclusión no lleva marcas del kit`);
+    return content;
+  };
 }
 
 const inWhitelist = (path: string): boolean => WHITELIST.some((entry) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry));
@@ -62,12 +102,13 @@ export async function listSources(repoRoot: string): Promise<string[]> {
 }
 
 export function buildDist(repoRoot: string, files: string[], outDir: string): void {
+  const readInclude = includesFrom(repoRoot);
   for (const file of files) {
     const source = join(repoRoot, file);
     if (!existsSync(source)) continue;
     const target = join(outDir, file);
     mkdirSync(dirname(target), { recursive: true });
-    if (file.endsWith('.md')) writeFileSync(target, stripMarks(readFileSync(source, 'utf8'), file));
+    if (file.endsWith('.md')) writeFileSync(target, renderLines(readFileSync(source, 'utf8'), file, readInclude).map((line) => line.text).join(''));
     else copyFileSync(source, target);
   }
 }

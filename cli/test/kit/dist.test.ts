@@ -1,7 +1,17 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { buildDist, listSources, relativeFiles as unsortedFiles, stripMarks, syncDir, WHITELIST } from '../../../build/dist.ts';
+import {
+  buildDist,
+  includesFrom,
+  listSources,
+  relativeFiles as unsortedFiles,
+  renderLines,
+  stripMarks,
+  syncDir,
+  WHITELIST,
+  type OutputLine,
+} from '../../../build/dist.ts';
 import { filesUnder, repoRoot } from './kit-files.ts';
 import { tempDirs, writeTree } from './temp-tree.ts';
 
@@ -45,7 +55,60 @@ describe('stripMarks', () => {
   });
 });
 
+describe('renderLines', () => {
+  const INCLUDE = '<!-- kit: incluye user-language -->';
+  const reader = (includes: Record<string, string>) => (name: string): string | null => includes[name] ?? null;
+  const render = (text: string, includes: Record<string, string> = {}) => renderLines(text, 'skills/a/SKILL.md', reader(includes));
+  const joined = (lines: OutputLine[]): string => lines.map((line) => line.text).join('');
+
+  it('expands an include and strips the other marks', () => {
+    const lines = render(`a\n${INCLUDE}\n<!-- kit: 0186 -->\nb\n`, { 'user-language': 'Write everything.\n' });
+    expect(joined(lines)).toBe('a\nWrite everything.\nb\n');
+    expect(lines.map((line) => line.source)).toEqual([0, null, 3]);
+  });
+
+  it('adds the missing newline of an include', () => {
+    expect(joined(render(`a\n${INCLUDE}\nb\n`, { 'user-language': 'x' }))).toBe('a\nx\nb\n');
+  });
+
+  it('fails on a missing include', () => {
+    expect(() => render(`a\n${INCLUDE}\n`)).toThrow('skills/a/SKILL.md:2: la inclusión user-language no existe: crea includes/user-language.md');
+  });
+
+  it('fails on an include inside a fence', () => {
+    expect(() => render(`a\n\`\`\`\n${INCLUDE}\n\`\`\`\n`, { 'user-language': 'x\n' })).toThrow(
+      'skills/a/SKILL.md:3: una inclusión va en el texto, fuera de un bloque de código',
+    );
+  });
+
+  it('fails on an include in the frontmatter', () => {
+    expect(() => render(`---\nname: a\n${INCLUDE}\n---\nb\n`, { 'user-language': 'x\n' })).toThrow(`skills/a/SKILL.md:3: ${MISPLACED}`);
+  });
+
+  it('includesFrom fails on an include with a kit mark', () => {
+    const root = tempDir('dist-inc-');
+    writeTree(root, { 'includes/x.md': `a\n${MARK}\n` });
+    expect(() => includesFrom(root)('x')).toThrow('includes/x.md: una inclusión no lleva marcas del kit');
+  });
+
+  it('includesFrom reads an include in LF and gives null for a missing one', () => {
+    const root = tempDir('dist-inc-');
+    writeTree(root, { 'includes/x.md': 'a\r\nb\r\n' });
+    expect(includesFrom(root)('x')).toBe('a\nb\n');
+    expect(includesFrom(root)('gone')).toBeNull();
+  });
+});
+
 describe('buildDist', () => {
+  it('writes includes and leaves includes/ out of dist', () => {
+    const source = tempDir('dist-src-');
+    writeTree(source, { 'skills/a/SKILL.md': '# a\n<!-- kit: incluye user-language -->\n', 'includes/user-language.md': 'Write everything.\n' });
+    const out = tempDir('dist-out-');
+    buildDist(source, ['skills/a/SKILL.md'], out);
+    expect(readFileSync(join(out, 'skills/a/SKILL.md'), 'utf8')).toBe('# a\nWrite everything.\n');
+    expect(existsSync(join(out, 'includes'))).toBe(false);
+  });
+
   it('copies a source without marks byte for byte', () => {
     const source = tempDir('dist-src-');
     const files = { 'skills/a/SKILL.md': '---\nname: a\n---\n\n# a\r\n', 'skills/a/NOTICE': 'MIT\n', 'cli/src/x.ts': 'export {};\n' };
