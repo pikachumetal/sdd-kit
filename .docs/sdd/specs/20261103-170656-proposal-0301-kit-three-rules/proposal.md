@@ -59,7 +59,9 @@ Los nueve problemas: (1) el kit pone su frase al lado de la de la fuente (A+C); 
 | 9 | 0308 | `sdd-roadmap` y `sdd-config`: la frase que falla, sustituida | 0304 |
 | 10 | 0309 | `sdd-templates`: una forma por regla y la fuente única | 0304 |
 | 11 | 0310 | `sdd-init`, `sdd-explore`, `sdd-end-release`, `sdd-feedback` y `add-to-changelog`: la frase que falla, sustituida | 0304 |
-| 12 | 0311 | Cierre: las comprobaciones al pre-commit y a la CI, revisar contra el kit nuevo 0297, 0284, 0198 y 0152, y cortar la 3.0.0 | 0296, 0305, 0306, 0307, 0308, 0309, 0310 |
+| 12 | 0313 | `cli/src/tasks` al día con los scripts de superpowers 7.0.2 | 0302 |
+| 13 | 0314 | `sdd-grilling` con `brainstorming` de superpowers 7.0.2 | 0302, 0304 |
+| 14 | 0311 | Cierre: las comprobaciones al pre-commit y a la CI, revisar contra el kit nuevo 0297, 0284, 0198 y 0152, y cortar la 3.0.0 | 0296, 0305, 0306, 0307, 0308, 0309, 0310, 0313, 0314 |
 
 ## Acta
 
@@ -67,4 +69,5 @@ No aplica: entrevista (sesión de coordinación `develop`, 2026-11-03).
 
 ## Enmiendas
 
-Ninguna.
+- **2026-11-04 — Cada copia parte del último tag de su fuente cuando arranca su feature** (dev-lead: «ok a las cinco, adelante», a la propuesta de la sesión `develop` tras salir superpowers v7.0.2). Regla «Copia o propia»: antes, `sdd-implement-native` de `executing-plans` 7.0.1 y `sdd-implement-subagent` de `subagent-driven-development` 7.0.1; ahora, del último tag cuando arranca la 0296 (hoy v7.0.2, que en esas dos skills solo añade «by its absolute path, from the working tree you're executing in» a cada llamada a un script). Ejemplo: superpowers saca v7.0.3 antes de arrancar la 0296 → la 0296 parte de v7.0.3, sin otra enmienda. Lo mismo vale para la fila 5 del reparto.
+- **2026-11-04 — Dos features nuevas en el reparto, por superpowers v7.0.2** (dev-lead, la misma frase). 0313: el port `cli/src/tasks` sigue en v6.4.2, y la 7.0.2 trae `sdd-repo` (el repo del directorio actual, `-C DIR`), los ids `A1`, `6b` y `2.1` en `task-brief` y las rutas de Windows. 0314: `brainstorming` 7.0.2 cambia cómo se pregunta, y la parte de las preguntas del kit vive en `sdd-grilling`, que la 0299 dejó entre las que se quedan. La 0306 compara `spec-writing.md` con `brainstorming` 7.0.2, y la 0309 lleva las alternativas al `## Approach` de la spec. La 0311 va tras las dos nuevas.
