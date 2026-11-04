@@ -60,9 +60,19 @@ function runUpdate(registry: string, upstream: string, source: string, tag: stri
 
 const V1 = '# Skill A\n\nFirst paragraph.\n\nSecond paragraph.\n';
 const V2 = '# Skill A\n\nFirst paragraph.\n\nSecond paragraph.\n\nThird paragraph.\n';
+const UNRELATED = '# Skill B\n\nNothing in common with skill A.\n';
 const KIT = '# Skill A\n\n<!-- kit: 0302 · sustituye: «First paragraph.» -->\nThe kit paragraph.\n\nSecond paragraph.\n';
 const kitFile = (root: string): string => readFileSync(join(root, 'repo', 'skills/sdd-a/SKILL.md'), 'utf8');
 const registryOf = (path: string): { entries: { version: string }[] } => JSON.parse(readFileSync(path, 'utf8'));
+
+// El original cambia de ruta y su texto pasa a ser text, en un commit con su tag: git ve el renombrado por el parecido.
+function moveAndTag(clone: string, from: string, to: string, text: string, tag: string): void {
+  git(['-C', clone, 'rm', '-q', from]);
+  writeTree(clone, { [to]: text });
+  git(['-C', clone, 'add', '-A']);
+  git(['-C', clone, '-c', 'user.name=test', '-c', 'user.email=test@example.com', 'commit', '-q', '-m', tag]);
+  git(['-C', clone, 'tag', tag]);
+}
 
 describe('kit:copies-update (tests/copies/update.ts)', () => {
   it('merges a copy and bumps its version', () => {
@@ -85,9 +95,9 @@ describe('kit:copies-update (tests/copies/update.ts)', () => {
     expect(runCheck(registry, join(root, 'upstream')).output).toContain('skills/sdd-a/SKILL.md:3: conflicto de git merge-file sin resolver');
   });
 
-  it('skips a copy whose original moved', () => {
+  it('skips a copy whose original is gone', () => {
     const root = newRoot();
-    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 }, 'v1.1.0': { 'skills/b/SKILL.md': V1 } });
+    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 }, 'v1.1.0': { 'skills/b/SKILL.md': UNRELATED } });
     git(['-C', join(root, 'upstream', 'juguete'), 'rm', '-q', 'skills/a/SKILL.md']);
     git(['-C', join(root, 'upstream', 'juguete'), '-c', 'user.name=test', '-c', 'user.email=test@example.com', 'commit', '-q', '-m', 'v1.2.0']);
     git(['-C', join(root, 'upstream', 'juguete'), 'tag', 'v1.2.0']);
@@ -99,9 +109,34 @@ describe('kit:copies-update (tests/copies/update.ts)', () => {
     expect(registryOf(registry).entries[0].version).toBe('v1.0.0');
   });
 
+  it('follows an original that the source renames', () => {
+    const root = newRoot();
+    const clone = newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 } });
+    moveAndTag(clone, 'skills/a/SKILL.md', 'skills/a/references/SKILL.md', V2, 'v1.1.0');
+    const registry = newRepo(root, [{ kit: 'skills/sdd-a/SKILL.md' }], { 'skills/sdd-a/SKILL.md': KIT });
+    expect(runUpdate(registry, join(root, 'upstream'), 'Juguete', 'v1.1.0')).toEqual({
+      output: 'skills/sdd-a/SKILL.md: su original skills/a/SKILL.md pasa a skills/a/references/SKILL.md en v1.1.0\nskills/sdd-a/SKILL.md: v1.0.0 → v1.1.0, 0 conflictos',
+      code: 0,
+    });
+    expect(kitFile(root)).toBe(`${KIT}\nThird paragraph.\n`);
+    expect(JSON.parse(readFileSync(registry, 'utf8')).entries[0]).toMatchObject({ paths: ['skills/a/references/SKILL.md'], version: 'v1.1.0' });
+  });
+
+  it("treats a rewrite below git's rename threshold as missing", () => {
+    const root = newRoot();
+    const clone = newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1 } });
+    moveAndTag(clone, 'skills/a/SKILL.md', 'skills/a/references/SKILL.md', '# Another skill\n\nA text written again from scratch, with nothing kept.\n', 'v1.1.0');
+    const registry = newRepo(root, [{ kit: 'skills/sdd-a/SKILL.md' }], { 'skills/sdd-a/SKILL.md': KIT });
+    expect(runUpdate(registry, join(root, 'upstream'), 'Juguete', 'v1.1.0')).toEqual({
+      output: 'skills/sdd-a/SKILL.md: su original skills/a/SKILL.md no existe en v1.1.0: mapéalo antes de actualizar',
+      code: 1,
+    });
+    expect(JSON.parse(readFileSync(registry, 'utf8')).entries[0]).toMatchObject({ paths: ['skills/a/SKILL.md'], version: 'v1.0.0' });
+  });
+
   it('leaves the from of a skipped copy at its version', () => {
     const root = newRoot();
-    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1, 'x.md': 'x\n' }, 'v1.1.0': { 'skills/b/SKILL.md': V1 } });
+    newClone(root, { 'v1.0.0': { 'skills/a/SKILL.md': V1, 'x.md': 'x\n' }, 'v1.1.0': { 'skills/b/SKILL.md': UNRELATED } });
     git(['-C', join(root, 'upstream', 'juguete'), 'rm', '-q', 'skills/a/SKILL.md']);
     git(['-C', join(root, 'upstream', 'juguete'), '-c', 'user.name=test', '-c', 'user.email=test@example.com', 'commit', '-q', '-m', 'v1.2.0']);
     git(['-C', join(root, 'upstream', 'juguete'), 'tag', 'v1.2.0']);

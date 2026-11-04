@@ -96,7 +96,8 @@ function paragraphsOf(content) {
 // Dentro de un recuadro una línea en blanco no cierra un bloque: lo cierra fin, y la línea en blanco sigue siendo texto.
 function inFence() {
   let fence = null;
-  for (const line of out) {
+  // Un párrafo de un bloque entra en out como una sola cadena con sus saltos de línea.
+  for (const line of out.join('\n').split('\n')) {
     const opener = line.startsWith('<!-- kit:') ? null : line.match(/^ {0,3}(`{3,}|~{3,})/)?.[1];
     if (opener && (!fence || opener.startsWith(fence))) fence = fence ? null : opener;
   }
@@ -114,7 +115,7 @@ function pushBlocks(mark, content, closing, kitBlank = false) {
 function insert(kEnd) {
   const content = kitText(kw, kCursor, kEnd);
   const blanks = [];
-  if (!opensParagraph(kw[kCursor].pre)) while (out.at(-1) === '') blanks.push(out.pop());
+  if (!opensParagraph(kw[kCursor].pre) && !(kCursor === 0 && k.body[0] === '')) while (out.at(-1) === '') blanks.push(out.pop());
   // Una línea en blanco que el original no tiene va tras una marca: la que cierra un bloque no es texto.
   else if (out.length > k.front.length && out.at(-1) !== '') out.push(`<!-- kit: ${task} -->`, '');
   const blankBehind = blanks.length > 0 || kEnd === kw.length || opensParagraph(kw[kEnd].pre);
@@ -131,7 +132,9 @@ function flush(kEnd) {
   const blankAfter = region.length > 0 && o.body[region.at(-1)] === '';
   const kitBlankAfter = kEnd < kw.length && opensParagraph(kw[kEnd].pre);
   const close = blankAfter || kitBlankAfter ? [''] : ['<!-- kit: fin -->'];
-  if (cite && !content) out.push(`<!-- kit: ${task} · quita: «${cite}» -->`, ...(blankAfter ? [''] : []));
+  // Lo quitado entre dos líneas en blanco deja una sola, y lo quitado al final no deja ninguna.
+  if (cite && !content && kEnd === kw.length) while (out.at(-1) === '') out.pop();
+  if (cite && !content) out.push(`<!-- kit: ${task} · quita: «${cite}» -->`, ...(blankAfter && out.at(-1) !== '' && kEnd < kw.length ? [''] : []));
   else if (cite) pushBlocks(`<!-- kit: ${task} · sustituye: «${cite}» -->`, content, close, !blankAfter);
   else if (content) pushBlocks(`<!-- kit: ${task} -->`, content, close, !blankAfter);
   else if (blankAfter) out.push('');
@@ -140,7 +143,7 @@ function flush(kEnd) {
 }
 
 o.body.forEach((line, index) => {
-  if (line === '' && region.length === 0) return void out.push('');
+  if (line === '' && region.length === 0) return void (out.length > k.front.length || k.body[0] === '' ? out.push('') : null);
   if (!intact[index] || line === '') return void region.push(index);
   const ws = wordsByLine[index];
   const kStart = ws.length ? match[ws[0]] : kCursor;

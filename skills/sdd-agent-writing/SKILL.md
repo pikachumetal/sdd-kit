@@ -3,18 +3,24 @@ name: sdd-agent-writing
 description: Use when creating a new skill — «quiero una skill para las migraciones SQL», «escribe una skill que…» — or an AGENTS.md or CLAUDE.md, or when a step of the kit names it, to write or test what an agent follows. A request to change an existing skill enters through sdd-propose.
 ---
 
+<!-- kit: 0312 -->
 # sdd-agent-writing
 
+<!-- kit: 0312 -->
 Write everything the user reads in their language. Adapted from `writing-for-agents` by Matt Pocock and `writing-skills` of superpowers (MIT, see `NOTICE`).
 
 Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable, since the agent takes the same _process_ every run rather than producing the same output.
 
+<!-- kit: 0312 · sustituye: «you're writing…skill,…[`SKILL-MECHANICS.md`](SKILL-MECHANICS.md)…frontmatter, invocation choice,…router skills.» -->
 ## When the document is a skill
 
+<!-- kit: 0312 -->
 First thing, read [references/skill-mechanics.md](references/skill-mechanics.md) to write it, and [references/skill-testing.md](references/skill-testing.md) to test it. A new skill lives in `.claude/skills/<name>/` of the project (in the kit's repo, `skills/<name>/`). It isn't done until a scenario that tests it is run or written next to it; in the kit's own repo, by the Art. I of its constitution, with RED and GREEN.
 
+<!-- kit: 0312 -->
 **A step that hands over to another skill** says: «First thing in this step: invoke `<skill>` with `Skill`; do nothing else from here.» A plain line pointing at the skill was followed 0 of 4 times; this form, 4 of 4.
 
+<!-- kit: 0312 -->
 **A forecast of a test campaign** has one line per batch, each with its subjects and dollars: RED; GREEN; one REFACTOR round, n = 2 per new rule that fixes a literal or goes to `references/`; and one line for controls, the final review's fix pass and a model change, about 20 % of the subjects. With RED and GREEN alone, a campaign forecast at 32 subjects spent 59.
 
 ## Context pointers
@@ -66,6 +72,7 @@ The strongest criteria are both checkable and exhaustive.
 Splitting one document into two spends one of the two loads, so split only when the cut earns it:
 
 - **By sequence**: split a run of steps where the post-completion steps tempt the agent to rush the one in front of it. Keeping them out of view drives more legwork on the current task. Beware the reverse: merging sequences exposes each step's later steps to what follows, inviting premature completion.
+<!-- kit: 0312 · sustituye: «[`SKILL-MECHANICS.md`](SKILL-MECHANICS.md).» -->
 - **By invocation**, skill-specific: see [skill-mechanics.md](references/skill-mechanics.md).
 
 ## Leading words

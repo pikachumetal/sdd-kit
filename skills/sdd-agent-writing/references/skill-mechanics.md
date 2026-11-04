@@ -1,24 +1,35 @@
+<!-- kit: 0312 · sustituye: «Writing Skills ## Overview **Writing…IS Test-Driven Development applied…process documentation.** **Personal skills live…your runtime's skills…[codex-tools.md](../using-superpowers/references/codex-tools.md) or [gemini-tools.md](../using-superpowers/references/gemini-tools.md)…the path on…and Gemini CLI…recognize `~/.agents/skills/` as…fail (baseline behavior),…(documentation), watch tests pass (agents comply),…refactor (close loopholes). **Core principle:** If…didn't watch an agent fail without…skill, you don't know if…skill teaches…right thing. **REQUIRED…That skill defines…fundamental RED-GREEN-REFACTOR cycle. This…adapts TDD to…For Anthropic's official…authoring best practices,…provides additional patterns…guidelines…complement…TDD-focused approach…this skill.» · de: mattpocock/skills skills/productivity/writing-for-agents/SKILL-MECHANICS.md -->
 # Skill mechanics
 
+<!-- kit: 0312 -->
 What changes when the document is a skill. From `writing-for-agents` (invocation) and `writing-skills` of superpowers (form and discovery).
 
+<!-- kit: 0312 -->
 ### Invocation
 
+<!-- kit: 0312 · de: mattpocock/skills skills/productivity/writing-for-agents/SKILL-MECHANICS.md -->
 Two choices, trading the two loads:
 
+<!-- kit: 0312 · de: mattpocock/skills skills/productivity/writing-for-agents/SKILL-MECHANICS.md -->
 - A **model-invoked** skill keeps a `description`, so the agent can fire it autonomously, and other skills can reach it. You can still type its name: model-invocation always _includes_ user reach; a description only ever adds agent discovery, never removes the human's. The description is the skill's top-level context pointer, forced to stay loaded at all times: permanent context load in exchange for discoverability. A model-invoked skill whose content is all reference is also one home for shared reference: another skill can invoke it, so reference needed by several skills lives in one place. Mechanics: omit `disable-model-invocation`, and write a model-facing description carrying the trigger branches (the pointer-writing rules in `SKILL.md` apply in full).
 - A **user-invoked** skill strips the description from the agent's reach: only the human typing its name can invoke it, and no other skill can. Zero context load, but it spends cognitive load: you are the index that must remember it exists. Mechanics: set `disable-model-invocation: true`; the `description` becomes human-facing: a one-line summary, trigger lists stripped.
 
+<!-- kit: 0312 · de: mattpocock/skills skills/productivity/writing-for-agents/SKILL-MECHANICS.md -->
 Pick model-invocation only when the agent must reach the skill on its own, or another skill must. If it only ever fires by hand, make it user-invoked and pay no context load.
 
+<!-- kit: 0312 · de: mattpocock/skills skills/productivity/writing-for-agents/SKILL-MECHANICS.md -->
 Shared reference that two user-invoked skills both need can live in neither: with no descriptions, neither can fire the other. Push it to a plain file outside the skill system: external reference any skill can point at.
 
+<!-- kit: 0312 -->
 ### Splitting by invocation
 
+<!-- kit: 0312 · de: mattpocock/skills skills/productivity/writing-for-agents/SKILL-MECHANICS.md -->
 The invocation cut of splitting (the sequence cut lives in `SKILL.md`): split off a model-invoked skill when you have a distinct leading word that should trigger it on its own (a trigger word you actually use in your prompts), or another skill must reach it. You pay context load for the new always-loaded description, so that independent reach has to be worth it.
 
+<!-- kit: 0312 -->
 ### Router skills
 
+<!-- kit: 0312 · de: mattpocock/skills skills/productivity/writing-for-agents/SKILL-MECHANICS.md -->
 When user-invoked skills multiply past what you can remember, that piled-up cognitive load is cured by a **router skill**: one user-invoked skill that names the others and when to reach for each, so the human has one skill to remember instead of many. It can only hint, never fire them: user-invoked skills have no description, so nothing but the human can reach them.
 
 ## What is a Skill?
@@ -281,8 +292,10 @@ wc -w skills/path/SKILL.md
 **When writing documentation that references other skills:**
 
 Use skill name only, with explicit requirement markers:
+<!-- kit: 0312 · sustituye: «superpowers:test-driven-development`…superpowers:systematic-debugging`» -->
 - ✅ Good: `**REQUIRED SUB-SKILL:** Use sdd-tdd`
 - ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand sdd-debugging`
+<!-- kit: fin -->
 - ❌ Bad: `See skills/testing/test-driven-development` (unclear if required)
 - ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (force-loads, burns context)
 
@@ -314,6 +327,7 @@ digraph when_flowchart {
 - Linear instructions → Numbered lists
 - Labels without semantic meaning (step1, helper2)
 
+<!-- kit: 0312 · quita: «See `graphviz-conventions.dot` in…one SVG ```» -->
 ## Code Examples
 
 **One excellent example beats many mediocre ones**
@@ -366,6 +380,7 @@ When: Reference material too large for inline
 
 Invoke bundled scripts through their interpreter in the prose (`bash scripts/tool.sh`, `node scripts/tool.js`), never by bare path: some harness plugin packagers strip executable bits, and a bare `scripts/tool.sh` fails there with `Permission denied`.
 
+<!-- kit: 0312 · sustituye: «The Iron Law…No exceptions.** ##» -->
 ## Match the Form to the Failure
 
 Before writing guidance, classify the baseline failure. The form that bulletproofs one failure type measurably backfires on another.
@@ -389,6 +404,7 @@ Skills that enforce discipline (like TDD) need to resist rationalization. Agents
 
 **Scope:** this toolkit is for discipline failures — an agent that knows the rule and skips it under pressure. For wrong-shaped output or omitted elements, prohibition-based bulletproofing backfires; use the forms in Match the Form to the Failure instead.
 
+<!-- kit: 0312 · sustituye: «persuasion-principles.md» -->
 **Psychology note:** Understanding WHY persuasion techniques work helps you apply them systematically. See «Persuasion principles» in [skill-testing.md](skill-testing.md) for research foundation (Cialdini, 2021; Meincke et al., 2025) on authority, commitment, scarcity, social proof, and unity principles.
 
 ### Close Every Loophole Explicitly
@@ -425,6 +441,7 @@ This cuts off entire class of "I'm following the spirit" rationalizations.
 
 ### Build Rationalization Table
 
+<!-- kit: 0312 · sustituye: «Testing section below).» -->
 Capture rationalizations from baseline testing (see [skill-testing.md](skill-testing.md)). Every excuse agents make goes in the table:
 
 ```markdown
@@ -459,6 +476,7 @@ Add to description: symptoms of when you're ABOUT to violate the rule:
 description: use when implementing any feature or bugfix, before writing implementation code
 ```
 
+<!-- kit: 0312 · sustituye: «RED-GREEN-REFACTOR for Skills…Meta-testing techniques ##» -->
 ## Anti-Patterns
 
 ### ❌ Narrative Example
@@ -479,3 +497,4 @@ step2 [label="read file"];
 ### ❌ Generic Labels
 helper1, helper2, step3, pattern4
 **Why bad:** Labels should have semantic meaning
+<!-- kit: 0312 · quita: «## STOP: Before…early and often.» -->
