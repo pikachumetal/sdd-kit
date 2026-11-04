@@ -21,7 +21,7 @@ export const WHITELIST: readonly string[] = [
 const MARK_OPENER = '<!-- kit:';
 export const WHOLE_LINE_MARK = /^\s*<!-- kit:(?:(?!-->).)*-->\s*$/;
 // Sin tope de sangría: una valla dentro de una lista anidada va sangrada cuatro espacios o más.
-export const FENCE = /^\s*(`{3,}|~{3,})/;
+const FENCE = /^\s*(`{3,}|~{3,})/;
 const MISPLACED = 'marca mal puesta: una marca va sola en su línea, <!-- kit: … -->, fuera del frontmatter y de un bloque de código';
 
 export type Block = 'frontmatter' | 'text' | { fence: string };

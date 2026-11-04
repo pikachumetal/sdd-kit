@@ -46,6 +46,8 @@ function validateEntry(registry: Registry, entry: Entry, at: string): void {
   if (!KINDS.includes(entry.kind)) throw new BuildError(`${at} tiene kind «${entry.kind}»; vale copy o concept`);
   for (const source of [entry.source, ...(entry.from ?? []).map((ref) => ref.source)])
     if (!(source in registry.sources)) throw new BuildError(`${at} nombra la fuente «${source}», que no está en sources`);
+  if (entry.kind === 'concept' && (entry.pending !== undefined || entry.from !== undefined))
+    throw new BuildError(`${at} es un concepto con pending o from; esos campos son de una copia`);
   const grouped = entry.kit.length !== 1 || entry.paths.length !== 1;
   if (entry.kind === 'copy' && entry.pending === undefined && grouped)
     throw new BuildError(`${at} es una copia sin pending con más de un fichero; una copia anotada va fichero a fichero`);
@@ -60,24 +62,33 @@ export function readRegistry(path: string): Registry {
   return validateRegistry(JSON.parse(readFileSync(path, 'utf8')));
 }
 
-// La entrada con sus from, una referencia por fuente y versión, en el orden en que aparecen.
-export function watchedRefs(entry: Entry): WatchedRef[] {
-  const refs: WatchedRef[] = [{ source: entry.source, version: entry.version, paths: [...entry.paths] }];
-  for (const ref of entry.from ?? []) {
-    const same = refs.find((watched) => watched.source === ref.source && watched.version === ref.version);
-    if (!same) refs.push({ source: ref.source, version: ref.version, paths: [ref.path] });
-    else if (!same.paths.includes(ref.path)) same.paths.push(ref.path);
+// Una referencia por fuente y versión, con sus rutas sin repetir, en el orden en que aparecen.
+export function mergeRefs(refs: WatchedRef[]): WatchedRef[] {
+  const merged: WatchedRef[] = [];
+  for (const ref of refs) {
+    const same = merged.find((group) => group.source === ref.source && group.version === ref.version);
+    if (!same) merged.push({ ...ref, paths: [...new Set(ref.paths)] });
+    else same.paths.push(...ref.paths.filter((path) => !same.paths.includes(path)));
   }
-  return refs;
+  return merged;
+}
+
+export function watchedRefs(entry: Entry): WatchedRef[] {
+  const fragments = (entry.from ?? []).map((ref) => ({ source: ref.source, version: ref.version, paths: [ref.path] }));
+  return mergeRefs([{ source: entry.source, version: entry.version, paths: entry.paths }, ...fragments]);
 }
 
 const covers = (path: string, file: string): boolean => (path.endsWith('/') ? file.startsWith(path) : file === path);
 
+// Una copia con pending y kit de carpeta solo clasifica lo que nada más clasifica: su carpeta puede contener copias ya fichero a fichero.
 export function classify(registry: Registry, files: string[]): string[] {
-  const copies = registry.entries.filter((entry) => entry.kind === 'copy').flatMap((entry) => entry.kit);
-  const own = registry.own ?? [];
+  const copies = registry.entries.filter((entry) => entry.kind === 'copy');
+  const kits = copies.flatMap((entry) => entry.kit.map((path) => ({ path, yields: entry.pending !== undefined && path.endsWith('/') })));
+  const firm = [...kits.filter((kit) => !kit.yields).map((kit) => kit.path), ...(registry.own ?? [])];
+  const pending = kits.filter((kit) => kit.yields).map((kit) => kit.path);
+  const count = (paths: string[], file: string): number => paths.filter((path) => covers(path, file)).length;
   return files
     .filter((file) => !file.endsWith('/NOTICE'))
-    .filter((file) => copies.filter((path) => covers(path, file)).length + own.filter((path) => covers(path, file)).length !== 1)
+    .filter((file) => (count(firm, file) === 0 ? count(pending, file) === 0 : count(firm, file) > 1))
     .map((file) => `${file} ${UNCLASSIFIED}`);
 }

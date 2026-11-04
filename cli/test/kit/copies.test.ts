@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { checkCopy, checkVerbatim, formatProblem, keptShare, markTask, type CopyInput } from '../../../tests/copies/annotated.ts';
+import { checkCopy, checkVerbatim, copyShareProblem, formatProblem, keptShare, markTask, type CopyInput } from '../../../tests/copies/annotated.ts';
 import { conflictBlocks, mergeCopy } from '../../../tests/copies/update.ts';
 import { repoRoot } from './kit-files.ts';
 
@@ -131,6 +131,16 @@ describe('checkCopy: lo que sustituye una marca', () => {
     );
     expect(check(annotated)).toEqual([]);
   });
+
+  it('rejects the cites of two blocks at one site in the wrong order', () => {
+    const two = 'Ensure the work happens in an isolated workspace: use\nsuperpowers:using-git-worktrees to create one or verify the existing one.\n';
+    const annotated = replaceLine(
+      BASE,
+      two,
+      '<!-- kit: 0002 · sustituye: «superpowers:using-git-worktrees to create one or verify the existing one.» -->\n`sdd-worktrees`, which creates it.\n<!-- kit: 0001 · sustituye: «Ensure the work happens in an isolated workspace: use» -->\nWork in a worktree: use\n<!-- kit: fin -->\n',
+    );
+    expect(check(annotated)).not.toEqual([]);
+  });
 });
 
 describe('checkCopy: A+C', () => {
@@ -242,22 +252,57 @@ describe('checkCopy: lo que acompaña a un rojo', () => {
       `${FILE}:${lineOf(annotated, '>>>>>>> v7.0.1')}: conflicto de git merge-file sin resolver`,
     ]);
   });
+
+  it('reports a merge conflict in the frontmatter and inside a fence', () => {
+    const conflict = '<<<<<<< kit\nours\n=======\ntheirs\n>>>>>>> v7.0.1\n';
+    const front = replaceLine(BASE, 'name: sdd-implement\n', `name: sdd-implement\n${conflict}`);
+    expect(check(front)).toContain(`${FILE}:${lineOf(front, '<<<<<<< kit')}: conflicto de git merge-file sin resolver`);
+    const fenced = replaceLine(BASE, '## Setup\n', `## Setup\n\`\`\`text\n${conflict}\`\`\`\n`);
+    expect(check(fenced)).toContain(`${FILE}:${lineOf(fenced, '<<<<<<< kit')}: conflicto de git merge-file sin resolver`);
+  });
+
+  it('does not take a setext underline for a conflict', () => {
+    const original = 'Title\n=======\n\nText.\n';
+    expect(check(original, { original })).toEqual([]);
+  });
+
+  it('accepts the annotated fixture of the experiment', () => {
+    const fixture = (name: string): string => readFileSync(join(repoRoot, 'cli/test/fixtures/copies', name), 'utf8');
+    expect(check(fixture('sdd-annotated-v7.0.0.md'), { original: fixture('sdd-v7.0.0.md') })).toEqual([]);
+  });
 });
 
 describe('checkVerbatim', () => {
   const file = 'skills/sdd-debugging/references/example.ts';
   const label = 'skills/systematic-debugging/example.ts@v7.0.0';
 
+  const verbatim = (annotated: string, original: string): string[] => checkVerbatim({ file, annotated, original, label }).map(formatProblem);
+
   it('accepts its original byte for byte in LF', () => {
-    expect(checkVerbatim(file, 'a\nb\n', 'a\r\nb\r\n', label)).toEqual([]);
+    expect(verbatim('a\nb\n', 'a\r\nb\r\n')).toEqual([]);
   });
 
   it('reports a non-md copy that is not its original', () => {
-    expect(checkVerbatim(file, 'a\nc\n', 'a\nb\n', label).map(formatProblem)).toEqual([`${file}: no es su original ${label} byte a byte`]);
+    expect(verbatim('a\nc\n', 'a\nb\n')).toEqual([`${file}: no es su original ${label} byte a byte`]);
   });
 
   it('reports CRLF', () => {
-    expect(checkVerbatim(file, 'a\r\nb\r\n', 'a\nb\n', label).map(formatProblem)).toEqual([`${file}: tiene finales de línea CRLF; la fuente de una copia va en LF`]);
+    expect(verbatim('a\r\nb\r\n', 'a\nb\n')).toEqual([`${file}: tiene finales de línea CRLF; la fuente de una copia va en LF`]);
+  });
+});
+
+describe('copyShareProblem', () => {
+  const firstWords = (count: number): string => Array.from({ length: count }, (_, index) => `x${index}`).join(' ');
+  const original = firstWords(25);
+
+  it('accepts 50 % exactly', () => {
+    expect(keptShare(firstWords(15), original)).toBe(50);
+    expect(copyShareProblem({ file: 'k.md', output: firstWords(15), original, path: 'o.md' })).toBeNull();
+  });
+
+  it('reports a copy below 50 %', () => {
+    const problem = copyShareProblem({ file: 'k.md', output: firstWords(14), original, path: 'o.md' });
+    expect(problem && formatProblem(problem)).toBe('k.md: conserva el 45 % de su original o.md; por debajo del 50 % es propia: pásala a own');
   });
 });
 
@@ -276,7 +321,8 @@ describe('mergeCopy: el experimento de 7.0.0 a 7.0.1', () => {
   const fixture = (name: string): string => readFileSync(join(repoRoot, 'cli/test/fixtures/copies', name), 'utf8');
 
   it('merges the 7.0.0 experiment into 7.0.1 with its two conflicts', async () => {
-    const { text, conflicts } = await mergeCopy(fixture('sdd-annotated-v7.0.0.md'), fixture('sdd-v7.0.0.md'), fixture('sdd-v7.0.1.md'), ['v7.0.0', 'v7.0.1']);
+    const texts = { kit: fixture('sdd-annotated-v7.0.0.md'), older: fixture('sdd-v7.0.0.md'), newer: fixture('sdd-v7.0.1.md') };
+    const { text, conflicts } = await mergeCopy(texts, ['v7.0.0', 'v7.0.1']);
     expect(conflicts).toBe(2);
     const regions = text.split(/^<<<<<<< kit$/m).slice(1).map((part) => part.split(/^>>>>>>> v7\.0\.1$/m)[0]);
     expect(regions[0]).toContain("- Check for this plan's ledger with `sdd task status`.");
@@ -284,6 +330,13 @@ describe('mergeCopy: el experimento de 7.0.0 a 7.0.1', () => {
     const outside = text.split(/^<<<<<<< kit$[\s\S]*?^>>>>>>> v7\.0\.1$/m).join('');
     for (const block of ['Seven things stop you, and only these', '**Your first message after loading this skill**', 'A scoped re-review takes a cheap-to-mid tier', '`sdd-worktrees` to create one or verify the existing one.'])
       expect(outside).toContain(block);
+  });
+
+  it('keeps the kit frontmatter when the original changes its own', async () => {
+    const older = '---\nname: a\ndescription: old\n---\n\nBody.\n';
+    const newer = '---\nname: a\ndescription: new\n---\n\nBody.\n\nMore.\n';
+    const kit = '---\nname: sdd-a\ndescription: kit\n---\n\nBody.\n';
+    expect(await mergeCopy({ kit, older, newer }, ['v1', 'v2'])).toEqual({ text: `${kit}\nMore.\n`, conflicts: 0 });
   });
 
   it('lists the blocks inside each conflict', () => {

@@ -11,7 +11,7 @@
 │   └── marketplace.json         (marketplace self-hosted, source "./dist")
 ├── dist/                        (lo único que viaja en el plugin: lo genera `moon run kit:build` con `build/dist.ts`; nunca se edita a mano, ADR 0023)
 ├── build/                       (herramientas del repo que no viajan: el build de dist/ y los avisos de terceros desde upstream.json)
-├── upstream.json                (registro de fuentes: cada copia y concepto de otro repo, con su versión y sus rutas; no viaja)
+├── upstream.json                (registro de fuentes: cada fichero de `skills/` como copia, fichero a fichero con su original y sus `from`, o como propia, y cada concepto, con su versión y sus rutas; no viaja)
 ├── skills/                      (fuente de las skills: admite marcas `<!-- kit: … -->`, que el build quita)
 │   ├── using-sdd/SKILL.md          (puerta de entrada: la inyecta el hook SessionStart)
 │   ├── sdd-init/SKILL.md
@@ -27,14 +27,14 @@
 │   ├── sdd-retro/SKILL.md
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
-│   ├── sdd-grilling/SKILL.md      (+ NOTICE: preguntar)
-│   ├── sdd-rubber-duck/SKILL.md   (+ NOTICE: explicar)
+│   ├── sdd-grilling/SKILL.md      (propia: preguntar)
+│   ├── sdd-rubber-duck/SKILL.md   (propia: explicar)
 │   ├── sdd-agent-writing/SKILL.md (+ NOTICE: escribir para agentes)
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje)
 ├── cli/                         (la CLI `sdd`, TypeScript sin build: bin/, src/ por dominio, test/ con Vitest y fixtures/)
 ├── hooks/                       (hooks.json: `sdd hook session-start` inyecta skills/using-sdd/SKILL.md; `session-end` borra temporales; project/: el hook que se copia a cada proyecto y solo cambia con una migración, igual que la ruta de la marca que lee)
 ├── .claude/                     (settings.json del repo y hooks/: kit-session-source.mjs, aviso de skills cargadas fuera de la rama; heredoc-guard.mjs, para el código escrito con heredoc)
-├── tests/                       (evidencia RED/GREEN por skill, fixtures/, headless/ (lanzador de sujetos) y batteries/ (baterías por skill))
+├── tests/                       (evidencia RED/GREEN por skill, fixtures/, headless/ (lanzador de sujetos), batteries/ (baterías por skill), upstream/ (`kit:upstream`) y copies/ (`kit:copies` y `kit:copies-update`: cada copia anotada contra su original))
 └── .docs/
     ├── workflow/                (documentación temprana del flujo: greenfield, brownfield, anexo de evidencia)
     └── sdd/                     (artefactos SDD del propio kit — dogfooding)

@@ -1,11 +1,10 @@
 // Uso: node tests/upstream/check.ts [<ruta de upstream.json>], con SDD_UPSTREAM_DIR apuntando a la carpeta de los clones.
 // El package.json de esta carpeta ("type": "module") evita que Node avise por stderr y ensucie la salida.
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { BuildError } from '../../build/errors.ts';
 import { readRegistry, watchedRefs, type Registry, type Source, type WatchedRef } from '../../build/sources.ts';
 import { git } from '../../cli/src/git/git.ts';
-import { findClones } from './clones.ts';
+import { DEFAULT_REGISTRY, findClones, hasCommit, MISSING_UPSTREAM_DIR, report } from './clones.ts';
 
 interface ParsedTag {
   prefix: string;
@@ -21,8 +20,6 @@ interface SourceClone {
 interface KitRef extends WatchedRef {
   kit: string[];
 }
-
-const DEFAULT_REGISTRY = resolve(import.meta.dirname, '../../upstream.json');
 
 // Prefijo distinto es otra familia de tags (OpenSpec publica `v1.14.1` y `@fission-ai/openspec@1.14.1`); un sufijo es prerelease.
 function parseTag(tag: string): ParsedTag | null {
@@ -55,16 +52,12 @@ async function prepareSource(name: string, source: Source, clone: string): Promi
   return { name, clone, newest };
 }
 
-async function exists(clone: string, revision: string): Promise<boolean> {
-  return (await git(clone, ['cat-file', '-e', revision])).code === 0;
-}
-
 async function checkRef(ref: KitRef, { name, clone, newest }: SourceClone): Promise<string[]> {
-  if (!(await exists(clone, `${ref.version}^{commit}`))) return [`${name}: falta ${ref.version} en el clon ${clone}`];
+  if (!(await hasCommit(clone, ref.version))) return [`${name}: falta ${ref.version} en el clon ${clone}`];
   if (ref.version === newest) return [];
   const where = `${name} · ${ref.kit.join(', ')}`;
   const gone: string[] = [];
-  for (const path of ref.paths) if (!(await exists(clone, `${newest}:${path}`))) gone.push(`${where}: la ruta ${path} no existe en ${newest}`);
+  for (const path of ref.paths) if ((await git(clone, ['cat-file', '-e', `${newest}:${path}`])).code !== 0) gone.push(`${where}: la ruta ${path} no existe en ${newest}`);
   if (gone.length > 0) return gone;
   const diff = await git(clone, ['diff', '--quiet', ref.version, newest, '--', ...ref.paths]);
   if (diff.code === 0) return [];
@@ -89,15 +82,10 @@ async function checkRegistry(registry: Registry, dir: string): Promise<string[]>
   return problems;
 }
 
-function report(lines: string[], code = 1): number {
-  for (const line of lines) console.log(line);
-  return code;
-}
-
 async function main(argv: string[]): Promise<number> {
   const registryPath = argv[0] ?? DEFAULT_REGISTRY;
   const dir = process.env.SDD_UPSTREAM_DIR;
-  if (!dir) return report(['Falta SDD_UPSTREAM_DIR: la carpeta con los clones de las fuentes vigiladas.']);
+  if (!dir) return report([MISSING_UPSTREAM_DIR]);
   if (!existsSync(registryPath)) return report([`Sin el registro de fuentes en ${registryPath}.`]);
   let registry: Registry;
   try {

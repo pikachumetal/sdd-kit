@@ -49,7 +49,7 @@ created: 2026-11-03
 
 ## Review Focus
 
-- Una marca `<!-- kit: … -->` dentro de una valla de la fuente anotada → se copia como texto y no abre bloque, igual que en el build · Task 1, `treats a mark inside a fence as text`
+- Una marca `<!-- kit: … -->` dentro de una valla de la fuente anotada → abre un bloque, y el build la quita igual (enmienda 2026-11-03; antes se copiaba como texto) · Task 5, `reads a mark inside a fence`
 - Dos bloques seguidos que caen en el mismo tramo del original → sus S se concatenan en orden y cuadran juntas con lo quitado · Task 1, `concatenates the cites of two blocks at one site`
 - Un original sin frontmatter (un `references/*.md`) con una fuente anotada sin frontmatter → no se quita nada en ninguno de los lados · Task 1, `compares files without frontmatter`
 - `upstream.json` reescrito por `kit:copies-update` → `JSON.stringify(registro, null, 2)` con salto final, y el resto de entradas queda igual · Task 4, `rewrites only the versions it merged`
@@ -171,7 +171,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
     - `reports an addition next to an absolute`, con `(«only»)`, y `ignores an addition in its own paragraph`;
     - `reports each grammar error`, uno por cada mensaje de «La marca del kit se escribe con su gramática»;
     - `ends a block at the first blank line outside a fence`;
-    - `treats a mark inside a fence as text`;
+    - `treats a mark inside a fence as text` (Task 5 lo pasa a `reads a mark inside a fence`);
     - `concatenates the cites of two blocks at one site`;
     - `reports a de block whose text is not in its fragment`;
     - `appends the fixing row`;
@@ -367,4 +367,4 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
   - `code-reviewer-prompt.md:210`, la ADR 0022 y `checks.mjs` → sin cambio aquí: la 0312 o «se queda». ✓
 - Decisión 12 de la spec (la copia real) → Task 3, Step 3, y Task 5, Step 3, en el walkthrough. ✓
 - Enmienda 2026-11-03 (marcas dentro de una valla; AND nuevo de la gramática; MODIFIED de «La skill que carga el agente sale limpia del build») → Task 5, `strips a whole-line kit mark inside a fenced code block`, `reads a mark inside a fence` y `ends a block inside a fence only at fin`. ✓
-- Review Focus → Task 1, `treats a mark inside a fence as text`, `concatenates the cites of two blocks at one site` y `compares files without frontmatter`; Task 4, `rewrites only the versions it merged`. ✓
+- Review Focus → Task 5, `reads a mark inside a fence`; Task 1, `concatenates the cites of two blocks at one site` y `compares files without frontmatter`; Task 4, `rewrites only the versions it merged`. ✓

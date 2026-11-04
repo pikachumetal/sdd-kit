@@ -50,7 +50,7 @@ Review de spec hecha: dos revisores en paralelo, pedidos por el dev-lead («1»,
 
 ### Decisiones
 
-1. **Partida en dos, con la 0312.** Esta feature construye la maquinaria (cuatro tasks). La 0312 (`parent: 0302`) la aplica a las copias: anota las fuentes, sube con `git merge-file` las copias de superpowers que no cambiaron de 7.0.0 a 7.0.1 y resuelve los §2 y §3 del ticket de la 0300. Sus filas ya están en el roadmap, y 0307 y 0311 van tras la 0312.
+1. **Partida en dos, con la 0312.** Esta feature construye la maquinaria (cuatro tasks). La 0312 (`parent: 0302`) la aplica a las copias: anota las fuentes, sube con `git merge-file` cada copia al último tag de su fuente cuando arranca (hoy superpowers v7.0.2) y resuelve los §2 y §3 del ticket de la 0300, salvo `cli/src/tasks` (0313) y `sdd-grilling` contra sus fuentes (0314). Sus filas ya están en el roadmap, y 0307 y 0311 van tras la 0312.
 2. **La marca.** Es una línea entera, como las que ya quita el build de la 0300, y la leen las mismas funciones de `build/dist.ts`, exportadas (vallas, frontmatter y marca de línea entera):
    - Abre un bloque: `<!-- kit: <tarea>[ · sustituye: «S» | · quita: «S»][ · de: <fuente> <ruta>][ · arregla: <fila>] -->`. `<tarea>` es un id de cuatro cifras (`0186`) o un commit (`4597d47e`).
    - Cierra un bloque: `<!-- kit: fin -->`, la única marca sin tarea. Si no, el bloque acaba en la primera línea en blanco fuera de una valla, o en la marca siguiente. Un cambio a mitad de párrafo necesita `fin`: sin él, el bloque se queda con el resto del párrafo. Un bloque de varios párrafos, también.
@@ -166,7 +166,9 @@ El éxito se mide en un fixture: un borrado sin `quita` y una `sustituye` vieja 
   - `word-budget.test.ts` sobre `dist/`;
   - `THIRD_PARTY_NOTICES.md` y los `NOTICE`, regenerados, y `dist/`, reconstruido.
 - No entra:
-  - anotar las copias, subirlas a 7.0.1, las versiones en el texto y las entradas de mattpocock y `cli/src/tasks`: 0312;
+  - anotar las copias, subirlas al último tag de su fuente (hoy superpowers v7.0.2), las versiones en el texto y las entradas de mattpocock `code-review` y `rubber-duck`: 0312;
+  - portar `cli/src/tasks` a los scripts de superpowers v7.0.2: 0313;
+  - `sdd-grilling` contra `brainstorming` 7.0.2 y `grilling` de mattpocock v1.3.2: 0314;
   - `sdd-implement`: 0296;
   - copia o propia de `sdd-archive` y de las `references/` de `sdd-propose`: 0305 y 0306;
   - OpenSpec de `sdd-verify`: 0297;
@@ -370,6 +372,7 @@ Las comprobaciones son funciones puras sobre texto (la fuente anotada, el origin
 
 ## Enmiendas
 
+- 2026-11-04 — el «No entra» y la decisión 1 apuntan a la 0313 (`cli/src/tasks`) y a la 0314 (`sdd-grilling`), y la 0312 sube cada copia al último tag de su fuente (hoy superpowers v7.0.2), no a la 7.0.1; lo que construye la 0302 no cambia — aplica literal la decisión del dev-lead de la propuesta 0301, «Enmiendas», 2026-11-04 («ok a las cinco, adelante», que trae la sesión `develop` en f76b56d8) — sin aprobar (aplica literal una decisión del dev-lead)
 - 2026-11-03 — una marca vale también dentro de una valla de código: el build la quita y el bloque acaba en `fin` o en la marca siguiente (decisión 2, AND nuevo de «La marca del kit se escribe con su gramática» y `MODIFIED` de «La skill que carga el agente sale limpia del build») — la prueba real de la decisión 12 lo exhibió: en `code-reviewer-prompt.md` todo el prompt de superpowers va en una valla, y en `sdd-parallel-agents` el kit cambia un ejemplo dentro de un ```text; sin la enmienda, esos cambios solo se marcan envolviendo la valla entera en un bloque, y ni el diff ni `git merge-file` ven nada dentro (Task 5) — aprobada: «1» (opción «Apruebo la enmienda: Task 5 al final»)
 
 ## Aprobaciones

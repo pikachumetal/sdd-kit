@@ -1,7 +1,10 @@
-// Los clones de las fuentes en SDD_UPSTREAM_DIR, por repo de GitHub.
+// Lo común de las órdenes que leen las fuentes: los clones de SDD_UPSTREAM_DIR por repo de GitHub, lo que hay en un tag y la salida.
 import { existsSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { git } from '../../cli/src/git/git.ts';
+
+export const DEFAULT_REGISTRY = resolve(import.meta.dirname, '../../upstream.json');
+export const MISSING_UPSTREAM_DIR = 'Falta SDD_UPSTREAM_DIR: la carpeta con los clones de las fuentes vigiladas.';
 
 function repoOfUrl(url: string): string | null {
   const match = /github\.com[/:]([^/\s)]+)\/([^/\s)]+?)(?:\.git)?(?:[)\s]|$)/i.exec(url);
@@ -24,4 +27,18 @@ export async function findClones(dir: string): Promise<Map<string, string>> {
     if (repo) clones.set(repo, path);
   }
   return clones;
+}
+
+export async function showAt(clone: string, version: string, path: string): Promise<string | null> {
+  const result = await git(clone, ['show', `${version}:${path}`]);
+  return result.code === 0 ? result.stdout : null;
+}
+
+export async function hasCommit(clone: string, version: string): Promise<boolean> {
+  return (await git(clone, ['cat-file', '-e', `${version}^{commit}`])).code === 0;
+}
+
+export function report(lines: string[], code = 1): number {
+  for (const line of lines) console.log(line);
+  return code;
 }

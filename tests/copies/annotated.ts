@@ -50,12 +50,12 @@ type Parsed = { fin: true } | { mark: Mark } | { error: string };
 
 const TASK = /^(\d{4}|[0-9a-f]{7,40})$/;
 const FIELD = /^(sustituye|quita|de|arregla): (.*)$/;
-const CONFLICT = /^(<{7}|={7}|>{7})( |$)/;
 const ABSOLUTE = /\b(only|never|always|must|every)\b/i;
 const QUOTE_INSIDE = /[«»]|-->/;
 const ABBREVIATE_AFTER = 6;
 const OVERCITE_RUN = 2;
 const SHINGLE = 6;
+const MIN_KEPT = 50;
 
 const MESSAGES = {
   unmarked: 'texto que no es del original ni está en un bloque del kit',
@@ -73,6 +73,7 @@ const MESSAGES = {
   conflict: 'conflicto de git merge-file sin resolver',
   crlf: 'tiene finales de línea CRLF; la fuente de una copia va en LF',
   notVerbatim: (label: string): string => `no es su original ${label} byte a byte`,
+  ownNow: (kept: number, path: string): string => `conserva el ${kept} % de su original ${path}; por debajo del ${MIN_KEPT} % es propia: pásala a own`,
 };
 
 export function formatProblem(problem: Problem): string {
@@ -172,11 +173,10 @@ class Reader {
   }
 
   private take(line: string, index: number, inText: boolean): void {
-    if (inText && CONFLICT.test(line)) this.problem(index, MESSAGES.conflict);
     if (WHOLE_LINE_MARK.test(line)) return this.takeMark(line, index, !inText);
-    if (!this.open) return void this.result.text.push({ index, text: line });
-    if (inText && line.trim() === '') return this.close(index);
-    this.open.content.push(line);
+    if (!this.open) this.result.text.push({ index, text: line });
+    else if (inText && line.trim() === '') this.close(index);
+    else this.open.content.push(line);
   }
 
   private takeMark(line: string, index: number, fenced: boolean): void {
@@ -184,7 +184,10 @@ class Reader {
     this.close(index - 1);
     const parsed = parseMark(line);
     if ('error' in parsed) return this.problem(index, parsed.error);
-    if ('fin' in parsed) return hadOpen ? undefined : this.problem(index, MESSAGES.orphanEnd);
+    if ('fin' in parsed) {
+      if (!hadOpen) this.problem(index, MESSAGES.orphanEnd);
+      return;
+    }
     this.open = { mark: parsed.mark, index, last: index, content: [], fenced };
     if (parsed.mark.kind === 'quita') this.close(index);
   }
@@ -199,7 +202,7 @@ class Reader {
 
 // LCS clásico; en un empate casa la primera pareja posible, así gana el alineado que casa antes en el original.
 function lcsPairs(a: string[], b: string[]): [number, number][] {
-  const table = Array.from({ length: a.length + 1 }, () => new Uint16Array(b.length + 1));
+  const table = Array.from({ length: a.length + 1 }, () => new Uint32Array(b.length + 1));
   for (let i = a.length - 1; i >= 0; i--)
     for (let j = b.length - 1; j >= 0; j--) table[i][j] = a[i] === b[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);
   const pairs: [number, number][] = [];
@@ -238,8 +241,8 @@ interface Context {
   problems: Problem[];
 }
 
-function report(context: Context, line: number, message: string, fixes?: string): void {
-  context.problems.push({ file: context.input.file, line, message, fixes });
+function report(context: Context, problem: Omit<Problem, 'file'>): void {
+  context.problems.push({ file: context.input.file, ...problem });
 }
 
 function wordOffsets(removedWords: string[]): number[] {
@@ -288,7 +291,10 @@ interface CiteState {
 function checkCite(context: Context, block: KitBlock, state: CiteState): boolean {
   const { mark } = block;
   const cite = mark.cite ?? '';
-  const fail = (message: string): boolean => (report(context, block.index + 1, message, mark.fixes), false);
+  const fail = (message: string): boolean => {
+    report(context, { line: block.index + 1, message, fixes: mark.fixes });
+    return false;
+  };
   if (!citePattern(cite).test(context.original)) return fail(MESSAGES.stale(mark, context.input.label));
   const fragments = fragmentsOf(cite);
   const resaid = MESSAGES.resaid(mark, fragments.length > 1 ? `${fragments[0]}…` : cite, fragments[0]);
@@ -309,7 +315,7 @@ function checkSite(context: Context, site: Site): void {
   const cited = site.blocks.filter((block) => block.mark.cite !== undefined);
   const kept = new Set(lcsPairs(removedWords, contentWords).map(([index]) => index));
   if (cited.length === 0) {
-    if (kept.size < removedWords.length) report(context, site.prior, MESSAGES.missing(strictRemoved(removedWords, kept)));
+    if (kept.size < removedWords.length) report(context, { line: site.prior, message: MESSAGES.missing(strictRemoved(removedWords, kept)) });
     return;
   }
   const state: CiteState = { removedWords, removedText: removedWords.join(' '), kept, covered: new Set(), cursor: 0 };
@@ -317,24 +323,25 @@ function checkSite(context: Context, site: Site): void {
   const uncovered = removedWords.filter((_, index) => !state.covered.has(index));
   if (isSubsequence(uncovered, contentWords)) return;
   const [first] = cited;
-  report(context, first.index + 1, MESSAGES.mismatch(first.mark, strictRemoved(removedWords, kept)), first.mark.fixes);
+  report(context, { line: first.index + 1, message: MESSAGES.mismatch(first.mark, strictRemoved(removedWords, kept)), fixes: first.mark.fixes });
 }
 
 function checkBlock(context: Context, annotated: Annotated, block: KitBlock): void {
   const { mark } = block;
   const line = block.index + 1;
-  if (mark.kind === 'sustituye' && block.content.every((text) => text.trim() === '')) report(context, line, MESSAGES.empty, mark.fixes);
+  if (mark.kind === 'sustituye' && block.content.every((text) => text.trim() === '')) report(context, { line, message: MESSAGES.empty, fixes: mark.fixes });
   if (mark.de !== undefined) checkFragment(context, block);
   if (mark.kind !== 'add' || block.content.length === 0) return;
   const word = absoluteNear(annotated, block);
-  if (word) report(context, line, MESSAGES.absolute(word), mark.fixes);
+  if (word) report(context, { line, message: MESSAGES.absolute(word), fixes: mark.fixes });
 }
 
 function checkFragment(context: Context, block: KitBlock): void {
   const de = block.mark.de ?? '';
   const fragment = context.input.fragments.get(de);
-  if (fragment === undefined) return report(context, block.index + 1, MESSAGES.foreign(de), block.mark.fixes);
-  if (!normalize(fragment).includes(normalize(block.content.join(' ')))) report(context, block.index + 1, MESSAGES.notInFragment(de), block.mark.fixes);
+  const line = block.index + 1;
+  if (fragment === undefined) report(context, { line, message: MESSAGES.foreign(de), fixes: block.mark.fixes });
+  else if (!normalize(fragment).includes(normalize(block.content.join(' ')))) report(context, { line, message: MESSAGES.notInFragment(de), fixes: block.mark.fixes });
 }
 
 function absoluteNear(annotated: Annotated, block: KitBlock): string | undefined {
@@ -397,20 +404,45 @@ const byLine = (a: Problem, b: Problem): number => (a.line ?? 0) - (b.line ?? 0)
 
 export function checkCopy(input: CopyInput): Problem[] {
   if (input.annotated.includes('\r')) return [{ file: input.file, message: MESSAGES.crlf }];
-  const annotated = new Reader(input.file, input.annotated).read();
-  const conflicts = annotated.problems.filter((problem) => problem.message === MESSAGES.conflict);
+  const conflicts = conflictProblems(input.file, lines(input.annotated));
   if (conflicts.length > 0) return conflicts;
+  const annotated = new Reader(input.file, input.annotated).read();
   const original = withoutFrontmatter(lines(input.original.replace(/\r\n/g, '\n')));
   const context: Context = { input, original: normalize(original.join(' ')), problems: [...annotated.problems] };
-  for (const line of unmatchedLines(annotated, original)) report(context, line, MESSAGES.unmarked);
+  for (const line of unmatchedLines(annotated, original)) report(context, { line, message: MESSAGES.unmarked });
   for (const site of sitesOf(annotated, original)) checkSite(context, site);
   for (const block of annotated.blocks) checkBlock(context, annotated, block);
   return context.problems.sort(byLine);
 }
 
-export function checkVerbatim(file: string, kit: string, original: string, label: string): Problem[] {
-  if (kit.includes('\r')) return [{ file, message: MESSAGES.crlf }];
-  return kit === original.replace(/\r\n/g, '\n') ? [] : [{ file, message: MESSAGES.notVerbatim(label) }];
+export function checkVerbatim({ file, annotated, original, label }: Omit<CopyInput, 'fragments'>): Problem[] {
+  if (annotated.includes('\r')) return [{ file, message: MESSAGES.crlf }];
+  return annotated === original.replace(/\r\n/g, '\n') ? [] : [{ file, message: MESSAGES.notVerbatim(label) }];
+}
+
+export function copyShareProblem({ file, output, original, path }: { file: string; output: string; original: string; path: string }): Problem | null {
+  const kept = keptShare(output, original);
+  return kept >= MIN_KEPT ? null : { file, message: MESSAGES.ownNow(kept, path) };
+}
+
+// Los marcadores de git merge-file se buscan en todo el fichero, también en el frontmatter y en una valla: allí no los vería nadie más.
+function conflictProblems(file: string, all: string[]): Problem[] {
+  const problems: Problem[] = [];
+  let open = false;
+  all.forEach((line, index) => {
+    const opens = line.startsWith('<<<<<<< ');
+    const closes = open && line.startsWith('>>>>>>> ');
+    if (opens || closes || (open && line === '=======')) problems.push({ file, line: index + 1, message: MESSAGES.conflict });
+    if (opens) open = true;
+    if (closes) open = false;
+  });
+  return problems;
+}
+
+export function splitFrontmatter(text: string): { front: string; body: string } {
+  const all = text.replace(/\r\n/g, '\n').split(/(?<=\n)/);
+  const close = all[0]?.trimEnd() === '---' ? all.findIndex((line, index) => index > 0 && line.trimEnd() === '---') : -1;
+  return close < 0 ? { front: '', body: all.join('') } : { front: all.slice(0, close + 1).join(''), body: all.slice(close + 1).join('') };
 }
 
 function shingles(text: string): Set<string> {

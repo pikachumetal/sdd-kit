@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'no
 import { join, resolve } from 'node:path';
 import { buildInto } from './dist.ts';
 import { BuildError } from './errors.ts';
-import { readRegistry, watchedRefs, type Entry, type Registry, type Source, type WatchedRef } from './sources.ts';
+import { mergeRefs, readRegistry, watchedRefs, type Entry, type Registry, type Source, type WatchedRef } from './sources.ts';
 
 const NOTICES_FILE = 'THIRD_PARTY_NOTICES.md';
 const SOURCES_HEADING = '## Fuentes';
@@ -47,16 +47,6 @@ function noticeBlock(registry: Registry, ref: WatchedRef): string {
   const source = registry.sources[ref.source];
   const origin = `https://github.com/${source.repo}, ${versionLabel(ref.version)} (${ref.paths.join(', ')})`;
   return `Portions of this skill are adapted from ${origin},\ndistributed under the following license:\n\n${licenseText(ref.source, source)}`;
-}
-
-function mergeRefs(refs: WatchedRef[]): WatchedRef[] {
-  const merged: WatchedRef[] = [];
-  for (const ref of refs) {
-    const same = merged.find((group) => group.source === ref.source && group.version === ref.version);
-    if (!same) merged.push({ ...ref, paths: [...ref.paths] });
-    else same.paths.push(...ref.paths.filter((path) => !same.paths.includes(path)));
-  }
-  return merged;
 }
 
 export function renderNotice(registry: Registry, skillDir: string): string | null {

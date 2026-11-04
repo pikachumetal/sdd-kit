@@ -83,6 +83,16 @@ describe('avisos de terceros desde upstream.json', () => {
     expect(classify(twice, files)).toEqual(['skills/sdd-a/SKILL.md no está clasificado en upstream.json: ponlo en una entrada copy o en own']);
     const pending: Registry = { ...toy, entries: [{ kind: 'copy', source: 'Juguete', version: 'v1.0.0', paths: ['a', 'b'], kit: ['skills/sdd-c/'], pending: '0296' }] };
     expect(classify(pending, ['skills/sdd-c/SKILL.md', 'skills/sdd-c/references/x.md'])).toEqual([]);
+    const overlap: Registry = { ...toy, entries: [...toy.entries, { kind: 'copy', source: 'Otra', version: 'v1.0.0', paths: ['a', 'b'], kit: ['skills/sdd-a/'], pending: '0297' }] };
+    expect(classify(overlap, files)).toEqual([]);
+    const pendingFile: Registry = { ...toy, entries: [{ kind: 'copy', source: 'Juguete', version: 'v1.0.0', paths: ['a'], kit: ['skills/sdd-b/SKILL.md'], pending: '0312' }] };
+    expect(classify(pendingFile, ['skills/sdd-b/SKILL.md'])).toEqual(['skills/sdd-b/SKILL.md no está clasificado en upstream.json: ponlo en una entrada copy o en own']);
+  });
+
+  it('rejects a concept with pending or from', () => {
+    const concept = toy.entries[2];
+    for (const extra of [{ pending: '0312' }, { from: [{ source: 'Otra', version: 'v1.0.0', path: 'x.md' }] }])
+      expect(() => validateRegistry({ ...toy, entries: [{ ...concept, ...extra }] })).toThrow('upstream.json: la entrada 1 es un concepto con pending o from; esos campos son de una copia');
   });
 
   it('every file of skills/ is a copy or own', async () => {
