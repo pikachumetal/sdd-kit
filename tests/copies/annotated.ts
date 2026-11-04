@@ -146,6 +146,15 @@ export function markTask(line: string): string | null {
 
 export const outputOf = (annotated: string): string => stripMarks(annotated, 'fuente anotada');
 
+export function kitBlockLines(file: string, annotated: string): Set<number> {
+  const kit = new Set<number>();
+  for (const block of new Reader(file, annotated).read().blocks) {
+    if (block.mark.kind === 'quita') continue;
+    for (let index = block.index + 1; index <= block.last; index++) kit.add(index);
+  }
+  return kit;
+}
+
 class Reader {
   readonly result: Annotated;
   private readonly file: string;

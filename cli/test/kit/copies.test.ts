@@ -194,6 +194,11 @@ describe('checkCopy: la gramática de la marca', () => {
     expect(check(stranger)).toContain(`${at(stranger, '<!-- kit: 0186')}: el bloque dice de Wondel plugins/x/SKILL.md, que no está en el from de su entrada`);
   });
 
+  it('rejects an include in an annotated copy', () => {
+    const include = withLine('<!-- kit: incluye user-language -->');
+    expect(check(include)).toContain(`${at(include, '<!-- kit: incluye')}: marca del kit sin tarea o con un campo desconocido: incluye user-language`);
+  });
+
   it('ends a block at the first blank line outside a fence', () => {
     const fenced = "<!-- kit: 0186 -->\n```text\nfirst\n\nsecond\n```\n";
     expect(check(replaceLine(BASE, '## Setup\n', `## Setup\n${fenced}`))).toEqual([]);
