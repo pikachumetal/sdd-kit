@@ -52,17 +52,20 @@ Los nueve problemas: (1) el kit pone su frase al lado de la de la fuente (A+C); 
 | 2 | 0300 | Base: fuente intermedia, build, `dist/` con lista blanca, registro único de fuentes y conceptos; ninguna frase cambia | — |
 | 3 | 0302 | Las copias anotadas contra su fuente: diff cubierto, A+C, añadidos junto a absolutas, forma de línea, mapeo de ficheros y actualización con `git merge-file` | 0300, 0303 |
 | 3b | 0312 | Aplicar la maquinaria de la 0302 a las copias: anotarlas, subirlas al último tag de su fuente y resolver los §2 y §3 del ticket de la 0300 | 0302 |
+| 3c | 0315 | `kit:copies` sin bloques que se comen el original, comparación de `dist/` byte a byte, y rojo para los lectores de `skills/` y los `own` con texto de terceros | 0312 |
 | 4 | 0304 | Las comprobaciones de las propias y del tamaño: una regla en un solo sitio, excepciones pegadas, tamaño por skill y por fase | 0300, 0303 |
-| 5 | 0296 | `sdd-implement` partida: puerta propia y dos copias de superpowers 7.0.1 | 0302, 0304 |
-| 6 | 0305 | `sdd-archive` rehecha | 0302, 0304 |
-| 7 | 0306 | `sdd-propose` rehecha, con sus `references/` como copia o propia | 0302, 0304 |
-| 8 | 0307 | `sdd-verify` y `sdd-tdd`: la frase que falla, sustituida | 0302, 0312, 0304 |
+| 5 | 0296 | `sdd-implement` partida: puerta propia y dos copias de superpowers 7.0.1 | 0302, 0304, 0315 |
+| 6 | 0305 | `sdd-archive` rehecha | 0302, 0304, 0315 |
+| 7 | 0306 | `sdd-propose` rehecha, con sus `references/` como copia o propia | 0302, 0304, 0315 |
+| 8 | 0307 | `sdd-verify` y `sdd-tdd`: la frase que falla, sustituida | 0302, 0312, 0304, 0315 |
 | 9 | 0308 | `sdd-roadmap` y `sdd-config`: la frase que falla, sustituida | 0304 |
 | 10 | 0309 | `sdd-templates`: una forma por regla y la fuente única | 0304 |
 | 11 | 0310 | `sdd-init`, `sdd-explore`, `sdd-end-release`, `sdd-feedback` y `add-to-changelog`: la frase que falla, sustituida | 0304 |
 | 12 | 0313 | `cli/src/tasks` al día con los scripts de superpowers 7.0.2 | 0302 |
 | 13 | 0314 | `sdd-grilling` con `brainstorming` de superpowers 7.0.2 | 0302, 0304 |
-| 14 | 0311 | Cierre: las comprobaciones al pre-commit y a la CI, revisar contra el kit nuevo 0297, 0284, 0198 y 0152, y cortar la 3.0.0 | 0296, 0312, 0305, 0306, 0307, 0308, 0309, 0310, 0313, 0314 |
+| 13b | 0316 | Las migraciones de `sdd-upgrade` en inglés | 0304 |
+| 13c | 0317 | El 🦆 del modo corto de `sdd-rubber-duck` nombra solo efectos comprobados | — |
+| 14 | 0311 | Cierre: las comprobaciones al pre-commit y a la CI, revisar contra el kit nuevo 0297, 0284, 0198 y 0152, y cortar la 3.0.0 | 0296, 0312, 0305, 0306, 0307, 0308, 0309, 0310, 0313, 0314, 0315, 0316, 0317 |
 
 ## Acta
 
@@ -74,3 +77,4 @@ No aplica: entrevista (sesión de coordinación `develop`, 2026-11-03).
 - **2026-11-04 — Dos features nuevas en el reparto, por superpowers v7.0.2** (dev-lead, la misma frase). 0313: el port `cli/src/tasks` sigue en v6.4.2, y la 7.0.2 trae `sdd-repo` (el repo del directorio actual, `-C DIR`), los ids `A1`, `6b` y `2.1` en `task-brief` y las rutas de Windows. 0314: `brainstorming` 7.0.2 cambia cómo se pregunta, y la parte de las preguntas del kit vive en `sdd-grilling`, que la 0299 dejó entre las que se quedan. La 0306 compara `spec-writing.md` con `brainstorming` 7.0.2, y la 0309 lleva las alternativas al `## Approach` de la spec. La 0311 va tras las dos nuevas.
 - **2026-11-04 — La 0302 se parte en dos** (dev-lead, 2026-11-03, al arrancarla: «1»; lo registra la sesión `develop` al triar el [ticket de la 0302](../../field-reports/20261104-102149-feature-0302-annotated-copies.md)). Fila 3 del reparto: antes, la 0302 hacía la maquinaria y anotaba las copias; ahora, la 0302 hace la maquinaria (la marca, `kit:copies`, `upstream.json` fichero a fichero y `kit:copies-update`) y la 0312, tras ella, aplica todo a las copias. Ejemplo: `sdd-tdd` anotada contra superpowers v7.0.2 → 0312, no 0302. La 0307 y la 0311 van también tras la 0312.
 - **2026-11-04 — Las references que siguen en castellano se traducen en la fila que reescribe su skill** (dev-lead, 2026-11-04, a la sesión de la 0312: «sí, adelante así y avisa a develop»). Ninguna fila del reparto las nombraba: las features de traducción reescribieron cada `SKILL.md`, y la 0206 movió estas references sin traducirlas. Ahora: `control-profiles.md`, `review-spec.md`, `modo-lite.md` y `nombrado.md` → 0306; `frontend-verification.md` y `commit-milestones.md` de `sdd-implement` → 0296; `encargo-revision.md` y los títulos en castellano de los tres `*-reviewer-prompt.md` de `sdd-verify` → 0307. Antes de cambiar un título se busca en `cli/` y `tests/`. Ejemplo: «## Restricciones de código» de un `*-reviewer-prompt.md` se traduce en la 0307 si ningún literal del CLI ni de un test lo lee. Las plantillas de `sdd-templates` siguen en castellano, porque las lee el equipo.
+- **2026-11-04 — Tres features nuevas en el reparto, del ticket de la 0312 y del inventario de `develop`** (dev-lead: «ok», a la propuesta de triaje de la sesión `develop`). 0315, tras la 0312 y antes de 0296, 0305, 0306 y 0307: `kit:copies` daba por bueno un bloque que se come líneas del original (`sdd-worktrees/SKILL.md:115-121`), la comparación de `dist/` no veía la sangría, un test ejecutaba texto anotado de `skills/` y un `own` no genera `NOTICE`. 0316, tras la 0304: las 16 migraciones de `sdd-upgrade` al inglés, que la 0299 dejó como «se queda» sin mirar el idioma; ejemplo: `migrations/v3.0.0.md`, 84 de 123 líneas en castellano → 0 fuera de las citas y del texto que escribe en el proyecto. 0317: el modo corto de `sdd-rubber-duck`. La 0311 va también tras las tres. La comprobación del castellano en `skills/` la propone la 0304, en curso, al dev-lead en su spec; si la rechaza, va a la 0316.
