@@ -239,7 +239,7 @@ Final: Eje Arquitectura: <sí | no> en el plan · señales en el diff: <each sig
 If the diff crosses one the plan didn't foresee, the axis goes out and you ledger `Final: Ruling: Eje Arquitectura no → sí — <reason> — <cost if wrong>`; `tasks.md` writes it `Arquitectura opus+high, <verdict> (subido: <reason>)`. Never lower a `sí`. Without the line —lite mode, or a plan written before the kit carried it— decide it at dispatch with the same signals, as a ruling.
 
 <!-- kit: 0312 -->
-**Each axis gets its silence watch** (`sdd-implement`, «Every dispatch»). A hung axis is relaunched alone, once, as [Vigía de silencio](../sdd-propose/references/control-profiles.md#vigía-de-silencio) says; the others go on.
+**Each axis gets its silence watch** (`sdd-implement`, «Every dispatch»). A hung axis is relaunched alone, once, as [Vigía de silencio](../sdd-propose/references/control-profiles.md#silence-watch) says; the others go on.
 
 <!-- kit: 0312 -->
 **Read the reports by axis.** A change can pass one axis and fail another: code that follows every standard can implement the wrong thing, and code that does exactly what the spec asked can break the project's conventions. Keep the reports under one heading per axis, as they came; do not merge or rerank findings across axes, because that is how one axis masks another. Re-grading each finding by its effect happens inside its axis ([Closing the review](#closing-the-review)).

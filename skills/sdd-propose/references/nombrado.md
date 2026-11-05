@@ -1,18 +1,28 @@
-## Nombrado de carpetas de spec
+## Naming of spec folders
 
-`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
 
 - Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
-- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
-- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la feature o el patch, o, si no tiene fila, el que reserva `sdd id next --project-root <raíz del proyecto> --reserve`. Sin `--reserve` el script solo propone un id, y otro worktree que calcule a la vez se lleva el mismo. El id reservado es **provisional** hasta que la tarea arranca: antes de crear la carpeta, `sdd id claim --project-root <raíz del proyecto>` lo comprueba contra la integración del remoto y lo publica, y si otro clon ya lo publicó, pasa al siguiente libre y renombra la rama («la 0174 pasa a 0203»). **Nunca el nombre de un módulo** ("M4" no es un id).
-- **La rama lleva el id reservado.** Si al reservar ya estás en una rama `feature/<slug>` sin id (`feature/fix-sala`, la que creó el worktree) y sin commits propios frente a la rama de integración, renómbrala antes del primer commit con `git branch -m feature/<id>-<slug>` y dilo en tu mensaje. Con commits propios no la renombres: avisa y sigue. Nunca renombres la rama de integración ni la estable (`develop`, `main`): si estás en una de ellas, crea `feature/<id>-<slug>`. Sin esta regla, 2 de 2 sujetos del RED reservaron el `0014` y commitearon el fix en `feature/fix-sala` (`tests/sdd-roadmap-red.md`, p8b).
-- Features, patches y propuestas comparten **una sola secuencia**: un id no se repite entre carriles. Una feature partida toma un **id reservado** con `sdd id next --reserve`, con `parent: <id>` en el frontmatter **y su fila propia en el roadmap** — nunca un sufijo tipo `0006a`. Sin esa fila, la relación entre las dos mitades se pierde en cuanto se cierra la sesión.
-- `<slug>`: kebab-case corto descriptivo.
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `tracker`). In `tracker`: the ticket id in the project's tracker, `0000` if there is none. In `sequence`: the id reserved in the roadmap row of the feature or the patch, or, if it has no row, the one `sdd id next --project-root <project root> --reserve` reserves. Without `--reserve` the script only proposes an id, and another worktree computing at the same time takes the same one. The reserved id is **provisional** until the task starts: before creating the folder, `sdd id claim --project-root <project root>` checks it against the remote's integration and publishes it, and if another clone already published it, it moves to the next free one and renames the branch («la 0174 pasa a 0203»). **Never a module's name** ("M4" isn't an id).
+- **The branch carries the reserved id.** If on reserving you're already on a `feature/<slug>` branch without an id (`feature/fix-sala`, the one the worktree created) and without commits of its own against the integration branch, rename it before the first commit with `git branch -m feature/<id>-<slug>` and say so in your message. With commits of its own, don't rename it: warn and go on. Never rename the integration or the stable branch (`develop`, `main`): if you're on one of them, create `feature/<id>-<slug>`. Without this rule, 2 of 2 subjects of the RED reserved `0014` and committed the fix on `feature/fix-sala` (`tests/sdd-roadmap-red.md`, p8b).
+- Features, patches and proposals share **a single sequence**: an id doesn't repeat between lanes. A split feature takes a **reserved id** with `sdd id next --reserve`, with `parent: <id>` in the frontmatter **and its own roadmap row** — never a suffix like `0006a`. Without that row, the relation between the two halves is lost as soon as the session closes.
+- `<slug>`: short descriptive kebab-case.
 
-## Módulos por predicado observable (no preguntes: observa el proyecto)
+## Red flags — STOP
 
-| Si existe… | Entonces… |
+- The folder says `feature-` but the content is a `patch.md`, or the `<id>` is a module instead of a ticket.
+- In `sequence` without a roadmap row, you created the folder before the branch — the branch reserves the id, it goes first.
+- In `sequence`, you created the folder without running `sdd id claim`, or with the id it replaced.
+
+| Rationalization | Reality |
 | --- | --- |
-| `.docs/sdd/estimation.md` | Bloque "Estimación y esfuerzo" obligatorio en `plan.md`, y tiempo real obligatorio en `walkthrough.md` |
-| `.docs/sdd/changelog.md` (2.x) | Entrada vía `add-to-changelog` durante el cierre; con `CHANGELOG.md` en la raíz, la escribe el corte de `sdd-end-release` |
-| `.docs/sdd/architecture.md` | Se lee en el paso 1. Si falta y la feature tiene que crearlo, se calca de `architecture-template.md` de `sdd-templates` |
+| "Without a ticket the id is `0000`; I add a slug to the branch so it doesn't clash with the feature in another worktree" | Seeing the clash and patching it with an improvised slug is the failure: in `sequence` the id comes from the roadmap row or from `sdd id next`, never from a convention invented on the spot. |
+
+## Modules by observable predicate (don't ask: observe the project)
+
+| If it exists… | Then… |
+| --- | --- |
+| `.docs/sdd/estimation.md` | The «Estimación y esfuerzo» block is mandatory in `plan.md`, and real time is mandatory in `walkthrough.md` |
+| `.docs/sdd/changelog.md` (2.x) | An entry through `add-to-changelog` during the closing; with `CHANGELOG.md` at the root, the cut of `sdd-end-release` writes it |
+| `.docs/sdd/architecture.md` | It's read in step 1. If it's missing and the feature has to create it, it's traced from `architecture-template.md` of `sdd-templates` |
