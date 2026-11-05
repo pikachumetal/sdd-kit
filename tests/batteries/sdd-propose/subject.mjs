@@ -21,6 +21,9 @@ const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
 const F28 = '.docs/sdd/specs/20261008-130000-feature-0028-close-notice-pending';
 const F29 = '.docs/sdd/specs/20261008-140000-feature-0029-room-floors';
 const F30 = '.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice';
+const F18 = '.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone';
+const F19 = '.docs/sdd/specs/20261008-170000-feature-0019-manager-marks';
+const FOLDERS = [F10, F11, F13, F18, F19, F28, F29, F30];
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
@@ -194,7 +197,7 @@ const molds = {
 const mold = moldFrom(() => MOLD, s, molds);
 mold();
 // El fallo de a2 y a3: findBooking busca solo por sala, y «cancelar Norte mar» cancela la reserva del lunes.
-if (['a2', 'a3', 'd1', 'p3'].includes(s.SC)) edit('src/app.js', (text) => text.replaceAll('b.room === room && b.day === day && ', 'b.room === room && '));
+if (['a2', 'a3', 'd1', 'p3', 'pr1'].includes(s.SC)) edit('src/app.js', (text) => text.replaceAll('b.room === room && b.day === day && ', 'b.room === room && '));
 s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');
 if (MOLD !== 'reservas-main') s.git('checkout', '-q', '-b', 'develop');
@@ -343,20 +346,34 @@ steps.pw1 = () => {
   branch('feature/0017-saturday-note');
   s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 };
+const reviewSpec = (folder, fixture) => () => {
+  branch(`feature/${folder.split('-feature-')[1]}`);
+  s.put(`${folder}/spec.md`, readFileSync(join(FIX, fixture), 'utf8'));
+};
+steps.rv1 = reviewSpec(F11, 'spec-0011-review.md');
+steps.rv2 = reviewSpec(F18, 'spec-0018-small.md');
+// Con --setting-sources "" no llega ningún CLAUDE.md: la instrucción de confirmar va por el system prompt.
+steps.rv3 = () => {
+  steps.rv1();
+  s.env.APPEND_SYSTEM = 'Antes de paralelizar subagentes, pide confirmación con el modelo de cada uno.';
+};
+steps.lr1 = reviewSpec(F19, 'spec-0019-lite.md');
+steps.rr1 = reviewSpec(F11, 'spec-0011-round1.md');
+steps.pr1 = () => (s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.');
 steps[s.SC]?.();
 
-const turns = { g1: '40', r1: '15', d1: '60', p3: '60' };
+const turns = { g1: '40', r1: '15', d1: '60', p3: '60', pr1: '70' };
 for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);
 for (const kept of ['spec', 'plan', 'tasks']) {
-  for (const folder of [F10, F11, F13, F28, F29, F30]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
+  for (const folder of FOLDERS) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
 }
 // Las carpetas del molde y de los fixtures son de 2026-10-08 o antes: la que crea el sujeto es la de fecha mayor.
 const specs = at('.docs/sdd/specs');
 const newest = existsSync(specs) ? readdirSync(specs).sort().at(-1) : undefined;
-const ours = [F10, F11, F13, F28, F29, F30].map((folder) => folder.split('/').at(-1));
+const ours = FOLDERS.map((folder) => folder.split('/').at(-1));
 if (newest && !ours.includes(newest) && !/task-000|patch-0007/.test(newest)) {
   for (const [file, name] of [['spec.md', 'spec-new.md'], ['patch.md', 'patch-new.md'], ['plan.md', 'plan-new.md']]) {
     if (existsSync(join(specs, newest, file))) s.keep(join(specs, newest, file), name);

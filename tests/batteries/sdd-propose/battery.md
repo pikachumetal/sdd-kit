@@ -68,6 +68,12 @@ Una pregunta cuenta si el sujeto la hace en prosa con sus opciones.
 | co6 | coherence-steps | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0030 está escrita. Termina el paso 4 y preséntamela para aprobar. | reservas-retira | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0281: ticket de la feature 0206 §4 (requisitos que citan «paso 2» a secas de la skill retirada) |
 | pw1 | patch-budget | Arranca este cambio con sdd-propose, carril patch: docs/guia.md añade la línea «Nota de conserjería: los sábados las salas cierran a las 14:00, así que no reserves después de esa hora.» Perfil delegate. | reservas-tope-justo | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0264: ticket del patch 0170 §3 |
 | sr1 | spec-review | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0011 está escrita en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`, con la pasada de coherencia hecha; la rúbrica de review-spec da cuatro señales y he aceptado la review de dos revisores, el de dominio en Sonnet. Despacha la review. | reservas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0166: humo de `sdd-parallel-agents` desde `review-spec.md` |
+| rv1 | spec-review | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0011 está escrita en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`, con la pasada de coherencia hecha. Termina el paso 4 y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0306: la rúbrica da «ninguna» o la pregunta, y el revisor que pide el dev-lead encuentra Críticos (fila de deuda de la rúbrica de review de spec, seis casos) |
+| rv2 | spec-review | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0018 está escrita en `.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone/spec.md`, con la pasada de coherencia hecha. Termina el paso 4 y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0306: un Scope pequeño sin contrato ni `MODIFIED` baja a un revisor, nunca a ninguno |
+| rv3 | spec-review | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0011 está escrita en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`, con la pasada de coherencia hecha. Termina el paso 4 y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0306: con instrucciones que piden confirmar antes de paralelizar y la spec sin delegar, una sola pregunta con los dos revisores, sus modelos y su coste |
+| lr1 | spec-review | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec lite de la 0019 está escrita en `.docs/sdd/specs/20261008-170000-feature-0019-manager-marks/spec.md`, con la pasada de coherencia hecha. Termina el paso 4 y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0306: «lite y patch minimo tendriamos que levantar uno en sonnet» (dev-lead, 2026-11-04), con un rol en la spec |
+| rr1 | spec-review | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0011 está escrita en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`, y la review de dos revisores ya volvió: sus hallazgos están incorporados en la spec. Termina el paso 4 y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0306: tras una mala review falla el arreglo, que nadie vuelve a mirar (segunda ronda tras un Crítico aceptado) |
+| pr1 | patch-review | patch: si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0306: el patch lleva un revisor en Sonnet antes del commit del fix (dev-lead, 2026-11-04) |
 | f1 | handoff | Añade un motivo al cancelar una reserva, de una lista: cambio de planes, sala ocupada, otro. Apruebo la spec por delegación; cuando tengas el commit de la Task 1, para. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0206: la feature, de propose a implement sin skill intermedia |
 
 ## Rúbrica
@@ -130,6 +136,20 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | CR3 Molde grande sin abrir | cr3 | §4 lleva ✓ en «sin lista de pendientes» sin haber listado `mold-cierre` entero, carpetas ocultas incluidas (`tools`), o sin avisar de `.docs/sdd/pendientes.md` |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 | SR1 Paralelo | sr1 | no carga `sdd-parallel-agents`; los dos `Agent` de la review no salen en la misma respuesta; o alguno va sin `model` o sin `subagent_type: sdd-kit:effort-medium` |
+| RV-A Dos revisores sin preguntar | rv1 | `tools: />>> Agent: subagent_type=sdd-kit:effort-medium model=opus/` ausente |
+| RV-B Técnico en Sonnet | rv1 | `tools: />>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet/` ausente |
+| RV-C Sin pregunta de activar | rv1 | el mensaje pregunta si se hace la review, o qué nivel, antes de despacharla; o el bloque del ✋ no cita una sección o un valor de la spec 0011 |
+| RV2 Un revisor | rv2 | `tools: />>> Agent: subagent_type=sdd-kit:effort-medium/` ausente |
+| RV2-B Solo uno | rv2 | despacha dos revisores |
+| RV3 Sin despachar | rv3 | `tools: />>> Agent/` presente |
+| RV3-B Pregunta con modelos y coste | rv3 | el último mensaje no pregunta por los dos revisores con el modelo de cada uno y su coste |
+| LR1 Lite en Sonnet | lr1 | `tools: />>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet/` ausente |
+| LR1-B Sin Opus | lr1 | `tools: />>> Agent: [^\n]*model=opus/` presente |
+| RR1 Segunda ronda | rr1 | `tools: />>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet/` ausente |
+| RR1-B Un solo revisor | rr1 | despacha dos revisores o uno en Opus |
+| PR1 Revisor antes del commit | pr1 | `tools: /git commit/ antes de />>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet/` |
+| PR1-B Hallazgos respondidos | pr1 | `patch-new.md` §4 no responde los hallazgos del revisor, uno a uno |
+| PR1-C Sin revisión final | pr1 | `tools: /Skill: sdd-kit:sdd-verify/` presente |
 | F1-C Aviso de fase | f1 | los mensajes no abren con `Ahora: … Queda: …` al cambiar de paso |
 | F1-A Sin skill intermedia | f1 | `tools: /Skill: sdd-kit:sdd-start-/` presente |
 | F1-B Entrega a implement | f1 | `tools: /Skill: sdd-kit:sdd-implement/` ausente |
