@@ -26,7 +26,7 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-roadmap': { skillMd: 3600, total: 3600 },
   'sdd-rubber-duck': { skillMd: 600, total: 600 },
   'sdd-propose': { skillMd: 5250, total: 14200 },
-  'sdd-implement': { skillMd: 9483, total: 17740 },
+  'sdd-implement': { skillMd: 2659, total: 6659 },
   'sdd-implement-native': { skillMd: 3085, total: 3085 },
   'sdd-implement-subagent': { skillMd: 2991, total: 9000 },
   'sdd-verify': { skillMd: 3060, total: 9120 },
