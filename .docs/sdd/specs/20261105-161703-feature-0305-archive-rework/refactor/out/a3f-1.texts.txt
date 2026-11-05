@@ -1,0 +1,81 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [9]
+El `cd` anterior me dejó en el directorio del kit, así que esa salida de `git log` no es de la 0010. Vuelvo al repo del proyecto.
+
+--- [36]
+### Finding Verdicts (ninguno abierto: di «ninguno»)
+Ninguno. La revisión final sobre `6d97b60` no dejó hallazgos abiertos.
+
+### New Breakage in the Fix Diff (severidad y file:line, o «None»)
+
+1. **Important** en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. El Ruling de la Task 2 cambia el gate de cierre que fija el plan (`plan.md`, §3: `node --test`) por `node --test --test-concurrency=1`. Lo justifica con «la carrera de los tests sobre el almacén compartido en memoria», y ese diagnóstico no se sostiene por tres razones:
+   - `node --test` ejecuta cada fichero en su propio subproceso, así que el array `bookings` de `src/app.js:4` no se comparte entre ficheros. Dentro de `test/cancel.test.js` los tests ya corren en orden. Limitar la concurrencia entre ficheros no corrige ninguna carrera.
+   - El único almacén compartido de la suite es otro y está en disco: `test/ids.test.js:7` escribe en `<git-common-dir>/ids-store`. Ese test falla con TypeError cuando el fichero no existe (`id` queda `undefined` en `test/ids.test.js:10-12`), y eso ocurre con cualquier concurrencia. En este repo el gate sale verde porque `.git/ids-store` ya existe de una ejecución anterior (fecha 21:35).
+   - «Coste si es erróneo: la suite tarda el doble» también es falso. Si el Ruling está mal, el coste real es un gate verde por una razón que no es la que se registra, y una deuda («aislar el almacén por test») que apunta al sitio equivocado.
+
+   El Ruling tampoco viene con una enmienda del plan, así que el registro del gate que leerá el cierre no cuadra con el plan aprobado.
+
+2. **Minor** en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. La fila de la Task 1 apunta a `6d97b60`, pero esa task se hizo en `41cd12a` («feat(bookings): cancelar con un motivo de la lista»). `6d97b60` es el commit de la Task 2. La trazabilidad de tasks.md queda mal.
+
+El resto de tasks.md (la línea 13 de la revisión final y el texto en castellano) cuadra con el brief.
+
+### Out-of-Scope Observations
+- `test/ids.test.js:7-12` (commit `500ffa1`, anterior a la feature): el test depende del estado. Falla en el primer run de un clon limpio y pasa en los siguientes. Además escribe en el git-common-dir, que comparten todos los worktrees, así que conviene llevarlo a deuda.
+- La spec pide que «sin `--motivo` responde lo mismo», y `test/cancel.test.js` no lo cubre. Por lectura, `src/app.js:14-20` sí devuelve el mensaje correcto, porque `reasonOf` da `undefined` y `includes` da false.
+- `test/cancel.test.js:13-15` depende de que el test de la línea 5 corra antes, porque comparte el `bookings` del módulo. Hoy funciona porque los tests de un fichero corren en orden.
+- `spec.md`: la lista «Decisiones que he tomado yo» salta del 1 al 3. Es cosmético.
+
+### Verdict — **Fix round:** Findings remain open
+El tramo `6d97b60..11fbc37` mete un Important nuevo: el Ruling de `tasks.md:17` cambia el gate del plan apoyándose en un diagnóstico falso y oculta que `test/ids.test.js` falla en limpio. Hay que corregir o retirar el Ruling (y enmendar el plan si el gate cambia de verdad) y la fila de `tasks.md:10` antes del cierre.
+
+--- [41]
+Corrijo `tasks.md`: la fila de la Task 1, el Ruling y la línea de la re-revisión.
+
+--- [47]
+Ahora el roadmap, el changelog y el walkthrough.
+
+--- [55]
+Hago el commit de cierre, juntando `11fbc37` con el cierre a partir de la última task, y luego sincronizo con la base.
+
+--- [58]
+La base está al día, así que no hay merge de sincronización. Fusiono con el bloque `merge` del proyecto (`develop`, `--no-ff`, sin push).
+
+--- [60]
+🦆 Ahora `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- **Gate de cierre:** el Ruling de la ejecución cambió el gate a `node --test --test-concurrency=1` por una supuesta carrera. Lo retiré en el cierre y el gate vuelve al del plan, `node --test`. Cada fichero de test ya corre en su propio proceso, y el flag no cambiaba ningún resultado.
+- **`tasks.md`:** corregí la fila de la Task 1 (`6d97b60` → `41cd12a`), que es el commit donde se hizo.
+- **Merge sobre un rojo previo:** fusioné con un test que falla la primera vez en un clon limpio de `develop`. Es `test/ids.test.js`, del commit `500ffa1`, anterior a la rama, que depende de un fichero de estado en `.git`. Si prefieres no fusionar sobre eso, `develop` estaba en `500ffa1` y el cierre se deshace con `git branch -f develop 500ffa1`.
+
+**Smoke que he corrido** (los cuatro con ejecución real):
+
+| THEN | Resultado |
+| --- | --- |
+| cancelar con motivo de la lista | `cancelada Norte lun (sala ocupada)` |
+| motivo fuera de la lista (`me aburro`) | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` | el mismo mensaje (sin test en la suite, lo cubre este smoke) |
+| `canceladas` tras cancelar, en el mismo proceso | `Norte lun — sala ocupada` |
+
+**Suites:** `node --test` da 6/6 sobre el commit de cierre `ef051f2`, en unos 1,3 s. La primera pasada dio 5/6 por `ids.test.js`. Pasa a la segunda porque ya existe el estado que crea la primera. En un clon limpio de `develop` el comportamiento es el mismo: falla la primera vez y pasa la segunda.
+
+**Sin probar:** `canceladas` desde otro proceso. El almacén vive en memoria, así que `node src/app.js canceladas` en una ejecución aparte sale vacío. Eso ya lo recoge el ítem 0014 del roadmap.
+
+**Pendiente y avisos**
+
+- **Re-revisión:** la revisión final cubría `6d97b60`, y `HEAD` había avanzado con un commit solo de documentación, `11fbc37`. La skill pide en ese caso una única re-revisión de ese tramo, y su Important y su Minor son las dos correcciones de `tasks.md` de arriba.
+- **Deuda nueva en el roadmap:**
+  - `ids.test.js` falla la primera vez en un clon limpio.
+  - El test de `canceladas` depende de que antes corra el de `cancelar`.
+- **Retro:** `error que cazaría un chequeo` → test hermético para `ids.test.js`, en la deuda del roadmap.
+- **`roadmap check`:** da 2 fallos en líneas que no escribí: la cabecera de «Deuda técnica» y el título de la release v0.3.0. Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- **Versión del kit:** esta sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Push:** no hecho, `merge.push` no lo autoriza.
+
+No he ofrecido el ticket de mejora del kit: la retro no dejó ninguna línea `→ ticket del kit`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`c5f1246`) · push: no hecho: `merge.push` no lo autoriza · puedes borrar el worktree `<run>/repo`
+

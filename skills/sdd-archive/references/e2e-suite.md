@@ -37,5 +37,4 @@ Tanda: <tests nuevos o cambiados> ×<N> + <los demás de esos ficheros> ×1 = <e
 | "The server answers, so the environment is up" | It answers with someone else's code or data. Raise it yourself, then check. |
 | "Three reds after the change: let me read the code" | With a server you didn't raise, the code is the last suspect. Raise the environment and pass again first. |
 | "The README trick is faster and gives the same result" | Same on this machine, today. The gate is what the project declared; a switch hides the race. |
-| "It was already over the budget before this branch" | Then the debt row is overdue. Open it. |
 | "The branch touches both spec files, so I repeat both ×3" | Repeat what the branch changed against `merge.into` ×N and the rest ×1, after the `Tanda:` line. |

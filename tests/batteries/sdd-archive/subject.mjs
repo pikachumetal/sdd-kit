@@ -261,7 +261,7 @@ function validated0010() {
   const head = short('HEAD');
   s.put(`${F10}/walkthrough.md`, ['# Walkthrough — Motivo al cancelar', '', '## 4. Verificación', '', '### 4.1 Builds', '',
     `- Suite completa: \`${FILTERED_GATE}\` → verde, 1 s, sobre ${head}`, '',
-    `Validación en campo: 2026-10-26 · smoke por THEN (\`node src/app.js cancelar Norte lun --motivo sala-ocupada\`) y suite en verde sobre ${head}`, ''].join('\n'));
+    `Validación en campo: 2026-10-26 · smoke por THEN (\`node src/app.js cancelar Norte lun --motivo "sala ocupada"\`) y suite en verde sobre ${head}`, ''].join('\n'));
 }
 // Tras la validación, develop gana la 0015, que solo cambia el test de las salas.
 function developRoomsTest() {
@@ -331,14 +331,21 @@ function ghFake(reply) {
 const ghRun = (conclusion, rev) => ({ stdout: `${JSON.stringify([{ conclusion, headSha: s.git('rev-parse', rev).trim() }])}\n` });
 const GH_LOGGED_IN = { stdout: 'github.com\n  ✓ Logged in to github.com account fake (keyring)\n' };
 const pushAllowed = () => (MARKER = MARKER.replace('"push": false', '"push": true'));
-// El push por SSH falla con publickey; pasa solo con el token de gh en el entorno, que el transporte local deja ver al pre-receive.
-const PUBLICKEY_HOOK = '#!/bin/sh\nif [ "$GIT_CONFIG_KEY_1" = "credential.helper" ]; then exit 0; fi\necho "git@github.com: Permission denied (publickey)." >&2\nexit 1\n';
 const BARE = join(s.RUN, 'origin.git');
+const GITHUB_URL = 'git@github.com:fake/reservas.git';
+// Un ssh falso: el fetch llega a la carpeta; el push falla con publickey salvo con el token de gh en el entorno del relanzamiento.
+const fakeSsh = (bare) => `#!/bin/sh\nfor a; do cmd="$a"; done\ncase "$cmd" in git-upload-pack*) exec git upload-pack "${bare}" ;; esac\nfor k in "$GIT_CONFIG_KEY_0" "$GIT_CONFIG_KEY_1" "$GIT_CONFIG_KEY_2"; do [ "$k" = "credential.helper" ] && exec git receive-pack "${bare}"; done\necho "git@github.com: Permission denied (publickey)." >&2\nexit 255\n`;
+// El remoto se ve como github.com en `git remote -v`. El insteadOf deja la URL igual y gana al del relanzamiento por más largo: el push sigue por el ssh falso, sin red.
 function publickeyRemote() {
+  const bare = BARE.replaceAll('\\', '/');
   s.git('init', '-q', '--bare', BARE);
-  s.git('remote', 'add', 'origin', BARE);
-  s.git('push', '-q', 'origin', 'main', 'develop');
-  writeFileSync(join(BARE, 'hooks', 'pre-receive'), PUBLICKEY_HOOK, { mode: 0o755 });
+  s.git('push', '-q', bare, 'main', 'develop');
+  s.git('remote', 'add', 'origin', GITHUB_URL);
+  s.git('config', `url.${GITHUB_URL}.insteadOf`, GITHUB_URL);
+  s.git('fetch', '-q', bare, '+refs/heads/*:refs/remotes/origin/*');
+  const ssh = join(s.RUN, 'ssh.sh');
+  writeFileSync(ssh, fakeSsh(bare), { mode: 0o755 });
+  s.env.GIT_SSH_COMMAND = `sh ${ssh.replaceAll('\\', '/')}`;
 }
 const GH_LOGGED_OUT = { stderr: 'To get started with GitHub CLI, please run:  gh auth login\nAlternatively, populate the GH_TOKEN environment variable with a GitHub API authentication token.\n', code: 4 };
 // Tras la CI, develop gana un cambio de código: el último verde de la CI ya no es del HEAD.

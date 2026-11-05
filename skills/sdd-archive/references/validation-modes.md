@@ -4,7 +4,7 @@ Step 1 of `sdd-archive`.
 
 ## With `validation.mode: field`
 
-You run your smoke and the suite ([closing-suite.md](closing-suite.md)) and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with an example with data>` and `**✋ Me salí del plan en…**`, with the rulings or «nada». If the user does say what they tried, the line is `Validado` with their words. «El kit no define ese valor, no voy a suponer» doesn't hold: this section defines it.
+You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with an example with data>` and `**✋ Me salí del plan en…**`, with the rulings or «nada». If the user does say what they tried, the line is `Validado` with their words. «El kit no define ese valor, no voy a suponer» doesn't hold: this section defines it.
 
 ## With `Validación: agente`
 

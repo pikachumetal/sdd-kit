@@ -1,0 +1,128 @@
+--- [3]
+Empiezo por las comprobaciones previas del paso 0.
+
+--- [17]
+Confirmado: `0bc7a71` cambia una línea de lógica y además convierte `src/app.js` de CRLF a LF, sin que nadie lo pidiera. Creo el worktree desanclado y el paquete del diff para el re-revisor.
+
+--- [19]
+Despacho la re-revisión en segundo plano (`sdd-kit:effort-high` + opus), con su vigía de silencio.
+
+--- [25]
+Paro aquí hasta que vuelva la re-revisión, porque el pre-check 6 prohíbe escribir ningún registro antes.
+
+**Estado del cierre de la 0010** (sigo en el paso 0):
+
+- **Árbol limpio.** `sdd merge --check` da «listo»: `develop` irá en un worktree temporal.
+- **Ramas abiertas a la vez:** ninguna. El único worktree es este.
+- **Spec:** `status: approved`, firmada por Laura, modo `full`.
+- **Revisión final:** no está limpia sobre `HEAD`, aunque la tuya sí lo estaba.
+  - Se hizo sobre `7e3f48f` (Spec y Código limpias).
+  - Después entró `0bc7a71`, el `?.trim()` sobre el motivo, sin revisar. Es un cambio de comportamiento, así que no encaja en la excepción de lo que se deja pasar.
+  - Ese commit también convierte todo `src/app.js` de CRLF a LF, 48 líneas de ruido que nadie pidió. Se lo he señalado al re-revisor.
+- **Re-revisión única de `7e3f48f..6381509`:** lanzada en segundo plano (`sdd-kit:effort-high` + opus) con su vigía de silencio. No sé aún qué dirá.
+
+Cuando vuelva, seguiré con la validación en `field`: la hago yo, con mi smoke y la suite. Después vienen el walkthrough, el delta de `bookings`, el roadmap, el commit de cierre y el merge a `develop` con el bloque `merge`.
+
+Dos avisos:
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Actualízalo con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Ruling del gate:** `node --test --test-concurrency=1` es un workaround sin fila de deuda. Lo tendré en cuenta en el paso de documentación viva.
+
+--- [32]
+## Finding Verdicts
+
+No había findings abiertos de la revisión final sobre `7e3f48f`, así que no hay nada que dictaminar.
+
+## New Breakage in the Fix Diff
+
+**Important: el `trim` nuevo no tiene ningún test, y se incumple la constitución.** El cambio está en `src/app.js:16`:
+```js
+return index === -1 ? undefined : params[index + 1]?.trim();
+```
+`0bc7a71` solo toca `src/app.js` y no añade ningún test. En `test/cancel.test.js` hay tres tests y todos pasan el motivo sin espacios (`'sala ocupada'`, `'me aburro'`), así que ninguno distingue el código anterior del nuevo. Si se quita el `trim`, la suite sigue en verde. La constitución dice en su punto 2: «Tests antes que código». Un `fix` que cambia el comportamiento sin un test RED que lo fije la incumple. Falta un caso del estilo `run('cancelar', ['Norte', 'lun', '--motivo', ' sala ocupada '])` → `'cancelada Norte lun (sala ocupada)'`, en el que se compruebe también que el motivo se guarda sin espacios (`canceladas` → `Norte lun — sala ocupada`).
+
+**Minor: el paso de CRLF a LF en todo `src/app.js` es ruido accidental, aunque no rompe nada.** Lo que he comprobado:
+- No hay `.gitattributes` ni `.editorconfig`, y `core.autocrlf=true` tanto en el gitconfig del sistema como en el global.
+- `git ls-files --eol` muestra que todos los ficheros de código y test del repo están en el índice como `i/crlf`. Solo `src/app.js` ha quedado como `i/lf`.
+- El commit no tiene mensaje que explique el cambio (el cuerpo es el texto de relleno «Cuerpo del commit.»). Por todo esto es un efecto colateral de la herramienta o de la normalización de autocrlf al reescribir el fichero, no algo buscado.
+- Funcionalmente no hace nada. A Node le dan igual los finales de línea, la copia de trabajo sigue en CRLF con `autocrlf=true`, y la única diferencia de contenido es la línea 16.
+- Lo que sí cuesta: el diff crudo reescribe las 48 líneas del fichero (que son todas), `git blame` atribuye el fichero entero a `0bc7a71`, y el índice deja de ser coherente con el resto del repo, así que la próxima vez que se edite otro fichero puede pasar lo mismo.
+
+Lo recomendable es devolver el fichero a CRLF para que el diff quede en una línea, o fijar la política de finales de línea con un `.gitattributes`, en un commit aparte.
+
+**Comprobaciones pedidas, sin rotura:**
+1. **La lista cerrada sigue validándose.** `cancelBooking` sigue comprobando `reasons.includes(reason)` (`src/app.js:20`) contra los tres motivos de la lista. El `trim` solo quita espacios por los lados, no acepta valores nuevos: «me aburro» sigue dando «motivo no válido: …». El motivo que se guarda en `booking.reason` (`src/app.js:24`) es el que ya se ha recortado, así que `canceladas` lo enseña limpio.
+2. **Sin `--motivo`:** `indexOf` da `-1` → `undefined` → «motivo no válido: …». No cambia nada.
+3. **Con `--motivo` sin valor:** `params[index + 1]` es `undefined` y `?.trim()` devuelve `undefined` sin lanzar un `TypeError`, así que sigue dando «motivo no válido: …». Un valor vacío o solo de espacios (`""`, `"  "`) se queda en `""` → no válido. Correcto, aunque tampoco esto lo cubre ningún test.
+4. **No contradice la spec.** La spec no dice nada de espacios. Aceptar `" sala ocupada "` como «sala ocupada» es una lectura razonable de la lista cerrada, pero es comportamiento nuevo que no aparece en el delta. Conviene recogerlo en «Enmiendas» o en el walkthrough como normalización (ver abajo). Los textos de la interfaz siguen en castellano.
+
+## Out-of-Scope Observations
+
+- **Escenario de la spec sin test.** El escenario «sin `--motivo` responde lo mismo» (spec, Delta, ADDED 1) no tiene test en `test/cancel.test.js`, y tampoco el de `--motivo` sin valor. Es anterior a este rango: la revisión final lo dio por limpio y no lo es del todo.
+- **Tests que dependen del orden.** El tercer test de `test/cancel.test.js` (`canceladas`) solo pasa si el primero ya ha cancelado Norte lun, porque comparten el almacén en memoria. Esto encaja con el ruling de `--test-concurrency=1` de `tasks.md`.
+- **Gate de cierre distinto en dos sitios.** El gate de `plan.md` sigue siendo `node --test`, pero el ruling de `tasks.md` dice `node --test --test-concurrency=1`.
+- **El walkthrough en borrador describe mal `0bc7a71`.** Lo llama «Arreglo de la validación», pero la validación no cambia: lo que se añade es una normalización del motivo antes de validar.
+- **Mensaje de `0bc7a71`.** El cuerpo es el texto de relleno «Cuerpo del commit.».
+
+## Verdict
+
+**No se puede cerrar todavía, por un finding Important.** `0bc7a71` no rompe la validación de la lista cerrada, ni el caso sin `--motivo`, ni el de `--motivo` sin valor, y no contradice la spec. Pero el comportamiento nuevo (`trim`) no tiene ningún test que lo fije (Important, `src/app.js:16`), y el paso a LF de todo el fichero es ruido accidental (Minor). Antes de cerrar hace falta un test que cubra el motivo con espacios. Además, conviene devolver `src/app.js` a CRLF (o definir un `.gitattributes`) y recoger la normalización en la spec o en el walkthrough.
+
+--- [34]
+La re-revisión devuelve un hallazgo Important: el `trim` no tiene test. Hago el único pase de arreglo. Primero paro el vigía y retiro el worktree de revisión, y miro los tests.
+
+--- [41]
+RED y GREEN se ven bien, pero el resumen de la suite no salió en mi filtro. Lo compruebo con la salida real antes de commitear.
+
+--- [43]
+Suite verde: 6 de 6. Commiteo el pase de arreglo y registro la re-revisión en `tasks.md`.
+
+--- [46]
+El pase de arreglo está commiteado y la re-revisión anotada. Sigo con el paso 1, la validación. Con `validation.mode: field` la hago yo, así que leo cómo se hace y cómo corre la suite.
+
+--- [49]
+Leo los THEN de la spec y cómo declara el proyecto su gate, para montar el smoke.
+
+--- [52]
+Hago el smoke con ejecución real. El almacén vive en memoria de cada proceso, así que encadeno los comandos en un solo proceso y guardo la salida completa en un fichero.
+
+--- [61]
+Ejecuto el delta de capacidad y compruebo ADR y roadmap.
+
+--- [67]
+Ahora la retro del paso 3, que deja su línea `Retro:` en el §5 del walkthrough.
+
+--- [79]
+`roadmap.md` vuelve a diferir solo en 5 líneas. Ahora la entrada del changelog, que en la forma 2.x va por `add-to-changelog`.
+
+--- [82]
+Sigo el formato de la skill (`- **<id>** — frase. → [ref](…)`), con el enlace relativo al changelog. Inserto la línea al final de «Added» de `[Unreleased]` sin tocar los finales CRLF.
+
+--- [97]
+🦆 Cancelar una reserva ahora exige un motivo de una lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lo lista como «Norte lun — sala ocupada». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+- **Gate con `--test-concurrency=1`.** El plan dice `node --test`. La task 2 lo serializó porque los tests comparten el almacén en memoria. Si fue un error, la suite tarda el doble. Está en el roadmap como deuda.
+- **`trim` del motivo.** Un commit anterior a mi cierre hace que `--motivo " otro "` se acepte, y la spec no dice nada de espacios. No lo he metido en la spec ni en `capabilities/bookings.md`: lo decide el dev-lead. Puede aprobarlo con una enmienda o pedir que se quite.
+
+**Qué pasó en el cierre**
+- La revisión final cubría `7e3f48f`, pero después entró ese `trim` sin revisar. Lancé la única re-revisión (opus + effort high) del tramo posterior.
+  - Important: el `trim` no tenía test. Añadí uno en RED→GREEN.
+  - Minor: el commit había pasado `src/app.js` de CRLF a LF por accidente. Lo devolví a CRLF.
+- Yo mismo hice lo mismo con `roadmap.md` al editarlo con `sed`. Lo detecté en el diff y lo corregí antes de commitear.
+- Validé yo, como manda `validation.mode: field`: smoke con ejecución real de los 4 THEN y suite 6/6. El dev-lead no lo ha probado.
+- Gate: `node --test --test-concurrency=1` → suite: corrió 6/6, sobre `0b4e4e5`.
+- Cierre en el repo:
+  - Un solo commit de cierre sobre `7e3f48f`.
+  - Capacidad `bookings` creada con `capability merge`.
+  - Entrada en el changelog, fila 0010 en ✅ y tres filas de deuda (tests acoplados, tests que faltan para «sin `--motivo`» y «`--motivo` sin valor», política de finales de línea).
+  - `Retro:` con una señal: un chequeo de finales de línea lo habría cazado antes.
+- Sin `estimation.md` no hay sección de tiempo real ni estimation-log.
+
+**Pendiente**
+- `roadmap check` sigue fallando en dos líneas que no escribí: el título `v0.3.0` y la cabecera de «Deuda técnica». Las arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+**Ticket del kit:** esta retro no generó ninguna línea «ticket del kit». Si quieres el feedback de mejora de la sesión, dime y lo preparo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`b53f4a2`) · push: no hecho: `merge.push` no lo autoriza y el repo no tiene remoto.
+

@@ -1,0 +1,85 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [31]
+La 0010 todavía no está cerrada: estoy esperando a una re-revisión y no he escrito ningún registro.
+
+- **Pre-checks:** la rama solo tiene sin commitear el borrador `walkthrough.md`. `sdd merge --check` sale bien, con `develop` como destino, y no hay otras ramas abiertas.
+- **Por qué hay una re-revisión:** la revisión final se hizo sobre `2dd2d7a`, pero `HEAD` es `aae2599`. Ese commit solo añade `tasks.md`. La skill pide una re-revisión del tramo antes de escribir nada, así que la he lanzado en segundo plano (opus, effort-high).
+- **Smoke propio (campo):**
+  - Con `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+  - Con un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+  - `canceladas` en un proceso aparte sale vacío, porque el almacén es en memoria. Lo compruebo en un solo proceso y lo anotaré así.
+- **Suite:** `develop` va un commit por delante (`1ae59c7`, tests de rooms), así que la suite corre una sola vez tras el merge de sincronización del paso 6. El «verde sobre aae2599» del borrador lo sustituiré por lo que ejecute yo.
+- **Discrepancias que corregiré en el cierre:**
+  - `tasks.md` da el commit `2dd2d7a` para las dos tareas, pero la 1 es `cff014c`.
+  - El ruling de `--test-concurrency=1` (un workaround) no está en `gate.json`. Hay que reflejarlo en el walkthrough y en una fila de deuda.
+
+Seguiré con el resto del cierre cuando termine la re-revisión.
+
+--- [36]
+### Finding Verdicts
+Ninguno. La revisión anterior no dejó hallazgos abiertos.
+
+### New Breakage in the Fix Diff
+El tramo no toca código: `git diff --stat 2dd2d7a aae2599` solo muestra `tasks.md`, con 17 líneas añadidas. Pero `tasks.md` contradice el código en dos puntos.
+
+- **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. El ruling de la Task 2 dice que el gate se lanza con `node --test --test-concurrency=1`, y eso no se aplicó en ningún sitio:
+  - `gate.json` sigue usando `node --test test/app.test.js test/cancel.test.js` y no ha cambiado desde `4df5de9`. Ningún commit de la feature toca `gate.json`, `scripts/gate.mjs` ni `package.json`.
+  - El plan (§3) declara el gate de cierre como `node --test`, sin el flag.
+  - `concurrency` solo aparece en el propio `tasks.md`.
+  - Además, la carrera que justifica el ruling no existe en el código. `node --test` ejecuta cada fichero en su propio proceso, y los tests de un mismo fichero van en serie, así que dos ficheros no comparten el array `bookings`. Lo que sí hay es otra cosa: dentro de `test/cancel.test.js`, el test `canceladas enseña sala, día y motivo` depende de que el primer test haya cancelado antes Norte lun. Eso es un acoplamiento por orden, no una carrera.
+  - Consecuencia: el registro apunta como aplicado un workaround que no está y lo presenta como deuda («hasta aislar el almacén por test»). Quien cierre la feature o haga el triaje de la deuda partirá de una premisa falsa. Hay que quitar el ruling o reescribirlo para que diga lo que pasa de verdad.
+- **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. La Task 1 (Cancelar con motivo) tiene el commit `2dd2d7a`, pero se implementó en `cff014c` («feat(bookings): cancelar con un motivo de la lista»). `2dd2d7a` es el commit de la Task 2. Hay que cambiar la columna Commit de la Task 1 a `cff014c`.
+
+Lo demás de `tasks.md` cuadra con la spec, el plan y el encargo:
+- Los nombres de las tasks son los del plan.
+- La línea `Revisión final:` dice «Spec y Código limpias sobre 2dd2d7a», igual que el encargo.
+- Arquitectura no se revisó, y el plan no la pide (Review Focus: ninguna).
+
+### Out-of-Scope Observations
+- La spec pide que sin `--motivo` responda «motivo no válido: …». `src/app.js` lo cumple (`reasonOf` devuelve `undefined` y `cancelBooking` lo rechaza), pero ningún test de `test/cancel.test.js` cubre ese caso. Esto ya existía antes del tramo.
+- En la spec, la lista «Decisiones que he tomado yo» salta de la 1 a la 3. Es un detalle de redacción anterior al tramo.
+
+### Verdict
+**Fix round:** No queda ningún hallazgo anterior abierto, pero el tramo mete un fallo nuevo de nivel Important: el ruling de `tasks.md:17` apunta un `--test-concurrency=1` en el gate que no existe y se justifica con una carrera que el código no tiene. Queda también el Minor de `tasks.md:10`, donde el commit de la Task 1 debe ser `cff014c` y no `2dd2d7a`. El cierre no está limpio hasta corregir `tasks.md`.
+
+--- [69]
+Ya hice el commit de cierre, pero el walkthrough cita `aae2599`, que el squash eliminó. Lo corrijo y paso a la base integrada.
+
+--- [76]
+La 0010 está cerrada y fusionada en `develop`, pero sin push porque `merge.push` no está activado.
+
+**Decisiones tomadas sin el dev-lead**
+- Retiré el ruling de la Task 2 de `tasks.md`. Decía que el gate llevaba `--test-concurrency=1` por una carrera entre tests, pero ese flag no estaba en `gate.json` ni en el plan, y `node --test` aísla cada fichero en su proceso. Lo que hay es un acoplamiento por orden dentro de `test/cancel.test.js`, y lo dejé como fila de deuda. Si el ruling lo escribió alguien a propósito, hay que reabrirlo.
+
+**Lo que cambió respecto a los borradores**
+- Había que re-revisar el tramo `2dd2d7a..aae2599` (solo `tasks.md`), porque la revisión final se hizo sobre `2dd2d7a`. Salió con un Important (el ruling anterior) y un Minor (la Task 1 citaba `2dd2d7a` en vez de `cff014c`). Corregí ambos en el cierre.
+- El «smoke por THEN» del borrador no se sostenía para `canceladas`: por la CLI, en procesos separados, sale vacío porque el almacén es en memoria. Lo verifiqué en un solo proceso y lo dejé escrito así en el walkthrough.
+- La validación en campo la hice yo, con smoke de 4 de 4 THEN. La del borrador (del 26 de octubre) la sustituí por la mía del 5 de noviembre.
+- Registré dos filas de deuda en `roadmap.md`: el acoplamiento por orden y que ningún test cubre `cancelar` sin `--motivo`.
+- La capacidad `bookings` no existía. La creé al fusionar el delta de la spec con `sdd capability merge`. Su spec no la declara en «Decisiones que he tomado yo», aunque Laura aprobó la spec con «Nuevas: bookings».
+- Marqué ✅ la fila 0010 del roadmap y añadí la entrada al changelog.
+
+**Pendiente**
+- `Gate:` `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test corrió 5/5 · rooms:test saltada (sin cambios en sus inputs) · `node --test` completo 7/7 · 0,6 s · sobre `724766b`, el merge de sincronización con el commit `1ae59c7` de la base, que no tuvo conflictos. Es el `--verified-at` del merge.
+- `sdd roadmap check` falla en dos líneas que no escribí: el título `v0.3.0` y la cabecera de «Deuda técnica». Las arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las skills pueden ser de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+**Ticket del kit:** la retro no dejó ninguna línea «ticket del kit», así que no hay nada que ofrecer. Si quieres igualmente el feedback de mejora de esta sesión, dime y invoco `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`75bac9a`) · push: no hecho: `merge.push` no lo autoriza
+
+--- [79]
+El cierre ya está hecho y no queda nada por continuar. El árbol está limpio y el walkthrough, que era ese borrador, ya va en el commit de cierre.
+
+- **Dónde está el walkthrough:** `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md` está en `develop`, junto con `capabilities/bookings.md`.
+- **Qué es:** lo completé en el cierre con la verificación real y las decisiones.
+- **Estado de la rama:** `feature/0010-cancel-reason` está fusionada en `develop` (`75bac9a`), sin push.
+- **Qué falta:** solo lo ya señalado en mi mensaje anterior:
+  - el push, que `merge.push` no autoriza;
+  - las dos fallas de `roadmap check` que no escribí yo;
+  - la actualización del kit a la 3.0.0.
+
+Si quieres que publique `develop`, dímelo y lo hago con `sdd merge --push`.
+

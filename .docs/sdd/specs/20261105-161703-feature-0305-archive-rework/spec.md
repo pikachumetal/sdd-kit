@@ -237,13 +237,17 @@ Precio por sujeto de `sdd-archive`: 0,45 $, lo medido en la 0236 (23,78 $ en 53 
 | Una tanda de REFACTOR | los escenarios en rojo, ~6 sujetos | 2,70 |
 | Controles | un rojo del GREEN que no toca lo cambiado, con el kit de `develop`, ~4 sujetos | 1,80 |
 | Medición tras la revisión final | si la pasada de fix cambia texto de la skill, sus escenarios, ~3 sujetos | 1,35 |
-| Suma | 91 sujetos | 42,90 |
+| Suma | 106 sujetos | 42,90 |
 
 ~3 h de reloj en segundo plano.
 
 Con el precio de `tech-stack.md` (0,70 $), la misma suma da ~66 $. Umbral de parada: 45 $ en sujetos; si lo medido en el RED sale más cerca de 0,70 $ que de 0,45 $, paro antes del GREEN y decides. Si se pasa, con una tanda más de REFACTOR incluida, paro y decides: seguir, cerrar con lo medido y dejar lo pendiente como deuda, o recortar. Con el humo de la decisión 13: RED 1,05 $ + GREEN 18 sujetos (8,10 $) + REFACTOR 2,70 $ = ~11,85 $.
 
 ## Enmiendas
+
+- 2026-11-05, Àngel Delgado, opción «1»: el umbral de parada sube de 45 $ a 48 $. El GREEN paró en el tope, con 44,82 $ acumulados, y le faltaban 5 sujetos: los 2 de `pk1`, con el molde arreglado (su remoto ya se ve como github.com), `a3-1`, que falló al montarse el molde, y `tc1-2` y `tc1-3`, que no llegaron a correr. Corren en la fase `green2`. Si sale otro rojo que no venga del molde, paro.
+- 2026-11-05, Àngel Delgado, opción «1»: el umbral sube de 48 $ a 53 $ y el techo, de 91 a 100 sujetos. El GREEN dejó 10 sujetos en rojo por texto que se perdió al mover a `references/`, y el REFACTOR lo devuelve. Una tanda de REFACTOR, fase `refactor`, con n = 1 y el umbral 1/1: `a3r`, `a3f`, `a4`, `a9`, `e1`, `g5`, `g6`, `g7`, `g8` y `m1`; y `m1` con el kit de `develop` como control, en la fase `control`. Cuentan como verde de la feature los escenarios que pasaron en el GREEN y estos diez. `a1-2` y `ci1-2` quedan en el ticket, con un solo caso cada uno. Los 9 sujetos de sobra en el techo son para la medición tras la revisión final.
+- 2026-11-05, Àngel Delgado, opción «1»: el umbral sube de 53 $ a 58 $ y el techo, de 100 a 106 sujetos. La tanda `refactor` paró en el tope, con 53,33 $ (0,69 $ por sujeto), antes de `m1` y su control. Pasan `a3r`, `a4`, `a9`, `g6` y `g7`. Vuelven al paso 6 dos frases que en `develop` estaban allí: la fila «No se repite» con el error entero, sin «…» (`a3f`, F3), y el gate sin filtro por un fichero de «Sin filtro» que trae la base (`g8`, 3 de 3). El borrador del molde (`validated0010`) pasa a `--motivo "sala ocupada"`, porque la app rechaza `sala-ocupada` y los sujetos de `g5` y `g8` descartaban esa validación. Fase `refactor2`, con n = 1: `a3f`, `g5`, `g8`, `e1` y `m1`; y `m1` con el kit de `develop` en `control`.
 
 ## Aprobaciones
 

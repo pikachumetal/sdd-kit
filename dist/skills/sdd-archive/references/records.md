@@ -14,7 +14,7 @@ With `.docs/sdd/estimation.md`, step 2 of `sdd-archive`: a deviation beyond ±30
 
 ## Settled rows
 
-A debt or backlog row the change settles —another row, never its own— starts with `**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`, or `parcial — <enlace>; queda: <lo pendiente>]**`, linking the walkthrough or `patch.md`; the original text stays intact behind it, and no «✅» in its cell.
+In the 2.x roadmap (`ROADMAP.md` closes its debt as «Roadmap 3.0.0» says), a debt or backlog row the change settles —another row, never its own— starts with `**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`, or `parcial — <enlace>; queda: <lo pendiente>]**`, linking the walkthrough or `patch.md`; the original text stays intact behind it, and no «✅» in its cell.
 
 ## Roadmap 2.x
 
