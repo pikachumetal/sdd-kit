@@ -4,7 +4,7 @@ import { readText } from './kit-files.ts';
 const GATE_FIELDS = ['Sin filtro', 'Lint', 'CI de la base'];
 
 function migrationStep(text: string, step: number): string {
-  const steps = text.indexOf('Los pasos van en este orden');
+  const steps = text.indexOf('The steps go in this order');
   const start = text.indexOf(`\n${step}. **`, steps);
   const end = text.indexOf(`\n${step + 1}. **`, start + 1);
   return start === -1 ? '' : text.slice(start, end === -1 ? undefined : end);
