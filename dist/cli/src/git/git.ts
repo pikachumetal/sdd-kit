@@ -49,6 +49,22 @@ export async function gitLines(cwd: string, args: string[]): Promise<string[]> {
   return stdout.split(/\r?\n/).filter((line) => line !== '');
 }
 
+// Cambio de contenido sin commitear en lo que tiene seguimiento (un error de git cuenta como cambio). `git status`
+// da « M» sin hashearlo a un fichero cuyo tamaño no es el del índice, como uno en CRLF con eol=lf; `git diff`
+// compara el contenido (patch 0318).
+export async function hasContentChanges(cwd: string, paths: string[] = []): Promise<boolean> {
+  for (const staged of [[], ['--cached']]) {
+    if ((await git(cwd, ['diff', '--quiet', ...staged, '--', ...paths])).code !== 0) return true;
+  }
+  return false;
+}
+
+// Solo tras hasContentChanges en false: `git add -u` reescribe entonces el stat del índice sin stagear nada; sin él,
+// `git merge` se niega a pisar un fichero que solo cambió de finales de línea (patch 0318).
+export async function refreshStat(cwd: string): Promise<void> {
+  await git(cwd, ['add', '-u']);
+}
+
 export async function toplevel(cwd: string): Promise<string | null> {
   const [top] = await gitLines(cwd, ['rev-parse', '--show-toplevel']);
   return top === undefined ? null : resolve(top);

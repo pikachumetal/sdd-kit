@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, realpathSync, rmSync } from 'node:
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
-import { git, gitLines, toplevel } from '../git/git.ts';
+import { git, gitLines, hasContentChanges, toplevel } from '../git/git.ts';
 import { runGit, withIntegrationTarget, withMergeLock } from '../merge/integration.ts';
 import { ROOT_DOCUMENTS } from '../cli/layout.ts';
 
@@ -40,7 +40,8 @@ async function assertTargetClean(target: string, files: string[]): Promise<void>
   for (const file of files) {
     const { code, stdout, stderr } = await git(target, ['status', '--porcelain', '--', file]);
     if (code !== 0) throw new DomainError(`git status falló en '${target}': ${stderr.trim()}`);
-    if (stdout.trim() !== '') throw new DomainError(`destino con cambios: ${file} en ${target}`);
+    const untracked = stdout.startsWith('??');
+    if (untracked || (await hasContentChanges(target, [file]))) throw new DomainError(`destino con cambios: ${file} en ${target}`);
   }
 }
 

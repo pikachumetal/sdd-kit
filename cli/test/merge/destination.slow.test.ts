@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { edit, git, mergeFixture, runMerge, sha, write } from './helpers.ts';
+import { edit, git, mergeFixture, runMerge, saveAll, sha, write } from './helpers.ts';
 
 const slash = (text: string) => text.replaceAll('\\', '/');
 
@@ -12,7 +12,32 @@ function dirtyDevelop(name: string) {
   return { fx, dev };
 }
 
+// El destino tiene README.md en CRLF con eol=lf, sin cambio de contenido, y la feature cambia ese fichero.
+function eolOnlyDevelop(name: string) {
+  const { fx, dev } = dirtyDevelop(name);
+  write(dev, '.gitattributes', '*.md text eol=lf\n');
+  saveAll(dev, 'chore: eol');
+  const feature = join(fx.wt, '0001');
+  git(feature, 'merge', '-q', '--no-edit', 'develop');
+  edit(feature, 'README.md', 'base\n', 'de la 0001\n');
+  saveAll(feature, 'docs: readme de la 0001');
+  git(fx.repo, 'config', 'core.autocrlf', 'true');
+  write(dev, 'README.md', 'base\r\n');
+  expect(git(dev, 'status', '--porcelain')).toBe('M README.md');
+  return { fx, dev };
+}
+
 describe('con la rama destino sacada y con cambios sin commitear, el cierre no fusiona', () => {
+  it('un fichero del destino que solo cambia de finales de línea no para el merge', async () => {
+    const { fx, dev } = eolOnlyDevelop('solo-eol');
+
+    const result = await runMerge(join(fx.wt, '0001'));
+
+    expect(result.code, result.text).toBe(0);
+    expect(git(dev, 'show', 'HEAD:README.md')).toBe('de la 0001');
+    expect(git(dev, 'status', '--porcelain')).toBe('');
+  });
+
   it('el merge para con diff --stat y tres salidas', async () => {
     const { fx, dev } = dirtyDevelop('salidas');
     edit(dev, '.docs/sdd/roadmap.md', '| 0100 | base |', '| 0100 | base retocada |');
@@ -65,6 +90,16 @@ describe('la comprobación del destino no toca nada', () => {
     expect(result.code, result.text).toBe(0);
     expect(slash(result.text)).toBe(`destino: listo: 'develop' sacado en '${slash(dev)}', sin cambios`);
     expect(sha(fx.repo, 'develop')).toBe(before);
+  });
+
+  it('--check con un fichero del destino que solo cambia de finales de línea dice listo y no refresca el índice', async () => {
+    const { fx, dev } = eolOnlyDevelop('check-solo-eol');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--check']);
+
+    expect(result.code, result.text).toBe(0);
+    expect(slash(result.text)).toBe(`destino: listo: 'develop' sacado en '${slash(dev)}', sin cambios`);
+    expect(git(dev, 'status', '--porcelain')).toBe('M README.md');
   });
 
   it('--check sin el destino sacado dice el worktree temporal', async () => {
