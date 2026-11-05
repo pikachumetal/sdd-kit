@@ -1,5 +1,5 @@
 import { DomainError } from '../cli/args.ts';
-import { git, gitLines } from '../git/git.ts';
+import { git, gitLines, hasContentChanges, refreshStat } from '../git/git.ts';
 import { completeMergeAttempt, gitWithOutput, mergeArgs, type MergeAttempt } from './attempt.ts';
 import { cleanRegistries } from './cleanup.ts';
 
@@ -47,9 +47,10 @@ export async function mergeAndClean(attempt: Omit<MergeAttempt, 'output'>, args:
 }
 
 export async function assertNothingPending(root: string, branch: string): Promise<void> {
-  const changed = (await gitLines(root, ['status', '--porcelain', '--untracked-files=no'])).length > 0;
+  const changed = await hasContentChanges(root);
   const merging = (await git(root, ['rev-parse', '--verify', '--quiet', 'MERGE_HEAD'])).code === 0;
   if (changed || merging) throw new DomainError(`base: '${branch}' tiene cambios sin commitear; commitéalos antes de integrar la base`);
+  await refreshStat(root);
 }
 
 export async function integrateRef(root: string, ref: string, report: Report): Promise<boolean> {

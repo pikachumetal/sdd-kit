@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
-import { git, gitLines, samePath, toplevel } from '../git/git.ts';
+import { git, gitLines, hasContentChanges, refreshStat, samePath, toplevel } from '../git/git.ts';
 import { runGit, withIntegrationTarget, withMergeLock } from '../merge/integration.ts';
 import { configuredMergeInto, configuredMergePush } from '../merge/policy.ts';
 import { fetchBase, remoteForBranch, remoteMoved, syncBaseBranch, unpublishedLines } from '../merge/steps.ts';
@@ -180,10 +180,17 @@ async function attemptClaim(target: string, claim: Claim): Promise<Outcome | 'mo
   return (await alreadyPublished(target, claim)) ?? claimWithoutRow(target, claim);
 }
 
+// Lo que no tiene seguimiento cuenta como en `git status`; lo que sí, solo si cambia su contenido (patch 0318).
+async function hasPendingChanges(root: string): Promise<boolean> {
+  const untracked = (await runGit(root, ['status', '--porcelain'])).split('\n').some((line) => line.startsWith('??'));
+  return untracked || hasContentChanges(root);
+}
+
 async function assertClean(target: string): Promise<void> {
-  if ((await runGit(target, ['status', '--porcelain'])) !== '') {
+  if (await hasPendingChanges(target)) {
     throw new DomainError(`destino con cambios: ${target}; límpialo y relanza sdd id claim`);
   }
+  await refreshStat(target);
 }
 
 async function claimIn(target: string, claim: Claim): Promise<Outcome> {
@@ -217,7 +224,8 @@ async function renameBranch(claim: Claim, branch: string, renamed: string): Prom
 
 async function fastForward(claim: Claim): Promise<string[]> {
   if (await isAncestor(claim.root, `refs/heads/${claim.into}`, 'HEAD')) return [];
-  if ((await runGit(claim.root, ['status', '--porcelain'])) !== '') return [`rama: cambios sin commitear; no avanza a ${claim.into}`];
+  if (await hasPendingChanges(claim.root)) return [`rama: cambios sin commitear; no avanza a ${claim.into}`];
+  await refreshStat(claim.root);
   await runGit(claim.root, ['merge', '-q', '--ff-only', `refs/heads/${claim.into}`]);
   return [];
 }

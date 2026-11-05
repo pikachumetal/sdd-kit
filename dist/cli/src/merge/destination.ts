@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { basename } from 'node:path';
 import { DomainError } from '../cli/args.ts';
-import { git, gitLines, worktrees, type Worktree } from '../git/git.ts';
+import { git, gitLines, hasContentChanges, refreshStat, worktrees, type Worktree } from '../git/git.ts';
 import { destinationExits } from './exits.ts';
 import { freeTempFolder, withWorktreeFolder } from './temp-worktree.ts';
 
@@ -20,8 +20,8 @@ function changedFile(statusLine: string): string {
 
 async function assertClean(path: string, into: string): Promise<void> {
   const status = await gitLines(path, ['status', '--porcelain']);
-  if (status.length === 0) return;
   const untracked = status.filter((line) => line.startsWith('??')).map(changedFile);
+  if (untracked.length === 0 && !(await hasContentChanges(path))) return;
   const stat = await gitLines(path, ['diff', '--stat', 'HEAD']);
   const message = [
     `destino sacado: el checkout de '${into}' en '${path}' tiene cambios sin commitear; el merge se haría encima de ellos, así que no se toca.`,
@@ -44,6 +44,7 @@ export async function withDestination<T>(request: DestinationRequest, body: (pat
   const found = await checkedOut(projectRoot, into);
   if (found === undefined) return withWorktreeFolder(projectRoot, { branch: into, folder: tempFolder(request), warn }, body);
   await assertClean(found.path, into);
+  await refreshStat(found.path);
   return body(found.path);
 }
 
