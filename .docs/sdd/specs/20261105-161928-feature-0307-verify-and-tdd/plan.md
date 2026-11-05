@@ -143,7 +143,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Modelo**: la sesión (Native)
 **Tests RED**: el rojo existente de `moon run kit:skill-size` (`FALLA: dist/skills/sdd-verify/SKILL.md ocupa 22881 bytes`) y de `moon run kit:own` (`dist/skills/sdd-verify/SKILL.md:61: absoluta con excepción en la misma frase («every» … «instead of»)`).
 **Superficies**: docs (skill), tooling (`upstream.json`), tests (procedencia de batería)
-**Verificación**: `moon run kit:build`; `moon run kit:skill-size` sin `FALLA` de `sdd-verify`; `moon run kit:copies` sin rojo de `skills/sdd-verify/SKILL.md`; `moon run kit:own` sin la línea `:61` ni otra de `dist/skills/sdd-verify/SKILL.md` o `references/closing-the-review.md` salvo la del preámbulo; desde `cli/`, `npx vitest run test/kit/skills.test.ts test/kit/dist.test.ts test/kit/notices.test.ts test/kit/word-budget.test.ts test/kit/skill-size.test.ts` → `Test Files  5 passed (5)`. Humo: `BATTERY=sdd-verify SCENARIOS=c1,c1f,t2 node tests/headless/battery.mjs run`, con las rúbricas C1, C1f, T2a y T2b.
+**Verificación**: `moon run kit:build`; `moon run kit:skill-size` sin `FALLA` de `sdd-verify`; `moon run kit:copies` sin rojo de `skills/sdd-verify/SKILL.md`; `moon run kit:own` sin la línea `:61` ni otra de `dist/skills/sdd-verify/SKILL.md` o `references/closing-the-review.md` salvo las repetidas con la skill de otra fila (enmienda de la spec del 2026-11-05); desde `cli/`, `npx vitest run test/kit/skills.test.ts test/kit/dist.test.ts test/kit/notices.test.ts test/kit/word-budget.test.ts test/kit/skill-size.test.ts` → `Test Files  5 passed (5)`. Humo: `BATTERY=sdd-verify SCENARIOS=c1,c1f,t2 node tests/headless/battery.mjs run`, con las rúbricas C1, C1f, T2a y T2b.
 
 **Interfaces**:
 - Consume: nada.
@@ -166,7 +166,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Modelo**: la sesión (Native)
 **Tests RED**: el rojo existente de `moon run kit:own`: 16 líneas `dist/skills/sdd-verify/references/encargo-revision.md:<n>: prosa en castellano`.
 **Superficies**: docs (skill)
-**Verificación**: `moon run kit:build`; `moon run kit:own`, filtrada por `sdd-verify|sdd-tdd`, con una sola línea (la del preámbulo); desde `cli/`, `npx vitest run test/kit/skills.test.ts test/kit/dist.test.ts test/kit/own.test.ts test/kit/word-budget.test.ts` → `Test Files  4 passed (4)`.
+**Verificación**: `moon run kit:build`; `moon run kit:own`, filtrada por `sdd-verify|sdd-tdd`, sin ninguna línea salvo las repetidas con la skill de otra fila (tras la Task 2, tres; una pareja nueva con otra fila va al ticket, sin parafrasear); desde `cli/`, `npx vitest run test/kit/skills.test.ts test/kit/dist.test.ts test/kit/own.test.ts test/kit/word-budget.test.ts` → `Test Files  4 passed (4)`.
 
 **Interfaces**:
 - Consume: nada.
