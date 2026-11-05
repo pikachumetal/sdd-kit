@@ -36,6 +36,10 @@ const F27 = '.docs/sdd/specs/20261014-140000-feature-0027-free-rooms-empty';
 const F30 = '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk';
 const F31 = '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load';
 const F32 = '.docs/sdd/specs/20261015-120000-feature-0032-free-rooms-fast';
+const F33 = '.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates';
+const F34 = '.docs/sdd/specs/20261015-140000-feature-0034-tags-max-two';
+const NOTE_PROMPT = 'skills/guardar-nota/references/note-prompt.md';
+let markSha = '';
 const SEED_LINE = 'export const seed = (list) => bookings.push(...list);\n\n';
 const ATTEMPT = "import { spawnSync } from 'node:child_process';\n\nexport const failureReport = (room) => `fallo ${room}`;\n\n"
   + "export function attempt(room) {\n  const gate = spawnSync(process.execPath, ['scripts/slow-gate.mjs', room]);\n  return gate.status === 0 ? `reservada ${room}` : failureReport(room);\n}\n";
@@ -47,6 +51,7 @@ const LEGACY_TEST = "import { test } from 'node:test';\nimport assert from 'node
   + "test('libres de una franja sin reservas da todas las salas', () => {\n  assert.equal(run('libres', ['08:00-09:00']), 'Norte, Sur');\n});\n";
 const WORDS_TEST = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync } from 'node:fs';\n\n"
   + "test('guardar-nota cabe en 60 palabras', () => {\n  const words = readFileSync('skills/guardar-nota/SKILL.md', 'utf8').split(/\\s+/).filter(Boolean).length;\n  assert.ok(words <= 60, `mide ${words}`);\n});\n";
+const GITFLOW = '\n## Art. III — Git\n\nGit-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`.\n';
 const ART_I = '\n## Art. I — Pruebas de skills\n\nLa guidance nueva lleva un test que falla antes de escribirla; si el baseline no exhibe el fallo, no se escribe.\n';
 const CLEAN_H0 = '# Humo h0 — guardar-nota, sin la frase (Task 1 de la 0026)\n\nPetición: «guarda la nota "Reunión lunes 12 de octubre": "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h0-1 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n| h0-2 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n\nRED: 2 de 2 limpios; el baseline no exhibe el fallo.\n';
 const RED_H1 = '# Humo h1 — guardar-nota, título vacío (Task 1 de la 0026)\n\nPetición: «guarda una nota sin título: "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h1-1 | notas/nota.md | falla: no pidió el título |\n| h1-2 | notas/sin-titulo.md | falla: no pidió el título |\n\nRED: 0 de 2.\n';
@@ -79,7 +84,7 @@ function formRules() {
   writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
 }
 
-s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
+s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'cp1'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
 s.putKitMarker(MARKER);
 const molds = {
   r1: () => (cp('app-0012.js', 'src/app.js'), cp('cancel-task1.test.js', 'test/cancel.test.js')),
@@ -119,6 +124,17 @@ const molds = {
   },
   a2: () => appendFileSync(at('.docs/sdd/constitution.md'), ART_I),
   b1: () => cp('readme-0027.md', 'README.md'),
+  fr1: () => {
+    mkdirSync(at('scripts'), { recursive: true });
+    cp('candidatos.mjs', 'scripts/candidatos.mjs');
+  },
+  // El original de la copia, con su encargo en un recuadro sangrado; el kit lo saca en steps.cp1.
+  cp1: () => {
+    mkdirSync(at('skills/guardar-nota/references'), { recursive: true });
+    cp('note-prompt-original.md', NOTE_PROMPT);
+    cp('upstream-cp1.json', 'upstream.json');
+    appendFileSync(at('.docs/sdd/constitution.md'), GITFLOW);
+  },
 };
 molds.g2 = molds.g1;
 molds.a3 = molds.a2;
@@ -292,6 +308,20 @@ const steps = {
     s.commit('feat(bookings): libres por planta (0030)');
     s.git('checkout', '-q', 'feature/0027-free-rooms-empty');
   },
+  fr1: () => openFixture('0033-duplicate-candidates', F33, '0033'),
+  // La marca del bloque nombra el commit que lo escribió; la base cambia después la línea `Tags:` que toca la Task 1, sin que la spec lo declare.
+  cp1: () => {
+    s.put(NOTE_PROMPT, readLf(join(FIX, 'note-prompt-kit.md')));
+    s.commit('feat(skills): el encargo de la nota sale del recuadro sangrado del original (feature 0042)', 'Las líneas Title, Body y Tags pasan de cuatro espacios de sangría a ninguna.');
+    markSha = short('HEAD');
+    edit(NOTE_PROMPT, (text) => text.replace('kit: 0042', `kit: ${markSha}`));
+    s.commit('docs(skills): la marca del bloque del encargo lleva su commit');
+    openFixture('0034-tags-max-two', F34, '0034');
+    s.git('checkout', '-q', 'develop');
+    edit(NOTE_PROMPT, (text) => text.replace('Tags: <tags, comma separated>', 'Tags: <tags, comma separated; at most five>'));
+    s.commit('feat(skills): hasta cinco etiquetas por nota');
+    s.git('checkout', '-q', 'feature/0034-tags-max-two');
+  },
   t2: () => openFixture('0016-room-hours', F16, '0016'),
   t3: () => openFixture('0017-reactivate', F17, '0017'),
   t6: () => openFixture('0022-scripts-to-node', F22, '0022'),
@@ -406,7 +436,7 @@ steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(j
 if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps[s.SC]?.();
 
-const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1'];
+const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1'];
 if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_WITHOUT_AGENT].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_WITHOUT_AGENT]) turns[id] = '40';
@@ -414,10 +444,11 @@ s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const folder of [F30, F31, F32, F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27]) {
+for (const folder of [F30, F31, F32, F33, F34, F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27]) {
   for (const kept of ['spec', 'plan', 'tasks', 'research']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
-for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash', 'attempt', 'report', 'legacy', 'free', 'words']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
+for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash', 'attempt', 'report', 'legacy', 'free', 'words', 'note-prompt']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
+keepIf(NOTE_PROMPT, 'note-prompt.md');
 keepIf('src/app.js', 'app.js');
 keepIf('.sdd-env.json', 'sdd-env.json');
 keepIf('README.md', 'README.md');
@@ -426,4 +457,4 @@ const sddTemp = at('.temp/sdd');
 for (const plan of existsSync(sddTemp) ? readdirSync(sddTemp).sort() : []) keepIf(`.temp/sdd/${plan}/progress.md`, 'progress.md');
 const patchFolder = existsSync(at('.docs/sdd/specs')) ? readdirSync(at('.docs/sdd/specs')).filter((name) => name.includes('-patch-')).sort().at(-1) : undefined;
 if (patchFolder) s.keep(at(`.docs/sdd/specs/${patchFolder}/patch.md`), 'patch-new.md');
-s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}## worktrees\n${s.git('worktree', 'list')}`);
+s.save(`## petición\n${ASK}\n${markSha ? `## sha de la marca\n${markSha}\n` : ''}## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}## worktrees\n${s.git('worktree', 'list')}`);

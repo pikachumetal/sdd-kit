@@ -20,8 +20,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una ta
 | --- | --- | --- | --- | --- |
 | 1 | `sdd-implement-native`, copia anotada de `executing-plans` | done | eabcfa67 | |
 | 2 | `sdd-implement-subagent`, copia anotada de `subagent-driven-development` | done | a86fdd94 | |
-| 3 | La puerta `sdd-implement`, propia | done | — | |
-| 4 | El freno de la spec y la parada sobre una copia | pending | — | |
+| 3 | La puerta `sdd-implement`, propia | done | 2b0c3ad9 | |
+| 4 | El freno de la spec y la parada sobre una copia | done | — | frase del freno de la spec no escrita: su RED salió limpio 3 de 3 |
 | 5 | Humos, enrutado y documentos | pending | — | |
 
 ## Verificación por task
