@@ -332,23 +332,23 @@ describe('the 2.0.0 migration', () => {
   const stepAbout = (text: string) => migration.split('\n').find((line) => line.includes(text)) ?? '';
 
   it('has a step that removes the Historial section with no gate and is skipped without capabilities/', () => {
-    const step = stepAbout('Historial de las capacidades');
+    const step = stepAbout('Capability history');
     expect(step).toMatch(/## Historial/);
-    expect(step).toMatch(/Sin gate/i);
-    expect(step).toMatch(/se salta/i);
+    expect(step).toMatch(/no gate/i);
+    expect(step).toMatch(/skip the step/i);
   });
 
   it('has a step that writes the purpose with no gate and is skipped without capabilities/', () => {
-    const step = stepAbout('Propósito de las capacidades');
+    const step = stepAbout('Capability purpose');
     expect(step).toMatch(/## Propósito/);
-    expect(step).toMatch(/Sin gate/i);
-    expect(step).toMatch(/se salta/i);
+    expect(step).toMatch(/no gate/i);
+    expect(step).toMatch(/skip the step/i);
   });
 
   it('verifies with sdd capability check and leaves the rest as pending', () => {
-    const verification = /## Verificación[\s\S]*/.exec(migration)?.[0] ?? '';
+    const verification = /## Verification[\s\S]*/.exec(migration)?.[0] ?? '';
     expect(verification).toMatch(/sdd capability check/i);
-    expect(verification).toMatch(/pendiente/i);
+    expect(verification).toMatch(/pending/i);
   });
 
   it('applied to a capability with history, the validator passes', async () => {

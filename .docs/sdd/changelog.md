@@ -73,6 +73,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0316** — Las 13 migraciones de `sdd-upgrade` pasan al inglés sin cambiar ningún paso, con lo que escriben en el proyecto en castellano; su forma cambia a `**Writes**:`, `## Verification` y la marca «no gate», también en `sdd-upgrade`, en los tests que las leen y en el Art. V. → [ref](specs/20261105-115850-feature-0316-upgrade-migrations-english/)
 - **Patch 0317** — El 🦆 del modo corto de `sdd-rubber-duck` nombra solo efectos que comprobó en el fichero, en la misma línea que pide primero qué cambia con datos. → [ref](specs/20261105-102427-patch-0317-duck-checked-effects/)
 - **Feature 0303** — La ADR 0022 fija las tres reglas del dev-lead para el texto del kit (partir de la fuente sin tocar lo que funciona, sustituir la frase de la fuente en vez de añadir al lado, arreglar mejorando la frase que falla), sustituye a la 0013 y a la consecuencia de la 0019 «Editar una frase de una skill no toca ningún test», y el Art. IX de la constitution y `tech-stack.md` la dicen y la enlazan. → [ref](specs/20261103-162611-feature-0303-adr-three-rules/)
 - **Feature 0289** — Revisión de las fuentes vigiladas antes del corte: superpowers v7.0.1, OpenSpec v1.16.0, Spec Kit v1.2.6, mattpocock/skills v1.3.2 e impeccable skill-v4.8.0, con `moon run kit:upstream` en verde; lo que se trae va a las filas 0296 y 0297. → [ref](specs/20261102-210125-feature-0289-upstream-review/)
@@ -140,6 +141,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Patch 0318** — `sdd merge`, `sdd id claim` y `sdd roadmap publish` ya no se paran por un fichero que solo cambia de finales de línea o de stat (`git diff --quiet` en vez de `git status`, y `git add -u` antes de un merge), y `.gitattributes` da `text eol=lf` a la lista blanca del build para que `kit:build` copie LF a `dist/`. → [ref](specs/20261105-115706-patch-0318-eol-only-not-dirty/)
 - **Patch 0270** — `sdd capability merge` no da hueco en una línea de un `MODIFIED` que ya está, literal, en el requisito vivo, y rechaza sin escribir la línea suelta y el escenario incompleto, con la comprobación de `sdd capability check`. → [ref](specs/20261102-134956-patch-0270-capability-merge-fixes/)
 - **0285** — Los tests de `cli:test` que esperan a `git` o a `node` tienen un tope de 20 s por fichero y ya no dan `Test timed out in 5000ms` con 8 suites a la vez. → [ref](specs/20261102-120757-feature-0285-load-test-timeouts/)
 - **Patch 0288** — El lanzador de sujetos no pasa a `claude` la `ORIGINAL_PATH` heredada: con ella, Git Bash rehacía el `PATH` del sujeto sin `no-claude/` ni el `gh` falso del molde, y `rc2` de `sdd-archive` caía en `K6`. → [ref](specs/20261102-085747-patch-0288-rc2-fake-gh/)

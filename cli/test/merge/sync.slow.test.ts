@@ -126,6 +126,39 @@ describe('sdd merge --sync', () => {
     expect(result.text).toContain("base: 'feature/0001' tiene cambios sin commitear; commitéalos antes de integrar la base");
   });
 
+  it('con un cambio solo en el índice no toca nada', async () => {
+    const fx = mergeFixture('sync-staged');
+    edit(join(fx.wt, '0001'), 'README.md', 'base\n', 'en el índice\n');
+    git(join(fx.wt, '0001'), 'add', 'README.md');
+
+    const result = await sync(fx);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("base: 'feature/0001' tiene cambios sin commitear; commitéalos antes de integrar la base");
+  });
+
+  it('un fichero de dist/ que solo cambia de finales de línea no para la integración de la base', async () => {
+    const fx = mergeFixture('sync-solo-eol');
+    write(fx.seed, '.gitattributes', 'dist/** text eol=lf\n');
+    write(fx.seed, 'dist/a.js', 'uno\ndos\n');
+    saveAll(fx.seed, 'chore: dist');
+    pushSeed(fx);
+    edit(join(fx.wt, '0002'), 'dist/a.js', 'dos\n', 'dos\ntres\n');
+    saveAll(join(fx.wt, '0002'), 'feat: dist de la 0002');
+    expect((await runMerge(join(fx.wt, '0002'), ['--push'])).code).toBe(0);
+    const feature = join(fx.wt, '0001');
+    git(fx.repo, 'config', 'core.autocrlf', 'true');
+    write(feature, 'dist/a.js', 'uno\r\ndos\r\n');
+    expect(git(feature, 'status', '--porcelain')).toBe('M dist/a.js');
+
+    const result = await sync(fx);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).toMatch(/base: integrada 'origin\/develop' en 'feature\/0001': [0-9a-f]{7,}/);
+    expect(git(feature, 'show', 'HEAD:dist/a.js')).toBe('uno\ndos\ntres');
+    expect(git(feature, 'status', '--porcelain')).toBe('');
+  });
+
   it('con otro merge a medias no toca nada', async () => {
     const fx = mergeFixture('sync-a-medias');
     const feature = join(fx.wt, '0001');

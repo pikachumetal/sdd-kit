@@ -13,7 +13,7 @@ const migrations = readdirSync(migrationsDir)
   .filter(({ text }) => text.includes('sdd-kit.json'));
 
 function declaredTokens(migrationText: string): string[] {
-  const line = migrationText.split(/\r?\n/).find((candidate) => candidate.startsWith('**Escribe**:'));
+  const line = migrationText.split(/\r?\n/).find((candidate) => candidate.startsWith('**Writes**:'));
   return line ? [...line.matchAll(/`([^`]+)`/g)].map((match) => match[1]) : [];
 }
 
@@ -43,7 +43,7 @@ describe('paridad migración–init', () => {
     expect(migrations.length).toBeGreaterThanOrEqual(3);
   });
 
-  it.each(['v1.0.0.md', 'v1.1.0.md', 'v2.0.0.md'])('%s declara lo que escribe en su línea **Escribe**', (name) => {
+  it.each(['v1.0.0.md', 'v1.1.0.md', 'v2.0.0.md'])('%s declara lo que escribe en su línea **Writes**', (name) => {
     expect(declaredTokens(readFileSync(join(migrationsDir, name), 'utf8')).length).toBeGreaterThan(0);
   });
 
@@ -57,7 +57,7 @@ describe('paridad migración–init', () => {
   });
 
   it('el corpus de una init no incluye las migraciones', () => {
-    expect(corpus).not.toContain('**Escribe**:');
+    expect(corpus).not.toContain('**Writes**:');
   });
 
   it('una clave inventada no aparece en el corpus', () => {

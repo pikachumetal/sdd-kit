@@ -24,12 +24,12 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 - GIVEN una release del kit, cambie o no la estructura de `.docs/sdd/`
 - WHEN se cierra la release
-- THEN existe `skills/sdd-upgrade/references/migrations/vX.Y.Z.md` con pasos verificables por predicado, o, si la release no cambia nada del proyecto, con la frase «sin cambios en el proyecto», su «Verificación» y su línea `**Escribe**:`
+- THEN existe `skills/sdd-upgrade/references/migrations/vX.Y.Z.md` con pasos verificables por predicado, o, si la release no cambia nada del proyecto, con la frase «no changes to the project», su «Verification» y su línea `**Writes**:`
 - AND la suite del kit falla si la `version` de `.claude-plugin/plugin.json` no tiene su fichero en esa carpeta
 
 ### Una migración sin cambios solo avanza el marcador
 
-- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.0.0` y el kit 2.1.0, cuyo `v2.1.0.md` dice «sin cambios en el proyecto»
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.0.0` y el kit 2.1.0, cuyo `v2.1.0.md` dice «no changes to the project»
 - WHEN el usuario pide «actualízame al kit»
 - THEN `sdd-kit.json` queda con `version` `2.1.0` y la fecha del día, escritos con `sdd upgrade --mark 2.1.0`, y ningún otro fichero del proyecto cambia
 - AND hay un commit `chore(sdd): migrar al kit v2.1.0`
@@ -51,7 +51,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN el agente invoca `sdd-upgrade`
 - THEN ejecuta `sdd upgrade --root <raíz>`, que lista las migraciones posteriores a la `version` de `sdd-kit.json` hasta la mayor del kit cargado, en orden SemVer
 - AND sin `sdd-kit.json`, la pregunta de si es un proyecto anterior a la v0.2.0, la recomendada, o una init de la 2.x que se cortó la hace el predicado 4 de `sdd-init`: si la sesión aún no la respondió, `sdd-upgrade` invoca `sdd-init`; con «anterior a la v0.2.0», `sdd-upgrade` las aplica todas, y con «init cortada», sigue la init sin migrar
-- AND las aplica en orden, con gate por fichero, y al acabar cada versión ejecuta su «Verificación», escribe el marcador con `sdd upgrade --mark <versión>` y hace su commit
+- AND las aplica en orden, con gate por fichero, y al acabar cada versión ejecuta su «Verification», escribe el marcador con `sdd upgrade --mark <versión>` y hace su commit
 - AND no regenera los documentos de anclaje desde cero ni vuelca `capabilities/`: una migración solo los reestructura con una tabla de destinos y su gate
 - AND con la `version` igual a la mayor migración del kit cargado, `sdd upgrade` escribe «el proyecto ya está al día con el kit <versión>» y el agente no toca nada
 - AND un `sdd-kit.json` con la clave `init` no se migra: `sdd upgrade` escribe «init en curso: sigue con sdd-init», y la init sigue por `sdd-init` ([`onboarding`](onboarding.md))
@@ -111,7 +111,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 - GIVEN una migración de `skills/sdd-upgrade/references/migrations/` que escribe en `sdd-kit.json` u otro fichero del proyecto
 - WHEN corre la suite del kit
-- THEN la migración declara en su línea `**Escribe**:` cada fichero y cada clave que escribe
+- THEN la migración declara en su línea `**Writes**:` cada fichero y cada clave que escribe
 - AND la suite falla si una clave declarada no aparece literal en `sdd-init`, contando su `SKILL.md`, sus `references/`, los documentos que estos enlazan salvo `skills/sdd-upgrade/`, `sdd-config` incluido, y los `.ts` de `cli/src/init/`, salvo `extraKnownMarketplaces.superpowers-marketplace`, que el kit retiró después de escribirla `v2.0.0.md`
 - AND la suite falla si el texto de una pregunta del catálogo de `sdd-config` aparece en la init o en una migración, o si una de ellas no nombra `sdd-config`
 
@@ -132,7 +132,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND si la capacidad no tiene párrafo bajo el título, el propósito sale de los títulos de sus requisitos
 - AND va sin gate, y el informe lista las capacidades a las que se ha escrito el propósito, para que el dev-lead lo revise en el diff
 - AND la verificación de la migración ejecuta `sdd capability check --path .docs/sdd`, y no queda ningún fallo del propósito
-- AND la línea `**Escribe**:` de `v2.0.0.md` no gana tokens: el paso va en su frase «Además…», como el del historial, y `cli/test/kit/migration-init-parity.test.ts` sigue en verde
+- AND la línea `**Writes**:` de `v2.0.0.md` no gana tokens: el paso va en su frase «Also…», como el del historial, y `cli/test/kit/migration-init-parity.test.ts` sigue en verde
 - AND sin carpeta `capabilities/`, el paso se salta y lo dice
 
 ### La migración a v2.0.0 cambia los nombres de las skills de feature
@@ -161,7 +161,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND el informe y el cuerpo del commit de la migración llevan `git show 284d195:.docs/sdd/roadmap.md` como la forma de ver el roadmap anterior
 - AND si el dev-lead cambia un destino de la tabla, se aplica el suyo; si la rechaza, `roadmap.md` queda sin tocar y el paso, pendiente
 - AND con `roadmap.md` sin commitear, el paso para antes de la tabla y lo dice
-- AND `v2.3.0.md` declara en su línea `**Escribe**:` `roadmap.md`, `validation.mode` y el marcador, y `cli/test/kit/migration-init-parity.test.ts` sigue en verde
+- AND `v2.3.0.md` declara en su línea `**Writes**:` `roadmap.md`, `validation.mode` y el marcador, y `cli/test/kit/migration-init-parity.test.ts` sigue en verde
 
 ### La migración a v2.3.0 pregunta quién valida
 
@@ -213,7 +213,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN `.docs/sdd/legacy.md` sigue en disco y el informe lista el paso como pendiente, con su comando
 - AND no hay commit de la migración ni cambia el marcador de `sdd-kit.json`
 - AND con el dev-lead presente, presenta el borrado y espera su «sí» antes de ejecutarlo
-- AND lo mismo vale para un paso sin marca que borra una sección entera o una clave de un JSON, o cambia la ruta de un fichero; un paso que solo sustituye un nombre, o uno que su migración marca «sin gate», se ejecuta sin preguntar
+- AND lo mismo vale para un paso sin marca que borra una sección entera o una clave de un JSON, o cambia la ruta de un fichero; un paso que solo sustituye un nombre, o uno que su migración marca «no gate», se ejecuta sin preguntar
 
 ### La migración a v3.0.0 lleva los documentos de producto y de operaciones a su sitio
 
@@ -268,7 +268,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND `sdd-end-patch` pasa a `sdd-archive`, y `sdd-init-greenfield` y `sdd-init-brownfield` a `sdd-init`, en `CLAUDE.md`, `AGENTS.md`, `.docs/sdd/*.md`, `.docs/sdd/steering/*.md`, `.docs/sdd/capabilities/*.md`, `.claude/skills/` y `.claude/commands/`
 - AND el `walkthrough.md` de `specs/` sigue citando `sdd-end-feature`, y tampoco cambian `CHANGELOG.md`, `decisions/`, `releases/` ni `kit-feedback/`
 - AND el informe lista los ficheros cambiados; sin ninguna mención, el paso se salta y lo dice
-- AND la «Verificación», con `git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)'` sobre esas rutas (las carpetas con `:(glob)`, y sin `changelog.md`, `client-changelog.md` ni `roadmap.md` de `.docs/sdd/`), no devuelve nada, también sin `AGENTS.md` ni `.claude/`
+- AND la «Verification», con `git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)'` sobre esas rutas (las carpetas con `:(glob)`, y sin `changelog.md`, `client-changelog.md` ni `roadmap.md` de `.docs/sdd/`), no devuelve nada, también sin `AGENTS.md` ni `.claude/`
 
 ### La migración a v3.0.0 lleva el método nuevo al `estimation.md` del proyecto
 
@@ -358,7 +358,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - GIVEN un proyecto que migra a v3.0.0 sin `.claude/hooks/sdd-kit-loaded.mjs`
 - WHEN corre la migración
 - THEN el fichero queda escrito y su entrada en `hooks.UserPromptSubmit` de `.claude/settings.json`, una sola vez, sin gate y sin tocar las demás entradas
-- AND si la entrada ya estaba, no la duplica, y la línea `**Escribe**:` de la migración los nombra
+- AND si la entrada ya estaba, no la duplica, y la línea `**Writes**:` de la migración los nombra
 
 ### La migración a v3.0.0 ofrece el test de títulos E2E
 
@@ -382,8 +382,8 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.
+- **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Writes**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.
 - **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case, salvo los tres documentos de la raíz que fija el Art. IV en mayúsculas: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`.
 - **Límites**: no aplica.
 - **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado que no pasa de la versión de su `plugin.json` (migrar el proyecto); en el segundo caso el agente ofrece migrar antes de atender la primera petición y no migra sin el «sí», salvo con `control.profile: unattended`, que ni ofrece ni migra y lo anota en su mensaje final; un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado; un paso sin marca que borra un fichero, una sección entera o una clave, o que cambia la ruta de un fichero, es un gate.
-- **Regla ante conflicto**: un paso que su migración marca «sin gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca. Un documento que una migración lleva a la raíz y ya existe allí (`PRODUCT.md` de impeccable, un `CHANGELOG.md`) se funde sección a sección con gate: ninguno pisa al otro.
+- **Regla ante conflicto**: un paso que su migración marca «no gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca. Un documento que una migración lleva a la raíz y ya existe allí (`PRODUCT.md` de impeccable, un `CHANGELOG.md`) se funde sección a sección con gate: ninguno pisa al otro.
