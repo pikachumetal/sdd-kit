@@ -1,6 +1,6 @@
 # Writing the plan
 
-Adapted from superpowers `writing-plans` (MIT, see NOTICE).
+Inspired by superpowers `writing-plans` (MIT).
 
 Write `plan.md` for an engineer who hasn't seen this codebase or this spec. Assume they write idiomatic code once they know the exact interface and the exact test, and that they make a reasonable choice wherever the plan leaves one open. What they can't know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. That is the plan. Trace it from `plan-template.md` of `sdd-templates`: the template fixes the form of each field (header, «Restricciones globales», Review Focus, the task's blocks, what a step contains); this file is the process. DRY, YAGNI, TDD.
 
@@ -37,7 +37,13 @@ Recommend a method for the whole plan and write it in the header's `Ejecución` 
 
 **The architecture axis.** Under `Ejecución`, write `Eje Arquitectura: sí — <frontier>` or `no — <reason>`: `sí` when the plan's files add a module, a dependency in a manifest (`package.json`, `*.csproj`, `go.mod`…), a contract between modules or data, judged against `architecture.md`. The final review of `sdd-verify` dispatches that axis only with `sí`, and can only raise it.
 
-If the method is already given —`execution: native` or `subagent` in `.docs/sdd/sdd-kit.local.json` or `sdd-kit.json`, or one the dev-lead named for this feature—, don't ask it in any profile: the line says `<valor>, fijado en <fichero>` with the file that fixes it, even if the template only names `sdd-kit.json` and even if you'd recommend the other. An `auto` in `sdd-kit.local.json` overrides the project's `native` or `subagent`: you recommend, and the line carries the `auto` form (precedence in [control-profiles.md](control-profiles.md)). Where you stop is the profile's: only `pair` asks, approving the plan and choosing the method in one question with the recommendation first; `delegate` and `unattended` check that each scenario of the spec has its task, write the method and go on. A spike is always Native, whatever `execution` says. Then `sdd-implement` runs the plan with that method.
+If the method is already given —`execution: native` or `subagent` in `.docs/sdd/sdd-kit.local.json` or `sdd-kit.json`, or one the dev-lead named for this feature—, don't ask it in any profile: the line says `<valor>, fijado en <fichero>` with the file that fixes it, even if the template only names `sdd-kit.json` and even if you'd recommend the other. An `auto` in `sdd-kit.local.json` overrides the project's `native` or `subagent`: you recommend, and the line carries the `auto` form (precedence in [control-profiles.md](control-profiles.md)). A spike is always Native, whatever `execution` says. Then `sdd-implement` runs the plan with that method.
+
+**Where you stop is the profile's.** In `delegate` and `unattended` there is no gate: check that each scenario of the spec has its task, note it in the plan, write the method and go on. In `pair`, like the spec, no code is touched without an approved plan: one question approves the plan and chooses the method at once, with these options: «Apruebo, con <método recomendado> (Recomendada)», «Apruebo, con <el otro método>» and «Cambios»; with `execution` fixed (`native` or `subagent` that no `auto` in `sdd-kit.local.json` overrides), or a method the dev-lead already named for the feature, only «Apruebo» and «Cambios». If the recommended or fixed method is Native and the session runs on the most capable model with more than one task, add, not as the recommended one, «Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media (quedan <n> tasks)», with the reason of the spec's gate in `sdd-propose`; if they choose it, put the opening in its commit and end the turn saying the change (`/model`, Sonnet with effort medium) (`tests/session-model-red.md`, p5).
+
+## The closing gate
+
+§3 copies the closing gate literally from `operations.md` §Testing `Gate de cierre`; without it, from `tech-stack.md` §Testing; without either, the constitution's; with none, `no declarado`, noted in the plan's decisions, never a command you made up (`tests/sdd-propose-0160-red.md`, p2). With Native, the `Ejecución` line also carries the template's method-change sentence, literal: after compaction, the session rereads the plan and the ledger, not this skill (`tests/native-adapt-red.md`).
 
 ## Commits
 

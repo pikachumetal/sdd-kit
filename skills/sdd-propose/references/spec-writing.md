@@ -1,6 +1,6 @@
 # Writing the spec
 
-Adapted from superpowers `brainstorming` (MIT, see NOTICE).
+Inspired by superpowers `brainstorming` (MIT).
 
 You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
 
@@ -17,13 +17,23 @@ Write it so a builder could plan from it without going back to the user:
 - **✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN. A default the user never heard is one they couldn't reject.
 - **Decisiones tomadas con el dev-lead**: what the user decided, with their literal phrase.
 
+Three things the spec carries when they apply:
+
+- **A new capability**: if the delta creates one in `capabilities/`, declare it in the decisions with its name in English kebab-case: the slug is a file name, even if the content is in Spanish.
+- **`§Frontend`**: if the feature changes what is seen and `tech-stack.md` has no `§Frontend` —or lacks the Access and the app asks for login—, «Decisiones que he tomado yo» carries the `§Frontend` proposal with its fields filled: impeccable as detector, Playwright and the access visible in the code ([frontend-verification.md](../../sdd-implement/references/frontend-verification.md)); when the spec is approved, write it in `tech-stack.md`. With `Detector: ninguno` already written, don't propose it again (`tests/frontend-verification-red.md`, s1).
+- **`Se valida en:`**: if a THEN depends on the integration branch, the git history, the remote or an environment the branch doesn't reproduce —a «no changes compared to `develop`» that the feature branch, which always changes something, can't give—, write under its scenario `Se valida en:` with `worktree con la base al día` or `validación post-merge con fecha`, also if the scenarios aren't in a capability delta: from the branch it can't be observed, and step 1 of `sdd-archive` prepares that environment (`tests/closing-verification-green.md`).
+
 Approval covers what you showed. A description you haven't written isn't approved, and choosing a scope («solo valida X») approves nothing.
+
+## Approaches
+
+Once you understand what the user wants, and before the sections or `spec.md`, put the ways of building it in a message of its own: the two or three that remain after dropping the weak ones, grounded in what the project does, each with what it trades off, and the one you recommend with its reason. In `pair`, ask which way they want to go and wait. In `delegate`, say you go with your pick and go on in the same turn. With one sensible way, the message says so and why the others don't fit. The approach chosen there is the spec's central decision.
 
 ## Design by sections
 
-In a full feature with **4 or more tasks foreseen**, close the interview by presenting the design in sections before you write `spec.md`: one section per message, each as long as it needs (a few sentences up to ~250 words), marking what you're guessing as your guess, and ending with «¿va bien?». Each section opens with what changes for whoever uses the product, in plain words and with an example with data, and its question is about that: «al exportar, cada factura sale con su vencimiento: `F-2026-014 · vence 30/11`», not «añado `dueDate` a `InvoiceDto` y lo mapeo en `ExportService`». Code names, files and internal flags go after it, only if needed (the short mode of `sdd-rubber-duck`): a «sí» to a section nobody understood approves nothing (`tests/sdd-propose-0185-red.md`, pb). What the user corrects goes into the spec before you write it. The count is the tasks foreseen for the feature you're specifying, made when you enter this step: a lite or a patch that moved up counts here, and after a split, the piece counts, not the whole.
+In a full feature with **4 or more tasks foreseen**, close the interview by presenting the design in sections before you write `spec.md`: one section per message, each as long as it needs (a few sentences up to ~250 words); only what the user said goes in as theirs: anything you filled in goes in as your proposal, with your reason; each ends with «¿va bien?». Each section opens with what changes for whoever uses the product, in plain words and with an example with data, and its question is about that: «al exportar, cada factura sale con su vencimiento: `F-2026-014 · vence 30/11`», not «añado `dueDate` a `InvoiceDto` y lo mapeo en `ExportService`». Code names, files and internal flags go after it, only if needed (the short mode of `sdd-rubber-duck`): a «sí» to a section nobody understood approves nothing (`tests/sdd-propose-0185-red.md`, pb). What the user corrects goes into the spec before you write it. The count is the tasks foreseen for the feature you're specifying, made when you enter this step: a lite or a patch that moved up counts here, and after a split, the piece counts, not the whole.
 
-The sections are interview turns, inside the spec's stop, not a new stop of the profile: they apply in `pair` and in `delegate`. No sections with 3 tasks or fewer, in lite, in a spike, with the spec approved by delegation, in `unattended`, or once the user asks to start right away; in the last three, what you'd have asked goes to ✋. The sections don't replace the gate: the spec is approved the same way. (`tests/superpowers-fork-red.md`)
+The sections are interview turns, inside the spec's stop, not a new stop of the profile: they apply in `pair`; in `delegate` they go to the spec's ✋ and its stop approves them. No sections with 3 tasks or fewer, in lite, in a spike, with the spec approved by delegation, in `unattended`, or once the user asks to start right away; in the last three, what you'd have asked goes to ✋. The sections don't replace the gate: the spec is approved the same way. (`tests/superpowers-fork-red.md`)
 
 ## Starting right away
 
