@@ -112,8 +112,7 @@ Vague name, tests mock not code
 
 ### Verify RED - Watch It Fail
 
-**MANDATORY. Never skip.**
-Also for a RED you received: run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
+**MANDATORY, a RED you received included: never skip it.** Run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
 
 ```bash
 npm test path/to/test.test.ts
@@ -124,11 +123,9 @@ Confirm:
 - Failure message is expected
 - Fails because feature missing (not typos)
 
-**Test passes?** You're testing existing behavior. Fix test.
-A test you received: report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».
+**Test passes?** You're testing existing behavior. Fix a test you wrote; report a test you received (`DONE_WITH_CONCERNS` with the green output), and don't write code to «make it pass».
 
-**Test errors?** Fix error, re-run until it fails correctly.
-A compile or import error on the symbol the task creates is the right failure.
+**Test errors?** Any other error: fix it, re-run until it fails correctly.
 
 ### GREEN - Minimal Code
 
@@ -296,8 +293,7 @@ Before marking work complete:
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
-- [ ] All tests pass
-(the task's «Verificación»)
+- [ ] The task's «Verificación» passes
 - [ ] Output pristine (no errors, warnings)
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
