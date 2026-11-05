@@ -139,6 +139,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Patch 0318** — `sdd merge`, `sdd id claim` y `sdd roadmap publish` ya no se paran por un fichero que solo cambia de finales de línea o de stat (`git diff --quiet` en vez de `git status`, y `git add -u` antes de un merge), y `.gitattributes` da `text eol=lf` a la lista blanca del build para que `kit:build` copie LF a `dist/`. → [ref](specs/20261105-115706-patch-0318-eol-only-not-dirty/)
 - **Patch 0270** — `sdd capability merge` no da hueco en una línea de un `MODIFIED` que ya está, literal, en el requisito vivo, y rechaza sin escribir la línea suelta y el escenario incompleto, con la comprobación de `sdd capability check`. → [ref](specs/20261102-134956-patch-0270-capability-merge-fixes/)
 - **0285** — Los tests de `cli:test` que esperan a `git` o a `node` tienen un tope de 20 s por fichero y ya no dan `Test timed out in 5000ms` con 8 suites a la vez. → [ref](specs/20261102-120757-feature-0285-load-test-timeouts/)
 - **Patch 0288** — El lanzador de sujetos no pasa a `claude` la `ORIGINAL_PATH` heredada: con ella, Git Bash rehacía el `PATH` del sujeto sin `no-claude/` ni el `gh` falso del molde, y `rc2` de `sdd-archive` caía en `K6`. → [ref](specs/20261102-085747-patch-0288-rc2-fake-gh/)
