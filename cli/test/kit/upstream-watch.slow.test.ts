@@ -55,11 +55,12 @@ function newSource(root: string, tags: string[], url = 'https://github.com/acme/
   return { origin, clone, upstream: join(root, 'upstream') };
 }
 
-function newRegistry(root: string, entries: ToyEntry[], repo = 'acme/juguete'): string {
+function newRegistry(root: string, entries: ToyEntry[], repo = 'acme/juguete', own?: string[]): string {
   const path = join(root, 'upstream.json');
   const registry = {
     sources: { Juguete: { repo, tagPrefix: 'v', license: 'MIT', copyright: 'Copyright (c) 2026 Acme' } },
     entries: entries.map(({ version, paths = ['a.md'], kit = ['skills/juguete/'], ...rest }) => ({ kind: 'copy', source: 'Juguete', version, paths, kit, ...rest })),
+    own,
   };
   writeFileSync(path, JSON.stringify(registry, null, 2));
   return path;
@@ -217,5 +218,79 @@ describe('Vigilancia de fuentes (tests/upstream/check.ts)', () => {
     const root = newRoot();
     const registry = join(root, 'upstream.json');
     expect(runCheck(registry, join(root, 'upstream'))).toEqual({ output: `Sin el registro de fuentes en ${registry}.`, code: 1 });
+  });
+});
+
+describe('Un fichero propio no lleva líneas literales de una fuente (tests/upstream/check.ts)', () => {
+  const LITERAL = 'Copied word for word from the toy source, this line has eighty characters in all';
+  const OWN = 'skills/juguete-propia/SKILL.md';
+  const literalAt = (line: number, at: string): string =>
+    `${OWN}:${line}: línea literal de Juguete ${at}, y un own no lleva NOTICE: reescríbela o pasa el fichero a copia: «Copied word for word from the…»`;
+
+  function withOwn(root: string, entries: ToyEntry[], body: string[]): string {
+    mkdirSync(join(root, 'skills', 'juguete-propia'), { recursive: true });
+    writeFileSync(join(root, OWN), `${body.join('\n')}\n`);
+    return newRegistry(root, entries, 'acme/juguete', ['skills/juguete-propia/']);
+  }
+
+  it('fails on an own line copied literally from a source', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v0.9.0']);
+    release(source.origin, 'v1.0.0', { 'b.md': `${LITERAL}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', LITERAL]), source.upstream)).toEqual({ output: literalAt(3, 'b.md@v1.0.0'), code: 1 });
+  });
+
+  it('fails on the same line indented in the own', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v0.9.0']);
+    release(source.origin, 'v1.0.0', { 'b.md': `${LITERAL}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', `    ${LITERAL}`]), source.upstream)).toEqual({ output: literalAt(3, 'b.md@v1.0.0'), code: 1 });
+  });
+
+  it('finds a line only in the version of an entry', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v0.8.0']);
+    release(source.origin, 'v0.9.0', { 'a.md': `${LITERAL}\n` });
+    release(source.origin, 'v1.0.0', { 'a.md': 'a\n' });
+    expect(runCheck(withOwn(root, [{ version: 'v0.9.0' }], ['# Propia', '', LITERAL]), source.upstream)).toEqual({
+      output: [`Juguete · skills/juguete/: v0.9.0 → v1.0.0, cambian sus rutas: git -C ${source.clone} diff v0.9.0 v1.0.0 -- a.md`, literalAt(3, 'a.md@v0.9.0')].join('\n'),
+      code: 1,
+    });
+  });
+
+  it('ignores an own line under 70 characters', () => {
+    const root = newRoot();
+    const short = LITERAL.slice(0, 69);
+    const source = newSource(root, ['v0.9.0']);
+    release(source.origin, 'v1.0.0', { 'b.md': `${short}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', short]), source.upstream)).toEqual(upToDate);
+  });
+
+  it('fails on a line of exactly 70 characters', () => {
+    const root = newRoot();
+    const line = LITERAL.slice(0, 70);
+    const source = newSource(root, ['v0.9.0']);
+    release(source.origin, 'v1.0.0', { 'b.md': `${line}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', line]), source.upstream).output).toBe(literalAt(3, 'b.md@v1.0.0'));
+  });
+
+  it('does not grep a version that is not in the clone', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v1.0.0']);
+    release(source.origin, 'v1.1.0', { 'b.md': `${LITERAL}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v0.9.0' }], ['# Propia', '', LITERAL]), source.upstream)).toEqual({
+      output: [`Juguete: falta v0.9.0 en el clon ${source.clone}`, literalAt(3, 'b.md@v1.1.0')].join('\n'),
+      code: 1,
+    });
+  });
+
+  it('reports each literal line once', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v0.9.0']);
+    release(source.origin, 'v1.0.0', { 'b.md': `${LITERAL}\n`, 'c.md': `${LITERAL}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', LITERAL, '', LITERAL]), source.upstream)).toEqual({
+      output: [literalAt(3, 'b.md@v1.0.0'), literalAt(5, 'b.md@v1.0.0')].join('\n'),
+      code: 1,
+    });
   });
 });

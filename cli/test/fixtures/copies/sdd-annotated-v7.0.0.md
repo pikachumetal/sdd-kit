@@ -149,6 +149,7 @@ a ledger file, not only in todos.
 - Check for this plan's ledger with `sdd task status`. Tasks with a
   `Task <N>: complete` line are DONE; a task whose last line is a fix round
   is mid-loop: resume it at the next round, and run its re-review first. A ledger whose first line names a different plan file — or a stray
+<!-- kit: fin -->
   ledger at the old flat path `.superpowers/sdd/progress.md` — is another
   plan's progress: leave it in place and start your own, fresh.
 - Create the ledger with its identity as the first line:

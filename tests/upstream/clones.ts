@@ -38,6 +38,14 @@ export async function hasCommit(clone: string, version: string): Promise<boolean
   return (await git(clone, ['cat-file', '-e', `${version}^{commit}`])).code === 0;
 }
 
+const ABBREVIATE_AFTER = 6;
+
+// Una cita en un aviso: las primeras palabras, con los espacios normalizados.
+export function abbreviate(text: string): string {
+  const all = text.split(/\s+/).filter(Boolean);
+  return all.length > ABBREVIATE_AFTER ? `${all.slice(0, ABBREVIATE_AFTER).join(' ')}…` : all.join(' ');
+}
+
 export function report(lines: string[], code = 1): number {
   for (const line of lines) console.log(line);
   return code;

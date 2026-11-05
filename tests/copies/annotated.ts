@@ -1,5 +1,6 @@
 // La fuente anotada de una copia frente a su original: sus marcas, sus bloques y cada diferencia que no lleva marca.
 import { nextBlock, stripMarks, WHOLE_LINE_MARK, type Block as Region } from '../../build/dist.ts';
+import { abbreviate } from '../upstream/clones.ts';
 
 export interface Problem {
   file: string;
@@ -52,10 +53,10 @@ const TASK = /^(\d{4}|[0-9a-f]{7,40})$/;
 const FIELD = /^(sustituye|quita|de|arregla): (.*)$/;
 const ABSOLUTE = /\b(only|never|always|must|every)\b/i;
 const QUOTE_INSIDE = /[«»]|-->/;
-const ABBREVIATE_AFTER = 6;
 const OVERCITE_RUN = 2;
 const SHINGLE = 6;
 const MIN_KEPT = 50;
+const EAT_RUN = 2;
 
 const MESSAGES = {
   unmarked: 'texto que no es del original ni está en un bloque del kit',
@@ -74,6 +75,8 @@ const MESSAGES = {
   crlf: 'tiene finales de línea CRLF; la fuente de una copia va en LF',
   notVerbatim: (label: string): string => `no es su original ${label} byte a byte`,
   ownNow: (kept: number, path: string): string => `conserva el ${kept} % de su original ${path}; por debajo del ${MIN_KEPT} % es propia: pásala a own`,
+  eats: (count: number, first: string): string =>
+    `el bloque lleva ${count} líneas seguidas del original en su sitio, desde «${abbreviate(first)}»: ciérralo con <!-- kit: fin --> antes de ellas`,
 };
 
 export function formatProblem(problem: Problem): string {
@@ -83,11 +86,6 @@ export function formatProblem(problem: Problem): string {
 
 const words = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 const normalize = (text: string): string => words(text).join(' ');
-
-function abbreviate(text: string): string {
-  const all = words(text);
-  return all.length > ABBREVIATE_AFTER ? `${all.slice(0, ABBREVIATE_AFTER).join(' ')}…` : all.join(' ');
-}
 
 function lines(text: string): string[] {
   const all = text.split('\n');
@@ -155,14 +153,27 @@ export function kitBlockLines(file: string, annotated: string): Set<number> {
   return kit;
 }
 
+// Para cada línea, si la siguiente marca de línea entera es fin: un bloque con fin cruza sus líneas en blanco.
+function finAhead(all: string[]): boolean[] {
+  const ahead = new Array<boolean>(all.length).fill(false);
+  let next = false;
+  for (let index = all.length - 1; index >= 0; index--) {
+    ahead[index] = next;
+    if (WHOLE_LINE_MARK.test(all[index])) next = 'fin' in parseMark(all[index]);
+  }
+  return ahead;
+}
+
 class Reader {
   readonly result: Annotated;
   private readonly file: string;
+  private readonly finAhead: boolean[];
   private open: KitBlock | null = null;
 
   constructor(file: string, text: string) {
     this.file = file;
     this.result = { lines: lines(text), text: [], blocks: [], problems: [] };
+    this.finAhead = finAhead(this.result.lines);
   }
 
   read(): Annotated {
@@ -184,7 +195,7 @@ class Reader {
   private take(line: string, index: number, inText: boolean): void {
     if (WHOLE_LINE_MARK.test(line)) return this.takeMark(line, index, !inText);
     if (!this.open) this.result.text.push({ index, text: line });
-    else if (inText && line.trim() === '') this.close(index);
+    else if (inText && line.trim() === '' && !this.finAhead[index]) this.close(index);
     else this.open.content.push(line);
   }
 
@@ -210,7 +221,7 @@ class Reader {
 }
 
 // LCS clásico; en un empate casa la primera pareja posible, así gana el alineado que casa antes en el original.
-function lcsPairs(a: string[], b: string[]): [number, number][] {
+export function lcsPairs(a: string[], b: string[]): [number, number][] {
   const table = Array.from({ length: a.length + 1 }, () => new Uint32Array(b.length + 1));
   for (let i = a.length - 1; i >= 0; i--)
     for (let j = b.length - 1; j >= 0; j--) table[i][j] = a[i] === b[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);
@@ -318,7 +329,33 @@ function checkCite(context: Context, block: KitBlock, state: CiteState): boolean
   return true;
 }
 
+// La racha más larga de líneas con texto que el bloque repite seguidas del tramo que quita su sitio.
+function eatenRun(content: string[], removed: string[]): { count: number; first: string } {
+  const [kit, gone] = [content.filter((line) => !isBlank(line)), removed.filter((line) => !isBlank(line))];
+  let best = { count: 0, first: '' };
+  for (let i = 0; i < kit.length; i++)
+    for (let j = 0; j < gone.length; j++) {
+      let count = 0;
+      while (i + count < kit.length && kit[i + count] === gone[j + count]) count++;
+      if (count > best.count) best = { count, first: kit[i] };
+    }
+  return best;
+}
+
+function checkEaten(context: Context, block: KitBlock, removed: string[]): void {
+  if (block.mark.kind === 'quita') return;
+  const run = eatenRun(block.content, removed);
+  if (run.count >= EAT_RUN) report(context, { line: block.index + 1, message: MESSAGES.eats(run.count, run.first), fixes: block.mark.fixes });
+}
+
+// Una marca con un rojo de su cita ya lo dice: la racha solo habla de las que no tienen otro.
 function checkSite(context: Context, site: Site): void {
+  checkCites(context, site);
+  const reported = new Set(context.problems.map((problem) => problem.line));
+  for (const block of site.blocks) if (!reported.has(block.index + 1)) checkEaten(context, block, site.removed);
+}
+
+function checkCites(context: Context, site: Site): void {
   const removedWords = words(site.removed.join(' '));
   const contentWords = words(site.blocks.flatMap((block) => block.content).join(' '));
   const cited = site.blocks.filter((block) => block.mark.cite !== undefined);
