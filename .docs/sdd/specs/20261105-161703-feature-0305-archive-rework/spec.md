@@ -237,7 +237,9 @@ Precio por sujeto de `sdd-archive`: 0,45 $, lo medido en la 0236 (23,78 $ en 53 
 | Una tanda de REFACTOR | los escenarios en rojo, ~6 sujetos | 2,70 |
 | Controles | un rojo del GREEN que no toca lo cambiado, con el kit de `develop`, ~4 sujetos | 1,80 |
 | Medición tras la revisión final | si la pasada de fix cambia texto de la skill, sus escenarios, ~3 sujetos | 1,35 |
-| Suma | ~91 sujetos, ~3 h de reloj en segundo plano | 42,90 |
+| Suma | 91 sujetos | 42,90 |
+
+~3 h de reloj en segundo plano.
 
 Con el precio de `tech-stack.md` (0,70 $), la misma suma da ~66 $. Umbral de parada: 45 $ en sujetos; si lo medido en el RED sale más cerca de 0,70 $ que de 0,45 $, paro antes del GREEN y decides. Si se pasa, con una tanda más de REFACTOR incluida, paro y decides: seguir, cerrar con lo medido y dejar lo pendiente como deuda, o recortar. Con el humo de la decisión 13: RED 1,05 $ + GREEN 18 sujetos (8,10 $) + REFACTOR 2,70 $ = ~11,85 $.
 

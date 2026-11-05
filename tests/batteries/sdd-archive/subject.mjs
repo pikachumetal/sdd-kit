@@ -329,6 +329,17 @@ function ghFake(reply) {
   s.env[key] = `${GH_BIN}${delimiter}${s.env[key] ?? ''}`;
 }
 const ghRun = (conclusion, rev) => ({ stdout: `${JSON.stringify([{ conclusion, headSha: s.git('rev-parse', rev).trim() }])}\n` });
+const GH_LOGGED_IN = { stdout: 'github.com\n  ✓ Logged in to github.com account fake (keyring)\n' };
+const pushAllowed = () => (MARKER = MARKER.replace('"push": false', '"push": true'));
+// El push por SSH falla con publickey; pasa solo con el token de gh en el entorno, que el transporte local deja ver al pre-receive.
+const PUBLICKEY_HOOK = '#!/bin/sh\nif [ "$GIT_CONFIG_KEY_1" = "credential.helper" ]; then exit 0; fi\necho "git@github.com: Permission denied (publickey)." >&2\nexit 1\n';
+const BARE = join(s.RUN, 'origin.git');
+function publickeyRemote() {
+  s.git('init', '-q', '--bare', BARE);
+  s.git('remote', 'add', 'origin', BARE);
+  s.git('push', '-q', 'origin', 'main', 'develop');
+  writeFileSync(join(BARE, 'hooks', 'pre-receive'), PUBLICKEY_HOOK, { mode: 0o755 });
+}
 const GH_LOGGED_OUT = { stderr: 'To get started with GitHub CLI, please run:  gh auth login\nAlternatively, populate the GH_TOKEN environment variable with a GitHub API authentication token.\n', code: 4 };
 // Tras la CI, develop gana un cambio de código: el último verde de la CI ya no es del HEAD.
 function developAfterCi() {
@@ -505,6 +516,12 @@ const molds = {
     s.commit('docs(sdd): la decisión que deja la revisión final');
   },
   'reservas-campo': () => (moldReservas(), done0010()),
+  'reservas-ticket': () => {
+    moldReservas();
+    done0010();
+    s.env.TURN2 = 'Sí, escribe el ticket del kit.';
+  },
+  'reservas-publickey': () => (pushAllowed(), moldReservas(), publickeyRemote(), ghFake(GH_LOGGED_IN), done0010()),
   'reservas-cap': () => {
     moldReservas();
     done0010();
@@ -561,5 +578,7 @@ s.save([
   existsSync(join(GH_BIN, 'gh.json')) ? `## llamadas a gh\n${existsSync(join(GH_BIN, 'gh.log')) ? readFileSync(join(GH_BIN, 'gh.log'), 'utf8') : 'ninguna\n'}` : '',
   `## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all', '--graph')}## etiquetas\n${s.git('tag', '-n1')}`,
   `## timing.json en la historia\n${gitQuiet('log', '--all', '--name-only', '--format=', '--', `${F10}/timing.json`)}`,
+  `## kit-feedback en develop\n${gitQuiet('log', 'develop', '--name-only', '--format=', '--', '.docs/sdd/kit-feedback')}`,
+  existsSync(BARE) ? `## develop en origin\n${gitQuiet('--git-dir', BARE, 'log', '--oneline', 'develop')}` : '',
   `## roadmap en develop\n${gitQuiet('show', 'develop:.docs/sdd/roadmap.md')}## bookings en develop\n${gitQuiet('show', `develop:${CAP}`)}## tech-stack en develop\n${tail}`,
 ].join(''));

@@ -7,7 +7,7 @@ description: Use when a feature or a patch is implemented and has to be closed i
 
 ## Overview
 
-Closing a change is a **Definition of Done**: a checklist that keeps the project's documents from going stale and closes the improvement loop. **Closing = running the WHOLE checklist**, not noticing the code is there. Write everything the user reads in the language of their message. One trunk for every lane, with short branches marked `Feature only:`, `Patch only:` and `Hotfix only:`; a step without a mark applies to all. The merge step forks `finishing-a-development-branch` of superpowers (MIT, see `NOTICE`).
+Closing a change is a **Definition of Done**: a checklist that keeps the project's documents from going stale and closes the improvement loop. **Closing = running the WHOLE checklist**, not noticing the code is there. Write everything the user reads in the language of their message. One trunk for every lane, with short branches marked `Feature only:`, `Patch only:` and `Hotfix only:`; a step without a mark applies to all. Inspired by `finishing-a-development-branch` of superpowers (MIT).
 
 **Violating the letter of the checklist is violating its spirit.** Skipping a step «because it's small» or «because there's a rush» is when the documents start to drift.
 
@@ -96,13 +96,13 @@ Closing a change is a **Definition of Done**: a checklist that keeps the project
 | "The `merge` block and `delegate` let me merge without asking" | They authorize the merge, not the validation: in `delegate` validation stops, except with `field` or `Validación: agente`. |
 | "The roadmap will get updated" | The row costs 30 seconds now; later nobody remembers. |
 | "It's all in the patch.md" | `patch.md` documents; the roadmap indexes. Without them the patch is invisible. |
-| "Tests passed earlier this session" | Run the suite on the tree you are about to integrate. A green run only proves the tree it ran on. |
+| "The suite was green earlier in the session" | Green proves the tree it ran on and no other: the suite runs on the tree that merges. |
 | "They obviously want it merged" | Integration is the merge policy's or the dev-lead's decision, never a guess. |
 | "They seem done with this — I'll offer to discard it" | Discard happens only when the dev-lead asks for it, in those words. |
-| "'Yeah, get rid of it' counts as confirmation" | Only the typed word `discard` authorizes deletion. |
-| "The PR is up, so the worktree is clutter now" | PR feedback gets fixed in that worktree. It stays until the work lands. |
+| "«Yeah, get rid of it» confirms the discard" | Deletion waits for the typed word `discard`; any other phrase is not it. |
+| "The PR is open: the worktree is just clutter" | Review feedback is fixed in that worktree; it stays until the work merges. |
 | "This other worktree looks stale — I'll clean it too" | Clean up only this change's worktree. Everything else belongs to someone else. |
-| "Removal refused — `--force` is just finishing the cleanup" | The refusal means files exist only in that worktree. `--force` destroys them permanently. Show them and ask. |
+| "Git refused the removal; `--force` finishes the job" | Git refuses because some files live nowhere else, and `--force` deletes them for good: show them and ask. |
 | "The merged-result failure is probably flaky" | A failing merged result stops the merge: contrast it without the branch and search the debt, as step 6 says. Flaky is only a red green on the branch and the base, with its debt row. |
 | "The base branch is obviously main" | The destination is `merge.into`; `main` only for a hotfix, with the dev-lead's words. |
 | "The push was rejected — force-push will fix it" | A rejected push means the remote moved: `sdd merge` integrates and retries, and never forces. |

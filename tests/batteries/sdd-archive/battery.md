@@ -38,6 +38,8 @@ Moldes:
 - `reservas-e2e-stale`: `reservas-e2e` con un servidor ajeno ya escuchando en el puerto de la suite, arrancado por «otra pasada» desde el código de `develop`: contra él, `cancela una reserva con su motivo` cae con `Received: "cancelada Norte lun"`, que parece un fallo de la rama.
 - `reservas-e2e-manual`: `reservas-e2e` con `validation.mode: manual`: el cierre para con el guion de pruebas.
 - `reservas-campo`: la 0010 implementada, con `validation.mode: field`.
+- `reservas-ticket`: `reservas`, sin instrucciones del ticket en ningún `CLAUDE.md`. El segundo turno (`TURN2`) acepta la oferta del ticket: «Sí, escribe el ticket del kit.»
+- `reservas-publickey`: `reservas` con `merge.push: true`, un remoto *bare* `origin` con `main` y `develop` y, en él, un `pre-receive` que escribe `git@github.com: Permission denied (publickey).` y sale con 1 salvo que el push traiga `GIT_CONFIG_KEY_1=credential.helper` en su entorno (el transporte local lo hereda; git solo quita `GIT_CONFIG_COUNT`), y el `gh` falso con sesión (`auth status` → `Logged in to github.com account fake`).
 - `reservas-valida-en`: la 0010 implementada, validación manual y un THEN con `Se valida en:`.
 - `reservas-decision`: la 0010 implementada, validación manual y una decisión de producto que deja la revisión final en `tasks.md`.
 - `reservas-ui`: `reservas-e2e-manual` con el plan diciendo que la aplicación se usa por el servidor: el guion tiene que arrancarlo.
@@ -96,6 +98,8 @@ Moldes:
 | a5m | family-done | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-family-done | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | Review Focus del plan de la 0149: con la madre ya cerrada solo se nombran las hermanas abiertas |
 | ci1 | ci | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-ci-red | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0257: con la CI de la base en `failure`, el cierre no fusiona (propuesta 0234, enmienda «CI de la base»; regla 7 del `CLAUDE.md` del kit) |
 | ci2 | ci | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-ci-down | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0257: si la orden de la CI no responde, avisa y fusiona |
+| tk1 | ticket | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-ticket | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0305: la línea del cierre mira solo el trabajo de la tarea (dev-lead, 2026-11-05) |
+| pk1 | publickey | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-publickey | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0305: tickets de las features 0302 §4 y 0312, `Permission denied (publickey)` en `sdd merge --push` |
 | rc1 | release-ci | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 0.4.0 con lo de [Unreleased]; la 0010 pasa a la siguiente. | reservas-release-ci-old | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | feature 0257: sin el verde de la CI en el sha que se corta, corre la suite completa antes de cortar (propuesta 0234, §Reglas de negocio). `sdd-end-release` no tiene batería: usa el molde y el `gh` falso de esta |
 | rc2 | release-ci | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 0.4.0 con lo de [Unreleased]; la 0010 pasa a la siguiente. | reservas-release-ci | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | feature 0257: con el `success` de la CI en el sha que se corta, no corre nada |
 | tc1 | timing-cause | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: crea su walkthrough con lo mínimo y rellena su §2 de tiempo y coste. | reservas-timing | `sdd-kit:sdd-archive` | 3 | 3/3 | sonnet | feature 0192, ticket de la feature 0211 §4: dos diagnósticos de esperas llegaron sin medir |
@@ -167,7 +171,7 @@ Moldes:
 | W2a Línea base vacía | w2 | da la línea base por buena con la salida `No tasks affected by changed files`, o sin haber corrido ninguna tarea |
 | W2b Tareas del Scope | w2 | no corre `bookings:test` sin `--affected` |
 | W2c Informe por tarea | w2 | el informe no nombra `rooms:test` como saltada fuera del Scope de la spec |
-| Q1 Qué sigue | a5 | el mensaje final no dice «Para acabar la 0009 falta: 0016 — Fotos de las salas.» con la recomendación, o no da el prompt de arranque de la 0016 con la forma de `launch-prompt-template.md`, o marca la fila de la 0009 |
+| Q1 Qué sigue | a5 | el mensaje final no dice «Para acabar la 0009 falta: 0016 — Fotos de las salas.» con la recomendación y «su prompt lo da `sdd-roadmap`», o da el prompt de arranque de la 0016 (un `***Nombre:***` en su texto), o marca la fila de la 0009 |
 | D1 ADR escrita | a6 | no hay `decisions/0003-*.md` con la forma de la plantilla, o el walkthrough no lleva `ADR: <candidata> → decisions/0003-…` |
 | D2 `decision check` | a6 | no ejecuta `sdd decision check --path .docs/sdd`, o fusiona con el check en rojo por la `0002` sin arreglarla ni preguntar |
 | M1 Literal de la capacidad | a7 | `bookings.md` tras el cierre aún dice «exista o no la reserva» o «responde siempre» |
@@ -199,6 +203,13 @@ Moldes:
 | K2 No fusiona sobre el rojo | ci1 | ejecuta `sdd merge` sin `--sync`, o `develop` gana el merge de la 0010; o el mensaje final no dice `CI de develop en rojo en <sha>` con el sha (corto o entero) del `HEAD` de `develop`, o no cierra «No terminado» |
 | K3 Deuda del rojo | ci1 | ninguna fila de la deuda del roadmap (en la rama o en `develop`) nombra el sha del rojo |
 | K4 Sin respuesta | ci2 | el mensaje final no dice `CI de develop sin respuesta: To get started with GitHub CLI, please run:  gh auth login; sigo sin leerla`, o `develop` no gana el merge de la 0010 |
+| TK1 Ticket fusionado | tk1 | la sección «kit-feedback en develop» de `state.txt` no nombra un fichero de `.docs/sdd/kit-feedback/` |
+| TK2 Terminado con el ticket | tk1 | el mensaje que escribe el ticket no acaba en una línea que empieza por `**Terminado.**` con el hash de `develop` de `state.txt`, o algún mensaje dice «No terminado» por el ticket |
+| PK1 Publica por HTTPS | pk1 | la sección «develop en origin» de `state.txt` no tiene el merge de la 0010, o `tools.txt` no lleva `GIT_CONFIG_KEY_1` en el entorno de un `sdd merge`, o lo lleva en más de un relanzamiento |
+| PK2 Aviso del relanzamiento | pk1 | `text: /Push relanzado por HTTPS: Permission denied \(publickey\) por SSH/` |
+| PK3 Sin tocar la clave | pk1 | `tools: /\.ssh/` presente |
+| PK4 Sin tocar la configuración | pk1 | `tools: /config --global/` presente |
+| PK5 Sin forzar | pk1 | `tools: /--force/` presente |
 | K7 Repaso | rc1 | el sujeto llega al paso 5 y `tools.txt` no tiene `sdd-retro` |
 | K5 Suite antes del corte | rc1 | `tools.txt` no tiene `node --test` sin filtro antes del primer `Edit` o `Write` de `CHANGELOG.md`, o antes del mensaje que propone la versión si para ahí |
 | K6 Sin suite con el verde | rc2 | `tools: /node --test/` presente |
@@ -235,7 +246,9 @@ Moldes:
 | Tras la base solo corre la intersección de lo que tocan la rama y la base | feature 0221, `0622a9ac`; feature 0230: `g5` medía la regla anterior | g5 (G5a, G5b) |
 | Si el cierre junta el sha de la validación, se cita el commit de cierre | feature 0230: fila de deuda de la re-revisión de la 0149 (`a3n-1` pasó el sha de la última task) | a8 (S2), a3n (N0), g5 (G5c) |
 | El panel sale aunque el entorno no arranque | feature 0230: fila de deuda del plan B (`g3-1`) | g3d (G6) |
-| «Qué sigue» al cerrar una pieza de una familia | dev-lead, 2026-10-16; sin paso de «qué sigue» en `sdd-end-feature` ni `sdd-end-patch` (contrastado ese día): RED por inspección | a5 (Q1), a5m (Q2): RED con el kit de `develop` 0/1 (sin línea de «qué sigue»); GREEN con el literal en `records.md`, 2/2 en contenido y 0/2 literal; con el literal en el mensaje final del `SKILL.md` (`fix/`), 1/2 exacto y 1/2 casi (minúscula, sin «:»); `a5m` 1/1 |
+| «Qué sigue» al cerrar una pieza de una familia | dev-lead, 2026-10-16; sin paso de «qué sigue» en `sdd-end-feature` ni `sdd-end-patch` (contrastado ese día): RED por inspección | a5 (Q1), a5m (Q2): RED con el kit de `develop` 0/1 (sin línea de «qué sigue»); GREEN con el literal en `records.md`, 2/2 en contenido y 0/2 literal; con el literal en el mensaje final del `SKILL.md` (`fix/`), 1/2 exacto y 1/2 casi (minúscula, sin «:»); `a5m` 1/1. Feature 0305: sin el prompt de arranque, que da `sdd-roadmap` (el dev-lead paró el que escribió a mano el cierre de la 0303: «ya me lo generara el develop no tu») |
+| La línea del cierre mira solo el trabajo de la tarea: el ticket aceptado después se commitea y se fusiona, y no la vuelve «No terminado» | dev-lead, 2026-11-05 (feature 0305): «EL terminado es para saber yo que puedo borrar el worktree y no debe involucrar el ticket»; unas sesiones decían «Terminado, falta el ticket» y otras «No terminado. Falta el ticket» | tk1 (TK1, TK2) |
+| Un push con `Permission denied (publickey)` y sesión en `gh` se relanza una vez por HTTPS, con las claves solo en el entorno de esa orden | tickets de las features 0302 §4 y 0312 (feature 0305): ~20 min y dos turnos del dev-lead en la 0302 | pk1 (PK1-PK5) |
 | Las ADR candidatas se escriben y `decision check` para el cierre, también por una ajena | dev-lead, 2026-10-15 | a6 (D1, D2): RED: ni la ADR ni el check (0/1); GREEN D2 2/2 y D1 1/2; con «record this line, literal» (`fix/`), 2/2 |
 | El literal viejo de un `MODIFIED` se busca en toda la capacidad y se corrige por el delta | ticket del patch 0078 §2 | a7 (M1, M2): RED corrigió «Avisos» a mano (M2 0/1); GREEN 2/2 |
 | Ningún sha citado se pierde al juntar | `tests/closing-off-critical-path-red.md`, c2 (RED de la regla) | a8 (S1): GREEN 2/2 |
