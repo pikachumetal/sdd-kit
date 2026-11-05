@@ -118,9 +118,8 @@ Vague name, tests mock not code
 
 ### Verify RED - Watch It Fail
 
-**MANDATORY. Never skip.**
-<!-- kit: 0312 · arregla: 0307 -->
-Also for a RED you received: run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
+<!-- kit: 0307 · sustituye: «skip.**» -->
+**MANDATORY. Never skip it, also with a RED you received:** run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
 
 ```bash
 npm test path/to/test.test.ts
@@ -133,13 +132,11 @@ Confirm:
 - Failure message is expected
 - Fails because feature missing (not typos)
 
-**Test passes?** You're testing existing behavior. Fix test.
-<!-- kit: 0312 -->
-A test you received: report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».
+<!-- kit: 0307 · sustituye: «Fix test.» -->
+**Test passes?** You're testing existing behavior. Fix a test you wrote; report a test you received (`DONE_WITH_CONCERNS` with the green output), and don't write code to «make it pass».
 
-**Test errors?** Fix error, re-run until it fails correctly.
-<!-- kit: 0312 -->
-A compile or import error on the symbol the task creates is the right failure.
+<!-- kit: 0307 · sustituye: «Fix error,» -->
+**Test errors?** Any other error: fix it, re-run until it fails correctly.
 
 ### GREEN - Minimal Code
 
@@ -315,9 +312,8 @@ Before marking work complete:
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
-- [ ] All tests pass
-<!-- kit: 0312 · arregla: 0307 -->
-(the task's «Verificación»)
+<!-- kit: 0307 · sustituye: «All tests pass» -->
+- [ ] The task's «Verificación» passes
 <!-- kit: fin -->
 - [ ] Output pristine (no errors, warnings)
 - [ ] Tests use real code (mocks only if unavoidable)
