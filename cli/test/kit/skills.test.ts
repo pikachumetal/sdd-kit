@@ -5,6 +5,8 @@ import { WHOLE_LINE_MARK } from '../../../build/dist.ts';
 import { filesUnder, frontmatter, isMigration, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
 
 const skillsRoot = join(repoRoot, 'skills');
+// Lo que carga el agente: el texto de una inclusión solo existe en dist/ (ticket de la 0304 §4).
+const distSkills = join(repoRoot, 'dist', 'skills');
 const skills = skillNames();
 
 // Proyectos reales donde se usa el kit: skills/ se instala en cada consumidor, y la evidencia de
@@ -21,7 +23,7 @@ function reachableReferences(skill: string, skillText: string): Set<string> {
   const reached = new Set(relativeLinks(skillText).map((link) => link.replace(/^references\//, '')));
   const pending = [...reached];
   for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
-    const path = join(skillsRoot, skill, 'references', name);
+    const path = join(distSkills, skill, 'references', name);
     if (!existsSync(path) || !statSync(path).isFile()) continue;
     for (const [link] of readFileSync(path, 'utf8').matchAll(/(?<![\w/-])[a-z0-9-]+\.md\b/g)) {
       if (reached.has(link)) continue;
@@ -41,7 +43,7 @@ function sortedUnique(values: string[]): string[] {
 }
 
 describe.each(skills)('skill %s', (skill) => {
-  const text = readText(`skills/${skill}/SKILL.md`);
+  const text = readText(`dist/skills/${skill}/SKILL.md`);
   const fields = frontmatter(text);
 
   it('tiene frontmatter con name igual a la carpeta, en kebab-case', () => {
@@ -59,20 +61,20 @@ describe.each(skills)('skill %s', (skill) => {
   });
 
   it('enlaza solo a ficheros que existen', () => {
-    expect(relativeLinks(text).filter((link) => !existsSync(join(skillsRoot, skill, link)))).toEqual([]);
+    expect(relativeLinks(text).filter((link) => !existsSync(join(distSkills, skill, link)))).toEqual([]);
   });
 
-  it.skipIf(!existsSync(join(skillsRoot, skill, 'references')))('enlaza todos sus references/ desde SKILL.md', () => {
+  it.skipIf(!existsSync(join(distSkills, skill, 'references')))('enlaza todos sus references/ desde SKILL.md', () => {
     const reached = reachableReferences(skill, text);
-    const orphans = readdirSync(join(skillsRoot, skill, 'references')).filter((name) => name.endsWith('.md') && !reached.has(name));
+    const orphans = readdirSync(join(distSkills, skill, 'references')).filter((name) => name.endsWith('.md') && !reached.has(name));
     expect(orphans).toEqual([]);
   });
 });
 
 describe('índice de sdd-templates', () => {
   it('lista cada plantilla de templates/ exactamente una vez', () => {
-    const templates = readdirSync(join(skillsRoot, 'sdd-templates/templates')).filter((name) => name.endsWith('.md')).sort();
-    const indexed = sortedUnique([...readText('skills/sdd-templates/SKILL.md').matchAll(/\]\(templates\/([^)]+)\)/g)].map((match) => match[1]));
+    const templates = readdirSync(join(distSkills, 'sdd-templates/templates')).filter((name) => name.endsWith('.md')).sort();
+    const indexed = sortedUnique([...readText('dist/skills/sdd-templates/SKILL.md').matchAll(/\]\(templates\/([^)]+)\)/g)].map((match) => match[1]));
     expect(templates.length).toBeGreaterThan(0);
     expect(indexed).toEqual(templates);
   });
