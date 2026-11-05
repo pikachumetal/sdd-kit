@@ -432,11 +432,18 @@ steps.pt2 = () => {
   s.git('add', '-A');
   s.commit('chore: pantalla del molde');
 };
+// Una feature a medias en su rama: la 0010 con la Task 1 commiteada y su `tasks.md`; la petición no nombra ninguna skill.
+steps.rt1 = () => {
+  steps.h1();
+  taskCommit('task1', 'feat(bookings): cancelar con un motivo de la lista');
+  s.put(`${F10}/tasks.md`, fixture('tasks-0010-u1.md'));
+  s.commit('docs(sdd): registrar las tasks de la feature 0010');
+};
 steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(join(FIX, 'spec-0010.md')), plan: fixture('plan-0010.md') });
 if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps[s.SC]?.();
 
-const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1'];
+const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1', 'rt1'];
 if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_WITHOUT_AGENT].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_WITHOUT_AGENT]) turns[id] = '40';

@@ -17,7 +17,8 @@
 │   ├── sdd-init/SKILL.md
 │   ├── sdd-upgrade/SKILL.md       (+ references/migrations/, una por versión)
 │   ├── sdd-propose/SKILL.md
-│   ├── sdd-implement/SKILL.md
+│   ├── sdd-implement/SKILL.md     (la puerta: elige el método)
+│   ├── sdd-implement-{native,subagent}/SKILL.md  (las dos copias, una por método)
 │   ├── sdd-{tdd,debugging,worktrees,parallel-agents,verify}/
 │   ├── sdd-archive/SKILL.md
 │   ├── sdd-roadmap/SKILL.md

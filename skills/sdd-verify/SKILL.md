@@ -136,7 +136,7 @@ Skip any step = lying, not verifying
 
 <!-- kit: 0312 -->
 **In the kit, that means:**
-- A task's `complete` line: `sdd task done` runs the task's «Verificación» and writes its result; you read that output before the line counts (`sdd-implement`, completion contract).
+- A task's `complete` line: `sdd task done` runs the task's «Verificación» and writes its result; you read that output before the line counts (`sdd-implement-native`, completion contract).
 - The `Revisión final:` line of `tasks.md`, the validation's smoke and the walkthrough: each says only what a command or a reviewer's report you read in this session shows.
 
 **Rule applies to:**
