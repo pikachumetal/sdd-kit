@@ -160,7 +160,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 <!-- kit: 0312 -->
 **Mandatory:**
-- After each task in subagent-driven development: the task review of `sdd-implement`, with its own prompt.
+- After each task in subagent-driven development: the task review of `sdd-implement-subagent`, with its own prompt.
 - After completing major feature: the final whole-branch review, in axes ([Final review](#final-review)).
 - Before the closing merge to the integration branch: the review's single closing. The merge to `main` is always a person's call.
 
@@ -289,7 +289,7 @@ Minor · possible Feature Envy in cancelledList (src/app.js:36)
 In both, the reproduce-before-fixing rule of the fix loop applies.
 
 <!-- kit: 0312 -->
-**The single re-review.** Right before you present the validation —with `validation.mode: field`, before you go on to the closing— dispatch ONE re-review in the background, with its silence watch: `sdd-kit:effort-high` + `opus`; the header of [encargo-revision.md](references/encargo-revision.md) and [re-review-prompt.md](../sdd-implement/references/re-review-prompt.md), filled with the open findings of every axis and the «What to Check» of the axes that went out; over `sdd review package <plan> <last reviewed> HEAD`, in its own detached worktree at `HEAD`. It covers the fix pass and every later commit of yours. Write `Re-revisión: <last reviewed>..<head>, sdd-kit:effort-high + opus, <verdict>` in `tasks.md`. A `Re-revisión:` line already in `tasks.md` means it went out: never dispatch another. If, since the last reviewed sha, you only have commits you review in the thread (`sdd-implement`, «Every commit of yours»), don't dispatch it.
+**The single re-review.** Right before you present the validation —with `validation.mode: field`, before you go on to the closing— dispatch ONE re-review in the background, with its silence watch: `sdd-kit:effort-high` + `opus`; the header of [encargo-revision.md](references/encargo-revision.md) and [re-review-prompt.md](../sdd-implement-subagent/re-review-prompt.md), filled with the open findings of every axis and the «What to Check» of the axes that went out; over `sdd review package <plan> <last reviewed> HEAD`, in its own detached worktree at `HEAD`. It covers the fix pass and every later commit of yours. Write `Re-revisión: <last reviewed>..<head>, sdd-kit:effort-high + opus, <verdict>` in `tasks.md`. A `Re-revisión:` line already in `tasks.md` means it went out: never dispatch another. If, since the last reviewed sha, you only have commits you review in the thread (`sdd-implement`, «Every commit of yours»), don't dispatch it.
 
 <!-- kit: 0312 -->
 **What it leaves open:**

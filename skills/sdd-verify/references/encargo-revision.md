@@ -1,6 +1,6 @@
 # Encargo de revisión — cabecera obligatoria
 
-El encargo de **cada eje de la revisión final**, el de su **pasada de fix** en SDD y el de su **re-revisión** empiezan así, antes del encargo del eje ([`sdd-verify`](../SKILL.md), «Final review»). Los del revisor de task y del re-revisor ya la llevan dentro: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) y [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) de `sdd-implement`.
+El encargo de **cada eje de la revisión final**, el de su **pasada de fix** en SDD y el de su **re-revisión** empiezan así, antes del encargo del eje ([`sdd-verify`](../SKILL.md), «Final review»). Los del revisor de task y del re-revisor ya la llevan dentro: [task-reviewer-prompt.md](../../sdd-implement-subagent/task-reviewer-prompt.md) y [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md) de `sdd-implement-subagent`.
 
 ```markdown
 ## Restricciones de código
@@ -77,4 +77,4 @@ Es lo que pedía `executing-plans` de superpowers («the plan's Review Focus sec
 
 ## Encargo del implementador
 
-Vive en [implementer-prompt.md](../../sdd-implement/references/implementer-prompt.md) de `sdd-implement`, con la misma sección «Restricciones de código» y, además, el contrato de los tests RED, la «Verificación» de la task y las reglas del implementador.
+Vive en [implementer-prompt.md](../../sdd-implement-subagent/implementer-prompt.md) de `sdd-implement-subagent`, con la misma sección «Restricciones de código» y, además, el contrato de los tests RED, la «Verificación» de la task y las reglas del implementador.

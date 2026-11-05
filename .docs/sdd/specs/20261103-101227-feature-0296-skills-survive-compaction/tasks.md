@@ -18,8 +18,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una ta
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | `sdd-implement-native`, copia anotada de `executing-plans` | done | — | |
-| 2 | `sdd-implement-subagent`, copia anotada de `subagent-driven-development` | pending | — | |
+| 1 | `sdd-implement-native`, copia anotada de `executing-plans` | done | eabcfa67 | |
+| 2 | `sdd-implement-subagent`, copia anotada de `subagent-driven-development` | done | — | |
 | 3 | La puerta `sdd-implement`, propia | pending | — | |
 | 4 | El freno de la spec y la parada sobre una copia | pending | — | |
 | 5 | Humos, enrutado y documentos | pending | — | |

@@ -19,8 +19,8 @@ function dedent(block, spaces) {
 }
 
 function sourceText() {
-  const fork = join(kit, 'skills/sdd-implement/references/implementer-prompt.md');
-  if (existsSync(fork)) return fencedAfter(readFileSync(fork, 'utf8'), '# ', '```text');
+  const fork = join(kit, 'skills/sdd-implement-subagent/implementer-prompt.md');
+  if (existsSync(fork)) return dedent(fencedAfter(readFileSync(fork, 'utf8').replace(/^<!-- kit: .* -->\n/gm, ''), 'prompt: |', 'prompt: |'), 4);
   const header = fencedAfter(readFileSync(join(kit, 'skills/sdd-start-feature/references/encargo-revision.md'), 'utf8'), '## Encargo del implementador', '```markdown');
   const prompt = readFileSync(join(superpowers, 'skills/subagent-driven-development/implementer-prompt.md'), 'utf8');
   const body = dedent(fencedAfter(prompt, "prompt: |", "prompt: |"), 4);

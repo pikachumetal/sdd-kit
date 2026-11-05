@@ -44,13 +44,13 @@ These stop you, and nothing else: an irreversible or destructive operation; a se
 - Your harness has no subagent tool. Never fabricate a dispatch; run
   the plan here.
 - Tasks are mostly independent — the same precondition as
-  the SDD method.
+  `sdd-implement-subagent`.
 
 A fully specified plan makes inline execution transcription plus testing:
 it runs well on a mid-tier session model, and the one place the most
 capable model earns its cost is the final review, whose axes `sdd-verify` dispatches separately. Tell your human partner so when they choose inline.
 
-Prefer the SDD method when your human partner
+Prefer `sdd-implement-subagent` when your human partner
 wants a review gate on every task, or when the plan is long enough that
 its later tasks would run on a compacted context. Inline execution over a
 long plan still works — the ledger is what makes it recoverable — but the
@@ -113,7 +113,7 @@ failure as a controller re-dispatching them, paid for in your own context.
 Track progress in a ledger file, not only in todos. Harness todos are a
 live view; the ledger is the record.
 
-The workspace and ledger are shared with the SDD method
+The workspace and ledger are shared with `sdd-implement-subagent`
 — same directory, same format — so a plan can change executors mid-flight
 and the new one resumes from the same ledger.
 
@@ -143,7 +143,7 @@ before Task 1. It governs every step of every task below; a plan whose
 steps already say "write the failing test first" does not exempt you
 from reading it.
 
-Read once the `## Quality decalogue` of [implementer-prompt.md](../sdd-implement/references/implementer-prompt.md#quality-decalogue): it governs the code you write, under the project's quality article.
+Read once the `## Quality decalogue` of [implementer-prompt.md](../sdd-implement-subagent/implementer-prompt.md#quality-decalogue): it governs the code you write, under the project's quality article.
 
 **Pre-flight scan**: before Task 1, scan the plan once for conflicts, writing down what you checked as you check it: tasks that contradict each other or the plan's Global Constraints, and anything the plan explicitly mandates that the review rubric treats as a defect (a test that asserts nothing, verbatim duplication of a logic block). The scan's output is a table in the ledger, not a verdict. One row for every pair of tasks that share a file or an interface: the two tasks, what one produces against what the other consumes, and what you found. One row for every task: whether its own text agrees with itself — the tests it specifies against the code it specifies, the files it creates against the files it later touches. «The scan is clean» without those rows is not a scan you ran. Rule on everything you find before execution begins — each finding against the plan text that mandates it, with the spec as the binding authority — and record each ruling beside its row. If the scan is clean, proceed without comment. The final review remains the net for conflicts that only emerge from implementation.
 
@@ -155,8 +155,6 @@ in the workspace and read its tail; read a brief, not the whole plan.
 
 ### 1. Take the task
 
-Before the first `task start`, with more than one task, write `tasks.md`, the **living record** (status and commit hash per task): it goes in the opening's commit or, if that is done, in Task 1's.
-
 - Run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task start <plan> <n>`. It prints the brief
   path and BASE (the commit the task's range is cut from) in one call.
   Read the brief for every task, including ones you remember from setup:
@@ -164,7 +162,7 @@ Before the first `task start`, with more than one task, write `tasks.md`, the **
   signatures, and test cases.
 - Mark the task's todo in_progress.
 
-Then the base check and the RED tests, before the first step: `sdd-implement`, «Before each task».
+Before the first `task start`, `tasks.md`; before the first step, the base check and the RED tests: `sdd-implement`, «Before each task».
 
 Every tool call is a turn that re-reads your whole context. Bookkeeping
 rides along with work — a ledger append in the same call as the commit,
@@ -210,7 +208,7 @@ the claim. If any item is missing, the task is not complete: finish it.
 
 ### 4. Complete the task
 
-Close, in this order: compare the RED copy with the committed test using `git diff --no-index` — a change that isn't formatting is a ruling in the ledger; commit the task; check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`).
+Close, in this order: compare the RED copy with the committed test, as `sdd-implement`, «Before each task», says; commit the task; check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`).
 
 Then, in its own call, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task done <plan> <n> <base> -- <command…>` with the command of the task's «Verificación». It runs the
 tests, keeps the full output in the workspace, prints the tail, and — only
