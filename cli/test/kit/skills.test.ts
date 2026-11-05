@@ -5,7 +5,7 @@ import { WHOLE_LINE_MARK } from '../../../build/dist.ts';
 import { filesUnder, frontmatter, isMigration, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
 
 const skillsRoot = join(repoRoot, 'skills');
-// Lo que carga el agente: el texto de una inclusión solo existe en dist/ (ticket de la 0304 §4).
+// Lo que carga el agente: el texto de una inclusión solo existe en dist/.
 const distSkills = join(repoRoot, 'dist', 'skills');
 const skills = skillNames();
 

@@ -7,8 +7,7 @@ import { WHOLE_LINE_MARK } from '../../build/dist.ts';
 import { BuildError } from '../../build/errors.ts';
 import { readRegistry, watchedRefs, type Registry, type Source, type WatchedRef } from '../../build/sources.ts';
 import { git, isolatedEnv } from '../../cli/src/git/git.ts';
-import { abbreviate } from '../copies/annotated.ts';
-import { DEFAULT_REGISTRY, findClones, hasCommit, MISSING_UPSTREAM_DIR, report } from './clones.ts';
+import { abbreviate, DEFAULT_REGISTRY, findClones, hasCommit, MISSING_UPSTREAM_DIR, report } from './clones.ts';
 
 const MIN_LITERAL = 70;
 
@@ -106,9 +105,11 @@ function ownLines(registry: Registry, repoRoot: string): OwnLine[] {
 }
 
 // Las líneas van por la entrada estándar: en la línea de órdenes, los cientos de líneas largas de los own pasan del tope de Windows.
+// git() no acepta entrada, por eso este spawnSync con su mismo entorno.
 function grepAt(clone: string, version: string, patterns: string[]): Hit[] | string {
   const args = ['-C', clone, '-c', 'core.quotePath=false', 'grep', '-F', '-I', '-z', '-f', '-', version];
   const result = spawnSync('git', args, { input: patterns.join('\n'), encoding: 'utf8', env: isolatedEnv(), maxBuffer: 64 * 1024 * 1024, windowsHide: true });
+  if (result.error) return result.error.message;
   if (result.status !== 0 && result.status !== 1) return firstLine(result.stderr ?? '');
   return (result.stdout ?? '')
     .split('\n')
@@ -119,25 +120,35 @@ function grepAt(clone: string, version: string, patterns: string[]): Hit[] | str
     });
 }
 
-const versionsOf = (registry: Registry, source: SourceClone): string[] => [
-  ...new Set([source.newest, ...kitRefs(registry).filter((ref) => ref.source === source.name).map((ref) => ref.version)]),
-];
+// Una versión que falta en el clon ya sale como «falta <versión>»: no se busca en ella.
+async function versionsOf(registry: Registry, source: SourceClone): Promise<string[]> {
+  const versions = [...new Set([source.newest, ...kitRefs(registry).filter((ref) => ref.source === source.name).map((ref) => ref.version)])];
+  const present = await Promise.all(versions.map((version) => hasCommit(source.clone, version)));
+  return versions.filter((_, index) => present[index]);
+}
+
+const literalMessage = (line: OwnLine, source: string, where: string): string =>
+  `${line.file}:${line.line}: línea literal de ${source} ${where}, y un own no lleva NOTICE: reescríbela o pasa el fichero a copia: «${abbreviate(line.text)}»`;
+
+function recordHits(found: Map<OwnLine, string>, lines: OwnLine[], at: { source: string; version: string; hits: Hit[] }): void {
+  for (const line of lines.filter((candidate) => !found.has(candidate))) {
+    const hit = at.hits.find((candidate) => candidate.content.includes(line.text));
+    if (hit) found.set(line, literalMessage(line, at.source, `${hit.path}@${at.version}`));
+  }
+}
 
 // Un own no genera NOTICE: una línea suya que está en una fuente se quedaría sin su aviso de licencia.
-function ownLiterals(registry: Registry, repoRoot: string, prepared: SourceClone[]): string[] {
+async function ownLiterals(registry: Registry, repoRoot: string, prepared: SourceClone[]): Promise<string[]> {
   const lines = ownLines(registry, repoRoot);
   if (lines.length === 0) return [];
   const patterns = [...new Set(lines.map((line) => line.text))];
   const problems: string[] = [];
   const found = new Map<OwnLine, string>();
   for (const source of prepared)
-    for (const version of versionsOf(registry, source)) {
+    for (const version of await versionsOf(registry, source)) {
       const hits = grepAt(source.clone, version, patterns);
       if (typeof hits === 'string') problems.push(`${source.name}: git grep falló en ${version}: ${hits}`);
-      else for (const line of lines.filter((candidate) => !found.has(candidate))) {
-        const hit = hits.find((candidate) => candidate.content.includes(line.text));
-        if (hit) found.set(line, `${line.file}:${line.line}: línea literal de ${source.name} ${hit.path}@${version}, y un own no lleva NOTICE: reescríbela o pasa el fichero a copia: «${abbreviate(line.text)}»`);
-      }
+      else recordHits(found, lines, { source: source.name, version, hits });
     }
   return [...problems, ...lines.flatMap((line) => found.get(line) ?? [])];
 }
@@ -158,7 +169,7 @@ async function checkRegistry(registry: Registry, dir: string, repoRoot: string):
       for (const ref of own) problems.push(...(await checkRef(ref, prepared)));
     }
   }
-  return [...problems, ...ownLiterals(registry, repoRoot, ready)];
+  return [...problems, ...(await ownLiterals(registry, repoRoot, ready))];
 }
 
 async function main(argv: string[]): Promise<number> {

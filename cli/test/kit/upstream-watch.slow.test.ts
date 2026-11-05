@@ -266,7 +266,25 @@ describe('Un fichero propio no lleva líneas literales de una fuente (tests/upst
     expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', short]), source.upstream)).toEqual(upToDate);
   });
 
-  it('reports each literal line once per source', () => {
+  it('fails on a line of exactly 70 characters', () => {
+    const root = newRoot();
+    const line = LITERAL.slice(0, 70);
+    const source = newSource(root, ['v0.9.0']);
+    release(source.origin, 'v1.0.0', { 'b.md': `${line}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', line]), source.upstream).output).toBe(literalAt(3, 'b.md@v1.0.0'));
+  });
+
+  it('does not grep a version that is not in the clone', () => {
+    const root = newRoot();
+    const source = newSource(root, ['v1.0.0']);
+    release(source.origin, 'v1.1.0', { 'b.md': `${LITERAL}\n` });
+    expect(runCheck(withOwn(root, [{ version: 'v0.9.0' }], ['# Propia', '', LITERAL]), source.upstream)).toEqual({
+      output: [`Juguete: falta v0.9.0 en el clon ${source.clone}`, literalAt(3, 'b.md@v1.1.0')].join('\n'),
+      code: 1,
+    });
+  });
+
+  it('reports each literal line once', () => {
     const root = newRoot();
     const source = newSource(root, ['v0.9.0']);
     release(source.origin, 'v1.0.0', { 'b.md': `${LITERAL}\n`, 'c.md': `${LITERAL}\n` });

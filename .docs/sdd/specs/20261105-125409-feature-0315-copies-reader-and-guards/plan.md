@@ -37,7 +37,7 @@ created: 2026-11-05
 
 ### De código
 
-- Los mensajes, literales de la spec: `<fichero>:<línea de la marca>: el bloque add lleva <n> líneas seguidas del original en su sitio, desde «<primera línea, abreviada a 6 palabras>»: ciérralo con <!-- kit: fin --> antes de ellas` · `<ruta>: <n> líneas con otra forma` con `  - <ref>:<línea> «<texto>»` / `  + <línea> «<texto>»` · `<ruta>: <n> párrafos distintos` · `<ruta>: igual` · `kit:dist-compare: la referencia <ref> no existe: usa --base <ref>` · `<test>:<línea de la lectura>: lee skills/ y ejecuta o compara un bloque de código: léelo de dist/skills/, que es lo que carga el agente` · `<fichero>:<línea>: línea literal de <fuente> <ruta>@<tag>, y un own no lleva NOTICE: reescríbela o pasa el fichero a copia: «<línea abreviada a 6 palabras>»`.
+- Los mensajes, literales de la spec: `<fichero>:<línea de la marca>: el bloque lleva <n> líneas seguidas del original en su sitio, desde «<primera línea, abreviada a 6 palabras>»: ciérralo con <!-- kit: fin --> antes de ellas` · `<ruta>: <n> líneas con otra forma` con `  - <ref>:<línea> «<texto>»` / `  + <línea> «<texto>»` · `<ruta>: <n> párrafos distintos` · `<ruta>: igual` · `kit:dist-compare: la referencia <ref> no existe: usa --base <ref>` · `<test>:<línea de la lectura>: lee skills/ y ejecuta o compara un bloque de código: léelo de dist/skills/, que es lo que carga el agente` · `<fichero>:<línea>: línea literal de <fuente> <ruta>@<tag>, y un own no lleva NOTICE: reescríbela o pasa el fichero a copia: «<línea abreviada a 6 palabras>»`.
 - Topes: racha de 2 líneas o más, sin contar las en blanco; línea literal de 70 caracteres o más sin los espacios de los bordes.
 - Art. X de la constitution: sin comentarios que repitan el código ni que citen documentos (constitution, spec, task, capacidad); clean code, funciones de ~20 líneas, anidamiento ≤ 3. Comentarios en castellano, solo el porqué.
 - Ningún fichero de `skills/` cambia (ADR 0022, regla 3).
@@ -50,9 +50,9 @@ created: 2026-11-05
 ## Review Focus
 
 - Un bloque en el texto con `fin` tras una línea en blanco y **sin** otra marca antes, pero con un `fin` que pertenece a un bloque abierto en una valla posterior → cierra en la línea en blanco: la búsqueda de la siguiente marca no salta vallas, y una marca dentro de una valla es la siguiente · Task 1, `does not extend a text block to a fin inside a later fence`
-- Una racha cuyas líneas iguales son en blanco o de una sola línea con texto (```` ``` ````, línea en blanco, ```` ``` ````) → no da rojo · Task 1, `ignores blank lines and a lone equal line`
+- Una racha cuyas líneas iguales son en blanco o de una sola línea con texto (una línea en blanco y `pnpm install --frozen-lockfile`) → no da rojo · Task 1, `ignores blank lines and a lone equal line`
 - `kit:dist-compare` sobre un fichero CRLF en el árbol (los `dist/` de este worktree) → se compara en LF y sale `igual` · Task 1, `compares in LF`
-- Un `own` con la misma línea literal dos veces → un rojo por línea, no uno por fuente repetida · Task 3, `reports each literal line once per source`
+- Un `own` con la misma línea literal dos veces → un rojo por línea, no uno por fuente repetida · Task 3, `reports each literal line once`
 
 ---
 
@@ -136,7 +136,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
   - `ends a text block at fin across a blank line`: un `<!-- kit: 0186 -->` tras `## Setup\n` con `uno\n\ndos\n<!-- kit: fin -->\n` → `toEqual([])` (hoy da `<!-- kit: fin --> sin bloque abierto`).
   - `ends a text block at a blank line when the next mark is not fin`: bloque, línea en blanco, `<!-- kit: 0186 -->`, una línea, `<!-- kit: fin -->` → `toEqual([])`, y el segundo bloque es el que cierra `fin` (sin `sin bloque abierto`).
   - `does not extend a text block to a fin inside a later fence` (Review Focus).
-  - `reports a block that eats original lines inside a fence`: original con una valla `bash` con `npm ci\npnpm install --frozen-lockfile\nyarn install --frozen-lockfile\n`; anotada con `<!-- kit: 0186 -->`, `bun install`, línea en blanco y las dos últimas líneas → `toEqual([\`${FILE}:<línea de la marca>: el bloque add lleva 2 líneas seguidas del original en su sitio, desde «pnpm install --frozen-lockfile»: ciérralo con <!-- kit: fin --> antes de ellas\`])`, y con `<!-- kit: fin -->` antes de la línea en blanco → `toEqual([])`.
+  - `reports a block that eats original lines inside a fence`: original con una valla `bash` con `npm ci\npnpm install --frozen-lockfile\nyarn install --frozen-lockfile\n`; anotada con `<!-- kit: 0186 -->`, `bun install`, línea en blanco y las dos últimas líneas → `toEqual([\`${FILE}:<línea de la marca>: el bloque lleva 2 líneas seguidas del original en su sitio, desde «pnpm install --frozen-lockfile»: ciérralo con <!-- kit: fin --> antes de ellas\`])`, y con `<!-- kit: fin -->` antes de la línea en blanco → `toEqual([])`.
   - `reports a text block whose fin eats an original paragraph`: un bloque con `fin` que deja dentro dos líneas seguidas de `STOPS_PARAGRAPH` → el mismo mensaje con su primera línea.
   - `ignores blank lines and a lone equal line` (Review Focus).
   - El test `ends a block at the first blank line outside a fence` sigue igual.
@@ -206,7 +206,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
   - `fails on the same line indented in the own` → el mismo rojo.
   - `finds a line only in the version of an entry`: la línea en `v0.9.0`, quitada en `v1.0.0`, entrada con `version: 'v0.9.0'` y el diff de rutas en verde → el rojo con `a.md@v0.9.0` (más la línea de `cambian sus rutas`, que se espera literal).
   - `ignores an own line under 70 characters` → `upToDate`.
-  - `reports each literal line once per source` (Review Focus).
+  - `reports each literal line once` (Review Focus).
   Ver en rojo.
 - [ ] **Step 2: Implementación** — en `checkRegistry`, guardar los `SourceClone` preparados y, tras las referencias, `problems.push(...await ownLiterals(registry, dirname(registryPath), prepared))` (`main` pasa la raíz). `ownLiterals`: ficheros de `registry.own` bajo la raíz (por `readdirSync` recursivo, sin `NOTICE`), líneas `trim()` de 70 o más y que no casan `WHOLE_LINE_MARK`; por fuente, versiones = último tag, después cada `version` de sus `watchedRefs` sin repetir; por versión, `spawnSync('git', ['-C', clone, 'grep', '-F', '-I', '-f', '-', version], { input: líneas.join('\n'), encoding: 'utf8' })`, que da `<version>:<ruta>:<texto>`; cada línea del `own` cuyo texto `trim()` está contenido en un resultado se informa una vez, con la primera versión que la da. Salida 1 de `git grep` = sin coincidencias. Ver en verde.
 - [ ] **Step 3: Verificación** — los comandos de «Verificación»; `moon run kit:upstream` real en verde (si sale una línea literal, es un desvío: para).

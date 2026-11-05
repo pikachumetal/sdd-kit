@@ -3,7 +3,8 @@ import { join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { filesUnder, repoRoot } from './kit-files.ts';
 
-// skills/ es la fuente anotada: sus marcas rompen un bloque de código que un test ejecuta o compara (ticket de la 0312 §2).
+// skills/ es la fuente anotada: sus marcas rompen un bloque de código que un test ejecuta o compara.
+const WARNING = 'lee skills/ y ejecuta o compara un bloque de código: léelo de dist/skills/, que es lo que carga el agente';
 const READS_SKILLS = /readText\(\s*['"`]skills\/|join\(\s*repoRoot\s*,\s*['"`]skills/;
 const NAMES_FENCE = /`{3}|~{3}/;
 
@@ -16,7 +17,6 @@ function skillsReaders(file: string, text: string): string[] {
 const FENCE = '`'.repeat(3);
 const readerOf = (path: string): string =>
   ["import { readText } from './kit-files.ts';", `const text = readText('${path}');`, `const block = new RegExp('^${FENCE}bash').exec(text);`].join('\n');
-const WARNING = 'lee skills/ y ejecuta o compara un bloque de código: léelo de dist/skills/, que es lo que carga el agente';
 
 describe('los tests que leen skills/', () => {
   it('flags a test that runs a fenced block read from skills/', () => {

@@ -1,5 +1,6 @@
 // La fuente anotada de una copia frente a su original: sus marcas, sus bloques y cada diferencia que no lleva marca.
 import { nextBlock, stripMarks, WHOLE_LINE_MARK, type Block as Region } from '../../build/dist.ts';
+import { abbreviate } from '../upstream/clones.ts';
 
 export interface Problem {
   file: string;
@@ -52,7 +53,6 @@ const TASK = /^(\d{4}|[0-9a-f]{7,40})$/;
 const FIELD = /^(sustituye|quita|de|arregla): (.*)$/;
 const ABSOLUTE = /\b(only|never|always|must|every)\b/i;
 const QUOTE_INSIDE = /[«»]|-->/;
-const ABBREVIATE_AFTER = 6;
 const OVERCITE_RUN = 2;
 const SHINGLE = 6;
 const MIN_KEPT = 50;
@@ -86,11 +86,6 @@ export function formatProblem(problem: Problem): string {
 
 const words = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 const normalize = (text: string): string => words(text).join(' ');
-
-export function abbreviate(text: string): string {
-  const all = words(text);
-  return all.length > ABBREVIATE_AFTER ? `${all.slice(0, ABBREVIATE_AFTER).join(' ')}…` : all.join(' ');
-}
 
 function lines(text: string): string[] {
   const all = text.split('\n');
@@ -226,7 +221,7 @@ class Reader {
 }
 
 // LCS clásico; en un empate casa la primera pareja posible, así gana el alineado que casa antes en el original.
-function lcsPairs(a: string[], b: string[]): [number, number][] {
+export function lcsPairs(a: string[], b: string[]): [number, number][] {
   const table = Array.from({ length: a.length + 1 }, () => new Uint32Array(b.length + 1));
   for (let i = a.length - 1; i >= 0; i--)
     for (let j = b.length - 1; j >= 0; j--) table[i][j] = a[i] === b[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);

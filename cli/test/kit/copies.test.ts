@@ -229,6 +229,12 @@ describe('checkCopy: la gramática de la marca', () => {
   it('ends a text block at a blank line when the next mark is not fin', () => {
     expect(check('Intro.\n<!-- kit: 0186 -->\nuno\n\n<!-- kit: 0186 -->\ndos\n<!-- kit: fin -->\nAfter.\n', { original: PLAIN })).toEqual([]);
   });
+
+  it('does not extend a text block to a fin inside a later fence', () => {
+    const original = 'Intro.\n\n```text\na\n```\nAfter.\n';
+    const annotated = 'Intro.\n<!-- kit: 0186 -->\nuno\n\n```text\n<!-- kit: 0186 · sustituye: «a» -->\nb\n<!-- kit: fin -->\n```\nAfter.\n';
+    expect(check(annotated, { original })).toEqual([]);
+  });
 });
 
 describe('checkCopy: un bloque que se come el original', () => {

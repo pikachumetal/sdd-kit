@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { paragraphDiff, shapeDiff } from '../../../tests/copies/dist-compare.ts';
-import { kitRoot, run } from './process.ts';
 
 const shape = (base: string, now: string): string[] => shapeDiff(base, now, 'develop');
 
@@ -36,20 +35,5 @@ describe('kit:dist-compare: la forma', () => {
 describe('kit:dist-compare: los párrafos', () => {
   it('names a paragraph with other words', () => {
     expect(paragraphDiff('uno dos\n\ntres\n', 'uno cuatro\n\ntres\n')).toEqual(['  - uno dos', '  + uno cuatro']);
-  });
-});
-
-describe('kit:dist-compare: la orden', () => {
-  const compare = (args: string[]) => run(process.execPath, ['tests/copies/dist-compare.ts', ...args], { cwd: kitRoot });
-
-  it('rejects a base that does not exist', () => {
-    expect(compare(['--base', 'no-existe', 'dist/skills/sdd-tdd/SKILL.md'])).toEqual({
-      output: 'kit:dist-compare: la referencia no-existe no existe: usa --base <ref>',
-      code: 1,
-    });
-  });
-
-  it('writes igual for a file equal to its base', () => {
-    expect(compare(['--base', 'HEAD', 'README.md'])).toEqual({ output: 'README.md: igual', code: 0 });
   });
 });

@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { nextBlock, type Block } from '../../build/dist.ts';
 import { git } from '../../cli/src/git/git.ts';
+import { lcsPairs } from './annotated.ts';
 
 interface Change<T> {
   sign: '-' | '+';
@@ -23,17 +24,14 @@ const FENCE = /^(\s*)(`{3,}|~{3,})/;
 
 const lf = (text: string): string => text.replace(/\r\n/g, '\n');
 
-// LCS clásico; en un empate sale antes lo que quita la referencia, como en git diff.
-function lcsChanges<T>(a: T[], b: T[], same: (x: T, y: T) => boolean): Change<T>[] {
-  const t = Array.from({ length: a.length + 1 }, () => new Uint32Array(b.length + 1));
-  for (let i = a.length - 1; i >= 0; i--) for (let j = b.length - 1; j >= 0; j--) t[i][j] = same(a[i], b[j]) ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
+// Lo que no casa entre dos parejas de la LCS: primero lo que quita la referencia, como en git diff.
+function lcsChanges<T>(a: T[], b: T[], keyOf: (item: T) => string): Change<T>[] {
+  const pairs = [...lcsPairs(a.map(keyOf), b.map(keyOf)), [a.length, b.length]];
   const changes: Change<T>[] = [];
-  let i = 0;
-  let j = 0;
-  while (i < a.length || j < b.length) {
-    if (i < a.length && j < b.length && same(a[i], b[j])) (i++, j++);
-    else if (i < a.length && (j === b.length || t[i + 1][j] >= t[i][j + 1])) changes.push({ sign: '-', item: a[i++] });
-    else changes.push({ sign: '+', item: b[j++] });
+  let [i, j] = [0, 0];
+  for (const [nextA, nextB] of pairs) {
+    changes.push(...a.slice(i, nextA).map((item) => ({ sign: '-' as const, item })), ...b.slice(j, nextB).map((item) => ({ sign: '+' as const, item })));
+    [i, j] = [nextA + 1, nextB + 1];
   }
   return changes;
 }
@@ -45,7 +43,7 @@ const paragraphs = (text: string): string[] =>
     .filter(Boolean);
 
 export function paragraphDiff(base: string, now: string): string[] {
-  return lcsChanges(paragraphs(base), paragraphs(now), (x, y) => x === y).map(({ sign, item }) => `  ${sign} ${item}`);
+  return lcsChanges(paragraphs(base), paragraphs(now), (paragraph) => paragraph).map(({ sign, item }) => `  ${sign} ${item}`);
 }
 
 function lineKey(block: Block, next: Block, content: string): string {
@@ -75,7 +73,7 @@ function shapeTokens(text: string): Token[] {
 }
 
 export function shapeDiff(base: string, now: string, ref: string): string[] {
-  return lcsChanges(shapeTokens(base), shapeTokens(now), (x, y) => x.key === y.key).map(({ sign, item }) =>
+  return lcsChanges(shapeTokens(base), shapeTokens(now), (token) => token.key).map(({ sign, item }) =>
     sign === '-' ? `  - ${ref}:${item.line} «${item.text}»` : `  + ${item.line} «${item.text}»`,
   );
 }
