@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-11-05
 branch: patch/0318-eol-only-not-dirty
-commit: <hash>
+commit: 7bd12cda
 ---
 
 # Patch 0318 — sdd merge no ve como cambio sin commitear un fichero que solo cambia de finales de línea o de stat
@@ -57,9 +57,11 @@ Dos piezas, una de la CLI y otra del repo:
 | 5 | El destino sacado con un fichero que solo cambia de finales de línea: `--check` da «listo» sin refrescar el índice, y el merge fusiona encima | ✅ los dos casos nuevos de `destination.slow.test.ts`; tras `--check`, `git status --porcelain` sigue en `M README.md` |
 | 6 | Tras `moon run kit:build`, `git status --porcelain -- dist` en un clon nuevo con `core.autocrlf=true` | ✅ 0 líneas con el fix (fuentes en `i/lf w/lf attr/text eol=lf`); control, el mismo clon sacado en el commit anterior: 129 líneas ` M`, `git diff --quiet` en 0 · ejecución real con `core.longpaths=true` |
 
+Validación en campo: 2026-11-05 · RED→GREEN en `sync.slow.test.ts` y `destination.slow.test.ts` (3 rojos con el síntoma literal → 85/85 con los lentos de `claim`, `publish` y `outside-lock`) · `kit:build` en un clon nuevo con `core.autocrlf=true`: `dist/` limpio, 129 ` M` en el control (ejecución real) · pre-commit en verde sobre `7bd12cda` · el gate de cierre corre en la base integrada, porque `feature/0315-copies-reader-and-guards` y `feature/0316-upgrade-migrations-english` están abiertas a la vez · no probado: `sdd id claim` y `sdd roadmap publish` con un fichero solo-EOL en el destino (mismo helper, sin test propio)
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 1 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-05T11:57Z
-- Esfuerzo real:
+- Esfuerzo real: 0,36 h — reloj de la sesión 0,36 h desde 2026-11-05T11:50Z, sin 0 min de espera al dev-lead (0 esperas). Desvío frente a 1 h: sin esperas ni huecos; la petición fijaba los cinco sitios, el comando y el criterio, y la causa venía reproducida por la sesión `develop`
 - Coste de sujetos: no aplica
