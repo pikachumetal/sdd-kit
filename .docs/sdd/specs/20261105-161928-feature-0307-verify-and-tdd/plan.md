@@ -51,7 +51,7 @@ created: 2026-11-05
 ## Review Focus
 
 - El puntero de `## Closing the review` y el agente que vuelve de los ejes → abre `references/closing-the-review.md` antes de tocar un hallazgo, y hace una sola pasada de fix y una re-revisión en opus · Task 2, humo `c1` (rúbrica C1).
-- Un Minor con `review.minors: fix` que ningún test reproduce → entra en la pasada y el ledger lo apunta `Final: fixed <finding> — suite <N>/<N>`, no `minor (deferred)` · Task 2, humo `c1f` (rúbrica C1f).
+- Un Minor con `review.minors: fix` → entra en la pasada y el ledger lo apunta `Final: fixed`, no `minor (deferred)` · Task 2, humo `c1f` (rúbrica C1f). La rama sin test (`Final: fixed <finding> — suite <N>/<N>`) queda sin observar: el Minor de `c1f` lo reproduce un test (revisión final, eje Spec).
 - Un implementador que carga `sdd-tdd` con un RED recibido → lo ejecuta y lo ve fallar antes del primer `Edit` sobre `src/` · Task 1, humo `t1b` (rúbrica R).
 
 ---
@@ -129,7 +129,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Ficheros**: modificar `skills/sdd-tdd/SKILL.md`, `dist/skills/sdd-tdd/SKILL.md` (build).
 
 - [ ] **Step 1: Implementación** — con marcas `<!-- kit: 0307 · sustituye: «S» -->` y su `<!-- kit: fin -->` donde haga falta, quitando las `arregla: 0307`:
-  - Verify RED: el par «**MANDATORY. Never skip.**» + bloque «Also for a RED you received…» → «**MANDATORY, a RED you received included: never skip it.** Run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».»
+  - Verify RED: el par «**MANDATORY. Never skip.**» + bloque «Also for a RED you received…» → «**MANDATORY. Never skip it, also with a RED you received:** run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».»
   - «**Test passes?** You're testing existing behavior. Fix test.» + bloque → «**Test passes?** You're testing existing behavior. Fix a test you wrote; report a test you received (`DONE_WITH_CONCERNS` with the green output), and don't write code to «make it pass».»
   - «**Test errors?** Fix error, re-run until it fails correctly.» + bloque «A compile or import error…» → «**Test errors?** Any other error: fix it, re-run until it fails correctly.» El bullet de «Confirm:» (`sustituye: «errors)»`) no cambia.
   - Checklist: «- [ ] All tests pass» + «(the task's «Verificación»)» → «- [ ] The task's «Verificación» passes».

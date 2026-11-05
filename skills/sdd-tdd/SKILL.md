@@ -118,8 +118,8 @@ Vague name, tests mock not code
 
 ### Verify RED - Watch It Fail
 
-<!-- kit: 0307 · sustituye: «**MANDATORY. Never skip.**» -->
-**MANDATORY, a RED you received included: never skip it.** Run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
+<!-- kit: 0307 · sustituye: «skip.**» -->
+**MANDATORY. Never skip it, also with a RED you received:** run it before touching the code it covers, and keep the command and the failing output for the report's «TDD Evidence».
 
 ```bash
 npm test path/to/test.test.ts

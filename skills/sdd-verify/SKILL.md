@@ -180,7 +180,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 ### Act on feedback
 
 <!-- kit: 0312 -->
-- Re-grade each finding by its effect, then act as [Closing the review](#closing-the-review) says: ONE fix pass for Critical and Important —and Minor with `review.minors: fix`—, other Minors to the ledger.
+- Re-grade each finding by its effect, then act as [Closing the review](references/closing-the-review.md) says: ONE fix pass for Critical and Important —and Minor with `review.minors: fix`—, other Minors to the ledger.
 - Push back if the reviewer is wrong (with reasoning): a finding you don't fix is a `Final: Ruling:` with why the code stands.
 
 <!-- kit: 0312 -->
@@ -199,7 +199,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 **Never:**
 - Skip review because "it's simple"
 - Ignore Critical issues
-- Proceed with unfixed Important issues beyond the one fix pass and the re-review of [Closing the review](#closing-the-review)
+- Proceed with unfixed Important issues beyond the one fix pass and the re-review of [Closing the review](references/closing-the-review.md)
 - Argue with valid technical feedback
 
 <!-- kit: 0312 · de: superpowers skills/requesting-code-review/SKILL.md -->
@@ -242,7 +242,7 @@ If the diff crosses one the plan didn't foresee, the axis goes out and you ledge
 **Each axis gets its silence watch** (`sdd-implement`, «Every dispatch»). A hung axis is relaunched alone, once, as [Vigía de silencio](../sdd-propose/references/control-profiles.md#vigía-de-silencio) says; the others go on.
 
 <!-- kit: 0312 -->
-**Read the reports by axis.** A change can pass one axis and fail another: code that follows every standard can implement the wrong thing, and code that does exactly what the spec asked can break the project's conventions. Keep the reports under one heading per axis, as they came; do not merge or rerank findings across axes, because that is how one axis masks another. Re-grading each finding by its effect happens inside its axis ([Closing the review](#closing-the-review)).
+**Read the reports by axis.** A change can pass one axis and fail another: code that follows every standard can implement the wrong thing, and code that does exactly what the spec asked can break the project's conventions. Keep the reports under one heading per axis, as they came; do not merge or rerank findings across axes, because that is how one axis masks another. Re-grading each finding by its effect happens inside its axis ([Closing the review](references/closing-the-review.md)).
 
 <!-- kit: 0312 -->
 **Without a subagent tool:** read each axis brief and perform each review yourself against the package, as separate passes after the last task's ledger line. Write `Final review: self-review (no subagent tool)` to the ledger, and say so in your final message: a self-review by the author is weaker than fresh reviewers, and the user decides whether that is enough before merge.

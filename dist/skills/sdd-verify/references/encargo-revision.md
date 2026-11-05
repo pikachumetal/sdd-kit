@@ -1,6 +1,6 @@
 # Review brief — mandatory header
 
-The brief of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) of `sdd-implement`.
+The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) of `sdd-implement`.
 
 ```markdown
 ## Restricciones de código
