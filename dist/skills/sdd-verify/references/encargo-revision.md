@@ -22,7 +22,7 @@ Solo viaja el bloque «De código». El de «De proceso» (política de modelos,
 
 ## Revisor final
 
-Cada eje se despacha con el tipo y el modelo de la tabla de «Final review» de `sdd-verify` —Spec y Arquitectura con `subagent_type: sdd-kit:effort-high` + `model: opus`, Código con `subagent_type: sdd-kit:effort-high` + `model: sonnet`—, también en Native, donde los despacha el hilo. Medido: `tests/native-adapt-red.md`. Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](../../sdd-propose/references/control-profiles.md#vigía-de-silencio).
+Cada eje se despacha con el tipo y el modelo de la tabla de «Final review» de `sdd-verify` —Spec y Arquitectura con `subagent_type: sdd-kit:effort-high` + `model: opus`, Código con `subagent_type: sdd-kit:effort-high` + `model: sonnet`—, también en Native, donde los despacha el hilo. Medido: `tests/native-adapt-red.md`. Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](../../sdd-propose/references/control-profiles.md#silence-watch).
 
 Sale en segundo plano en cuanto existe el commit de la última task, y el hilo sigue trabajando y commiteando mientras revisa. Por eso los ejes no trabajan en el árbol del hilo, sino en un worktree desanclado en el sha que revisa, `review-<id>-<sha corto>`, junto a los demás worktrees del repo:
 

@@ -18,11 +18,12 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una ta
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | La rúbrica de review en inglés, con dos revisores por defecto, el de lite y patch, y la segunda ronda | pending | — | |
-| 2 | `spec-writing.md` y `plan-writing.md` propias, con las frases de `brainstorming` 7.0.2 y las secciones al ✋ en `delegate` | pending | — | |
-| 3 | `control-profiles.md`, `modo-lite.md` y `nombrado.md` en inglés | pending | — | |
-| 4 | `SKILL.md` por debajo de 20.000 bytes, con el repaso de coherencia nuevo | pending | — | |
-| 5 | Batería entera de control, REFACTOR y evidencia | pending | — | |
+| 1 | La rúbrica de review en inglés, con dos revisores por defecto, el de lite y patch, y la segunda ronda | done | 8f6357c1 | afectada por enmienda 2026-11-05 → Task 6 |
+| 2 | `spec-writing.md` y `plan-writing.md` propias, con las frases de `brainstorming` 7.0.2 y las secciones al ✋ en `delegate` | done | e285544c | afectada por enmienda 2026-11-05 → Task 6 |
+| 3 | `control-profiles.md`, `modo-lite.md` y `nombrado.md` en inglés | done | 5a688d75 | |
+| 4 | `SKILL.md` por debajo de 20.000 bytes, con el repaso de coherencia nuevo | done | (este commit) | con lo de la enmienda 2026-11-05 que cae en sus ficheros |
+| 5 | Batería entera de control, REFACTOR y evidencia | pending | — | se ejecuta tras la Task 6 |
+| 6 | Task 6 — enmienda 2026-11-05: los recuentos del repaso y los enfoques al ✋ en `delegate` | pending | — | |
 
 ## Verificación por task
 

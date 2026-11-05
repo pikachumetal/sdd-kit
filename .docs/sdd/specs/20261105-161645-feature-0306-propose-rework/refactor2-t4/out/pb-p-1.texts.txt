@@ -1,0 +1,52 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar y presentar el anuncio.
+
+--- [15]
+Rama `feature/0012-informes` creada desde `develop`. El id 0012 vale: no hay remoto, así que lo comprobé contra el contador local.
+
+**Cómo construirlo.** Lo decidido con el dev-lead fija el qué (cuatro vistas, `--sala`, tabla de texto, «sin reservas»). El cómo sigue abierto. Hay tres formas:
+
+1. **Una función por vista** sobre la lista de reservas activas, con un formateador de tabla compartido. `run('informes', …)` junta las cuatro vistas y `--sala` filtra la lista antes de agregarlas. Encaja con 5 tasks: una por vista y otra para `--sala`. Es lo que ya hace `app.js` (funciones pequeñas que `run` despacha).
+2. **Una sola función `informes()`** que calcula las cuatro vistas de golpe. Es menos código, pero cada task toca el mismo bloque y las vistas no se prueban por separado.
+3. **Un fichero nuevo `src/informes.js`.** Separa mejor, pero la constitución y la tech-stack piden un solo fichero de entrada (`src/app.js`).
+
+**Recomiendo la 1.** Cada vista tiene su test y su task, y `--sala` queda como filtro común. Va en el mismo fichero, como pide la tech-stack.
+
+Con la 1 tengo dos dudas de diseño:
+- Las reservas **canceladas y anuladas no cuentan** como ocupación. Solo cuentan las `active`, igual que en `libres`.
+- «Franjas más reservadas» ordena de más a menos reservas y, en empate, por orden de la franja.
+
+¿Vamos con la opción 1? Si dices que sí, te presento el diseño por secciones, una por mensaje, y luego escribo la spec.
+
+--- [17]
+Voy con la opción 1. El diseño va por secciones, una por mensaje. Esta es la primera.
+
+**Sección 1 de 4: qué ve quien usa `informes`**
+
+`informes` escribe las cuatro vistas, una detrás de otra, cada una con su título y su tabla. Con las reservas de ahora (Norte, lunes, 10:00-12:00) saldría:
+
+```text
+Ocupación por sala
+Sala   Reservas
+Norte  1
+Sur    0
+
+Ocupación por día
+Día  Reservas
+lun  1
+
+Franjas más reservadas
+Franja       Reservas
+10:00-12:00  1
+
+Salas sin reservas
+Sur
+```
+
+- Cuentan solo las reservas activas. Las canceladas y las anuladas no cuentan, igual que en `libres`. Es decisión mía y la dejo en ✋ para que la valides.
+- En «ocupación por sala» salen todas las salas, también las de 0 reservas.
+- En «ocupación por día» salen solo los días con reservas, en orden de semana (lun…dom). Es decisión mía.
+- Sin ninguna reserva, cada vista pone «sin reservas» en lugar de la tabla. La de «salas sin reservas» también, aunque entonces todas las salas estarían sin reservar. Esto último es decisión mía.
+
+¿Va bien?
+

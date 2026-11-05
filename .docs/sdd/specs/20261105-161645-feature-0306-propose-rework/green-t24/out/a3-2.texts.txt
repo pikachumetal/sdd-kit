@@ -1,0 +1,128 @@
+--- [13]
+Es un patch, así que primero leo la referencia patch-flow.
+
+--- [28]
+Los cuatro tests fallan por la causa que diagnostiqué. Ahora escribo `patch.md` (con la causa antes del fix) y aplico el arreglo.
+
+--- [31]
+Los 8 tests pasan. Antes del commit, el flujo pide un revisor independiente (sonnet, effort medio), así que lo lanzo.
+
+--- [33]
+El revisor está en marcha y no sé todavía qué dirá. No voy a hacer commit hasta que responda; mientras tanto no toco los ficheros que está revisando.
+
+--- [40]
+Resumen: la causa raíz es la real, el fix es mínimo y correcto, y los tests detectan el fallo. No hay hallazgos Críticos ni Importantes. Hay dos Menores y una observación documental.
+
+Ejecuté `node --test` y pasan los 8 tests. Para el RED copié el repo a un directorio temporal, restauré el `src/app.js` original de `HEAD` y ejecuté los 4 tests nuevos. Fallan los 4, como dice el patch.md (§4). No toqué el repo.
+
+**Comprobaciones**
+
+1. **Causa raíz de §2:** es la real. En `HEAD`, `findBooking(room, day)` filtraba solo por `room` y `status`, y `day` no se usaba. `cancelBooking` y `voidBooking` devolvían el `day` pedido y no el de la reserva marcada. Eso explica el «cancelada Norte mar» con la reserva del lunes perdida.
+2. **Fix de `findBooking`:** es mínimo y correcto. Es una línea en `src/app.js`: añade `b.day === day`. `findBooking` solo la llaman `cancelBooking` y `voidBooking`, así que ambas quedan arregladas. El mensaje `sin reserva <sala> <día>` ya existía. Los tests antiguos (`cancel.test.js`, `app.test.js`) siguen pasando.
+3. **Tests de regresión:** prueban el fallo y no son frágiles entre ficheros. `node --test` ejecuta cada fichero en un proceso aparte, y el estado de `bookings` es de módulo, así que cada fichero parte con la reserva del lunes intacta.
+
+**Hallazgos**
+
+1. **Menor — el segundo test de cada fichero depende del primero y su nombre no dice lo que hace.**
+   - Evidencia: `cancel-day.test.js` y `void-day.test.js`, segundo test: «sigue activa tras cancelar/anular el martes».
+   - En realidad ese test cancela o anula el lunes, y solo detecta el bug si el primer test corrió antes y mutó la reserva.
+   - Aislado con `--test-name-pattern="sigue activa"` pasa aunque falte el fix (1 pass, 0 fail). Lo comprobé en el repo con el fix puesto y no lo probé contra el `HEAD` original, así que la conclusión sale de leer el código.
+   - El comentario de `cancel-day.test.js` reconoce el estado compartido, pero `void-day.test.js` no avisa de la dependencia.
+   - Sugerencia: unificar en un solo test con dos aserciones secuenciales, o reiniciar el estado, por ejemplo con un `reset` exportado o importando el módulo con `?query`.
+
+2. **Menor — hay un caso sin cubrir: la reserva del lunes sigue `active` tras fallar el martes.**
+   - Evidencia: los tests no comprueban un `cancelar` seguido de un `anular` sobre el mismo día, ni el caso de reserva ya cancelada (`status !== 'active'`).
+   - Es un comportamiento previo que el patch no cambia, así que no bloquea.
+
+3. **Observación documental (no es un fallo del código):**
+   - El patch.md (§4) dice que el RED fue «4/4 fallan», y coincide con lo que reproduje.
+   - Dice `status: done` y `commit: pendiente`. El estado es coherente con los cambios sin commitear, pero conviene rellenar el commit al cerrar.
+   - El «Esfuerzo real» sigue en `pendiente`.
+
+Ficheros revisados, todos bajo `<run>\repo`:
+- `src\app.js`
+- `test\cancel-day.test.js`
+- `test\void-day.test.js`
+- `.docs\sdd\specs\20261105-172754-patch-0012-cancel-day\patch.md`
+
+--- [42]
+El revisor no ve nada Crítico ni Importante. Acepto el hallazgo 1: el segundo test de cada fichero solo detecta el fallo si el primero corrió antes. Lo uno en un test con dos aserciones. El hallazgo 2 es comportamiento previo que el patch no cambia, así que lo dejo fuera.
+
+--- [44]
+Contra el código original los 2 tests fallan, y con el arreglo pasan 6 de 6. Completo `patch.md` con la respuesta al revisor y hago el commit.
+
+--- [47]
+El comando se enredó con el heredoc y no sé qué se ejecutó. Compruebo el estado antes de seguir.
+
+--- [50]
+`patch.md` quedó actualizado, pero el commit no llegó a ejecutarse. Lo hago ahora.
+
+--- [52]
+Commit hecho y la suite sigue en 6/6. Paso al cierre, que es el último paso del flujo de patch.
+
+--- [62]
+Ahora: pido tu validación del patch; el cierre espera a tu respuesta. Queda: registrar la validación, completar `patch.md`, el roadmap y el merge, ~10 min.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva del lunes y respondía «cancelada Norte mar». Ahora responde «sin reserva Norte mar» y la del lunes sigue activa. `anular` tenía el mismo fallo y también está arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada. Una sola decisión de forma: el test de `anular` va en un fichero aparte (`test/void-day.test.js`), porque las reservas viven en memoria y cada fichero de test arranca con la del lunes intacta.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` no toca el lunes | ejecución real | `sin reserva Norte mar` |
+| `cancelar Norte lun` sigue funcionando | ejecución real | `cancelada Norte lun` |
+| `anular Norte mar` no toca el lunes | ejecución real | `sin reserva Norte mar` |
+| `anular Norte lun` sigue funcionando | ejecución real | `anulada Norte lun` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y lint sin hallazgos, sobre 3082f3d, ~0,2 s.
+
+**Sin probar**
+
+- Nada. Una limitación: la app no guarda reservas entre ejecuciones, así que en una sesión real de CLI cada comando parte de la reserva del lunes. El caso «cancelo el martes y luego el lunes en la misma sesión» solo lo cubren los tests.
+
+**Panel:** plan B en http://127.0.0.1:6584/. Esa página no ve la app, así que si algo falla cuéntamelo en el comentario del paso.
+
+**Guion**
+
+Rama `feature/0012-cancel-day` · worktree `<run>/repo`
+
+Es una CLI y no hay entorno que arrancar. Un solo terminal:
+
+```
+cd <run>/repo
+```
+
+1. El caso que reportaste → debe salir `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. La reserva del lunes sigue cancelándose → debe salir `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Lo mismo con anular → debe salir `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+4. → debe salir `anulada Norte lun`
+
+```
+node src/app.js anular Norte lun
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

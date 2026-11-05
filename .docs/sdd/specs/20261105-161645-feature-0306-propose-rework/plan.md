@@ -259,6 +259,26 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 3: Verificación** — los comandos de «Verificación».
 - [ ] **Step 4: Commit de la task** — `test(sdd-propose): batería entera de control de la 0306`.
 
+### Task 6 — enmienda 2026-11-05: los recuentos del repaso y los enfoques al ✋ en `delegate`
+
+**Tras**: Task 4
+**Modelo**: sesión (Native)
+**Tests RED**: hilo principal · estructural: `spec-writing.md:30` «In `delegate`, say you go with your pick and go on in the same turn», `review-spec.md:66` (la decisión central «in the approaches message»), la `note` de `brainstorming` en `upstream.json` («los enfoques en un mensaje propio»)
+**Superficies**: docs (skills), tooling (registro)
+**Verificación**:
+- `moon run kit:notices kit:build kit:own` → ninguna línea de `skills/sdd-propose/` salvo las repetidas con la skill de otra fila
+- `node cli/node_modules/vitest/vitest.mjs run --root cli test/kit/skills.test.ts test/kit/notices.test.ts` → `Tests  <N> passed (<N>)`
+
+**Interfaces**:
+- Consume: la spec enmendada (decisiones 2, 4 y 12).
+- Produce: `spec-writing.md` sin mensaje de enfoques en `delegate`; la decisión central «in the approaches message or in the ✋».
+
+**Ficheros**: modificar `skills/sdd-propose/references/spec-writing.md`, `skills/sdd-propose/references/review-spec.md`, `upstream.json`, `THIRD_PARTY_NOTICES.md` (por `kit:notices`)
+
+- [ ] **Step 1: Implementación** — las tres frases de `spec-writing.md` (enfoques en `delegate` al ✋, «after the approaches», sin mensaje de enfoques con la spec delegada o en `unattended`), la decisión central de `review-spec.md:66` y la `note` de `upstream.json`, sustituidas en su sitio.
+- [ ] **Step 2: Build** — `moon run kit:notices kit:build`. Esperado: verde.
+- [ ] **Step 3: Verificación** — los comandos de «Verificación».
+- [ ] **Step 4: Commit de la task** — `feat(sdd-propose): enmienda 2026-11-05, los enfoques al ✋ en delegate`.
 ---
 
 ## Estimación y esfuerzo

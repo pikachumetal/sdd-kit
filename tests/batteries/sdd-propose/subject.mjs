@@ -23,7 +23,9 @@ const F29 = '.docs/sdd/specs/20261008-140000-feature-0029-room-floors';
 const F30 = '.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice';
 const F18 = '.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone';
 const F19 = '.docs/sdd/specs/20261008-170000-feature-0019-manager-marks';
-const FOLDERS = [F10, F11, F13, F18, F19, F28, F29, F30];
+const F20 = '.docs/sdd/specs/20261008-180000-feature-0020-export-dir';
+const F21 = '.docs/sdd/specs/20261008-190000-feature-0021-slot-check';
+const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30];
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
@@ -188,6 +190,12 @@ const molds = {
     s.copy(join(FIX, 'deps'));
     edit('package.json', (text) => text.replace('"engines"', '"dependencies": {"fecha": "workspace:*"}, "engines"'));
     edit('src/app.js', (text) => `import { dayName } from 'fecha';\n${text}\nexport const today = () => dayName(new Date().getDay());\n`);
+  },
+  // La carpeta de exportación vive en config.json, y un test fija su valor suelto, '.', sin nombrar la clave.
+  'reservas-export'() {
+    s.put('config.json', '{\n  "base": "."\n}\n');
+    s.put('src/export.js', "import { readFileSync } from 'node:fs';\n\nexport const readConfig = () => JSON.parse(readFileSync('config.json', 'utf8'));\nexport const exportPath = () => `${readConfig().base}/reservas.csv`;\n");
+    s.put('test/config.test.js', "import { test } from 'node:test';\nimport assert from 'node:assert';\nimport { readConfig } from '../src/export.js';\n\ntest('la exportación escribe en la raíz', () => {\n  assert.equal(readConfig().base, '.');\n});\n");
   },
   // Una sala más rompe el test de libres: el gate de cierre sale en rojo.
   'reservas-rojo'() {
@@ -360,10 +368,13 @@ steps.rv3 = () => {
 steps.lr1 = reviewSpec(F19, 'spec-0019-lite.md');
 steps.rr1 = reviewSpec(F11, 'spec-0011-round1.md');
 steps.pr1 = () => (s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.');
+steps['pb-p'] = () => (s.env.TURN2 = 'Sigue con el que recomiendas.');
+steps.co7 = reviewSpec(F20, 'spec-0020-export-dir.md');
+steps.co8 = reviewSpec(F21, 'spec-0021-slot-check.md');
 steps[s.SC]?.();
 
 const turns = { g1: '40', r1: '15', d1: '60', p3: '60', pr1: '70' };
-for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
+for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-p', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);
