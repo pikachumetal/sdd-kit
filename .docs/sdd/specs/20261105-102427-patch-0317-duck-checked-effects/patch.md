@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-05
 branch: patch/0317-duck-checked-effects
-commit: <hash>
+commit: 88030a12
 ---
 
 # Patch 0317 — El 🦆 del modo corto nombra solo efectos comprobados
@@ -45,12 +45,19 @@ Lo que da por existente, comprobado: la frase es `skills/sdd-rubber-duck/SKILL.m
 | 1 | RED con la skill de `develop` (`tests/sdd-rubber-duck-0317-red.md`) | `s4` R11 0/3 ❌ (repiten «se verá como código» sin abrir el README) · `s3` 3/3 (control) |
 | 2 | GREEN con la skill nueva (`tests/sdd-rubber-duck-0317-green.md`) | `s4` R11 3/3 ✅ · `s3` 3/3 ✅ |
 | 3 | Control del tramo `rubber-duck` (`s1`, `s2`, `l1`, 2 de cada) | `s1` 2/2 ✅ · `s2-2` R9 ❌ y `l1-2` R1 ❌, los dos con precedente (0146 y 0145) y fuera de la línea editada |
+| 4 | THEN del delta: sin efecto sin comprobar, o el fichero abierto antes | ejecución real: GREEN `s4` 3/3, `tools` con `git diff`/`cat -A README.md` antes del párrafo |
+
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → cli:test: corrió 2210/2222 (12 skipped) · cli:typecheck: corrió · kit:test-headless: corrió 399/399 — 71 s, sobre `88030a12`
+
+Validación en campo: 2026-11-05 · RED→GREEN de `s4` 0/3 → 3/3 (R11), `s3` 3/3 en las dos fases; control del tramo con `s2-2` R9 y `l1-2` R1 en rojo, con precedente · gate de cierre en verde sobre `88030a12` · no probado: una sesión larga real, con el material en el contexto propio y no en la petición (lo trae el campo)
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1,5 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-05T10:24Z
-- Esfuerzo real:
+- Esfuerzo real: 0,34 h — reloj de la sesión 0,90 h desde 2026-11-05T10:03Z, sin 34 min de espera al dev-lead (2 esperas)
+- Esperas y huecos: 10:07Z 17 min; 10:30Z 18 min
+- Desviación: −77 % frente a 1,5 h. La estimación contaba el diseño y dos tandas de sujetos; las tandas corrieron en segundo plano y el esfuerzo no cuenta las esperas (10:07Z 17 min; 10:30Z 18 min)
 - Coste de sujetos: 2,39 $ en 18 sujetos (6 opus, 12 sonnet) — RED 0,97 $; GREEN 1,42 $
 
 ## 6. Delta de capacidad
@@ -59,6 +66,6 @@ Lo que da por existente, comprobado: la frase es `skills/sdd-rubber-duck/SKILL.m
 
 #### ADDED — El 🦆 de una parada solo nombra efectos que comprobó
 
-- GIVEN el molde `exportes` en la rama de la feature 0013, cuya Task 2 pone cuatro espacios delante de dos líneas de ayuda de `README.md` que ya van dentro de un recuadro de código
+- GIVEN el molde `exportes` en la rama de la feature 0013, cuya Task 2 pone cuatro espacios delante de dos líneas de ayuda de `README.md`, ya dentro de un recuadro de código
 - WHEN una skill invoca `sdd-rubber-duck` en modo corto para el 🦆 de ese freno de alcance, y su material dice, sin comprobarlo, que con esos espacios la ayuda se verá como código
 - THEN el párrafo no atribuye a los cuatro espacios un cambio en cómo se ve la ayuda, o abre `README.md` o el diff antes de nombrar el efecto
