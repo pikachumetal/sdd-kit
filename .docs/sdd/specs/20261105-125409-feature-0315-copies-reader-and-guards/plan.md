@@ -17,7 +17,7 @@ created: 2026-11-05
 4. **El cierre en `fin` mira hacia delante con un índice precalculado**: el `Reader` guarda, para cada línea, si la siguiente marca de línea entera es `fin`; así `take` no recorre el fichero en cada línea en blanco.
 5. **`kit:dist-compare` exporta funciones puras** (`paragraphDiff`, `shapeDiff`) que el test llama con textos; la lectura de git (`git show <ref>:<ruta>`, `git rev-parse --verify <ref>^{commit}`) solo va en `main`.
 6. **El `own` se busca con `git grep -F -I -n -f -`**, con las líneas por la entrada estándar: sin ficheros temporales ni el tope de longitud de la línea de órdenes de Windows. Se usa `spawnSync` de `node:child_process` con `input`, porque `git()` de `cli/src/git/git.ts` no acepta entrada.
-7. **Riesgos altos**: que un `add` real de `develop` caiga en la racha (desvío: para, spec §Scope).
+7. **Riesgos altos**: que un bloque real de `develop` caiga en la racha (desvío: para, spec §Scope).
 8. **Coste**: ~2 h de implementación, sin subagentes salvo los tres ejes de la revisión final.
 9. Review Focus: 4 entradas que la spec no fija, con su comportamiento esperado; ver la sección.
 
@@ -99,7 +99,7 @@ Clones de `SDD_UPSTREAM_DIR` (`D:/code/github/upstream`) para `kit:copies` y `ki
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 | --- | --- | --- | --- |
-| Un `add` real de `develop` cae en la racha | baja | desvío | `moon run kit:copies` en la Task 1 antes de commitear; si sale, para (spec §Scope) |
+| Un bloque real de `develop` cae en la racha | baja | desvío | `moon run kit:copies` en la Task 1 antes de commitear; si sale, para (spec §Scope) |
 | La forma da falsos rojos en `dist/` de hoy | media | la herramienta no sirve | `moon run kit:dist-compare` sobre todo `dist/skills/` frente a `develop` debe dar `igual` |
 | `git grep -f -` no lee de la entrada en el git de la CI | baja | `kit:upstream` falla | el test lento corre en la CI con Linux |
 

@@ -219,6 +219,49 @@ describe('checkCopy: la gramática de la marca', () => {
     const annotated = FENCED.replace('first line\n\nsecond line\n', '<!-- kit: 0186 · sustituye: «first…second» -->\nprimera line\n\nsegunda line\n<!-- kit: fin -->\n');
     expect(check(annotated, { original: FENCED })).toEqual([]);
   });
+
+  const PLAIN = 'Intro.\n\nAfter.\n';
+
+  it('ends a text block at fin across a blank line', () => {
+    expect(check('Intro.\n\n<!-- kit: 0186 -->\nuno\n\ndos\n<!-- kit: fin -->\nAfter.\n', { original: PLAIN })).toEqual([]);
+  });
+
+  it('ends a text block at a blank line when the next mark is not fin', () => {
+    expect(check('Intro.\n<!-- kit: 0186 -->\nuno\n\n<!-- kit: 0186 -->\ndos\n<!-- kit: fin -->\nAfter.\n', { original: PLAIN })).toEqual([]);
+  });
+});
+
+describe('checkCopy: un bloque que se come el original', () => {
+  const ORIGINAL_FENCE = 'Intro.\n\n```bash\nnpm install\n\npnpm install --frozen-lockfile\nyarn install --frozen-lockfile\n```\n\nAfter.\n';
+  const eats = (line: number, first: string): string =>
+    `${FILE}:${line}: el bloque lleva 2 líneas seguidas del original en su sitio, desde «${first}»: ciérralo con <!-- kit: fin --> antes de ellas`;
+  const fenced = (annotated: string): string[] => check(annotated, { original: ORIGINAL_FENCE });
+
+  it('reports a block that eats original lines inside a fence', () => {
+    expect(fenced(ORIGINAL_FENCE.replace('npm install\n', 'npm install\n<!-- kit: 0186 -->\nbun install\n'))).toEqual([eats(5, 'pnpm install --frozen-lockfile')]);
+  });
+
+  it('accepts the same block closed with fin before the original lines', () => {
+    expect(fenced(ORIGINAL_FENCE.replace('npm install\n', 'npm install\n<!-- kit: 0186 -->\nbun install\n<!-- kit: fin -->\n'))).toEqual([]);
+  });
+
+  it('reports a sustituye without fin that keeps the original lines after its blank line', () => {
+    expect(fenced(ORIGINAL_FENCE.replace('npm install\n', '<!-- kit: 0186 · sustituye: «npm install» -->\nbun install\n'))).toEqual([eats(4, 'pnpm install --frozen-lockfile')]);
+  });
+
+  it('reports a text block whose fin eats an original paragraph', () => {
+    const original = 'Intro.\n\nuno dos\ntres cuatro\n\nAfter.\n';
+    const annotated = 'Intro.\n\n<!-- kit: 0186 -->\nkit\n\nuno dos\ntres cuatro\n<!-- kit: fin -->\n\nAfter.\n';
+    expect(check(annotated, { original })).toEqual([eats(3, 'uno dos')]);
+  });
+
+  it('ignores blank lines and a lone equal line', () => {
+    const annotated = ORIGINAL_FENCE.replace('npm install\n', 'npm install\n<!-- kit: 0186 -->\nbun install\n').replace(
+      'pnpm install --frozen-lockfile\n',
+      'pnpm install --frozen-lockfile\n<!-- kit: fin -->\n',
+    );
+    expect(fenced(annotated)).toEqual([]);
+  });
 });
 
 describe('checkCopy: fragmentos de otra fuente', () => {
