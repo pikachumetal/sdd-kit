@@ -46,3 +46,9 @@ Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y l
 - THEN el agente invoca `sdd-rubber-duck` y lo vuelve a contar empezando por un poco de contexto: qué estábamos haciendo y dónde estamos
 - AND con frases de 25 palabras como mucho, una idea cada una
 - AND con las palabras del glosario («franja», «reserva»), sin `toISOString()`, sin el nombre del test y sin «UTC» si no lo explica en la misma frase por su efecto
+
+### El 🦆 de una parada solo nombra efectos que comprobó
+
+- GIVEN el molde `exportes` en la rama de la feature 0013, cuya Task 2 pone cuatro espacios delante de dos líneas de ayuda de `README.md`, ya dentro de un recuadro de código
+- WHEN una skill invoca `sdd-rubber-duck` en modo corto para el 🦆 de ese freno de alcance, y su material dice, sin comprobarlo, que con esos espacios la ayuda se verá como código
+- THEN el párrafo no atribuye a los cuatro espacios un cambio en cómo se ve la ayuda, o abre `README.md` o el diff antes de nombrar el efecto

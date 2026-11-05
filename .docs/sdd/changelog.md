@@ -72,6 +72,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Patch 0317** — El 🦆 del modo corto de `sdd-rubber-duck` nombra solo efectos que comprobó en el fichero, en la misma línea que pide primero qué cambia con datos. → [ref](specs/20261105-102427-patch-0317-duck-checked-effects/)
 - **Feature 0303** — La ADR 0022 fija las tres reglas del dev-lead para el texto del kit (partir de la fuente sin tocar lo que funciona, sustituir la frase de la fuente en vez de añadir al lado, arreglar mejorando la frase que falla), sustituye a la 0013 y a la consecuencia de la 0019 «Editar una frase de una skill no toca ningún test», y el Art. IX de la constitution y `tech-stack.md` la dicen y la enlazan. → [ref](specs/20261103-162611-feature-0303-adr-three-rules/)
 - **Feature 0289** — Revisión de las fuentes vigiladas antes del corte: superpowers v7.0.1, OpenSpec v1.16.0, Spec Kit v1.2.6, mattpocock/skills v1.3.2 e impeccable skill-v4.8.0, con `moon run kit:upstream` en verde; lo que se trae va a las filas 0296 y 0297. → [ref](specs/20261102-210125-feature-0289-upstream-review/)
 - **Feature 0281** — El repaso de coherencia de `sdd-propose` busca con `grep` en `capabilities/` los pasos numerados de lo que se retira, también citados a secas; el cruce del Scope con el índice no se escribe porque su RED salió limpio. → [ref](specs/20261102-173845-feature-0281-coherence-pass-scope/)

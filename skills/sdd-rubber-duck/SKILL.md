@@ -21,7 +21,7 @@ Explain for a reader who knows the product, not its code or the kit. Write every
 The caller gives you the stop and its material: a spec, a blocker, a decision. Its technical wording (an Approach full of file names, a stack trace) is your input, not your output. Return one paragraph:
 
 - It starts with 🦆 and has five sentences at most.
-- First, what changes or what happens for the person who uses the product, with one example with data.
+- First, what changes or happens for the product's user, with data; name only effects checked in the file.
 - Then how, in the product's words.
 - Return it to the caller without questions: the caller asks. What you did or what is left to decide goes after the paragraph, never as a sixth sentence, as a bare statement: «falta decidir el redondeo del IVA», not «falta decidir: por línea o por total; recomiendo por línea». The caller asks it with its options; listing them here makes the user answer twice.
 

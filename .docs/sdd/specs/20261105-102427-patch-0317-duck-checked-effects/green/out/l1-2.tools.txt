@@ -1,0 +1,170 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Grep: export|exporta
+
+>>> Glob: **/PRODUCT.md
+<<< PRODUCT.md
+<<< Found 15 files
+test\export.test.js
+src\export\writer.js
+src\export\index.js
+src\export\ics.js
+src\export\filter.js
+src\cli.js
+src\bookings\repository.js
+README.md
+PRODUCT.md
+.docs\sdd\tech-stack.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+.docs\sdd\roadmap.md
+.docs\sdd\mission.md
+.docs\sdd\constitution.md
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# exportes
+2	
+3	## Users
+4	
+5	- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+6	- **Responsable del coworking**: mantiene la herramienta.
+7	
+8	## Product Purpose
+9	
+10	Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+11	
+12	## Capabilities and Constraints
+13	
+14	- **Es**: reservar, cancelar y exportar las reservas de un mes.
+15	- **No es**: un calendario compartido ni una sincronización en vivo.
+16	
+17	## Terminology
+18	
+19
+
+>>> Read: <run>\repo\src\cli.js
+<<< 1	import { exportMonth } from './export/index.js';
+2	
+3	const [command, ...args] = process.argv.slice(2);
+4	
+5	if (command === 'exportar') {
+6	  const month = args[args.indexOf('--mes') + 1];
+7	  console.log(exportMonth(month));
+8	}
+9	
+
+>>> Read: <run>\repo\src\export\index.js
+<<< 1	import { loadBookings } from '../bookings/repository.js';
+2	import { bookingsBySlot } from './filter.js';
+3	import { toIcs } from './ics.js';
+4	import { writeExport } from './writer.js';
+5	
+6	export function exportMonth(month) {
+7	  return writeExport(month, toIcs(bookingsBySlot(loadBookings(), month)));
+8	}
+9	
+
+>>> Read: <run>\repo\src\export\filter.js
+<<< 1	export function bookingsBySlot(bookings, month) {
+2	  return bookings
+3	    .filter((booking) => booking.day.startsWith(month) && booking.status !== 'cancelled')
+4	    .sort((a, b) => `${a.day} ${a.slot}`.localeCompare(`${b.day} ${b.slot}`));
+5	}
+6	
+
+>>> Read: <run>\repo\src\export\ics.js
+<<< 1	const COWORKING_OFFSET = '+02:00';
+2	
+3	function toUtcStamp(day, time) {
+4	  const utc = new Date(`${day}T${time}:00${COWORKING_OFFSET}`).toISOString();
+5	  return utc.replace(/[-:]/g, '').slice(0, 15);
+6	}
+7	
+8	function toEvent(booking) {
+9	  const [start, end] = booking.slot.split('-');
+10	  return [
+11	    'BEGIN:VEVENT',
+12	    `SUMMARY:Sala ${booking.room}`,
+13	    `DTSTART:${toUtcStamp(booking.day, start)}`,
+14	    `DTEND:${toUtcStamp(booking.day, end)}`,
+15	    'END:VEVENT',
+16	  ].join('\r\n');
+17	}
+18	
+19	export function toIcs(bookings) {
+20	  return ['BEGIN:VCALENDAR', 'VERSION:2.0
+
+>>> Read: <run>\repo\src\export\writer.js
+<<< 1	import { mkdirSync, writeFileSync } from 'node:fs';
+2	
+3	export function writeExport(month, ics) {
+4	  mkdirSync('exports', { recursive: true });
+5	  const path = `exports/${month}.ics`;
+6	  writeFileSync(path, ics);
+7	  return path;
+8	}
+9	
+
+>>> Read: <run>\repo\src\bookings\repository.js
+<<< 1	import { readFileSync } from 'node:fs';
+2	
+3	const DATA = new URL('../../data/bookings.json', import.meta.url);
+4	
+5	export function loadBookings() {
+6	  return JSON.parse(readFileSync(DATA, 'utf8'));
+7	}
+8	
+
+>>> Bash: cd "<run>/repo" && cat data/bookings.json | head -30; ls exports 2>&1 | head; node -e "
+import('./src/export/ics.js').then(m=>console.log(m.toIcs([{day:'2026-10-05',slot:'10:00-11:00',room:'Norte'}])))"
+<<< [
+  { "room": "Norte", "day": "2026-03-02", "slot": "10:00-12:00", "status": "confirmed" },
+  { "room": "Sur", "day": "2026-03-05", "slot": "16:00-17:00", "status": "confirmed" },
+  { "room": "Norte", "day": "2026-03-12", "slot": "09:00-10:00", "status": "cancelled" },
+  { "room": "Norte", "day": "2026-03-19", "slot": "12:00-13:30", "status": "confirmed" },
+  { "room": "Sur", "day": "2026-04-01", "slot": "10:00-11:00", "status": "confirmed" }
+]
+ls: cannot access 'exports': No such file or directory
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:Sala Norte
+DTSTART:20261005T080000
+
+
+=== RESULTADO (13 turnos, 0.123164 $)
+Sigo el ejemplo de las reservas de marzo de 2026. El socio pide la exportación de `2026-03`.
+
+## El recorrido
+
+1. **El socio** escribe en la terminal la orden de exportar con el mes `2026-03`. El programa lee el mes y lo pasa al módulo de exportación.
+2. **El programa** abre la lista de reservas guardada en un fichero de datos. Hay cinco reservas, de marzo y de abril.
+3. **El programa** se queda con las de marzo y descarta las canceladas. De las cinco quedan tres:
+   - Norte, 2 de marzo, de 10:00 a 12:00.
+   - Sur, 5 de marzo, de 16:00 a 17:00.
+   - Norte, 19 de marzo, de 12:00 a 13:30.
+
+   La del 12 de marzo está cancelada y no entra. La de abril cae fuera del mes. Las tres que quedan se ordenan por día y franja.
+4. **El programa** convierte cada reserva en un evento de calendario. El título es «Sala Norte» o «Sala Sur». La franja de 10:00 a 12:00 pasa a hora universal (UTC). Para eso resta 2 horas, porque el programa da por hecho que la hora del coworking va dos horas por delante. Sale 08:00 a 10:00.
+5. **El programa** une los tres eventos en un solo texto con formato de calendario.
+6. **El programa** crea la carpeta de exportaciones si no existe. Guarda ahí el texto como fichero del mes, y la terminal muestra su ruta.
+
+Después de los pasos, el socio abre su Google Calendar o su Outlook, importa ese fichero y ve las tres reservas.
+
+## Dos cosas que he visto al leer el código
+
+- **Faltan las «Z» en las horas.** Las horas salen como `20260302T080000`, sin la «Z» final que dice «esto es UTC». Lo comprobé generando un evento de prueba. Sin la «Z», el calendario puede leer 08:00 como hora local del socio y no como hora universal. Eso es una deducción mía sobre cómo importan los calendarios. No lo he probado con uno real.
+- **La resta de 2 horas es fija.** Vale en verano. En invierno la hora del coworking va una hora por delante, no dos. Una reserva del 2 de marzo, a las 10:00, saldría una hora antes de lo debido.
+
+## Dónde mirar
+
+- Orden de exportar y lectura del mes: `src/cli.js`
+- Encadenado de los pasos: `src/export/index.js`
+- Lista de reservas: `src/bookings/repository.js` y `data/bookings.json`
+- Filtro por mes y orden: `src/export/filter.js`
+- Eventos y cambio de hora: `src/export/ics.js`
+- Escritura del fichero, en la carpeta `exports/`: `src/export/writer.js`
+
+Si quieres, te respondo cualquier duda sobre alguno de los pasos.
