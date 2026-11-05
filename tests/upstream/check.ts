@@ -1,10 +1,16 @@
 // Uso: node tests/upstream/check.ts [<ruta de upstream.json>], con SDD_UPSTREAM_DIR apuntando a la carpeta de los clones.
 // El package.json de esta carpeta ("type": "module") evita que Node avise por stderr y ensucie la salida.
-import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { WHOLE_LINE_MARK } from '../../build/dist.ts';
 import { BuildError } from '../../build/errors.ts';
 import { readRegistry, watchedRefs, type Registry, type Source, type WatchedRef } from '../../build/sources.ts';
-import { git } from '../../cli/src/git/git.ts';
+import { git, isolatedEnv } from '../../cli/src/git/git.ts';
+import { abbreviate } from '../copies/annotated.ts';
 import { DEFAULT_REGISTRY, findClones, hasCommit, MISSING_UPSTREAM_DIR, report } from './clones.ts';
+
+const MIN_LITERAL = 70;
 
 interface ParsedTag {
   prefix: string;
@@ -67,19 +73,92 @@ async function checkRef(ref: KitRef, { name, clone, newest }: SourceClone): Prom
 
 const kitRefs = (registry: Registry): KitRef[] => registry.entries.flatMap((entry) => watchedRefs(entry).map((ref) => ({ ...ref, kit: entry.kit })));
 
-async function checkRegistry(registry: Registry, dir: string): Promise<string[]> {
+interface OwnLine {
+  file: string;
+  line: number;
+  text: string;
+}
+
+interface Hit {
+  path: string;
+  content: string;
+}
+
+function filesAt(repoRoot: string, path: string): string[] {
+  const full = join(repoRoot, path);
+  if (!existsSync(full)) return [];
+  if (!statSync(full).isDirectory()) return [path];
+  return readdirSync(full, { recursive: true, encoding: 'utf8' })
+    .filter((name) => statSync(join(full, name)).isFile())
+    .map((name) => `${path.replace(/\/$/, '')}/${name.replaceAll('\\', '/')}`);
+}
+
+function ownLines(registry: Registry, repoRoot: string): OwnLine[] {
+  const files = (registry.own ?? []).flatMap((path) => filesAt(repoRoot, path)).filter((file) => !file.endsWith('/NOTICE'));
+  return files.flatMap((file) =>
+    readFileSync(join(repoRoot, file), 'utf8')
+      .split(/\r?\n/)
+      .flatMap((content, index) => {
+        const text = content.trim();
+        return text.length >= MIN_LITERAL && !WHOLE_LINE_MARK.test(content) ? [{ file, line: index + 1, text }] : [];
+      }),
+  );
+}
+
+// Las líneas van por la entrada estándar: en la línea de órdenes, los cientos de líneas largas de los own pasan del tope de Windows.
+function grepAt(clone: string, version: string, patterns: string[]): Hit[] | string {
+  const args = ['-C', clone, '-c', 'core.quotePath=false', 'grep', '-F', '-I', '-z', '-f', '-', version];
+  const result = spawnSync('git', args, { input: patterns.join('\n'), encoding: 'utf8', env: isolatedEnv(), maxBuffer: 64 * 1024 * 1024, windowsHide: true });
+  if (result.status !== 0 && result.status !== 1) return firstLine(result.stderr ?? '');
+  return (result.stdout ?? '')
+    .split('\n')
+    .filter(Boolean)
+    .map((hit) => {
+      const [where, content = ''] = hit.split('\0');
+      return { path: where.slice(version.length + 1), content };
+    });
+}
+
+const versionsOf = (registry: Registry, source: SourceClone): string[] => [
+  ...new Set([source.newest, ...kitRefs(registry).filter((ref) => ref.source === source.name).map((ref) => ref.version)]),
+];
+
+// Un own no genera NOTICE: una línea suya que está en una fuente se quedaría sin su aviso de licencia.
+function ownLiterals(registry: Registry, repoRoot: string, prepared: SourceClone[]): string[] {
+  const lines = ownLines(registry, repoRoot);
+  if (lines.length === 0) return [];
+  const patterns = [...new Set(lines.map((line) => line.text))];
+  const problems: string[] = [];
+  const found = new Map<OwnLine, string>();
+  for (const source of prepared)
+    for (const version of versionsOf(registry, source)) {
+      const hits = grepAt(source.clone, version, patterns);
+      if (typeof hits === 'string') problems.push(`${source.name}: git grep falló en ${version}: ${hits}`);
+      else for (const line of lines.filter((candidate) => !found.has(candidate))) {
+        const hit = hits.find((candidate) => candidate.content.includes(line.text));
+        if (hit) found.set(line, `${line.file}:${line.line}: línea literal de ${source.name} ${hit.path}@${version}, y un own no lleva NOTICE: reescríbela o pasa el fichero a copia: «${abbreviate(line.text)}»`);
+      }
+    }
+  return [...problems, ...lines.flatMap((line) => found.get(line) ?? [])];
+}
+
+async function checkRegistry(registry: Registry, dir: string, repoRoot: string): Promise<string[]> {
   const clones = await findClones(dir);
   const refs = kitRefs(registry);
   const problems: string[] = [];
+  const ready: SourceClone[] = [];
   for (const [name, source] of Object.entries(registry.sources)) {
     const own = refs.filter((ref) => ref.source === name);
     if (own.length === 0) continue;
     const clone = clones.get(source.repo.toLowerCase());
     const prepared = clone ? await prepareSource(name, source, clone) : `${name}: sin clone de ${source.repo} en ${dir}.`;
     if (typeof prepared === 'string') problems.push(prepared);
-    else for (const ref of own) problems.push(...(await checkRef(ref, prepared)));
+    else {
+      ready.push(prepared);
+      for (const ref of own) problems.push(...(await checkRef(ref, prepared)));
+    }
   }
-  return problems;
+  return [...problems, ...ownLiterals(registry, repoRoot, ready)];
 }
 
 async function main(argv: string[]): Promise<number> {
@@ -94,7 +173,7 @@ async function main(argv: string[]): Promise<number> {
     if (error instanceof BuildError) return report([error.message]);
     throw error;
   }
-  const problems = await checkRegistry(registry, dir);
+  const problems = await checkRegistry(registry, dir, dirname(resolve(registryPath)));
   return problems.length > 0 ? report(problems) : report([`Fuentes al día: ${registry.entries.length} entradas.`], 0);
 }
 

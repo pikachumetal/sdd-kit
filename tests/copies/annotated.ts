@@ -87,7 +87,7 @@ export function formatProblem(problem: Problem): string {
 const words = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 const normalize = (text: string): string => words(text).join(' ');
 
-function abbreviate(text: string): string {
+export function abbreviate(text: string): string {
   const all = words(text);
   return all.length > ABBREVIATE_AFTER ? `${all.slice(0, ABBREVIATE_AFTER).join(' ')}…` : all.join(' ');
 }
