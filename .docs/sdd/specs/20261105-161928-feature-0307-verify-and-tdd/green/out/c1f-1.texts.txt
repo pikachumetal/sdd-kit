@@ -1,0 +1,56 @@
+--- [4]
+Ahora: retomo la 0010 tras la revisión final. Queda: leer los dos informes, arreglar lo que proceda, cerrar la revisión y pasar a la validación, ~15 min.
+
+--- [23]
+Los dos tests están en RED/GREEN como toca. Ahora el arreglo en `reasonOf`, la suite completa y el commit.
+
+--- [36]
+Estoy esperando la re-revisión única (opus) del arreglo de la 0010, que corre en segundo plano. Mientras tanto dejé `tasks.md` con la revisión final y la pasada de fix. No tengo su resultado todavía.
+
+--- [49]
+### Finding Verdicts
+
+1. **[Code, Important] `reasonOf` kept spaces around the motivo: ADDRESSED.** `src/app.js:16` now reads `params[index + 1]?.trim()`.
+   - **No `--motivo`:** `index === -1` still returns `undefined`. `reasons.includes(undefined)` is false, so the answer is «motivo no válido: …», as the spec asks (spec.md:54).
+   - **`--motivo` as the last argument:** `params[index + 1]` is `undefined`. The `?.` operator stops `.trim()` from throwing and returns `undefined`, which gives the same «motivo no válido» message.
+   - **Motivo not on the list:** trimming does not change the outcome, and `test/cancel.test.js:9-11` still covers it.
+   - **The new test** (`test/cancel.test.js:18-20`) tells the old and new code apart. Before the fix, `' sala ocupada '` failed the list check and answered «motivo no válido…». After the fix it passes that check and reaches `findBooking`, which answers «sin reserva Sur mar». The test checks the trim indirectly but correctly, and it leaves the shared state unchanged.
+
+2. **[Spec, Minor] the `canceladas` test depended on test order: ADDRESSED.** `test/cancel.test.js:14` now runs `cancelar Norte lun --motivo "sala ocupada"` inside the test itself before calling `canceladas`.
+   - **Run alone:** I ran `node --test --test-name-pattern="canceladas" test/cancel.test.js` and got 1/1 pass.
+   - **Run in file order:** test 1 has already cancelled Norte lun, so the cancel at line 14 answers «sin reserva» with no side effect. `cancelledList` (`src/app.js:35-37`) then returns a single line, «Norte lun — sala ocupada».
+   - The spec's THEN at spec.md:59 is unchanged and the test still asserts exactly that line.
+
+### New Breakage in the Fix Diff
+None. The fix changes no requirement and no existing assertion. All user-facing text stays in Spanish.
+
+### Out-of-Scope Observations
+- **Important, spec coverage, from before the fix:** the AND at spec.md:54 («sin `--motivo` responde lo mismo: motivo no válido…») has no test. Nothing in `test/cancel.test.js` or `test/app.test.js` calls `cancelar` without `--motivo`. The code handles it correctly (`src/app.js:16` plus `src/app.js:20`), but the requirement is untested. `review-spec.md:4` says "Both THEN… have their test", yet the block has three outcomes. The fix did not cause this gap. Suggested fix: add a test like `run('cancelar', ['Sur', 'mar'])` asserting «motivo no válido: cambio de planes, sala ocupada, otro».
+- **Minor:** `test/cancel.test.js:5-7` still relies on Norte lun being active, because module state is shared across tests in the file. `node:test` runs tests in the order they are declared, so this does not fail today. It would fail if the tests were reordered or shuffled.
+
+### Verdict
+All findings addressed, no new Critical/Important breakage. The untested «sin `--motivo`» requirement (spec.md:54) is an Important coverage gap from before this fix and is still open, outside the scope of this re-review.
+
+--- [59]
+La revisión final de la 0010 está cerrada, pero el cierre se detiene aquí. Todavía no he escrito nada del cierre ni he hecho merge.
+
+**Revisión final**
+- Los dos ejes volvieron sobre `b407548`: Spec sin Critical ni Important, y Código con un Important.
+- El Important era que `cancelar` no admitía un motivo con espacios (`"sala ocupada "`). Lo arreglé con test en RED primero en `9985f3a`, recortando el motivo en `src/app.js:16`.
+- Con `review.minors: fix`, el Minor del test de `canceladas` que dependía del orden entró en la misma pasada y también está arreglado.
+- La suite pasa 6/6. La re-revisión única (opus) dio los dos hallazgos por resueltos y sin roturas nuevas.
+- Borré el workspace del plan.
+
+**Rulings I made**
+- Falta un test para «sin `--motivo` responde motivo no válido» (`spec.md:54`). Lo señaló la re-revisión fuera del diff del fix. Comprobé a mano que el código lo cumple, y no añado el test porque la pasada de fix ya se usó. Si me equivoco, una regresión en ese caso no la detecta ningún test. Va a ✋.
+- El test de `cancelar` (`test/cancel.test.js:5-7`) depende del orden de declaración y de que Norte lun siga activa. No lo toco. Si me equivoco, un orden aleatorio de tests lo rompería.
+
+**Deferred minors:** ninguno.
+
+**Qué me frena en `sdd-archive`**
+1. Hay un cambio sin commitear: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, el registro de tasks con la revisión final y los rulings. ¿Lo commiteo en la rama, lo descarto o paro? Mi recomendación es commitearlo.
+2. `sdd merge --check` falla: faltan `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Sin ellos no puedo fusionar. Dime a qué rama se integra y si va con `--no-ff`.
+3. Con perfil `delegate` y sin `validation.mode`, la validación es tuya. Cuando quieras te preparo el smoke y el guion. Para probarlo: `cancelar Norte lun --motivo "sala ocupada "` y luego `canceladas`.
+
+Aviso aparte: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+

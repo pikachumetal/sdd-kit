@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | head -80; echo ----; grep -n -i -A25 "testing" .docs/sdd/operations.md | head -80; git log --oneline -8; git diff --stat 389aff8 0d380a5
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ bookings:test (4 passed, 1 failed)
+✔ libres excluye la sala reservada en la franja (0.9041ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1228ms)
+✔ cancelar con un motivo de la lista (0.7788ms)
+✔ cancelar con un motivo fuera de la lista (0.1808ms)
+✖ canceladas enseña sala, día y motivo (11.3986ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.5656
+
+✖ failing tests:
+
+test at test\cancel.test.js:13:1
+✖ canceladas enseña sala, día y motivo (11.3986ms)
+  AssertionE
+
+>>> Bash: find .docs -type f | head -30; cat .docs/sdd/*/operations.md 2>/dev/null | head -60; ls; cat package.json; ls scripts test; git diff 389aff8 0d380a5
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/tech-stack.md
+gate.json
+package.json
+PRODUCT.
+
+>>> Bash: cat gate.json scripts/gate.mjs .docs/sdd/tech-stack.md; cat .docs/sdd/sdd-kit.json; git status --short
+<<< {"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+#!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const tasks = JSON.parse(readFileSync('gate.json', 'utf8')).tasks;
+
+function git(args) {
+
+
+>>> Bash: node --test test/cancel.test.js 2>&1 | grep -E "^(✔|✖|ℹ (tests|pass|fail))"; echo "== gate"; node scripts/gate.mjs run bookings:test rooms:test --affected --base 389aff8; echo exit=$?; echo "== rooms sin filtro"; node scripts/gate.mjs run rooms:test; echo exit=$?; node scripts/gate.mjs task rooms:test
+<<< ✔ cancelar con un motivo de la lista (1.1216ms)
+✔ cancelar con un motivo fuera de la lista (0.165ms)
+✔ canceladas enseña sala, día y motivo (0.9278ms)
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+== gate
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 0 failed)
+Tasks: 1 completed, 1 skipped
+exit=0
+== rooms sin filtro
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit=0
+Task: rooms:test
+Inputs:
+  - src/rooms.js
+  - test/rooms.test.js
+
+=== RESULTADO (7 turnos, 0.1421514 $)
+El gate de la 0010 queda en verde tras el arreglo. La línea es:
+
+``Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base 389aff8` · `node scripts/gate.mjs run rooms:test` → tras el rojo en 389aff8, arreglo 0d380a5: bookings:test: corrió 5/5 · rooms:test: corrió 1/1 (no corrió en la pasada roja)``
+
+Qué comprobé, siguiendo la regla de después de un rojo:
+- **El test que falló:** `canceladas enseña sala, día y motivo` pasa en `test/cancel.test.js`. Ese fichero da 3/3.
+- **El gate con `--base 389aff8`:** `bookings:test` corrió 5/5. El arreglo toca `src/app.js`, que es input suyo. `rooms:test` quedó saltada por el filtro, porque sus inputs no cambian. Salió con exit 0 y `Tasks: 1 completed, 1 skipped`.
+- **`rooms:test` sin filtro:** en la pasada roja se saltó porque dependía de `bookings:test`. Por eso la corrí aparte y dio 1/1, exit 0. Es lo que justifica la anotación `(no corrió en la pasada roja)`.
+
+El proyecto no declara «Suites» ni `operations.md` §Testing, así que no había suites unitarias aparte que correr. El arreglo tampoco toca ningún fichero de «Sin filtro» (`gate.json` y `scripts/gate.mjs` no están en esa lista).
+
+Esto es solo el gate de cierre. No he hecho la revisión final por ejes de `sdd-verify`, así que no afirmo nada sobre ella.
