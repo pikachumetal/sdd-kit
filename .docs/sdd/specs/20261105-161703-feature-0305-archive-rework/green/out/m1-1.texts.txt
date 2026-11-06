@@ -1,0 +1,59 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [18]
+Voy por el paso 0.6: tras la revisión final hubo dos commits de solo documentación (`tasks.md` y `tech-stack.md`), y la regla exige una única re-revisión de ese tramo. La despacho ahora.
+
+--- [23]
+La re-revisión de `2d87464..a3e7152` sigue en marcha en segundo plano, con su vigía de silencio. El cierre espera a que termine y no escribo ningún registro hasta tenerla.
+
+Mientras tanto, hay dos cosas que ya sé:
+- **Abiertas a la vez:** no hay otras ramas `feature/*` ni `patch/*`. Solo existe este worktree.
+- **Pre-check del merge:** `merge --check` da `listo`. Fusionará en `develop` desde un worktree temporal.
+
+Cuando vuelva la re-revisión, sigo con la validación en campo, el `walkthrough.md`, las capacidades, la hoja de ruta y el merge.
+
+--- [38]
+## New Breakage in the Fix Diff
+
+1. **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. El ruling de `--test-concurrency=1` no se corresponde con nada real:
+   - El flag solo aparece en esa línea de todo el árbol de a3e7152 (lo busqué en todo el árbol).
+   - El gate del plan es `node --test` sin flags (`plan.md:50`), `package.json` solo contiene `{"type": "module"}` sin scripts, y no hay CI.
+   - La «carrera sobre el almacén compartido en memoria» no puede darse. `node --test` lanza cada fichero de test en su propio proceso, así que `test/app.test.js` y `test/cancel.test.js` no comparten el array `bookings` de `src/app.js:4`. Dentro de `cancel.test.js` los tests van en serie: la dependencia del orden entre el test 1 y el 3 es secuencial, no una carrera.
+   - Además, el ruling va colgado de la Task 2, cuya verificación es `node --test test/cancel.test.js` (`plan.md:45`). Con un solo fichero, `--test-concurrency` no cambia nada.
+
+   El registro deja un workaround que nadie aplica y una deuda inexistente («hasta aislar el almacén por test»). Eso confundiría al cierre (gate y deuda). Hay que quitar el ruling, o sustituirlo por lo que realmente se decidió, si hubo algo.
+
+2. **Minor**: `tasks.md:10`. La Task 1 apunta al commit `2d87464`, pero se implementó en `d51a5f0` («cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). `2d87464` es la Task 2. La trazabilidad del registro es incorrecta.
+
+**Comprobaciones sin hallazgo:**
+- **Frase de `tech-stack.md`:** es verdad. `cancelBooking` en `src/app.js:20` rechaza cualquier motivo que no esté en la lista cerrada de `src/app.js:3`. Si falta `--motivo`, `reasonOf` (`src/app.js:14-17`) devuelve `undefined` y cae en el mismo rechazo, como pide el spec (`spec.md:53-54`).
+- **Línea `Revisión final:` (`tasks.md:13`):** es coherente con lo que me pasas: ejes Spec y Código, limpia, sobre 2d87464. No hay revisión de Arquitectura, lo que encaja con un plan de una sola superficie (backend) y Review Focus «ninguna». No puedo comprobar desde el repo los modelos y niveles de esfuerzo anotados (opus/sonnet + high).
+- **`tech-stack.md` solo cambia esa frase:** confirmado. Las otras 2 líneas que marca el diff crudo (1, 2 y 4 del fichero) son solo cambio de fin de línea. El blob anterior (`55f0830`) estaba guardado con CRLF y el nuevo (`44a46c4`) con LF; `git ls-files --eol` da `i/lf w/crlf`. El texto de esas líneas es idéntico. No importa en la práctica: con `core.autocrlf=true` el fichero sale igual en el disco (CRLF) y no cambia nada de contenido.
+
+## Out-of-Scope Observations
+
+- **Fines de línea mezclados en el repo:** no hay `.gitattributes` y el repo guarda los ficheros con fines de línea distintos. `src/app.js` y `.docs/sdd/mission.md` están en CRLF; `tech-stack.md` (ahora) y `tasks.md` en LF. Cualquier commit desde otra máquina puede volver a dar diffs de 3 líneas por 1 de contenido. Un `.gitattributes` con `* text=auto eol=lf` lo cerraría. Es higiene, no de esta feature.
+- **Sitio de la frase:** la frase nueva describe comportamiento del producto («valida el motivo al cancelar»), y eso no es stack. Encaja más en el spec o el changelog que en `tech-stack.md`. Es correcta, pero está fuera de sitio.
+- **Hueco en los tests:** `test/cancel.test.js` no cubre el caso «sin `--motivo`» (`spec.md:54`). El código lo cumple. La revisión final sobre 2d87464 ya salió limpia, así que solo lo anoto.
+
+## Verdict
+
+Hallazgos abiertos: 1 Important (ruling sin base, `tasks.md:17`) y 1 Minor (commit de la Task 1, `tasks.md:10`).
+
+--- [43]
+La re-revisión del tramo `2d87464..a3e7152` no salió limpia, y paro antes de escribir ningún registro. Comprobé sus dos hallazgos y los dos son ciertos.
+
+1. **Important: el ruling de `tasks.md:17` no se corresponde con nada real.**
+   - `--test-concurrency=1` solo aparece en esa línea de todo el repo.
+   - El gate del plan es `node --test` a secas (`plan.md`, §3), `package.json` no tiene scripts y no hay CI.
+   - Un ruling es una decisión que se registró sin el dev-lead. Por eso no lo quito ni lo reescribo por mi cuenta.
+   - El revisor añade que `node --test` ejecuta cada fichero en su propio proceso, así que la carrera sobre el almacén compartido no podría darse. Eso lo razona el revisor y yo no lo comprobé.
+   - Si lo dejo, el cierre arrastra un workaround que nadie aplica y una deuda inventada («hasta aislar el almacén por test»).
+
+2. **Minor: `tasks.md` atribuye la Task 1 a `2d87464`.** Ese commit es la Task 2. La Task 1 es `d51a5f0`. Esto lo corrijo en el cierre sin preguntar, porque es un desajuste con la realidad.
+
+**Mi recomendación:** quitar el ruling, porque el gate es `node --test` sin flags. ¿Lo quito, o se decidió algo real fuera del repo, por ejemplo que el gate se corrió con ese flag? Si fue así, dime qué y lo dejo bien escrito, con su fila de deuda.
+
+Con tu respuesta sigo con la validación en campo, que es lo siguiente. La re-revisión ya está registrada como abierta y la cierro con lo que decidas.
+

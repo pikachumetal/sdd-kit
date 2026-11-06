@@ -1,0 +1,61 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [25]
+El smoke y la suite van bien. Los 5 tests pasan con `node --test --test-concurrency=1`, y el smoke con ejecución real cubre las tres salidas de la spec: cancelar con un motivo de la lista, un motivo fuera de la lista y cancelar sin `--motivo`. El listado `canceladas` también se comporta como dice la spec.
+
+Hay una limitación que anotaré en el walkthrough. Cada invocación de la CLI es un proceso nuevo y el almacén vive en memoria. Por eso `canceladas` lanzado aparte de `cancelar` sale vacío. La spec lo cubre porque su GIVEN comparte estado, y la fila 0014 del roadmap ("Motivo guardado") es la que lo resolverá.
+
+No escribo ningún registro hasta que vuelva la re-revisión del tramo `baa9d12..ef7c058`, como pide el paso 0.6. Cuando llegue, sigo con el walkthrough, `tasks.md`, la capability, el roadmap y el changelog, y después con la integración con `develop` y el merge.
+
+--- [31]
+**Veredicto: con hallazgos.** El commit solo toca documentación, pero la tabla de tasks atribuye mal un commit.
+
+**(1) Alcance de ef7c058:** se cumple. El commit solo añade `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (fichero nuevo, 17 líneas). Entre baa9d12 y ef7c058 no cambia nada más: ni `src/`, ni `test/`, ni `spec.md`, ni `plan.md`.
+
+**(2) Coherencia de tasks.md con el repo:**
+
+- **Important** — `tasks.md:10`: la Task 1 «Cancelar con motivo» apunta a `baa9d12`, pero su commit es `672489a` («feat(bookings): cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). `baa9d12` es el de la Task 2 «Listado de canceladas». Así las dos filas dicen el mismo hash y se pierde de dónde viene la Task 1. Arreglo: poner `672489a` en la fila 1.
+- **Minor** — `tasks.md:17`: el Ruling de la Task 2 dice que el gate es `node --test --test-concurrency=1`. Ese flag no está en ninguna otra parte del repo. El gate de cierre de `plan.md:50` y la CI de `.github/workflows/ci.yml` corren `node --test` a secas, y `package.json` no tiene script de test. Con el gate tal como está, la carrera entre `test/app.test.js` y `test/cancel.test.js` puede volver a salir. Hay que llevar el flag al gate o anotar en el Ruling que solo se aplicó en local.
+- Sin hallazgo — `tasks.md:13`, la línea `Revisión final:` (Spec opus+high limpia, Código sonnet+high limpia, Arquitectura no por el plan, sobre baa9d12) coincide con la revisión final que me pasaste. Los nombres de las tasks coinciden con `plan.md:36` y `plan.md:42`, y el texto está en castellano.
+
+Trabajé en `<run>/review-0010-ef7c058`, que está en ef7c058.
+
+--- [59]
+El walkthrough cita `ef7c058`, que el squash ha eliminado. Lo reescribo sin ese hash y amplío el commit de cierre.
+
+--- [62]
+La CI de `develop` marca `failure`, así que antes de fusionar leo qué dice la receta de merge sobre eso.
+
+--- [67]
+Hay un `failure` en `develop` (workflow `ci`, `headSha` `00aca4e`) y ninguna fila de deuda lo nombra. Abro la fila en «Deuda técnica» y la meto en el commit de cierre. No ejecuto `sdd merge`.
+
+--- [70]
+**No terminado.** La 0010 está cerrada en su rama, pero no la he fusionado en `develop` porque la CI de `develop` está en rojo. No borres todavía el worktree `<run>/repo`.
+
+CI de develop en rojo en 00aca4e
+
+- **Qué falló:** el workflow `ci` de `develop`, en `00aca4e`. No he mirado por qué falla.
+- **Qué hice:** según la receta, con la CI en `failure` no ejecuto `sdd merge`, en ningún perfil. No había fila de deuda que lo nombrara, así que abrí una en «Deuda técnica» de `roadmap.md`.
+- **Qué falta:** un patch que arregle `develop`. Cuando esté verde, la 0010 se fusiona sin repetir nada de lo anterior.
+
+**Lo que está hecho y verificado:**
+- **Suite:** `node --test` pasa 5/5. Sobre el tronco que se fusionará corre una vez más, porque `develop` no se ha movido desde la sincronización (`base: al día`).
+- **Smoke:** probé con ejecución real los 4 THEN de la spec, incluido «sin `--motivo`». Es la validación en campo.
+- **Revisión final:** Spec y Código sobre `baa9d12`, limpias.
+- **Re-revisión:** como `HEAD` se había movido con un commit de documentación, la lancé. Salió con dos hallazgos, ambos en `tasks.md` y corregidos:
+  - **Important:** la Task 1 citaba `baa9d12`, el commit de la Task 2. Ahora cita `672489a`.
+  - **Minor:** el Ruling decía que `--test-concurrency=1` esquivaba una carrera entre tests. No hace falta, ni llegó al gate: cada fichero de test corre en su propio proceso y `node --test` pasó 5/5 veces seguidas. Lo anoté en `tasks.md`.
+- **Registros:** walkthrough, capacidad nueva `bookings` fusionada, changelog y roadmap con la 0010 en ✅. El cierre quedó en un commit sobre la última task, `31cc52b`.
+
+**Decisiones sin el dev-lead** (están en el walkthrough):
+- El Ruling del flag, que se quedó como registro de la Task 2.
+- La corrección del hash de la Task 1.
+
+**Pendiente de tu lado:**
+- `roadmap check` falla en dos líneas que no toqué: la cabecera de «Deuda técnica» y el formato de «v0.3.0». Lo corrige el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- La CLI no conserva el motivo entre procesos, porque el almacén vive en memoria. `canceladas` lanzado aparte de `cancelar` sale vacío. Lo cubre la fila 0014 del roadmap.
+- Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+**Ticket del kit:** la retro dejó una línea `error que cazaría un chequeo → ticket del kit`. `tasks.md` llegó al cierre con el mismo hash en las dos tasks, y solo lo cazó la re-revisión. Puedo preparar el ticket con `sdd-feedback` si quieres.
+

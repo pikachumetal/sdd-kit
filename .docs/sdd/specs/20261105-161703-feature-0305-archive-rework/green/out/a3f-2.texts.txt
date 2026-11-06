@@ -1,0 +1,60 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [18]
+Estoy en el paso 1 (validación en campo): primero miro el código y la suite, y después corro el smoke real.
+
+--- [23]
+La suite sale en rojo (`test/ids.test.js`). Antes de nada miro el test y el resumen completo, y lo contrasto con la base como pide la receta.
+
+--- [31]
+Paro en el paso 1 y no sigo con los registros ni con el merge. La suite sale roja y el rojo también está en `develop`, así que decides tú si se fusiona.
+
+## Informe del rojo
+
+- **Comando:** `node --test --test-concurrency=1` (el gate del ruling de la Task 2), sobre `d76a927`.
+- **Salida:** código 1, 5 de 6 pasan. El log completo está en `D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/sdd0010-suite.txt`.
+- **Fallo:** `test/ids.test.js` ("una reserva nueva lleva su id"). Acaba en:
+  ```
+  TypeError [Error]: Cannot read properties of undefined (reading 'trim')
+      at TestContext.<anonymous> (test/ids.test.js:12:19)
+  ```
+- **Contraste con la base:**
+  - `base: en rojo: el mismo comando también falla sin la rama`.
+  - El test es de `develop` (commit `7fccc78`). Lee `ids-store` en el git-common-dir antes de crearlo, así que falla la primera pasada en un clone limpio y pasa la segunda.
+  - Con el estado original, `develop` en un worktree desprendido sale con 0 pasa y 1 falla. La rama, ejecutando solo ese fichero, también.
+  - Con el almacén ya creado, la suite de la rama pasa 6 de 6.
+  - Mi primera pasada creó `.git/ids-store`. Lo borré al terminar y ya no existe.
+- **Deuda:** no había ninguna fila que lo nombrara. Abrí una en «Deuda técnica» de `.docs/sdd/roadmap.md`. Está sin commitear y irá en el commit de cierre.
+- **Destino:** `develop` sin tocar en `7fccc78`. El worktree desprendido de contraste ya está retirado.
+
+## Smoke con ejecución real
+
+| Prueba | Salida |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | `cancelada Norte lun (sala ocupada)` |
+| `cancelar Norte lun --motivo "me aburro"` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `cancelar Norte lun` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas`, mismo proceso tras cancelar | `Norte lun — sala ocupada` |
+| `canceladas`, desde la CLI en otro proceso | vacío |
+
+El almacén de reservas vive en memoria, así que desde la CLI no ves el listado de canceladas tras cancelar en otra ejecución. Es lo que cubre la 0014 («Motivo guardado»). Lo anotaré como `no probado` en el walkthrough.
+
+## Qué decides
+
+¿Fusiono la 0010 en `develop` con la suite roja por un fallo que ya trae `develop`? Mi recomendación es que sí. Las tres pruebas de la feature pasan, el rojo no lo causa ella y queda anotado en la deuda. Dime «fusiona» o «no».
+
+Con tu respuesta sigo con el resto del cierre:
+- walkthrough
+- `capabilities/bookings.md`
+- roadmap y changelog
+- retro
+- commit de cierre
+- sync de la base
+
+Al revisar vi dos cosas más:
+- En `tasks.md`, la Task 1 cita `5950039` y su commit real es `c058b4d`. Lo corrijo en el cierre.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+**No terminado.** Falta tu decisión sobre el rojo, los registros del cierre y el merge. No borres el worktree `<run>/repo`.
+

@@ -1,0 +1,211 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; node "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo ---; git worktree list; echo ---; ls .docs/sdd .docs/sdd/specs/*0010* 2>&1; cat .docs/sdd/sdd-kit.json
+<<< ---
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+---
+<run>/repo 5a86489 [feature/0010-cancel-reason]
+---
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "n
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05/skills/sdd-archive/references"; cat final-review-check.md; echo =====; cat validation-modes.md; cd - >/dev/null; echo =====; head -40 .docs/sdd/specs/*0010*/spec.md; echo ====; cat .docs/sdd/sdd-kit.local.json; tail -30 .docs/sdd/specs/*0010*/tasks.md
+<<< # The final review, before the close writes
+
+`Feature only:` item 6 of the pre-checks of `sdd-archive`.
+
+1. Check there was one, and with which axes and models: `sdd-implement` runs it with `sdd-verify`, and the thread records it in the `Revisión final:` line of `tasks.md` (without `tasks.md`, in the axes' report of this session); a 2.x line, without axes, counts too. With no final review at all, invoke `sdd-verify` for it.
+2. Compare `HEAD` with the last reviewed commit: the second sha of `Re-revisión:`; if none, the `sobre` of `Revisión final:`; if the line says «juntada en el cierre», 
+
+>>> Bash: git diff --stat 1c89258..HEAD; grep -n "Validación\|Se valida\|THEN\|WHEN\|ADR" .docs/sdd/specs/*0010*/spec.md; cd "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05/skills"; cat sdd-archive/references/dev-validation.md; cat sdd-templates/templates/validation-template.md
+<<<  .../20261008-100000-feature-0010-cancel-reason/tasks.md | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+51:- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+52:- THEN responde «cancelada Norte lun (sala ocupada)»
+58:- WHEN `canceladas`
+59:- THEN responde «Norte lun — sala ocupada»
+# The dev's validation
+
+For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`). Form and order: [validation-template.md](../../sdd-templates/templates/validation-template.md). With `validation.mode: field` or `Validación: agente` none of this runs.
+
+## 1. The scri
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05/skills/sdd-archive/references/closing-suite.md"; R="<run>/repo"; cd "$R"; git ls-files | head -50; cat package.json; sed -n 40,80p .docs/sdd/specs/*0010*/spec.md; ls .docs/sdd/steering; git log --format='%h %s' -8
+<<< # The suite of the close
+
+Steps 1 and 6 of `sdd-archive`. Every run saves its whole output to a file in the session's scratchpad before any `tail`, `grep` or `Select-String`: a red is read from that file. With the E2E fields in `operations.md`, each pass follows [e2e-suite.md](e2e-suite.md).
+
+## In the validation
+
+If the suite already ran for this close (the validation names its sha; the closing commit moves `HEAD`, not that), don't run it again, whatever the base did: step 6 repeats only what the base brought (`tests/affected-gate-red.md`, g5). If it hasn't run, with another branch open
+
+>>> Bash: cd "<run>/repo"; cat .docs/sdd/steering/operations.md; cat src/app.js; cat scripts/env-up.mjs scripts/env-down.mjs; cat .gitignore
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la persona que valida
+- **Mot
+
+>>> Bash: cd "<run>/repo"; cat server.mjs scripts/env-up.mjs e2e/config.json e2e/cancel.e2e.mjs; cat test/cancel.test.js | head -40; mkdir -p .temp; node --test test/ > .temp/suite.txt 2>&1; echo exit=$?; tail -15 .temp/suite.txt
+<<< import http from 'node:http';
+import { readFileSync } from 'node:fs';
+
+const { port } = JSON.parse(readFileSync(new URL('./e2e/config.json', import.meta.url)));
+const appUrl = new URL('./src/app.js', import.meta.url).href;
+// Cada sesión de test tiene su propio estado de la app: sus datos nacen y mueren con ella.
+const sessions = new Map();
+const appFor = (session) => {
+  if (!sessions.has(session)) sessions.set(session, import(`${appUrl}?session=${session}`));
+  return sessions.get(session);
+};
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url,
+
+>>> Bash: cd "<run>/repo"; node scripts/env-up.mjs; echo exit=$?; curl -sf http://localhost:13596/health; echo health=$?; node server.mjs & sleep 1; curl -s http://localhost:13596/health; echo; H='x-session: val1'; q(){ curl -s -H "$H" -G "http://localhost:13596/run" --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }; q cancelar '["Norte","lun","--motivo","sala ocupada"]'; q canceladas '[]'; q cancelar '["Norte","lun","--motivo","me aburro"]'; q cancelar '["Norte","lun"]'; curl -s http://localhost:13596/shutdown; echo
+<<< Error: no arranca: falta data/seed.json
+exit=1
+health=7
+ok
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+bye
+
+>>> Bash: cd "<run>/repo"; (node server.mjs >/dev/null 2>&1 &) ; sleep 1; curl -sf http://localhost:13596/health; echo " health=$?"
+cat > .temp/steps.json <<'EOF'
+[{"id":"1","title":"cancelar Norte lun --motivo \"sala ocupada\" → cancelada Norte lun (sala ocupada)"},
+{"id":"2","title":"canceladas → Norte lun — sala ocupada"},
+{"id":"3","title":"cancelar con un motivo fuera de la lista → motivo no válido: cambio de planes, sala ocupada, otro"},
+{"id":"4","title":"cancelar sin --motivo → motivo no válido: cambio de planes, sala ocupada, otro"}]
+EOF
+(node "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05/cli/bin/sdd.js" validation serve --steps .temp/steps.json --out .temp/validation-0010.json > .temp/serve.log 2>&1 &); sleep 2; cat .temp/serve.log
+<<< <tool_use_error>InputValidationError: Bash failed due to the following issue:
+An unexpected parameter `run_background` was provided</tool_use_error>
+
+>>> Bash: cd "<run>/repo"; (node server.mjs >/dev/null 2>&1 &) ; sleep 1; curl -sf http://localhost:13596/health; echo " health=$?"
+cat > .temp/steps.json <<'EOF'
+[{"id":"1","title":"cancelar Norte lun --motivo \"sala ocupada\" → cancelada Norte lun (sala ocupada)"},
+{"id":"2","title":"canceladas → Norte lun — sala ocupada"},
+{"id":"3","title":"cancelar con un motivo fuera de la lista → motivo no válido: cambio de planes, sala ocupada, otro"},
+{"id":"4","title":"cancelar sin --motivo → motivo no válido: cambio de planes, sala ocupada, otro"}]
+EOF
+(node "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05/cli/bin/sdd.js" validation serve --steps .temp/steps.json --out .temp/validation-0010.json > .temp/serve.log 2>&1 &); sleep 2; cat .temp/serve.log
+<<< ok health=0
+panel: http://127.0.0.1:5702/
+
+=== RESULTADO (12 turnos, 0.26842710000000003 $)
+Todavía no puedo cerrar la 0010: falta tu validación. La validación del proyecto es `manual`, y «ciérrala» es la orden de cerrar, no una validación. No he escrito ningún registro ni he fusionado nada. El árbol sigue limpio y el servidor está levantado esperando que pruebes.
+
+🦆 Cancelar una reserva ahora pide un motivo de la lista. Con `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` la lista como «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: usé `node --test --test-concurrency=1` en el gate para esquivar una carrera entre tests sobre el almacén en memoria. Es un workaround hasta aislar el almacén por test. Si fuera un error, la suite tardaría el doble.
+
+**Pre-checks**
+
+- `sdd merge --check` da `destino: listo`: `develop` irá en un worktree temporal.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+- Revisión final: ambos revisores salieron limpios sobre `1c89258`. `HEAD` solo añade 17 líneas de `tasks.md` (documentación), así que no hace falta re-revisión.
+- `tasks.md` da `1c89258` como commit de la Task 1, pero la Task 1 es `cc7d519`. Lo corrijo en el cierre.
+- Aún no existe `walkthrough.md`. Lo escribo en el cierre.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real, por HTTP contra `server.mjs` | `cancelada Norte lun (sala ocupada)` |
+| `canceladas` | ejecución real | `Norte lun — sala ocupada` |
+| motivo fuera de la lista (`me aburro`) | ejecución real, con la entrada que falla | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `5a86489`, 95 ms.
+- `node e2e/run.mjs`: no lo he corrido.
+
+**Sin probar**
+
+- `e2e/run.mjs`: no lo he corrido porque el gate de cierre es `node --test test/`. El E2E (unos 50 s) lo lanzo si lo quieres.
+- Mi smoke usó la sesión `val1`. Tú arrancas con la sesión limpia, con la reserva de Norte del lunes activa.
+
+**Aviso sobre el entorno:** `node scripts/env-up.mjs`, el «Arrancar» declarado, falla siempre con «falta data/seed.json». El commit 9816f79 quitó esa semilla y el script no se ajustó. No lo he tocado porque no es de esta feature. Te sugiero apuntarlo como deuda; dime si lo hago. Para validar he levantado `node server.mjs`, que sí funciona.
+
+Panel: plan B en http://127.0.0.1:5702/ (no tengo las herramientas de Chrome). Esta página no ve la app: si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 13596. Una sola terminal basta:
+
+```
+cd <run>/repo
+```
+
+Cada comando va por HTTP con tu propia sesión (`x-session: tu`):
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: tu" -G http://localhost:13596/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Ver el listado → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: tu" -G http://localhost:13596/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+3. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: tu" -G http://localhost:13596/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+4. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: tu" -G http://localhost:13596/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
