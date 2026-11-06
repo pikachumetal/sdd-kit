@@ -58,7 +58,7 @@ digraph process {
     "Base check; write the RED tests; sdd task brief" [shape=box];
     "Base check; write the RED tests; sdd task brief" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "More tasks remain?" [shape=diamond];
-    "Final review and finish: sdd-verify, then Finish" [shape=box];
+    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [shape=box];
     "Final review clean: delete this plan's workspace" [shape=box];
     "sdd-archive (validation)" [shape=box style=filled fillcolor=lightgreen];
 
@@ -74,16 +74,15 @@ digraph process {
     "Fix loop: read references/fix-loop.md before every round" -> "Append completion to ledger, mark todo complete" [label="addressed, or parked at the cap"];
     "Append completion to ledger, mark todo complete" -> "More tasks remain?";
     "More tasks remain?" -> "Base check; write the RED tests; sdd task brief" [label="yes"];
-    "More tasks remain?" -> "Final review and finish: sdd-verify, then Finish" [label="no"];
-    "Final review and finish: sdd-verify, then Finish" -> "Final review clean: delete this plan's workspace";
+    "More tasks remain?" -> "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [label="no"];
+    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" -> "Final review clean: delete this plan's workspace";
     "Final review clean: delete this plan's workspace" -> "sdd-archive (validation)";
 }
 ```
 
 ## Setup
 
-Ensure the work happens in an isolated workspace: use
-`sdd-worktrees` with `Skill` to create one or verify the existing one.
+Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `.docs/sdd/environments.md` exists, and runs the baseline in a detached worktree.
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
 
@@ -92,7 +91,7 @@ controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
-- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it prints the plan's git-ignored directory, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. **Your next message to the user**, under its phase notice, carries this line, also when you resume: `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`). «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`).
+- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; your next message, under its phase notice and also when you resume, opens with `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`), where `<ruta>` is the plan's git-ignored directory it prints, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`).
 - Check for this plan's ledger at `<workspace>/progress.md`. If one exists,
   read [references/resuming.md](references/resuming.md) before anything
   else: it says whose ledger it is and where to resume.
@@ -245,8 +244,7 @@ needed.
   file, the report file, and the review package — plus the global
   constraints that bind the task.
 - The global-constraints block you hand the reviewer is its attention
-  lens. Copy the binding requirements verbatim from the plan's Global
-  Constraints section or the spec: exact values, exact formats, and the
+  lens. Copy the plan's «De código» block verbatim, never its «De proceso» one: exact values, exact formats, and the
   stated relationships between components ("same layout as X", "matches
   Y"). The reviewer's template already carries the process rules (YAGNI,
   test hygiene, review method) — the constraints block is for what THIS
@@ -295,9 +293,7 @@ Squash the task's range into one commit, as [commit-milestones.md](../sdd-implem
 
 ## Final Review
 
-When every task is complete, read
-[references/final-review.md](references/final-review.md) and follow it. It
-covers the whole-branch review, its single fix wave, and how you finish.
+When every task is complete, invoke `sdd-verify` with `Skill`: the final review and its single closing are its. When its closing is done, finish with [Finish](../sdd-implement-native/SKILL.md#finish) of `sdd-implement-native`.
 
 ## Common Rationalizations
 

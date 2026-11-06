@@ -69,8 +69,10 @@ const cp = (name, path) => copyFileSync(join(FIX, name), at(path));
 const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, env: s.env, encoding: 'utf8' }).stdout ?? '';
 
 // El molde recibe las reglas de forma del kit que se prueba: así el mismo escenario es RED y GREEN.
+// La copia del kit es `dist/` y no lleva `.docs/` (el sujeto leería la spec medida): las reglas de forma salen del repo del que se lanza.
+const REPO_DOCS = join(HERE, '..', '..', '..', '.docs', 'sdd');
 function formRules() {
-  const constitution = join(s.KIT, '.docs', 'sdd', 'constitution.md');
+  const constitution = join(REPO_DOCS, 'constitution.md');
   const lines = existsSync(constitution) ? readLf(constitution).split('\n') : [];
   const from = lines.findIndex((line) => line.startsWith('## Art. II — La forma sigue al fallo'));
   const to = lines.findIndex((line, i) => i > from && line.startsWith('*Por qué*'));
@@ -79,7 +81,7 @@ function formRules() {
   article[0] = article[0].replace(/^## Art\. II /, '## Art. III ');
   writeFileSync(join(s.RUN, 'form-article.md'), `${article.join('\n')}\n`);
   appendFileSync(at('.docs/sdd/constitution.md'), `\n${article.join('\n')}\n`);
-  const refactor = readLf(join(s.KIT, '.docs', 'sdd', 'tech-stack.md')).split('\n').filter((line) => line.includes('- **Una ronda de REFACTOR que da 0/N'));
+  const refactor = readLf(join(REPO_DOCS, 'tech-stack.md')).split('\n').filter((line) => line.includes('- **Una ronda de REFACTOR que da 0/N'));
   writeFileSync(at('.docs/sdd/tech-stack.md'), ['# Tech stack — notas', '', '## Pruebas de skills', '', ...refactor, ''].join('\n'));
   writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
 }

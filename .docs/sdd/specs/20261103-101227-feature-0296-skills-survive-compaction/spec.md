@@ -274,12 +274,19 @@ Batería `sdd-implement`, Sonnet; 0,3–2,5 $ por sujeto (`tech-stack.md`, «Suj
 | Una tanda de REFACTOR | `fr1` ×1 y `cp1` ×1 | 2 |
 | Controles | `h1`, `h2`, `g1`, `d1` ×1 y el enrutado de «retoma la feature» ×1 (~0,5 $) | 4,5 |
 | Medición tras la revisión final | `h1` ×1, si la pasada de fix toca una copia o la puerta | 1 |
-| Suma | 18 sujetos | 17,5 |
+| Verificación de la pasada de fix (enmienda del 2026-11-06) | `w1`, `h2`, `rt1`, `o1` ×2 (8, ya corridos) y `h2`, `rt1` ×2 (4) | 10 |
+| Línea base del anuncio del workspace (enmienda del 2026-11-06) | `h2` ×2 con el kit de `develop` | 4 |
+| Suma | 32 sujetos | 31,5 |
 
 ## Enmiendas
 
+- 2026-11-06 — «Previsión de coste»: el techo sube a 32 sujetos y 31,5 $ para medir la línea base del anuncio del workspace, con `h2` ×2 sobre el kit de `develop`: tras la frase en el Overview, `h2` lo dice 0 de 2 y `rt1` 0 de 2, y no se sabe si antes de partir la skill lo decía — aprobada: «2» (dev-lead, 2026-11-06, a la opción «Medir antes la línea base»)
+- 2026-11-06 — «Previsión de coste»: el techo sube de 18 a 30 sujetos y de 17,5 a 27,5 $, con la verificación de la pasada de fix de la revisión final (8 sujetos ya corridos, 5,99 $, más `h2` y `rt1` ×2, ~4 $) — el dev-lead aprobó esa medida «por encima de la previsión» — aprobada: «1» (dev-lead, 2026-11-06, a la opción «Recuperar la frase del Overview en la puerta», que nombraba el coste)
+- 2026-11-06 — Anexo, unidad 3: el aviso «tu primer mensaje tras cargar la skill, nuevo o retomado, lleva la línea `Workspace del plan: <ruta> — …`» vuelve al Overview de la puerta, además del hueco del Setup de las dos copias — tras la pasada de fix, `h2` lo dice 0 de 2 y `rt1` (retomando) 1 de 2, y antes de partir la skill lo decía siempre; el Overview de la puerta es lo que se carga antes de entrar en la copia — pasada de fix de la revisión final, medido con `h2` y `rt1` ×2 — aprobada: «1» (dev-lead, 2026-11-06, a la opción «Recuperar la frase del Overview en la puerta»)
+- 2026-11-05 — Decisión 5: `references/final-review.md` de `-subagent` pasa a `notCopied`; `-subagent` remite a `sdd-verify` para la revisión final y al «Finish» de `sdd-implement-native` para el cierre, en vez de llevar ese «Finish» a `-subagent/SKILL.md` — la revisión final (eje Spec S1, eje Código C1) vio que su párrafo de la tanda de fix contradice a `sdd-verify`; sustituirlo baja la copia al 44 % de su original, y a `-subagent/SKILL.md` le quedan 234 bytes; los dos «Finish» de la fuente dicen lo mismo con el mismo bloque del kit, así que la regla queda en un solo sitio (decisión 6) — pasada de fix de la revisión final — aprobada: «1» (dev-lead, 2026-11-05, a la opción «No copiarlo y remitir a `-native`»)
 - 2026-11-05 — El ADDED «Un freno que fija la spec es un freno de alcance» sale del delta: su RED (`fr1`) salió limpio 3 de 3 y la decisión 10 dice que entonces no se fusiona (`tests/sdd-implement-0296-red.md`); la fila de deuda del freno queda abierta — Task 4 — aplica literal la decisión 10
 - 2026-11-05 — El ADDED de la parada sobre una copia pasa a «La parada sobre una copia abre con el commit del kit que la cambió», con un contrato de salida: el ✋ abre con `Copia:` y la salida literal de `git log -1 --format='%h %s'` del commit de la marca (o de `git log -S` con una marca de tarea); la regla «Avisos» y el hueco de la skill pasan a esa forma — en dos tandas de REFACTOR, el «qué cambió» libre no salió: en REFACTOR 1 el sujeto copió la cita de la marca y en REFACTOR 2 leyó `git show --stat` y no lo transcribió (1 de 2 abren con la línea, n = 1 por texto); el asunto del commit ya dice qué cambió y no hay que interpretarlo. Lo que el asunto no cuente (el commit real de la 0148, `baad233e feat(sdd-verify): los encargos de los tres ejes`, no dice que quitó la sangría) queda en el «queda» de la fila de deuda de la 0317 — Task 4, con una tanda de `cp1` n = 2; si no pasan los dos, el ✋ abre solo con `Copia: <sha7>` y el «qué cambió» pasa entero a la deuda — aprobada: «1» (dev-lead, 2026-11-05, a la opción «Contrato de salida»)
+- 2026-11-05 — El anexo corrige dónde vive lo que es solo del kit en las unidades 25, 36, 60-65, 66 y 74: `tasks.md` antes de la primera task, la comparación de la copia RED y la «Verificación lenta» van una vez en la puerta, «Before each task», y los pasos de las copias la remiten — pasada de fix de la revisión final — aplica la decisión 6
 
 ## Aprobaciones
 
@@ -295,7 +302,7 @@ Una fila por paso, red flag y racionalización (Art. I), por las unidades de [pr
 | --- | --- | --- | --- |
 | 1 | Overview: ejecutar el plan, idioma del usuario, nota de fork | puerta, Overview; la nota de fork, en los `NOTICE` de las copias | es del kit |
 | 2 | Core principle | `-native`, fuente | texto de `executing-plans` |
-| 3 | Primer mensaje con `Workspace del plan` | las dos copias, Setup, kit, junto al paso que crea el workspace | es del kit; la ruta no existe antes de ese paso |
+| 3 | Primer mensaje con `Workspace del plan` | el Overview de la puerta (`sdd-implement`), que pide la línea en el primer mensaje, y el hueco del Setup de las dos copias, kit, junto al paso que crea el workspace | la línea la imprime ese paso, que está en la copia; la ruta no existe antes de él |
 | 4 | Narration y aviso `Ahora/Queda` | «Narration»: las dos copias, fuente; el aviso: puerta, Overview | la frase es de las dos fuentes; el aviso, del kit |
 | 5 | Continuous execution y las paradas | las dos copias, fuente; «Four things…» sustituido (decisión 7) | fuente; la sustitución arregla el hallazgo 1 |
 | 6 | Patch | puerta, Patch | es del kit |
@@ -314,12 +321,12 @@ Una fila por paso, red flag y racionalización (Art. I), por las unidades de [pr
 | 22 | Spike con «Evidencia»; tests RED del hilo | puerta, Before each task | es del kit |
 | 23 | Grafo Native | `-native`, «The Process», fuente; kit en los nodos de base, RED, `sdd-debugging`, `sdd-verify` y `sdd-archive` | fuente |
 | 24 | Lo que imprimes queda en el contexto | `-native`, «The Task Loop», fuente | fuente |
-| 25 | Take the task: `tasks.md` antes de la primera, `sdd task start` | `-native`, paso 1; kit en `tasks.md` y el verbo | fuente con lo del kit |
+| 25 | Take the task: `tasks.md` antes de la primera, `sdd task start` | `-native`, paso 1, fuente, con el verbo `sdd task start` del kit y una remisión a la puerta; `tasks.md` antes de la primera task, en la puerta, «Before each task» | fuente con lo del kit; lo solo del kit, una vez, en la puerta (decisión 6) |
 | 26-27 | Work the steps; Matches | `-native`, paso 2, fuente | fuente |
 | 28 | The code is wrong → `sdd-debugging`, y la regla de forma en un humo de guía | `-native`, paso 2; kit en el nombre y la frase del humo | fuente con lo del kit |
 | 29 | The plan is wrong | `-native`, paso 2, fuente | fuente |
 | 30-35 | Contrato de cierre y `sdd-verify` | `-native`, paso 3, fuente; kit sustituye `verification-before-completion` | fuente |
-| 36 | Cerrar: copia RED, commit, comprobar el commit, `sdd task done` | `-native`, paso 4; kit en la copia RED, la comprobación y el código de salida | fuente con lo del kit |
+| 36 | Cerrar: copia RED, commit, comprobar el commit, `sdd task done` | `-native`, paso 4, con la comprobación del commit y el código de salida del kit; la comparación de la copia RED, en la puerta, «Before each task», que el paso remite | fuente con lo del kit; lo solo del kit, una vez, en la puerta (decisión 6) |
 | 37-48 | 12 racionalizaciones del bucle Native | `-native`, «Common Rationalizations», fuente; kit en 41, 42 y 48 | fuente; los tres bloques, del kit |
 | 49 | Grafo SDD | `-subagent`, «The Process», fuente; kit en los nodos de base, RED y `sdd-verify` | fuente |
 | 50-55 | Modelos: declarar modelo y effort, señales, revisores, rondas 4-5, `fable` y `opus xhigh` | `-subagent`, «Model Selection», fuente; kit en el effort y la prohibición; la excepción de la re-revisión final («—except the single re-review…») no se copia: ya la dice `sdd-verify` («This re-review is small», `SKILL.md:308`) | fuente con lo del kit; quitar la excepción pegada es el hallazgo 2 de `fork-audit.md` |
@@ -327,10 +334,10 @@ Una fila por paso, red flag y racionalización (Art. I), por las unidades de [pr
 | 57 | Hand artifacts over as files | `-subagent`, «The Task Loop», fuente | fuente |
 | 58 | Waiting on dispatched subagents | `-subagent`, «The Task Loop», fuente; kit sustituye la espera en tramos por el vigía de la puerta | el vigía es del kit |
 | 59 | Nunca implementadores en paralelo | `-subagent`, paso 1, fuente | fuente |
-| 60-65 | Despachar: BASE, `sdd task brief`, el encargo, sin historia, sin subagentes, identidad | `-subagent`, paso 1, fuente; kit en `tasks.md`, el verbo y las secciones del encargo | fuente con lo del kit |
-| 66 | Verificación lenta | `-subagent`, paso 1, kit (o la puerta, si no cabe) | es del kit |
+| 60-65 | Despachar: BASE, `sdd task brief`, el encargo, sin historia, sin subagentes, identidad | `-subagent`, paso 1, fuente; kit en el verbo y las secciones del encargo; `tasks.md` antes del primer despacho, en la puerta, «Before each task», que el paso remite | fuente con lo del kit; lo solo del kit, una vez, en la puerta (decisión 6) |
+| 66 | Verificación lenta | puerta, «Before each task», punto 4 | es del kit; una vez, en la puerta (decisión 6) |
 | 67-73 | Los cuatro estados del informe y las preguntas | `-subagent`, paso 2, y `references/handling-reports.md`, fuente | fuente |
-| 74 | Comparar la copia RED al volver | `-subagent`, paso 2, kit | es del kit |
+| 74 | Comparar la copia RED al volver | puerta, «Before each task», punto 3, que el paso 2 de `-subagent` remite | es del kit; una vez, en la puerta (decisión 6) |
 | 75-80 | Revisar la task: paquete, encargo, sin directivas abiertas ni prejuicios | `-subagent`, paso 3, fuente; kit en el verbo y el bloque «De código» | fuente con lo del kit |
 | 81 | ⚠️ Cannot verify from diff | `-subagent/references/cannot-verify.md`, fuente | fuente |
 | 82-90 | Bucle de fix: disparador, menores, plan-mandated, rondas 1-5, re-revisión, ledger | `-subagent/references/fix-loop.md`, fuente; kit en el encargo de las rondas y el verbo | fuente con lo del kit |
@@ -347,10 +354,10 @@ Una fila por paso, red flag y racionalización (Art. I), por las unidades de [pr
 | 114 | Deviation | puerta, Deviations and rulings, sustituida (decisión 11) | es del kit |
 | 115 | Todo commit tuyo entra en revisión | puerta, Deviations and rulings | es del kit |
 | 116 | Recovery | puerta, Recovery | es del kit |
-| 117 | `sdd-verify` lleva la revisión final | las dos copias: kit sustituye «Final Review» (`-native`) y la revisión de `references/final-review.md` (`-subagent`) | la revisión del kit es `sdd-verify` |
+| 117 | `sdd-verify` lleva la revisión final | las dos copias: kit sustituye «Final Review» (`-native`) y «Final Review» de `-subagent/SKILL.md` (que ya no tiene `references/final-review.md`, enmienda de decisión 5) | la revisión del kit es `sdd-verify` |
 | 118 | Vigía de silencio de cada despacho | puerta, After the last task | es del kit |
 | 119 | Borradores del cierre | puerta, After the last task | es del kit |
-| 120-121 | Finish: rulings a `tasks.md`, borrar el workspace, `sdd-archive` | `-native`, «Finish», y `-subagent/references/final-review.md`, «Finish», fuente; kit en `sdd ledger rulings`, los menores diferidos y `sdd-archive` | fuente con lo del kit (decisión 6) |
+| 120-121 | Finish: rulings a `tasks.md`, borrar el workspace, `sdd-archive` | `-native`, «Finish», fuente; kit en `sdd ledger rulings`, los menores diferidos y `sdd-archive`; `-subagent` lo remite con `[Finish](../sdd-implement-native/SKILL.md#finish)` (enmienda de decisión 5) | fuente con lo del kit (decisión 6) |
 | 122-129 | 8 red flags | puerta, Red flags | son del kit |
 | 130-135 | 6 racionalizaciones de los red flags | puerta, Red flags | son del kit |
 | 136-139 | Example workflows | salen | los quitó la fuente en 7.0.1 (decisión 8) |

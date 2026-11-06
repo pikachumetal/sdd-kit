@@ -68,7 +68,7 @@ digraph process {
 <!-- kit: fin -->
     "More tasks remain?" [shape=diamond];
 <!-- kit: 649f1a99 · sustituye: «read references/final-review.md» -->
-    "Final review and finish: sdd-verify, then Finish" [shape=box];
+    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [shape=box];
 <!-- kit: fin -->
     "Final review clean: delete this plan's workspace" [shape=box];
 <!-- kit: 64a86577 · sustituye: «"Use superpowers:finishing-a-development-branch"» -->
@@ -92,10 +92,10 @@ digraph process {
     "More tasks remain?" -> "Base check; write the RED tests; sdd task brief" [label="yes"];
 <!-- kit: fin -->
 <!-- kit: 649f1a99 · sustituye: «read references/final-review.md» -->
-    "More tasks remain?" -> "Final review and finish: sdd-verify, then Finish" [label="no"];
+    "More tasks remain?" -> "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [label="no"];
 <!-- kit: fin -->
 <!-- kit: 649f1a99 · sustituye: «read references/final-review.md» -->
-    "Final review and finish: sdd-verify, then Finish" -> "Final review clean: delete this plan's workspace";
+    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" -> "Final review clean: delete this plan's workspace";
 <!-- kit: fin -->
 <!-- kit: 64a86577 · sustituye: «"Use superpowers:finishing-a-development-branch"» -->
     "Final review clean: delete this plan's workspace" -> "sdd-archive (validation)";
@@ -105,9 +105,8 @@ digraph process {
 
 ## Setup
 
-Ensure the work happens in an isolated workspace: use
-<!-- kit: d59bf7b5 · sustituye: «superpowers:using-git-worktrees» -->
-`sdd-worktrees` with `Skill` to create one or verify the existing one.
+<!-- kit: 0296 · sustituye: «use…existing one.» -->
+Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `.docs/sdd/environments.md` exists, and runs the baseline in a detached worktree.
 <!-- kit: fin -->
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
@@ -118,7 +117,7 @@ sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
 <!-- kit: 31783aa5 · sustituye: «at skill start, run this skill's `bash scripts/sdd-workspace PLAN_FILE` by its absolute path, from the working tree you're executing in — it prints the plan's git-ignored directory (under `<repo-root>/.superpowers/sdd/`),» -->
-- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it prints the plan's git-ignored directory, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. **Your next message to the user**, under its phase notice, carries this line, also when you resume: `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`). «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`).
+- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; your next message, under its phase notice and also when you resume, opens with `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`), where `<ruta>` is the plan's git-ignored directory it prints, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`).
 <!-- kit: fin -->
 - Check for this plan's ledger at `<workspace>/progress.md`. If one exists,
   read [references/resuming.md](references/resuming.md) before anything
@@ -286,8 +285,9 @@ needed.
   file, the report file, and the review package — plus the global
   constraints that bind the task.
 - The global-constraints block you hand the reviewer is its attention
-  lens. Copy the binding requirements verbatim from the plan's Global
-  Constraints section or the spec: exact values, exact formats, and the
+<!-- kit: 0296 · sustituye: «the binding requirements…Global Constraints section or the spec» -->
+  lens. Copy the plan's «De código» block verbatim, never its «De proceso» one: exact values, exact formats, and the
+<!-- kit: fin -->
   stated relationships between components ("same layout as X", "matches
   Y"). The reviewer's template already carries the process rules (YAGNI,
   test hygiene, review method) — the constraints block is for what THIS
@@ -337,9 +337,9 @@ Squash the task's range into one commit, as [commit-milestones.md](../sdd-implem
 
 ## Final Review
 
-When every task is complete, read
-[references/final-review.md](references/final-review.md) and follow it. It
-covers the whole-branch review, its single fix wave, and how you finish.
+<!-- kit: 0296 · sustituye: «read…how you finish.» -->
+When every task is complete, invoke `sdd-verify` with `Skill`: the final review and its single closing are its. When its closing is done, finish with [Finish](../sdd-implement-native/SKILL.md#finish) of `sdd-implement-native`.
+<!-- kit: fin -->
 
 ## Common Rationalizations
 

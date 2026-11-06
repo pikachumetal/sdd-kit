@@ -62,7 +62,7 @@ The kit's executable code is a Node CLI, `cli/bin/sdd.js`, that travels with the
 | `sdd task done` | Runs a task's «Verificación» and, if it passes, notes it in the ledger: `task done <plan> <n> <base> -- <command…>`. |
 | `sdd task brief` | Extracts a task's text from the plan to a file: `task brief <plan> <n> <out>`. |
 | `sdd review package` | Generates the review package of a commit range: `review package <plan> <base> <head> <out>`. |
-| `sdd ledger rulings` | Lists the rulings and deferred minors of a plan's ledger: `ledger rulings <plan>`. Used by `sdd-implement` and `sdd-archive`. |
+| `sdd ledger rulings` | Lists the rulings and deferred minors of a plan's ledger: `ledger rulings <plan>`. Used by `sdd-implement-native`, `sdd-implement-subagent` and `sdd-archive`. |
 | `sdd hook session-start` | Writes the session-start context; run by `hooks/hooks.json`, not by the skills. |
 
 Rules when using them:

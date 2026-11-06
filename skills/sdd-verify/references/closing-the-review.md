@@ -10,7 +10,7 @@
 
 **SDD:** if the final review returns findings, dispatch ONE fix subagent with the complete findings list of every axis — not one fixer per finding. Per-finding fixers each rebuild context and re-run suites; a real session's final-review fix wave cost more than all its tasks combined. Its scoped re-review is the single re-review below: don't dispatch another for the fix wave. There is no second fix wave.
 
-In both, the reproduce-before-fixing rule of the fix loop applies.
+In both, the reproduce-before-fixing rule of the [fix loop](../../sdd-implement-subagent/references/fix-loop.md) applies.
 
 **The single re-review.** Right before you present the validation —with `validation.mode: field`, before you go on to the closing— dispatch ONE re-review in the background, with its silence watch: `sdd-kit:effort-high` + `opus`; the header of [encargo-revision.md](encargo-revision.md) and [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md), filled with the open findings of every axis and the «What to Check» of the axes that went out; over `sdd review package <plan> <last reviewed> HEAD`, in its own detached worktree at `HEAD`. It covers the fix pass and every later commit of yours. Write `Re-revisión: <last reviewed>..<head>, sdd-kit:effort-high + opus, <verdict>` in `tasks.md`. A `Re-revisión:` line already in `tasks.md` means it went out: never dispatch another. If, since the last reviewed sha, you only have commits you review in the thread (`sdd-implement`, «Every commit of yours»), don't dispatch it.
 

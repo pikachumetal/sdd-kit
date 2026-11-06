@@ -25,9 +25,10 @@ record that survives your own forgetting.
 ledger and the tool results carry the record.
 
 **Continuous execution:** Do not pause to check in with your human partner
-between tasks. They chose inline execution to spend less, not to answer
-"should I continue?" after every task. Execute all tasks from the plan
-without stopping.
+<!-- kit: 0296 · sustituye: «They…plan without stopping.» -->
+between tasks. `sdd-implement` chose inline execution to spend less, not to answer
+"should I continue?" after every task. Execute all tasks from the plan, stopping only at the stops named below.
+<!-- kit: fin -->
 
 **Rulings, not stalls.** Conflicts, ambiguities, plan defects — decide them.
 The spec is the binding authority, the plan is its argument, and your
@@ -54,8 +55,8 @@ These stop you, and nothing else: an irreversible or destructive operation; a se
 
 A fully specified plan makes inline execution transcription plus testing:
 it runs well on a mid-tier session model, and the one place the most
-<!-- kit: 4597d47e · sustituye: «which this skill» -->
-capable model earns its cost is the final review, whose axes `sdd-verify` dispatches separately. Tell your human partner so when they choose inline.
+<!-- kit: 0296 · sustituye: «which this skill…Tell your human partner so when they choose inline.» -->
+capable model earns its cost is the final review, whose axes `sdd-verify` dispatches separately. The plan's `Ejecución` line chose inline.
 
 <!-- kit: 4597d47e · sustituye: «superpowers:subagent-driven-development» -->
 Prefer `sdd-implement-subagent` when your human partner
@@ -127,9 +128,8 @@ digraph process {
 
 ## Setup
 
-Ensure the work happens in an isolated workspace: use
-<!-- kit: d59bf7b5 · sustituye: «superpowers:using-git-worktrees» -->
-`sdd-worktrees` with `Skill` to create one or verify the existing one.
+<!-- kit: 0296 · sustituye: «use…existing one.» -->
+Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `.docs/sdd/environments.md` exists, and runs the baseline in a detached worktree.
 <!-- kit: fin -->
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
@@ -147,7 +147,7 @@ The workspace and ledger are shared with `sdd-implement-subagent`
 and the new one resumes from the same ledger.
 
 <!-- kit: 31783aa5 · sustituye: «at skill start, run `../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` by its absolute path, from the working tree you're executing in — it prints the plan's git-ignored directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`),» -->
-- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it prints the plan's git-ignored directory, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. **Your next message to the user**, right under its phase notice, carries this line, also when you resume: `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`). «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`). The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
+- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; your next message, right under its phase notice and also when you resume, opens with `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`), where `<ruta>` is the plan's git-ignored directory it prints, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`). The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
 <!-- kit: fin -->
 - Check for this plan's ledger at `<workspace>/progress.md`. If its first
   line names your plan file, tasks with a `Task <N>: complete` line are
@@ -205,7 +205,7 @@ Before the first `task start`, `tasks.md`; before the first step, the base check
 
 Every tool call is a turn that re-reads your whole context. Bookkeeping
 rides along with work — a ledger append in the same call as the commit,
-<!-- kit: 4dcb5598 · sustituye: «never in a call of its own.» -->
+<!-- kit: d08b7a59 · sustituye: «never in a call of its own.» -->
 with one exception: the completion line is `sdd task done`'s, in its own call after the commit you checked (step 4).
 
 ### 2. Work the steps
@@ -313,8 +313,8 @@ Then invoke `sdd-archive` with `Skill`: its first step is the validation.
 <!-- kit: d08b7a59 · sustituye: «task, in the same message as the commit.» -->
 | "I'll write the ledger lines after a few tasks" | Compaction does not wait for a convenient moment. One line per task: `sdd task done` writes it right after the commit you checked. |
 <!-- kit: fin -->
-<!-- kit: e7ddf254 · sustituye: «four» -->
-| "Let me check in before the next task" | They chose inline to spend less. Progress prompts spend their time instead. Only the stops listed above stop you. |
+<!-- kit: 0296 · sustituye: «They…four» -->
+| "Let me check in before the next task" | `sdd-implement` chose inline to spend less. Progress prompts spend their time instead. Only the stops listed above stop you. |
 <!-- kit: fin -->
 | "I read my own diff carefully; the final reviewer is redundant" | Same author, same blind spots. The reviewer is the only fresh context this run buys. |
 | "Tests should pass, the change was trivial" | "Should" is not evidence. The contract requires the command and its output. |

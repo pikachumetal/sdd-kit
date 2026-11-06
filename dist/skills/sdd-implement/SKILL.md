@@ -7,13 +7,13 @@ description: Use when sdd-propose hands off a confirmed patch, or an approved sp
 
 ## Overview
 
-Execute the approved plan, task by task, and leave a record that survives your own forgetting. Write everything the user reads in the language of their message.
+Execute the approved plan, task by task, and leave a record that survives your own forgetting. Write everything the user reads in the language of their message. **Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` that the Setup of the method's skill prints.
 
 **Notice:** each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects; a counter or a step number alone isn't a notice.
 
 ## Patch
 
-If `sdd-propose` handed you a confirmed patch, or you resume one (its `patch.md` on the branch), read [references/patch-flow.md](references/patch-flow.md) and follow it, with the class and the estimate it brought; implement nothing from here. Everything below is for features and lites: the Method, the Setup, the sections per task and [After the last task](#after-the-last-task) don't apply. Its `sdd <verb>` run as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
+If `sdd-propose` handed you a confirmed patch, or you resume one (its `patch.md` on the branch), read [references/patch-flow.md](references/patch-flow.md) and follow it, with the class and the estimate it brought; implement nothing from here: nothing below applies to a patch. Its `sdd <verb>` run as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
 
 ## Method
 
@@ -38,7 +38,7 @@ Every task, the second and later ones too, in both methods:
 
 1. **Check the base first**, with or without a remote: `git diff $(git merge-base HEAD <integration>) <integration> -- .docs/sdd/roadmap.md`, with `<integration>` `develop` or the one the constitution fixes (with a remote, `git fetch` first and compare `origin/<integration>` too). If the feature's row is in the diff, it's a scope brake: don't start or dispatch, and follow its row in the [gate table](../sdd-propose/references/control-profiles.md). Cross `git diff --name-only $(git merge-base HEAD <integration>) <integration>` with the task's «Crear» and «Modificar» files: for a match, compare `git diff -U0` of the base (`origin/<integration>` too if the match comes from there; ranges are the merge base's) with the lines the task will touch. An overlap the spec doesn't declare, or lines you can't tell, is the same brake. Other lines, or an overlap the spec declares with file and region and the base stays inside it, is a `Ruling:` with both ranges, and you go on.
 2. **In a spike, «Evidencia» replaces the RED tests**: the raw output goes in the spec's folder, and the task's «Verificación» checks that file. Otherwise, **the RED tests are the thread's**: with the opening already in its commit, you write the tests that encode the task's scenarios —one per THEN and one per Review Focus line that names the task— in RED by compilation or by failure, without committing them: they go in the task's commit. Keep a copy outside the repo: it's the only proof the test wasn't fitted to the code (`tests/tests-red-hilo-red.md`).
-3. **When the task is committed, compare the RED copy** with the committed test using `git diff --no-index <copy> <path>`: a change that isn't formatting is a `Ruling:` in the ledger or, in SDD, goes to the task reviewer.
+3. **Compare the RED copy** with the test before its commit (SDD: when the implementer returns), using `git diff --no-index <copy> <path>`: a change that isn't formatting is a ledger `Ruling:` or, in SDD, goes to the task reviewer.
 4. **In SDD, a «Verificación lenta»**: the implementer doesn't run it. You launch it in the background as soon as it reports, while the task review runs; dispatch the next task meanwhile only if it shares no files with the running one and its brief forbids the commands that compete for the same binaries. If it fails, it opens the task's fix round.
 
 Before the first task, with more than one task, write `tasks.md`, the **living record** (status and commit hash per task): it goes in the opening's commit or, if that is done, in Task 1's.
@@ -57,7 +57,7 @@ The closing gate —the project's full build and suite— runs at the baseline o
 
 - **Rulings.** The scope brakes and the deviations below are not rulings, and they stop. Leaving the plan without changing the spec (a file under «NO se tocan», another order, a fix of yours) doesn't stop you: it is a `Ruling:` in the ledger.
 - **How you stop**, in `pair` and `delegate`: with 🦆 and ✋. When the stop's file is a copy in `upstream.json`, the first line of the ✋ is `Copia:` and the literal output of `git log -1 --format='%h %s' <sha7>`, `<sha7>` the id after `kit:` in the block's mark; with a task id, the first line of `git log -S '<S>' --reverse --format='%h %s' -- <file>` (S the mark's `sustituye` or `quita` quote, else its first line); with none, `Copia: no encuentro el commit del kit que lo cambió`.
-- **Scope brakes** stop as «How you stop» says: the third discovered fix, a decision that changes the observable output, the feature's row or the task's lines changed in the base ([control-profiles.md](../sdd-propose/references/control-profiles.md)).
+- **Scope brakes** stop the same way: the third discovered fix, a decision that changes the observable output, the feature's row or the task's lines changed in the base ([control-profiles.md](../sdd-propose/references/control-profiles.md)).
 - **Deviation** ([Desvío](../sdd-propose/references/control-profiles.md#desvío)): a change to the approved spec (a requirement, a THEN, the Scope, a «No entra» or «Dónde se prueba»). A Scope item marked «si el RED lo exhibe» with a clean RED at n = 3 goes out with a `Ruling:`; anything else is a deviation. In `pair` and `delegate`, stop as «How you stop» says, leave the correction in `spec.md` and its «Enmiendas» line uncommitted, and wait; approved, what touches a closed task goes to a new task at the end, with its commit (`Task 3 — enmienda <fecha>: <qué>` after Task 2), without reopening it, and `tasks.md` marks the closed task as `afectada por enmienda <fecha> → Task 3`. In `unattended`, apply it marked `sin aprobar` and go on. A REFACTOR or fix round that writes guidance or behavior the spec doesn't have is a deviation when it adds or changes a THEN or an AND: stop before committing it — also when you didn't write the AND: a smoke that «only says warn» fixed with «don't write until the user confirms» is a new AND, not a ruling (`tests/sdd-deviations-red.md`, k2). One case goes on: an AND or a THEN that only applies, literally, a line of «Decisiones tomadas con el dev-lead» of the spec. Write it, its «Enmiendas» line marked `sin aprobar`, commit it with the round and name it in ✋; a `Ruling:` hides the amendment from the dev-lead (`tests/sdd-deviations-0222-red.md`, k3). A value, case or text that line doesn't say: stop.
 - **Every commit of yours** enters the review scope of the task in progress; with no task open and the final review not yet out, the final review's; and once it's out, even if not back, the single re-review of the range `<last reviewed>..HEAD` («Closing the review» of `sdd-verify`); once that re-review is out, it doesn't open another and goes to ✋ as `sin revisar: <sha> — <what it changes>`. No commit is presented or closed unreviewed other than one under 20 lines (`git diff --numstat`) that only changes documentation or comments —files under `.docs/`, `*.md` of any path that aren't an agent's instructions or a template, comment lines no tool interprets; in a merge, only what you resolved, with `git show --remerge-diff`—: that one you read yourself, noting `revisado en el hilo`.
 
@@ -73,14 +73,14 @@ After a machine crash or a quota cut, before anything else, reread the ledger, `
 
 ## Red flags — STOP
 
-- You're about to start Task 1 and your messages haven't carried the `Workspace del plan: …` line.
+- You're about to start Task 1 without the `Workspace del plan: …` line sent.
 - You're about to edit code and the plan isn't approved.
 - You're about to dispatch an implementer, a final reviewer, a fix wave or a re-review without the `## Restricciones de código` section at the start of its brief.
-- You're about to dodge a file marked «NO se tocan» with a fix that isn't in its own commit and doesn't enter review.
+- You're about to dodge a file marked «NO se tocan» with a fix outside its own reviewed commit.
 - You're about to record as a ruling a discovered fix that is already the third, or a decision that changes the observable output, without the scope brake.
 - You're about to start or dispatch a task without crossing its files with the base, because the feature's row didn't change.
 - You're about to mark a UI task done with a detector finding open and unjustified, or without running the detector `§Frontend` declares.
-- An implementer's brief carries the project's full gate because «the constitution says all green in every task» — that rule is met with the task's surfaces, not the whole suite.
+- An implementer's brief carries the project's full gate because «the constitution says all green in every task»: the task's surfaces meet that rule.
 
 | Excuse | Reality |
 | --- | --- |
