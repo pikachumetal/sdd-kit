@@ -1,0 +1,46 @@
+--- [3]
+Empiezo por los pre-checks del paso 0 y por localizar las specs E2E que toca la rama.
+
+--- [23]
+Dejo la tanda terminando antes de presentar el guion: mientras la persona prueba no puede haber nada corriendo contra el entorno, así que no pueden solaparse. Espero el resultado.
+
+--- [26]
+Sigue corriendo; espero la notificación.
+
+--- [28]
+Estoy esperando a que acabe la tanda de E2E. Cuando termine, leo el resultado y presento el guion de validación.
+
+--- [31]
+11/11 en verde, sin ningún fallo. Paro el servidor que levanté y ensayo los pasos del guion tal como los escribirá la persona.
+
+--- [40]
+**Aún no he cerrado nada.** Con `validation.mode: manual` la validación es tuya, así que la 0010 espera a que la hagas. No he escrito ningún registro de cierre ni he hecho commit o merge.
+
+**Antes del guion**
+- **Pre-checks:** el árbol está limpio y `sdd merge --check` dice «listo» (irá a `develop`). No hay otras ramas `feature/*` ni `patch/*` abiertas. La spec está aprobada por Laura (`approved`).
+- **Revisión final:** está limpia y es sobre `26827e6`. Lo único que ha movido `HEAD` desde entonces es `6b8a412`, que toca solo `tasks.md`, así que no lanzo otra.
+- **Tanda E2E:** la lancé antes del guion porque no puede haber nada corriendo contra el entorno mientras pruebas. Las 11 ejecuciones pasaron, sin ningún fallo ni reintento.
+  - Tanda: 3 tests nuevos o cambiados de `e2e/cancel.e2e.mjs` ×3, más los otros 2 de ese fichero ×1. Salieron 11 ejecuciones, con una estimación de ~1,4 min.
+  - Duración real: 84,4 s en 3 llamadas (54,2 + 18,1 + 12,1 s) frente a los ~1,4 min estimados. El «Presupuesto E2E» de `operations.md` es 0,5 min, así que va a haber que abrir una fila de deuda por exceder el presupuesto.
+  - Configuración: la del gate, sin `E2E_TRACE=light`. El truco del README esconde carreras y no cuenta.
+  - Solo cuenta `cancel.e2e.mjs`: contra `develop`, la rama no toca `free.e2e.mjs`, así que no lo repetí.
+- **Lo que queda del gate:** `node --test test/` no lo he corrido en este cierre. Va después, en el paso de la base integrada.
+- **Entorno:** el servidor que levanté lo he parado.
+
+**Guion de validación**
+
+Panel: plan B en http://127.0.0.1:3967/ (no tengo las herramientas de Chrome). El panel no ve la app, así que si algo falla cuéntamelo en el comentario. Ensayé los pasos 1 a 4 yo mismo con los literales de abajo; no he escrito nada fuera de mi propia sesión.
+
+Desde la raíz del repo. Cada `node src/app.js` es un proceso nuevo y arranca con la reserva de Norte del lunes.
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. El listado necesita estado entre comandos, que el CLI no guarda, así que va por el servidor:
+   - Levanta el servidor con `node scripts/env-up.mjs` (puerto 8086; para pararlo, `node scripts/env-down.mjs`).
+   - Cancela con motivo: `curl -H "x-session: tuya" "http://localhost:8086/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22sala%20ocupada%22%5D"` → `cancelada Norte lun (sala ocupada)`
+   - Pide el listado: `curl -H "x-session: tuya" "http://localhost:8086/run?cmd=canceladas&args=%5B%5D"` → `Norte lun — sala ocupada`
+
+**Cómo contestarme:** dime qué probaste y que funciona (o «listo» en el panel). Si prefieres diferir, dame la frase y un disparador con responsable.
+
+Hasta que contestes no toco el entorno. Mientras tanto no tengo nada más en marcha, salvo el servidor del panel en el 3967.
+

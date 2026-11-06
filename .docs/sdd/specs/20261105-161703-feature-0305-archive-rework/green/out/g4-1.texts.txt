@@ -1,0 +1,123 @@
+--- [17]
+Estoy en los pre-checks del cierre. Ya he visto que `HEAD` se movió un commit de solo documentación desde la revisión final, y ahora leo la plantilla del guion para componerlo.
+
+--- [37]
+## Re-revisión de `1b5bc41..b1c1e6c`
+
+Revisé el commit en un worktree desanclado en `b1c1e6c` y ya lo he retirado. No ejecuté la suite, el build ni el lint, y no he editado nada.
+
+**(1) Solo documentación: sí.** El diff añade un único fichero, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, con 17 líneas. No toca `src/`, `test/` ni `e2e/`.
+
+**(2) Tabla de commits: incorrecta en la Task 1.**
+
+- **Important.** La fila de la Task 1 («Cancelar con motivo») apunta a `1b5bc41`, pero esa task está en `bbe1af3` («cancelar con un motivo de la lista»). Ese commit añade a `src/app.js` la lista `reasons`, `reasonOf`, la validación y el motivo en la respuesta de `cancelBooking`, y reescribe los dos tests de cancelar en `test/cancel.test.js`. Por su parte, `1b5bc41` solo añade `cancelledList`, el comando `canceladas`, su test y los casos e2e. La fila de la Task 2 (`1b5bc41`) sí está bien. Tal como está, `bbe1af3` no aparece en ningún sitio del registro.
+
+**(3) La línea `Revisión final:` y el ruling frente al código.**
+
+- **La línea `Revisión final:` no contradice el código.** Pone «sobre 1b5bc41», que es el último commit de código del tramo. El código cumple los escenarios de la spec: «cancelada Norte lun (sala ocupada)»; «motivo no válido: …» tanto con un motivo fuera de la lista como sin `--motivo`, porque `reasonOf` devuelve `undefined` y no está en la lista; y «Norte lun — sala ocupada». Los textos de la interfaz están en castellano. «Arquitectura no (plan)» encaja con el plan, que no pide ese eje (Review Focus: ninguna).
+- **Important. El ruling de la Task 2 parte de una premisa que el código no respalda.** Justifica `node --test --test-concurrency=1` con una «carrera de los tests sobre el almacén compartido en memoria».
+  - Con `node --test`, cada fichero de test se ejecuta en su propio proceso, y dentro de un fichero los tests van en serie. Así, `test/app.test.js` y `test/cancel.test.js` tienen cada uno su propio `bookings` y no puede haber carrera entre ellos.
+  - El único acoplamiento real es otro: dentro de `test/cancel.test.js`, el test «canceladas enseña sala, día y motivo» depende de que antes se ejecute «cancelar con un motivo de la lista». Es una dependencia de orden, y `--test-concurrency=1` no cambia nada ahí.
+  - Además, el gate no refleja ese flag en ningún sitio: el plan dice `node --test` y `package.json` tiene `node --test test/`.
+  - Como resultado, el registro da por buena una deuda que no existe («hasta aislar el almacén por test») y deja sin anotar la que sí existe.
+- **Minor, fuera del tramo y solo como observación.** El escenario «sin `--motivo`» de la spec no tiene test unitario ni e2e. El código lo cumple, así que no contradice la revisión final.
+
+**Veredicto: con hallazgos.**
+
+--- [43]
+Ensayé el guion y el servidor del entorno ya está parado. Falta levantar el panel de validación (plan B) y te presento el mensaje.
+
+--- [48]
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro), y `canceladas` lista cada cancelación con el suyo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y luego `canceladas` da «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: se anotó `node --test --test-concurrency=1` en el gate para esquivar una carrera sobre el almacén compartido. La re-revisión dice que no hay tal carrera: `node --test` corre cada fichero en su propio proceso. El gate real es `node --test test/`, sin el flag. Lo corregiré en el walkthrough en vez de copiarlo tal cual.
+
+**La revisión final no estaba tan limpia**
+
+`HEAD` se movió un commit (`b1c1e6c`, solo `tasks.md`) tras la revisión sobre `1b5bc41`. Lancé la re-revisión de ese tramo y vuelve **con hallazgos**, los dos de severidad Important:
+
+- **`tasks.md` tiene mal el commit de la Task 1.** Pone `1b5bc41`, pero esa task está en `bbe1af3`. Lo corrijo al cerrar.
+- **El ruling de `--test-concurrency=1` no se sostiene.** Es el punto de arriba. El acoplamiento real es de orden dentro de `test/cancel.test.js`, y el flag no lo cambia. Lo apuntaré como deuda con esa causa.
+
+También hay un Minor: el caso «sin `--motivo`» no tiene test, ni unitario ni e2e. Está en el guion.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con un motivo de la lista | `ejecución real` | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | `ejecución real` | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `npm test`: 5/5 sobre `b1c1e6c`, 98 ms. Es la suite que correrá al cerrar, porque no hay base por delante ni otra rama abierta.
+
+**Sin probar**
+
+- E2E: no lo he corrido (ver abajo).
+
+**Tanda E2E que dejo para cuando respondas**
+
+La regla del kit me impide lanzar nada contra el entorno mientras pruebas. El guion usa el mismo servidor (puerto 3937) que la tanda, así que no la arranco ahora. En cuanto contestes la lanzo en segundo plano, y mientras corre yo no toco nada.
+
+Tanda: 3 tests cambiados o nuevos de `e2e/cancel.e2e.mjs` ×3 + 2 más del mismo fichero ×1 = 11 ejecuciones · ~1,5 min (~8 s × 11 ÷ 1 worker)
+
+`free.e2e.mjs` no lo toca la rama, así que no entra. Si quieres los 5 de `cancel` ×3 (15 ejecuciones), dímelo.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Panel: plan B en http://127.0.0.1:2118/ (esta página no ve la app: si un paso falla, cuéntame el error en el comentario).
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+npm run env:up
+```
+
+Terminal 2. Los 4 pasos usan la misma sesión `demo`, así que el paso 4 ve lo del paso 1:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con motivo válido → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: demo" "http://localhost:3937/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22sala%20ocupada%22%5D"
+```
+
+2. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: demo" "http://localhost:3937/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22me%20aburro%22%5D"
+```
+
+3. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: demo" "http://localhost:3937/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%5D"
+```
+
+4. Listado de canceladas → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: demo" "http://localhost:3937/run?cmd=canceladas&args=%5B%5D"
+```
+
+Para parar el entorno:
+
+```
+npm run env:down
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

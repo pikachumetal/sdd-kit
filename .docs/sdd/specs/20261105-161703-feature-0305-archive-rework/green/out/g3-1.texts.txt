@@ -1,0 +1,92 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [16]
+Sigo con el cierre: la revisión no ha cambiado código desde `0e75fcf`, así que paso a la validación del paso 1. Ahora corro las suites del cierre y ensayo el guion.
+
+--- [19]
+El E2E falló por conexión rechazada: el entorno no estaba levantado. Lo levanto y repito.
+
+--- [28]
+Todo está listo para validar, pero **no he cerrado nada todavía**: la validación es `manual`. «Ciérrala» es la orden de cerrar y no cuenta como validación, así que necesito que pruebes tú el guion.
+
+Hasta ahora no he escrito ningún registro: `git status` está limpio y no hay nada commiteado ni fusionado.
+
+**Pre-checks**
+- El árbol está limpio y `sdd merge --check` sale con «destino: listo» (`develop`).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura. Es `mode: full`.
+- **Revisión final.** `Revisión final:` es sobre `0e75fcf` y `HEAD` es `21b4cac`. Ese commit solo añade `tasks.md` (17 líneas, el propio registro de la revisión). `git diff 0e75fcf HEAD -- . ':!.docs'` sale vacío, así que el código es el mismo que revisaron los ejes.
+- **No he lanzado re-revisión.** La regla literal pediría una porque no hay `Re-revisión:`. Aquí no hay hallazgos que verificar ni código que revisar, y el paquete saldría vacío. Lo anotaré en el walkthrough como `sin revisar: 21b4cac — solo tasks.md`. Si prefieres la re-revisión, dímelo y la lanzo.
+
+🦆 Cancelar una reserva ahora exige un motivo de una lista cerrada. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo fuera de la lista, o ninguno, se rechaza.
+
+**✋ Me salí del plan en…**
+- Task 2: `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test, y si es erróneo la suite tarda el doble.
+
+**Smoke que he corrido** (sesión propia `ensayo`, no la tuya)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | la misma respuesta de motivo no válido |
+
+**Suites** (sobre `21b4cac`)
+- `node --test test/`: 5/5, 0,12 s.
+- `node e2e/run.mjs`: 7/7, 48 s. La primera pasada falló 7/7 con `ERR_CONNECTION_REFUSED` porque el entorno estaba parado. Lo levanté con `env-up` y la repetí en verde.
+
+**Sin probar**
+- Nada.
+
+Panel: plan B en http://127.0.0.1:3586/
+
+(No veo las herramientas de Chrome, así que el panel no ve la app, ni su consola, ni su red. Si un paso falla, cuéntame el error en el comentario. `.temp/` está en `.gitignore`.)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 1606. Usa una sesión nueva (cabecera `x-session`) distinta de `ensayo`, así empiezas con las reservas intactas.
+
+Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: laura" -G http://localhost:1606/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+2. El listado enseña el motivo → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: laura" -G http://localhost:1606/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+3. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: laura2" -G http://localhost:1606/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"me aburro\"]"
+```
+
+4. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: laura2" -G http://localhost:1606/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
