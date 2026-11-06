@@ -1,0 +1,84 @@
+--- [29]
+Estoy abriendo el patch 0012. Ya tengo la carpeta y `patch.md`. La prueba no se añadió por un error mío con el shell, así que la escribo ahora y la veo fallar.
+
+--- [32]
+RED confirmado. Ahora el arreglo mínimo.
+
+--- [37]
+Todo en verde: 5 de 5 tests y lint sin hallazgos. El diff es pequeño, 10 líneas. Ahora lanzo el revisor único del patch.
+
+--- [39]
+Estoy esperando al revisor del patch. Después anoto la verificación en `patch.md`, hago el commit del arreglo y sigo con el cierre.
+
+--- [43]
+Hallazgos (sin críticos ni importantes):
+
+**Corrección del fix.** Es correcto y mínimo. Lo he revisado leyendo el código; no he ejecutado los tests.
+- `SLOT_FORMAT` es `/^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/`. Con los anclajes `^…$` rechaza cualquier texto extra dentro de la misma franja.
+- Casos límite:
+  - `24:00-…` se rechaza.
+  - `10:60-…` se rechaza.
+  - `9:00-10:00` se rechaza, porque exige dos dígitos de hora.
+  - `10:00-11:00` se acepta.
+  - `25:00-26:00` se rechaza, que es el síntoma del patch.
+- `libres 10:00-11:00 extra` se acepta, porque `params[1]` se ignora. Es coherente con el código actual y el patch no lo pide.
+- La franja ausente (`undefined`) sigue listando las salas, como fija el patch. Una cadena vacía se rechaza, lo cual es razonable.
+- El mensaje coincide con el texto fijado: «franja no válida: usa HH:MM-HH:MM».
+- No se comprueba inicio < fin. Es una decisión documentada y la petición no lo pide.
+
+**Hallazgos:**
+1. **Menor.** El test cubre solo `25:00-26:00`. Los casos límite que justifican la regex (`24:00`, `10:60`, `9:00-10:00`) no tienen test. Tampoco hay un test para el caso sin franja. Ninguno es obligatorio para el patch, pero un par más fijaría el comportamiento. El test existente es válido: es determinista, se coloca junto al de `libres` y compara el texto exacto.
+2. **Menor.** En `patch.md` el front-matter dice `status: done`, pero la verificación (caso 1) sigue en «pendiente» y `commit` y el esfuerzo real también. Hay que actualizarlos al cerrar.
+
+--- [47]
+Commit hecho. Cierro con sdd-archive.
+
+--- [53]
+Antes de cerrar necesito que valides tú el patch. Con el perfil delegate la validación es un alto: no fusiono ni toco el roadmap hasta que me digas qué probaste.
+
+🦆 `libres 25:00-26:00` ya no lista «Norte, Sur». Ahora responde «franja no válida: usa HH:MM-HH:MM». Una franja con formato correcto, como `libres 10:00-12:00`, sigue respondiendo «Sur».
+
+**✋ Me salí del plan en…**
+
+- Nada. Tomé tres decisiones menores que `patch.md` §3 recoge con su autor:
+  - HH va de 00 a 23 y MM de 00 a 59. Es lo que hace inválida `25:00-26:00`, y lo tomé como implícito en la petición.
+  - No compruebo que el inicio sea anterior al fin, porque la fila 0012 no lo pide.
+  - `libres` sin franja sigue listando las salas, como hoy.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` rechaza la franja | ejecución real (RED antes del arreglo: «Norte, Sur») | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` no cambia | ejecución real | `Sur` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 y lint sin hallazgos, sobre `323defd`, ~0,1 s.
+
+**Sin probar**
+
+- Nada del patch. El revisor (sonnet) no encontró críticos ni importantes. Rechacé su Menor 1, que pedía más casos límite en el test, porque la petición solo fija `25:00-26:00`. El Menor 2 ya está corregido.
+
+**Pendiente para el cierre**
+
+- `sdd merge --check` dice que a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Sin ese bloque, en el paso de fusión te presentaré el merge y esperaré tu orden. La integración sería `develop`.
+- No hay otras ramas abiertas a la vez.
+
+**Guion**
+
+Rama `feature/0012-slot-format` · worktree `<run>/repo`
+
+Es una CLI sin entorno que arrancar. En una terminal:
+
+```
+cd <run>/repo
+```
+
+1. Ejecuta `node src/app.js libres 25:00-26:00` → sale `franja no válida: usa HH:MM-HH:MM`
+2. Ejecuta `node src/app.js libres 10:00-12:00` → sale `Sur`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

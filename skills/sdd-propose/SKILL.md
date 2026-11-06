@@ -8,7 +8,7 @@ argument-hint: "<change, roadmap id or ticket>"
 
 ## Overview
 
-The single entry for a change: it reads the project, classifies the change into a lane and writes what comes before implementing (spec and plan, or the patch's opening). This project works with **Spec-Driven Development**: the spec is the source of truth, the code is output. Artifacts (folders, names, document structure) follow the kit's convention. Write everything the user reads in the language of their message, skill announcements included.
+The single entry for a change: it reads the project, classifies the change into a lane and writes what comes before implementing (spec and plan, or the patch's opening). This project works with **Spec-Driven Development**: the spec is the source of truth, the code is output. Artifacts (folders, names, document structure) follow the kit's convention. Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
 
 **Golden rule:** artifacts live ONLY in `.docs/sdd/specs/<task-folder>/`. Never create `docs/superpowers/` or leave loose plans.
 

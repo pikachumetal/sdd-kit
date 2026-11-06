@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json && git branch --show-current && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+{"merge": {"push": true}}
+develop
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md PRODUCT.md package.json; find src test scripts -type f | head -50; ls .docs/sdd/specs
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la de
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js scripts/lint.mjs; ls node_modules 2>&1 | head -2; cat .docs/sdd/operations.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011 develop 2>&1 | tail -1; cat "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references/spec-writing.md"; cat "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references/nombrado.md" | head -60
+<<< Switched to a new branch 'feature/0011'
+# Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" id claim --project-root "$PWD" 2>&1 | tail -5; git branch --show-current
+<<< sin remoto: la 0011 vale (contador local)
+feature/0011
+
+=== RESULTADO (8 turnos, 0.1701319 $)
+Ahora: he leído el proyecto, clasificado el cambio y creado la rama `feature/0011` (fila 0011 del roadmap). Queda: unas pocas preguntas de diseño, luego la spec para tu aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Aviso: se ignora `merge.push` de `sdd-kit.local.json`: solo admite `control.profile`, `execution` y `validation.startEnvironment`; lo demás es del proyecto y va en `sdd-kit.json`.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme):**
+
+Hoy `anular <sala> <día>` (`src/app.js`, `voidBooking`) lo puede ejecutar cualquiera y marca la reserva como `voided`. No existe ninguna noción de quién es quien ejecuta, ni de quién es responsable de qué sala. Lo que quieres (fila 0011): que **solo el responsable de cada sala** pueda anular reservas de otras personas. Es decir:
+
+- Ejemplo: Ana es responsable de Norte y Luis de Sur. Ana anula `Norte lun` de otra persona → «anulada Norte lun». Ana intenta anular `Sur lun` de otra persona → se rechaza. Un usuario cualquiera que intenta anular la reserva de otro → se rechaza.
+- Cancelar la propia reserva (`cancelar`) sigue como está; la anulación es otra cosa, con su término propio en `PRODUCT.md`.
+
+Hay dos cosas que no puedo deducir del código y que cambian el diseño. Te pregunto la primera:
+
+**¿Cómo sabe la herramienta quién ejecuta el comando y quién es responsable de cada sala?**
+
+1. **(Recomendada)** Una opción `--como <nombre>` en cada comando, y una lista fija en `src/app.js` de responsable por sala (`Norte: Ana`, `Sur: Luis`). Es lo mínimo para una CLI sin login ni base de datos, y encaja con que las reservas viven en memoria.
+2. Una variable de entorno `SALAS_USUARIO` en vez de `--como`, con la misma lista fija de responsables.
+3. Otra cosa que tengas pensada (por ejemplo, responsables en un fichero de configuración).
+
+Y la segunda, que dejo para la siguiente vuelta si no tienes preferencia: hoy las reservas no guardan a nombre de quién están, y «reservas de otras personas» lo necesita. Mi propuesta sería añadir un campo `owner` a la reserva y que el responsable pueda anular cualquiera de su sala; ¿te vale, o prefieres tratarlo de otra manera?

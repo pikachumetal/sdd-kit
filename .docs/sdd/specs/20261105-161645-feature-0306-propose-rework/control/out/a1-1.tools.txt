@@ -1,0 +1,122 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>&1; done
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+{"merge": {"push": true}}
+Sin capacidades
+<<< Exit code 1
+=== constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde traba
+
+>>> Bash: cd "<run>/repo" && git branch --show-current; ls src test scripts .docs/sdd/specs; cat package.json PRODUCT.md; cat src/*.js; head -60 test/*
+<<< develop
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+scripts:
+lint.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+{"type": "module", "engines": {"node": ">=20"}}
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ante
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && cat spec-writing.md; grep -n -i "merge.push\|Aviso" control-profiles.md | head -20
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview covers g
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && git switch -c feature/0011 develop && git branch --show-current
+<<< Switched to a new branch 'feature/0011'
+feature/0011
+
+=== RESULTADO (10 turnos, 0.17100400000000002 $)
+Ahora: preparo la spec de la feature, ya en la rama `feature/0011`, y te hago la primera pregunta de diseño. Queda: la entrevista, la spec y tu aprobación, que es la próxima parada.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Es la fila 0011 del roadmap, «Anular reservas de otros». Prevé 3 tareas o menos, así que no propongo partirla.
+
+**Lo que he entendido, corrígeme:**
+
+- Hoy `anular <sala> <día>` ya existe en `src/app.js` y **cualquiera puede ejecutarlo**. Marca la reserva como `voided` sin comprobar quién lo pide.
+- No hay concepto de persona. Las reservas no guardan a nombre de quién están, aunque `PRODUCT.md` dice que la reserva es «a nombre de quien la pide». Tampoco hay un responsable por sala.
+- Quieres que **solo el responsable de cada sala** pueda anular reservas de otras personas. Cada sala tiene su responsable. El de Norte no podría anular en Sur.
+- Esto no es un patch: el qué está sin fijar. Hay que decidir cómo se sabe quién eres y cómo se define el responsable.
+
+❓ **¿Cómo sabe la herramienta quién ejecuta `anular`?**
+
+Es una CLI sin login, así que necesita una identidad para comprobar que quien anula es el responsable de esa sala.
+
+1️⃣ **Opción `--como <nombre>` en cada comando.** `anular Norte lun --como Marta` → `anulada Norte lun`. Con `--como Pedro`, que no es responsable de Norte → `solo el responsable de Norte puede anular: Marta`.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Se fija una vez en el terminal y `anular Norte lun` funciona sin repetirla. Si no está definida, el comando rechaza anular.
+3️⃣ **Nombre de usuario del sistema operativo.** No hay que indicar nada, pero acopla la herramienta a la máquina y no sirve si el servidor se comparte.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta no guarda estado entre ejecuciones y cada comando ya recibe sus datos por argumentos, como `cancelar`. A cambio, escribir `--como` cada vez es incómodo y cualquiera puede escribir el nombre de otro. Aquí no hay autenticación, solo evitar errores.

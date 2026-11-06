@@ -16,7 +16,7 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `guide` — la guía dice a quién llamar si una sala está cerrada.
+- Nuevas: `guide` — la guía dice a quién llamar si una sala está cerrada.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 

@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50; ls node_modules 2>&1 | head -2; git ls-files | head -80
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+.docs/sdd/capabilities/order-sheets.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+<<< - `order-sheets` — Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+>>> Bash: cd .docs/sdd; cat capabilities/order-sheets.md constitution.md tech-stack.md roadmap.md | head -150; cd ../..; cat pages/*.html app.js styles/ficha.css package.json
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references/patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+<<< # Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+- WHEN se abre la ficha
+- THEN la columna «Total con IVA» muestra `36,26 €`
+
+### La ficha ofrece guardar, cancelar y borrar
+
+- GIVEN una ficha de pedido o de albarán
+- WHEN se abre
+- THEN ofrece las acciones Guardar, Cancelar y Borrar
+# Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin depende
+
+=== RESULTADO (7 turnos, 0.1410934 $)
+Ahora: clasifico el cambio y te abro la feature con su nota de comprensión. Queda: 1 pregunta tuya, después la spec para aprobar (~10 min).
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Por qué es feature y no patch.** Mover Borrar a la derecha sería un ajuste de presentación. Ocultarlo según el estado «facturado» no lo es:
+- En el repo no existe ese dato. `pedido-detalle.html` y `albaran-detalle.html` son estáticas, y la única lógica es `lineTotal` en `app.js`.
+- Hay que decidir de dónde sale «facturado» y cómo llega a la página. Eso es diseñar la solución, y lo que ofrece la ficha cambia, así que `order-sheets.md` se modifica.
+
+**Lo que he entendido** (corrígeme):
+1. En la ficha de pedido, Borrar no se muestra cuando el pedido está facturado.
+2. En las dos fichas, Borrar pasa al extremo derecho de la fila de acciones. Ahora va tras Cancelar, junto a Guardar.
+3. Se cambia el requisito «La ficha ofrece guardar, cancelar y borrar» de la capacidad `order-sheets`. Son 2 tasks como mucho, así que no propongo dividirla.
+
+**Pregunta** (la necesito antes de escribir la spec): en la ficha de **albarán**, ¿qué significa «facturado»?
+1. **El albarán se oculta con su propio estado «facturado»** (Recomendada). Cada ficha lee su estado, y las dos usan la misma regla.
+2. **Solo se oculta en el pedido.** El albarán mantiene Borrar siempre, y solo cambia de sitio.
+3. **El albarán hereda el estado de su pedido.** Para eso hay que decidir cómo se enlazan los dos.
+
+Además, ¿cómo llega hoy el estado a la página? Como no hay backend, propongo un atributo `data-facturado="true"` en el `<main class="ficha">`, igual que `data-cantidad` en las líneas, y que `app.js` oculte Borrar con él. Si tienes otra fuente en mente, dímela.

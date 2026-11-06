@@ -22,7 +22,7 @@ const F28 = '.docs/sdd/specs/20261008-130000-feature-0028-close-notice-pending';
 const F29 = '.docs/sdd/specs/20261008-140000-feature-0029-room-floors';
 const F30 = '.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice';
 const F18 = '.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone';
-const F19 = '.docs/sdd/specs/20261008-170000-feature-0019-manager-marks';
+const F19 = '.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot';
 const F20 = '.docs/sdd/specs/20261008-180000-feature-0020-export-dir';
 const F21 = '.docs/sdd/specs/20261008-190000-feature-0021-slot-check';
 const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30];
@@ -359,7 +359,12 @@ const reviewSpec = (folder, fixture) => () => {
   s.put(`${folder}/spec.md`, readFileSync(join(FIX, fixture), 'utf8'));
 };
 steps.rv1 = reviewSpec(F11, 'spec-0011-review.md');
-steps.rv2 = reviewSpec(F18, 'spec-0018-small.md');
+// La spec de la 0018 edita la guía y sale de su fila: sin las dos, el repaso de coherencia la para antes de la review.
+steps.rv2 = () => {
+  reviewSpec(F18, 'spec-0018-small.md')();
+  s.put('docs/guia.md', readLf(join(FIX, 'guia.md')).replace('; lo retira la 0012', ''));
+  edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0018 | **El teléfono de conserjería en la guía** | ⏳ |\n| 1 |'));
+};
 // Con --setting-sources "" no llega ningún CLAUDE.md: la instrucción de confirmar va por el system prompt.
 steps.rv3 = () => {
   steps.rv1();

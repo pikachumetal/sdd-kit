@@ -1,0 +1,117 @@
+--- [3]
+Ahora: abro la rúbrica de review-spec y leo la spec para despachar la review. Queda: despachar a los revisores y recoger sus hallazgos.
+
+--- [31]
+Ahora: la review de la spec está despachada. Queda: esperar a los dos revisores, integrar sus hallazgos en `### Hallazgos de la review` y presentar la spec en el gate, ~10 min y ~200k tokens.
+
+Despaché dos revisores en paralelo, cada uno con su lente y sus puntos:
+
+- **Dominio (Sonnet):** puntos 1, 3, 5, 5 bis y 7. Mira el permiso por rol, es decir, qué no puede hacer o ver el cliente, y qué pasa si falta `--como`.
+- **Técnica (Sonnet):** puntos 2, 4 y 6. Mira si cada THEN/AND se puede verificar, dónde se guarda «quién anuló» y si cambia el formato de salida de `anuladas`.
+
+Dos cosas que conviene que sepas:
+
+- **Modelo del dominio:** la rúbrica pone a Opus en el revisor de dominio cuando la spec toca roles. Como me pediste Sonnet, usé Sonnet. Lo anotaré en «Decisiones tomadas con el dev-lead» con tu frase.
+- **Sin `capabilities/` ni `architecture.md`:** no existen en este proyecto. Por eso mandé a los revisores a las specs anteriores (0005, 0006 y el patch 0007) para conocer el comportamiento actual de `anular`, `cancelar` y `anuladas`. La señal «área sin explorar» sigue pendiente de mirar al integrar los hallazgos.
+
+Lancé también una vigilancia de silencio por cada revisor. Cuando lleguen los dos resultados, los integro. Si hay un Crítico aceptado o se reescribe la decisión central, habrá segunda ronda con un revisor nuevo antes del gate.
+
+--- [32]
+1. Crítico · Delta / Intent · El roadmap 0011 dice «solo el responsable *de cada sala*», y la spec lo reduce a un rol global `--como responsable`. Cualquiera que escriba `--como responsable` anula en cualquier sala. No dice si el responsable es por sala ni cómo se sabe cuál es. · Declarar que el rol es global y que esto cambia el roadmap, o añadir la relación sala-responsable en Reglas y Scope. Pasarlo a ✋.
+
+2. Crítico · Delta de comportamiento · Falta el valor por defecto cuando no hay `--como`. Hoy `anular` funciona sin flag, y esta spec cambia ese caso sin decirlo. Es un MODIFIED no declarado, y puede bloquear a todos o dejar un permiso abierto. · Añadir un escenario sin `--como` con su salida, y decir si es error o si equivale a `cliente`. Decidir el valor y ponerlo en ✋.
+
+3. Crítico · Intent / Delta · Contradicción interna. El Intent dice «el cliente no» puede anular, pero hoy cualquiera anula cualquier reserva, y eso incluye la propia. No dice si el cliente puede anular su propia reserva. El único escenario negativo es la reserva de Ana con `--como cliente`, sin precisar si quien actúa es Ana. · Declarar si el cliente anula lo propio, y si hay forma de identificar al dueño. Si no la hay, decir que ningún cliente anula nada. Añadir un escenario.
+
+4. Importante · Capacidades / Delta · El cambio se declara como MODIFIED de «Anular una reserva». Pero hoy `anular` es libre, y la spec añade un permiso nuevo, un dato nuevo (quién anuló) y un cambio de contrato de `anuladas`. Todo va bajo un solo requisito MODIFIED, y el listado `anuladas` no tiene requisito propio. · Separar el requisito de `anuladas` como MODIFIED o ADDED explícito. En cada MODIFIED, citar el comportamiento previo (before/after).
+
+5. Importante · Delta (complemento de visibilidad) · El rol cliente se describe solo por lo que no puede hacer. No dice qué ve en `anuladas`. El ✋ afirma «que el cliente no pueda ver quién anuló», pero ningún escenario lo cubre: `anuladas` imprime «anulada por responsable» sin condición de rol. · Añadir un escenario de `anuladas --como cliente` (¿oculta la parte «por …»?, ¿el listado completo?). Si el cliente sí lo ve, corregir el ✋.
+
+6. Importante · Delta · Las reservas anuladas antes de esta feature no tienen el dato «quién anuló». La spec no dice cómo las muestra `anuladas`, ni si `--como` es obligatorio también en `anuladas`. · Declarar el formato para el dato ausente (por ejemplo, `anulada` sin «por»). Declarar si `anuladas` acepta `--como`.
+
+7. Importante · Reglas de la capacidad · Falta la sección «Reglas de la capacidad», y la constitución no tiene «Reglas de producto». Faltan las cinco reglas: dónde viven los datos (el campo «quién anuló»), idioma de los nombres (`responsable`/`cliente` frente a `--como`), límites (valores válidos de `--como`), avisos (el valor desconocido) y regla ante conflicto (`--como` inválido). · Añadir la sección con cada regla declarada o «no aplica». Declarar la salida con un `--como` inválido, por ejemplo `--como admin`, que hoy queda sin definir.
+
+8. Menor · Scope · «No entra: `cancelar`» no justifica por qué `cancelar` sigue libre, cuando el roadmap 0010 lo toca. No dice si `cancelar` sigue funcionando sin `--como`. · Una línea que diga que `cancelar` no cambia y no exige `--como`, con la razón.
+
+9. Menor · Dónde se prueba / ✋ · El ✋ lista una «Técnica» («que `anuladas` no rompa el formato de salida actual»). Es contradictoria: la salida cambia a «Norte lun — anulada por responsable». Hay además un «Mínimo razonable» que reconoce una sola lente, cuando la cabecera dice dos revisores. · Reformular la línea técnica como compatibilidad hacia atrás y alinear el recuento de revisores.
+
+10. Menor · Delta (ejemplos) · Los ejemplos usan «Norte» y «Ana», que son inventados y no chocan con la constitución. Pero el escenario nombra a Ana como dueña sin que ningún paso la use, así que parece un dato implícito. · Quitar «de Ana», o usarla en un escenario explícito de dueño.
+
+--- [33]
+1. Crítico · Delta de comportamiento · Hay un solo escenario con tres THEN/AND que mezcla `anular`, el rechazo y `anuladas`. El AND de `anuladas` no puede verificarse con `run('anular', …)`, porque pide otra invocación, y el AND de `--como cliente` parte de un GIVEN distinto, pues la reserva ya está anulada. · Separar en escenarios independientes: anular como responsable, rechazo como cliente (reserva intacta, comprobada con `anuladas` vacío) y listado de `anuladas`. Cada uno con su propio GIVEN y WHEN.
+2. Crítico · Delta de comportamiento · No hay escenario para `--como` ausente. Hoy `anular` funciona sin ese flag, así que el cambio puede romper a quienes ya lo usan, o dejar el valor por defecto sin definir. · Añadir un escenario con su THEN exacto (error de flag obligatorio, o un rol por defecto) y declarar cuál se elige.
+3. Crítico · Delta de comportamiento · No hay escenario para un valor de `--como` inválido, por ejemplo `--como admin`. El mensaje no está definido, y no se sabe si la reserva queda intacta ni si el código de salida es distinto. · Añadir un escenario con el texto literal de la respuesta y la reserva sin cambios.
+4. Importante · Delta de comportamiento · No hay escenario para anular una reserva ya anulada, ni para una reserva inexistente, con `--como responsable`. No se sabe si `anuladas` guarda el primer anulador o lo sobrescribe. · Añadir los escenarios y fijar que no se sobrescribe el anulador original.
+5. Importante · Delta de comportamiento · El texto «anulada por responsable» está fijado para `anuladas`, pero no se dice qué pasa con las ya anuladas antes del cambio, que no tienen ese dato. No hay formato definido para ellas, y puede romper la salida actual. · Añadir un escenario de reserva anulada antes del cambio, con su línea exacta (por ejemplo sin sufijo, el formato actual), y retirar la ambigüedad.
+6. Importante · ✋ Decisiones / Delta · Hay decisiones tomadas en el cuerpo que no están en «✋ Decisiones». Son el literal `solo el responsable de sala puede anular`, el sufijo `— anulada por responsable` en `anuladas`, que el valor guardado sea el rol (no un nombre), que `--como` sea obligatorio u opcional, y que `cancelar` no se toque aunque haya el mismo problema de permiso. · Pasarlas a la lista numerada de decisiones para que el dev-lead las valide. Hoy solo hay una.
+7. Importante · Capacidades / Scope · Se toca el contrato de salida de `anular` y de `anuladas`, con un campo nuevo, sin declararlo. El hueco donde se persiste «quién anuló» tampoco está dicho: es el almacén de reservas, y puede ser un fichero o memoria. Si es un fichero, el cambio de formato necesita migración o lectura compatible. · Declarar el almacén (según el código, que el implementador debe leer) y si cambia su formato. Indicar la compatibilidad hacia atrás y qué lista `anuladas` para las reservas antiguas.
+8. Menor · ✋ Decisiones (bloque text) · La línea «Técnica: que `anuladas` no rompa el formato de salida actual» promete compatibilidad. Pero el escenario añade un sufijo a la línea de `anuladas`, lo que sí cambia el formato. Se contradice con el cuerpo. · Alinear: o el formato se amplía de forma declarada (y se dice en el Delta), o el campo va aparte.
+9. Menor · Dónde se prueba · Se nombra `test/anular.test.js` «como `test/cancel.test.js`». No hay prueba de `anuladas` ni de la regresión de los tests actuales, que llaman a `anular` sin `--como`. · Indicar dónde se prueba `anuladas` y cómo se actualizan los tests existentes de `anular` al nuevo flag. El gate es `node --test` entero.
+
+--- [48]
+Ahora: segunda ronda de la review. Un revisor nuevo, en Sonnet y con los siete puntos, relee la spec corregida. Queda: integrar lo que diga y presentar el gate, ~5 min.
+
+--- [55]
+Las dos reviews de la primera ronda están integradas y la spec está reescrita. La segunda ronda está en marcha y espero su resultado antes de presentar el gate.
+
+Lo que cambió respecto a la spec que me pasaste:
+
+- **`anuladas` no existe en el código.** Solo hay `voidBooking`, que anula sin más. Por eso `anuladas` pasa a ser un ADDED y no un MODIFIED.
+- **Decisiones nuevas en ✋ (10 en total).** Las tomé yo y Laura las valida:
+  - El rol es global, no por sala.
+  - `--como` es obligatorio. Esto rompe a quien hoy llama `anular` sin flag.
+  - Un `--como` inválido responde `rol desconocido`.
+  - Ningún cliente anula nada, ni siquiera lo suyo.
+  - El cliente ve `anuladas` sin saber quién anuló.
+  - `cancelar` no se toca.
+- **Escenarios separados.** Cada uno tiene su GIVEN y su WHEN. La spec cubre `--como` ausente, `--como` inválido y reserva ya anulada.
+- **Hallazgos.** Los 19 están registrados como aceptados en `### Hallazgos de la review`, con el cambio hecho en cada uno. La nota del dominio en Sonnet también está.
+
+Cuando vuelva el revisor nuevo, integro sus hallazgos. Después presento la spec con su 🦆 y la pregunta de aprobación. La spec sigue sin aprobar y no escribo el plan hasta que Laura apruebe.
+
+--- [59]
+1. Crítico · Delta de comportamiento, escenario «Listado de anuladas» · Un solo escenario encadena dos GIVEN/WHEN/THEN y un AND sin estado propio («sin reservas anuladas responde `sin anuladas`»). Ese AND contradice el GIVEN, que dice que Norte lun está anulada. Es imposible de verificar tal cual. · Separarlo en tres escenarios: responsable, cliente o sin `--como`, y ninguna anulada con su propio GIVEN. Añadir un escenario para `anuladas` con un valor inválido de `--como`.
+
+2. Crítico · Decisión 7 y escenario «ya anulada» · La decisión 7 dice «como hoy», pero las propias decisiones 3 y 4 dicen que `anular` nunca fue verificado por tests y el spec no cita ningún requisito vivo que lo describa. Además el escenario mezcla `anular` con una comprobación de `anuladas` que depende de otro requisito. Falta fijar el orden de validación: si `anular Norte lun --como cliente` sobre una reserva ya anulada o inexistente da `solo el responsable…` o `sin reserva…`. · Declarar el orden (rol, luego existencia, o al revés) con un escenario. Hacer que el escenario de ya anulada no dependa de `anuladas`.
+
+3. Importante · Capacidades y Delta («Listado de anuladas» como ADDED) · `anuladas` se declara «Añadida (dentro de `bookings`)» pero con `--como cliente` lista `<sala> <día>`. Es un listado de reservas anuladas visible a cualquiera, y el spec no dice que hoy el cliente no ve nada de ellas. Por ahora esto es una capacidad de producto nueva con decisiones de visibilidad sin respaldo en la misión («la uso yo, no hay más usuarios»). · Justificar en Intent por qué un cliente ve anuladas, o prohibirlo. Si el cliente no debe verlas, decirlo explícitamente.
+
+4. Importante · Decisión 6 («Sin `--como`, igual que cliente») · En `anular` la ausencia de `--como` es error (decisión 3), pero en `anuladas` es un rol implícito de cliente. Es una inconsistencia de reglas de conflicto entre dos comandos, y está solo en el escenario con un «o». · Unificar el criterio, o justificarlo en ✋ y darle un escenario propio.
+
+5. Importante · Decisión 3 y Scope · «Rompe a quien hoy llama `anular` sin flag». No dice qué otros llamadores hay (scripts, otros comandos, tests, README) ni si se actualiza la ayuda de la CLI y la documentación del contrato. Es un contrato público modificado. · Listar en Scope los ficheros y la ayuda que se tocan, y decir que se actualiza el texto de uso.
+
+6. Importante · Decisión 2 y Delta · El spec no dice qué pasa con una sala inexistente ni con una sala sin reserva bajo `--como responsable`. «anular Norte lun» sin reserva está cubierto solo para «ya anulada». Tampoco fija si `--como` puede ir antes del `<sala> <día>`, ni el límite de longitud o formato de `<sala>` y `<día>`. · Añadir escenarios para sala o día inexistente y para el orden de argumentos. Declarar los límites del dato.
+
+7. Importante · Decisión 1 (el rol sale de `--como`) · El flag lo escribe quien invoca, así que no es un permiso real. El cliente se declara «responsable» y anula. El spec lo presenta como control de acceso sin decir que no protege nada. · Declararlo en ✋: «--como es declarativo, no autenticación», para que la verificación y el walkthrough no lo vendan como seguridad.
+
+8. Importante · Bloque de la review y «Hallazgos» · Contiene métricas de proceso (~60 líneas en 3 ficheros) y una nota sobre elección de modelo que no son decisiones de comportamiento. Además la decisión 10 apila literales en una línea y falta `sin anuladas`, que aparece en el escenario. · Mover el bloque de review fuera de ✋, o fuera del spec. Añadir `sin anuladas` y `anulada por responsable` a la decisión 10.
+
+9. Menor · Capacidades vs Delta · Dice «guarda quién anuló», pero ningún escenario verifica ese dato salvo a través de `anuladas`. El «dónde viven los datos» se resuelve en un texto («en la reserva, en memoria»), no en el cuerpo. · Añadir al Scope «el rol de quien anuló se guarda en la reserva en memoria» y un escenario del dato guardado. El spec depende de que `cancelar` no registre quién canceló, y lo da por sentado.
+
+10. Menor · Decisión 9 y Scope · Dice «`cancelar` no cambia», pero `cancelar` y `anular` actúan sobre la misma reserva. Falta decir si una reserva cancelada aparece en `anuladas` o si `anular` sobre una cancelada responde `sin reserva`. · Añadir un escenario cancelar y luego anular, y declarar si `anuladas` incluye las canceladas (la 0010 las motiva).
+
+--- [67]
+Ahora: la spec está lista para tu aprobación. Queda: tu respuesta. Si apruebas, escribo el plan y paso a la implementación.
+
+🦆 **En corto:** hoy `anular` anula cualquier reserva sin preguntar nada. Con esta feature hay que decir quién eres con `--como cliente|responsable`. El responsable anula, y el cliente recibe `solo el responsable de sala puede anular`. Se guarda quién anuló, y un comando nuevo, `anuladas`, lo muestra solo al responsable. El rol es un flag que escribe quien invoca, no una autenticación.
+
+**Review:** pasaron tres revisiones, dos en paralelo (dominio y técnica, las dos en Sonnet) y una segunda ronda con un tercer revisor.
+- Los 29 hallazgos están en `### Hallazgos de la review`: 27 aceptados y 2 rechazados con su motivo.
+- Los 2 rechazos: no hay otros llamadores de `anular` que actualizar, y el bloque de review se queda en ✋ porque así lo pide la rúbrica.
+
+**✋ Decisiones que he tomado yo — valida estas** (están numeradas en la spec; estas son las que más pesan):
+1. **Rol global, no por sala.** El roadmap dice «responsable de cada sala», pero la app no tiene usuarios ni relación sala-responsable. Modelarla sería otra feature.
+2. **`--como` es obligatorio en `anular`.** Esto rompe a quien hoy llama `anular Norte lun` sin flag.
+3. **Ningún cliente anula nada, ni lo suyo.** Las reservas no tienen dueño.
+4. **`anuladas` es un comando nuevo.** Con `--como cliente` o sin flag lista `Norte lun`, sin quién anuló. Valida en especial que el cliente pueda ver qué reservas están anuladas. Si no debe verlas, lo prohíbo y cambio el escenario.
+5. **Se valida primero el rol y después la reserva.** `anular Sur mar --como cliente` responde `solo el responsable…` aunque la reserva no exista.
+6. **`cancelar` no cambia.** `anuladas` no incluye las canceladas.
+7. **Los literales de los mensajes son míos:** `falta --como <cliente|responsable>`, `rol desconocido`, `sin anuladas` y el sufijo `— anulada por responsable`.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada).**
+2. **Cambios.** Dime cuáles.
+
+Sigue en espera. No escribo el plan hasta tu respuesta, aunque el perfil sea `delegate`.
+

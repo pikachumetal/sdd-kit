@@ -1,0 +1,663 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\review-spec.md
+<<< 1	# Spec review — the complexity rubric and the adversarial reviewer
+2	
+3	Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+4	
+5	## 1. Count the signals (observable in the spec)
+6	
+7	| Signal | Holds if… |
+8	| --- | --- |
+9	| New capability | «✋ Decisiones que he tomado yo» declares a new capability in `capabilities/` |
+10	| Public contract | the delta touches an API, a file format or an interface 
+
+>>> Glob: .docs/sdd/specs/20261008-110000-feature-0011-void-others/**
+<<< .docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `room-managers` — quién es responsable de cada sala.
+21	- Modificadas: `bookings` — anular una reserva de otra persona exige ser responsable de la sala.
+22	
+23	## Decisiones que he tomado yo — valida estas
+24	
+25	1. Capacidad 
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\coherence-pass.md
+<<< 1	## Coherence pass
+2	
+3	In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+4	
+5	**Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —the literal and the function or step that 
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50; echo ---; cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md
+
+>>> Bash: cd "<run>/repo" && git grep -niE "anular|managers|cancel" -- . ':!.docs/sdd/specs' | head -40; ls node_modules 2>&1 | head -2
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+---
+# Constitution
+<<< .docs/sdd/changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs/sdd/changelog.md:20:- Cancelar una reserva propia.
+.docs/sdd/roadmap.md:7:| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+.docs/sdd/roadmap.md:8:| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+.docs/sdd/roadmap.md:27:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la mi
+
+>>> Bash: cd "<run>/repo" && cat src/app.js package.json PRODUCT.md; ls data 2>&1; cat .docs/sdd/operations.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; node "$S" capability index --path .docs/sdd 2>&1 | head; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md 2>&1 | head -20; git grep -n "0011\|void" -- . ':!.docs/sdd/specs/20261008*' | head; cat test/cancel.test.js | head -5; git log --oneline | head -3
+<<< Sin capacidades
+spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»
+.docs/sdd/roadmap.md:8:| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+src/app.js:20:export function voidBooking(room, day) {
+src/app.js:23:  booking.status = 'voided';
+src/app.js:31:  if (cmd === 'anular') return voidBooking(params[0], params[1]);
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+209d486 feat: 
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("""- Nuevas: `room-managers` — quién es responsable de cada sala.
+- Modificadas: `bookings` — anular una reserva de otra persona exige ser responsable de la sala.""","""- Nuevas: `room-managers` — quién es responsable de cada sala; `bookings` — anular una reserva (el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).""")
+s=s.replace("""2. Quien ejecuta el comando se identifica con `--como <nombre>`.
+""","""2. Quien ejecuta el comando se identifica con `--como <nombre>`.
+3. `bookings` nace como capacidad nueva en esta feature, porque `capabilities/` no existe y el merge rechaza un `MODIFIED` sobre una capacidad sin fichero. Su requisito va como `ADDED`, pero cambia lo que hace hoy `anular` (hoy anula cualquiera).
+4. Solo el responsable anula (PRODUCT.md: «Anulación: la reserva que anula el responsable de sala»); quien reservó usa `cancelar`, que no cambia.
+5. Sin `--como`, o con una sala sin responsable en `data/managers.json` (o sin el fichero), `anular` rechaza y la reserva sigue activa: es lo seguro por defecto.
+""")
+s=s.replace("""- Entra: `anular <sala> <día> --como <nombre>`; `data/managers.json`.""","""- Entra: `anular <sala> <día> --como <nombre>` en `src/app.js` (`voidBooking` y la rama `anular` de `run`); `data/managers.json`; tests en `test/`; las capacidades `room-managers` y `bookings`.""")
+s=s.replace("""**MODIFIED — Anular una reserva**""","""**ADDED — Anular una reserva exige ser responsable de la sala**""")
+s=s.replace("""- AND `anular Norte lun --como Ana` responde «anulada Norte lun»
+""","""- AND `anular Norte lun --como Ana` responde «anulada Norte lun»
+
+**ADDED — Sin identificar o sin responsable, no se anula**
+- GIVEN la reserva de Norte del lunes, de Pedro
+- WHEN `anular Norte lun` (sin `--como`)
+- THEN responde «indica quién anula con --como» y la reserva sigue activa
+- AND si la sala no tiene responsable en `data/managers.json` (o el fichero no existe), responde «Norte no tiene responsable» y la reserva sigue activa
+""")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md 2>&1 | head
+
+>>> Skill: sdd-kit:sdd-parallel-agents
+<<< spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»
+<<< Launching skill: sdd-kit:sdd-parallel-agents
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306" && grep -rn "Nuevas" --include=*.md --include=*.js . 2>/dev/null | grep -v "^./.temp\|tests/" | head -15
+<<< ./skills/sdd-templates/templates/patch-template.md:30:> Se escribe al cerrar, con el nombre exacto que da `sdd capability index`. Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, con su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Un delta que la vacía: `- Retiradas:`, con nombre y motivo.
+./skills/sdd-templates/templates/spec-template.md:34:> Se escribe con la salida de `sdd capability index`, con el nombre exac
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("""— quién es responsable de cada sala; `bookings` — anular una reserva (el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).""","""— quién es responsable de cada sala.
+- Nuevas: `bookings` — anular una reserva (el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).""")
+open(p,encoding='utf-8',mode='w').write(s)
+EOF
+S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md 2>&1 | head; ls "$T/sdd/capabilities"
+<<< room-managers.md: añadido «Cada sala tiene un responsable»
+bookings.md: añadido «Anular una reserva exige ser responsable de la sala»
+bookings.md: añadido «Sin identificar o sin responsable, no se anula»
+bookings.md
+room-managers.md
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (note: the file had been modified on disk since you last read it — the edit applied cleanly, but the file contains other changes not in your context. Read it before edits that depend on surrounding content.)
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=opus · Spec review: domain lens
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: ab7816ae3a6adb039 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `room-managers` — quién es responsable de cada sala.
+21	- Nuevas: `bookings` — anular una reserva (el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).
+22	
+23	## Decision
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Spec review: technical lens
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a51ad146ca911fb87 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Terminology
+6	
+7	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+8	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+9	- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+10	- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+11	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `room-managers` — quién es responsable de cada sala.
+21	- Nuevas: `bookings` — anular una reserva (el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).
+22	
+23	## Decision
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+5	
+
+>>> Read: <run>\repo\.docs\sdd\operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- **Arrancar**: `node src/app.js <comando> <argumentos>`
+6	
+7	## Testing
+8	
+9	- **Suites**: `unit` · `node --test` · ~1 s
+10	- **Lo afectado**: `node --test <fichero de test>`
+11	- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+12	- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13	- **Acceso a la aplicación**: `sin login`
+14	- **Motor de producción**: sin base de datos; las reservas viven en memoria
+15	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `room-managers` — quién es responsable de cada sala.
+21	- Nuevas: `bookings` — anular una reserva (el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).
+22	
+23	## Decision
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js | head -20; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md | head -30; cat README.md | head -20
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+
+>>> Write: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md 2>&1 | head
+<<< responsables-de-sala.md: añadido «Cada sala tiene un responsable»
+reservas.md: añadido «Anular una reserva exige ser responsable de la sala»
+reservas.md: añadido «Sin identificar o sin responsable, no se anula»
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Spec review: second round
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a578b935bfa02cff2 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `responsables-de-sala` — quién es responsable de cada sala.
+21	- Nuevas: `reservas` — anular una reserva (el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).
+22	
+23	## D
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+5	
+
+>>> Read: <run>\repo\.docs\sdd\operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- **Arrancar**: `node src/app.js <comando> <argumentos>`
+6	
+7	## Testing
+8	
+9	- **Suites**: `unit` · `node --test` · ~1 s
+10	- **Lo afectado**: `node --test <fichero de test>`
+11	- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+12	- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13	- **Acceso a la aplicación**: `sin login`
+14	- **Motor de producción**: sin base de datos; las reservas viven en memoria
+15	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Terminology
+6	
+7	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+8	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+9	- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+10	- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+11	
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md'
+s=open(p,encoding='utf-8').read()
+
+# 1. move numbered list before review record
+i=s.index("1. Capacidad nueva `responsables-de-sala`")
+j=s.index("## Intent")
+lista=s[i:j]
+s=s[:i]+s[j:]
+k=s.index("Review de spec propuesta")
+s=s[:k]+lista+s[k:]
+
+# capacidades
+s=s.replace("(el proyecto no tiene `capabilities/`: nace con lo que ya hace `anular`, ahora con la regla del responsable).","(el proyecto no tiene `capabilities/`: nace parcial, solo con `anular` y la regla del responsable; reservar, listar y cancelar no entran).")
+
+# decisions 4,5,6
+s=s.replace("""4. Solo el responsable anula, sea de quien sea la reserva (PRODUCT.md: «Anulación: la reserva que anula el responsable de sala»); quien reservó usa `cancelar`, que no cambia.""","""4. Solo el responsable anula, sea de quien sea la reserva (PRODUCT.md: «Anulación: la reserva que anula el responsable de sala»); quien reservó usa `cancelar`, que no cambia. La reserva no guarda quién la hizo y esta feature no lo añade: la regla no lo necesita.""")
+s=s.replace("""5. `--como` se acepta en cualquier posición; sin valor, o ausente, cuenta como no indicado. Los nombres""","""5. `--como` se acepta en cualquier posición y su valor es el primer argumento que le sigue; si no hay, está vacío o empieza por `--`, cuenta como no indicado; repetido, vale el primero. Los argumentos sobrantes o mal escritos se tratan como hoy. Los nombres""")
+s=s.replace("""luego el responsable de la sala (sala sin responsable, fichero ausente o inválido → rechaza); luego si quien pide es el responsable. En todo rechazo la reserva sigue activa.""","""luego el responsable de la sala: sala sin responsable o fichero ausente → «<sala> no tiene responsable»; fichero que no es JSON, que no es un objeto o cuyo valor para la sala no es un texto no vacío → «el fichero de responsables no es válido» (sin ruta, porque los tests usan otro fichero); luego si quien pide es el responsable. En todo rechazo la reserva sigue activa.""")
+s=s.replace("""- Límites: un responsable por sala; la anulación no tiene plazo (PRODUCT.md: «por cualquier motivo»).
+- Avisos: no aplica; no se avisa a quien reservó.""","""- Límites: un responsable por sala; esta feature no añade plazo a la anulación (PRODUCT.md solo dice «por cualquier motivo»).
+- Avisos: no aplica; no hay canal de avisos (los avisos por correo son la fila 1 del roadmap) y la reserva no guarda a quién avisar.""")
+s=s.replace("(`managerOf`); `data/managers.json` inicial;","(`managerOf`, función exportada nueva); `data/managers.json` inicial;")
+s=s.replace("Tampoco entra una gestión","Los ficheros nuevos y modificados pasan `scripts/lint.mjs` (gate de cierre de operations.md). Tampoco entra una gestión")
+
+# delta reservas rewrite
+a=s.index("### Capacidad: `reservas`")
+b=s.index("## Enmiendas")
+nuevo="""### Capacidad: `reservas`
+
+**ADDED — Anular una reserva exige ser responsable de la sala**
+- GIVEN la reserva activa de Norte del lunes y un fichero de responsables con `{"Norte": "Ana", "Sur": "Luis"}`
+- WHEN `anular Norte lun --como Ana`
+- THEN responde «anulada Norte lun» y la reserva queda anulada
+
+*(cada escenario siguiente parte de su propio GIVEN, con la reserva activa)*
+
+**ADDED — Quien no es el responsable no anula**
+- GIVEN la reserva activa de Norte del lunes y el mismo fichero de responsables
+- WHEN `anular Norte lun --como Luis`
+- THEN responde «solo Ana anula reservas de Norte» y la reserva sigue activa
+- AND con `--como Pedro` responde lo mismo
+- AND con `--como ana` responde lo mismo
+
+**ADDED — `--como` va en cualquier posición**
+- GIVEN la reserva activa de Norte del lunes y el mismo fichero de responsables
+- WHEN `anular --como Ana Norte lun`, o `anular Norte --como Ana lun`
+- THEN responde «anulada Norte lun»
+
+**ADDED — Sin identificarse no se anula**
+- GIVEN la reserva activa de Norte del lunes
+- WHEN `anular Norte lun` (sin `--como`, con `--como` al final sin valor, o con `--como --otra`)
+- THEN responde «indica quién anula con --como» y la reserva sigue activa
+
+**ADDED — Sala sin responsable no se anula**
+- GIVEN la reserva activa de Norte del lunes y un fichero de responsables sin Norte
+- WHEN `anular Norte lun --como Ana`
+- THEN responde «Norte no tiene responsable» y la reserva sigue activa
+- AND con el fichero ausente responde lo mismo
+
+**ADDED — Fichero de responsables inválido no se anula**
+- GIVEN la reserva activa de Norte del lunes y un fichero de responsables que no es JSON
+- WHEN `anular Norte lun --como Ana`
+- THEN responde «el fichero de responsables no es válido» y la reserva sigue activa
+- AND con un fichero que no es un objeto, o con `{"Norte": 3}` o `{"Norte": ""}`, responde lo mismo
+
+**ADDED — Sin reserva se dice antes que nada**
+- GIVEN que no hay reserva activa de Norte el martes
+- WHEN `anular Norte mar` (con o sin `--como`)
+- THEN responde «sin reserva Norte mar»
+
+"""
+s=s[:a]+nuevo+s[b:]
+
+# hallazgos ronda 2
+s=s.replace("1. Capacidad nueva `responsables-de-sala`","""Segunda ronda (Sonnet, una sola):
+- **Aceptado** (Crítico) — `reservas` nace parcial y el escenario de `cancelar` no era suyo → declarado parcial; `cancelar` sale de la delta y queda en el Scope como «sigue igual».
+- **Aceptado** (Crítico) — un escenario mezclaba seis THEN con un GIVEN que dejaba de valer → siete escenarios con su propio GIVEN.
+- **Aceptado** — «sin reserva» como AND de otro escenario → escenario propio.
+- **Aceptado** — casos mezclados y sin mensaje → un escenario por caso, con valores no válidos (`{"Norte": 3}`, `""`) y decisión 6 con los dos mensajes.
+- **Aceptado** — el mensaje llevaba una ruta falsa en los tests → mensaje sin ruta.
+- **Aceptado** — valor de `--como` → decisión 5 (primer argumento siguiente, vacío o `--x` cuenta como no indicado, repetido vale el primero).
+- **Aceptado** — cita falsa del plazo y «no aplica» sin justificar → reglas reescritas.
+- **Aceptado** — «quien reservó» no existe en el modelo → sale de los THEN; `Pedro` es un nombre más (decisión 4).
+- **Aceptado** — `scripts/lint.mjs` y `managerOf` exportada → en el Scope.
+- **Rechazado en parte** — reordenar la sección: la lista de decisiones pasa delante del registro; Laura es la aprobadora que ya figura en el frontmatter de la spec, no la cambio.
+
+1. Capacidad nueva `responsables-de-sala`""",1) if False else s
+open(p,'w',encoding='utf-8').write(s)
+EOF
+grep -n "Hallazgos de la review\|^1\. Capacidad" .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md
+<<< 25:1. Capacidad nueva `responsables-de-sala`, con los responsables en `data/managers.json` (`{"Norte": "Ana", "Sur": "Luis"}` en el fichero inicial: nombres inventados que Laura sustituye por los reales; los tests usan su propio fichero en `test/`).
+45:### Hallazgos de la review
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md'
+s=open(p,encoding='utf-8').read()
+add="""
+Segunda ronda (Sonnet, una sola):
+- **Aceptado** (Crítico) — `reservas` nace parcial y el escenario de `cancelar` no era suyo → declarado parcial; `cancelar` sale de la delta y queda en el Scope como «sigue igual».
+- **Aceptado** (Crítico) — un escenario mezclaba seis THEN con un GIVEN que dejaba de valer → siete escenarios, cada uno con su GIVEN.
+- **Aceptado** — «sin reserva» como AND de otro escenario → escenario propio.
+- **Aceptado** — casos mezclados y sin mensaje → un escenario por caso, con valores no válidos (`{"Norte": 3}`, `""`) y decisión 6 con los dos mensajes.
+- **Aceptado** — el mensaje llevaba una ruta falsa en los tests → mensaje sin ruta.
+- **Aceptado** — valor de `--como` → decisión 5 (primer argumento siguiente; vacío o `--x` cuenta como no indicado; repetido vale el primero).
+- **Aceptado** — cita falsa del plazo y «no aplica» sin justificar → reglas reescritas.
+- **Aceptado** — «quien reservó» no existe en el modelo → sale de los THEN; `Pedro` es un nombre más (decisión 4).
+- **Aceptado** — `scripts/lint.mjs` y `managerOf` exportada → en el Scope.
+- **Aceptado en parte** — la lista de decisiones pasa delante del registro; **rechazado** confirmar a Laura: es la aprobadora que ya figura en el frontmatter, no la cambio.
+"""
+m="\n## Intent"
+s=s.replace(m, add+m,1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md 2>&1; sed -n 20,75p .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md | cut -c1-110
+<<< spec.md: línea suelta en «Anular una reserva exige ser responsable de la sala»: «*(cada escenario siguiente parte de su propio GIVEN, con la reserva activa)*»
+- Nuevas: `responsables-de-sala` — quién es responsable de cada sala.
+- Nuevas: `reservas` — anular una reserva (el proyecto no tiene `capabilities/`: nace parcial, solo con `anu
+
+## Decisiones que he tomado yo — valida estas
+
+1. Capacidad nueva `responsables-de-sala`, con los responsables en `data/managers.json` (`{"Norte": "Ana", "Su
+2. Quien ejecuta el comando se identifica con `--como <nombre>`.
+3. `reservas` nace como capacidad nuev
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("*(cada escenario siguiente parte de su propio GIVEN, con la reserva activa)*\n\n","")
+s=s.replace("la salida de éxito «anulada Norte lun» y `cancelar` no cambian (escenario)","la salida de éxito «anulada Norte lun» se conserva y `cancelar` no cambia (Scope)")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md 2>&1
+<<< responsables-de-sala.md: añadido «Cada sala tiene un responsable»
+reservas.md: añadido «Anular una reserva exige ser responsable de la sala»
+reservas.md: añadido «Quien no es el responsable no anula»
+reservas.md: añadido «`--como` va en cualquier posición»
+reservas.md: añadido «Sin identificarse no se anula»
+reservas.md: añadido «Sala sin responsable no se anula»
+reservas.md: añadido «Fichero de responsables inválido no se anula»
+reservas.md: añadido «Sin reserva se dice antes que nada»
+
+=== RESULTADO (20 turnos, 0.9589056999999999 $)
+Ahora: dos revisores de la spec en paralelo. Queda: plegar sus hallazgos y presentarte la spec en el gate, ~5 min y ~$0,6 en total.
+
+**Señales contadas (5 de 8):**
+- Capacidad nueva: `room-managers` y `bookings`.
+- Contrato público: `--como` y el formato de `data/managers.json`.
+- `MODIFIED` en sustancia: `anular` deja de anular a cualquiera.
+- Datos: `data/managers.json`.
+- Reglas de permiso: quién no puede anular.
+
+No cuentan la dependencia externa, las tres o más capacidades ni el área sin explorar, porque ya leí `src/app.js` y los tests. Con ~80 líneas en ~6 ficheros, el contrato público y el `MODIFIED` impiden bajar a un revisor.
+
+**Decisión de review:** dos revisores. El de dominio va en Opus, porque la spec toca permisos por rol. El técnico va en Sonnet. No te pregunto, porque la rúbrica decide cuántos revisores hay.
+
+**Cambios por la pasada de coherencia:**
+- **Merge:** la delta de `bookings` como `MODIFIED` fallaba en el merge sobre una copia, porque el proyecto no tiene `capabilities/`. Ahora `bookings` es capacidad nueva con `ADDED` (decisión 3). Tras corregirlo, el merge pasa sin errores.
+- **Decisiones 4 y 5, que añadí yo y hay que validar:**
+  - Solo el responsable anula, y quien reservó usa `cancelar`.
+  - Sin `--como` o sin responsable de sala, `anular` rechaza.
+- **Scope:** añadí `src/app.js` y los tests.
+
+Cuando vuelvan los dos revisores, pliego los hallazgos en «Hallazgos de la review». Si hay un Crítico aceptado, habrá segunda ronda. Después te presento la spec con su 🦆 y el gate.
+
+=== RESULTADO (1 turnos, 0.9589056999999999 $)
+Ha vuelto el revisor técnico, con 2 Críticos y 6 Importantes. Falta el de dominio (Opus). Espero a que llegue para plegar todos los hallazgos de una vez y decidir si hace falta segunda ronda.
+
+=== RESULTADO (6 turnos, 0.9589056999999999 $)
+Ahora: segunda ronda de review en curso. Queda: plegar sus hallazgos y presentarte la spec con su 🦆 y el gate, ~2 min y ~$0,15.
+
+**Primera ronda plegada.** Aceptados los 19 hallazgos de los dos revisores. Ninguno se rechazó, y están anotados en la subsección «Hallazgos de la review».
+
+- **Críticos:**
+  - Los nombres de capacidad estaban en inglés. Ahora son `reservas` y `responsables-de-sala`.
+  - La ruta de `data/managers.json` no estaba definida. Ahora se resuelve desde `src/app.js`.
+  - Faltaba el escenario del fichero malformado.
+- **Fuera de esta feature:** `cancelar` hoy no comprueba de quién es la reserva ni el plazo de 24 h, así que podría saltarse la regla. Queda declarado como hueco conocido. Propongo anotarlo en la deuda técnica del roadmap, pero no lo he tocado.
+- **Para que lo valides tú:** la misión («no hay más usuarios») y PRODUCT.md («equipos de una oficina») no coinciden. La spec lo señala, no lo resuelve.
+
+El merge sobre la copia pasa en verde con las dos capacidades y tres requisitos.
+
+=== RESULTADO (4 turnos, 0.9589056999999999 $)
+Ahora: presentarte la spec en el gate. Queda: tu aprobación explícita; hasta entonces la spec sigue en espera.
+
+**Review decidida y hecha.** Conté 5 señales de 8 y dispatché dos revisores: dominio en Opus y técnica en Sonnet. Los dos Críticos aceptados (nombres en inglés y ruta del fichero) activaron una segunda ronda con un solo revisor Sonnet. Entre las dos rondas hubo 29 hallazgos. Acepté 27 y rechacé 1; otro lo acepté en parte. Los 29 están en «Hallazgos de la review» de la spec. El merge sobre una copia pasa con 2 capacidades y 8 requisitos. Quedan 12 decisiones en ✋.
+
+🦆 **En corto:** hoy `anular Norte lun` anula la reserva de cualquiera. Con esta feature solo la anula quien se identifica con `--como` y es el responsable de esa sala, según `data/managers.json`. Es un cambio incompatible: la llamada de hoy pasa a rechazarse. Un nombre como `Pedro` no tiene ningún permiso especial. Y `--como` no autentica, así que cualquiera puede escribir `--como Ana`.
+
+**✋ Decisiones que he tomado yo, para que las valides:**
+- **Capacidades:** nacen `responsables-de-sala` y `reservas`, esta última parcial, solo con `anular`. Los nombres van en castellano.
+- **Quién anula:** solo el responsable, sea de quien sea la reserva. Quien reservó usa `cancelar`.
+- **Precedencia al rechazar:** primero «sin reserva», luego `--como`, luego el responsable, luego si quien pide lo es. En todo rechazo la reserva sigue activa.
+- **Mensajes:**
+  - Ante un fichero inválido: «el fichero de responsables no es válido», sin ruta.
+  - El rechazo nombra al responsable, a propósito.
+  - El rechazo no cambia el código de salida.
+- **Datos:** `data/managers.json` se resuelve desde `src/app.js`. Su contenido inicial (Ana, Luis) son nombres inventados que Laura sustituye. Los tests usan su propio fichero.
+- **Comparación de nombres:** exacta, distinguiendo mayúsculas.
+
+**Dos cosas que no resuelvo aquí:**
+- La misión («no hay más usuarios») y PRODUCT.md («equipos de una oficina») no coinciden.
+- `cancelar` hoy no comprueba de quién es la reserva ni el plazo de 24 h, y podría saltarse la regla. Queda fuera de esta feature como hueco conocido. Propongo anotarlo en la deuda técnica del roadmap, pero no lo he tocado.
+
+Spec: `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`
+
+¿Apruebas?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 3 tasks)** — la sesión corre en un modelo capaz y las tasks son cortas; en Native cada task las ejecuta esta sesión, y bajar a Sonnet con esfuerzo medio sale más barato.

@@ -1,0 +1,190 @@
+--- [3]
+Ahora: leo la referencia de redacción del plan y la spec aprobada del spike 0031. Queda: escribir `plan.md` y pasar a la implementación.
+
+--- [17]
+Ahora: plan escrito y commiteado, y paso a la implementación. Queda: ejecutar la Task 1 (medir y escribir `research.md`).
+
+--- [20]
+Ahora: preparo el espacio de trabajo del plan. Queda: la Task 1 (medir y escribir `research.md`), la revisión final y la validación, ~20 min.
+
+--- [36]
+Ahora: revisión final de la rama y gate de cierre. Queda: validación en `sdd-archive`.
+
+--- [47]
+Mientras revisa, apunto la decisión en el ledger y corro el gate de cierre en el repo.
+
+--- [50]
+Empiezo leyendo el paquete de review y los ficheros de la carpeta de la spec.
+
+--- [51]
+Gate de cierre en verde (`node --test`: 4/4, lint sin hallazgos). Queda esperar al revisor del eje Spec; no sigo hasta que termine.
+
+--- [66]
+### Strengths
+
+- Los números de `research.md` §2 y §3 coinciden exactamente con `medidas.txt`. Las 12 filas, el máximo 0,052 ms (rep 1), la mediana 0,023 ms (media de las posiciones 6 y 7 una vez ordenadas), la subida de heap 4.909.752 − 4.842.304 = 67.448 B (1,39 %, redondeado a 1,4 %) y «~960 veces» (50/0,052 ≈ 961) son correctos.
+- Se mide el `freeRooms` real. `medir-libres.mjs:11` resuelve bien `../../../../src/app.js` hasta la raíz del repo. La regex de `:12` encuentra la línea 3 de `src/app.js`, y la siembra deja 1.000 reservas activas en `10:00-12:00`. El script aborta si `bookingCount !== 1000` o si `libres` no devuelve `Sur`. Con `Sur` libre, `some()` recorre las 1.000. Dado que la reserva original de `Norte` está en el índice 0, es el peor recorrido posible para esa carga.
+- `src/` está intacto: `git diff --stat 6b05dd4 HEAD -- src` sale vacío. El script no tiene comentarios.
+- O1 está en `cumple` y las 12 repeticiones bajan de 50 ms, así que se respeta la regla de estado.
+- La decisión 1 del plan aparece en `research.md:22` («el repo no tiene `seed`»). §3 es prudente con el heap: no confirma ni descarta una fuga.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+
+1. **`medir-libres.mjs:34` y `research.md:20`: la «repetición en frío» no es fría.** La comprobación `app.run('libres', [FRANJA]) !== 'Sur'` ejecuta `freeRooms` (compilación perezosa y primeras inline caches) antes del bucle. Rep 1 es en realidad la segunda llamada. Aun así, `research.md:20` dice «máximo 0,052 ms (la primera, en frío)».
+   - **Por qué importa:** la primera línea del Review Focus pide que la llamada en frío se registre y cuente para O1. La llamada fría de verdad no se cronometró ni aparece en `medidas.txt`. El estado `cumple` se apoya en la regla «todas, la fría incluida», y justo esa no está medida. Lo más probable es que el veredicto no cambie, pero la afirmación no está respaldada.
+   - **Cómo arreglarlo:** cronometrar la llamada de comprobación como rep 1, o mover la comprobación de `'Sur'` detrás del bucle. Después, volver a ejecutar y actualizar `medidas.txt` y `research.md`.
+   - **Gap:** `contradicts`.
+   - **Origen:** el plan. La decisión 3 («la primera en frío y sin calentamiento previo») choca con el Step 1, que pone la comprobación antes del bucle. También el Review Focus 1.
+
+2. **`research.md:20` y `research.md:47`: el crecimiento de memoria no aparece donde lo pide el Review Focus.** El `heapUsed` crece casi sin parar entre repeticiones: +67.448 B, con un solo retroceso en rep 3. §3 (`:43`) lo dice, pero el Detalle de O1 y la Recomendación no lo mencionan.
+   - **Por qué importa:** la segunda línea del Review Focus exige decirlo justo en esos dos sitios, porque la recomendación («no añadir caché… antes de abrirlo a toda la oficina») se lee sin esa reserva.
+   - **Cómo arreglarlo:** añadir al Detalle de O1 una frase con el +67.448 B (1,4 %) sin confirmar. Añadir a la Recomendación que la decisión cubre el tiempo y que el crecimiento del heap queda abierto, con poca muestra.
+   - **Gap:** `partial`.
+   - **Origen:** el plan, Review Focus 2.
+
+#### Minor (Nice to Have)
+
+3. **`medir-libres.mjs:44-45`: el heap se lee después, no antes.** El Step 1 del plan pide «`global.gc()`, `heapUsed` previo, `performance.now()`…». El script lee `heapUsed` después de la llamada y de un segundo `gc()`. Es coherente con la cabecera de §3 («tras `gc()`») y no cambia el sentido de la columna, pero se aparta del plan sin que se diga en ningún sitio.
+   - **Cómo arreglarlo:** ajustar el plan o el script, o anotar la desviación.
+   - **Gap:** `contradicts`.
+   - **Origen:** el plan, Task 1 Step 1.
+
+4. **`research.md:22` y `research.md:47`: la decisión 1 sigue sin validar y no se dice.** `research.md` cuenta que no hay `seed` y que se siembra una copia. Pero no dice que la decisión 1 sigue pendiente de validar: `plan.md` está en `status: draft` y su riesgo 1.7 da probabilidad «Media» a «la copia sembrada difiere del `seed` que el dev-lead tenía en mente». Además, §4 habla de «la peor carga confirmada», y el dev-lead confirmó la forma de la carga, no cómo se siembra.
+   - **Cómo arreglarlo:** una frase en §2 o en §4 que diga que la siembra sustituye al `seed` de la spec y que, si el dev-lead se refería a otro `seed`, la medida se repite.
+   - **Gap:** `partial`.
+   - **Origen:** el plan, decisión 1.
+
+**Ledger:** no tiene líneas `Ruling:`, `minor (deferred)` ni `parked`, así que no hay minors diferidos que arreglar antes del merge.
+
+### Declined to judge
+
+- **Arranque de Node en el tiempo de `libres`:** un usuario de la CLI notaría el tiempo de arranque. Lo dejo fuera porque la decisión 3 del plan fija la medida dentro del proceso, `research.md:22` lo declara como límite, y una caché no cambiaría ese tiempo.
+- **Persistencia de 1.000 reservas entre invocaciones de la CLI:** las reservas viven en memoria y la CLI arranca un proceso nuevo en cada llamada. Es una pregunta de producto que el spike no plantea.
+- **Mención de `operations.md` en `research.md:50`:** la regla dice que la recomendación cita solo filas medidas. Esa mención es el «Límite de la conclusión», no el fundamento, y `operations.md:14` lo confirma («las reservas viven en memoria»).
+- **Origen de la subida del heap:** podría venir de `freeRooms`, de los strings de `console.log` o del propio bucle. Ni el plan ni la spec piden explicarlo.
+- **Verificación del ledger (`... | tail -1 && test ...`):** la tubería oculta el código de salida del script. Afecta a la evidencia del ledger, no al entregable.
+
+### Not verified
+
+- no verificado: el cumplimiento de `research.md` con `research-template.md` más allá de las reglas del encargo, porque no tengo acceso a la plantilla (se me denegó la búsqueda fuera del worktree).
+- no verificado: que `medidas.txt` sea la salida real del script, porque el encargo prohíbe ejecutarlo. Sí comprobé que el formato de las líneas coincide con `medir-libres.mjs:45` y `:47`.
+
+### Recommendations
+
+- Arreglar los issues 1 y 2 y volver a ejecutar una vez. Con eso, `medidas.txt`, la fila O1 y §4 cuentan una historia completa: la llamada fría cronometrada y la memoria mencionada en el veredicto.
+- Aprovechar esa misma pasada para cerrar los issues 3 y 4, que son de texto.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** Las cifras cuadran con la salida en bruto, la carga es la de la spec y `src/` no cambia. Pero la «repetición en frío» que exige el Review Focus no se midió (`medir-libres.mjs:34` calienta `freeRooms` antes del bucle), y el crecimiento de memoria falta en el Detalle de O1 y en la Recomendación.
+
+--- [68]
+Ahora: una sola pasada de fix para los dos Important del eje Spec (llamada fría sin cronometrar y memoria ausente del veredicto). Los dos Minor van al ledger como diferidos.
+
+--- [80]
+Ahora: lancé la pasada de fix (commit `e9a5aae`) y despacho la única re-revisión del rango `f5e2448..e9a5aae`. Queda: su veredicto y pasar a `sdd-archive`.
+
+--- [84]
+La re-revisión está en marcha y no hay veredicto todavía. Espero su notificación antes de cerrar la revisión y pasar a `sdd-archive`.
+
+Hasta ahora:
+- **Task 1:** hecha. Las 12 mediciones de `libres` con 1.000 reservas están en `medidas.txt`, y `research.md` da O1 como `cumple`: el máximo es 0,147 ms (la primera llamada, en frío) frente a los 50 ms del umbral.
+- **Gate de cierre:** `node --test` pasa 4/4 y el lint sale limpio.
+- **Revisión del eje Spec:** devolvió dos hallazgos Important, ya corregidos en `e9a5aae`:
+  - La repetición "en frío" no lo era, porque una llamada de comprobación corría antes del bucle.
+  - El crecimiento de memoria no aparecía ni en el Detalle de O1 ni en la Recomendación.
+- **Minors diferidos:**
+  - El script lee `heapUsed` después de la llamada y el plan decía antes.
+  - `research.md` no dice que la decisión del plan sobre `seed` sigue pendiente de validar. El repo no tiene `seed`, así que se sembró una copia de `src/app.js`.
+
+--- [100]
+Los dos hallazgos están resueltos y el fix no rompe nada. HEAD del worktree de revisión es `e9a5aae`, su árbol está limpio y `git diff --stat e9a5aae~1 e9a5aae` coincide con el diff que me pasaste (3 ficheros, +33 −34).
+
+Ruta base: `<run>/review-0031-e9a5aae/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/`
+
+## Hallazgos
+
+**1. Important — la repetición en frío no era fría: ADDRESSED**
+- `medir-libres.mjs:34-42`: la llamada previa ya no existe. La comprobación de `'Sur'` está dentro del bucle y mira `resultado`, el valor de la llamada cronometrada (línea 37). Se compara después de `const ms = ...` (línea 38), así que la comparación no entra en el tiempo medido.
+- Rep 1 es de verdad la primera llamada. `src/app.js:35` solo ejecuta `run` si `process.argv` trae un comando, y la Verificación del plan (`plan.md:112`) lanza el script sin argumentos. La copia importada no llama a `libres` al cargarse.
+- `medidas.txt:1-13` está regenerado: rep 1 pasa a 0.147 ms, el triple largo del resto, que es lo esperable si ahora es fría.
+- `research.md:20`, `:30-43` y `:47` usan las cifras nuevas. En `:20` dice «en frío, sin llamada previa», y ahora es cierto.
+
+**2. Important — `heapUsed` ausente del Detalle de O1 y de la Recomendación: ADDRESSED**
+- Detalle de O1, `research.md:20`: «El `heapUsed` sube 67.472 B (1,4 %) en las 12 repeticiones, sin confirmar si es una fuga (§3).»
+- Recomendación, `research.md:47`: «La decisión cubre el tiempo: el crecimiento del `heapUsed` (+67.472 B, 1,4 %, §3) queda abierto, con solo 12 repeticiones.»
+- Con esto se cumplen los dos sitios que pide el Review Focus 2 (`plan.md:49`).
+
+## Cifras de `research.md` frente a `medidas.txt`
+
+Todas coinciden exactamente.
+
+| Cifra | `research.md` | Cálculo sobre `medidas.txt` |
+| --- | --- | --- |
+| Máximo | 0,147 ms (`:20`, `:47`) | rep 1 = 0.147 |
+| Mediana | 0,0345 ms (`:20`) | ordenados, los valores 6.º y 7.º son 0.033 y 0.036; su media es 0.0345 |
+| Factor respecto al umbral | ~340 (`:20`) | 50 / 0.147 = 340,1 |
+| Rango tras la primera | 0,023–0,057 ms (`:43`) | mínimo de rep 2-12 = 0.023 (rep 4); máximo = 0.057 (rep 8) |
+| Delta de heap | 67.472 B, 1,4 % (`:20`, `:43`, `:47`) | 4909736 − 4842264 = 67472; 67472 / 4842264 = 1,39 % |
+| 12 filas de §3 | `:30-41` | las 12 coinciden en tiempo y en `heapUsed` con `medidas.txt:1-12` |
+
+## Roturas nuevas en el diff del fix
+
+Ninguna.
+- El script sigue abortando si `bookingCount !== 1000` (`medir-libres.mjs:30-33`, sin cambios).
+- Sigue abortando con `exit(1)` si algún resultado no es `Sur`, ahora en cada repetición y con el número de rep en el mensaje (`:39-42`). Es más estricto que antes.
+- La línea final `medidas: 12 repeticiones, 1000 reservas` y el formato de cada línea siguen como pide `plan.md:117`.
+- No hay comentarios nuevos, y `src/` no aparece en el diff.
+
+Una observación que no bloquea: la frase «el tiempo no crece» (`research.md:43`) es interpretativa. Entre las reps 5 y 8 hay un repunte (0.045–0.057), aunque luego vuelve a 0.029–0.036. Como no hay tendencia sostenida, se puede defender, y queda muy lejos del umbral.
+
+## No verificado
+
+- No he vuelto a ejecutar `medir-libres.mjs` (lo prohíbe el encargo). No puedo confirmar que `medidas.txt` salga de verdad de este script; solo que la tabla y `research.md` coinciden con él.
+- Tampoco he comprobado que `src/` no cambie al ejecutar. Solo sé que el diff no lo toca.
+- No he ejecutado la suite, el build ni el lint.
+
+## Fuera de alcance
+
+Nada que añadir. Los Minor 3 y 4 siguen diferidos y no los he mirado.
+
+## Veredicto
+
+All findings addressed: **sí**.
+
+--- [115]
+**No terminado.** El spike 0031 está medido, revisado y commiteado, pero falta el merge. Mientras decides, no borres el checkout `…\k2p-1\repo`.
+
+**Respuesta a la pregunta del spike:** sí, `libres` aguanta 1.000 reservas. O1 `cumple`: con 1.000 reservas activas en la misma franja, las 12 repeticiones seguidas bajaron de 50 ms. El máximo fue 0,147 ms, en la primera llamada (en frío), y la mediana 0,0345 ms. La recomendación es no añadir caché antes de abrirlo a toda la oficina. La evidencia está en `research.md` y `medidas.txt`.
+
+**Decisiones que tomé sin ti** (están en el walkthrough, §3):
+- **`seed`:** la spec dice «cargadas con `seed`», pero el repo no tiene ningún `seed`. Sembré una copia de `src/app.js` y medí su `freeRooms`. Si te referías a otro `seed`, hay que repetir la medida.
+- **Forma de la carga:** 999 reservas de `Norte` con `day` distinto más la original. Así `Sur` recorre las 1.000, que es el peor caso de esa franja.
+- **Repeticiones:** 12, con la primera en frío contando para O1. La spec no fijaba el número.
+
+**Qué pasó en el cierre:**
+- **Validación:** la spec dice `Validación: agente`, así que la hice yo. Volví a ejecutar el script (12 repeticiones, exit 0), `node --test` pasa 4/4, el lint sale limpio y `src/` queda intacto.
+- **Revisión final:** en un spike solo sale el eje Spec. Encontró dos hallazgos Important: la repetición «en frío» no lo era, y el crecimiento de `heapUsed` no aparecía en la conclusión. Los corregí en una pasada y la re-revisión los dio por resueltos.
+- **Minors diferidos, sin corregir:**
+  - El script lee `heapUsed` después de la llamada y el plan decía antes.
+  - `research.md` no dice que la decisión del `seed` sigue sin validar por ti.
+- **Retro:** sin señales.
+- **Historia:** el cierre queda en un solo commit, `d7c2558`, sobre el plan.
+- **Roadmap:** el 0031 no tiene fila en `roadmap.md`, así que no toqué el roadmap.
+- **Estimación:** 0,10 h reales frente a 0,5 h estimadas, y regeneré `estimation-log.md`.
+
+**Lo que bloquea el merge:** `sdd-kit.json` no declara `merge.into` ni `merge.noFf`, así que `sdd merge --check` y `--sync` se niegan a correr. No he fusionado ni empujado nada. ¿Fusiono `feature/0031-free-rooms-load` en `develop`, con o sin `--no-ff`? Si quieres que esto deje de preguntarse, tendrías que añadir esas dos claves al bloque `merge` de `sdd-kit.json`.
+
+**Avisos:**
+- `sdd roadmap check` da dos errores de formato en `roadmap.md` (cabecera de «Deuda técnica» y título de `v0.3.0`). Ya estaban antes y este cambio no los causa.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0; para actualizar, `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+No hay ticket del kit que ofrecer, porque la retro no encontró señales.
+

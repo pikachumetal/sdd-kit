@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; find . -name gate.json -not -path "./node_modules/*" | head; ls node_modules 2>&1 | head -2
+<<< ./
+../
+.docs/
+.git/
+gate.json
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+./gate.json
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cat gate.json package.json; head -40 .docs/sdd/constitution.md; ls src src/shared 2>&1 | head -20; cat "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references/config-lane.md"
+<<< {"tasks": {
+  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+}}
+{"type": "module", "engines": {"node": ">=20"}}
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `
+
+>>> Bash: grep -n -i -B1 -A4 "gate\|build" .docs/sdd/operations.md | head -30
+<<< 10-- **Lo afectado**: `node --test <fichero de test>`
+11:- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+12:- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13-- **Acceso a la aplicación**: `sin login`
+14-- **Motor de producción**: sin base de datos; las reservas viven en memoria
+
+=== RESULTADO (6 turnos, 0.12572750000000002 $)
+Ahora: clasifico el cambio. Queda: tu confirmación del carril y, si la das, aplicar el cambio y correr el gate, ~2 min.
+
+🦆 Es un cambio de configuración: solo toco `gate.json`, en la tarea `rooms:test`, y añado `src/shared/**` a su lista de `inputs`. Con eso, esa tarea también se considerará afectada cuando cambie algo de `src/shared/`. No cambia nada de lo que ve o puede hacer el usuario del producto. Antes de guardarlo corro el gate de cierre de `operations.md`: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`. Como edito la definición de `rooms:test`, esa tarea corre sin el filtro de afectadas.
+
+Carril: config (no hay spec, plan ni id). Perfil: delegate, del proyecto (`sdd-kit.json`).
+
+Estoy en `develop`, la rama estable de integración. Con gate en verde no haría commit y pararía a preguntarte, como pide el carril.
+
+1. **Aplicar como config (Recomendada):** edito `gate.json`, corro el gate y, si sale verde, te pregunto qué hacer con el commit.
+2. **Otro carril:** si quieres tratarlo como patch o feature, dime cuál.
+3. **Otro perfil:** «perfil `<otro>` para este cambio».
+
+¿Qué opción eliges?
+
+>>> Edit: <run>\repo\gate.json
+<<< The file <run>\repo\gate.json has been updated successfully.
+
+>>> Bash: ls scripts; node scripts/gate.mjs run bookings:test rooms:test --affected --base develop 2>&1 | tail -20; echo ---; node scripts/gate.mjs run rooms:test 2>&1 | tail -20
+<<< gate.mjs*
+lint.mjs
+No tasks affected by changed files. Unable to execute action pipeline.
+---
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+
+=== RESULTADO (3 turnos, 0.1454927 $)
+He añadido `src/shared/**` a los `inputs` de `rooms:test` en `gate.json`. No he hecho commit.
+
+- **Gate de cierre:** `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` no ejecutó ninguna tarea. Dijo: «No tasks affected by changed files». `gate.json` no figura entre los `inputs` de ninguna de las dos tareas.
+- **`rooms:test` sin filtro:** como edité su definición, la corrí aparte con `node scripts/gate.mjs run rooms:test`. Pasó (1 pasada, 0 falladas).
+
+Estoy en `develop`, que es rama estable, y el carril config no me deja commitear ahí en `delegate`. ¿Qué prefieres?
+
+1. **Commit en `develop` (Recomendada si quieres que quede ya):** lo hago con la línea `Gate:` en el cuerpo.
+2. **Crear `feature/<id>` y commitear allí:** lo reservo con `sdd id claim` y lo dejo en esa rama.
+3. **Dejarlo sin commit:** el cambio queda en el árbol de trabajo.

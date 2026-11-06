@@ -1,0 +1,55 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar, escribir spec y plan y parar antes de implementar, ~10 min.
+
+--- [35]
+Sigo: la fusión del delta en una copia sale bien; ahora lo anoto en ✋ y lanzo al revisor de la spec.
+
+--- [40]
+Reviewer launched and the silence watch is running. I'm waiting for its result before folding in findings and writing the plan.
+
+--- [43]
+1. Importante · Decisiones («Planta de cada sala», punto 1) y Scope · La asignación `Norte`=1 y `Sur`=2 está inventada y la spec lo admite, pero el requisito «Filtrar libres por planta» y los GIVEN la presentan como hecho. Si el dato real es otro, la verdad viva quedará mal. · Marca el dato como pendiente de confirmar por el dev-lead, o confírmalo antes de aprobar. Deja la aprobación por delegación condicionada a esa confirmación.
+
+2. Importante · Delta, «Listar las salas libres de una franja» · El requisito dice documentar lo que `libres` hace hoy, pero solo se afirma con el `git grep` de la sección Decisiones. El GIVEN (`Norte` reservada el lunes de 10:00-12:00) introduce el día «lunes», que ningún otro lugar de la spec define. No se sabe si la franja lleva día ni cómo se reserva. · Quita «el lunes» o di cómo se fija el día en el escenario. Escribe el GIVEN con los mismos datos que usa `test/app.test.js`, de modo que se pueda verificar sin leer el código.
+
+3. Importante · Delta, «Rechazar una planta inválida» · Mezcla dos errores en un solo requisito. «Planta inválida» no cubre `--planta` sin valor, ni una planta no numérica (`--planta abc`) o decimal (`--planta 1.5`). La regla «la planta es un número entero» no tiene escenario que la verifique. · Separa «falta el valor» en su propio escenario y añade el escenario de un valor no entero, con su mensaje. Si el mensaje es `planta desconocida: abc`, dilo.
+
+4. Importante · Delta, «Filtrar libres por planta» y Decisión 3 · «La opción puede ir antes o después de la franja» no cubre otras posiciones ni el caso de la franja ausente (`libres --planta 2`). La decisión 3 afirma que es lo que ya hace `reservar` con `--cada-semana`, pero la spec no cita ninguna capacidad que lo respalde, y capabilities/ está vacío. · Añade un escenario para `libres --planta 2` sin franja, o declara que queda fuera. Cita la fuente del comportamiento de `reservar` o quita la justificación.
+
+5. Importante · Delta, «Planta sin salas libres» · El requisito «Planta sin salas libres» dice «salida vacía». Eso no se puede comprobar como está escrito: una cadena vacía, una línea en blanco y la ausencia de salida son cosas distintas. Tampoco hay escenario del caso «sin filtrar y ninguna libre», que se cita como referencia («como hoy»). · Concreta: `run` devuelve la cadena `""`. Añade el escenario de la franja sin ninguna libre y sin `--planta`, para que la comparación se pueda verificar.
+
+6. Importante · Reglas de la capacidad, «Límites» y «Avisos» · Para el límite, «número entero» no tiene rango ni valores (1 y 2, ¿negativos, 0, `+2`, `02`?). «Planta desconocida» y «entero no válido» no se distinguen. Faltan reglas con nombre sin declarar: el formato de la franja y los nombres de las salas no se tratan, y «Regla ante conflicto: no aplica» no está justificada. · Declara el rango válido (1 a 2, o «las plantas que existan») y la forma de `--planta` (`02`, `+2`). Justifica el «no aplica» de conflicto con una frase, por ejemplo «una sala solo tiene una planta».
+
+7. Menor · Decisiones, punto 9 y revisión · «Repaso de coherencia» afirma un `sdd capability merge` probado y «4 requisitos y 5 reglas añadidos». El cuerpo cuenta 4 requisitos, pero las reglas son 5 líneas con «Regla ante conflicto: no aplica» incluida. Además, «Hallazgos de la review» sigue en «(pendiente)» con status `approved`. · Corrige el recuento o aclara que «no aplica» cuenta como regla. Rellena los hallazgos, o pon la spec en un estado anterior a `approved` hasta que la review termine.
+
+8. Menor · Decisiones, punto 8 y «Lo que se retira o cambia de forma» · Mezcla decisiones de implementación (estructura de datos en `src/app.js`, lista de salas con nombre y planta) con el delta de comportamiento. Las referencias a líneas (`src/app.js:2`, `5-7`, `28`) envejecen en cuanto cambie el fichero. · Cita las funciones por nombre (`freeRooms`, `run`), no por número de línea, y deja el diseño interno fuera de la tabla de cambios.
+
+9. Menor · Intent / Scope · El Intent habla de «salas en varias plantas» y promete «éxito: devuelve `Sur`», pero ese valor depende del dato inventado (punto 1). El Scope excluye «mostrar la planta en la salida», y eso no se refleja como límite en ningún requisito. · Quita el valor concreto del criterio de éxito o ancla el criterio al dato de la decisión 1. Añade en la capacidad que la salida no incluye la planta.
+
+10. Menor · Validación y aprobación · «Validación: dev-lead» y la aprobación por delegación vienen de la misma persona, Fixture. La misión dice que es una sola persona, así que la delegación y la validación coinciden, y «dev-lead» no figura en la misión. No se ve un riesgo concreto, pero el rol no está definido. · Alinea el rol con la misión («el autor, único usuario») o define «dev-lead» en un documento del proyecto.
+
+--- [50]
+Tienes la spec aprobada por delegación y el plan escritos. Me he parado antes de implementar y no he invocado `sdd-implement`.
+
+Nada está commiteado: la spec y el plan están en la carpeta de la feature, en la rama `feature/0012-planta-libres` (id 0012, reservado y sin remoto). Al retomar, el commit de apertura (spec + plan) va antes de los tests RED de la Task 1.
+
+Carril feature, modo full, perfil `delegate` (el de `sdd-kit.json`). Son 2 tasks en un solo fichero, así que no propuse partirla.
+
+**Spec** (`spec.md`)
+- Aprobada por delegación con tu frase literal, registrada con fecha en «Decisiones tomadas con el dev-lead» y en «Aprobaciones».
+- Crea la capacidad nueva `room-availability` (el proyecto no tenía ninguna). Probé la fusión del delta en una copia de `.docs/sdd` y `capability check` sale válido.
+- Revisó la spec un revisor en sonnet. Aceptó 8 hallazgos y rechazó 3. El rechazo con más peso: no condicionar tu aprobación a confirmar el dato de las plantas.
+- Cambios por la review: la franja del GIVEN ya no lleva día; se añadió el escenario `libres --planta 2` sin franja; «falta el valor» pasó a ser su propio requisito.
+
+**Plan** (`plan.md`)
+- Ejecución native, con dos tasks. La Task 1 añade el filtro `--planta`. La Task 2 añade los dos errores.
+- Gate de cierre: `node --test && node scripts/lint.mjs`.
+
+**Decisiones mías que debes validar** (están en ✋ de la spec)
+1. **Plantas:** `Norte` está en la planta 1 y `Sur` en la 2. Me lo inventé para poder probar. Si no es el real, dime cuál es antes de implementar, o corrígelo en la validación.
+2. **Posición de la opción:** `--planta` puede ir antes o después de la franja.
+3. **Valores inválidos:** solo valen `1` y `2`. Cualquier otro valor (`9`, `abc`, `1.5`, `02`) da `planta desconocida: <valor>`. Sin valor da `falta el valor de --planta`.
+4. **Ninguna libre en esa planta:** devuelve la cadena vacía, como ya pasa hoy sin filtrar.
+
+Para continuar, dime «sigue» y retomo con `sdd-implement`.
+

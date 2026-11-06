@@ -1,0 +1,145 @@
+--- [3]
+Ahora: leo la spec escrita y las referencias del paso 4 (coherencia y revisión). Queda: pasada de coherencia, revisión de la spec y presentártela para aprobar.
+
+--- [43]
+Los dos revisores de la spec (dominio y técnica, ambos en Sonnet) están lanzados en paralelo, cada uno con su vigilancia de silencio. Espero a que terminen para meter sus hallazgos en la spec y presentártela.
+
+Hasta ahora, sin revisión todavía, la pasada de coherencia ha cambiado esto en `spec.md`:
+- **`libres --planta`** es un `MODIFIED` de `cli`, no un añadido. La capacidad dice hoy que `libres` no acepta más opciones que la franja. Lo he declarado así en el delta.
+- **Sala Este.** `src/app.js` solo tiene Norte y Sur, aunque `rooms` ya dice que existe Este. La feature la añade en la planta 1.
+- **Comando `informe`.** No existe en el código, así que he propuesto `informe` sin argumentos. Es un nombre mío y va a ✋ para que lo valides.
+- **`reports`.** Pasa de `ADDED` a `MODIFIED` y el escenario deja claro que las canceladas no cuentan.
+- **Fila 0029 del roadmap.** Solo habla de «tienen planta», pero el informe agrupado y el filtro salen del Intent. Está en ✋ por si prefieres la fila estricta.
+- **Delta probado en una copia** de `.docs/sdd` con `sdd capability merge`, sin rechazos. El resultado está en la spec.
+- **Aprobación y plan.** El perfil es `delegate`, así que las aproximaciones y la política de modelos van a ✋. Tampoco propongo dividir la feature: son unas 4 tasks sobre un solo fichero y sin migración.
+
+--- [44]
+1. Crítico · Delta `rooms` (ADDED «Cada sala tiene planta») · El requisito vigente «Las salas del edificio» (Norte, Sur y Este) no se toca, pero el ADDED fija las plantas de las tres salas. Eso es el mismo requisito ampliado, y el merge no lo detecta porque los títulos difieren. · Declarar `MODIFIED` sobre «Las salas del edificio» con THEN «conoce Norte, Sur y Este, cada una con su planta», o dejar el ADDED limitado a la planta sin repetir el catálogo. Corregir también «Capacidades» y «Lo que se retira».
+
+2. Crítico · Delta `reports` (MODIFIED) · El MODIFIED sustituye el requisito entero y quita `THEN cuenta dos`. El GIVEN pasa a tener dos reservas en Norte, una en Este y una cancelada en Sur. Ya no cubre el caso original de «dos activas y una cancelada» ni el total. Con ello el informe deja de decir cuántas reservas activas hay en total. · Mantener el requisito vigente intacto y añadir uno nuevo («El informe se agrupa por planta»). Si se modifica, conservar el total y el escenario original.
+
+3. Importante · Delta `reports` / Scope · El formato de salida `planta 0: 2` y `planta 1: 1` no está en el Scope ni en las decisiones. No se dice si se muestran plantas sin reservas, ni si hay línea de total. La decisión 2 (orden de menor a mayor) no aparece en ningún requisito. · Pasar el orden y el formato exacto al delta, y declarar qué pasa con una planta sin reservas activas.
+
+4. Importante · Scope / Delta `cli` · El comando `informe` es nuevo y público, pero solo está en el Scope. No hay requisito en `cli` para él, y `cli` lista los comandos y su contrato. Falta además el requisito de `libres --planta` con una planta sin salas libres o inexistente. · Añadir un ADDED en `cli` para `informe` (sin argumentos), y declarar qué responde `libres <franja> --planta <n>` cuando no hay salas.
+
+5. Importante · Delta `cli` MODIFIED «Consultar las salas libres» · Dice que `libres` no acepta más que la franja y `--planta <n>`. El requisito vigente decía «ni opciones». El valor inválido de `--planta` queda fuera (decisión 7). Esto deja sin definir el rechazo de `--planta abc`. Con la restricción «no acepta más» el comportamiento ante esos valores es contradictorio. · Definir la respuesta ante `--planta` mal formado, o declararlo explícitamente como no definido en el requisito, no solo en el Scope.
+
+6. Importante · Datos nuevos (planta) · Reglas del 5 bis. Dónde vive: declarado (lista en `src/app.js`). Idioma de los nombres: no declarado («planta», `--planta`, `informe`; constitución dice castellano, falta anotarlo como «cumple»). Límites: no declarados (entero, la planta 0 es la baja; ¿negativos?, ¿máximo?). Avisos: no aplica sin declarar. Conflicto: no declarado (dos salas con el mismo nombre, o planta duplicada o ausente). · Añadir un bloque con las cinco reglas, cada una con valor o «no aplica».
+
+7. Importante · Decisión 4 / Scope · Este no está en el código pero `rooms` ya lo daba por existente. La spec lo trata como alcance de esta feature y no como divergencia entre capacidad y código. Cambia el estado de las reservas posibles (se puede reservar Este) y `libres` pasa a listar Este. Nada de eso está en el delta. · Declarar en `cli` o `rooms` el efecto sobre `reservar Este` y sobre la salida de `libres` sin filtro, o sacar Este del alcance.
+
+8. Menor · Delta `cli` ADDED (ejemplo) · El GIVEN fija las plantas como parte de la fixture y repite el requisito de `rooms`; si cambian las plantas, hay dos sitios que actualizar. · Referirse a «una sala de planta 1» sin repetir el catálogo completo.
+
+9. Menor · Decisión 9 / Intent · Intent habla de conserjería y limpieza por plantas, y del usuario que quiere ver «lo que tiene cerca». La misión dice que no hay más usuarios que el autor. Intent contradice el contexto de la misión con actores que no existen. · Reescribir el Intent en términos del autor, o anotar la divergencia con `mission.md`.
+
+10. Menor · Scope / «No entra» · Scope incluye `README.md` y tests, pero ningún requisito se vincula a ellos. Además «Dónde se prueba» no menciona el informe vacío ni el filtro sin resultados. · Añadir esos casos a «Dónde se prueba», o quitar la mención al README si no hay un requisito detrás.
+
+--- [45]
+1. Crítico · Delta `reports` (MODIFIED) · El escenario no se puede verificar. Dice `planta 0: 2` y `planta 1: 1`, pero el comando `informe` no tiene formato de salida definido: ni separador, ni orden de líneas, ni qué pasa con una planta sin reservas. Además, el Scope dice que hay «subtotal», y el escenario no dice si existe total. El delta tampoco define el comando `informe` en `cli`. · Añadir en `cli` un requisito `ADDED` «Pedir el informe» (`informe` sin argumentos, formato exacto de salida, planta vacía). Dejar `reports` solo con la regla de agrupación y que cite ese formato.
+
+2. Crítico · Delta `cli` / Scope · El comando nuevo `informe` toca el contrato público de la CLI y no tiene requisito ni escenario en `cli` (sí lo tiene `libres --planta`). Tampoco hay escenario de `informe` con argumentos extra. · Añadir el `ADDED` en `cli` para `informe`, con un GIVEN/WHEN/THEN ejecutable. Tocar `cli` por este comando es contrato, así que debe constar en la sección «Capacidades» o en «Lo que se retira o cambia de forma».
+
+3. Importante · Delta `reports` · El MODIFIED sustituye el escenario vigente («dos activas y una cancelada → cuenta dos») por otro con otros datos. Se pierde el caso de que un informe sin agrupar cuente dos en total. El destino de «cuenta dos» consta en la tabla, pero la spec no dice si el total global desaparece. · Decir explícitamente si el total global se retira o se mantiene. Si se mantiene, añadir `AND` con el total. Si se retira, anotarlo en las decisiones.
+
+4. Importante · Delta `cli`, MODIFIED «Consultar las salas libres» · El `AND` «no acepta más argumentos que la franja y la opción `--planta <n>`» no se puede verificar: no hay escenario de rechazo, ni la respuesta ante un argumento sobrante, ni el orden (`--planta 1 <franja>`). La decisión 7 deja `--planta abc` y `--planta` sin valor sin definir, pero ese caso cae justo dentro de lo que el `AND` promete acotar. · Añadir un escenario de rechazo con la respuesta exacta, o quitar el `AND` y registrar en las decisiones que el parseo del resto queda sin definir. Aclarar el orden de los argumentos.
+
+5. Importante · Delta `rooms` · El `ADDED` «Cada sala tiene planta» convive con el requisito vigente «Las salas del edificio» («conoce Norte, Sur y Este»). La decisión 4 dice que Este no existe en el código y que esta feature lo añade. El escenario no distingue ese cambio de comportamiento, y los datos de `rooms` (el catálogo gana un campo y una sala) se tocan sin declararlos en la tabla de «Lo que se retira o cambia de forma». · Añadir a la tabla la fila «catálogo con Norte y Sur → catálogo con Norte, Sur y Este con planta», y comprobar que ningún test existente de `libres` (que hoy lista Norte y Sur) se rompe al añadir Este. Es un efecto de contrato sobre `libres` y `reservar`, y no está dicho.
+
+6. Importante · «Decisiones que he tomado yo», puntos 1 y 2 · La decisión «planta baja = 0, enteros» no cubre números negativos ni plantas sin salas. La spec elige sin decirlo cómo se muestra una planta sin reservas en el informe (¿`planta 1: 0` o se omite?). Eso es una decisión tomada en el cuerpo y no está en la lista. · Añadir a la lista de decisiones: «las plantas sin reservas salen con 0» (o «se omiten»), y reflejarlo en un escenario.
+
+7. Importante · Cuerpo (Approach/Scope) vs. decisiones · El Approach fija que el informe «recorre la lista y acumula por planta», y el Scope toca `README.md` y `test/app.test.js`. Ambos ficheros se tocan y ninguna capacidad o decisión explica el contenido del README. Además `README.md` es documentación de contrato (cómo leer el informe) que depende del formato no definido. · Reflejar en las decisiones que el formato del informe se documenta en el README, y definir primero el formato (hallazgo 1) para que el README sea verificable.
+
+8. Menor · Decisión 9 / delta `cli` ADDED · El escenario `libres --planta 1` solo cubre una planta con una sala libre. No cubre el filtro con sala ocupada, ni una planta sin salas (`--planta 7`), que la decisión 7 deja sin definir pero que da una respuesta observable (¿lista vacía?). · Añadir un escenario con una sala reservada de esa planta, y declarar la respuesta de una planta inexistente o moverla a «No entra» con la respuesta anotada.
+
+9. Menor · «Prueba del delta» · Afirma un resultado de `sdd capability merge` sin que conste el comando ni la salida literal, y la spec sigue en `draft` con los hallazgos «pendientes». No hay forma de comprobar la afirmación desde el texto. · Pegar la salida del comando o la ruta de la copia usada.
+
+--- [61]
+Ahora: segunda ronda de revisión. Corregí la spec con los hallazgos de la primera (tres Críticos aceptados) y un revisor la relee una vez. Queda: meter sus hallazgos y presentártela para aprobar, ~3 min.
+
+--- [67]
+1. Crítico · Delta `reports` (MODIFIED) · El GIVEN del escenario cambia el requisito vigente («dos activas y una cancelada → cuenta dos») por un caso con Norte, Este y Sur. El caso original desaparece y la regla «cuenta dos» ya no se verifica con ese dato. La decisión 8 dice que el total «conserva» ese comportamiento, pero el escenario nuevo da `total: 3`. · Mantén un escenario del caso original (dos activas y una cancelada, `total: 2`) o explica en «Lo que se retira» que el caso original se sustituye. Corrige también la decisión 8 para que no diga que «conserva» el total.
+
+2. Importante · Delta `reports` · El requisito vigente habla de «el informe de ocupación», pero el MODIFIED mete en la misma sección tres reglas nuevas. Son el orden, la planta vacía con 0 y el formato `planta <n>: <n>`, y cada una necesita su propio escenario. El orden «de menor a mayor» solo se ve con dos plantas y no se prueba con más de dos. · Parte el MODIFIED en escenarios separados (orden, planta vacía, cancelada) o declara explícitamente que un solo escenario cubre las tres cosas.
+
+3. Importante · Delta `cli` ADDED «Pedir el informe de ocupación» · Introduce el comando `informe`, que es contrato público de la CLI. Falta decir qué pasa con `informe` con argumentos de más, y esto contradice el «No entra». El escenario «Un comando desconocido» sigue diciendo que cualquier comando que no existe responde `comando desconocido`, y `informe x` queda en tierra de nadie. · Declara el comportamiento de `informe x` o acota explícitamente el requisito («sin argumentos»). Si no se define, anótalo en «No entra» con la consecuencia: ¿responde el informe o `comando desconocido`?
+
+4. Importante · Delta `rooms` + Scope · La reserva con Este queda abierta. La decisión 10 dice «con Este en el catálogo también se puede reservar», pero no hay escenario en `cli` ni en `rooms` que lo verifique. Es un efecto observable de una ADDED implícita sobre «Reservar una sala». · Añade un escenario de `reservar Este <franja>` o declara en «No entra» que no se verifica y no se promete.
+
+5. Importante · Decisión 10 y «Lo que se retira» · El cambio del test de `libres` pasa a `Sur, Este`, pero el escenario vigente de `libres` no dice qué salas hay libres y el MODIFIED de `cli` tampoco lo concreta. Por eso `Sur, Este` no sale de ningún escenario de la spec. · Añade al MODIFIED de `libres` un GIVEN concreto (por ejemplo, Norte reservada, Sur y Este libres → `Sur, Este`) para que el cambio del test tenga respaldo.
+
+6. Importante · Decisión 7 y escenario de `--planta` · La decisión dice que «una planta válida sin salas libres responde vacío», pero «planta válida» y «planta que no existe» son indistinguibles en la práctica, porque se deja fuera validar una planta inexistente (por ejemplo `--planta 7`). Responder vacío para `--planta 7` es un comportamiento de hecho que la spec no define. · Define que cualquier entero sin salas libres responde vacío (y que eso incluye una planta inexistente), o saca la frase «planta válida» de la decisión 7.
+
+7. Menor · Delta `cli` MODIFIED «Consultar las salas libres» · El AND «no acepta más opciones que `--planta <n>`» no dice qué ocurre con otra opción (por ejemplo `--sala x`) ni con argumentos de más. Esto no se puede verificar con GIVEN/WHEN/THEN. · Cambia el AND por un escenario verificable (por ejemplo, `libres <franja> --otra` responde X) o quita el AND si el comportamiento queda sin definir.
+
+8. Menor · Decisión 12 e Intent · El Intent habla de conserjería y de «quien reserva», mientras que `mission.md` dice que el único usuario es el autor. La spec lo anota como pregunta abierta pero deja un Intent que contradice la misión, y las aprobaciones nombran a «Laura», que no existe en la misión («No hay más usuarios ni más desarrolladores»). · Reescribe el Intent en términos del autor o actualiza la misión. Revisa también si «Laura» debe aparecer como aprobadora.
+
+9. Menor · Sección «Prueba del delta» · La salida pegada está marcada «tras la primera ronda», y la spec ya declara que hay que repetirla tras los cambios. Con la segunda ronda pendiente, la prueba puede quedar obsoleta. · Repite el merge tras aplicar las correcciones de esta ronda y actualiza la salida y la etiqueta.
+
+10. Menor · Decisión 11 (cinco reglas) · Declara «avisos: no aplica» y «límites: planta ≥ 0», pero no dice qué hace el sistema con una sala sin planta, salvo «no entra en la lista». Esa regla de conflicto no tiene escenario y no es observable. Además, la decisión 4 dice que «hay que cambiar el ejemplo del delta» si no se quiere Este, lo que acopla el catálogo al ejemplo. · Pasa la regla «sala sin planta» a «no aplica» (no hay forma de crearla desde la CLI) y separa el catálogo de los ejemplos del delta.
+
+--- [71]
+# Spec 0029 — Ocupación por planta
+
+La spec está escrita y revisada, y la dejo en espera de tu aprobación.
+
+## 🦆 Qué cambia, en llano
+
+- **Cada sala tiene planta.** Norte y Sur están en la 0 y Este en la 1.
+- **Nuevo comando `informe`.**
+  - Con una reserva activa en Norte, una en Este y una cancelada en Sur, responde `planta 0: 1`, `planta 1: 1` y `total: 2`, una línea cada una.
+  - Las plantas salen de menor a mayor, y una planta sin reservas sale con 0.
+- **`libres` admite `--planta`.** `libres 10:00-12:00 --planta 1` responde `Este`.
+- **Este se añade a `src/app.js`.** La capacidad `rooms` ya la daba por existente, pero el código solo tiene Norte y Sur. Por eso `libres` sin filtro pasa a responder `Sur, Este` en el test actual.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. Plantas enteras, y la baja es la 0. Sin sótanos.
+2. Las plantas van de menor a mayor.
+3. **`libres` ya no es «solo la franja».** La capacidad `cli` lo prohibía, así que es un `MODIFIED`, no un añadido.
+4. **Este** se añade al código (planta 1).
+5. **`informe` es un nombre inventado por mí**, porque no existe ningún comando de informe. Cámbialo si prefieres otro.
+6. **La fila 0029 del roadmap** dice solo «Las salas tienen planta». El informe y el filtro salen del Intent. Si quieres la fila estricta, quedan fuera.
+7. **`--planta` con valor malo** (`abc`, sin valor) no lo defino. Un entero sin salas libres, como `--planta 7`, responde vacío.
+8. **Formato del informe:** líneas `planta <n>: <activas>`, y al final `total: <suma>`.
+9. Plantas: Norte 0, Sur 0, Este 1.
+10. **Efecto de añadir Este:** con Este en el catálogo también se podrá reservar, pero no lo verifico ni lo prometo.
+11. **Reglas de la capacidad:**
+    - El dato vive en la lista de `src/app.js`.
+    - Los nombres van en castellano.
+    - La planta es un entero ≥ 0.
+    - No hay avisos.
+    - No hay conflicto posible.
+12. **Intent frente a `mission.md`.** El Intent habla de conserjería y de quien reserva, y la misión dice que el único usuario eres tú. He dejado el texto del dev-lead. Dime si lo reescribo.
+
+Política de modelos: dos revisores de la spec en Sonnet. Los ejes de la revisión final son Spec en Opus (effort high), Código en Sonnet (high) y Arquitectura según el plan. El paralelismo llega hasta `control.maxParallelAgents`.
+
+### Review de spec propuesta: dos revisores, y una segunda ronda
+- **Señales:** contrato público de la CLI, `MODIFIED` en `reports` y `cli`, datos nuevos y tres capacidades. Unas 40 líneas en 4 ficheros.
+- **Primera ronda (dominio y técnica).** Aceptados tres Críticos:
+  - `rooms` pasa a `MODIFIED`.
+  - Se define el formato del informe y su total.
+  - `informe` tiene su requisito en `cli`.
+- **Segunda ronda (un revisor).** Aceptado un Crítico: el escenario de `reports` ahora da `total: 2`, el mismo total que el requisito vigente.
+- **Rechazados con motivo:**
+  - Un escenario de `reports` por cada regla.
+  - Quitar a «Laura» de las aprobaciones.
+  - El README sin requisito propio.
+- **Prueba del delta:** `sdd capability merge` sobre una copia, sin rechazos y con exit 0.
+- El detalle está en `### Hallazgos de la review`.
+
+## Fuera de alcance
+Reservar por planta, exportar el informe, validar `--planta` y `informe` con argumentos de más.
+
+Son unas 4 tasks sobre un solo fichero y sin migración, así que no propongo dividirla. No hay dependencias que instalar: `package.json` no declara ninguna.
+
+El fichero es `.docs/sdd/specs/20261008-140000-feature-0029-room-floors/spec.md`. Sigue sin commitear.
+
+## ¿Apruebas la spec?
+
+1. **Apruebo (Recomendada).** Escribo el plan y paso a `sdd-implement` sin parar.
+2. **Cambios.** Dime qué ajusto: el nombre `informe`, el formato, la fila del roadmap o el Intent.
+
+Un «sí» o la opción 1 cuenta como aprobación. Si me das otra respuesta, la spec sigue en espera.
+
+Un aviso aparte: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+

@@ -1,7 +1,7 @@
 ---
-id: 20261008-170000-feature-0019-manager-marks
+id: 20261008-170000-feature-0019-free-without-slot
 feature: 0019
-title: El responsable ve sus salas marcadas en libres
+title: libres sin franja dice qué falta
 mode: lite
 profile: delegate
 status: draft
@@ -12,15 +12,15 @@ approvers:
     approved_at: null
 ---
 
-# Spec — El responsable ve sus salas marcadas en libres
+# Spec — libres sin franja dice qué falta
 
 ## Capacidades
 
-- Modificadas: `rooms` — `libres --como responsable` marca con `*` las salas de las que es responsable.
+- Nuevas: `rooms` — `libres` sin franja dice qué falta en vez de listar todas las salas.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-1. La marca es un `*` detrás del nombre de la sala: `Norte*`.
+1. El mensaje es `falta la franja: libres <franja>`, con la forma de la guía.
 
 ### Decisiones tomadas con el dev-lead
 
@@ -28,34 +28,34 @@ approvers:
 
 ## Intent
 
-El responsable de sala no ve de un vistazo cuáles de las salas libres son suyas.
+Hoy `libres` sin franja responde `Norte, Sur`, como si las dos estuvieran libres a cualquier hora: quien lo escribe sin franja reserva una sala ocupada.
 
 ## Scope
 
-- Entra: `libres <día> <franja> --como responsable` marca sus salas.
-- No entra: `--como cliente`, que lista igual que hoy.
+- Entra: `libres` sin franja, en `run` de `src/app.js`.
+- No entra: `libres <franja>`, que responde igual que hoy.
 
 ## Dónde se prueba
 
-- La marca: por `run('libres', …)`, en `test/app.test.js`.
+- El mensaje: por `run('libres', [])`, en `test/app.test.js`.
 
 ## Delta de comportamiento
 
 ### Capacidad: `rooms`
 
-#### ADDED — El responsable ve sus salas marcadas
+#### ADDED — libres sin franja dice qué falta
 
-- GIVEN Norte y Sur libres el lunes de 10:00 a 12:00, y el responsable de Norte
-- WHEN `libres lun 10:00-12:00 --como responsable`
-- THEN responde `Norte*, Sur`
-- AND con `--como cliente` responde `Norte, Sur`
+- GIVEN el catálogo de `src/app.js`, con Norte reservada el lunes de 10:00 a 12:00
+- WHEN `libres` sin franja
+- THEN responde `falta la franja: libres <franja>`
+- AND `libres 10:00-12:00` responde `Sur`
 
 ### Estimación y esfuerzo
 
 - Tipo: backend
 - Esfuerzo spec: 0,2 h
 - Estimación de implementación: 0,5 h
-- Base de la estimación: un comando y su test
+- Base de la estimación: una rama en `run` y su test
 - Confianza: alta
 
 ## Aprobaciones

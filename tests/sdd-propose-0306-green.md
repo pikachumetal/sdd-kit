@@ -49,3 +49,32 @@ Kit de las Tasks 1 a 4 en la copia (`.temp/k306`), con el REFACTOR de `rr1` en e
 | 2 | el paso 4 del `SKILL.md` nombra el mensaje de enfoques, también en `delegate` | 0/2: `pb-1` va a la spec; `pb-2` pone el enfoque como decisión del ✋ | 2/2 (`pb-p-1` pregunta «¿Vamos con la opción 1?») |
 
 Tras dos tandas, la conducta de `delegate` era la de un mensaje que no espera respuesta: el dev-lead aprobó la enmienda del 2026-11-05 (opción «Apruebo las dos»), que en `delegate` lleva los enfoques al ✋, como ya hacía `pb-2`. La fila PB se reescribe con ella; la batería entera de la Task 5 vuelve a medir `pb` con la fila nueva.
+
+## Controles de la Task 5 (`control/`, `control-fix/`, `control-using/`, `control-verify/`)
+
+Kit final (Tasks 1 a 4 y 6) en la copia `.temp/k306`. `sdd-propose` entera salvo `rv1`, `rr1`, `co7`, `co8`, `g1` y `a3`, ya medidos en `green-t24/` con el texto de la Task 4: 58 escenarios, 107 sujetos Sonnet. La tanda se cortó al cerrarse la sesión con 35 guardados y se reanudó saltando las etiquetas guardadas. El precio real salió a ~0,57 $ por sujeto, no los 0,36 $ de la 0281: el dev-lead aprobó subir la previsión dos veces (2026-11-06, opciones «2» y «1»). Las filas de prosa las leyeron tres lectores Sonnet (effort medium), un tercio cada uno; cada «falla» se releyó en el hilo.
+
+| Escenario | Veredicto | Lectura |
+| --- | --- | --- |
+| 46 escenarios | puerta verde, prosa leída: pasa | |
+| `c1` | 0/2 por el medidor; C1 2/2 | la petición es el slash `/sdd-kit:sdd-propose`, que el harness expande sin llamada a `Skill`, y `firstSkill` da `sdd-kit:sdd-grilling`; los dos toman la fila 0010 de la rama como enunciado |
+| `rv2`, `lr1` (`control/`) | 1/2, rojo de fixture | el repaso de coherencia nuevo vio que `spec-0018-small.md` apuntaba a `docs/guia.md`, a la capacidad `guide` y a la fila 0018, que el molde no tiene, y que `spec-0019-lite.md` cambiaba la firma de `libres` y suponía un responsable de sala; los dos sujetos pararon antes de la review, que es lo correcto. Fixtures rehechas, con `capability merge` verde sobre una copia del molde |
+| `rv2`, `lr1` (`control-fix/`) | 2/2 | un revisor Sonnet cada uno (RV2-B leída) |
+| `co6` | 2/2 | listar «El resumen va al final» al renumerar `resumen-cierre` no es la confusión que caza CO6 (el mismo caso cuenta como pasa en la 0281) |
+| `using-sdd` `p1 v1 c1w pc1 bt1 c2` | 6/6 verde | |
+| `sdd-verify` `s1` | 2/2 | los dos revisores devuelven el Crítico del SMS sin escenario (R leída) |
+| L Idioma | 6 sujetos de `sdd-propose` (`h1-2`, `pl2-1`, `g1b-2`, `co6-1`, `co6-2`, `f1-2`) y `v1-2` de `using-sdd` | líneas de transición en inglés entre llamadas («Dispatching the two spec reviewers in parallel…»). En las campañas del 31 de octubre en adelante, 0 de ~700 sujetos: es de esta feature, que deja en inglés las references que el sujeto sigue. REFACTOR abajo |
+
+Sin atribuir, un sujeto en contra cada uno (en `l1`, los dos), con el texto que los gobierna sin cambios o sin base con la que comparar; van al ticket para la 0311: `k3-1` (K1, el gate de `operations.md` en config sobre `main`), `p1-2` (P3, para por huecos de la spec de la fixture antes de `sdd-implement`), `l1` (L1, la «planta» cambia datos y lite no cabe: parece la fixture), `pl2-1` (PL2, la fila «la reserva de otra persona no se toca» sin test), `adr-c-1` (ADR-C, cita la ADR 0003), `co2-1` (CO2, reclasifica a patch en el paso 4) y `f1-2` (F1-C, cambios de paso sin «Ahora: … Queda:»).
+
+## REFACTOR del idioma (`refactor-l/`, 10 sujetos Sonnet, 10,11 $)
+
+La frase del Overview del `SKILL.md` pasa de «…in the language of their message, skill announcements included.» a «…skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.», sustituida en su sitio (Art. IX); el `SKILL.md` queda en 19.671 bytes.
+
+| Escenario | Veredicto | Lectura |
+| --- | --- | --- |
+| `h1`, `g1b`, `co6`, `f1` | 2/2 | ninguna línea en inglés (L); H1, G1B, CO6 y F1-C pasan |
+| `pl2` | 2/2 de máquina; L 2/2 | PL2 sigue sin test para «la reserva de otra persona no se toca» en los dos: el molde no guarda dueño de reserva y los dos lo dicen. Es de la fixture: va al ticket con los demás sin atribuir |
+| `v1` (`using-sdd`) | sin correr | el acumulado (107,44 $) tocó el techo de 108 $; `v1-2` fue 1 de 12 sujetos de `using-sdd` con inglés, y `using-sdd` no cambia en esta feature |
+
+Coste de sujetos de la feature: 107,44 $ en 171 sujetos, sobre una previsión de 57,50 $ ampliada por el dev-lead a ~106 $.

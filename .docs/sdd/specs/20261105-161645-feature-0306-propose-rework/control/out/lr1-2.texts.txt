@@ -1,0 +1,51 @@
+--- [3]
+Ahora: leo la spec y las referencias del paso 4 para hacer la revisión de la spec y preparar la aprobación. Queda: la revisión, y presentarte la spec para aprobar.
+
+--- [26]
+La revisión de la spec sigue en curso. No te presento la spec todavía: la pasada de coherencia que me dices que estaba hecha tenía huecos, y quiero juntarlos con los hallazgos del revisor antes de presentártela.
+
+Hasta ahora he comprobado esto:
+- **`rooms` no existe en `capabilities/`.** El proyecto no tiene esa carpeta. `sdd capability merge`, probado sobre una copia, rechaza la spec con «`rooms` no tiene fichero en `capabilities/` y el bloque no la declara en "Nuevas"».
+- **La firma de `libres` cambia.** Hoy es `libres <franja>` y no tiene `--como`. La spec exige `libres <día> <franja> --como responsable`, y eso es un cambio de contrato público. La condición de lite «no cambia contratos públicos» no se cumple, así que la spec tendría que pasar a full o recortar el alcance.
+- **Nadie define quién es «el responsable de Norte».** La decisión sobre qué responsable es la que pregunta pertenece a la 0011, que sigue pendiente, y la spec la da por supuesta.
+- **Faltan dos cosas de la spec.** No tiene la línea `Política de modelos:` en ✋ ni el bloque de review.
+
+Cuando llegue el revisor integro sus hallazgos y te presento la spec con una recomendación sobre el carril.
+
+--- [27]
+1. Crítico · Capacidades / Delta · El Capacidades declara `rooms` como *Modificada*, pero el proyecto no tiene `capabilities/`, así que `rooms` no existe como verdad viva y no hay nada que modificar. El delta usa `ADDED` sobre una capacidad inexistente, y eso contradice «Modificadas». · Decidir una de dos. Si es la primera spec de esa capacidad, declararla como *Nuevas* (`rooms`) y planear que se cree en el archivo. Si ya existe, aportar su contenido. Hay que alinear la etiqueta de Capacidades con el delta.
+2. Crítico · Delta de comportamiento · No se puede comprobar que `ADDED` no cambie un requisito existente de `libres`. Cambiar la salida de `libres --como responsable` de `Norte, Sur` a `Norte*, Sur` modifica la salida actual, que probablemente ya está especificada, o al menos se da por hecha. Es un `MODIFIED` encubierto. · Reclasificarlo como `MODIFIED` del requisito vigente de `libres` y citar el requisito previo, o demostrar que no existía ninguno para `--como responsable`.
+3. Importante · Delta, escenario · El escenario no cubre el caso de la sala de la que NO se es responsable cuando el responsable lo es de una sola sala. El «responsable de Norte» tampoco está definido: no se dice cómo se identifica ni de qué sala es. Faltan además estos casos: un responsable de varias salas, uno sin salas libres suyas, y la ausencia de `--como`. · Añadir escenarios para esos casos. Definir cómo se determina la responsabilidad (¿argumento, datos de la sala?) en el GIVEN.
+4. Importante · Scope / Delta · Ambigüedad de la salida. No se dice si el separador `, `, el orden, o un `*` ya presente en un nombre de sala forman parte del contrato. «Responde» no indica si es stdout, el valor devuelto por `run`, ni el código de salida. · Fijar el formato exacto y dónde se emite, y qué ocurre si un nombre ya acaba en `*`.
+5. Importante · Decisiones («✋») · El `*` se declara como decisión, pero hay otras decisiones tomadas en el cuerpo y no listadas: que `--como cliente` no cambie, que la marca vaya detrás del nombre y sin espacio, y que el modo sea lite con el perfil `delegate`. Falta también la decisión de si el cliente puede ver quién es responsable. · Listar esas decisiones en «✋», o quitarlas del cuerpo.
+6. Importante · Complemento de roles (5) · Se menciona el rol «responsable» sin decir qué no ve ni qué no puede hacer. No se aclara que `--como cliente` no debe ver ninguna marca, ni qué pasa si `--como responsable` se usa sin ser responsable de ninguna sala (¿error, lista sin marcas?). Tampoco se dice cómo se autentica el rol: `--como` parece un flag declarativo que cualquiera puede poner, y eso permite que un cliente vea las marcas. · Declarar explícitamente lo prohibido o invisible para cada rol. Aclarar que `--como` no es un control de acceso, o decidir si hace falta uno.
+7. Importante · 5 bis (datos nuevos) · La spec incorpora un dato nuevo, la marca `*` y la relación responsable-sala, y no declara las cinco reglas ni «no aplica»: dónde vive el dato (¿se calcula o se persiste?), idioma de los nombres, límites (nombres que ya terminan en `*`), avisos, y regla de conflicto (¿sala con dos responsables?). La constitución no tiene «Reglas de producto», así que no hay valores de referencia. · Añadir las cinco reglas, cada una declarada o como «no aplica», con su justificación. Señalar que la constitución carece de «Reglas de producto» y decidir si hay que crearlas.
+8. Menor · Constitución / Modo lite · Se dice «Modo lite, con sus cinco condiciones citadas», pero la spec no cita ninguna de las cinco condiciones. La cita está solo en la nota de decisión. Además hay un perfil `delegate` y un campo `approvers` con Laura, que no aparecen en la misión (un único usuario y desarrollador). · Citar las cinco condiciones en la spec. Reconciliar a «Laura» y a la aprobación con la misión de un solo usuario, o eliminarlas.
+9. Menor · Dónde se prueba / Contratos · Se toca el contrato de salida de `run('libres', …)` y de `test/app.test.js` sin decir qué otros tests o consumidores dependen del formato actual. El gate es `node --test` entero en verde, y los tests existentes de `libres --como responsable` pueden romperse. · Indicar qué tests existentes cambian y si hay otros consumidores del formato. Añadir el paso de verificar que `node --test` sigue en verde.
+10. Menor · Ejemplos · Los ejemplos «Norte» y «Sur» y «Laura» no son datos reales de un cliente, pero «Laura» como aprobadora contradice la misión (no hay más usuarios). Fechas y estado: `created: 2026-10-08` y `status: draft` son coherentes. · Sustituir «Laura» por un aprobador acorde con la misión, o explicar quién es.
+
+--- [31]
+Ahora: te presento la spec en el punto de aprobación. No la doy por aprobada ni escribo plan. Queda: tu respuesta.
+
+🦆 **En corto:** quieres que quien es responsable de una sala vea cuáles de las salas libres son suyas, con un `*` detrás del nombre (`Norte*, Sur`). Pero hoy `libres` solo acepta `libres 10:00-12:00`. No tiene día ni `--como`, y el código no sabe quién es el responsable de nada. Esto no es el retoque pequeño que pensábamos al elegir lite.
+
+**Qué ha cambiado desde tu mensaje.** La pasada de coherencia que me dabas por hecha tenía huecos, y la revisión (un revisor, sonnet) los confirmó:
+- **`rooms` no existe.** El proyecto no tiene `capabilities/`, así que la spec lo declaraba como «Modificadas» sin que lo fuera. Lo he cambiado a «Nuevas».
+- **Cambia la firma de `libres`.** Pasa de `libres <franja>` a `libres <día> <franja> --como responsable`, y eso es un cambio de contrato público. Por eso no se cumple una de las cinco condiciones de lite que citamos.
+- **«El responsable de Norte» no está definido.** La 0011, sin hacer, es quien lo introduce.
+- **Falta lo de full.** Casos como varios responsables o ninguna sala propia, las cinco reglas y los tests afectados, que dependen de las dos decisiones anteriores.
+
+Todo esto está escrito en la spec: bloque de review, política de modelos y hallazgos aceptados o rechazados. No he tocado el carril ni la frontera de alcance, porque son decisiones tuyas.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. La marca es `*` detrás del nombre: `Norte*`.
+2. La capacidad nueva se llama `rooms`, y se crea al archivar.
+3. **Quién es el responsable.** Propongo un dato fijo sala→responsable en `src/app.js`, y `--como responsable` marca las salas que tienen responsable. No identifica a la persona, porque `--como` es declarativo y no controla el acceso.
+
+**¿Cómo seguimos?**
+1. **Cambios: pasar a full (recomendada).** La firma cambia, así que lite no se sostiene. Completo la spec con las decisiones 2 y 3 y los casos que faltan, y te la presento otra vez antes del plan.
+2. **Cambios: mantener lite recortando el alcance.** Por ejemplo, sin `<día>`, solo `libres <franja> --como responsable`. Sigue siendo una opción nueva en un comando existente, y tendrías que confirmar tú que eso no cuenta como cambio de contrato.
+3. **Apruebo tal como está.** No lo recomiendo: aprobarías una spec que no se puede implementar sin definir al responsable.
+
+Dime el número, y la decisión 3 si quieres otra distinta de la propuesta.
+

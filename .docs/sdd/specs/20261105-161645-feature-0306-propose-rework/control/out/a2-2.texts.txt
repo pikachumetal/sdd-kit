@@ -1,0 +1,165 @@
+--- [2]
+Esto es un fallo en un proyecto con `.docs/sdd/`, así que entra por `sdd-propose`.
+
+--- [5]
+Empiezo por leer el contexto SDD del proyecto.
+
+--- [16]
+Es un fallo determinista y lo veo como un patch, pero antes de abrir rama, carpeta o id necesito que lo confirmes.
+
+🦆 Hoy, al cancelar una sala un día en el que no tienes reserva, el programa cancela igualmente la reserva activa de esa sala en otro día. Con tu caso, `cancelar Norte mar` cancela la del lunes y responde «cancelada Norte mar». Pasa porque la búsqueda de la reserva mira la sala y que esté activa, pero no mira el día. Lo correcto sería responder «sin reserva Norte mar» y dejar intacta la del lunes.
+
+**Causa raíz.** La causa está en `findBooking`, en `src/app.js:11`. Recibe `day` y no lo compara. No hay un test que lo cubra: el test «sin reserva» usa `Sur`, que no tiene ninguna reserva, y por eso nunca lo detectó. El patch 0007 corrigió la comparación por hora y no tocó esta. Hoy los 4 tests pasan.
+
+**Lo que toca.** Es una sola línea, `b.day === day`. Esa misma búsqueda la usa la anulación del responsable de sala, así que `anular Norte mar` tiene el mismo fallo y se arregla a la vez.
+
+**Test que fallaría hoy.** `cancelar Norte mar`, con la reserva de Norte el lunes, debe responder `sin reserva Norte mar` y dejar activa la del lunes. Con el arreglo pasa a verde.
+
+**Estimación.** Es un patch de unos 0,5 h de trabajo, como el 0007. El gate de cierre (`node --test && node scripts/lint.mjs`) no tiene duración medida en ningún patch ni walkthrough del proyecto, y no lo he ejecutado.
+
+¿Cómo seguimos?
+
+1. **Patch (recomendada).** Arreglo `findBooking`, añado el test de regresión para cancelar y otro para anular, y el fallo queda cerrado en `sdd-implement`. Perfil `delegate`, del proyecto (`sdd-kit.json`).
+2. **Feature completa.** Solo si quieres cambiar algo más que el arreglo, como el texto del mensaje o la regla de qué se puede cancelar. No lo veo necesario.
+
+Si prefieres otro perfil para este patch, dime «perfil `pair` para este patch».
+
+Aviso aparte: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Puedes actualizarlo con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code. No bloquea este patch.
+
+--- [22]
+Rama `feature/0012-cancel-day` creada y el id 0012 reclamado (no hay remoto, vale el contador local). Paso el patch a `sdd-implement`.
+
+--- [24]
+Es un patch: sigo `references/patch-flow.md`.
+
+--- [31]
+Reproducido: `cancelar Norte mar` y `anular Norte mar` actúan sobre la reserva del lunes. Leo la plantilla de `patch.md`.
+
+--- [34]
+Escribo el `patch.md` con síntoma y causa raíz antes de tocar el código.
+
+--- [37]
+Escribo los tests RED al principio de `cancel.test.js`. El estado es de módulo y el test existente cancela Norte el lunes, así que los míos tienen que ir antes.
+
+--- [45]
+Verde 6/6 y el lint limpio. Completo `patch.md` y corrijo una afirmación mía no verificada sobre el patch 0007. Luego saco el esfuerzo real.
+
+--- [49]
+El script no aplicó nada. Lo hago con `Edit`.
+
+--- [53]
+Ahora el revisor único del patch, con `patch.md` y el diff, antes del commit.
+
+--- [60]
+Revisor lanzado en segundo plano. Espero su informe antes de hacer el commit del fix.
+
+--- [66]
+**Resumen:** no hay hallazgos Críticos ni Importantes. La causa raíz de §2 es la real, el fix es mínimo y los tests demuestran el arreglo. Solo anoto cuatro hallazgos Menores.
+
+Comprobaciones:
+
+1. **Causa raíz.** Es correcta. La versión original de `findBooking` en `src/app.js` recibía `day` y no lo usaba. `cancelBooking` y `voidBooking` comparten esa función, así que el fallo era común a las dos.
+2. **Fix.** Es mínimo. Es una sola condición, `b.day === day`, en `src/app.js:10`. No toca nada fuera del fallo y no añade dependencias.
+3. **Tests.**
+   - Los dos tests nuevos (`test/cancel.test.js:6-14`) fallarían con el código antiguo. `cancelar Norte mar` devolvía `cancelada`, y `libres` daría `Norte, Sur` en vez de `Sur`.
+   - El orden está documentado en el comentario de `test/cancel.test.js:5`. Es un orden determinista, porque `node:test` ejecuta los tests de un fichero en el orden en que se declaran.
+
+Hallazgos:
+
+- **Menor, `test/cancel.test.js:6-14` (lo notaría quien mantiene los tests).**
+  - Los dos tests nuevos dependen de ir antes de `cancelar Norte lun` (línea 16). La aserción `libres == 'Sur'` solo vale mientras la reserva del lunes siga activa.
+  - Si alguien reordena el fichero, o añade otro test que cancele o anule el lunes antes, fallan sin que haya regresión.
+  - El comentario avisa, así que el riesgo está asumido. Un `beforeEach` que restaure el estado exigiría exportar o reiniciar `bookings`, y eso queda fuera del alcance.
+
+- **Menor, `test/cancel.test.js:11-14` (lo notaría quien revisa).**
+  - El test de `anular` no es independiente del de `cancelar` dentro del mismo fichero.
+  - Con el bug, `cancelar` ya habría borrado la reserva del lunes y `anular` caería en cascada. Su fallo propio solo se midió aparte, en un proceso limpio, como dice `patch.md:55`.
+  - Con el fix está bien. Es una limitación de cómo se midió el RED, no del código.
+
+- **Menor, `.docs/sdd/specs/20261106-095901-patch-0012-cancel-day/patch.md:63` (lo notaría quien lee el registro).**
+  - El texto «sin 0 min de espera al dev-lead (1 espera)» es contradictorio. `timing.json` declara `waitSeconds: 4`, que se redondea a 0 min.
+  - El reloj de sesión arranca el `09:57Z`, pero `Inicio` (línea 62) dice `09:59Z`. También es anterior al id del patch, que lleva `095901`.
+
+- **Menor, `.docs/sdd/specs/20261106-095901-patch-0012-cancel-day/patch.md:10` y `:25` (lo notaría quien cierra el patch).**
+  - `status: done` con `commit: PENDIENTE` es normal antes de archivar, pero conviene rellenar el commit al cerrar.
+  - La línea 25 habla de la base `develop`, y el repo solo muestra `main` con un commit. No he podido verificarlo.
+  - Tampoco he podido verificar la mención al patch 0007 (línea 40), porque el historial visible no lo contiene.
+
+--- [68]
+Sin Críticos ni Importantes. Respondo cada hallazgo en §4 y hago el commit.
+
+--- [71]
+Commit del fix hecho (`764598e`). Paso al cierre con `sdd-archive`.
+
+--- [74]
+Empiezo por las comprobaciones previas del cierre.
+
+--- [80]
+Antes de seguir, compruebo que el `git add -A` del commit no arrastró `.temp/` (`check-ignore` dice que no está ignorado).
+
+--- [83]
+El commit está limpio, sin `.temp/`. Lanzo el panel plan B, que es obligatorio con guion.
+
+--- [85]
+Cierro con `sdd-archive` y necesito tu validación antes de tocar nada más. Todavía no he escrito registros ni he hecho el merge.
+
+🦆 Hoy, con Norte reservada solo el lunes, `cancelar Norte mar` te quitaba la reserva del lunes y respondía «cancelada Norte mar». Ahora responde «sin reserva Norte mar» y la del lunes sigue en pie. `anular Norte mar` (responsable de sala) tenía el mismo fallo y también queda arreglado. La búsqueda de la reserva ahora mira también el día.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` no quita la del lunes | `ejecución real` | `sin reserva Norte mar` y `libres 10:00-12:00` → `Sur` |
+| `anular Norte mar` no quita la del lunes | `ejecución real` | `sin reserva Norte mar` y `libres 10:00-12:00` → `Sur` |
+| `cancelar Norte lun` sigue funcionando | `ejecución real` | `cancelada Norte lun` y `libres` → `Norte, Sur` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y lint sin hallazgos, sobre `764598e`. Es la última que corrí y la repito en el cierre si cambia algo.
+
+**Sin probar**
+
+- Nada. Sí hay una limitación de cómo se prueba: las reservas viven en memoria, así que cada `node src/app.js` empieza con la reserva del lunes y no ve lo que hizo el comando anterior. Por eso los pasos 1 a 3 van dentro de un solo proceso.
+
+Panel: plan B en http://127.0.0.1:5016/ (esta página no ve la app, así que si un paso falla cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0012-cancel-day` · worktree `<run>/repo`
+
+No hay entorno que arrancar: es una CLI sin servidor ni base de datos.
+
+Terminal:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar un día sin reserva, y mirar que la del lunes sigue → `sin reserva Norte mar` y después `Sur`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','mar'])); console.log(run('libres',['10:00-12:00']))"
+```
+
+2. Lo mismo con la anulación → `sin reserva Norte mar` y después `Sur`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('anular',['Norte','mar'])); console.log(run('libres',['10:00-12:00']))"
+```
+
+3. Cancelar el lunes, que sí está reservado → `cancelada Norte lun` y después `Norte, Sur`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun'])); console.log(run('libres',['10:00-12:00']))"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Aviso para más adelante: `merge --check` dice que a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Sin ese bloque, el merge no se hace solo: te lo presentaré y esperaré tu orden.
+
+Dime "validado" o qué paso falla.
+
