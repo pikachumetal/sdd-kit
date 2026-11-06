@@ -78,3 +78,9 @@ La frase del Overview del `SKILL.md` pasa de «…in the language of their messa
 | `v1` (`using-sdd`) | sin correr | el acumulado (107,44 $) tocó el techo de 108 $; `v1-2` fue 1 de 12 sujetos de `using-sdd` con inglés, y `using-sdd` no cambia en esta feature |
 
 Coste de sujetos de la feature: 107,44 $ en 171 sujetos, sobre una previsión de 57,50 $ ampliada por el dev-lead a ~106 $.
+
+## Lo que añade la revisión final
+
+- `lr1` con un rol en la spec: la fixture vieja («el responsable ve sus salas marcadas») ya dio 3 de 3 revisores en Sonnet (`green-t1/lr1-1`, `lr1-2` y `control/lr1-2`); la rehecha mide la misma frase de `review-spec.md` con una regla de negocio.
+- `g1` y `g1b` despachan dos revisores y la segunda ronda: su petición dice «escrita y repasada, sin review» como estado de la fixture, y la `spec-0010.md` trae «Sin review de spec: dos señales», que la rúbrica nueva ya no admite en full. No mide «sin review»: lo miden las filas NR (`k1`, `k2`, `s1`, 0 `Agent`) y NR-B (`s1` registra «Sin review» con la frase), recalculadas sobre los sujetos de `control/` sin lanzar ninguno.
+- PR1-A (hay revisor) se añade a PR1, que pasaba sin commit ni `Agent`: `pr1` 2/2 en `green-t1/` y en `control/`.

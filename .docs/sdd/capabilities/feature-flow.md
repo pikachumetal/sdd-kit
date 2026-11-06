@@ -25,20 +25,25 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una spec en modo full recién redactada
 - WHEN el agente cuenta las señales de la rúbrica
-- THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec, la opción mínima con lo que deja sin cubrir y el modelo del revisor de dominio
-- AND si el Scope cambia menos de ~50 líneas (texto y código), el nivel baja de dos revisores a uno con los siete puntos, nunca a ninguno: con contrato público + datos y dos líneas en `db/002-site.sql` y `src/api.js`, un revisor
-- AND si el nivel sería dos revisores, la spec va aprobada por delegación (la opción o la frase «apruebo la spec por delegación») y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo; con un nivel de «ninguna» no despacha ninguno
+- THEN la review lleva dos revisores, dominio y técnica, y el agente no pregunta si se hace: el bloque de la review abre el ✋ con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
+- AND si el Scope cambia menos de ~50 líneas (texto y código) y el delta no toca un contrato público ni lleva un `MODIFIED`, el nivel baja a un revisor con los siete puntos, nunca a ninguno: con dos líneas en `docs/guia.md` y un `ADDED`, un revisor; con dos líneas en `db/002-site.sql` y `src/api.js` que cambian un contrato público, dos
+- AND si el nivel es dos revisores, la spec va aprobada por delegación (la opción o la frase «apruebo la spec por delegación») y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo
+- AND si el nivel es dos revisores, la spec no va delegada y las instrucciones del usuario piden confirmar antes de paralelizar, el agente pregunta una sola vez, antes de despacharlos, con los dos revisores, el modelo de cada uno y su coste
 - AND con 4 señales o más y un delta grande (seis ficheros, uno de ellos una migración), sin esa restricción, siguen siendo dos revisores
 - AND ninguna de esas líneas es genérica: cita un requisito, una sección o un valor de esta spec
-- AND en `unattended` el agente decide y lo registra; en modo lite no se propone
+- AND en `unattended` el agente decide y lo registra, nunca con menos revisores de los que da la rúbrica; en modo lite, un revisor con los siete puntos en Sonnet
+- AND un spike no lleva review, y un cambio de config, tampoco, porque no tiene spec
+- AND si la petición o el prompt de arranque piden «sin review» u otro nivel, el agente lo aplica y escribe la frase literal en «Decisiones tomadas con el dev-lead»
 
 ### La review adversarial tensa la spec antes del gate
 
-- GIVEN un nivel de review activado por el usuario o, en `unattended`, decidido y registrado por el agente
+- GIVEN un nivel de review decidido por la rúbrica
 - WHEN el agente despacha el revisor con la spec, la constitution, la mission y las capacidades tocadas
 - THEN cada hallazgo aparece en «Decisiones a validar» como aceptado (con el cambio en la spec) o rechazado con motivo, antes de pedir la aprobación
 - AND con dos revisores cada lente recibe puntos disjuntos y el encargo le prohíbe reportar lo que pertenece al punto de la otra
 - AND con un revisor la lente única recibe todos los puntos
+- AND si se aceptó un Crítico o se reescribió la decisión central —la que fija el enfoque elegido, en el mensaje de los enfoques o en el ✋, o, sin enfoques, la que el Intent pone como condición de éxito—, un revisor nuevo con los siete puntos, en Sonnet, relee la spec corregida una sola vez, en full y en lite, y sus hallazgos se incorporan igual; después, el gate
+- AND sin un Crítico aceptado ni la decisión central reescrita, no hay segunda ronda; y un Crítico de la segunda ronda va al gate aceptado o rechazado con motivo, sin tercera ronda
 
 ### La review mira los ejemplos de la spec contra la constitution
 
@@ -152,9 +157,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
 - AND para cada `MODIFIED` busca en el código dónde se implementa lo que cambia y lista en el Scope cada fichero que lo implementa, o dice por qué queda fuera: con «Búsqueda por cliente» en `src/search.js` y en `src/phone.js` y un Scope que solo nombra el primero, el Scope pasa a nombrar los dos
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
-- AND si la spec retira algo o cambia la forma o el sitio de un documento (un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija), busca su nombre en `capabilities/`, en los documentos del proyecto y, en un kit de skills, en `skills/`, y escribe cada resultado en «Lo que se retira o cambia de forma», con su destino: el delta, el Scope o una decisión con su motivo; con la etiqueta `- Real:` pasada a `- Esfuerzo real:` en `patch-template.md` y dos requisitos de `estimation` que la nombran, los dos van al delta como `MODIFIED`
+- AND si la spec retira algo o cambia la forma o el sitio de un documento (un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija), busca en todo el repo con `git grep`, salvo las carpetas de evidencia, cada forma del literal —la cadena y su valor suelto—, y escribe cada resultado en «Lo que se retira o cambia de forma», con su destino: el delta, el Scope o una decisión con su motivo; con `"base": "."` pasado a `"./out"` en `config.json`, el `toBe('.')` de `test/config.test.js` sale en esa sección, aunque no esté en `capabilities/`, en los documentos ni en `skills/`
+- AND con la etiqueta `- Real:` pasada a `- Esfuerzo real:` en `patch-template.md` y dos requisitos de `estimation` que la nombran, los dos van al delta como `MODIFIED`
+- AND cada caso real que la spec cita (un `fichero:línea`, un sha) se pasa por el THEN que lo debe atrapar: con un THEN que solo rechaza importes negativos y un caso citado, `src/invoice.js:42`, que es un importe cero, el agente cambia el THEN o lo señala antes del gate
+- AND cada recuento de una comprobación que la spec fija se pasa por lo que da correrla, sobre el texto de hoy o sobre una copia con el cambio hecho, y si no se puede correr antes del gate va al ✋ como `sin medir`: con «lint da exactamente una línea» y un lint que, corrido sobre la copia con el texto movido, da tres, el agente corrige el recuento o lo señala antes del gate
 - AND al retirar algo con pasos numerados busca también esos pasos: con una skill retirada cuyo «paso 3» citan dos requisitos sin nombrarla, los dos salen en esa sección con su destino
-- AND la misma sección lleva cada id de fila que la spec implementa con los ficheros que la nombran («la define la 0009» en `docs/config.md` → Scope), o «nada: comprobado con `grep -rn 0009 capabilities/ skills/`», y no se borra con los bloques de ayuda
+- AND la misma sección lleva cada id de fila que la spec implementa con los ficheros que la nombran («la define la 0009» en `docs/config.md` → Scope), o «nada: comprobado con `git grep -n 0009`», y no se borra con los bloques de ayuda
 - AND antes del gate ejecuta `sdd capability merge --path <copia> --artifact <spec.md>` sobre una copia de `.docs/sdd` fuera del repo, corrige en la spec lo que rechace y escribe la línea del resultado en «Decisiones que he tomado yo»; la `capabilities/` del repo no cambia
 
 ### Cada task del plan verifica solo sus superficies
@@ -218,11 +226,10 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### El revisor de spec se despacha con su effort
 
 - GIVEN una spec de permisos por rol del gestor de cobros, con review de uno o dos revisores
-- WHEN el agente pregunta la review
-- THEN las opciones llevan el modelo del revisor de dominio, y la recomendada es Opus porque la spec toca roles; para «renombrar una columna del listado», la recomendada es Sonnet
-- AND con un solo revisor de siete puntos, su modelo se elige igual, porque incluye la lente de dominio
-- AND si la petición o el prompt de arranque dicen «revisor de dominio en Opus», no lo pregunta y lo aplica
-- AND sin esa pregunta (spec aprobada por delegación, `unattended`), el revisor de dominio va en Sonnet
+- WHEN el agente despacha la review
+- THEN el revisor de dominio va en Opus porque la spec toca roles; para «renombrar una columna del listado», en Sonnet; sin preguntarlo
+- AND con un solo revisor de siete puntos en full, su modelo se elige igual, porque incluye la lente de dominio; en lite y en el revisor del patch, Sonnet, aunque la spec o el patch toquen roles
+- AND si la petición o el prompt de arranque dicen «revisor de dominio en Opus», lo aplica
 - AND cada despacho lleva `subagent_type: sdd-kit:effort-medium` y el modelo elegido; el revisor técnico, siempre `model: sonnet`
 
 ### Cada cambio de paso lleva un aviso en llano
@@ -554,14 +561,15 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### Una feature grande devuelve el diseño por secciones antes de la spec
 
-- GIVEN la feature 0012 en `delegate`, con 5 tasks previstas en el recuento del paso 2 y la entrevista cerrada
+- GIVEN la feature 0012 en `pair`, con 5 tasks previstas en el recuento del paso 2 y la entrevista cerrada
 - WHEN el agente va a escribir `spec.md`
-- THEN antes presenta el diseño por secciones, una por mensaje, y pregunta «¿va bien?» tras cada una
+- THEN antes dice los enfoques en un mensaje propio —dos o tres maneras de construirlo, con lo que cuesta cada una y la que recomienda— y, elegido uno, presenta el diseño por secciones, una por mensaje, y pregunta «¿va bien?» tras cada una
 - AND lo que el usuario corrige en una sección entra en la spec antes de escribirla
+- AND lo que el agente rellenó sin que el usuario lo dijera va en la sección como su propuesta, con su motivo
 - AND el recuento es el de la feature que se especifica, hecho al entrar en el paso de spec: un lite o un patch que suben a full cuentan ahí, y tras partir cuenta la pieza
 - AND con 2 tasks previstas, en lite o en spike, escribe la spec sin secciones y la presenta en el gate
-- AND con la spec aprobada por delegación o en `unattended` no presenta secciones: lo que habría preguntado va a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
-- AND las secciones son turnos de la entrevista dentro de la parada de la spec, no una parada nueva del perfil: valen en `pair` y en `delegate`
+- AND en `delegate` no hay mensaje de los enfoques: los enfoques, con el elegido y por qué se descartan los otros, y las secciones van a «✋ Decisiones que he tomado yo»; la parada de la spec los aprueba, sin un turno por enfoque ni por sección
+- AND con la spec aprobada por delegación o en `unattended` no presenta secciones ni mensaje de enfoques: los enfoques y lo que habría preguntado van a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
 - AND cada sección abre con lo que cambia para quien usa el producto, con un ejemplo con datos («`informes --sala Norte` enseña las cuatro vistas solo de Norte»), y la pregunta es sobre eso; un nombre de código (`active`, `rooms`, `src/app.js`) no abre ninguna sección y, si hace falta, va detrás
 
 ### Pedir empezar ya no se lleva la spec
@@ -600,7 +608,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### Dos revisores de spec se despachan con `sdd-parallel-agents`
 
-- GIVEN la spec de permisos por rol del gestor de cobros, con 4 señales, review de dos revisores aceptada y `control.maxParallelAgents: 3`
+- GIVEN la spec de permisos por rol del gestor de cobros, con dos revisores por la rúbrica y `control.maxParallelAgents: 3`
 - WHEN el agente despacha la review
 - THEN invoca `sdd-parallel-agents` y despacha los dos revisores en la misma respuesta, cada uno con su lente
 - AND cada despacho lleva `model` y `subagent_type: sdd-kit:effort-medium`, como dice «El revisor de spec se despacha con su effort»
@@ -625,7 +633,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### La política de modelos de la spec vale como confirmación de paralelizar
 
-- GIVEN una feature en `delegate`, con la spec aprobada y la línea `Política de modelos: revisores de la spec ninguno · ejes de la revisión final Spec opus+high, Código sonnet+high · en paralelo hasta control.maxParallelAgents`, y unas instrucciones del usuario que piden confirmar antes de paralelizar
+- GIVEN una feature en `delegate`, con la spec aprobada y la línea `Política de modelos: revisores de la spec dominio opus + técnica sonnet · ejes de la revisión final Spec opus+high, Código sonnet+high · en paralelo hasta control.maxParallelAgents`, y unas instrucciones del usuario que piden confirmar antes de paralelizar
 - WHEN el hilo va a despachar los ejes de la revisión final con `sdd-parallel-agents`
 - THEN los despacha en la misma respuesta sin preguntar, porque la aprobación de la spec fue esa confirmación
 - AND un modelo o un despacho que la línea no nombra se confirma como piden las instrucciones
@@ -724,6 +732,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN `sdd-propose` lo entrega
 - THEN invoca `sdd-implement`, que lee lo primero `references/patch-flow.md` y sigue su flujo: causa raíz, `patch.md`, fix mínimo y commit; ni el Setup ni los bucles de tasks aplican
 - AND antes de decir que está arreglado, §4 de `patch.md` lleva el comando del test y su salida leída en esta sesión, como dice la «Gate Function» de `sdd-verify`
+- AND antes del commit del fix, un revisor en Sonnet lee `patch.md` y el diff —la causa raíz, el arreglo y su test— y §4 responde cada hallazgo: arreglado, o rechazado con su motivo
 - AND no se despacha ningún eje de la revisión final, y sigue en `sdd-archive`
 
 ### Ninguna skill intermedia entre propose e implement
@@ -802,6 +811,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
-- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras; el tope de palabras propuesto en una spec es lo medido más lo previsto más un 2 %, con un mínimo de 20 palabras.
+- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras; el tope de palabras propuesto en una spec es lo medido más lo previsto más un 2 %, con un mínimo de 20 palabras; la review de spec, dos revisores en full, uno con un Scope de menos de ~50 líneas sin contrato público ni `MODIFIED`, uno en lite y uno en patch; la segunda ronda, una sola vez.
 - **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `tech-stack.md` no declara detector en §Frontend».
 - **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`. El gate de cierre del plan se toma de `operations.md` §Testing; sin él, de `tech-stack.md` §Testing; sin ninguno, de la constitution.

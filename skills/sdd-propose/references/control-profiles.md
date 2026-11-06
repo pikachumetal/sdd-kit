@@ -6,7 +6,7 @@ How much the agent stops is chosen by the user with a profile. Each gate of the 
 
 - **`pair`** — stops at every gate of the table.
 - **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
-- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and the outward actions (push, PR, publish) are always a person's call.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `merge.push`; a PR; a publish) are a person's call.
 
 The start (`sdd-propose`) says the current profile and which level it comes from: in feature and spike it announces it, with the phrase to change it for that feature; in patch, lite and config, in the lane question.
 

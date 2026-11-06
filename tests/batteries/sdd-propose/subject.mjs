@@ -350,9 +350,10 @@ steps.cr3 = () => {
   branch('feature/0028-close-notice-pending');
   s.put(`${F28}/spec.md`, spec.replace(NAMED_MOLD, '`c1`, en un molde sin lista de pendientes.').replace('GIVEN un cierre sin `pendientes.md` en el molde', 'GIVEN un cierre en un molde sin lista de pendientes'));
 };
+const PATCH_TO_COMMIT = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps.pw1 = () => {
   branch('feature/0017-saturday-note');
-  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
+  s.env.TURN2 = PATCH_TO_COMMIT;
 };
 const reviewSpec = (folder, fixture) => () => {
   branch(`feature/${folder.split('-feature-')[1]}`);
@@ -372,7 +373,7 @@ steps.rv3 = () => {
 };
 steps.lr1 = reviewSpec(F19, 'spec-0019-lite.md');
 steps.rr1 = reviewSpec(F11, 'spec-0011-round1.md');
-steps.pr1 = () => (s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.');
+steps.pr1 = () => (s.env.TURN2 = PATCH_TO_COMMIT);
 steps['pb-p'] = () => (s.env.TURN2 = 'Sigue con el que recomiendas.');
 steps.co7 = reviewSpec(F20, 'spec-0020-export-dir.md');
 steps.co8 = reviewSpec(F21, 'spec-0021-slot-check.md');
