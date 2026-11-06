@@ -334,7 +334,15 @@ const pushAllowed = () => (MARKER = MARKER.replace('"push": false', '"push": tru
 const BARE = join(s.RUN, 'origin.git');
 const GITHUB_URL = 'git@github.com:fake/reservas.git';
 // Un ssh falso: el fetch llega a la carpeta; el push falla con publickey salvo con el token de gh en el entorno del relanzamiento.
-const fakeSsh = (bare) => `#!/bin/sh\nfor a; do cmd="$a"; done\ncase "$cmd" in git-upload-pack*) exec git upload-pack "${bare}" ;; esac\nfor k in "$GIT_CONFIG_KEY_0" "$GIT_CONFIG_KEY_1" "$GIT_CONFIG_KEY_2"; do [ "$k" = "credential.helper" ] && exec git receive-pack "${bare}"; done\necho "git@github.com: Permission denied (publickey)." >&2\nexit 255\n`;
+const fakeSsh = (bare) => [
+  '#!/bin/sh',
+  'for a; do cmd="$a"; done',
+  `case "$cmd" in git-upload-pack*) exec git upload-pack "${bare}" ;; esac`,
+  `for k in "$GIT_CONFIG_KEY_0" "$GIT_CONFIG_KEY_1" "$GIT_CONFIG_KEY_2"; do [ "$k" = "credential.helper" ] && exec git receive-pack "${bare}"; done`,
+  'echo "git@github.com: Permission denied (publickey)." >&2',
+  'exit 255',
+  '',
+].join('\n');
 // El remoto se ve como github.com en `git remote -v`. El insteadOf deja la URL igual y gana al del relanzamiento por más largo: el push sigue por el ssh falso, sin red.
 function publickeyRemote() {
   const bare = BARE.replaceAll('\\', '/');
@@ -526,6 +534,14 @@ const molds = {
   'reservas-ticket': () => {
     moldReservas();
     done0010();
+    s.env.TURN2 = 'Sí, escribe el ticket del kit.';
+  },
+  'reservas-ticket-wt': () => {
+    moldReservas();
+    done0010();
+    s.git('checkout', '-q', 'develop');
+    s.git('worktree', 'add', '-q', join(s.RUN, 'wt'), 'feature/0010-cancel-reason');
+    s.R = join(s.RUN, 'wt');
     s.env.TURN2 = 'Sí, escribe el ticket del kit.';
   },
   'reservas-publickey': () => (pushAllowed(), moldReservas(), publickeyRemote(), ghFake(GH_LOGGED_IN), done0010()),
