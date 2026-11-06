@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -1
+
+>>> Grep: cancelada
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< test\cancel.test.js:6:  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+src\app.js:17:  return `cancelada ${room} ${day}`;
+.docs\sdd\roadmap.md:7:| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references/patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/estimation.md; ls .docs/sdd/specs; grep -rn "gate" -i .docs/sdd/specs 2>/dev/null | head; cat package.json
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-rubber-duck/SKILL.md
+<<< 1	---
+2	name: sdd-rubber-duck
+3	description: Use when the user asks you to explain how something in their project works or travels, step by step or in plain words («explícame cómo viaja un pedido de punta a punta», «explícamelo en llano»), when your last message didn't land («no te he entendido», «wait, what?»), or when another sdd-kit skill needs the 🦆 paragraph of a stop.
+4	---
+5	
+6	# sdd-rubber-duck
+7	
+8	## Overview
+9	
+10	Explain for a reader who knows the product, not its code or the kit. Write everything they read in the language of their message, skill announcements included: an English
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo el tiempo real.
+- `estimation-log.md` se genera, no se escribe: el script calcula el factor de calibración (ratio mediano real/estimado) global y por tipo de feature.
+- Feat
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*patch-0007*/*.md | head -60; grep -n -i -A8 terminolog PRODUCT.md
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+5:## Terminology
+6-
+7-- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+8-- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+9-- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+10-- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+
+=== RESULTADO (10 turnos, 0.153097 $)
+Ahora: clasifico el cambio. Queda: tu respuesta a una pregunta sobre cómo lo abro y luego el cambio, que es una línea y su test, ~5 min.
+
+🦆 Hoy, al cancelar una reserva, el cliente ve «cancelada Norte lun». Pasará a ver «reserva cancelada: Norte lun». Cambia solo ese texto del mensaje de confirmación. El aviso de «sin reserva» y el de anulación se quedan como están.
+
+Es un **patch** de petición cerrada. Tú fijas el texto literal, solo cambia una cosa y un test la reproduce. Ese test es `test/cancel.test.js`, que hoy espera «cancelada Norte lun» y pasará a esperar el texto nuevo.
+
+Estimación: 0,5 h, la del último patch (0007). No hay un gate de cierre medido en el proyecto, así que no sumo ninguno. El perfil es `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo lo abro?
+
+1. **Patch (Recomendada):** rama y carpeta `patch-`, test primero y luego el cambio.
+2. **Feature completa:** spec y plan, algo desproporcionado para una línea.
+
+Si te vas a ausentar: «apruebo por delegación, nos vemos en la validación». Si prefieres otro perfil: «perfil `<otro>` para este patch».

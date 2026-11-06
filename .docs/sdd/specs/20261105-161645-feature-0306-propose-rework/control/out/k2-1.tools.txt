@@ -1,0 +1,129 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch --show-current; ls node_modules 2>/dev/null | head -3
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+develop
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat $f.md; done; ls specs; cd ..; cd ..; cat package.json; ls src test scripts; grep -rn "libres" src --include=* -l
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls .docs/sdd/specs/*; git status --short
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && cat nombrado.md; echo =====; cat spec-writing.md
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" id next --project-root "$PWD" --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git switch -c feature/0012-libres-1000-reservas develop && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" id claim --project-root "$PWD"; git branch --show-current; git status --short
+<<< Switched to a new branch 'feature/0012-libres-1000-reservas'
+sin remoto: la 0012 vale (contador local)
+feature/0012-libres-1000-reservas
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-templates/templates" && cat spec-template.md; echo ======; cat research-template.md; echo =====; cat plan-template.md | head -80; cd "<run>/repo"; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -50; cat .docs/sdd/operations.md; cat test/app.test.js | head -20
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
+title: <título corto descriptivo>
+mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills" && cat sdd-propose/references/coherence-pass.md; echo ======; sed -n 1,60p sdd-rubber-duck/SKILL.md; cat sdd-propose/references/control-profiles.md | head -60
+<<< ## Coherence pass
+
+In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+
+**Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —the literal and the function or step that applies it
+
+>>> Bash: cd "<run>/repo" && TS=$(date -u +%Y%m%d-%H%M%S) && D=".docs/sdd/specs/$TS-feature-0012-libres-1000-reservas" && mkdir -p "$D" && echo "$D" && git config user.name && node --version
+<<< .docs/sdd/specs/20261105-211051-feature-0012-libres-1000-reservas
+Fixture
+v26.10.0
+
+>>> Write: <run>/repo/.docs/sdd/specs/20261105-211051-feature-0012-libres-1000-reservas/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/specs/20261105-211051-feature-0012-libres-1000-reservas/spec.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (16 turnos, 0.37017799999999995 $)
+**Spec del spike escrita. Está en espera de tu aprobación.**
+
+🦆 Hoy nadie sabe cuánto tarda `libres` cuando hay muchas reservas: el comando mira las reservas una a una para cada sala. Voy a medirlo con 10, 100, 1.000 y 10.000 reservas activas y a darte una tabla. Ejemplo: con 1.000 reservas, `libres 10:00-12:00` debería contestar en menos de 50 ms, y repetirlo no debe comerse memoria. No toco el código del comando: si la medida descubre un problema, sale una fila nueva en el roadmap. Falta decidir el umbral de «aguanta»: he puesto 50 ms.
+
+Lo he dejado en la rama `feature/0012-libres-1000-reservas`, en `.docs/sdd/specs/20261105-211051-feature-0012-libres-1000-reservas/spec.md`. Sin commitear todavía.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Umbral:** p95 por llamada ≤ 50 ms. Nadie dijo uno.
+2. **Peor caso:** ninguna reserva coincide con la franja, así que se recorren las 1.000 para cada una de las 2 salas.
+3. **Tamaños:** 10, 100, 1.000 (el tuyo) y 10.000 (margen 10×).
+4. **Qué se mide:** la función `run('libres', …)` dentro de un proceso. El comando entero no sirve: las reservas viven en memoria y cada ejecución arranca con una sola.
+5. **Carga sin tocar `src/app.js`:** un script de medida sustituye la lista inicial en una copia temporal y la importa.
+6. **Repeticiones:** 10 repeticiones seguidas de 1.000 llamadas por tamaño, con 100 de calentamiento. Se anotan mediana y p95.
+7. **Memoria:** `heapUsed` no crece más de 5 MB tras las 10 repeticiones.
+8. **Máquina:** Node v26.10.0, el instalado. `tech-stack.md` dice Node 22, que aquí no está, y la tabla lo dirá.
+9. **Carpeta:** uso `specs/` y no `changes/`. `sdd-kit.json` pide el kit 3.0.0, pero el proyecto sigue en la estructura 2.x.
+
+Además, tu sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualízalo cuando puedas con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada):** escribo el plan, implemento el script de medida y te entrego la tabla.
+2. **Cambios:** dime qué ajusto (el umbral, los tamaños o el método).

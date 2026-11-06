@@ -1,0 +1,92 @@
+--- [21]
+Es un patch, así que leo `patch-flow.md` y lo sigo.
+
+--- [29]
+RED correcto: falla porque falta la validación. Ahora el fix mínimo.
+
+--- [37]
+Verde, 5/5. Ahora el revisor del patch (sonnet, effort medium), antes del commit.
+
+--- [39]
+Ahora: el revisor del patch está en marcha. Queda: recoger sus hallazgos, completar `patch.md`, hacer el commit y pasar a `sdd-archive`, ~10 min. Hasta que termine no toco los ficheros que revisa.
+
+--- [43]
+**Resumen:** no hay hallazgos Críticos ni Importantes. Hay tres Menores. Los 5 tests pasan (`node --test`) y los comandos manuales dan el resultado esperado.
+
+**Comprobaciones**
+1. **Solución fijada de la fila 0012: cumple.**
+   - `node src/app.js libres 25:00-26:00` devuelve exactamente «franja no válida: usa HH:MM-HH:MM». La respuesta sale de `src/app.js:32` (diff, `run`).
+   - Antes del fix imprimía `Norte, Sur`, como dice `patch.md:23`.
+2. **El test falla sin el fix y cubre el caso.**
+   - `test/app.test.js:13` llama a `run('libres', ['25:00-26:00'])` y espera el texto literal.
+   - Sin el fix, `freeRooms('25:00-26:00')` devolvería `Norte, Sur` y el `assert.equal` fallaría.
+   - Lo deduzco del código sin ejecutarlo: no quité el fix porque la revisión es de solo lectura.
+3. **Sin regresiones.**
+   - `libres` sin franja da `Norte, Sur`: `params[0] === undefined` salta la validación.
+   - `libres 10:00-12:00` da `Sur`, igual que antes.
+
+**Hallazgos**
+- **Menor:** el test nuevo no protege los casos de no regresión (`libres` sin franja y una franja válida). La verificación ya existente solo cubre la franja válida de forma indirecta, en `test/app.test.js:5-8`. Falta un test de `libres` sin argumento.
+- **Menor:** `patch.md:7` dice `status: done` mientras que `patch.md:43` deja la verificación en «pendiente», `patch.md:10` el commit en «pendiente» y `patch.md:49` el esfuerzo real en «pendiente». El estado se adelanta al cierre.
+- **Menor:** `patch.md:35` atribuye al «ticket» la decisión de validar minutos 00–59 y horas 00–23, pero admite que el rango de minutos lo añade el agente. Es honesto porque lo declara, pero la etiqueta «ticket» sobreestima el origen: sería más exacto «agente (lectura de la fila)».
+
+**Decisiones de §3**
+- Son honestas en lo demás. Texto literal, sin validar fin posterior a inicio, y `libres` sin franja sin cambios: los tres coinciden con el código.
+- Es cierto que 25:00 cumple la forma de dos dígitos y solo lo rechaza el rango. Una consecuencia no mencionada: `9:00-10:00`, con una sola cifra en la hora, también se rechaza. Es coherente con `HH:MM`.
+
+Ficheros revisados: `src/app.js`, `test/app.test.js` y `.docs/sdd/specs/20261106-101449-patch-0012-slot-format/patch.md`, todos bajo `<run>/repo/`.
+
+--- [55]
+El patch está implementado y probado, pero no lo cierro: el cierre espera tu validación.
+
+El perfil es `delegate`, `patch.md` dice `Validación: dev-lead` y no hay frase tuya que delegue la validación. Sin ella no sigo con el cierre, la fusión ni las filas del roadmap.
+
+🦆 `libres 25:00-26:00` ya no lista las salas como libres. Responde «franja no válida: usa HH:MM-HH:MM», y `libres 10:00-12:00` sigue dando `Sur`. La franja se comprueba antes de listar: dos horas `HH:MM` con horas 00–23 y minutos 00–59. Sin franja, `libres` lista todas las salas como hasta ahora.
+
+**✋ Me salí del plan en…**
+
+- Nada. Solo hay una decisión mía para que la veas: los **minutos 00–59** los fijé yo, como parte de leer `HH:MM` en sentido literal. La fila 0012 solo fija que 25:00 es inválida.
+- Efecto colateral: `9:00-10:00`, con una sola cifra en la hora, también se rechaza.
+- No valido que el fin sea posterior al inicio, porque la fila no lo pide.
+- Si quieres otra regla, dímelo y lo ajusto antes de cerrar.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` responde el texto de la fila | ejecución real | `franja no válida: usa HH:MM-HH:MM` (antes imprimía `Norte, Sur`) |
+| `libres 10:00-12:00` sin cambios | ejecución real | `Sur` |
+| `libres` sin franja sin cambios | ejecución real y test | `Norte, Sur` |
+| `libres 09:60-10:00` rechazado | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 tests y lint sin hallazgos, sobre `3e95632`, menos de 1 s. No hay otra rama abierta y `develop` ya está dentro de `HEAD`.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente para después de validar**
+
+- Cerrar: hash del fix en `patch.md`, fila 0012 a ✅ en el roadmap y la deuda «Sin validación del formato de franja horaria».
+- Fusionar: `sdd merge --check` avisa de que `sdd-kit.json` no declara `merge.into` ni `merge.noFf`. Por eso presentaré la fusión y esperaré tu orden, aunque el perfil sea `delegate`.
+
+**Guion**
+
+Rama `feature/0012-slot-format` · worktree `<run>/repo`
+
+Es una CLI y `operations.md` no declara entorno que arrancar. Un solo terminal:
+
+```
+cd <run>/repo
+```
+
+1. `node src/app.js libres 25:00-26:00` → `franja no válida: usa HH:MM-HH:MM`
+2. `node src/app.js libres 10:00-12:00` → `Sur`
+3. `node src/app.js libres` → `Norte, Sur`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -3
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat $f.md 2>&1; done
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< Exit code 1
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La
+
+>>> Bash: cd "<run>/repo" && cat package.json PRODUCT.md; ls src test scripts; wc -l src/* ; cat src/app.js | head -120; ls .docs/sdd/specs
+<<< {"type": "module", "engines": {"node": ">=20"}}
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+scripts:
+lint.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.j
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && cat nombrado.md | head -80; git -C "<run>/repo" branch -a
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+=== RESULTADO (7 turnos, 0.1476069 $)
+Ahora: clasificar el cambio. Queda: que me contestes una pregunta sobre cómo partirlo; después la entrevista de la primera feature, ~5 min.
+
+**Carril:** feature (modo full) · **Perfil:** delegate, del proyecto (`sdd-kit.json`).
+
+Esto son cuatro piezas, y dos de ellas tocan superficies distintas. Una tiene migración de datos. Mi propuesta es partirlo en features con fila propia en el roadmap, en vez de una sola.
+
+🦆 Hoy `src/app.js` no sabe quién usa la herramienta. Las reservas están en memoria y no tienen autor. `anular` no comprueba nada, aunque `PRODUCT.md` dice que solo anula el responsable de sala. Hacen falta cuatro cosas, y cada una depende de la anterior:
+1. Saber quién eres (login).
+2. Distinguir al responsable de sala de los demás (rol).
+3. Guardar quién hizo cada reserva.
+4. Pasar las reservas existentes a un usuario genérico.
+
+**¿Cómo lo hacemos?**
+
+1. **Partirlo en 3 features, cada una con su fila en el roadmap (recomendada).**
+   - **A. Usuarios con login.** Incluye el rol de responsable de sala.
+   - **B. Autor en cada reserva.** Incluye la migración de las reservas actuales al usuario genérico, porque el campo nuevo y su relleno van juntos.
+   - **C. Restringir `anular` al responsable.** Es la fila 0011 que ya tienes en el roadmap, y pasaría a depender de A.
+   - Cada una cabe en 2 o 3 tasks, y la migración queda aislada en B.
+2. **Mantenerlo entero como una sola feature.** Son unas 4 o 5 tasks en login, rol, autor y migración. No volvería a proponerte partirlo.
+
+Sea cual sea tu elección, el perfil `delegate` sigue como está. Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».
+
+Dos cosas que te preguntaré en la entrevista de la primera feature, para que lo vayas pensando:
+- **Login en una CLI:** ¿usuario y contraseña, o solo un nombre de usuario?
+- **Usuarios:** ¿dónde viven? Hoy no hay persistencia.

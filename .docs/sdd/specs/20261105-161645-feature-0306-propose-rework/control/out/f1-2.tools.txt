@@ -1,0 +1,927 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/specs 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3
+<<< .
+..
+.docs
+.git
+package.json
+PRODUCT.md
+README.md
+scripts
+src
+test
+.docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md package.json; find src test scripts -type f; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la de
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js; head -30 test/app.test.js; cat PRODUCT.md; ls .docs/sdd/specs/*; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && ls && cat nombrado.md spec-writing.md
+<<< coherence-pass.md
+config-lane.md
+control-profiles.md
+modo-lite.md
+nombrado.md
+patch-lane.md
+plan-writing.md
+review-spec.md
+spec-writing.md
+## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && cat control-profiles.md coherence-pass.md review-spec.md plan-writing.md
+<<< <persisted-output>
+Output too large (46.4KB). Full output saved to: <home>\.claude\projects\D--code--worktrees-sdd-kit-feature-0306-propose-rework--temp-b306-control-f1-2-repo\e73bdd34-f1bc-4360-9014-e8977a7a85be\tool-results\b40jhq8ev.txt
+
+Preview (first 2KB):
+# Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && wc -c *.md && cat review-spec.md
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && cat plan-writing.md coherence-pass.md
+<<<  2559 coherence-pass.md
+ 1769 config-lane.md
+28236 control-profiles.md
+ 1822 modo-lite.md
+ 3716 nombrado.md
+ 5367 patch-lane.md
+ 6977 plan-writing.md
+ 9756 review-spec.md
+ 6223 spec-writing.md
+66425 total
+# Spec review — the complexity rubric and the adversarial reviewer
+
+Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+
+## 1. Count the signals (observable in the spec)
+
+| Signal | Holds if… |
+| --
+<<< # Writing the plan
+
+Inspired by superpowers `writing-plans` (MIT).
+
+Write `plan.md` for an engineer who hasn't seen this codebase or this spec. Assume they write idiomatic code once they know the exact interface and the exact test, and that they make a reasonable choice wherever the plan leaves one open. What they can't know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. That is the plan. Trace it from `plan-template.md` of `sdd-templates`: the template fixes the form of each field (header, «Restricciones globales», Review
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && grep -n -iE "Política de modelos|silence watch|delegación|por delegaci" control-profiles.md | head -30; ls ../../sdd-templates ../../sdd-templates/* | head -40
+<<< 161:- The cap of agents in parallel isn't this capability's: [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md) applies it, reading `control.maxParallelAgents`. Nor are the retries by failure type: task 0022 defines them. The silence watch is: [Silence watch](#silence-watch).
+163:## Silence watch
+180:| `SIN TRANSCRIPT:` | Tell the user, in your next message, that the silence watch doesn't work in this session. Don't replace it with something else. |
+238:`control.maxParallelAgents` is only declared here: [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md) applies its behavior. `con
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills" && sed -n 1,60p sdd-propose/references/control-profiles.md | tail -30; sed -n 100,200p sdd-propose/references/control-profiles.md; cat sdd-templates/templates/spec-template.md
+<<< Everything else —`merge`, `ids`, `release`, the brakes of `control`, any test level or floor, an unknown key or a person's name— belongs to the project or doesn't exist: it isn't applied, the next level of the precedence rules, and you warn once per key, with this literal line:
+
+```text
+Aviso: se ignora <clave> de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+```
+
+An admitted key with a value outside its type is ignored the same way, with:
+
+```text
+Aviso: se ignora <clave> de sdd-kit.local.json: <valor> 
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/*0006*/spec.md; cat specs/*0007*/patch.md | head -40; cat operations.md estimation.md | head -50; git -C .. log --oneline | head
+<<< # Spec — free
+
+status: done
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0010-motivo-cancelar && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" id claim --project-root "$PWD"; date -u +%Y%m%d-%H%M%S; git config user.name
+<<< Switched to a new branch 'feature/0010-motivo-cancelar'
+sin remoto: la 0010 vale (contador local)
+20261106-102216
+Fixture
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills" && sed -n 1,80p sdd-parallel-agents/SKILL.md; sed -n 1,60p sdd-rubber-duck/SKILL.md; cat ../../b306/control/f1-2/repo/scripts/lint.mjs | head -20
+<<< ---
+name: sdd-parallel-agents
+description: Use when an sdd-kit skill dispatches two or more independent agents at once — the spec reviewers of review-spec.md, or the axes of the final review of sdd-verify — to dispatch them in parallel within the project's agent cap. Invoked from there; not the entry of a change (that is sdd-propose), and not for plan tasks (sdd-implement runs them one after another).
+---
+
+# sdd-parallel-agents
+
+## Overview
+
+Write everything the user reads in the language of their message. Forked from `dispatching-parallel-agents` of superpowers (MIT, see `NOTICE`); the text i
+
+>>> Bash: cd "<run>/repo" && git grep -nE "cancelar|cancelada|0010" -- . ':!.docs/sdd/specs' ; ls .docs/sdd/capabilities 2>&1 | head -2; ls .gitignore 2>&1
+<<< Exit code 2
+.docs/sdd/roadmap.md:7:| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+src/app.js:17:  return `cancelada ${room} ${day}`;
+src/app.js:30:  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);
+test/cancel.test.js:5:test('cancelar una reserva activa', () => {
+test/cancel.test.js:6:  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+test/cancel.test.js:9:test('cancelar sin reserva lo dice', () => {
+test/cancel.test.js:10:  assert.equal(run('cancelar', ['Sur', 
+
+>>> Write: <run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md"; ls "$T/sdd/capabilities" 2>&1
+<<< booking-cancellation.md: añadido «Cancelar exige un motivo de la lista»
+booking-cancellation.md: añadido «Cancelar sin motivo válido se rechaza»
+booking-cancellation.md: añadido «Cancelar una reserva que no existe lo dice»
+booking-cancellation.md: añadido «El listado de canceladas enseña cada motivo»
+booking-cancellation.md
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar" && python3 - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('spec.md','utf8');
+s=s.replace('status: approved','status: in-review').replace('    approved_at: 2026-11-06','    approved_at: null');
+s=s.replace('- Política de modelos','11. **Fusión probada sobre una copia de \`.docs/sdd\`**: \`sdd capability merge\` añade los 4 requisitos a \`booking-cancellation.md\` sin rechazos.\n- Política de modelos');
+fs.writeFileSync('spec.md',s)"
+E
+grep -n "status:\|approved_at\|^11\." spec.md
+<<< 6:status: in-review
+11:    approved_at: null
+43:11. **Fusión probada sobre una copia de `.docs/sdd`**: `sdd capability merge` añade los 4 requisitos a `booking-cancellation.md` sin rechazos.
+76:`cancelar` lee `--motivo <valor>` de los argumentos, lo valida contra la lista antes de buscar la reserva y, si cancela, guarda `reason` en la reserva junto a `status: 'cancelled'`. `canceladas` recorre las reservas con `status: 'cancelled'` y las formatea. Una única fuente de verdad para la lista de motivos (valor → texto) sirve a la validación, a la respuesta y al listado.
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Spec review: dominio
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a01bd2af85fcb00a5 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md
+<<< 1	---
+2	id: 20261106-102216-feature-0010-motivo-cancelar
+3	feature: 0010
+4	title: Motivo al cancelar una reserva
+5	mode: full
+6	status: in-review
+7	created: 2026-11-06
+8	author: Fixture
+9	approvers:
+10	  - name: Fixture
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Motivo al cancelar una reserva
+15	
+16	🦆 Hoy `cancelar Norte lun` cancela la reserva sin preguntar por qué. Con este cambio hay que decir el motivo —cambio de planes, sala ocupada u otro—: `cancelar Norte lun --motivo sala-ocupada` responde «cancelada Norte lun (sala ocupada)», y sin motivo, o con uno que no está en la lista, la r
+
+>>> Read: <run>/repo/.docs/sdd/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Terminology
+6	
+7	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+8	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+9	- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+10	- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+11	
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Spec review: técnica
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a6a30a53ad36e8da0 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" watch subagent --description "Spec review: dominio"
+<<< Command running in background with ID: b40aat1ca. Output is being written to: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\claude\812f9df3eca01c85\e73bdd34-f1bc-4360-9014-e8977a7a85be\tasks\b40aat1ca.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo\.docs\sdd\specs\20261106-102216-feature-0010-motivo-cancelar; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" watch subagent --description "Spec review: técnica"
+<<< Command running in background with ID: bvngasx4b. Output is being written to: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\claude\812f9df3eca01c85\e73bdd34-f1bc-4360-9014-e8977a7a85be\tasks\bvngasx4b.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo\.docs\sdd\specs\20261106-102216-feature-0010-motivo-cancelar; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md
+<<< 1	---
+2	id: 20261106-102216-feature-0010-motivo-cancelar
+3	feature: 0010
+4	title: Motivo al cancelar una reserva
+5	mode: full
+6	status: in-review
+7	created: 2026-11-06
+8	author: Fixture
+9	approvers:
+10	  - name: Fixture
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Motivo al cancelar una reserva
+15	
+16	🦆 Hoy `cancelar Norte lun` cancela la reserva sin preguntar por qué. Con este cambio hay que decir el motivo —cambio de planes, sala ocupada u otro—: `cancelar Norte lun --motivo sala-ocupada` responde «cancelada Norte lun (sala ocupada)», y sin motivo, o con uno que no está en la lista, la r
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Glob: test/*.test.js
+<<< <run>\repo\test\app.test.js
+<run>\repo\test\cancel.test.js
+
+>>> Read: <run>/repo/.docs/sdd/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+5	
+
+>>> Read: <run>/repo/.docs/sdd/operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- **Arrancar**: `node src/app.js <comando> <argumentos>`
+6	
+7	## Testing
+8	
+9	- **Suites**: `unit` · `node --test` · ~1 s
+10	- **Lo afectado**: `node --test <fichero de test>`
+11	- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+12	- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13	- **Acceso a la aplicación**: `sin login`
+14	- **Motor de producción**: sin base de datos; las reservas viven en memoria
+15	
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Read: <run>/repo/test/app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar" && node - <<'E'
+const fs=require('fs');let s=fs.readFileSync('spec.md','utf8');
+const cut=(a,b)=>{const i=s.indexOf(a),j=s.indexOf(b);return [i,j]};
+// capabilities line
+s=s.replace('cancelar una reserva propia con motivo','cancelar una reserva con motivo');
+// decisions 12-18 + hallazgos
+s=s.replace(/11\. \*\*Fusión[^\n]*\n/,`11. **Fusión probada sobre una copia de \`.docs/sdd\`**: \`node sdd.js capability merge --path <copia> --artifact spec.md\` añadió los 4 requisitos iniciales a \`booking-cancellation.md\` sin rechazos; se repite tras la reescritura de la review.
+12. **Pruebas aisladas con \`resetBookings()\`**: \`src/app.js\` exporta \`resetBookings()\`, que devuelve las reservas a la semilla actual (Norte lun 10:00-12:00 activa); los tests la llaman antes de cada caso. Alternativa descartada: depender del orden de los tests o de un fichero por caso.
+13. **Parseo de \`--motivo\`**: el flag puede ir en cualquier posición; sala y día son los dos primeros argumentos que no empiezan por \`--\` ni son el valor del flag. Solo vale la forma \`--motivo <valor>\`; \`--motivo\` sin valor, seguido de otro flag, o \`--motivo=otro\` cuentan como «falta el motivo».
+14. **Precedencia**: motivo (falta → no válido) antes que reserva, también con motivo no válido y sin reserva.
+15. **Una cancelada no se vuelve a cancelar**: responde \`sin reserva Norte lun\`, como hoy.
+16. **El orden del listado no se promete**: con una sola reserva semilla no hay forma de probarlo; sale en el orden de las reservas. Retirada la promesa «en el orden en que se cancelaron».
+17. **No aplica**: el plazo de 24 h de \`PRODUCT.md\` no se comprueba hoy ni en esta feature; no hay dueño de la reserva (cualquiera cancela cualquier reserva), así que no se dice «propia». Datos: viven en memoria (\`operations.md\`), en la reserva, como \`reason\` (valor del flag) junto a \`status: 'cancelled'\`; identificadores de código en inglés, textos de interfaz en castellano.
+18. **\`libres\` y \`anular\` son preexistentes y no cambian**: los escenarios solo los usan para comprobar o preparar estado. El cambio cumple el gate completo (\`node --test && node scripts/lint.mjs\`, \`scripts/lint.mjs\` existe).
+`);
+s=s.replace('_Pendiente de la review._',`Dominio (10) y técnica (10), en sonnet:
+- **Aceptado (Crítico, técnica 1 y 2)** — estado compartido en memoria hace los escenarios no ejecutables → decisión 12, \`resetBookings()\`, y «Dónde se prueba».
+- **Aceptado** — \`--motivo\` sin decidir (técnica 5) → decisión 13 y escenarios de parseo.
+- **Aceptado** — conflicto motivo/reserva (dominio 1) → decisión 14, escenario con motivo no válido y sin reserva.
+- **Aceptado** — \`anular\`/\`libres\` sin declarar (dominio 2 y 8, técnica 3 y 8) → decisión 18; el AND de \`libres\` lleva \`Norte, Sur\`.
+- **Aceptado** — orden del listado sin escenario (dominio 10, técnica 4) → decisión 16, promesa retirada.
+- **Aceptado** — cancelar dos veces (técnica 6) → decisión 15 y escenario.
+- **Aceptado** — requisito que mezcla tres casos y falta \`otro\` (dominio 9, técnica 7) → requisitos separados y escenario con \`otro\`.
+- **Aceptado** — «propia», 24 h, datos e idioma (dominio 4, 5, 6, 7) → decisión 17 y capacidad sin «propia».
+- **Aceptado** — criterio «todo ADDED» (dominio 3) → decisión 9 ya lo dice; repetido en Capacidades.
+- **Aceptado** — gate y evidencia del merge (técnica 9 y 10) → decisiones 18 y 11.`);
+s=s.replace('- Nuevas: `booking-cancellation` — cancelar una reserva con motivo y listar las canceladas.','- Nuevas: `booking-cancellation` — cancelar una reserva con motivo y listar las canceladas. No hay `capabilities/` previa: todo va como `ADDED`.');
+// dónde se prueba
+s=s.replace(/- Listado de canceladas:[^\n]*\n/,'- Listado de canceladas: por `run(\'canceladas\', [])`, en `test/cancelled.test.js`. Cada caso llama antes a `resetBookings()` (decisión 12): no hay orden entre casos ni entre ficheros. `test/app.test.js` sigue esperando `Sur`.\n');
+// delta
+const i=s.indexOf('#### ADDED — Cancelar exige'),j=s.indexOf('## Enmiendas');
+s=s.slice(0,i)+`#### ADDED — Cancelar exige un motivo de la lista
+
+- GIVEN reserva activa de la sala Norte el lunes, franja 10:00-12:00
+- WHEN \`cancelar Norte lun --motivo sala-ocupada\`
+- THEN la respuesta es \`cancelada Norte lun (sala ocupada)\`
+- AND la reserva queda cancelada y \`libres 10:00-12:00\` responde \`Norte, Sur\`
+- WHEN \`cancelar --motivo otro Norte lun\` sobre esa misma reserva activa
+- THEN la respuesta es \`cancelada Norte lun (otro)\`
+- WHEN \`cancelar Norte lun --motivo cambio-de-planes\` sobre esa misma reserva activa
+- THEN la respuesta es \`cancelada Norte lun (cambio de planes)\`
+
+#### ADDED — Cancelar sin motivo se rechaza
+
+- GIVEN reserva activa de la sala Norte el lunes
+- WHEN \`cancelar Norte lun\`
+- THEN la respuesta es \`falta el motivo: elige cambio-de-planes, sala-ocupada u otro\`
+- AND la reserva sigue activa
+- WHEN \`cancelar Norte lun --motivo\`
+- THEN la respuesta es la misma y la reserva sigue activa
+- WHEN \`cancelar Norte lun --motivo=otro\`
+- THEN la respuesta es la misma y la reserva sigue activa
+
+#### ADDED — Cancelar con un motivo fuera de la lista se rechaza
+
+- GIVEN reserva activa de la sala Norte el lunes
+- WHEN \`cancelar Norte lun --motivo vacaciones\`
+- THEN la respuesta es \`motivo no válido «vacaciones»: elige cambio-de-planes, sala-ocupada u otro\`
+- AND la reserva sigue activa
+
+#### ADDED — El motivo se comprueba antes que la reserva
+
+- GIVEN ninguna reserva activa de la sala Sur el martes
+- WHEN \`cancelar Sur mar\`
+- THEN la respuesta es \`falta el motivo: elige cambio-de-planes, sala-ocupada u otro\`
+- WHEN \`cancelar Sur mar --motivo vacaciones\`
+- THEN la respuesta es \`motivo no válido «vacaciones»: elige cambio-de-planes, sala-ocupada u otro\`
+
+#### ADDED — Cancelar una reserva que no existe o ya cancelada lo dice
+
+- GIVEN ninguna reserva activa de la sala Sur el martes
+- WHEN \`cancelar Sur mar --motivo otro\`
+- THEN la respuesta es \`sin reserva Sur mar\`
+- GIVEN la reserva de Norte el lunes ya cancelada
+- WHEN \`cancelar Norte lun --motivo otro\`
+- THEN la respuesta es \`sin reserva Norte lun\`
+
+#### ADDED — El listado de canceladas enseña cada motivo
+
+- GIVEN la reserva de Norte el lunes, 10:00-12:00, cancelada con \`--motivo cambio-de-planes\`
+- WHEN \`canceladas\`
+- THEN la respuesta es \`Norte lun 10:00-12:00 · cambio de planes\`
+- GIVEN ninguna reserva cancelada
+- WHEN \`canceladas\`
+- THEN la respuesta es \`sin canceladas\`
+- GIVEN la reserva de Norte el lunes anulada con \`anular Norte lun\`
+- WHEN \`canceladas\`
+- THEN la respuesta es \`sin canceladas\`
+
+`+s.slice(j);
+s=s.replace('guarda `reason` en la reserva','guarda `reason` en la reserva (`resetBookings()` exportada para las pruebas)');
+s=s.replace('Entra: `cancelar <sala> <día> --motivo <valor>`','Entra: `resetBookings()` exportada para las pruebas; `cancelar <sala> <día> --motivo <valor>`');
+fs.writeFileSync('spec.md',s);
+E
+cd ../../../.. && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md"
+<<< booking-cancellation.md: añadido «Cancelar exige un motivo de la lista»
+booking-cancellation.md: añadido «Cancelar sin motivo se rechaza»
+booking-cancellation.md: añadido «Cancelar con un motivo fuera de la lista se rechaza»
+booking-cancellation.md: añadido «El motivo se comprueba antes que la reserva»
+booking-cancellation.md: añadido «Cancelar una reserva que no existe o ya cancelada lo dice»
+booking-cancellation.md: añadido «El listado de canceladas enseña cada motivo»
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Spec review: segunda ronda
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a8c55132e5f1799a2 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" watch subagent --description "Spec review: segunda ronda"
+<<< Command running in background with ID: blag7wvv0. Output is being written to: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\claude\812f9df3eca01c85\e73bdd34-f1bc-4360-9014-e8977a7a85be\tasks\blag7wvv0.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md
+<<< 1	---
+2	id: 20261106-102216-feature-0010-motivo-cancelar
+3	feature: 0010
+4	title: Motivo al cancelar una reserva
+5	mode: full
+6	status: in-review
+7	created: 2026-11-06
+8	author: Fixture
+9	approvers:
+10	  - name: Fixture
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Motivo al cancelar una reserva
+15	
+16	🦆 Hoy `cancelar Norte lun` cancela la reserva sin preguntar por qué. Con este cambio hay que decir el motivo —cambio de planes, sala ocupada u otro—: `cancelar Norte lun --motivo sala-ocupada` responde «cancelada Norte lun (sala ocupada)», y sin motivo, o con uno que no está en la lista, la r
+
+>>> Read: <run>/repo/.docs/sdd/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>/repo/.docs/sdd/operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- **Arrancar**: `node src/app.js <comando> <argumentos>`
+6	
+7	## Testing
+8	
+9	- **Suites**: `unit` · `node --test` · ~1 s
+10	- **Lo afectado**: `node --test <fichero de test>`
+11	- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+12	- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13	- **Acceso a la aplicación**: `sin login`
+14	- **Motor de producción**: sin base de datos; las reservas viven en memoria
+15	
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Glob: test/*.test.js
+<<< test\app.test.js
+test\cancel.test.js
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Read: <run>/repo/test/app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+
+>>> Bash: cd <run>/repo; ls .docs/sdd; sed -n 1,12p .docs/sdd/roadmap.md; ls scripts; git branch -a
+<<< changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+lint.mjs
+  develop
+* feature/0010-motivo-cancelar
+  main
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar" && node - <<'E'
+const fs=require('fs');let s=fs.readFileSync('spec.md','utf8');
+const rep=(a,b)=>{if(!s.includes(a))throw new Error('falta: '+a.slice(0,40));s=s.replace(a,b)};
+rep('status: in-review','status: approved');
+rep('    approved_at: null','    approved_at: 2026-11-06');
+// scenario 1 split
+rep(`- WHEN \`cancelar --motivo otro Norte lun\` sobre esa misma reserva activa
+- THEN la respuesta es \`cancelada Norte lun (otro)\`
+- WHEN \`cancelar Norte lun --motivo cambio-de-planes\` sobre esa misma reserva activa
+- THEN la respuesta es \`cancelada Norte lun (cambio de planes)\`
+`,`
+- GIVEN reserva activa de la sala Norte el lunes (estado repuesto con \`resetBookings()\`)
+- WHEN \`cancelar --motivo otro Norte lun\`
+- THEN la respuesta es \`cancelada Norte lun (otro)\`
+- GIVEN reserva activa de la sala Norte el lunes (estado repuesto)
+- WHEN \`cancelar Norte lun --motivo cambio-de-planes\`
+- THEN la respuesta es \`cancelada Norte lun (cambio de planes)\`
+`);
+rep(`- WHEN \`cancelar Norte lun --motivo\`
+- THEN la respuesta es la misma y la reserva sigue activa
+- WHEN \`cancelar Norte lun --motivo=otro\`
+- THEN la respuesta es la misma y la reserva sigue activa`,`- GIVEN reserva activa de la sala Norte el lunes (estado repuesto)
+- WHEN \`cancelar Norte lun --motivo\`
+- THEN la respuesta es la misma y \`libres 10:00-12:00\` responde \`Sur\`
+- GIVEN reserva activa de la sala Norte el lunes (estado repuesto)
+- WHEN \`cancelar Norte lun --motivo=otro\`
+- THEN la respuesta es la misma y \`libres 10:00-12:00\` responde \`Sur\``);
+rep(`- WHEN \`cancelar Sur mar --motivo vacaciones\`
+- THEN la respuesta es \`motivo no válido`,`- GIVEN ninguna reserva activa de la sala Sur el martes
+- WHEN \`cancelar Sur mar --motivo vacaciones\`
+- THEN la respuesta es \`motivo no válido`);
+rep('- Política de modelos',`19. **Casos de parseo cerrados**: el valor del motivo distingue mayúsculas (\`Otro\` → «motivo no válido «Otro»…»); \`--motivo ""\` cuenta como «falta el motivo»; sala o día ausentes quedan como hoy (fuera de alcance). Solo se prueba el rechazo con \`vacaciones\`.
+20. **\`resetBookings()\`** muta \`bookings\` en sitio, devuelve la semilla y deja las reservas sin \`reason\`; \`app.test.js\` no depende de ella.
+21. **\`canceladas\` ignora los argumentos extra.**
+22. **Límite de prueba declarado**: con una sola reserva semilla, el filtro del listado se prueba con cancelada vs. anulada sobre la misma reserva en casos distintos; «una activa junto a una cancelada» queda sin verificar.
+- Política de modelos`);
+rep('- Términos resueltos: motivo de cancelación — una de «cambio de planes», «sala ocupada», «otro» | ninguno más','- Términos resueltos: motivo de cancelación — una de «cambio de planes» (`cambio-de-planes`), «sala ocupada» (`sala-ocupada`), «otro» (`otro`; su prueba es el escenario con `otro`, sin texto libre)');
+rep('- **Aceptado** — gate y evidencia del merge (técnica 9 y 10) → decisiones 18 y 11.',`- **Aceptado** — gate y evidencia del merge (técnica 9 y 10) → decisiones 18 y 11.
+
+Segunda ronda (1 revisor, sonnet, sin Críticos): 
+- **Aceptado** — escenarios encadenados sobre la misma reserva (1 y 2) → un GIVEN con reposición por caso; los rechazos comprueban \`libres\`.
+- **Aceptado** — parseo, \`resetBookings()\`, argumentos extra, filtro con una sola semilla (3, 5, 6, 7, 8, 9) → decisiones 19 a 22 y Términos.
+- **Aceptado** — evidencia del merge y estado de la cabecera (4) → merge repetido sobre copia con 6 requisitos sin rechazos; cabecera \`approved\`.
+- **Rechazado** — la rama sale de \`main\` (10) → la rama salió de \`develop\`, la integración del proyecto.`);
+fs.writeFileSync('spec.md',s);
+E
+cd ../../../.. && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md" | wc -l; git log --oneline -1; git status --short
+<<< 6
+b393fec feat: base del molde
+?? .docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills" && cat sdd-templates/templates/plan-template.md; sed -n 1,200p sdd-implement/references/commit-milestones.md
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Plan de implementación — <título de la spec>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+---
+
+# Plan de implementación — <título>
+
+> Se escribe siguiendo `plan-writing.md` de `sdd-propose`. El método lo recomienda su handoff y va en la línea
+> `Ejecución` de abajo, para el plan entero.
+> Borra los bloques de ayuda (`>`) al redactar.
+
+## Decisiones que he tomado yo — valida estas
+
+> Una línea por decisión: **modelo y effort por task** (y por qué; la revisión final de rama no sigue esta política ni se quita en Native: sus
+
+>>> Write: <run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md
+<<< File created successfully at: <run>/repo/.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && git add .docs && git commit -q -m "docs: apertura de la feature 0010, motivo al cancelar
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+
+>>> Skill: sdd-kit:sdd-implement
+<<< warning: in the working copy of '.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/spec.md', LF will be replaced by CRLF the next time Git touches it
+9af69cc docs: apertura de la feature 0010, motivo al cancelar
+b393fec feat: base del molde
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && S="node D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; P=.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md; $S workspace $P; node --test 2>&1 | grep -E "^ℹ (pass|fail)"; node scripts/lint.mjs; git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md | wc -l
+<<< <run>\repo\.temp\sdd\plan
+ℹ pass 4
+ℹ fail 0
+lint: sin hallazgos
+0
+
+>>> Bash: cd "<run>/repo" && W=.temp/sdd/plan; mkdir -p $W; cat > $W/progress.md <<'E'
+# SDD ledger — plan: .docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md
+Pre-flight: Task1/Task2 comparten src/app.js (T1 produce REASONS, reason, resetBookings; T2 los consume) — coherente. Task1 y Task2 coherentes consigo mismas (tests vs código vs ficheros). Sin hallazgos.
+E
+git status --short; git check-ignore .temp || echo "no ignorado"; node D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js task start .docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md 1
+<<< Exit code 1
+no ignorado
+plan with 2 tasks and no tasks.md: write <run>\repo\.docs\sdd\specs\20261106-102216-feature-0010-motivo-cancelar\tasks.md before the first task (status and commit per task)
+
+>>> Bash: cd "<run>/repo" && git status --short --ignored | head; echo ".temp/" >> .git/info/exclude
+cat > .docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/tasks.md <<'E'
+# Tasks — 0010 Motivo al cancelar una reserva
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| 1 — Cancelar con motivo | pendiente | — |
+| 2 — Listado de canceladas | pendiente | — |
+E
+node D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js task start .docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md 1
+<<< !! .temp/
+brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: 9af69cccfb4f750d95be8b744b1f62df1f337baf
+
+>>> Write: <run>/repo/test/cancel.test.js
+<<< The file <run>/repo/test/cancel.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && cp test/cancel.test.js .temp/sdd/plan/cancel.test.red.js; node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)|SyntaxError|does not provide" | head
+<<< SyntaxError: The requested module '../src/app.js' does not provide an export named 'resetBookings'
+ℹ pass 0
+ℹ fail 1
+
+>>> Bash: cd "<run>/repo" && node - <<'E'
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+const rep=(a,b)=>{if(!s.includes(a))throw new Error(a);s=s.replace(a,b)};
+rep(`const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];`,
+`const seedBookings = () => [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+const bookings = seedBookings();
+const REASONS = { 'cambio-de-planes': 'cambio de planes', 'sala-ocupada': 'sala ocupada', otro: 'otro' };
+const OPTIONS = 'cambio-de-planes, sala-ocupada u otro';
+
+export function resetBookings() {
+  bookings.splice(0, bookings.length, ...seedBookings());
+}
+
+function parseCancelArgs(params) {
+  const positional = [];
+  let reason;
+  for (let i = 0; i < params.length; i++) {
+    const arg = params[i];
+    if (arg === '--motivo') {
+      const value = params[i + 1];
+      if (value && !value.startsWith('--')) {
+        reason = value;
+        i++;
+      }
+    } else if (!arg.startsWith('--')) {
+      positional.push(arg);
+    }
+  }
+  return { room: positional[0], day: positional[1], reason };
+}`);
+rep(`export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return \`sin reserva \${room} \${day}\`;
+  booking.status = 'cancelled';
+  return \`cancelada \${room} \${day}\`;`,`export function cancelBooking(room, day, reason) {
+  if (reason === undefined) return \`falta el motivo: elige \${OPTIONS}\`;
+  if (!Object.hasOwn(REASONS, reason)) return \`motivo no válido «\${reason}»: elige \${OPTIONS}\`;
+  const booking = findBooking(room, day);
+  if (!booking) return \`sin reserva \${room} \${day}\`;
+  booking.status = 'cancelled';
+  booking.reason = reason;
+  return \`cancelada \${room} \${day} (\${REASONS[reason]})\`;`);
+rep(`if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);`,`if (cmd === 'cancelar') {
+    const { room, day, reason } = parseCancelArgs(params);
+    return cancelBooking(room, day, reason);
+  }`);
+fs.writeFileSync('src/app.js',s);
+E
+git diff --no-index --stat .temp/sdd/plan/cancel.test.red.js test/cancel.test.js | tail -1; node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)|not ok"; node --test 2>&1 | grep -E "^ℹ fail"; node scripts/lint.mjs
+<<< [stdin]:2
+const rep=(a,b)=>{if(!s.includes(a))throw new Error(a);s=s.replace(a,b)};
+                                    ^
+
+Error: export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status = 'cancelled';
+  return `cancelada ${room} ${day}`;
+    at rep ([stdin]:2:43)
+    at [stdin]:30:1
+    at runScriptInThisContext (node:internal/vm:219:10)
+    at node:internal/process/execution:485:12
+    at [stdin]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:483:60)
+    a
+
+>>> Bash: cd "<run>/repo" && file src/app.js; sed -i 's/\r$//' src/app.js && git diff --stat | tail -2
+<<< src/app.js: JavaScript source, ASCII text, with CRLF line terminators
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+ test/cancel.test.js | 87 ++++++++++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 111 insertions(+), 46 deletions(-)
+
+>>> Bash: cd "<run>/repo" && git diff --stat src/app.js | tail -1; git show HEAD:src/app.js | file -; git config core.autocrlf
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+ 1 file changed, 35 insertions(+), 35 deletions(-)
+/dev/stdin: JavaScript source, ASCII text, with CRLF line terminators
+true
+
+>>> Bash: cd "<run>/repo" && git checkout src/app.js 2>/dev/null; node - <<'E'
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8').replace(/\r\n/g,'\n');
+const rep=(a,b)=>{if(!s.includes(a))throw new Error(a);s=s.replace(a,b)};
+rep(`const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];`,
+`const seedBookings = () => [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+const bookings = seedBookings();
+const REASONS = { 'cambio-de-planes': 'cambio de planes', 'sala-ocupada': 'sala ocupada', otro: 'otro' };
+const OPTIONS = 'cambio-de-planes, sala-ocupada u otro';
+
+export function resetBookings() {
+  bookings.splice(0, bookings.length, ...seedBookings());
+}
+
+function parseCancelArgs(params) {
+  const positional = [];
+  let reason;
+  for (let i = 0; i < params.length; i++) {
+    const arg = params[i];
+    if (arg === '--motivo') {
+      const value = params[i + 1];
+      if (value && !value.startsWith('--')) {
+        reason = value;
+        i++;
+      }
+    } else if (!arg.startsWith('--')) {
+      positional.push(arg);
+    }
+  }
+  return { room: positional[0], day: positional[1], reason };
+}`);
+rep(`export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return \`sin reserva \${room} \${day}\`;
+  booking.status = 'cancelled';
+  return \`cancelada \${room} \${day}\`;`,`export function cancelBooking(room, day, reason) {
+  if (reason === undefined) return \`falta el motivo: elige \${OPTIONS}\`;
+  if (!Object.hasOwn(REASONS, reason)) return \`motivo no válido «\${reason}»: elige \${OPTIONS}\`;
+  const booking = findBooking(room, day);
+  if (!booking) return \`sin reserva \${room} \${day}\`;
+  booking.status = 'cancelled';
+  booking.reason = reason;
+  return \`cancelada \${room} \${day} (\${REASONS[reason]})\`;`);
+rep(`if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);`,`if (cmd === 'cancelar') {
+    const { room, day, reason } = parseCancelArgs(params);
+    return cancelBooking(room, day, reason);
+  }`);
+fs.writeFileSync('src/app.js',s.replace(/\n/g,'\r\n'));
+E
+git diff --stat src/app.js 2>/dev/null| tail -1; node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)|^not ok"; node --test test/app.test.js 2>&1 | grep -E "^ℹ fail"; diff <(tr -d '\r' < .temp/sdd/plan/cancel.test.red.js) <(tr -d '\r' < test/cancel.test.js) && echo RED-copy-igual
+<<<  1 file changed, 35 insertions(+), 4 deletions(-)
+ℹ pass 13
+ℹ fail 0
+ℹ fail 0
+RED-copy-igual
+
+>>> Bash: cd "<run>/repo" && sed -i 's/| 1 — Cancelar con motivo | pendiente | — |/| 1 — Cancelar con motivo | hecha | ver git log (feat: cancelar exige un motivo) |/' .docs/sdd/specs/*0010*/tasks.md && node scripts/lint.mjs && git add -A && git commit -q -m "feat: cancelar exige un motivo de la lista (0010)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git log --oneline -3; node D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js task done .docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/plan.md 1 9af69cccfb4f750d95be8b744b1f62df1f337baf -- node --test test/cancel.test.js 2>&1 | tail -5
+<<< lint: sin hallazgos
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261106-102216-feature-0010-motivo-cancelar/tasks.md', LF will be replaced by CRLF the next time Git touches it
+e931d8b feat: cancelar exige un motivo de la lista (0010)
+9af69cc docs: apertura de la feature 0010, motivo al cancelar
+b393fec feat: base del molde
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 78.1466
+ledger: Task 1: complete (commits 9af69cc..e931d8b, tests: node --test test/cancel.test.js → ℹ durat
+
+=== RESULTADO (23 turnos, 1.5168674999999998 $)
+Los dos revisores de la spec (dominio y técnica, en sonnet) están en marcha, cada uno con su vigilancia de silencio. Espero a que terminen para incorporar sus hallazgos y aprobar la spec por delegación. Después vienen el plan y la Task 1, hasta su commit.
+
+=== RESULTADO (1 turnos, 1.5168674999999998 $)
+El revisor de dominio ya ha terminado y espero al técnico para incorporar los hallazgos de los dos a la vez.
+
+=== RESULTADO (4 turnos, 1.5168674999999998 $)
+Incorporé los hallazgos de la primera ronda. Entraron dos Críticos, así que la spec se ha reescrito. La reescritura funde bien (6 requisitos, sin rechazos) y un tercer revisor la está leyendo ahora en una segunda ronda. Cuando termine, la cierro y paso al plan.
+
+=== RESULTADO (17 turnos, 1.5168674999999998 $)
+La Task 1 está hecha y commiteada (`e931d8b`). Paro aquí, como pediste.
+
+**Qué hay ahora**
+- `cancelar` exige `--motivo` con uno de tres valores: `cambio-de-planes`, `sala-ocupada` u `otro`. Por ejemplo, `cancelar Norte lun --motivo sala-ocupada` responde `cancelada Norte lun (sala ocupada)`.
+- Sin motivo, con motivo vacío o con un valor fuera de la lista, responde con el error y la reserva sigue activa.
+- Los 13 tests de `test/cancel.test.js` pasan y `app.test.js` también. El lint está limpio.
+- En el ledger, `sdd task done` imprimió la línea de cierre con `ℹ duration_ms` como resultado, así que no prueba nada por sí sola. El resultado real de la task es el de los 13 tests.
+- Los commits son `9af69cc` (apertura: spec, plan y tasks.md) y `e931d8b` (Task 1).
+
+**Pendiente**
+- La Task 2 (comando `canceladas` con el motivo) no está empezada. Dime «sigue» y la hago.
+- Después vienen la revisión final de la rama, la validación y el cierre.
+
+**Decisiones mías que conviene revisar**
+- Spec y plan los aprobé yo, por tu delegación. Las decisiones están en la sección ✋ de la spec.
+- El motivo es obligatorio, no opcional con valor por defecto. Por eso `cancelar Norte lun` a secas ya no cancela.
+- Antes no había ningún listado de canceladas, así que la Task 2 lo crea.
+- Exporté `resetBookings()` desde `src/app.js` para que los tests no compartan estado.
+- Añadí `.temp/` a `.git/info/exclude`, para que el workspace del plan no se versione.
+
+**Rulings y minors**
+- No hay `Ruling:` en el ledger ni minors diferidos.
+- La spec tuvo dos rondas de revisión. La segunda no dio Críticos, y la decisión 21 (que `canceladas` ignora los argumentos extra) queda sin test, a propósito.

@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< Exit code 1
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat $f.md; done; ls specs; cd ../..; cat package.json PRODUCT.md; find src test scripts -type f | head -50
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -30 test/app.test.js; git branch -a; ls .docs/sdd/specs/*
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (7 turnos, 0.1413076 $)
+Ahora: clasifico el cambio y compruebo si conviene partirlo. Queda: tu respuesta a esta pregunta. Después, la nota de lo que he entendido y las preguntas de diseño, ~10 min.
+
+**Carril:** feature, modo full · **Perfil:** delegate, del proyecto (`sdd-kit.json`).
+
+Es una feature y no la veo como una sola. Cuento unas 6 tasks:
+
+1. Almacén de usuarios.
+2. Login y sesión.
+3. Usuario genérico.
+4. Rol de responsable por sala.
+5. Autor en cada reserva.
+6. Migración de las reservas existentes.
+
+Tocan superficies distintas (usuarios y sesión, reservas y datos) y una es una migración. Con ese tamaño el kit recomienda partirla.
+
+**¿Cómo la llevamos?**
+
+1. **Partirla en 3 features, cada una con su fila de roadmap (recomendada).**
+   - **A. Usuarios con login.** Almacén de usuarios, login y sesión, y el usuario genérico.
+   - **B. Autor de la reserva y migración.** Cada reserva guarda quién la hizo y las actuales pasan al usuario genérico. Depende de A.
+   - **C. Rol de responsable de sala.** Depende de A. Es la base de la fila **0011** (anular reservas de otros), que hoy asume que ya existe ese rol, así que C iría antes que 0011.
+   - Orden: A, B, C. La migración queda aislada en B, con su propia validación.
+2. **Mantenerla entera**, como una sola feature con las 6 tasks. No te lo volveré a proponer.
+
+Hay una contradicción en el proyecto que afecta al diseño: `mission.md` dice «No hay más usuarios», pero `PRODUCT.md` habla de «equipos de una oficina». Si hay login con roles, la misión ya no es cierta. Lo resolvemos en la spec de A, y actualizaré `mission.md` cuando la cierre.
+
+Si te vas a ausentar, di: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di: «perfil `<otro>` para esta feature».
+
+**Aviso:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las reglas que aplico pueden ser de una versión vieja. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. `/reload-plugins` no aplica una actualización de ámbito proyecto.

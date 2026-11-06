@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd; ls; git branch --show-current
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\patch-lane.md
+<<< ./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+- `order-sheets` — Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+app.js
+package.json
+pages/
+README.md
+styles/
+develop
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/order-sheets.md package.json; ls pages styles; cat app.js; cat .docs/sdd/roadmap.md
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting them **e
+<<< # Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+- WHEN se abre la ficha
+- THEN la columna «Total con IVA» muestra `36,26 €`
+
+### La ficha ofrece guardar, cancelar y borrar
+
+- GIVEN una ficha de pedido o de albarán
+- WHEN se abre
+- THEN ofrece las acciones Guardar, Cancelar y Borrar
+{ "name": "ventas", "private": true }
+pages:
+albaran-detalle.html
+pedido-detalle.html
+
+style
+
+=== RESULTADO (7 turnos, 0.14537740000000002 $)
+Ahora: clasifico el cambio y te pregunto el carril. Queda: tu respuesta, que es la única parada antes de abrir rama o carpeta.
+
+🦆 En llano: hoy cada ficha (`pedido-detalle.html` y `albaran-detalle.html`) calcula el total de cada línea con IVA en `app.js`, pero no suma ni avisa de nada. Lo que me pides es sumar las líneas y enseñar un aviso cuando el resultado pase de 1.000 €. Es una conducta nueva que ve el usuario.
+
+**No lo abro como patch.** Dices «patch», pero el patch exige que la solución esté fijada. Aquí solo está fijado el umbral. Quedan sin fijar:
+
+- el texto del aviso;
+- dónde aparece;
+- si es solo un aviso o también bloquea guardar;
+- si 1.000 € exacto avisa o no;
+- si «total» es la suma de las líneas con IVA.
+
+Esas decisiones las tomaría yo, y eso ya es diseñar. Con el aviso en dos fichas serían como mínimo dos tests, y un patch es lo que reproduce un solo test.
+
+Sí cumple el modo lite, y lo compruebo condición por condición:
+
+- el flujo ya existe y se lee en `app.js`;
+- no cambia contratos públicos;
+- no cambia datos;
+- cabe en un área, las dos fichas con su `app.js` compartido;
+- no hay `estimation.md`, así que no se aplica el tope de media jornada.
+
+Carril: **lite** (spec corta, sin plan ni tasks). Perfil: `delegate`, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json` que lo cambie. Con 3 tasks o menos no propongo dividir.
+
+¿Cómo seguimos?
+
+1. **Lite (Recomendada).** Te escribo una spec corta con las decisiones de arriba marcadas para que las valides. Después implemento, verifico y cierro.
+2. **Feature en modo full.** Igual, con plan y tasks. Es más ceremonia de la que pide un aviso así.
+3. **Lite con ausencia.** Es la 1 y apruebo la spec por delegación. Dices «apruebo la spec por delegación, nos vemos en la validación» y no paro en la spec.
+
+Si prefieres otro perfil, dime «perfil `<otro>` para esta feature».

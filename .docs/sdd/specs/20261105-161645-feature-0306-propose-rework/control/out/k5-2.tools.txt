@@ -1,0 +1,152 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the one in `tech-stack.md` §Testing; without either, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, say so and ask what to run: never invent a command (`tests/sdd-propose-0160-red.md`, k1).
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the
+<<< Exit code 1
+.:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{
+  "version": "3.0.0",
+  "channel": "plugin",
+  "ids": {
+    "mode": "sequence"
+  },
+  "release": {
+    "hasRecipient": false
+  },
+  "control": {
+    "profile": "delegate"
+  },
+  "execution": "native",
+  "merge": {
+    "into": "develop",
+    "noFf": true,
+    "removeWorktree": false,
+    "push": false
+  }
+}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cd "<run>/repo" && ls node_modules 2>&1 | head -3; echo ---; cat package.json
+<<< ls: cannot access 'node_modules': No such file or directory
+---
+{"type": "module", "engines": {"node": ">=20"}}
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat constitution.md tech-stack.md operations.md roadmap.md; git -C .. log --oneline develop..HEAD 2>&1 | head; git -C ../.. branch -a 2>&1 | head
+
+>>> Bash: cd "<run>/repo" && grep -rn "22\|engines\|node" --include=* -I . --exclude-dir=.git -i | grep -v "^./.docs/sdd/\(constitution\|tech-stack\|operations\|roadmap\)" | head -30
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# O
+<<< ./package.json:1:{"type": "module", "engines": {"node": ">=20"}}
+./scripts/lint.mjs:1:import { readFileSync } from 'node:fs';
+./test/app.test.js:1:import { test } from 'node:test';
+./test/app.test.js:2:import assert from 'node:assert/strict';
+./test/cancel.test.js:1:import { test } from 'node:test';
+./test/cancel.test.js:2:import assert from 'node:assert/strict';
+
+=== RESULTADO (8 turnos, 0.1329685 $)
+Ahora: confirmo el carril config con una pregunta antes de tocar nada. Queda: editar `package.json`, pasar el gate y hacer un commit, unos 2 min, sin subagentes.
+
+🦆 Es un cambio de configuración: solo se toca el campo `engines.node` de `package.json`, que pasa de `>=20` a `>=22.18`. No cambia nada de lo que ve o puede hacer quien usa las salas, y no hay dependencias que instalar. Antes de guardarlo corro el gate de cierre de `operations.md`: `node --test && node scripts/lint.mjs`. Si falla, no hago commit.
+
+No hay spec, plan, id ni fila de roadmap en este carril. Es un solo commit en la rama actual, `feature/bump-node-22-18`. Esa rama no tiene más commits que `develop`, así que al terminar haría el `sdd merge` a `develop` según el perfil `delegate`, que es el del proyecto en `sdd-kit.json`.
+
+¿Lo hago así?
+
+1. **Sí, carril config (recomendada):** edito `engines`, corro el gate y hago el commit.
+2. **Cambia el alcance:** dime qué más quieres que entre. Por ejemplo, si prefieres `>=22.18.0` o si hay que tocar también `tech-stack.md`, que ya dice «Node 22».
+3. **Súbelo a patch o feature:** si quieres spec o trazabilidad en el roadmap.
+
+Aviso: el hook de sesión dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que estoy siguiendo vienen de otra ruta y no lo he comprobado. Si quieres, actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+>>> Bash: cd "<run>/repo" && sed -i 's/">=20"/">=22.18"/' package.json && cat package.json && node --test 2>&1 | tail -12; echo "--- lint"; node scripts/lint.mjs; echo "lint exit $?"
+<<< {"type": "module", "engines": {"node": ">=22.18"}}
+✔ libres excluye la sala reservada en la franja (0.7239ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1393ms)
+✔ cancelar una reserva activa (0.6914ms)
+✔ cancelar sin reserva lo dice (0.1142ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.0134
+--- lint
+lint: sin hallazgos
+lint exit 0
+
+>>> Bash: cd "<run>/repo" && git add package.json && git commit -q -F - <<'EOF'
+chore: sube el mínimo de node a 22.18 en engines
+
+Gate: `node --test && node scripts/lint.mjs` → unit: corrió 4/4 · lint: corrió sin hallazgos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline develop..HEAD; grep -n -i "merge\|push" "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references/control-profiles.md" | head -20
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+0f0b35f chore: sube el mínimo de node a 22.18 en engines
+9:- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and the outward actions (push, PR, publish) are always a person's call.
+24:`.docs/sdd/sdd-kit.local.json` keeps how each person works, without changing what stays in git: it's in `.gitignore` and isn't committed. Every skill that resolves the current profile or `execution` reads it —`sdd-propose` (the start and the plan), `sdd-archive` (the m
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" merge --project-root "$(pwd)" 2>&1; echo "exit $?"; git status -sb | head -3; git log --oneline -3 --all --graph | head
+<<< Fusionado feature/bump-node-22-18 en develop: 70e7f09
+exit 0
+## feature/bump-node-22-18
+*   70e7f09 merge: feature/bump-node-22-18 en develop
+|\  
+| * 0f0b35f chore: sube el mínimo de node a 22.18 en engines
+|/  
+* ea29927 chore: política de merge
+
+=== RESULTADO (4 turnos, 0.17776959999999997 $)
+Hecho: `engines.node` de `package.json` pasa de `>=20` a `>=22.18` y el cambio ya está fusionado en `develop`.
+
+- **Gate:** pasó `node --test && node scripts/lint.mjs`. Los tests corrieron 4/4 y el lint salió sin hallazgos.
+- **Commit:** `0f0b35f` en `feature/bump-node-22-18`. Su cuerpo lleva la línea `Gate:`.
+- **Merge:** `sdd merge` lo fusionó en `develop` (`70e7f09`, con `--no-ff`). Como `merge.push` es `false`, no hice push.
+- **Sin artefactos:** no hay spec, plan, id ni fila de roadmap, que es lo que corresponde al carril config.
+- **Pendiente:** no toqué `tech-stack.md`, que ya decía «Node 22».
+
+Git avisó de que `package.json` pasará de LF a CRLF la próxima vez que lo toque. No cambia el contenido, solo es un aviso por la configuración de saltos de línea de Windows.

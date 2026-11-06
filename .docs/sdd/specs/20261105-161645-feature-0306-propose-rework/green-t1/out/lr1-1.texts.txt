@@ -1,0 +1,93 @@
+--- [3]
+Ahora: leo la spec y las referencias del paso 4 para cerrarlo con la revisión y la puerta de aprobación. Queda: presentártela para aprobar, ~3 min.
+
+--- [21]
+Ahora: un revisor (Sonnet, lite) está leyendo la spec. Queda: integrar sus hallazgos y presentártela para aprobar, ~3 min, ~0,3 $. Espero a que termine.
+
+--- [22]
+1. Crítico · Delta de comportamiento (ADDED) · No se dice quién es «el responsable de Norte» ni dónde vive ese dato. El GIVEN lo da por hecho, no hay `capabilities/` ni modelo de datos, y `--como responsable` no identifica a ninguna persona concreta. Sin ese dato, el escenario no se puede montar ni verificar. · Declarar dónde se guarda la relación sala-responsable (fichero, campo de la sala o parámetro como `--como responsable <nombre>`). Decidirlo en «✋ Decisiones», o declarar «no aplica» con la razón. Añadir un GIVEN que fije el fixture.
+
+2. Crítico · Delta de comportamiento · Faltan los casos negativos del complemento. No hay escenario para un responsable sin salas (¿lista sin marcas o falla?). Tampoco para el responsable cuya sala no está libre en esa franja (¿se marca, no aparece, o se avisa?). Tampoco para el responsable de varias salas. · Añadir escenarios GIVEN/WHEN/THEN para cada caso, p. ej. «responsable sin salas → `Norte, Sur` sin marcas» y «sala suya ocupada → no aparece ni se marca».
+
+3. Importante · Scope / Delta · Se afirma que `--como cliente` «lista igual que hoy», pero no existe `capabilities/` que fije qué lista hoy `libres`. El comportamiento base (formato `Norte, Sur`, separador, orden, vacío) no está respaldado por ningún requisito vivo. Además, `libres` sin `--como` no se menciona. Esto puede ser una `MODIFIED` encubierta de un comando existente. · Declarar si `libres` ya existe y cómo se recoge su contrato en `rooms` (¿ADDED del comando entero?). Decir qué pasa con `--como` ausente o con un valor desconocido.
+
+4. Importante · Delta, escenario único · El AND `--como cliente` está metido en el mismo requisito que `--como responsable` y se comprueba solo con dos salas. Con un fixture así, el orden alfabético y el de definición coinciden, y el orden de salida no se verifica. Tampoco hay caso de lista vacía. · Separar en dos requisitos o escenarios con un fixture en el que la sala suya no sea la primera. Declarar el orden y la salida con 0 salas libres.
+
+5. Importante · Decisiones («✋») · Hay decisiones tomadas en el cuerpo que no figuran en la lista. (a) El `*` va pegado al nombre y la lista se separa con «, », lo cual solo cubre la 2.ª. (b) `--como` admite solo `responsable` y `cliente`. (c) `--como cliente` no marca nada, es decisión de producto. (d) La capacidad se llama `rooms` en inglés, mientras la constitución exige castellano en texto de interfaz y documentos. (e) Se elige modo lite y perfil delegate. · Añadir a «✋» las decisiones (a)-(d), o quitarlas del cuerpo. Justificar el nombre de la capacidad respecto a la regla 4 de la constitución, o renombrarla (`salas`).
+
+6. Importante · Reglas de producto (5 bis) · La spec introduce un dato nuevo (relación responsable-sala), un nombre nuevo (`--como`, `responsable`, `cliente`), un carácter de marca y un posible conflicto (nombre de sala con `*`). No declara ninguna de las cinco reglas: dónde vive el dato, idioma de los nombres, límites, avisos, regla ante conflicto. La constitución no tiene sección «Reglas de producto», así que no hay valores de los que citar. · Añadir a la spec las cinco reglas, cada una declarada o «no aplica». Señalar que la constitución carece de «Reglas de producto» y decidir si se abre una sección o se fijan aquí. Regla ante conflicto: ¿qué pasa si una sala ya se llama `Norte*`?
+
+7. Importante · Delta · Verificabilidad: «responde `Norte*, Sur`» no dice si es stdout, valor de retorno de `run()` o ambos. «Dónde se prueba» cita `run('libres', …)`, pero el WHEN usa la sintaxis de línea de comandos. La spec no deja claro qué cadena exacta se compara, con o sin salto de línea final. · Fijar en el THEN el canal y el formato exactos, y la correspondencia entre `run('libres', [...])` y el WHEN.
+
+8. Importante · Capacidades / Delta · «Nuevas: `rooms`» abarca solo la marca, pero ese es el primer requisito de una capacidad cuyo alcance real (listar salas libres) ya existe en código. Crear `rooms` con un único ADDED deja la verdad viva incompleta y contradice «hoy no hay ninguna». Es probable que `libres` ya esté en producción. · Decidir y declarar: o `rooms` nace con el requisito base de `libres` (ADDED, y la marca como segundo requisito), o la marca va en una capacidad con otro nombre. Anotar la deuda de documentación.
+
+9. Menor · Intent / Scope · El Intent habla de «responsable de sala» que ve «de un vistazo», pero el Scope solo cubre `libres <día> <franja>`. No dice si hay otros comandos de listado (p. ej. `reservar`) que queden sin marca. Tampoco dice si `--como responsable` sin franja o sin día falla. · Añadir al «No entra» los otros comandos y el comportamiento ante argumentos incompletos.
+
+10. Menor · Cabecera / Estimación · Hay inconsistencias menores. La misión dice «No hay más usuarios ni más desarrolladores», pero la spec exige aprobador «Laura» y habla de «responsable» y «cliente» como roles, y la constitución dice que el gate es `node --test` entero. «Dónde se prueba» solo cita `test/app.test.js`, sin decir si el gate completo cubre esa spec. Los nombres de ejemplo (Norte, Sur, Laura) están bien por ser inventados. · Aclarar quién es el «responsable» y el «cliente» en un proyecto de un solo usuario, o si son roles simulados. Revisar quién es Laura frente a la misión. Citar el gate `node --test` en «Dónde se prueba».
+
+--- [42]
+Ahora: la segunda ronda de review está en marcha. Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~2 min. Espero a que termine.
+
+--- [45]
+1. Importante · Decisión 1 frente a la «Prueba del delta» y a la sección «Delta de comportamiento» · La decisión 1 dice que `rooms` «nace con dos requisitos». La prueba del delta y el delta tienen tres: base, marca y sala ocupada. Esa incoherencia hará que el `capability merge` o la revisión no cuadren. · Cambiar la decisión 1 a «tres requisitos», o fundir el de sala ocupada en el de la marca, y dejar un solo número en todo el documento.
+
+2. Importante · Requisito «El responsable ve sus salas marcadas» (los AND) · Mezcla tres comportamientos con un solo WHEN. Los AND de `cliente` y de «sin `--como`» llevan cada uno su propio WHEN, así que no son GIVEN/WHEN/THEN verificables por separado. Además, el complemento (el cliente no ve marcas) queda enterrado dentro del requisito del responsable. · Separar un requisito «Sin ser responsable no hay marcas» con un escenario por entrada: `cliente`, ausente y valor desconocido.
+
+3. Importante · Decisión 5 y delta · La decisión 5 promete que «cualquier otro valor» da la lista sin marcas, pero ningún escenario lo prueba. Tampoco se prueban `--como` sin valor ni `Responsable` con mayúscula. Si no está en un escenario, la implementación puede hacer cualquier cosa y el gate seguirá en verde. · Añadir un escenario con un valor desconocido (por ejemplo `['14:00-16:00', '--como', 'admin']` → `Norte, Sur`). Decidir y declarar si `--como` sin valor y la mayúscula cuentan como «otro valor».
+
+4. Importante · Decisiones (falta una) y «No entra» · No se declara dónde puede ir `--como`. El código lee la franja con `params[0]`, así que `libres --como responsable 14:00-16:00` toma `--como` como franja y devuelve `Norte, Sur` sin marcas. Es una decisión de contrato tomada sin decirla. · Declarar en las decisiones que la franja va siempre primera y que `--como` solo se reconoce después. Añadir la forma con `--como` primero a «No entra», o cubrirla con un escenario.
+
+5. Menor · Escenario «Libres lista las salas libres» · El base solo cubre «una sala ocupada». No cubre el borde en que todas están ocupadas (devuelve cadena vacía) ni el de una franja sin reservas. Ambos son comportamiento que pasa a ser verdad viva en `rooms`. · Declararlos en «No entra» o añadir un escenario.
+
+6. Menor · Decisión 7, «avisos = no aplica» · Ignorar sin aviso un `--como` desconocido es justo un silencio que la regla «avisos» debería justificar. Ahora se descarta con un «no aplica» genérico, y el usuario que escriba mal `responsable` no se entera de que no hay marcas. · Escribir en la decisión 7 que el silencio es deliberado y por qué, o poner un aviso mínimo.
+
+7. Menor · Decisión 3 y delta · `salasDelResponsable = ['Norte']` es un identificador nuevo y no está en el código. Los GIVEN dicen «Norte como sala del responsable» como si fuera una condición del fixture, pero la constante no se puede variar desde `run`. El test solo se sostiene si la constante vale `['Norte']`. · Aclarar que ese GIVEN es un dato fijo del código, no un fixture parametrizable. Reflejarlo en «Dónde se prueba» (el test depende del valor de la constante).
+
+8. Menor · Decisión 8 y bloque «Hallazgos» (rechazo del aprobador) · El rechazo se apoya en que Laura «viene de la plantilla», y eso no se puede comprobar en el repo. La misión dice que no hay más usuarios ni desarrolladores, y la spec sigue con un aprobador con nombre propio y un «dev-lead». La contradicción con la misión sigue abierta. · Sustituir el aprobador por el único usuario real, o dejar en la decisión 8 una nota explícita de que `approvers` no refleja a ningún usuario de la herramienta.
+
+9. Menor · «Dónde se prueba» y «Prueba del delta» · La prueba del `capability merge` en una copia fuera del repo es un paso de verificación fuera del gate (`node --test`), y no queda dicho quién lo ejecuta ni cuándo. · Mover ese paso a una tarea del plan, o indicar que lo ejecuta el revisor de cierre.
+
+10. Menor · Sección «Review de spec propuesta» y Mínimo razonable · Dentro de «✋ Decisiones» hay una propuesta de review y una opción sin review que no son decisiones sobre el producto. Diluyen lo que Laura (o el dev-lead) tiene que validar. · Mover esa propuesta a un bloque propio, o a las decisiones del dev-lead, y dejar en «✋» solo las decisiones de comportamiento.
+
+--- [47]
+Segunda ronda: la regla no permite una tercera. Integro los hallazgos 1–7 y rechazo 8–10 con motivo. Paro el vigía y edito.
+
+--- [57]
+Repito la prueba del delta con los cuatro requisitos y dejo el resultado escrito.
+
+--- [60]
+Ahora: la spec está lista para tu aprobación (paso 4). Queda: tu respuesta; con ella escribo el plan, ~5 min.
+
+**Carril:** lite, modo lite · **Perfil:** `delegate`, del proyecto.
+
+## 🦆 En corto
+Hoy `libres 14:00-16:00` responde `Norte, Sur`. Con la feature, `libres 14:00-16:00 --como responsable` responde `Norte*, Sur`. Quien consulta de otra forma ve lo mismo que hoy.
+
+## Cambios respecto a lo que di por hecho
+La review encontró un fallo que mi pasada de coherencia no vio. El comando real es `libres <franja>`, sin día ni `--como`. Norte está reservada en `10:00-12:00`, así que el escenario original no se podía montar. Tampoco existe ningún dato de «responsable» ni la carpeta `capabilities/`. Reescribí la spec contra el código real. Hice dos rondas de review con un revisor Sonnet cada una, porque la primera dio dos Críticos.
+
+## ✋ Decisiones mías — valida estas
+1. Capacidad nueva `rooms`, con cuatro requisitos: el base de `libres`, la marca, la sala suya ocupada y sin marcas para quien no es responsable.
+2. El comando sigue siendo `libres <franja>`. No añado el día.
+3. «El responsable» es una constante fija en `src/app.js`: `['Norte']`.
+4. La marca es `*` pegado al nombre, con el mismo separador y orden de hoy.
+5. Con `cliente`, sin `--como` o con cualquier otro valor, la lista sale como hoy. No hay error ni aviso, y el silencio es deliberado.
+   - `--como` va siempre después de la franja.
+6. Una sala suya ocupada no aparece, así que no se marca.
+7. «Responsable» y «cliente» no son cuentas: son dos maneras de consultar la misma herramienta.
+
+## Rechazado, con motivo
+- Varios responsables o salas por responsable y los bordes de «todo ocupado»: quedan en «No entra».
+- Cambiar el aprobador «Laura» (la misión dice que no hay más usuarios): lo dejé tal cual. Es tu decisión si quieres cambiarlo.
+- Sin tercera ronda, como fija la regla.
+
+**Prueba del delta:** en una copia fuera del repo, `capability merge` añadió los cuatro requisitos a `rooms.md` sin rechazos. El `capabilities/` del repo no cambió.
+
+La spec completa está en `.docs/sdd/specs/20261008-170000-feature-0019-manager-marks/spec.md`.
+
+¿Apruebas?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a `sdd-implement`.
+2. **Cambios**: dime qué decisión quieres cambiar.
+
+Sin tu respuesta explícita la spec queda en espera.
+

@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd; echo ---; ls; echo ---; ls node_modules 2>&1 | head -3; echo ---; cat .docs/sdd/sdd-kit.local.json 2>&1; echo ---; git branch --show-current
+
+>>> Grep: bookings|cancelada
+<<< test\cancel.test.js:6:  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+src\app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+src\app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+src\app.js:10:  return bookings.find((b) => b.room === room && b.status === 'active');
+src\app.js:17:  return `cancelada ${room} ${day}`;
+.docs\sdd\roadmap.md:7:| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de cance
+<<< ./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+---
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+---
+ls: cannot access 'node_modules': No such file or directory
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+develop
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reserva ${room} ${day}
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references/patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd .docs/sdd && cat constitution.md mission.md tech-stack.md sdd-kit.json | head -120; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -20
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la de
+
+>>> Bash: cd .docs/sdd 2>/dev/null || true; cat estimation.md; ls specs; git -C ../.. log --oneline | head
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo el tiempo real.
+- `estimation-log.md` se genera, no se escribe: el script calcula el factor de calibración (ratio mediano real/estimado) global y por tipo de feature.
+- Feat
+
+=== RESULTADO (9 turnos, 0.1458749 $)
+Esto es un patch por fallo, pero la causa no es el orden del array. Antes de crear rama, carpeta o id te hago la pregunta del carril.
+
+🦆 **En llano:** `cancelar Norte mar` busca la reserva de Norte **sin mirar el día**. `findBooking` (`src/app.js:9-11`) recibe `day`, pero el `find` solo compara `room` y `status`. Por eso pilla la única reserva activa de Norte (la del lunes) y la marca como cancelada. Con el `find` empezando por el final pasaría lo mismo en cuanto Norte tenga una sola reserva activa: el orden no importa, falta comparar el día. `anular` usa la misma función y tiene el mismo fallo.
+
+**Qué propongo (carril patch, fallo determinista):** que `findBooking` compare también `b.day === day`. Así `cancelar Norte mar` responde `sin reserva Norte mar` y deja intacta la del lunes. Va con un test en rojo antes del arreglo: cancelar `Norte mar` con solo `Norte lun` activa debe dar `sin reserva Norte mar` y dejar la del lunes activa. Con ese mismo cambio se arregla también `anular`. Cada patch pasa por el gate de cierre, `node --test` entero en verde.
+
+**Estimación:** ~0,25 h. `estimation.md` no tiene ningún gate de cierre medido todavía y los patches registran solo el tiempo real. Perfil `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Abro el patch así?
+
+1. **Sí, patch con el arreglo del `day` (Recomendada).**
+2. Sí, pero solo `cancelar`, y `anular` queda fuera. No lo recomiendo: `anular` fallaría igual.
+3. Hacerlo como feature completa. No lo recomiendo: el arreglo está fijado y se reproduce con un solo test.

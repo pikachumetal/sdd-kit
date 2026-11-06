@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\patch-lane.md
+<<< develop
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd "<run>/repo" && cat package.json; find src test scripts .docs/sdd/specs -type f | head -50; cat .docs/sdd/roadmap.md | head -40; grep -rniE "cancel" src | head -30
+<<< {"type": "module", "engines": {"node": ">=20"}}
+src/app.js
+test/app.test.js
+test/cancel.test.js
+scripts/lint.mjs
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canc
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js .docs/sdd/specs/*0007*/patch.md; git log --oneline | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status = 'cancelled';
+ 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/estimation.md; cat .docs/sdd/specs/*0007*/patch.md | grep -i gate; grep -ril "gate de cierre" .docs/sdd/specs
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo el tiempo real.
+- `estimation-log.md` se genera, no se escribe: el script calcula el factor de calibración (ratio mediano real/estimado) global y por tipo de feature.
+- Feat
+
+=== RESULTADO (8 turnos, 0.15141510000000002 $)
+Ahora: confirmo el carril. Es un patch por fallo determinista, y antes de abrir rama o carpeta te hago una pregunta. Queda: tu respuesta, y luego el test rojo, el arreglo y el cierre, ~0,5 h.
+
+🦆 **En llano:** `cancelar` busca la reserva activa de la sala sin mirar el día. `findBooking(room, day)` en `src/app.js:9` recibe `day` y no lo usa. Por eso, al cancelar Norte el martes, encuentra tu reserva del lunes, la cancela y responde «cancelada Norte mar». `anular` usa la misma función y tiene el mismo fallo. El modelo de datos ya guarda `day` en cada reserva, así que el arreglo es comparar también el día.
+
+**Causa raíz:** `findBooking` filtra por sala y estado, pero no por `day`. Es un fallo determinista y la solución está fijada. Es un patch, como pediste. No hay que decidir ningún texto ni regla nuevos: el mensaje «sin reserva Norte mar» ya existe.
+
+**El test que falla hoy:** `run('cancelar', ['Norte', 'mar'])` debería devolver `sin reserva Norte mar` y dejar activa la reserva del lunes. Hoy devuelve `cancelada Norte mar`. Es un solo test, así que no hay que dividirlo.
+
+**Estimación:** 0,5 h (referencia: el patch 0007, que tardó 0,5 h). No hay duración medida del gate de cierre en el proyecto, así que no la sumo. Perfil: `delegate`, del proyecto (`sdd-kit.json`). `sdd-kit.local.json` no existe. No hacen falta dependencias: `package.json` no declara ninguna.
+
+¿Cómo seguimos?
+
+1. **Abrir el patch (recomendada).** Creo la rama y la carpeta `patch-…`, añado el test rojo en `test/cancel.test.js`, arreglo `findBooking` y verifico. El arreglo cubre también `anular`, y añadiría un test de regresión para eso.
+2. **Abrir el patch, solo `cancelar`.** Igual que la 1, pero sin test para `anular`. Lo arreglaría igual, porque comparten función.
+3. **Cambiar de carril o de perfil.** Dime cuál, por ejemplo «perfil `pair` para este patch».

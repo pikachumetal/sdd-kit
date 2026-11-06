@@ -67,7 +67,7 @@ After a machine crash or a quota cut, before anything else, reread the ledger, `
 
 ## After the last task
 
-**Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, launch the command through its watch: `watch command -- <the command…>`, which saves its output and ends with the command (`watch command --path <its output>` only for a command already running). What to do with its warning is in [Vigía de silencio](../sdd-propose/references/control-profiles.md#vigía-de-silencio). (`tests/silence-watch-red.md`)
+**Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, launch the command through its watch: `watch command -- <the command…>`, which saves its output and ends with the command (`watch command --path <its output>` only for a command already running). What to do with its warning is in [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch). (`tests/silence-watch-red.md`)
 
 **Closing drafts**: while the axes review, write in their place, uncommitted, `walkthrough.md` without the verification or the time, the delta merged into `capabilities/` with the `sdd capability merge` of step 3 of `sdd-archive` and, in 2.x, the changelog entry; the roadmap isn't touched. `sdd-archive` only completes them (`tests/closing-off-critical-path-red.md`, c1).
 

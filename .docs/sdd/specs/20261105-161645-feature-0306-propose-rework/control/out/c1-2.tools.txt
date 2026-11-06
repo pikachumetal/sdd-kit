@@ -1,0 +1,120 @@
+
+>>> Bash: cd .docs/sdd && ls -a && cat roadmap.md && cat sdd-kit.json && cat sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30; cd ..; ls; ls -d node_modules 2>&1 | head -1
+
+>>> Bash: cd .docs/sdd && head -c 3000 constitution.md; echo ----; head -c 1500 mission.md; echo ----; head -c 1500 tech-stack.md; ls architecture.md 2>&1
+<<< ./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics)
+<<< Exit code 2
+/usr/bin/bash: line 1: cd: .docs/sdd: No such file or directory
+----
+head: cannot open 'mission.md' for reading: No such file or directory
+----
+head: cannot open 'tech-stack.md' for reading: No such file or directory
+ls: cannot access 'architecture.md': No such file or directory
+
+>>> Bash: cd sdd && head -c 3000 constitution.md; echo ----; head -c 1500 mission.md; echo ----; head -c 1500 tech-stack.md; ls specs; cd ../..; ls
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+----
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y 
+
+>>> Bash: cat package.json; ls src test; wc -l src/*.js; grep -n -i "cancel" -r src | head -40
+<<< {"type": "module", "engines": {"node": ">=20"}}
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+35 src/app.js
+src/app.js:13:export function cancelBooking(room, day) {
+src/app.js:16:  booking.status = 'cancelled';
+src/app.js:17:  return `cancelada ${room} ${day}`;
+src/app.js:30:  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);
+
+>>> Bash: cat src/app.js; cat test/cancel.test.js; cat PRODUCT.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" id claim --project-root "$(pwd)" 2>&1 | tail -10; git branch --show-current; git remote -v
+<<< sin remoto: la 0010 vale (contador local)
+feature/0010-cancel-reason
+
+=== RESULTADO (7 turnos, 0.14875000000000002 $)
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Id 0010 reservado** (sin remoto, vale el contador local). La rama `feature/0010-cancel-reason` ya existe. Sigo en esa rama.
+
+## Lo que he entendido (corrígeme)
+
+Fila 0010 del roadmap: *al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*.
+
+Hoy el código es muy corto (`src/app.js`, 35 líneas):
+- `cancelar <sala> <día>` marca la reserva como `cancelled` y responde `cancelada Norte lun`. No guarda motivo.
+- **No existe ningún comando que liste reservas canceladas.** El «listado de canceladas» habría que crearlo. Esto es lo que más pesa en el alcance.
+- Los tests actuales de `cancelar` (`test/cancel.test.js`) comprueban la salida literal `cancelada Norte lun`. El cambio de comportamiento afecta a esos tests.
+
+Lo clasifico como **feature**, modo full. Hay decisiones visibles que nadie ha fijado: la lista de motivos, cómo se elige y qué enseña el listado. Eso descarta patch y lite. Prevé unas 2 o 3 tasks, todas en la misma superficie. No propongo dividirla.
+
+Dependencias: el proyecto no declara ninguna, no hay nada que instalar.
+
+## Primera pregunta de diseño
+
+**¿Cómo se elige el motivo al cancelar?**
+
+1. **Argumento obligatorio** (recomendada): `cancelar Norte lun --motivo <clave>`. Sin `--motivo` o con una clave fuera de la lista, el comando falla con un mensaje y no cancela. Es lo más simple de probar, y una terminal sin interacción lo soporta sin cambios.
+2. **Argumento opcional** con un motivo por defecto («otro»). Los usos antiguos de `cancelar Norte lun` siguen funcionando.
+3. **Pregunta interactiva** si falta el motivo. Pide más código y tests con entrada estándar simulada.
+
+Para que la spec no se quede coja, necesito también tu respuesta a estas dos:
+
+- **¿Qué motivos tiene la lista?** Propongo cuatro: `imprevisto`, `cambio-de-plan`, `duplicada`, `otro`.
+- **¿Cómo se llama el comando del listado y qué enseña cada línea?** Propongo `canceladas`, con una línea por reserva: `Norte lun 10:00-12:00 · imprevisto`.
+
+Dime «1, con esos motivos y ese listado» si te vale todo.

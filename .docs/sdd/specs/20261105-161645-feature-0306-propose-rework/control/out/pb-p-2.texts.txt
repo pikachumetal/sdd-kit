@@ -1,0 +1,80 @@
+--- [3]
+Ahora: leer el contexto del proyecto en `.docs/sdd/` y clasificar el cambio. Queda: la nota de comprensión y la spec hasta la aprobación, ~10 min.
+
+--- [12]
+Ahora: clasificado el cambio y reservada la rama `feature/0012-informes`. Te dejo la nota de comprensión y las formas de construirlo, y espero tu elección. Queda: elegir enfoque, las secciones del diseño, la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: pair, dicho por ti en este mensaje (el proyecto tiene delegate en sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No separo la feature. Prevé 5 tasks, pero todas tocan la misma superficie (la CLI, `src/app.js`) y no hay migración. Las sesiones no pasan por el modelo más capaz, así que no hay opción de parar antes de la Task 1.
+
+## Lo que he entendido (corrígeme)
+
+- Un comando nuevo, `informes`, con cuatro vistas:
+  1. ocupación por sala,
+  2. ocupación por día de la semana,
+  3. franjas más reservadas,
+  4. salas que nadie ha reservado.
+- `--sala <nombre>` filtra las cuatro vistas.
+- La salida es una tabla de texto.
+- Sin reservas, cada vista dice «sin reservas».
+- Plan en 5 tasks: una por vista y otra para `--sala`.
+
+Lo que vi en el código:
+- `src/app.js` guarda las reservas en memoria, con un `status` (`active`, `cancelled`, `voided`).
+- Salas: Norte y Sur.
+- Hay una reserva activa de ejemplo.
+- Cada reserva tiene `room`, `day` y `slot`.
+
+Con esto quedan dos preguntas abiertas, que llevaré a ✋ salvo que me digas otra cosa:
+- ¿Cuenta una reserva cancelada o anulada en la ocupación? Propongo que no: solo las `active`.
+- «Sin reservas» se aplica por vista, como dijiste. En la vista de salas sin reservas no tiene sentido: si no hay reservas, todas las salas salen como no reservadas. Propongo que esa vista liste todas las salas en vez de decir «sin reservas».
+
+## ¿Cómo lo construimos?
+
+1. **Una función por vista y un despachador (Recomendada).** Cada vista es una función pura `(reservas, filtro) → filas`. Otra función las pinta como tabla, y `run('informes', params)` elige la vista y aplica `--sala`.
+   - Cuadra con el estilo del proyecto (funciones exportadas y probables con `node --test`).
+   - Cada task toca una función, con su test, sin pisar a las demás.
+   - Coste: algo más de estructura que un solo bloque.
+2. **Un único recorrido que calcula las cuatro vistas.** Un solo pase por las reservas acumula los contadores de las cuatro vistas.
+   - Es más corto.
+   - Las tasks dejan de ser independientes: la 2.ª y la 3.ª editan el mismo bloque, y cada vista se prueba peor por separado.
+3. **Un subcomando por vista** (`informes sala`, `informes dia`…). Es más explícito, pero es otra interfaz de la que decidiste. Tú pediste un comando con cuatro vistas y un filtro, así que no encaja.
+
+Recomiendo la 1. ¿Cuál eliges?
+
+--- [14]
+Voy con la 1: una función por vista y un despachador. Como la feature prevé 5 tasks, te presento el diseño por secciones, una por mensaje. Esta es la primera.
+
+## Sección 1: la forma general y «ocupación por sala»
+
+**Lo que ves tú.** `informes` a secas enseña las cuatro vistas una tras otra, cada una con su título y su tabla de texto. Esta es la primera, con tres reservas activas en Norte y una en Sur:
+
+```text
+Ocupación por sala
+Sala   Reservas
+Norte  3
+Sur    1
+```
+
+**Sin reservas.** Si no hay ninguna reserva activa, bajo el título sale una sola línea:
+
+```text
+Ocupación por sala
+sin reservas
+```
+
+**Lo que decido yo en esta sección** (irá a ✋ en la spec):
+- «Ocupación» es el **número de reservas activas** de cada sala. No es un porcentaje, porque el proyecto no define cuántas horas tiene una sala.
+- Las canceladas y las anuladas **no cuentan**.
+- Se ordena de más a menos reservas y, en empate, por nombre de sala.
+- Esta vista lista solo las salas con al menos una reserva. Las que no tienen ninguna salen en la vista 4.
+
+**Por dentro** (solo si te hace falta): una función pura que recibe las reservas y devuelve las filas, y otra que las pinta como tabla alineada.
+
+¿Va bien?
+

@@ -1,13 +1,13 @@
-## Modo lite — predicado observable, activación del usuario
+## Lite mode — observable predicate, activated by the user
 
-Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+A feature **can** go in lite mode if it meets **all** these conditions:
 
-- El flujo a modificar ya existe en el repo y se puede leer.
-- No cambia contratos públicos (API, interfaces que consume otro módulo).
-- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
-- Cabe en un solo módulo o área.
-- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/estimation.md` exists: the estimate is ≤ half a day.
 
-Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite en la pregunta del carril de `sdd-propose`, **citando una por una las condiciones que has comprobado**, y espera la confirmación explícita del usuario. Sin confirmación, la feature va en modo full.
+Meeting them **enables** the mode; it does NOT activate it. Propose lite mode in the lane question of `sdd-propose`, **citing one by one the conditions you checked**, and wait for the user's explicit confirmation. Without confirmation, the feature goes in full mode.
 
-En lite: `spec.md` corta (con el bloque de estimación dentro), sin `plan.md` ni `tasks.md`. Si la lite cambia lo que se ve, su Approach lleva el criterio en frases medibles y la pantalla de referencia, y antes de presentar la validación aplicas [frontend-verification.md](../../sdd-implement/references/frontend-verification.md): sobre el entorno del usuario si lo tiene levantado, sin build dedicado ni suite de specs nueva, el detector de `§Frontend` en sus dos viewports y una captura por estado. No presentas con un hallazgo del detector abierto sin justificar, y la presentación enseña su salida, o el aviso «composición no medida», o «no probado» con su motivo. Todo lo demás es idéntico — el gate de la spec, el smoke y el `walkthrough.md` con tiempo real no se abaratan nunca. Si al implementar cae cualquier condición, la feature **sube** a modo full: para, dilo y escribe el `plan.md` que faltaba con su gate. Nunca al revés.
+In lite: a short `spec.md` (with the estimate block inside), without `plan.md` or `tasks.md`. If the lite changes what is seen, its Approach carries the criterion in measurable sentences and the reference screen, and before presenting the validation you apply [frontend-verification.md](../../sdd-implement/references/frontend-verification.md): on the user's environment if they have it up, with no dedicated build or new spec suite, the `§Frontend` detector in its two viewports and one screenshot per state. You don't present with a detector finding open and unjustified, and the presentation shows its output, or the warning «composición no medida», or «no probado» with its reason. Everything else is identical — the spec's gate, its review, the smoke and the `walkthrough.md` with real time never get cheaper. If a condition falls while implementing, the feature **moves up** to full mode: stop, say so and write the missing `plan.md` with its gate. Never the other way round.

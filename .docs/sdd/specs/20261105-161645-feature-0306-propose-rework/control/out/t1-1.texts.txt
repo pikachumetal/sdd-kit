@@ -1,0 +1,111 @@
+--- [3]
+Ahora: leo la spec de la 0011 y las referencias del paso 4 para cerrarlo. Queda: pasada de coherencia, revisión de la spec y presentártela para aprobar, ~10 min.
+
+--- [20]
+Ahora: pruebo el delta en una copia y despacho los dos revisores de la spec. Queda: integrar sus hallazgos y presentarte la spec, ~8 min y ~$0,5.
+
+--- [36]
+Los dos revisores de la spec están en marcha: dominio en Opus y técnica en Sonnet, cada uno con su vigilancia de silencio. Espero a que terminen para integrar sus hallazgos y presentarte la spec.
+
+--- [40]
+1. Importante · Delta `room-managers` («Cada sala tiene un responsable», «Una sala puede no tener responsable») · El WHEN «se pregunta el responsable de Norte» no nombra ninguna operación del CLI ni función. Con `node --test` y un único `src/app.js` no se sabe qué invoca el test. Tampoco se dice si «sin fichero» se prueba con una ruta inyectable o borrando `data/`. · Reescribir el WHEN con una interfaz observable, por ejemplo `anular` o un comando de consulta. Declarar cómo el test apunta a otro fichero (ruta por parámetro o variable de entorno) o fijar el contrato de la función exportada.
+
+2. Importante · Delta `bookings` («Solo el responsable…») · Un solo requisito agrupa cuatro escenarios, y el segundo da por hecho que Ana es responsable, por lo que depende del GIVEN del primero. «Sin responsable» y «sin `--como`» no tienen GIVEN propio. · Separar en escenarios con GIVEN/WHEN/THEN completos: rechazo, éxito, sin `--como` y sala sin responsable. Incluir el caso de decisión 7 (sala sin reserva y no responsable), que no tiene escenario.
+
+3. Importante · Decisiones 6 y 7 frente al delta · La decisión 6 cubre «ausencia del fichero». El delta solo la prueba con `room-managers` y no hay escenario para `anular` sin fichero. La decisión 7 (el permiso se comprueba antes que la existencia de la reserva) tampoco tiene escenario. Ninguna es verificable con el delta actual. · Añadir escenarios de `anular` con el fichero ausente y con una sala sin reserva y un no responsable. Si no, quitar la promesa.
+
+4. Importante · Decisiones, punto 6 · Un `data/managers.json` ilegible, con JSON inválido o con un valor que no es cadena no se contempla. Con la lectura de un fichero nuevo, eso lanzaría una excepción no controlada o contaría como «sin responsable» sin decirlo. · Añadir decisión y escenario del fichero inválido. Por ejemplo, mensaje de error claro y no anular.
+
+5. Importante · Decisiones y Scope · Se habla de `data/managers.json` sin fijar desde dónde se resuelve. Si es relativa al directorio donde se ejecuta el CLI, `anular` falla o da «sin responsable» al lanzarlo desde otro directorio. «Hoy no existe `data/`» implica además que el fichero sí se commitea, y eso no se dice. · Decidir y escribir que se resuelve respecto a `src/app.js` (por ejemplo `import.meta.url`/`__dirname`) o respecto a `process.cwd()`. Decir que `data/managers.json` entra en git con el contenido de ejemplo.
+
+6. Importante · Decisión 4 y delta · El contrato de `--como` no está cerrado. No se dice si acepta `--como=Ana`, si vale antes de los posicionales, ni qué pasa con `--como` sin valor. «Sin `--como`» no distingue entre flag ausente y flag vacío. La lectura de argumentos no está definida, y sin dependencias hay que hacerla a mano. · Fijar la sintaxis admitida (solo `--como <nombre>` tras los posicionales) y añadir un escenario para `--como` sin valor, que responda como sin `--como`.
+
+7. Importante · Decisión 3 frente a Intent y Scope · El cambio de comportamiento de `anular` (antes cualquiera, ahora solo el responsable, con firma nueva) rompe los tests existentes que llaman `voidBooking(room, day)`. La sección Coherencia dice que `git grep` no encuentra la firma en `test/`, y aun así Scope incluye «tests en `test/`». El «anulada <sala> <día>» que «ya existe» no está verificado en el delta como estado previo. · Aclarar si los tests actuales de `anular` existen y deben actualizarse. Si no existen, decir que la 0011 los crea. Marcar el mensaje de éxito como comportamiento conservado.
+
+8. Menor · Decisión 8 · Los mensajes dependen de la capitalización exacta y del nombre del responsable tal cual está en el fichero, sin normalizar (decisión 4). «solo Ana anula…» no deja claro qué pasa si el fichero tiene espacios sobrantes. No se toma decisión sobre `trim`. · Añadir una línea: sin normalización ni `trim`, y el mensaje usa el valor del fichero literal.
+
+9. Menor · Hallazgos de la review · «(pendiente: hallazgos al volver los revisores)» deja la spec en estado `draft` con una sección vacía, y la decisión 1 pide validación («decide tú») sin resolver. Eso bloquea el gate de aprobación. · Resolver la decisión 1 con Laura antes de aprobar y completar o retirar la sección de hallazgos.
+
+10. Menor · Capacidades · `bookings` se declara «Nueva» con un único requisito, de modo que `cancelar` y reservar quedan fuera de la capacidad. El nombre no refleja que está incompleta, y un delta `ADDED` futuro podría chocar con requisitos que ya existen en el código. · Añadir una nota en el cuerpo de la capacidad (o en Scope) diciendo que está incompleta a propósito, para que la 0009 u otra feature la amplíen sin duplicar.
+
+--- [42]
+Ha vuelto el revisor técnico. Falta el de dominio, así que espero a que termine antes de integrar los hallazgos.
+
+--- [43]
+El vigilante de la revisión técnica ya terminó, sin avisos de silencio. Sigo esperando al revisor de dominio.
+
+--- [45]
+1. Crítico · Decisiones 3 y Scope «No entra: `cancelar`» · Si las reservas no guardan a nombre de quién están, `cancelar` sigue dejando que cualquiera quite cualquier reserva. Restringir `anular` no cierra el hueco que describe el Intent («hoy cualquiera anula cualquier reserva»), y el complemento («quien no es responsable no puede quitar la reserva de otro») queda sin cumplirse ni declararse. · Hay dos salidas: declarar en el Intent y en No entra que `cancelar` sigue abierto a todos y que es un riesgo aceptado, o meter `cancelar` en el Scope con su regla.
+2. Crítico · Decisión 3 frente a la escena de `bookings` · La decisión 3 dice que las reservas no guardan a nombre de quién están. Pero el GIVEN pone «la reserva de Norte del lunes, de Pedro», y `PRODUCT.md` define Reserva como «a nombre de quien la pide». O el dato no existe y el ejemplo es falso, o existe y la decisión 3 es falsa. · Comprobar si la reserva guarda o no a su titular. Si lo guarda, reescribir la decisión 3. Si no, quitar «de Pedro» y anotar la divergencia con `PRODUCT.md`.
+3. Importante · Capacidades y Decisión 2 · `bookings` y `room-managers` usan justo los términos que `PRODUCT.md` manda evitar («_Evitar_: booking», «_Evitar_: room»). Además, la constitución (punto 4) pide los documentos en castellano, y la regla «idioma de los nombres» se resuelve en inglés sin justificarlo. · Cambiar a `reservas` y `responsables-de-sala`, o declarar de forma explícita por qué los ids van en inglés y cómo encaja eso con el punto 4 y con la terminología.
+4. Importante · Delta de `bookings` frente a `PRODUCT.md` (Reserva = sala + día + franja) · `anular <sala> <día>` no tiene franja. Si Norte tiene dos reservas el lunes, no está definido qué se anula, ni si se anulan todas. · Añadir una escena con varias franjas el mismo día, o declarar que hoy solo hay una reserva por sala y día.
+5. Importante · Decisión 7 frente al Delta · El orden «permiso antes que existencia» y el caso «sala sin reserva ese día» solo aparecen en las decisiones. Ninguna escena los prueba, así que el gate no los verifica. · Añadir el AND `anular Sur mar --como Ana` (Sur sin reserva) → «solo Luis anula reservas de Sur».
+6. Importante · Decisión 4 frente al Delta · La comparación «tal cual, con mayúsculas» no tiene escena (`--como ana` frente a Ana). Tampoco se dice qué pasa con `--como` vacío ni con salas escritas en otra caja (`norte`). · Añadir escenas para `--como ana` y `--como ""`, y declarar si el nombre de sala también se compara tal cual.
+7. Importante · Decisión 6 frente a las 5 reglas (aviso y conflicto) · No se dice qué pasa si `data/managers.json` existe pero está mal formado, ni si eso cuenta como «sin responsable», como error o con aviso. Tampoco se dice qué pasa con claves de sala que no existen. · Declarar la regla de fichero inválido, con el mensaje exacto, y la de clave desconocida, o poner «no aplica» con su motivo.
+8. Importante · Decisión 1 y Scope · La spec crea la capacidad `room-managers` y el formato del fichero, que según `docs/config.md` le tocan a la 0009. Eso es alcance oculto: ni el Scope «Entra» ni el «No entra» mencionan los ficheros de capacidad ni la reconciliación del roadmap. Tampoco se declara la regla de conflicto si la 0009 define otro formato (por ejemplo, varios responsables). · Listar en «Entra» los ficheros de capacidad y la fila de la 0009, y declarar el límite «un único responsable por sala» y qué manda si la 0009 lo contradice.
+9. Menor · Decisiones (5 bis: dónde viven los datos y límites) · No se dice si `data/managers.json` se versiona o es local del servidor, ni quién lo edita, porque no hay comando y no se declara «no aplica». Tampoco hay límites de nombre ni de número de salas, ni un «no aplica». · Declarar si el fichero va en git o se ignora, que se edita a mano (fuera de alcance) y que los límites no aplican.
+10. Menor · Frontmatter, Aprobaciones y Hallazgos · La misión dice «No hay más usuarios ni más desarrolladores», pero la spec nombra a una aprobadora (Laura) y a un dev-lead, y las decisiones 4 y 8 hablan de varias personas. Si Laura es una persona real, sobra; si no, contradice la misión. Además, el mensaje «solo <responsable>…» enseña el nombre del responsable a quien no lo es, y no se declara si eso se permite. · Alinear los aprobadores con la misión (el propio autor) y declarar de forma explícita que el nombre del responsable es visible para todos.
+
+--- [47]
+Ahora: integro los hallazgos de los dos revisores en la spec. Queda: segunda ronda con un revisor (aceptaste un Crítico) y presentarte la spec, ~6 min y ~$0,2.
+
+--- [50]
+El script no se ejecutó y la spec sigue como estaba. La reescribo entera con Write.
+
+--- [53]
+Delta limpio (exit 0, 8 requisitos). Segunda ronda: un revisor en Sonnet relee la spec corregida.
+
+--- [59]
+La segunda ronda está en marcha con su vigilancia. Espero su resultado antes de presentarte la spec.
+
+--- [61]
+1. Crítico · Delta `bookings` / decisión 1 · El GIVEN del delta dice «`data/managers.json` con {"Norte": "Ana"…}» pero la decisión 8 manda a los tests a `SALAS_MANAGERS`, y varios escenarios dicen «Ana responsable de Norte» sin decir de dónde sale. El gate (`node --test` en verde) no tiene una definición única del fixture. · Unificar los GIVEN: todos usan `SALAS_MANAGERS` apuntando a un fichero temporal con contenido explícito. Dejar el fichero versionado solo para el escenario de `responsable`.
+
+2. Crítico · Delta `bookings` / «Anular exige decir quién eres» · El requisito mezcla dos escenarios (sin `--como` y `--como ana`) en un solo WHEN/THEN. Eso no es verificable como un caso. Además, `--como` vacío y `--como` sin valor (decisión 6) no tienen escenario propio. · Separar en escenarios individuales: sin `--como`, `--como ana` (minúscula), `--como ""` y `--como` sin valor.
+
+3. Importante · Decisiones 6 y 11 · No se dice qué pasa con la forma `--como=Ana`, que la decisión 6 excluye. Sin escenario ni mensaje definido, el comportamiento queda abierto: puede tratarse como sin `--como`, como un posicional de más o como un error. Tampoco se define el orden de comprobación entre «falta `--como`» y «sala sin responsable». · Añadir un escenario para `--como=Ana` y fijar el orden completo de validación (sin `--como`, fichero inválido, sin responsable, no es responsable, sin reserva).
+
+4. Importante · Decisión 9 / delta · Los casos «fichero ilegible», «JSON válido pero no objeto» y «valores no textuales» se agrupan bajo un solo escenario. Falta el caso de fichero inválido con `--como` ausente: ¿gana «indica quién eres» o «no es válido»? · Dar un escenario por forma de invalidez, o declarar que basta una. Fijar la precedencia entre estos dos mensajes.
+
+5. Importante · Decisión 3 / Intent / `PRODUCT.md` · «Anulación» en `PRODUCT.md` dice «por cualquier motivo», pero la spec deja que `cancelar` siga abierto a todos aunque «Cancelación» es del propio cliente. La divergencia con `PRODUCT.md` se declara, pero no hay actualización de `PRODUCT.md` ni de su terminología en el Scope. · Declarar en Scope si `PRODUCT.md` se toca o no. Si no, anotar la divergencia como deuda con una fila en el roadmap.
+
+6. Importante · Scope / decisión 1 · El Scope incluye «reconciliar la fila de la 0009 en el roadmap», pero la decisión 1 dice que se hace «al cerrar» con `sdd-roadmap`. Además, el cambio de formato (migración de `managers.json`) si la 0009 manda otro formato no tiene dueño ni criterio de cuándo. Es alcance oculto. · Mover la reconciliación a una tarea explícita del cierre o sacarla del Scope. Registrar el riesgo de migración como dependencia de la 0009.
+
+7. Importante · Decisión 11 / permisos · Mostrar el nombre del responsable a quien no lo es se declara a propósito, pero `--como` no autentica (decisión 6). Cualquiera obtiene el nombre del responsable y puede suplantarlo en el siguiente intento. Eso vacía la regla de permiso, y la spec solo dice «la misión es de un solo usuario». · Declarar la consecuencia en el Intent: la regla es una guarda contra errores, no un control de acceso. O no revelar el nombre en el rechazo.
+
+8. Menor · Decisión 5 / delta · «Como máximo una reserva activa por sala y día; `anular` toma la primera» es un supuesto sobre código existente que la spec no verifica ni cubre con escenario. Si hay varias franjas (el glosario de `PRODUCT.md` habla de «sala en un día y una franja»), el comportamiento queda sin probar. · Añadir un escenario con dos reservas el mismo día, o retirar la afirmación y decir que no se define.
+
+9. Menor · Hallazgos / Coherencia · «La pasada final se anota al cierre del paso» deja la prueba de `sdd capability merge` sin resultado en una spec que va a gate. Hay también una aprobación de Laura «pendiente» mientras la decisión 1 sigue sin resolver. · Anotar el resultado de la pasada final antes del gate, o quitar la frase.
+
+10. Menor · Decisión 12 / ejemplos · La decisión 12 mezcla «límites: no aplica» con la mención al aprobador, que es otro tema. Los ejemplos Ana, Luis y Pedro son nombres de persona, aunque ficticios. Pedro se citó en una versión anterior y ya no está. · Separar la decisión 12 en dos. Confirmar que los nombres de ejemplo son genéricos y que no hay más referencias a «Pedro».
+
+--- [63]
+Ahora: integro los hallazgos de la segunda ronda (sin tercera ronda) y repito la prueba del delta.
+
+--- [67]
+La spec de la 0011 está terminada y espera tu aprobación. Está en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md` y sigue en `draft`. Es feature en modo full, con perfil delegate del proyecto.
+
+🦆 Hoy `anular Norte lun` anula la reserva sea quien sea quien lo escriba. Con esta spec hará falta añadir `--como Ana`, y solo el responsable que `data/managers.json` pone para esa sala podrá anular. `--como Luis` recibe «solo Ana anula reservas de Norte» y la reserva sigue activa. No es una contraseña: cualquiera puede escribir `--como Ana`. `cancelar` no cambia y sigue abierto a todos.
+
+## Lo que ha cambiado en este paso
+- **Review de spec:** dos revisores, dominio (Opus) y técnica (Sonnet), con 20 hallazgos. Después, una segunda ronda con un revisor (Sonnet) porque acepté dos Críticos. Cada hallazgo está en la spec como aceptado o rechazado, con su razón.
+- **Capacidades:** `bookings` no existía como capacidad. Por eso `sdd capability merge` rechazó la primera versión. Ahora `bookings` y `room-managers` van como nuevas y todo el delta entra como `ADDED`.
+- **Pruebas del delta:** en una copia de `.docs/sdd`, la versión final da exit 0 con 9 requisitos añadidos (2 en `room-managers`, 7 en `bookings`).
+- **Coherencia:** corregí la spec contra `docs/config.md` y `PRODUCT.md`, y no hay otros usos de `voidBooking` ni de `anular` fuera de `src/app.js`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+1. **Solape con la 0009 (decide tú).** `docs/config.md` dice que los responsables y su fichero los define la 0009, que sigue pendiente y va antes en el roadmap. La spec crea `data/managers.json` con un único responsable por sala, para no bloquear la 0011. Si la 0009 define otro formato, manda ella y se migra el fichero. La alternativa es hacer antes la 0009.
+2. **Capacidades nuevas** `room-managers` y `bookings`, con ids en inglés porque son nombres de fichero. `bookings` queda incompleta a propósito y solo recoge anular.
+3. **Las reservas no guardan titular.** Por eso la regla es que `anular` es del responsable de la sala, de quien sea la reserva. `PRODUCT.md` queda sin tocar y la divergencia va como deuda al roadmap.
+4. **`cancelar` sigue abierto a todos** (riesgo aceptado). Cerrarlo exigiría guardar el titular, que es otra feature.
+5. **Sintaxis de `--como`:** solo `--como <nombre>` tras los posicionales, y `--como=Ana` cuenta como ausente. Los nombres se comparan tal cual, con mayúsculas y sin `trim`.
+6. **Orden de comprobación de `anular`:** sin `--como`, fichero inválido, sala sin responsable, no es el responsable, sin reserva.
+7. **Dónde se lee el fichero:** relativo a la raíz del proyecto, con `SALAS_MANAGERS` para redirigirlo en los tests. Se expone la función `responsable(sala)`. Un fichero inválido responde «data/managers.json no es válido».
+8. **Mensajes:** el rechazo nombra al responsable. Hoy `anular` no tiene tests, así que esta feature los crea.
+
+Rechacé dos hallazgos, con razón en la spec: pasar los ids de capacidad a castellano y cambiar al aprobador Laura. También rechacé añadir un escenario con dos reservas el mismo día, porque la decisión 5 deja ese caso fuera de alcance.
+
+## ¿Apruebas la spec?
+1. **Apruebo (Recomendada).** Incluye mantener la decisión 1 como está. Después escribo el plan y paso a la implementación.
+2. **Cambios.** Dime qué cambio, por ejemplo hacer antes la 0009.
+

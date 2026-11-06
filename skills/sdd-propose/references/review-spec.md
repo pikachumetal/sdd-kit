@@ -1,64 +1,66 @@
-# Review de la spec — rúbrica de complejidad y revisor adversarial
+# Spec review — the complexity rubric and the adversarial reviewer
 
-Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gate. En modo lite no se aplica.
+Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
 
-## 1. Cuenta las señales (observables en la spec)
+## 1. Count the signals (observable in the spec)
 
-| Señal | Se cumple si… |
+| Signal | Holds if… |
 | --- | --- |
-| Capacidad nueva | «✋ Decisiones que he tomado yo» declara una capacidad nueva en `capabilities/` |
-| Contrato público | el delta toca una API, un formato de fichero o una interfaz que consume otro módulo o sistema |
-| `MODIFIED` / `REMOVED` | el delta cambia o quita un requisito existente |
-| Tres o más capacidades | el delta tiene tres o más subsecciones «Capacidad:» |
-| Datos o migración | hay cambio de schema, migración o dato persistente nuevo |
-| Dependencia externa | entra una librería, servicio o sistema que el proyecto no usaba |
-| Área no explorada | la spec toca código o documentos que no has leído en esta sesión |
-| Reglas de visibilidad o permiso | el delta introduce un rol, un estado o una condición que decide **qué no debe ver o hacer** alguien (el funcional suele decir qué hace cada rol y callar lo que no debe) |
+| New capability | «✋ Decisiones que he tomado yo» declares a new capability in `capabilities/` |
+| Public contract | the delta touches an API, a file format or an interface another module or system consumes |
+| `MODIFIED` / `REMOVED` | the delta changes or removes an existing requirement |
+| Three or more capabilities | the delta has three or more «Capacidad:» subsections |
+| Data or migration | there's a schema change, a migration or new persistent data |
+| External dependency | a library, service or system the project didn't use comes in |
+| Unexplored area | the spec touches code or documents you haven't read in this session |
+| Visibility or permission rules | the delta brings in a role, a state or a condition that decides **what someone must not see or do** (the functional spec usually says what each role does and stays silent on what it must not) |
 
-## 2. Decide si recomiendas review
+## 2. Decide how many reviewers
 
-- **Por defecto, ninguna.** 0–3 señales no proponen review.
-- **4 señales o más, o contrato público + datos → recomienda dos revisores** en paralelo (una lente cada uno).
-- **Delta pequeño → un revisor con los siete puntos** en vez de dos: estima cuántas líneas cambia lo que lista el Scope, texto y código juntos, y si son menos de ~50, baja un escalón. Las señales dicen qué mirar; el tamaño, cuánto cuesta mirarlo: cuatro señales pidieron dos revisores para unos pocos párrafos (ticket 0040 §1b). Un delta pequeño con contrato público y datos baja a un revisor, nunca a ninguno: «es solo una línea» no quita la review de un contrato que consume otro sistema.
-- **Dos revisores, paralelismo restringido y spec delegada → un revisor con los siete puntos**, sin preguntar: si el nivel sería dos revisores, el dev-lead eligió o dijo en el arranque «apruebo la spec por delegación» y las instrucciones del usuario piden confirmar antes de paralelizar, no despaches dos revisores ni pares a confirmarlo. Con un nivel de «ninguna», sigue siendo ninguna, y «toma tú las decisiones» sin esa opción no es una spec delegada. Un revisor no es paralelizar, y la segunda lente va en la línea del mínimo razonable. Con la regla solo en las instrucciones, 2 de 2 sujetos con la spec delegada pararon a pedir permiso para los dos revisores (`tests/spec-review-weight-red.md`, p).
+The rubric decides how many reviewers, not whether there is a review, and you don't ask the user whether to do it:
 
-En `pair` y `delegate`, si toca recomendar, lo preguntas **antes de presentar la spec**, en una sola pregunta con su motivo. **Sus opciones llevan el modelo del revisor de dominio** —también el del revisor único de siete puntos, que incluye esa lente— con su recomendación: Opus si la spec toca reglas de negocio, roles o reglas del flujo («permisos por rol del gestor de cobros»), Sonnet si no («renombrar una columna del listado»). Sin el modelo en las opciones, 2 de 2 sujetos preguntaron solo el nivel (`tests/sdd-start-feature-0146-red.md`, r1). Si la petición o el prompt de arranque ya nombran el modelo, no lo preguntas; si no hay pregunta (spec aprobada por delegación, `unattended`), Sonnet. La lente técnica va siempre en Sonnet. En `unattended` el agente decide él mismo, sin preguntar, y lo registra con el mismo bloque en «Decisiones que he tomado yo».
+- **Full: two reviewers**, one lens each (domain and technical), in parallel.
+- **Small Scope → one reviewer with the seven points**: estimate how many lines what the Scope lists changes, text and code together; with fewer than ~50, and a delta that touches no public contract and carries no `MODIFIED`, one reviewer. The signals say what to look at; the size, what looking costs: four signals asked for two reviewers for a few paragraphs (ticket 0040 §1b). «It's only one line» doesn't lower a public contract or a `MODIFIED` to one reviewer: two lines in `db/002-site.sql` and `src/api.js` that change a contract still get two.
+- **Lite: one reviewer with the seven points**, `model: sonnet`.
+- **Two reviewers, restricted parallelism and a delegated spec → one reviewer with the seven points**, without asking: if the level is two reviewers, the dev-lead chose or said at the start «apruebo la spec por delegación» and the user's instructions ask to confirm before parallelizing, don't dispatch two reviewers or stop to confirm it. «Toma tú las decisiones» without that option isn't a delegated spec. One reviewer isn't parallelizing, and the second lens goes in the line of the reasonable minimum. With the rule only in the instructions, 2 of 2 subjects with the spec delegated stopped to ask permission for the two reviewers (`tests/spec-review-weight-red.md`, p).
+- **Two reviewers, restricted parallelism and a spec not delegated → one question**, before dispatching them, with the two reviewers, each one's model and its cost: it's a money stop the user's own instructions ask for.
+- **A level the dev-lead names** in the request or the launch prompt («sin review», «un revisor») is applied, and their literal phrase goes to «Decisiones tomadas con el dev-lead». In `unattended`, never fewer reviewers than the rubric gives.
 
-El nivel se presenta como el **bloque que abre** «✋ Decisiones que he tomado yo — valida estas», con esta forma:
+**The model.** The domain reviewer, and the single reviewer of full that carries that lens, goes in Opus when the spec touches business rules, roles or flow rules («permisos por rol del gestor de cobros»), and in Sonnet when not («renombrar una columna del listado»). The technical lens always goes in Sonnet. In lite, Sonnet even if the spec touches roles: it's the dev-lead's phrase («levantar uno en sonnet»). If the request or the launch prompt name the model, apply it.
+
+The level goes as the **block that opens** «✋ Decisiones que he tomado yo — valida estas», as the record of what you dispatched, in this form:
 
 ```text
 Review de spec propuesta: <nivel> — señales: <las contadas> · tamaño: ~<N> líneas en <M> ficheros
-- Dominio: <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
-- Técnica: <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
+- Dominio (<modelo>): <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
+- Técnica (sonnet): <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
 - Mínimo razonable: <el nivel más bajo defendible> — deja sin cubrir <qué>
 ```
 
-Cada línea de lente **cita un requisito, una sección o un valor de esta spec**. «Comprobaría contradicciones con las capacidades» vale para cualquier spec y no ayuda a decidir; lista solo las lentes que el nivel propone o que el mínimo descarta. La línea del mínimo nombra el **descubierto**, no el precio: lo que cuesta un revisor (~100k tokens) ya se sabe, y lo que el dev-lead no puede ver sin ti es qué se queda sin mirar si recorta.
+Each lens line **cites a requirement, a section or a value of this spec**. «Comprobaría contradicciones con las capacidades» fits any spec and helps no one decide; list only the lenses the level dispatches or the minimum drops. The minimum's line names what is **left uncovered**, not the price: what a reviewer costs (~100k tokens) is known, and what the dev-lead can't see without you is what goes unread if they cut.
 
-Ejemplo, en una spec de facturación:
+Example, in a billing spec:
 
 ```text
 Review de spec propuesta: dos revisores — señales: contrato público (el webhook `invoice.paid` lo consume el portal del cliente), MODIFIED (dos requisitos de `invoicing`), datos (columna `tax_rate`), rol nuevo (gestor de cobros) · tamaño: ~180 líneas en 6 ficheros
-- Dominio: si el MODIFIED de «La factura se emite al cerrar el mes» mantiene el aviso a contabilidad que hoy exige la capacidad, y qué NO puede hacer el gestor de cobros (señal: MODIFIED + rol nuevo)
-- Técnica: si el payload de `invoice.paid` queda versionado y si `tax_rate` necesita migración con valor por defecto para las facturas ya emitidas (señal: contrato público + datos)
+- Dominio (opus): si el MODIFIED de «La factura se emite al cerrar el mes» mantiene el aviso a contabilidad que hoy exige la capacidad, y qué NO puede hacer el gestor de cobros (señal: MODIFIED + rol nuevo)
+- Técnica (sonnet): si el payload de `invoice.paid` queda versionado y si `tax_rate` necesita migración con valor por defecto para las facturas ya emitidas (señal: contrato público + datos)
 - Mínimo razonable: solo técnica — deja sin mirar el complemento del rol nuevo, el tipo de hueco que no se ve hasta que alguien accede a lo que no debía
 ```
 
-**Proponer no es activar**: el usuario activa con su respuesta a esta pregunta, antes de ver la spec.
+## 3. Dispatch the reviewers
 
-## 3. Despacha el revisor (si se activa: por el usuario, o por el agente en `unattended`)
+Subagent `subagent_type: sdd-kit:effort-medium`, with the model of §2, one per lens, each with its silence watch ([control-profiles.md](control-profiles.md#silence-watch)). With two reviewers, load `sdd-parallel-agents` with `Skill` and dispatch them with it, in the same response. The brief's points **are split by how many reviewers you dispatch**:
 
-Subagente `subagent_type: sdd-kit:effort-medium`, con el modelo elegido para la lente de dominio (o el revisor único) y `model: sonnet` para la técnica, uno por lente, cada uno con su vigía de silencio ([control-profiles.md](control-profiles.md#vigía-de-silencio)). Con dos revisores, carga `sdd-parallel-agents` con `Skill` y despáchalos con ella, en la misma respuesta. Los puntos del encargo **se reparten según cuántos revisores despaches**:
+- **One reviewer**: its lens gets the **seven points**.
+- **Two reviewers**: **domain** gets 1, 3, 5, 5 bis and 7; **technical** gets 2, 4 and 6, and also reads `architecture.md`. Each brief closes with the frontier: «if a finding belongs to a point not on your list, don't report it: the other reviewer looks at it».
 
-- **Un revisor**: su lente recibe los **siete puntos**.
-- **Dos revisores**: **dominio** recibe 1, 3, 5, 5 bis y 7; **técnica** recibe 2, 4 y 6, y además lee `architecture.md`. Cada encargo cierra con la frontera: «si un hallazgo pertenece a un punto que no está en tu lista, no lo reportes: lo mira el otro revisor».
+Without the split, the common points are paid twice: 4 of 18 findings duplicated in the field (task 0009, ~100k tokens per reviewer) and 8 of 19 —42 %— in the RED of this rule (`tests/spec-review-lenses-red.md`).
 
-Sin el reparto, los puntos comunes se pagan dos veces: 4 de 18 hallazgos duplicados en campo (task 0009, ~100k tokens por revisor) y 8 de 19 —el 42 %— en el RED de esta regla (`tests/spec-review-lenses-red.md`).
+Brief, with the points it gets:
 
-Encargo, con los puntos que le tocan:
+> You are an adversarial reviewer of an SDD spec, with the `<domain|technical>` lens. Your job is to find what will make the implementation or the gate fail, not to approve. Read: `<path of spec.md>`, `.docs/sdd/constitution.md`, `.docs/sdd/mission.md`, `<touched capabilities from capabilities/>` [technical lens: and `.docs/sdd/architecture.md`]. Don't read code or other specs. Look, in this order, for: (1) contradictions with the living truth of `capabilities/` — an `ADDED` that changes an existing requirement is an undeclared `MODIFIED`; (2) delta requirements without a GIVEN/WHEN/THEN scenario or with a scenario that can't be verified; (3) hidden scope — something the Intent promises and the Scope doesn't list, or the other way round; (4) decisions taken in the body that aren't in «✋ Decisiones que he tomado yo»; (5) [if the spec brings in a role, a state or an access condition] **the complement**: for each new role or state, what is forbidden —what it doesn't see, what it can't do— and whether the spec says so; a role described only by what it does is a visibility gap; (5 bis) [if the delta brings in new data, names, limits, warnings or a conflict condition] **the five rules by name** —where the data lives · language of the names · limits · warnings · rule on conflict—: each one declared in «Reglas de la capacidad» or «no aplica», with the value taken from the constitution's «Reglas de producto» or from the capability; a rule invented where one was already written, or one that contradicts the constitution, is Crítico; (6) contracts, data or dependencies the spec touches without saying so; (7) **the examples**: an example, a value or a fixture of the spec that contradicts the constitution, and —even if the constitution doesn't forbid it— any that names a real client, project, person or datum where an invented example would serve as well; artifacts get published and the name doesn't leave the history. With two reviewers, end with your lens's frontier. Return ONLY a numbered list, one finding per line: `<Crítico|Importante|Menor> · <dónde (sección)> · <qué falla> · <qué cambiar>`, in the user's language. No preamble, no praise, ten findings at most.
 
-> Eres un revisor adversarial de una spec SDD, con la lente `<dominio|técnica>`. Tu trabajo es encontrar lo que hará fallar la implementación o el gate, no aprobar. Lee: `<ruta spec.md>`, `.docs/sdd/constitution.md`, `.docs/sdd/mission.md`, `<capacidades tocadas de capabilities/>` [lente técnica: y `.docs/sdd/architecture.md`]. No leas código ni otras specs. Busca, en este orden: (1) contradicciones con la verdad viva de `capabilities/` — un `ADDED` que cambia un requisito existente es un `MODIFIED` no declarado; (2) requisitos del delta sin escenario GIVEN/WHEN/THEN o con escenario que no se puede verificar; (3) alcance oculto — algo que el Intent promete y el Scope no lista, o al revés; (4) decisiones tomadas en el cuerpo que no están en «✋ Decisiones que he tomado yo»; (5) [si la spec introduce un rol, un estado o una condición de acceso] **el complemento**: para cada rol o estado nuevo, qué queda prohibido —qué no ve, qué no puede hacer— y si la spec lo dice; un rol descrito solo por lo que hace es un hueco de visibilidad; (5 bis) [si el delta introduce datos, nombres, topes, avisos o una condición de conflicto nuevos] **las cinco reglas por nombre** —dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto—: cada una declarada en «Reglas de la capacidad» o «no aplica», con el valor tomado de las «Reglas de producto» de la constitution o de la capacidad; una regla inventada donde ya había una escrita, o que contradiga la constitution, es Crítico; (6) contratos, datos o dependencias que la spec toca sin decirlo; (7) **los ejemplos**: un ejemplo, un valor o una fixture de la spec que contradiga la constitution, y —aunque la constitution no lo prohíba— cualquiera que nombre un cliente, un proyecto, una persona o un dato reales donde un ejemplo inventado serviría igual; los artefactos se publican y el nombre no se retira del historial. Con dos revisores, termina con la frontera de tu lente. Devuelve SOLO una lista numerada; cada hallazgo en una línea: `<Crítico|Importante|Menor> · <dónde (sección)> · <qué falla> · <qué cambiar>`. Sin preámbulo, sin elogios, máximo diez hallazgos.
+## 4. Fold the findings in before the gate
 
-## 4. Incorpora los hallazgos antes del gate
-
-Subsección `### Hallazgos de la review` dentro de «✋ Decisiones que he tomado yo», una línea por hallazgo: `**Aceptado** — <hallazgo> → <cambio hecho en la spec>` o `**Rechazado** — <hallazgo> → <motivo>`. Los Críticos no se rechazan sin motivo escrito. Después, el gate: el usuario lee las decisiones y los hallazgos, nada más.
+Subsection `### Hallazgos de la review` inside «✋ Decisiones que he tomado yo», one line per finding: `**Aceptado** — <hallazgo> → <cambio hecho en la spec>` or `**Rechazado** — <hallazgo> → <motivo>`. Críticos aren't rejected without a written reason. Then the second round, if it applies: with a Crítico accepted or the central decision rewritten —the one that fixes the chosen approach, in the approaches message or in the ✋, or, without approaches, the one the Intent makes the condition of success—, a new reviewer with the seven points, dispatched as in §3 with `model: sonnet`, rereads the corrected spec once, in full and in lite, and its findings are folded in the same way; a Crítico of that round goes to the gate accepted or rejected with its reason, with no third round. Without an accepted Crítico or a rewritten central decision, there's no second round. Then the gate: the user reads the decisions and the findings, nothing more.

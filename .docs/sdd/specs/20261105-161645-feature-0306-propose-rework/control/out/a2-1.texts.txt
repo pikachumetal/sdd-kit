@@ -1,0 +1,125 @@
+--- [12]
+Ahora: he reproducido el fallo leyendo el código y lo he clasificado. Queda: tu confirmación del carril, y luego el parche, unos 30 min.
+
+🦆 **En llano:** `cancelar` busca la reserva activa de la sala y se olvida del día (`src/app.js:10-12`, `findBooking` no usa `day`). Por eso "Norte mar" encuentra la del lunes, la cancela y responde con el día que pediste. La causa es determinista y el arreglo es comparar también `b.day === day`. `anular` usa la misma función, así que tenía el mismo fallo y queda arreglado con el mismo cambio.
+
+**Carril: patch (fallo).**
+- Hay un solo test que hoy falla: `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar activa la del lunes.
+- La solución la fija la causa raíz. No hay texto, sitio ni regla que decidir.
+- Ningún walkthrough abierto toca esto.
+
+**Estimación:** 0,5 h, el tiempo real del patch 0007, que fue parecido. No hay ningún gate de cierre medido en el proyecto, así que no puedo darte su duración.
+
+**Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo seguimos?
+1. **Patch (recomendada).** Creo la rama, el test de regresión en rojo y el arreglo. `anular` queda cubierto con un segundo caso en el mismo patch.
+2. **Feature completa.** Solo si quieres cambiar algo más, por ejemplo qué dice el mensaje cuando no hay reserva. No lo veo necesario.
+
+También puedes decir otro perfil para este patch.
+
+Aparte: esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+--- [21]
+Es un patch, así que la skill manda leer primero `patch-flow.md`.
+
+--- [33]
+RED confirmado, y falla por la causa esperada. Ahora el arreglo mínimo.
+
+--- [37]
+Verde: 6/6 y el síntoma ya no se reproduce. Antes del commit, el patch exige un revisor (Sonnet).
+
+--- [39]
+Ya está el arreglo con sus tests en verde. Estoy esperando al revisor antes de hacer el commit; en cuanto responda, termino `patch.md` y cierro.
+
+--- [45]
+Sin hallazgos.
+
+1. **Causa raíz.** Es la real. `findBooking` en `src/app.js:9-11` recibía `day` y no lo usaba. `cancelBooking` (`:13`) y `voidBooking` (`:20`) usan esa misma función, así que `anular` tenía el mismo fallo, como dice el patch.
+2. **Fix.** `src/app.js:10` añade `b.day === day`. Solo hay dos llamadas a `findBooking`, y las dos quedan cubiertas. No queda otro caso igual sin arreglar.
+3. **Tests.** Los dos tests nuevos fallan sin el fix y pasan con él.
+   - Sin el fix (con `app.js` de HEAD en un directorio temporal) fallan los dos: `cancelar` devuelve `cancelada Norte mar` y `anular` devuelve `anulada Norte mar`, cuando se esperaba `sin reserva Norte mar`.
+   - Con el fix, `node --test test/` da 6 de 6 en verde.
+   - Prueban comportamiento observable, no detalles internos. Cada test comprueba que el martes devuelve `sin reserva` y que después el lunes sigue siendo cancelable o anulable. Eso confirma que la reserva del lunes no se tocó.
+   - Cada test importa una copia nueva del módulo (`?copia=n`), así que el estado en memoria no se comparte entre tests.
+
+Los dos nombres de test dicen «otro día sin reserva». Es correcto, y no he marcado nada como hallazgo.
+
+--- [51]
+El shell se comió las comillas invertidas y el §4 quedó corrupto. Reescribo la sección con Edit.
+
+--- [57]
+Ya hay commit del fix (`92507a2`). El campo `commit:` de `patch.md` guarda el hash anterior al amend. Lo corrige el commit de cierre, como dice la plantilla. Paso a `sdd-archive`.
+
+--- [69]
+Cierre en pausa: falta tu validación, y el merge está además bloqueado por la política (más abajo).
+
+🦆 Antes, `cancelar Norte mar` sin reserva el martes cancelaba la del lunes y respondía «cancelada Norte mar». Ahora responde «sin reserva Norte mar» y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- nada
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día no toca la del lunes | `ejecución real` | `sin reserva Norte mar` |
+| `cancelar Norte lun` sigue funcionando | `ejecución real` | `cancelada Norte lun` |
+| `anular Norte mar` sin reserva ese día | `ejecución real` | `sin reserva Norte mar` |
+| `anular Norte lun` sigue funcionando | `ejecución real` | `anulada Norte lun` |
+
+**Suites**
+
+- Gate de cierre `node --test && node scripts/lint.mjs`: 6/6 y `lint: sin hallazgos`, sobre `92507a2`, ~0,2 s.
+
+**Sin probar**
+
+- nada
+
+**Aviso de cierre:** `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Sin el bloque `merge` completo no fusiono. Dime a qué rama (`develop`) y si con `--no-ff`, o fusiona tú.
+
+Panel: plan B en http://127.0.0.1:5188/ (no hay herramientas de Chrome; la página no ve la app, así que no registra consola ni red).
+
+**Guion**
+
+Rama `feature/0012-cancelar-ignora-dia` · worktree `<run>/repo`
+
+Es una CLI sin servidor ni entorno que arrancar. Las reservas viven en memoria y cada comando parte de cero.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Tu caso del reporte:
+
+```
+node src/app.js cancelar Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+2. La del lunes sigue ahí:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `cancelada Norte lun`
+
+3. Lo mismo con `anular`:
+
+```
+node src/app.js anular Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+Si no puedes ahora: `Diferir: lo pruebo en la próxima reserva real de Norte, a cargo de ti`
+
+Dime "validado" o qué paso falla.
+
+Aparte: esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+

@@ -1,0 +1,116 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y escribir la spec hasta la parada de aprobación.
+
+--- [39]
+Los dos revisores de la spec (dominio y técnica, ambos sonnet) están en marcha, cada uno con su vigilancia de silencio. Cuando vuelvan, integro sus hallazgos en el ✋ y te presento la spec para aprobarla. Todavía no hay plan ni código.
+
+--- [40]
+1. Importante · Delta de comportamiento, escenario «Libres de una franja» · El GIVEN dice «Norte reservada el lun de 10:00-12:00», pero `libres 10:00-12:00` no recibe día. El Approach dice que `params[0]` es solo la franja, y nada dice cómo se resuelve el día en `freeRooms`. El THEN `Sur` no se puede comprobar con el contrato descrito. · Indicar de dónde sale el día (parámetro, valor por defecto o fecha fija del test). Reescribir el GIVEN y el WHEN con ese dato.
+
+2. Importante · Delta de comportamiento, escenario «filtrados por planta» · El GIVEN reserva Norte «de 10:00-12:00» sin día, a diferencia del escenario anterior (lun). El THEN `--planta 1` → vacía solo prueba el filtro si Norte ya está ocupada. Si no lo está, daría `Norte` y el escenario falla. · Fijar el mismo día que en el escenario 1. Añadir un escenario separado que pruebe el filtro sin reservas: `--planta 1` da `Norte`.
+
+3. Importante · Delta de comportamiento, escenario «Planta desconocida o sin valor» · Mezcla dos comportamientos en un solo escenario con dos THEN. Las decisiones 6 y 7 no dicen qué pasa con otros valores inválidos (`--planta abc`, `--planta 0`, `--planta 2.5`, `--planta -1`). Tampoco dicen si el error se comprueba antes o después de validar la franja. · Separar en dos escenarios. Añadir la regla de validación: entero positivo, y qué sale si no lo es. Decir el orden de las validaciones.
+
+4. Importante · Delta de comportamiento · Los THEN «la salida es vacía» y «la salida es `planta desconocida: 9`» exigen saber cómo devuelve `run` los resultados: cadena, array o `console.log`. Y si los errores se devuelven o se lanzan. La spec no lo dice. Una salida vacía puede ser `''`, `[]` o `undefined`. · Fijar el tipo de retorno literal de `run('libres', …)`. Dejar claro que el error de planta sale por la misma vía que los demás errores del comando.
+
+5. Importante · Decisiones, punto 2 y Approach · La asignación Norte → 1 y Sur → 2 es un dato inventado. Los escenarios y la validación de «planta desconocida» dependen de él. «Planta desconocida» se deriva del conjunto de plantas de las salas, y la spec no lo dice. · Declarar en el Approach que las plantas válidas son las que tienen alguna sala. Marcar la asignación como supuesto a confirmar con el dev-lead antes de aprobar.
+
+6. Importante · Decisiones · Hay decisiones en el cuerpo que no están en «✋ Decisiones que he tomado yo». Son estas: el orden obligatorio (franja primero), qué pasa con `--planta` repetida, qué pasa con parámetros extra o desconocidos, y si `freeRooms` cambia de firma para recibir la planta. · Añadir cada una como decisión numerada. Para `--planta` repetida y opciones desconocidas, decir si se rechazan o se ignoran.
+
+7. Menor · Decisiones, punto 10 · «Delta probado en una copia» con `sdd capability merge` es un dato no verificable por el lector, y el gate de cierre no lo comprueba. · Quitar la afirmación o ponerla como nota informativa. No debe contar como decisión.
+
+8. Menor · Scope y Dónde se prueba · Se modifica el contrato interno `freeRooms` (nueva entrada de planta) y el dato de las salas, con un campo `floor` que antes no existía. La spec no lo declara como cambio de contrato. Tampoco indica si hay otros llamadores de `freeRooms`, aunque el `git grep` solo cita `src/app.js:28`. · Declarar en el Approach el nuevo contrato de `freeRooms` y de la estructura de sala. Confirmar que no hay más llamadores.
+
+9. Menor · Dónde se prueba · El test existente de `libres` (`test/app.test.js:5-6`) «sigue valiendo» sin que se haya comprobado el literal de su salida contra el delta (`Sur` en el primer escenario). La spec tampoco garantiza que sin `--planta` el orden y el formato de la salida no cambien. · Citar la aserción del test existente. Añadir un escenario de regresión del formato, por ejemplo varias salas libres en el mismo orden que hoy.
+
+--- [43]
+Ha vuelto el revisor técnico, con 9 hallazgos, ninguno Crítico. Todavía falta el de dominio. Espero a los dos para integrarlos juntos en la spec y presentártela.
+
+--- [44]
+1. Crítico · Delta de comportamiento / falta «Reglas de la capacidad» · El delta trae datos nuevos (planta por sala), nombres (`--planta`, `room-availability`), límites (entero), avisos (dos mensajes de error) y condiciones de conflicto. La spec no tiene la sección «Reglas de la capacidad» ni dice «no aplica» en ninguna de las cinco reglas (dónde vive el dato, idioma de los nombres, límites, avisos, regla de conflicto). · Añadir la sección con las cinco reglas por nombre. Dónde vive el dato: campo `floor` en `src/app.js` (decisión 2). Para cada una, el valor o «no aplica» con su razón.
+
+2. Importante · Decisiones 1 y «Capacidades» (nombre `room-availability`) · La spec declara el nombre «en inglés», pero la constitución (regla 4) fija los documentos en castellano y no dice nada sobre nombres de capacidad. Esa regla de idioma de los nombres queda inventada, y la constitución la contradice o no la cubre. · Declarar la regla de idioma de nombres citando la constitución. Si queda en castellano, renombrar a `disponibilidad-salas`. Si se mantiene el inglés, justificarlo y proponer enmendar la constitución, sin darlo por resuelto.
+
+3. Importante · Reglas / límites (decisión 4, «Planta con número entero») · Solo se define el caso `--planta 9` (entero inexistente). No hay regla para valores no enteros (`abc`, `2.5`, `-1`, `02`, `0`), así que el mensaje `planta desconocida: <valor>` sirve para todo o queda sin definir. Ningún escenario lo cubre. · Declarar el límite (entero ≥ 1, sin ceros a la izquierda) y qué mensaje sale con un valor no numérico. Añadir un escenario para ello, o sacarlo del alcance con una línea en «No entra».
+
+4. Importante · Reglas / conflicto · No se dice qué pasa con `--planta` repetido (`--planta 1 --planta 2`), con `--planta` antes de la franja, ni con `libres --planta 2` sin franja. Decisión 3 fija la forma «franja primero», pero no su incumplimiento. · Declarar la regla de conflicto, por ejemplo el último gana o error, y la posición obligatoria. Reflejarla en el delta o excluirla en «No entra».
+
+5. Importante · Scope vs. Delta (mensajes de error) · Decisiones 6 y 7 son avisos nuevos, pero no se comprueba que sigan la convención de errores que ya tiene el comando: texto en castellano sí, pero no se dice si sale por salida estándar, por error o con código de salida. El scenario dice «la salida es». · Declarar en «Reglas» el canal y el código de salida de los avisos, alineado con los errores existentes de `run`. Si no existe convención, decir «no aplica» y por qué.
+
+6. Importante · Decisión 2 / Approach (dato inventado) · Las plantas `Norte`→1 y `Sur`→2 son un dato inventado, y la spec no sabe si existen otras salas. El delta (escenario 3) asume que solo hay dos plantas, y `planta desconocida` depende de ese conjunto. · Aclarar que el conjunto de plantas válidas se deriva de las salas anotadas, no de una lista fija. Confirmar con el dev-lead las plantas reales antes de aprobar, con la decisión 2 marcada como bloqueante.
+
+7. Menor · Delta, escenario «Libres de una franja» · Este ADDED recoge el comportamiento existente de `libres` sin cambios. Está bien como primera documentación viva. Pero la GIVEN usa «reservada el lun» y las otras usan solo «reservada de 10:00-12:00», sin día, así que la fixture es ambigua entre escenarios. · Unificar la fixture, con el mismo día en los tres escenarios y la misma reserva de Norte.
+
+8. Menor · Delta, escenario «Planta desconocida o sin valor» · Mezcla dos condiciones distintas en un solo ADDED (desconocida y sin valor). Si una falla, el escenario no dice cuál. Además, la GIVEN no incluye ninguna reserva, a diferencia de los otros. · Partir en dos ADDED, uno por mensaje, con la misma fixture.
+
+9. Menor · Scope («Entra») · Dice «planta anotada por sala» pero no lista el cambio de `freeRooms` ni que `run` parsea la opción. Eso solo aparece en Approach. No entra tampoco «planta sin libres» como escenario del delta, aunque la decisión 5 y «Dónde se prueba» lo prometen. · Añadir al delta un escenario para planta sin libres (está implícito en `--planta 1` vacía), o quitarlo de «Dónde se prueba».
+
+--- [48]
+Las dos vigilancias terminaron sin avisos de silencio. La fusión del delta rechaza una referencia a «decisión 2» dentro de las reglas, así que la quito.
+
+--- [52]
+Hubo un Crítico aceptado, así que toca la segunda ronda: un revisor sonnet con los siete puntos relee la spec corregida una sola vez.
+
+--- [59]
+La segunda ronda está en marcha: un revisor sonnet con los siete puntos, vigilado. Cuando vuelva, integro lo que diga y te presento la spec con su ✋.
+
+--- [60]
+1. Importante · Delta de comportamiento, escenarios «Planta sin valor» y «Planta desconocida» · El AND de `--planta abc` no tiene su propio GIVEN/WHEN. Los escenarios de aviso tampoco cubren el orden de validación: qué sale con `--planta` repetida y un valor inválido (`--planta 9 --planta 2`), o con una planta inválida y una franja mal escrita. Los avisos son cadenas devueltas por `run`, y la franja inválida no tiene regla en ninguna parte. · Añadir un escenario de `--planta 9 --planta 2` (gana la última, sale `Sur`) y declarar qué pasa con la franja inválida. O dejarlo fuera en «No entra».
+
+2. Importante · Delta de comportamiento, escenario «Libres de una franja» · Es un ADDED que describe comportamiento ya existente, así que en la práctica documenta el estado actual y no una incorporación. Su GIVEN dice «Norte reservada de 10:00-12:00 (el lun)», pero el día no entra en `libres` (decisión 3). Eso deja dos hechos mezclados en un mismo GIVEN y la fixture no es verificable tal cual. Además, `libres 14:00-16:00` da `Norte, Sur` solo si la reserva lun 10:00-12:00 no solapa con 14:00-16:00, y eso no se declara. · Quitar «(el lun)» del GIVEN o decir qué día usa la reserva de la fixture. Hacer explícita la separación del orden `Norte, Sur`, o decir que es el orden de la lista de salas.
+
+3. Importante · Reglas de la capacidad, «Límites» · La regla es una tautología («las válidas son las de alguna sala anotada») y no declara límites reales: ni tipo de valor (entero), ni rango, ni qué hace `--planta 02` o `--planta +2`. La decisión 4 dice «número entero» y la decisión 5 dice «tal como se tecleó», pero ningún escenario fija `2.5`, `0` o `02`. El texto de «Términos» dice «número entero» y contradice esa decisión 5, según la cual cualquier valor que no sea la planta de una sala es desconocido. · Declarar la comparación (cadena exacta o numérica) y añadir un escenario con `2.5` o `02`, o quitar «entero» del término.
+
+4. Importante · Reglas de la capacidad, «Idioma de los nombres» · Mezcla dos cosas, el nombre del fichero de la capacidad en inglés y el texto de la interfaz en castellano. Cita la regla 4 de la constitución, que solo cubre «texto de la interfaz y de los documentos», no los nombres de capacidad. El slug en inglés no está respaldado por la constitución. Aparece como rechazado en la ronda anterior, pero la regla de la capacidad sigue citando la constitución para algo que esta no dice. Además el campo `floor` está en inglés dentro del código y no se declara el criterio de idioma de los identificadores. · Separar la regla en «nombres de código y de fichero» (la convención del kit, no la constitución) y «texto de interfaz» (regla 4). Declarar el criterio para `floor`.
+
+5. Importante · Decisiones, orden y numeración · La decisión 3 (forma del comando) y la 7 dejan «`--planta` antes de la franja o sin franja» como «sin comportamiento definido». Eso no es verificable y permite una implementación que dé un fallo no controlado. `libres --planta 2` hoy no tiene salida definida. Es probable que `params[0]` sea `--planta`, que se tome como franja y se devuelva algo inesperado. · Definir una salida mínima (por ejemplo, reutilizar el aviso de franja existente), o quedarse con «no entra» y no prometer nada. En el segundo caso, añadir una nota de que el comportamiento queda sin garantía.
+
+6. Menor · Reglas de la capacidad, «Avisos» · Dice que los avisos «salen como cadena de `run`», pero la salida vacía `''` de «Planta sin salas libres» es indistinguible de un resultado sin avisos. No hay ningún escenario que cubra el caso de planta válida con la franja libre en el que se mezclen avisos y listado. Los avisos se devuelven como cadena y el llamador no puede diferenciarlos de una sala llamada `planta desconocida: 9`. · Aceptar que es la convención actual (`sin reserva Norte lun`) y dejar una nota explícita. No hace falta cambiar el comportamiento.
+
+7. Menor · Delta de comportamiento, escenario «Planta sin salas libres» · Su GIVEN solo declara Norte, y la decisión 2 dice que existe Sur en la planta 2. La fixture es inconsistente con las demás: la planta 1 sin libres depende de que Sur no esté, pero el GIVEN no lo dice. Con `--planta 1`, Norte reservada, Sur en la planta 2, el resultado vacío sale igual. Sin embargo, el escenario no deja claro si Sur existe. · Igualar el GIVEN a los demás: «Norte en la planta 1 y Sur en la planta 2, y Norte reservada de 10:00-12:00».
+
+8. Menor · «Decisiones que he tomado yo», entrada de la review y «Política de modelos» · Mezcla registro de la review, nota de cumplimiento y política de modelos dentro de la sección que el dev-lead debe validar. Una de las líneas («al aprobar la spec, esta línea es la confirmación de paralelizar…») convierte la aprobación de la spec en una autorización de despacho, y eso no es una decisión sobre el producto. Este es un contenido que el dev-lead puede aprobar sin haberlo leído. La nota del delta probado con `sdd capability merge` afirma un resultado («×3 antes de esta ronda») que ya no coincide con los 6 ADDED actuales. · Mover la política de modelos fuera de las decisiones a validar. Actualizar el recuento (6 ADDED, no 3) o quitar la cifra.
+
+9. Menor · Lo que se retira o cambia de forma · Declara que `test/app.test.js:5-6` sigue valiendo y que `src/app.js:28` se amplía, pero la forma de las salas cambia de nombre a `{ name, floor }`, y es un cambio de dato interno. La afirmación «Nada se retira ni cambia de forma» contradice el Approach. Cualquier lectura de las salas como cadenas (por ejemplo, la reserva por nombre de sala, `sin reserva Norte lun`) se ve afectada y no hay una comprobación de ese uso en el `git grep` declarado, que solo busca `libres\|planta`. · Buscar también los usos de la lista de salas, no solo `libres` y `planta`. Reescribir la afirmación: el cambio de forma de la sala sí existe y queda cubierto.
+
+10. Menor · Intent y Scope · El Intent promete «sin cambiar nada para quien no usa la opción» y el Scope no incluye un test de regresión explícito en «Entra», aunque el escenario «Libres de una franja» lo cubre. Hay un punto añadido que el Scope no lista, la capacidad nueva `room-availability` y su documentación viva, que figura en «Capacidades» y en la decisión 1 pero no en «Entra». · Añadir a «Entra» la capacidad `room-availability` y el test de regresión sin `--planta`.
+
+--- [62]
+La segunda ronda no trae ningún Crítico, así que no hay tercera. Integro los 10 hallazgos y compruebo antes los usos de la lista de salas, que pide el nº 9.
+
+--- [65]
+Ahora aplico los cambios al cuerpo de la spec.
+
+--- [79]
+La spec está escrita y revisada. Falta tu aprobación: sin ella no escribo plan ni código.
+
+Está en `.docs/sdd/specs/20261106-100512-feature-0012-libres-por-planta/spec.md`, en la rama `feature/0012-libres-por-planta`. No la he commiteado.
+
+🦆 **Qué cambia.** Hoy `salas libres 10:00-12:00` enseña todas las salas libres de la franja. Con esto, `salas libres 10:00-12:00 --planta 2` enseña solo las de la planta 2 (por ejemplo `Sur`). Sin `--planta` todo sigue igual que ahora. Para poder filtrar, cada sala pasa a tener su planta anotada en `src/app.js`.
+
+**Review.** Dos revisores (dominio y técnica, ambos sonnet) y una segunda ronda con un tercero, porque el primer pase dio un Crítico. Era la falta de la sección «Reglas de la capacidad», y ya está añadida. La segunda ronda no dio Críticos. En la spec constan los hallazgos aceptados y los tres que rechacé, con su motivo.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Plantas inventadas (valídala primero).** No existía el dato. Propongo `Norte` en la planta 1 y `Sur` en la planta 2. Si las plantas reales son otras, dímelo: los escenarios salen de ahí.
+2. **Capacidad nueva `room-availability`.** Hoy no hay ninguna capacidad en `capabilities/`. El slug va en inglés (convención del kit), y el contenido va en castellano.
+3. **Forma del comando.** `libres <franja> --planta <n>`, con la franja primero. `libres` sigue filtrando solo por franja, sin día, como hoy.
+4. **Planta con número entero.** `--planta 2`, no `--planta=2` ni nombres de planta.
+5. **Planta que no existe o no válida.** `--planta 9`, `abc`, `0`, `02` y `2.5` dan `planta desconocida: <valor>`. El valor se compara como texto exacto con la planta de cada sala.
+6. **`--planta` sin valor.** Da `falta la planta tras --planta`.
+7. **`--planta` repetida.** Gana la última. `--planta` antes de la franja, sin franja o con la franja mal escrita queda fuera, sin garantía.
+8. **Planta sin salas libres.** La salida queda vacía, como hoy cuando no hay ninguna libre.
+9. **Enfoque.** Un campo `floor` por sala y el filtro dentro de `freeRooms`. Descarté un fichero de datos aparte (el proyecto es un solo fichero) y filtrar en `run` tras listar (duplicaría la lista de salas).
+10. **Una sola task.** Por eso no propongo partir la feature.
+
+**Política de modelos.** Revisores de la spec en sonnet. Revisión final: Spec opus+high, Código sonnet+high. Al aprobar, esa línea confirma el paralelismo.
+
+Quedan registradas tus tres decisiones (`--planta`, sin opción lista todas las salas, perfil `delegate`). El perfil sale del proyecto, no del fichero local.
+
+El delta se probó en una copia de `.docs/sdd` con `sdd capability merge`: sale con éxito (6 requisitos y 5 reglas). La validación al cierre la haces tú, porque es un comando que usa una persona.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a la implementación.
+2. **Cambios**: dime qué ajustar. Lo más probable son las plantas reales de las salas.
+

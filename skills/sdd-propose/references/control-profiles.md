@@ -1,241 +1,244 @@
-# Perfiles de control y gates
+# Control profiles and gates
 
-Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
 
-## Perfiles
+## Profiles
 
-- **`pair`** — para en todos los gates de la tabla.
-- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
-- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de integración tras el merge del cierre sigue `merge.push`.
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `merge.push`; a PR; a publish) are a person's call.
 
-El arranque (`sdd-propose`) dice el perfil vigente y de qué nivel sale: en feature y spike lo anuncia, con la frase para cambiarlo para esa feature; en patch, lite y config, en la pregunta del carril.
+The start (`sdd-propose`) says the current profile and which level it comes from: in feature and spike it announces it, with the phrase to change it for that feature; in patch, lite and config, in the lane question.
 
-## Precedencia
+## Precedence
 
-1. `profile:` en el frontmatter de `spec.md` — la feature. Omitido, hereda.
-2. `control.profile` en `.docs/sdd/sdd-kit.local.json` — la persona. Fuera de git: ver la sección siguiente.
-3. `Perfil de control: <perfil>` justo bajo el encabezado de la sección de la release en el roadmap (en `ROADMAP.md`, entre `## Now` y su tabla).
-4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+1. `profile:` in the frontmatter of `spec.md` — the feature. Omitted, it inherits.
+2. `control.profile` in `.docs/sdd/sdd-kit.local.json` — the person. Outside git: see the next section.
+3. `Perfil de control: <perfil>` right under the heading of the release's section in the roadmap (in `ROADMAP.md`, between `## Now` and its table).
+4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
 
-Manda el primero que exista, de arriba abajo: feature sobre persona, persona sobre release, release sobre proyecto. Al confirmar el perfil vigente, di de qué nivel sale.
+The first that exists rules, top to bottom: feature over person, person over release, release over project. When you confirm the current profile, say which level it comes from.
 
 ## sdd-kit.local.json
 
-`.docs/sdd/sdd-kit.local.json` guarda cómo trabaja cada persona, sin cambiar lo que queda en git: está en `.gitignore` y no se commitea. Lo lee toda skill que resuelve el perfil vigente o `execution` —`sdd-propose` (el arranque y el plan), `sdd-archive` (el merge y el push dependen del perfil) y `sdd-config`— aunque no aparezca al listar la carpeta: búscalo siempre junto a `sdd-kit.json`.
+`.docs/sdd/sdd-kit.local.json` keeps how each person works, without changing what stays in git: it's in `.gitignore` and isn't committed. Every skill that resolves the current profile or `execution` reads it —`sdd-propose` (the start and the plan), `sdd-archive` (the merge and the push depend on the profile) and `sdd-config`— even if it doesn't show when listing the folder: always look for it next to `sdd-kit.json`.
 
-Admite solo tres claves:
+It takes no keys other than these three:
 
-- `control.profile`: `pair` | `delegate` | `unattended`, con la precedencia de arriba.
-- `execution`: `auto` | `native` | `subagent`. Precedencia: el método que el dev-lead nombra para la feature → `sdd-kit.local.json` → `sdd-kit.json`, sin nivel de release. Un `execution: auto` en local también cuenta: pisa un `native` o `subagent` del proyecto y el método lo recomienda el handoff.
-- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+- `control.profile`: `pair` | `delegate` | `unattended`, with the precedence above.
+- `execution`: `auto` | `native` | `subagent`. Precedence: the method the dev-lead names for the feature → `sdd-kit.local.json` → `sdd-kit.json`, with no release level. An `execution: auto` in local counts too: it overrides the project's `native` or `subagent`, and the handoff recommends the method.
+- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
 
-Todo lo demás —`merge`, `ids`, `release`, los frenos de `control`, cualquier nivel o suelo de tests, una clave desconocida o un nombre de persona— es del proyecto o no existe: no se aplica, rige el siguiente nivel de la precedencia, y se avisa una vez por clave, con esta línea literal:
+Everything else —`merge`, `ids`, `release`, the brakes of `control`, any test level or floor, an unknown key or a person's name— belongs to the project or doesn't exist: it isn't applied, the next level of the precedence rules, and you warn once per key, with this literal line:
 
-`Aviso: se ignora <clave> de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.`
+```text
+Aviso: se ignora <clave> de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+```
 
-Una clave admitida con un valor fuera de su tipo se ignora igual, con:
+An admitted key with a value outside its type is ignored the same way, with:
 
-`Aviso: se ignora <clave> de sdd-kit.local.json: <valor> no es un valor admitido.`
+```text
+Aviso: se ignora <clave> de sdd-kit.local.json: <valor> no es un valor admitido.
+```
 
-El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falta, sale de `git config user.name`. Las claves las escribe `sdd-config`.
+The name of whoever works isn't kept in any kit file: if needed, it comes from `git config user.name`. The keys are written by `sdd-config`.
 
-**Cambio de perfil a media feature**: una aprobación delegada («ve tú solo hasta el smoke», dicha en `pair`) cambia el perfil de la feature. Se escribe `profile:` en el frontmatter y una fila en «Aprobaciones»: fecha y, en «Estado», `perfil → <perfil>: «<frase literal>»`. Sin esa frase literal el perfil no cambia — es la misma regla del atajo autoconcedido.
+**Profile change mid-feature**: a delegated approval («ve tú solo hasta el smoke», said in `pair`) changes the feature's profile. Write `profile:` in the frontmatter and a row in «Aprobaciones»: the date and, in «Estado», `perfil → <perfil>: «<frase literal>»`. Without that literal phrase the profile doesn't change: it's the rule of the self-granted shortcut ([sdd-kit.json keys](#sdd-kitjson-keys)).
 
-## Gates por perfil
+## Gates by profile
 
-| Punto | `pair` | `delegate` | `unattended` |
+| Point | `pair` | `delegate` | `unattended` |
 | --- | --- | --- | --- |
-| Arranque (carril, modo, perfil, enunciado desde la rama) | pregunta en patch, lite y config, y si toca partir; anuncia en feature y spike | igual que `pair` | decide y registra: lite va como full |
-| Review de spec recomendada | pregunta antes de presentar, con el modelo del revisor de dominio; con la spec delegada, decide y registra (dominio en Sonnet) | pregunta antes de presentar, con el modelo del revisor de dominio; con la spec delegada, decide y registra (dominio en Sonnet) | decide y registra (dominio en Sonnet) |
-| Spec | para con opciones fijas en prosa, salvo la spec delegada en el arranque: la aprueba el agente y registra la frase | para con opciones fijas en prosa, salvo la spec delegada en el arranque: la aprueba el agente y registra la frase | la aprueba el agente con las decisiones registradas |
-| Plan | para: una sola pregunta aprueba el plan y elige el método, con la recomendación del handoff primero; con `execution` fijado, solo aprueba | sin gate: comprueba escenario → task, escribe el método que recomienda el handoff (o el fijado en `execution`) y sigue | igual que `delegate` |
-| Tras cada task | para | sigue | sigue |
-| Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
-| Freno de alcance (3.er fix, salida observable, fila de la feature o líneas de la task cambiadas en la base) | para | para | opción conservadora, enmienda sin aprobar |
-| Salida del plan | ruling + «✋ Me salí del plan en…» | ruling + «✋ Me salí del plan en…» | ruling + informe |
-| Validación (cierre de feature y de patch) | para | para | diferida al smoke de la release (🧪) · con `validation.mode: field` o [`Validación: agente`](#quién-valida), en los tres: no para |
-| Merge a develop (cierre de feature y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
-| Push de la rama de integración tras el merge del cierre | presenta el push con el merge y espera | con `merge.push: true`, lo hace; sin él, no | igual que `delegate` |
-| Merge a main, tag, cualquier otro push, PR, publicar | persona | persona | persona |
+| Start (lane, mode, profile, statement from the branch) | asks in patch, lite and config, and if splitting applies; announces in feature and spike | same as `pair` | decides and records: lite goes as full |
+| Spec review | the rubric of `review-spec.md` decides how many reviewers and dispatches them without asking; one question only if the user's instructions ask to confirm before parallelizing and the spec isn't delegated | same as `pair` | decides and records, never fewer reviewers than the rubric gives |
+| Spec | stops with fixed options in prose, except the spec delegated at the start: the agent approves it and records the phrase | same as `pair` | the agent approves it with the decisions recorded |
+| Plan | stops: one question approves the plan and chooses the method, with the handoff's recommendation first; with `execution` fixed, it only approves | no gate: checks scenario → task, writes the method the handoff recommends (or the one fixed in `execution`) and goes on | same as `delegate` |
+| After each task | stops | goes on | goes on |
+| Deviation (change to the approved spec) | stops · `## Enmiendas` | stops · `## Enmiendas` | the most conservative option, amendment not approved; if it blocks, `⏸️ aparcada` |
+| Scope brake (3rd fix, observable output, the feature's row or the task's lines changed in the base) | stops | stops | conservative option, amendment not approved |
+| Leaving the plan | ruling + «✋ Me salí del plan en…» | ruling + «✋ Me salí del plan en…» | ruling + report |
+| Validation (closing of feature and patch) | stops | stops | deferred to the release's smoke (🧪) · with `validation.mode: field` or [`Validación: agente`](#who-validates), in all three: doesn't stop |
+| Merge to develop (closing of feature and patch) | presents the policy and waits | applies the full `merge` block; without it, asks | same as `delegate` |
+| Push of the integration branch after the closing's merge | presents the push with the merge and waits | with `merge.push: true`, does it; without it, doesn't | same as `delegate` |
+| Merge to main, tag, any other push, PR, publish | person | person | person |
 
-Más:
-- La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada.
-- La ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow` no se deroga: ahí la decisión ya la tomó una persona.
-- En `unattended`, una pregunta de la entrevista sin respuesta en los documentos del proyecto aparca la feature, y al acabar la release hay un solo informe.
+More:
+- The route «Merge y tag sin segunda ronda cuando la decisión ya está tomada» of `release-flow` isn't repealed: there a person already took the decision.
+- In `unattended`, an interview question with no answer in the project's documents parks the feature, and when the release ends there is a single report.
 
-## Desvío
+## Deviation
 
-Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope, un «No entra» o «Dónde se prueba». Un punto del Scope marcado «si el RED lo exhibe», con RED limpio y n = 3, sale con un ruling; sin marca o con menos sujetos, es un desvío. Todo lo demás que se aparta del plan sin tocar la spec —un fichero de «NO se tocan», otro orden, un fix del hilo principal— es un **ruling**, no un desvío, salvo que caiga en un freno de alcance (ver «Frenos de alcance»): entonces se trata como un desvío.
+A deviation changes the approved spec: a requirement, a THEN, the Scope, a «No entra» or «Dónde se prueba». A Scope item marked «si el RED lo exhibe», with a clean RED at n = 3, goes out with a ruling; without the mark or with fewer subjects, it's a deviation. Everything else that leaves the plan without touching the spec —a file under «NO se tocan», another order, a fix by the main thread— is a **ruling**, not a deviation; one that falls in a scope brake (see «Scope brakes») is treated as a deviation.
 
-**Desvío** (cambia la spec) — la **acción update**:
-- `pair` y `delegate`: el agente para con el 🦆 del cambio (de `sdd-rubber-duck` en modo corto) y su ✋ (lo que decidió él), deja escrita sin commitear la corrección **en su sitio** de `spec.md` —el requisito, el THEN o la sección corregidos— más su línea en `## Enmiendas`, y espera la aprobación. No sigue con la enmienda sin aprobar, salvo un AND o un THEN de una ronda de REFACTOR o de fix que solo aplica, literal, una línea de «Decisiones tomadas con el dev-lead» de la spec: ese se escribe en su sitio con su línea de `## Enmiendas` marcada `sin aprobar`, se commitea con la ronda y se nombra en ✋. Un valor, un caso o un texto que esa línea no dice para.
-- Con la aprobación: commitea la spec. Si la enmienda obliga a cambiar una task ya cerrada, su trabajo va a una task nueva al final del plan, con el número siguiente y su propio commit —`Task 3 — enmienda <fecha>: <qué>` en un plan de dos tasks, no «Task 1 — enmienda»—, con su `Tras`, y en `tasks.md` cada task cerrada afectada lleva la nota `afectada por enmienda <fecha> → Task N`: no reabre ninguna ni reescribe su commit, la historia sigue con un commit por task, la task nueva pasa por `sdd task start` y `sdd task done` como cualquier otra, y su commit entra en la revisión que toque. Si solo cambia la task en curso, el trabajo sigue en ella, con la nota de la enmienda. Sin esta forma, 1 de 2 sujetos metió en la task en curso el cambio a una task cerrada, y ninguno paró con 🦆 ni ✋ (`tests/sdd-start-feature-0146-red.md`, u1).
-- `unattended`: elige la opción más conservadora, la aplica igual en su sitio con su línea de `## Enmiendas` marcada `sin aprobar`, añade la task y sigue. Si ninguna opción evita bloquear la feature, la aparca (`⏸️ aparcada: <motivo>`).
-- Si la enmienda añade ficheros, antes de pedir la aprobación la entrada nombra las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno de esos ficheros en el `**Toca:**` del brief de su fila (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x), o dice «solape no comprobable: el roadmap no declara ficheros» si el roadmap no la declara. Con la aprobación, el `**Toca:**` o la fila de la feature añade esos ficheros.
+**Deviation** (changes the spec) — the **update action**:
+- `pair` and `delegate`: the agent stops with the change's 🦆 (from `sdd-rubber-duck` in short mode) and its ✋ (what it decided), leaves written and uncommitted the correction **in its place** in `spec.md` —the requirement, the THEN or the section corrected— plus its line in `## Enmiendas`, and waits for approval. It goes on with an unapproved amendment in one case only: an AND or a THEN of a REFACTOR or fix round that only applies, literally, a line of «Decisiones tomadas con el dev-lead» of the spec is written in its place with its `## Enmiendas` line marked `sin aprobar`, committed with the round and named in ✋. A value, a case or a text that line doesn't say stops.
+- With the approval: commit the spec. If the amendment forces a change to a task already closed, its work goes to a new task at the end of the plan, with the next number and its own commit —`Task 3 — enmienda <fecha>: <qué>` in a two-task plan, not «Task 1 — enmienda»—, with its `Tras`, and in `tasks.md` each affected closed task carries the note `afectada por enmienda <fecha> → Task N`: it reopens none and rewrites none of their commits, the history keeps one commit per task, the new task goes through `sdd task start` and `sdd task done` like any other, and its commit enters the review that applies. If it only changes the task in progress, the work stays in it, with the amendment's note. Without this form, 1 of 2 subjects put the change to a closed task into the task in progress, and neither stopped with 🦆 or ✋ (`tests/sdd-start-feature-0146-red.md`, u1).
+- `unattended`: chooses the most conservative option, applies it the same way in its place with its `## Enmiendas` line marked `sin aprobar`, adds the task and goes on. If no option avoids blocking the feature, parks it (`⏸️ aparcada: <motivo>`).
+- If the amendment adds files, before asking for approval the entry names the open features of the roadmap (⏳, 🔄, ⏸️, 🧪) that declare any of those files in the `**Toca:**` of their row's brief (`ROADMAP.md`) or in «Ficheros que toca» (2.x roadmap), or says «solape no comprobable: el roadmap no declara ficheros» if the roadmap doesn't declare it. With the approval, the `**Toca:**` or the feature's row adds those files.
 
-**Ruling** (no cambia la spec):
-- El agente no para: decide, registra el ruling (qué decidió, por qué, qué cuesta si se equivoca) y sigue.
-- Todo commit del hilo principal —incluido un fix improvisado para esquivar un fichero vetado— entra en el alcance de la revisión de la task en curso; si no queda ninguna abierta y la revisión final aún no ha salido, en la de la revisión final de rama; y si ya salió, aunque no haya vuelto, en la única re-revisión del tramo `<último revisado>..HEAD` (ver la viñeta de la pasada de fix), antes de la validación o, si ya se presentó, antes del cierre; si esa re-revisión ya salió, no abre otra: va a ✋ como `sin revisar: <sha> — <qué cambia>` («Closing the review» de `sdd-verify`). Un fix sin commit propio, o mezclado sin marcar entre el resto de decisiones, no pasa por revisión.
-- Excepción: un commit del hilo que cambia menos de 20 líneas (añadidas más borradas, `git diff --numstat`; en un merge, las de `git show --remerge-diff`) y en el que todo lo que cambia es documentación o comentarios —ficheros bajo `.docs/`, `*.md` de cualquier ruta y líneas de comentario del código— no despacha revisor: el hilo lee el diff y lo anota en «✋ Me salí del plan en…» como `revisado en el hilo: <sha> · <ficheros> · <n> líneas`. Un tramo con solo commits así tampoco abre la re-revisión. Lo decide lo que cambia, no la carpeta: el README de un paquete, las notas de una campaña junto a sus tests o el comentario de una función se leen en el hilo. Dos cosas no son documentación aunque lo parezcan, y despachan: un `.md` que un agente o un programa lee como instrucciones o como plantilla (una skill, un agente, una plantilla), y un comentario que una herramienta interpreta (`eslint-disable`, `@ts-ignore`, `# noqa`). Cualquier otra línea en el commit —código, configuración, un diccionario del corrector— también despacha. Sin esta excepción, 2 de 2 sujetos despacharon un revisor Opus para un merge que solo resolvía una fila del roadmap (`tests/post-final-review-red.md`, s1); con la excepción atada a la ruta, 4 de 4 lo despacharon para 15 líneas de una guía, un comentario y una tabla de pruebas (`tests/re-review-exception-red.md`, a1 y a2).
-- La pasada de fix de la propia revisión final entra en esa re-revisión, con los dos métodos, junto a los commits posteriores del hilo. El hilo la apunta en `tasks.md` (sin él, en la presentación de la validación) como `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`. El último revisado es el segundo sha de la `Re-revisión:`; si no hay, el `sobre` de `Revisión final:`, también con una línea en el formato 2.x, sin ejes; y si la línea dice «juntada en el cierre», el commit de cierre ([commit-milestones.md](../../sdd-implement/references/commit-milestones.md), «The hash in the artifacts»).
-- La presentación de la validación —y con `validation.mode: field`, el mensaje con que se invoca el cierre— sigue [validation-template.md](../../sdd-templates/templates/validation-template.md): abre con el 🦆 y «✋ Me salí del plan en…».
+**Ruling** (doesn't change the spec):
+- The agent doesn't stop: it decides, records the ruling (what it decided, why, what it costs if wrong) and goes on.
+- Every commit of the main thread —including an improvised fix to dodge a vetoed file— enters the review scope of the task in progress; if none is open and the final review hasn't gone out yet, the final branch review's; and if it went out, even if it hasn't come back, the single re-review of the range `<último revisado>..HEAD` (see the fix pass bullet), before the validation or, if that was already presented, before the closing; if that re-review already went out, it doesn't open another: it goes to ✋ as `sin revisar: <sha> — <qué cambia>` («Closing the review» of `sdd-verify`). A fix without its own commit, or mixed unmarked among the other decisions, doesn't go through review.
+- What a thread commit changes decides its review: a commit under 20 lines (added plus deleted, `git diff --numstat`; in a merge, those of `git show --remerge-diff`) in which everything that changes is documentation or comments —files under `.docs/`, `*.md` of any path and code comment lines— dispatches no reviewer: the thread reads the diff and notes it in «✋ Me salí del plan en…» as `revisado en el hilo: <sha> · <ficheros> · <n> líneas`. A range with only such commits doesn't open the re-review either. What changes decides, not the folder: a package's README, a campaign's notes next to its tests or a function's comment are read in the thread. Two things aren't documentation even if they look like it, and dispatch: an `.md` an agent or a program reads as instructions or as a template (a skill, an agent, a template), and a comment a tool interprets (`eslint-disable`, `@ts-ignore`, `# noqa`). Any other line in the commit —code, configuration, a spell-checker dictionary— dispatches too. Without this rule, 2 of 2 subjects dispatched an Opus reviewer for a merge that only resolved a roadmap row (`tests/post-final-review-red.md`, s1); with the rule tied to the path, 4 of 4 dispatched it for 15 lines of a guide, a comment and a test table (`tests/re-review-exception-red.md`, a1 and a2).
+- The fix pass of the final review itself enters that re-review, with both methods, together with the thread's later commits. The thread notes it in `tasks.md` (without it, in the validation's presentation) as `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`. The last reviewed is the second sha of the `Re-revisión:`; if there is none, the `sobre` of `Revisión final:`, also with a line in the 2.x format, without axes; and if the line says «juntada en el cierre», the closing commit ([commit-milestones.md](../../sdd-implement/references/commit-milestones.md), «The hash in the artifacts»).
+- The validation's presentation —and with `validation.mode: field`, the message the closing is invoked with— follows [validation-template.md](../../sdd-templates/templates/validation-template.md): it opens with the 🦆 and «✋ Me salí del plan en…».
 
-## Frenos de alcance
+## Scope brakes
 
-Cuatro situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: en `pair` y `delegate` su fila de la tabla para como la de «Desvío»; en `unattended` sigue con la opción conservadora y no aparca, porque ninguno de los cuatro bloquea la feature. Sin estado nuevo del roadmap. Si la respuesta cambia el texto de la spec, se aplica con la acción update de «Desvío»; si no, solo entra en `## Enmiendas`.
+Four situations that don't change the spec's letter and are still treated as a deviation: in `pair` and `delegate` their row of the table stops like «Deviation»'s; in `unattended` it goes on with the conservative option and doesn't park, because none of the four blocks the feature. No new roadmap state. If the answer changes the spec's text, it's applied with the update action of «Deviation»; if not, it only goes into `## Enmiendas`.
 
-### 3.er fix descubierto
+### 3rd discovered fix
 
-Disparador: el 3.er fix descubierto de la feature, y cada tercero después (6.º, 9.º…). Cuenta las filas de «Fixes adicionales» de `tasks.md` o, sin `tasks.md`, los rulings de fix registrados — cuenta todo lo que se registra, tanto si se arregla como si se difiere. Cuenta el trabajo descubierto fuera del plan (un defecto del código previo, alcance que nadie pidió); un hallazgo de revisión sobre el código que la propia task acaba de escribir no cuenta: es su bucle de fix.
+Trigger: the feature's 3rd discovered fix, and every third after (6th, 9th…). Count the rows of «Fixes adicionales» in `tasks.md` or, without `tasks.md`, the fix rulings recorded — count everything recorded, whether it's fixed or deferred. It counts work discovered outside the plan (a defect of earlier code, scope nobody asked for); a review finding on the code the task itself just wrote doesn't count: it's its fix loop.
 
-- `pair` y `delegate`: antes de arreglarlo o diferirlo, el agente para y pregunta con tres opciones: seguir en esta feature, diferir a otra feature (fila en el roadmap) o partir la feature. La respuesta entra en `## Enmiendas`.
-- `unattended`: lo difiere a una fila nueva del roadmap, lo registra como enmienda sin aprobar y sigue.
+- `pair` and `delegate`: before fixing or deferring it, the agent stops and asks with three options: go on in this feature, defer to another feature (row in the roadmap) or split the feature. The answer goes into `## Enmiendas`.
+- `unattended`: defers it to a new roadmap row, records it as an unapproved amendment and goes on.
 
-### Salida observable
+### Observable output
 
-Disparador: una decisión de ejecución que la spec no fija y que cambia la salida observable — lo que ve o recibe quien usa el producto: la respuesta de una API o de una CLI, el texto o el flujo de una UI, los ficheros generados, los nombres públicos (comandos, campos, rutas). Un nombre interno, la estructura, el orden de implementación o deshacer una regresión de la propia task (devuelve la salida a la que había) siguen siendo ruling; ejemplo: elegir entre dos formas internas de calcular un recargo de factura no dispara el freno, cambiar el campo que la factura muestra al cliente sí.
+Trigger: an execution decision the spec doesn't fix and that changes the observable output — what whoever uses the product sees or receives: an API's or a CLI's response, a UI's text or flow, the generated files, the public names (commands, fields, routes). An internal name, the structure, the implementation order or undoing a regression of the task itself (it returns the output to what it was) stay rulings; example: choosing between two internal ways of computing an invoice surcharge doesn't trigger the brake, changing the field the invoice shows the client does.
 
-- `pair` y `delegate`: el agente para y pregunta con sus opciones antes de despachar. No la registra como ruling; la respuesta entra en `## Enmiendas`.
-- `unattended`: elige la opción que deja la salida como la describe la spec o, si la spec calla, como está hoy. La registra como enmienda sin aprobar.
+- `pair` and `delegate`: the agent stops and asks with its options before dispatching. It doesn't record it as a ruling; the answer goes into `## Enmiendas`.
+- `unattended`: chooses the option that leaves the output as the spec describes it or, if the spec is silent, as it is today. Records it as an unapproved amendment.
 
-### Fila cambiada en la base
+### Row changed in the base
 
-Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HEAD <integración>) <integración> -- .docs/sdd/roadmap.md`, buscando la fila de la feature en curso. Se compara siempre: sin remoto la base se mueve igual, porque otro worktree commitea en la rama local; con remoto, antes `git fetch` y se compara también `origin/<integración>`. Si cambió, es un posible desvío.
+Trigger: before dispatching each task of the plan, `git diff $(git merge-base HEAD <integration>) <integration> -- .docs/sdd/roadmap.md`, looking for the row of the feature in progress. Always compared: without a remote the base moves anyway, because another worktree commits to the local branch; with a remote, `git fetch` first and `origin/<integration>` is compared too. If it changed, it's a possible deviation.
 
-- `pair` y `delegate`: presenta el cambio y para.
-- `unattended`: sigue con la spec aprobada y registra la fila nueva como enmienda sin aprobar.
+- `pair` and `delegate`: present the change and stop.
+- `unattended`: goes on with the approved spec and records the new row as an unapproved amendment.
 
-### Fichero de la task cambiado en la base
+### Task's file changed in the base
 
-Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, compara `git diff -U0 $(git merge-base HEAD <integración>) <integración> -- <fichero>` con las líneas que tocará la task (o `origin/<integración>` si la coincidencia sale de ahí). Solape no declarado, o líneas que el plan no deja saber: posible desvío. Otras líneas, o un solape que la spec declara con fichero y región sin salir de ella: ruling con los dos tramos, y sigues. En el cruce no cuentan los tres registros compartidos: `.docs/sdd/roadmap.md`, porque su fila la cubre «Fila cambiada en la base», ni `.docs/sdd/changelog.md` ni `.docs/sdd/estimation-log.md`, que los resuelve el merge de sincronización del cierre.
+Trigger: before dispatching each task of the plan, together with the row check and before writing its RED tests, `git diff --name-only $(git merge-base HEAD <integration>) <integration>` is crossed with the task's «Crear» and «Modificar» files. With a remote, `git fetch` first, and `origin/<integration>` is crossed too. If any matches, compare `git diff -U0 $(git merge-base HEAD <integration>) <integration> -- <file>` with the lines the task will touch (or `origin/<integration>` if the match comes from there). An undeclared overlap, or lines the plan doesn't let you tell: possible deviation. Other lines, or an overlap the spec declares with file and region without leaving it: a ruling with both ranges, and you go on. The cross skips the three shared records: `.docs/sdd/roadmap.md`, because «Row changed in the base» covers its row, and `.docs/sdd/changelog.md` and `.docs/sdd/estimation-log.md`, which the closing's sync merge resolves.
 
-- `pair` y `delegate`: nombran los ficheros, los commits de la base que los tocan (`git log --oneline $(git merge-base HEAD <integración>)..<integración> -- <fichero>`) y los tramos («la base cambia las líneas A–B; la task toca C») y paran.
-- `unattended`: sigue con la spec aprobada y lo registra como enmienda sin aprobar.
+- `pair` and `delegate`: name the files, the base commits that touch them (`git log --oneline $(git merge-base HEAD <integration>)..<integration> -- <file>`) and the ranges («la base cambia las líneas A–B; la task toca C») and stop.
+- `unattended`: goes on with the approved spec and records it as an unapproved amendment.
 
-## Quién valida
+## Who validates
 
-La línea `Validación: dev-lead | agente` de la spec o de `patch.md`; sin ella, `dev-lead`. Con `agente`, sin guion ni espera: `Validación por el agente: <fecha> · <evidencia>` y ✅. Con `field`, manda `Validación en campo:`. `agente` no vale si solo lo aprobó el agente (spec delegada sin frase que lo nombre, `unattended`, patch sin la frase del dev-lead). Si al implementar aparece algo visible para el usuario, vuelve a `dev-lead` como desvío.
+The line `Validación: dev-lead | agente` of the spec or of `patch.md`; without it, `dev-lead`. With `agente`, no script and no wait: `Validación por el agente: <fecha> · <evidencia>` and ✅. With `field`, `Validación en campo:` rules. `agente` doesn't hold if only the agent approved it (a delegated spec without a phrase that names it, `unattended`, a patch without the dev-lead's phrase). If something visible to the user appears while implementing, it goes back to `dev-lead` as a deviation.
 
-## Validación diferida
+## Deferred validation
 
-Diferir cuenta solo con las tres condiciones a la vez:
-1. El usuario está presente y tiene el trabajo delante (no ausente sin respuesta).
-2. Dice, con su frase, que probará más tarde.
-3. Nombra un disparador con dueño: una feature, una release o un uso con dueño.
+Deferring counts only with the three conditions at once:
+1. The user is present and has the work in front of them (not away without an answer).
+2. They say, in their own words, that they'll test later.
+3. They name a trigger with an owner: a feature, a release or a use with an owner.
 
-Con las tres, el agente no se niega a cerrar ni inventa un estado nuevo — la forma es esta, y solo esta:
+With the three, the agent doesn't refuse to close nor invent a new state — the form is this, and only this:
 - Walkthrough: `Validación diferida: <fecha> · «<frase literal>» · disparador: <feature, release o uso con dueño>`
-- Roadmap: `🧪 validación diferida a <disparador>` (no ✅)
-- Patch: la misma línea en `patch.md` §4, debajo de la tabla, y la fila de la tabla de patches del roadmap empieza por `🧪 validación diferida a <disparador> — `
+- Roadmap: `🧪 validación diferida a <disparador>` (not ✅)
+- Patch: the same line in `patch.md` §4, under the table, and the row of the roadmap's patch table starts with `🧪 validación diferida a <disparador> — `
 
-Si el disparador falta o es vago («diferida», «se prueba en uso») y se cumplen las dos primeras, no vuelvas a preguntar: concreta tú el uso más próximo, con quien difiere como dueño, y escríbelo así: `disparador: <uso más próximo>, a cargo de <quien difiere>` (p. ej., «la primera exportación del informe mensual, a cargo del dev-lead»). Dilo en el mensaje de cierre para que lo corrija. Con eso la tercera condición queda cumplida.
+If the trigger is missing or vague («diferida», «se prueba en uso») and the first two hold, don't ask again: pin the nearest use yourself, with whoever defers as owner, and write it like this: `disparador: <uso más próximo>, a cargo de <quien difiere>` (e.g. «la primera exportación del informe mensual, a cargo del dev-lead»). Say it in the closing message so they can correct it. With that the third condition holds.
 
-El mensaje de validación ofrece diferir con un disparador concreto que elige el agente, con dueño: «Diferir: lo pruebo en <uso más próximo>, a cargo de <quien valida>». Aceptarlo es la frase literal (segunda condición) y el disparador (tercera): no vuelves a preguntar. Sin él, 0 de 2 sujetos lo propusieron (`tests/defer-trigger-red.md`).
+The validation message offers to defer with a concrete trigger the agent chooses, with an owner: «Diferir: lo pruebo en <uso más próximo>, a cargo de <quien valida>». Accepting it is the literal phrase (second condition) and the trigger (third): you don't ask again. Without it, 0 of 2 subjects proposed it (`tests/defer-trigger-red.md`).
 
-Sin las dos primeras no hay diferido: la feature sigue EN ESPERA con el smoke documentado.
+Without the first two there is no deferral: the feature stays EN ESPERA with the smoke documented.
 
-En `unattended` el disparador es siempre el smoke de la release: no hacen falta las tres condiciones, el perfil ya lo fija.
+In `unattended` the trigger is always the release's smoke: the three conditions aren't needed, the profile already fixes it.
 
-Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el walkthrough (en un patch, en `patch.md` §4) con solo lo que él dice que probó, y pasa la fila a ✅ (en un patch, quita el prefijo 🧪).
+When the user validates what was deferred, the agent adds a dated addendum to the walkthrough (in a patch, to `patch.md` §4) with only what they say they tested, and moves the row to ✅ (in a patch, removes the 🧪 prefix).
 
-## Validación en campo
+## Field validation
 
-Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Sin la clave, o con `manual`, la de siempre.
+With `"validation": {"mode": "field"}` in `.docs/sdd/sdd-kit.json`, the project's human validation is real use: failures arrive as `sdd-feedback` tickets and open a new row. It's a team decision, written in the project's file; in `sdd-kit.local.json` it's ignored with a warning, and a value other than `manual` or `field` counts as `manual`, also with a warning: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Without the key, or with `manual`, the usual one.
 
-En campo, en los tres perfiles, la validación del cierre (la validación de `sdd-archive`) no para: no preguntas qué ha probado el usuario, no ofreces diferir, no escribes guion de pruebas y sigues con el cierre. «El kit no define ese valor, no voy a suponer qué significa» no vale: lo define esta sección. Lo que no cambia es la verificación del agente: revisión final y su cierre (`sdd-verify`), smoke con una fila por THEN, verificación visual y suite, igual que en `manual`. La línea `Validación en campo:` lleva los ejes y no dice «limpia» mientras quede un `sin revisar` o un «no verificado»: dice cuántos quedan. Una decisión que la revisión final deja al usuario se sigue preguntando sola, en su turno.
+In the field, in all three profiles, the closing's validation (the validation of `sdd-archive`) doesn't stop: you don't ask what the user tested, don't offer to defer, don't write a test script and go on with the closing. «El kit no define ese valor, no voy a suponer qué significa» doesn't hold: this section defines it. What doesn't change is the agent's verification: the final review and its closing (`sdd-verify`), a smoke with one row per THEN, visual verification and suite, same as in `manual`. The `Validación en campo:` line carries the axes and doesn't say «limpia» while a `sin revisar` or a «no verificado» remains: it says how many remain. A decision the final review leaves to the user is still asked on its own, in its turn.
 
-Forma, y solo esta:
-- Walkthrough (en un patch, `patch.md` §4, debajo de la tabla): `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutaste (p. ej. `Validación en campo: 2026-10-06 · suite 412/412 · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`). Un THEN o una verificación visual `no probado` van tal cual, con su motivo: la línea no los da por verificados.
-- Roadmap: ✅, sin 🧪. La fila del patch en «Patches» no lleva el prefijo 🧪 ni tiene fila en la tabla de la release.
+Form, and only this:
+- Walkthrough (in a patch, `patch.md` §4, under the table): `Validación en campo: <fecha> · <verificación del agente>`, with the evidence you ran (e.g. `Validación en campo: 2026-10-06 · suite 412/412 · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`). A THEN or a visual verification `no probado` go as they are, with their reason: the line doesn't count them as verified.
+- Roadmap: ✅, without 🧪. The patch's row in «Patches» carries no 🧪 prefix nor a row in the release's table.
 
-Si el usuario, aun así, dice qué ha probado, registras `Validado` con su frase: cuando hay validación humana, manda.
+If the user, even so, says what they tested, you record `Validado` with their phrase: when there is human validation, it rules.
 
 ## unattended
 
-- La spec la aprueba el agente, con las decisiones registradas en «Decisiones que he tomado yo».
-- Si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, la feature queda `⏸️ aparcada: <pregunta>` en el roadmap y el agente sigue con la siguiente feature de la release.
-- Al terminar la release, un solo informe: features cerradas, decisiones, enmiendas sin aprobar y features aparcadas.
-- El tope de agentes en paralelo no es de esta capacidad: lo aplica [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md), que lee `control.maxParallelAgents`. Los reintentos por tipo de fallo, tampoco: los define la task 0022. El vigía de silencio sí: [Vigía de silencio](#vigía-de-silencio).
+- The agent approves the spec, with the decisions recorded in «Decisiones que he tomado yo».
+- If an interview question has no answer in the project's documents, the feature stays `⏸️ aparcada: <pregunta>` in the roadmap and the agent goes on with the release's next feature.
+- When the release ends, a single report: closed features, decisions, unapproved amendments and parked features.
+- The cap of agents in parallel isn't this capability's: [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md) applies it, reading `control.maxParallelAgents`. Nor are the retries by failure type: task 0022 defines them. The silence watch is: [Silence watch](#silence-watch).
 
-## Vigía de silencio
+## Silence watch
 
-Un subagente en segundo plano puede colgarse sin error: la herramienta de subagentes no tiene timeout y el harness solo avisa cuando termina. El vigía es `sdd watch subagent`, y los umbrales los lee él de `control.silence` en `sdd-kit.json`: no los escribas en la orden.
+A background subagent can hang with no error: the subagent tool has no timeout and the harness only warns when it ends. The watch is `sdd watch subagent`, and it reads the thresholds itself from `control.silence` in `sdd-kit.json`: don't write them in the command.
 
-**Cuándo se lanza.** En el mismo turno de cada despacho —implementador, revisor de task, fix wave, re-revisión, revisor final, revisor de spec—, con la herramienta de shell en segundo plano (`run_in_background`):
+**When it's launched.** In the same turn as each dispatch —implementer, task reviewer, fix wave, re-review, final reviewer, spec reviewer—, with the shell tool in the background (`run_in_background`):
 
 ```text
 sdd watch subagent --description "<la description del despacho, literal>"
 ```
 
-Una verificación lenta la lanza en segundo plano su propio vigía, `sdd watch command -- <comando…>`: guarda la salida en el fichero que nombra su línea `salida:` y termina con el comando. `sdd watch command --path <fichero de salida>` queda para un comando que ya corre. Cada despacho lleva una `description` distinta: el vigía encuentra el transcript por ella.
+A slow verification is launched in the background by its own watch, `sdd watch command -- <command…>`: it saves the output in the file its `salida:` line names and ends with the command. `sdd watch command --path <output file>` is for a command already running. Each dispatch carries a different `description`: the watch finds the transcript by it.
 
-**Qué hacer con lo que devuelve.** El vigía termina con una sola notificación; su primera línea dice cuál:
+**What to do with what it returns.** The watch ends with a single notification; its first line says which:
 
-| Primera línea | Qué haces |
+| First line | What you do |
 | --- | --- |
-| `TERMINADO:` | Nada: el resultado del subagente llega por su lado; el de un comando, en el fichero de su línea `salida:`. |
-| `SIN TRANSCRIPT:` | Dile al usuario, en tu siguiente mensaje, que en esta sesión el vigía de silencio no funciona. No lo sustituyas por otra cosa. |
-| `SILENCIO:` | Es un cuelgue. Sigue abajo. |
+| `TERMINADO:` | Nothing: the subagent's result arrives on its own; a command's, in the file of its `salida:` line. |
+| `SIN TRANSCRIPT:` | Tell the user, in your next message, that the silence watch doesn't work in this session. Don't replace it with something else. |
+| `SILENCIO:` | It's a hang. Go on below. |
 
-Al recibir el resultado de un subagente, o el aviso de que terminó un comando vigilado con `--path`, para su vigía si sigue corriendo: ese vigía no sabe cuándo acaba su comando, y daría `SILENCIO:` sobre uno ya terminado.
+When you receive a subagent's result, or the notice that a command watched with `--path` ended, stop its watch if it's still running: that watch doesn't know when its command ends, and would give `SILENCIO:` on one already finished.
 
-**Ante un `SILENCIO:`**, en este orden, sin esperar a que el usuario pregunte:
+**On a `SILENCIO:`**, in this order, without waiting for the user to ask:
 
-1. Para el subagente (`TaskStop`) y su vigía.
-2. Si el aviso dice `petición de permiso pendiente`, no lo relances: en tu siguiente mensaje dile al usuario qué herramienta esperaba el permiso. En `unattended`, la feature queda además `⏸️ aparcada: permiso pendiente de <herramienta>` al instante.
-3. Si no, y es el primer cuelgue de ese encargo, relánzalo una vez con el mismo encargo y un vigía nuevo. Si era un implementador y dejó cambios sin commitear, el encargo del relanzado los lista (`git status --short`) y le dice que parta de ellos o los descarte con motivo; no los borres tú.
-4. Si es el segundo cuelgue del mismo encargo: en `pair` y `delegate`, para y pregunta al usuario cómo seguir, sin relanzarlo; en `unattended`, la feature queda `⏸️ aparcada: cuelgue repetido del <tipo>` y sigues con la siguiente de la release.
-5. En tu siguiente mensaje, dile al usuario qué se colgó, con las líneas del aviso, y qué has hecho.
-6. Registra el ruling en `tasks.md` (en Native, también en el ledger): `Cuelgue: <tipo de subagente o comando>, <herramienta> sin respuesta, <minutos> min, <relanzado | no relanzado: permiso | parado: segundo cuelgue>`.
+1. Stop the subagent (`TaskStop`) and its watch.
+2. If the warning says `petición de permiso pendiente`, don't relaunch it: in your next message tell the user which tool was waiting for permission. In `unattended`, the feature is also `⏸️ aparcada: permiso pendiente de <herramienta>` at once.
+3. If not, and it's the first hang of that brief, relaunch it once with the same brief and a new watch. If it was an implementer and it left uncommitted changes, the relaunched brief lists them (`git status --short`) and tells it to start from them or discard them with a reason; don't delete them yourself.
+4. If it's the second hang of the same brief: in `pair` and `delegate`, stop and ask the user how to go on, without relaunching it; in `unattended`, the feature is `⏸️ aparcada: cuelgue repetido del <tipo>` and you go on with the release's next one.
+5. In your next message, tell the user what hung, with the warning's lines, and what you did.
+6. Record the ruling in `tasks.md` (in Native, in the ledger too): `Cuelgue: <tipo de subagente o comando>, <herramienta> sin respuesta, <minutos> min, <relanzado | no relanzado: permiso | parado: segundo cuelgue>`.
 
-Una verificación lenta colgada sigue los mismos pasos, con su proceso en vez del subagente: la que lanzó su vigía con `--` ya está parada.
+A hung slow verification follows the same steps, with its process instead of the subagent: the one its watch launched with `--` is already stopped.
 
-| Racionalización | Realidad |
+| Rationalization | Reality |
 | --- | --- |
-| «Entre 15 y 30 minutos es normal para una revisión» | Sin mirar, es una suposición: así se perdieron 26 min con un revisor que llevaba 25 parado. Lo que no escribe su transcript no está trabajando. |
-| «Monto yo un bucle con `sleep` y un umbral razonable» | El umbral es del proyecto, no tuyo: un agente eligió 300 s cuando el proyecto había fijado otro. Lanza el script, que lo lee. |
-| «Le relanzo otra vez, a la tercera irá» | Un segundo cuelgue del mismo encargo es repetir sin avanzar: para y pregunta, o aparca en `unattended`. |
+| "Between 15 and 30 minutes is normal for a review" | Without looking, it's a guess: that's how 26 min were lost with a reviewer that had been stalled for 25. What its transcript doesn't write isn't working. |
+| "I'll set up a `sleep` loop with a reasonable threshold" | The threshold is the project's, not yours: an agent chose 300 s when the project had fixed another. Launch the script, which reads it. |
+| "I'll relaunch it again, third time lucky" | A second hang of the same brief is repeating without progress: stop and ask, or park in `unattended`. |
 
-## Estados del roadmap
+## Roadmap states
 
-Conjunto cerrado:
+Closed set:
 
-| Estado | Significa |
+| State | Means |
 | --- | --- |
-| `⏳` | pendiente |
-| `🔄 en curso` | feature abierta |
-| `⏸️ aparcada: <motivo>` | parada, con el motivo escrito |
-| `🧪 validación diferida a <disparador>` | verificada por el agente, validación pendiente con disparador conocido |
-| `✅` | cerrada y validada |
+| `⏳` | pending |
+| `🔄 en curso` | feature open |
+| `⏸️ aparcada: <motivo>` | stopped, with the reason written |
+| `🧪 validación diferida a <disparador>` | verified by the agent, validation pending with a known trigger |
+| `✅` | closed and validated |
 
-«EN ESPERA» no es un estado del roadmap: es la feature en curso esperando la respuesta del usuario.
+«EN ESPERA» isn't a roadmap state: it's the feature in progress waiting for the user's answer.
 
-## Claves de sdd-kit.json
+## sdd-kit.json keys
 
-| Clave | Tipo | Default |
+| Key | Type | Default |
 | --- | --- | --- |
 | `control.profile` | `pair` \| `delegate` \| `unattended` | `"delegate"` |
-| `control.maxParallelAgents` | entero | `3` |
-| `control.silence.betweenStepsMinutes` | entero | `8` |
-| `control.silence.longCommandMinutes` | entero | `20` |
-| `merge.into` | cadena (rama destino) | — |
-| `merge.noFf` | booleano | — |
-| `merge.removeWorktree` | booleano | — |
-| `merge.push` | booleano | `false` |
+| `control.maxParallelAgents` | integer | `3` |
+| `control.silence.betweenStepsMinutes` | integer | `8` |
+| `control.silence.longCommandMinutes` | integer | `20` |
+| `merge.into` | string (target branch) | — |
+| `merge.noFf` | boolean | — |
+| `merge.removeWorktree` | boolean | — |
+| `merge.push` | boolean | `false` |
 | `execution` | `auto` \| `native` \| `subagent` | `"auto"` |
-| `validation.startEnvironment` | booleano (solo en `sdd-kit.local.json`) | `false` |
-| `validation.mode` | `manual` \| `field` (solo en `sdd-kit.json`) | `"manual"` |
-| `review.minors` | `fix` \| `defer` (solo en `sdd-kit.json`) | `"defer"` |
-| `pricing` | objeto: `source`, `updated`, `usdPerMillionTokens` (solo en `sdd-kit.json`) | — (sin ella, el cierre da «sin precio») |
+| `validation.startEnvironment` | boolean (only in `sdd-kit.local.json`) | `false` |
+| `validation.mode` | `manual` \| `field` (only in `sdd-kit.json`) | `"manual"` |
+| `review.minors` | `fix` \| `defer` (only in `sdd-kit.json`) | `"defer"` |
+| `pricing` | object: `source`, `updated`, `usdPerMillionTokens` (only in `sdd-kit.json`) | — (without it, the closing gives «sin precio») |
 
-`execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `plan-writing.md` de `sdd-propose` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro. No tiene nivel de release (precedencia en «sdd-kit.local.json»): el método queda escrito en el plan de cada feature, y un método que el dev-lead nombra para una feature concreta cuenta como dado.
+`execution` chooses the plans' execution method. With `auto`, the handoff of `plan-writing.md` of `sdd-propose` recommends one per plan and the agent writes it in the header as `Ejecución: <native | subagent>, porque <motivo del plan>`; with `native` or `subagent`, the method is given and isn't asked in any profile: the header says `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` or `sdd-kit.local.json`, the one that fixes it—, even if the handoff recommends the other. It has no release level (precedence in «sdd-kit.local.json»): the method stays written in each feature's plan, and a method the dev-lead names for a concrete feature counts as given.
 
-`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (el merge de `sdd-archive`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
+`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied. `merge.push` is optional and doesn't count for the full block: absent, the closing doesn't push.
 
-`control.maxParallelAgents` solo se declara aquí: su conducta la aplica [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md). `control.silence.*` los lee el vigía: [Vigía de silencio](#vigía-de-silencio).
+`control.maxParallelAgents` is only declared here: [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md) applies its behavior. `control.silence.*` are read by the watch: [Silence watch](#silence-watch).
 
-El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
+**The rule of the self-granted shortcut**: the agent never writes, without the user's literal phrase, a `profile`, a `control.*`, a `merge` or a `validation.mode` that removes a stop. When the user asks for it, the phrase and the date go in a row of «Aprobaciones» (or in the commit, if the change is in `sdd-kit.json`). In `sdd-kit.local.json`, which isn't committed, the user's answer to `sdd-config` is enough.
 
-## Preguntas de las claves
+## Questions for the keys
 
-Las preguntas que fijan estas claves, con su recomendación y el fichero donde va cada respuesta, viven solo en `sdd-config` ([catálogo](../../sdd-config/SKILL.md#catalog)). Las init y las migraciones la invocan en lugar de llevar su lista.
+The questions that fix these keys, with their recommendation and the file each answer goes to, live only in `sdd-config` ([catalog](../../sdd-config/SKILL.md#catalog)). The inits and the migrations invoke it instead of carrying their list.

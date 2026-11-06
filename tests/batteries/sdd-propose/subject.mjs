@@ -21,6 +21,11 @@ const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
 const F28 = '.docs/sdd/specs/20261008-130000-feature-0028-close-notice-pending';
 const F29 = '.docs/sdd/specs/20261008-140000-feature-0029-room-floors';
 const F30 = '.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice';
+const F18 = '.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone';
+const F19 = '.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot';
+const F20 = '.docs/sdd/specs/20261008-180000-feature-0020-export-dir';
+const F21 = '.docs/sdd/specs/20261008-190000-feature-0021-slot-check';
+const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30];
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
@@ -186,6 +191,12 @@ const molds = {
     edit('package.json', (text) => text.replace('"engines"', '"dependencies": {"fecha": "workspace:*"}, "engines"'));
     edit('src/app.js', (text) => `import { dayName } from 'fecha';\n${text}\nexport const today = () => dayName(new Date().getDay());\n`);
   },
+  // La carpeta de exportación vive en config.json, y un test fija su valor suelto, '.', sin nombrar la clave.
+  'reservas-export'() {
+    s.put('config.json', '{\n  "base": "."\n}\n');
+    s.put('src/export.js', "import { readFileSync } from 'node:fs';\n\nexport const readConfig = () => JSON.parse(readFileSync('config.json', 'utf8'));\nexport const exportPath = () => `${readConfig().base}/reservas.csv`;\n");
+    s.put('test/config.test.js', "import { test } from 'node:test';\nimport assert from 'node:assert';\nimport { readConfig } from '../src/export.js';\n\ntest('la exportación escribe en la raíz', () => {\n  assert.equal(readConfig().base, '.');\n});\n");
+  },
   // Una sala más rompe el test de libres: el gate de cierre sale en rojo.
   'reservas-rojo'() {
     edit('src/app.js', (text) => text.replaceAll("const rooms = ['Norte', 'Sur'];", "const rooms = ['Norte', 'Sur', 'Este'];"));
@@ -194,7 +205,7 @@ const molds = {
 const mold = moldFrom(() => MOLD, s, molds);
 mold();
 // El fallo de a2 y a3: findBooking busca solo por sala, y «cancelar Norte mar» cancela la reserva del lunes.
-if (['a2', 'a3', 'd1', 'p3'].includes(s.SC)) edit('src/app.js', (text) => text.replaceAll('b.room === room && b.day === day && ', 'b.room === room && '));
+if (['a2', 'a3', 'd1', 'p3', 'pr1'].includes(s.SC)) edit('src/app.js', (text) => text.replaceAll('b.room === room && b.day === day && ', 'b.room === room && '));
 s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');
 if (MOLD !== 'reservas-main') s.git('checkout', '-q', '-b', 'develop');
@@ -339,24 +350,47 @@ steps.cr3 = () => {
   branch('feature/0028-close-notice-pending');
   s.put(`${F28}/spec.md`, spec.replace(NAMED_MOLD, '`c1`, en un molde sin lista de pendientes.').replace('GIVEN un cierre sin `pendientes.md` en el molde', 'GIVEN un cierre en un molde sin lista de pendientes'));
 };
+const PATCH_TO_COMMIT = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps.pw1 = () => {
   branch('feature/0017-saturday-note');
-  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
+  s.env.TURN2 = PATCH_TO_COMMIT;
 };
+const reviewSpec = (folder, fixture) => () => {
+  branch(`feature/${folder.split('-feature-')[1]}`);
+  s.put(`${folder}/spec.md`, readFileSync(join(FIX, fixture), 'utf8'));
+};
+steps.rv1 = reviewSpec(F11, 'spec-0011-review.md');
+// La spec de la 0018 edita la guía y sale de su fila: sin las dos, el repaso de coherencia la para antes de la review.
+steps.rv2 = () => {
+  reviewSpec(F18, 'spec-0018-small.md')();
+  s.put('docs/guia.md', readLf(join(FIX, 'guia.md')).replace('; lo retira la 0012', ''));
+  edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0018 | **El teléfono de conserjería en la guía** | ⏳ |\n| 1 |'));
+};
+// Con --setting-sources "" no llega ningún CLAUDE.md: la instrucción de confirmar va por el system prompt.
+steps.rv3 = () => {
+  steps.rv1();
+  s.env.APPEND_SYSTEM = 'Antes de paralelizar subagentes, pide confirmación con el modelo de cada uno.';
+};
+steps.lr1 = reviewSpec(F19, 'spec-0019-lite.md');
+steps.rr1 = reviewSpec(F11, 'spec-0011-round1.md');
+steps.pr1 = () => (s.env.TURN2 = PATCH_TO_COMMIT);
+steps['pb-p'] = () => (s.env.TURN2 = 'Sigue con el que recomiendas.');
+steps.co7 = reviewSpec(F20, 'spec-0020-export-dir.md');
+steps.co8 = reviewSpec(F21, 'spec-0021-slot-check.md');
 steps[s.SC]?.();
 
-const turns = { g1: '40', r1: '15', d1: '60', p3: '60' };
-for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
+const turns = { g1: '40', r1: '15', d1: '60', p3: '60', pr1: '70' };
+for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-p', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);
 for (const kept of ['spec', 'plan', 'tasks']) {
-  for (const folder of [F10, F11, F13, F28, F29, F30]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
+  for (const folder of FOLDERS) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
 }
 // Las carpetas del molde y de los fixtures son de 2026-10-08 o antes: la que crea el sujeto es la de fecha mayor.
 const specs = at('.docs/sdd/specs');
 const newest = existsSync(specs) ? readdirSync(specs).sort().at(-1) : undefined;
-const ours = [F10, F11, F13, F28, F29, F30].map((folder) => folder.split('/').at(-1));
+const ours = FOLDERS.map((folder) => folder.split('/').at(-1));
 if (newest && !ours.includes(newest) && !/task-000|patch-0007/.test(newest)) {
   for (const [file, name] of [['spec.md', 'spec-new.md'], ['patch.md', 'patch-new.md'], ['plan.md', 'plan-new.md']]) {
     if (existsSync(join(specs, newest, file))) s.keep(join(specs, newest, file), name);

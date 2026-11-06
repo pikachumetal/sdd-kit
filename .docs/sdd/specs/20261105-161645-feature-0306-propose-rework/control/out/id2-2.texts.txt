@@ -1,0 +1,62 @@
+--- [24]
+RED confirmado: hoy `libres 25:00-26:00` devuelve «Norte, Sur». Ahora aplico el arreglo mínimo.
+
+--- [28]
+Las barras invertidas del regex se perdieron al escribirlo. Lo corrijo.
+
+--- [36]
+Revisor lanzado (un solo revisor, sin ejes, como pide el carril patch). Espero su informe antes de hacer el commit del fix.
+
+--- [40]
+Sin hallazgos críticos ni importantes.
+
+1. **Cumple §2:** `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM». `libres 10:00-12:00` sigue devolviendo `Sur`. Lo comprobé por CLI y con `node --test` (5/5). `node scripts/lint.mjs` da «sin hallazgos».
+2. **Test honesto:** sin el fix, `run('libres', ['25:00-26:00'])` devolvería `Norte, Sur` y el `assert.equal` fallaría. Solo cubre el caso de hora fuera de rango. Los minutos fuera de rango y la franja ausente no tienen test propio.
+3. **Regex y `params[0]` ausente:**
+   - El regex `^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$` es correcto para HH:MM-HH:MM con hora 00-23 y minutos 00-59, con anclas y sin falsos positivos.
+   - `params[0] ?? ''` evita que `test(undefined)` coincida con la cadena «undefined».
+   - `libres` sin franja responde el mensaje de franja no válida, como dice patch.md.
+4. **patch.md fiel al diff:**
+   - Ficheros, cambio y decisiones coinciden con el diff.
+   - La fila 1 de §4 (RED antes del fix, OK después) no se puede comprobar en este estado del repo, pero es coherente con el código.
+
+**Menor**
+- patch.md §3 escribe el regex como `/^HH:MM-HH:MM$/`. Es una descripción abreviada, no el regex real. Es aceptable, pero un lector literal podría confundirse.
+- patch.md tiene `status: done` y `commit: pendiente` con el diff aún sin commit. Es coherente solo si el cierre lo rellena después.
+- Menor, opcional: no hay test de `libres` sin franja ni de minutos inválidos como `10:60-11:00`. patch.md declara el caso sin franja como decisión sin el dev-lead.
+
+Archivos revisados:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\app.test.js`
+- `<run>\repo\.docs\sdd\specs\20261106-100404-patch-0016-slot-format\patch.md`
+
+--- [47]
+El cambio está implementado y commiteado (`913994e`), pero **no puedo cerrarlo ni fusionarlo todavía**: faltan dos cosas que solo puedes decidir tú.
+
+**🦆 Qué cambia:** `libres` ya no lista salas cuando la franja no es una hora válida. Antes, `libres 25:00-26:00` devolvía `Norte, Sur`. Ahora devuelve `franja no válida: usa HH:MM-HH:MM`.
+
+**Lo que he comprobado yo (ejecución real):**
+
+| Caso | Resultado |
+| --- | --- |
+| `libres 25:00-26:00` | `franja no válida: usa HH:MM-HH:MM` ✅ |
+| `libres 10:60-11:00` | `franja no válida: usa HH:MM-HH:MM` ✅ |
+| `libres abc` | `franja no válida: usa HH:MM-HH:MM` ✅ |
+| `libres` sin franja | `franja no válida: usa HH:MM-HH:MM` ✅ |
+| `libres 10:00-12:00` | `Sur` (sin cambios) ✅ |
+| `libres 08:00-09:00` | `Norte, Sur` (sin cambios) ✅ |
+
+- **Suite:** `node --test` pasa 5/5 y `lint` no da hallazgos. El test nuevo falló antes del arreglo y pasa ahora.
+- **Revisión:** un revisor (sonnet) no encontró ningún hallazgo crítico ni importante.
+
+**✋ Decisiones que tomé yo y que debes validar** (están en `patch.md` §3):
+1. «Formato válido» es HH:MM-HH:MM con hora 00-23 y minutos 00-59. Tu ejemplo fija que 25:00 es inválido; los minutos y el resto son lectura mía.
+2. `libres` sin franja también responde «franja no válida…». Antes no pasaba por ahí.
+3. No exijo que el inicio sea anterior al fin (no lo pediste).
+
+**Qué necesito de ti:**
+1. **Validación.** Prueba `node src/app.js libres 25:00-26:00` y dime qué probaste y que funciona. Un «cierra» o «los tests pasan» no cuenta como validación. Si no puedes ahora, dime cuándo lo probarás y quién se encarga, y lo dejo como validación diferida.
+2. **Política de fusión.** `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, así que `sdd merge --check` falla y no hay destino autorizado. Dime la rama de destino (por defecto, `develop`) y si va con `--no-ff`. Con eso uso `sdd merge --push` como pediste.
+
+Cuando me respondas termino el cierre: tiempo real en `patch.md`, la fila de deuda saldada en el roadmap, el patch en la tabla Patches y el commit de cierre. Después fusiono.
+

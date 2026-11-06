@@ -1,0 +1,115 @@
+--- [3]
+Ahora: leo la spec escrita y las referencias del paso 4 (spec-writing, coherence-pass, review-spec). Queda: pasada de coherencia, revisión y presentarte la spec para aprobar.
+
+--- [39]
+Los dos revisores de la spec (dominio y técnica, sonnet) están en marcha, cada uno con su vigilancia de silencio. Espero a que terminen para integrar sus hallazgos antes de presentarte la spec. Hasta entonces no tengo ningún resultado de la revisión.
+
+--- [42]
+1. Importante · Delta de comportamiento (MODIFIED) y Capacidades · El MODIFIED cambia el THEN de `aviso-cierre` a `resumen-cierre`, pero «El resumen va al final» (closing.md, THEN del paso 1 y del paso 2) describe el contenido de `resumen-cierre` sin mencionar la línea de apertura. La capacidad queda con dos requisitos sobre el mismo mensaje y ninguno dice que la apertura va antes de los pasos. · Declarar en el MODIFIED que el mensaje abre con lo que se cierra y después sigue con los pasos 1 y 2, o añadir un AND que ancle el orden. Si no, el orden «abre y luego pasos» queda sin ninguna garantía en la capacidad.
+
+2. Importante · Delta de comportamiento (MODIFIED) · El THEN nuevo, «`resumen-cierre` dice qué se cierra», es más débil que el Intent y que el ejemplo del 🦆. Ahí el mensaje «abre diciendo qué feature se cierra» y es «un solo mensaje». Ningún requisito de `closing` recoge «un solo mensaje» ni «sin `aviso-cierre`». · Si el «un solo mensaje» es parte del comportamiento prometido, añadir un AND al MODIFIED. Si no lo es, quitarlo del Intent o dejar claro que es solo motivación.
+
+3. Importante · Scope vs Intent / ✋ decisión 2 · El Intent promete «un solo mensaje», pero `aviso-cierre` también hacía «Corre el gate» y esa acción se descarta. El 🦆 afirma que «lo corre el cierre (`sdd-archive`)», y eso es una afirmación sobre otra skill. La spec no lo verifica y no puede, porque el revisor no lee código. Ninguna capacidad lo recoge: `quality-gate.md` solo se cita de pasada, y esta revisión no lo ha leído. · Comprobar en `capabilities/quality-gate.md` que existe un requisito que cubra «el cierre corre el gate». Si no existe, la decisión 2 deja una promesa de comportamiento sin respaldo y habría que declararlo.
+
+4. Menor · Scope («Entra») vs «Lo que se retira» · La fila de `closing.md:13` aparece en la tabla como cambio, pero el archivado la toca con `sdd capability merge`. Las referencias a `aviso-cierre` en otros ficheros se dicen «buscadas» sin enumerar ningún hit fuera de la skill y de `closing.md`. El criterio de éxito dice «ningún fichero fuera de las carpetas de evidencia nombra `aviso-cierre`», pero `.docs/sdd/specs/` queda fuera del grep. Eso incluye la propia spec, que lo nombra muchas veces. · Aclarar en el Intent qué son «carpetas de evidencia» (¿`.docs/sdd/specs/` entera?). Que coincida con la exclusión del grep.
+
+5. Menor · Ejemplos (🦆) · El ejemplo «Cierro la 0030 · Retirar la skill aviso-cierre» usa el id y el título reales de esta feature. Es coherente con la constitución, pero ata el ejemplo del mensaje a un caso concreto. · Cambiar a un ejemplo inventado, como «Cierro la 0099 · Añadir reserva recurrente», o marcarlo como ilustrativo.
+
+6. Menor · Frontmatter y Aprobaciones · Aparece un nombre de persona, «Laura», como aprobadora. La constitución y la misión dicen que no hay más usuarios ni más desarrolladores: «La uso yo… No hay más usuarios ni más desarrolladores». Una aprobadora distinta del autor contradice la misión. Además `profile: delegate` y «dev-lead» presuponen un rol de equipo. · Alinear aprobadores y perfil con la misión de proyecto unipersonal, o justificar quién es Laura.
+
+7. Menor · ✋ «Política de modelos» y revisión · El texto dice que la implementación la hace la propia sesión, «sin subagentes», y los revisores van en sonnet «porque no hay reglas de negocio ni roles en juego». La misión y la existencia de «dev-lead» y «Laura» sí implican un rol. · Reformular la justificación para que no contradiga el resto de la spec.
+
+--- [44]
+Ha vuelto el revisor de dominio; falta el técnico. Mientras tanto compruebo dos de sus hallazgos (el gate en `quality-gate.md` y lo que dice la misión sobre quién usa el proyecto).
+
+--- [50]
+Sigo esperando al revisor técnico; llegará una notificación cuando termine, y entonces integro los hallazgos de los dos y corrijo la spec. Lo que ya sé y voy a corregir:
+
+- **Crítico:** al retirar `aviso-cierre` se pierde el paso «Corre el gate» del que dependen dos requisitos de `quality-gate` («El gate corre una sola vez» y «Un gate en rojo para el cierre»). La decisión 2 de la spec es errónea.
+- **Importante:** el MODIFIED es más débil que el Intent («un solo mensaje», apertura antes de los pasos).
+- **Menores:** el ejemplo del 🦆 usa el id real de esta feature, y aparece «Laura» como aprobadora aunque la misión dice que solo trabaja una persona.
+
+--- [51]
+1. Crítico · Intent y «Dónde se prueba» · El criterio de éxito («ningún fichero fuera de las carpetas de evidencia nombra `aviso-cierre`») y el `git grep` con `':!.docs/sdd/specs/'` no se cumplirán tras el archivado. `.docs/sdd/roadmap.md:9` conserva el título «Retirar la skill aviso-cierre» (solo cambia a ✅). Además, `sdd-archive` probablemente añadirá una entrada a `.docs/sdd/changelog.md` que también nombrará la skill. · Excluir `roadmap.md` y `changelog.md` del grep, o reformular el criterio a «ninguna skill ni capacidad la referencia». Dejar dicho que el roadmap y el changelog la nombran como historia.
+
+2. Crítico · ✋ decisión 2 y «Dónde se prueba» · La spec da por hecho que el gate es solo `node --test`. `.docs/sdd/operations.md:11` define el «Gate de cierre» como `node --test && node scripts/lint.mjs`. La verificación de la spec se queda corta, y la justificación de no trasladar «Corre el gate» cita solo la constitución. · Poner como gate `node --test && node scripts/lint.mjs` (operations.md) y citarlo en la decisión 2.
+
+3. Importante · Delta de comportamiento y «Dónde se prueba» · El THEN «`resumen-cierre` dice qué se cierra» solo se comprueba «leyendo» el SKILL.md. No hay comando ni test, y la propia spec admite que no hay test propio. La constitución art. 2 pide tests antes que código. La instrucción «Di qué se cierra.» tampoco exige id ni título, así que el ejemplo «Cierro la 0030 · …» del 🦆 no queda garantizado. · Añadir un test de `node --test` que lea `skills/resumen-cierre/SKILL.md` y compruebe la línea de apertura antes de los pasos 1 y 2, y que `skills/aviso-cierre` no existe. Si no, justificar la excepción al art. 2 en ✋. Precisar el texto de la línea (feature e título).
+
+4. Importante · ✋ Decisiones · Hay decisiones tomadas en el cuerpo que no están listadas. Una es el texto literal de la línea de apertura, «Di qué se cierra.», y su ejemplo del 🦆. Otra es que el delta no se escribe a mano sino con `sdd capability merge` en el archivado (Scope). Otra es borrar el directorio entero en vez de dejar un stub. Otra es dejar `aviso-apertura` fuera del alcance. · Añadirlas como decisiones numeradas con su alternativa descartada (por ejemplo, dejar un alias o stub deprecado).
+
+5. Importante · ✋ decisión 5 · Afirma haber probado `sdd capability merge` con una salida concreta, pero esa evidencia no se puede comprobar. El comando no aparece en «Dónde se prueba» y no hay fichero de evidencia. · Mover la comprobación a «Dónde se prueba» con el comando exacto (`sdd capability merge` sobre una copia, esperando salida 0 y `closing.md` sin «aviso-cierre»). Si no, quitar la afirmación.
+
+6. Importante · «Lo que se retira o cambia de forma» (contratos y dependencias) · La spec no dice si algo carga o lista skills por nombre. Puede haber un manifiesto de plugin, hooks, configuración de usuario o el `sdd-kit.json` fuera del repo que invoque `aviso-cierre`. El grep del repo no lo cubre, y la búsqueda de `aviso-cierre` no incluye `.docs/sdd/specs/`, que sí podría citarlo. · Añadir una línea «Registros o cargadores de skills por nombre: ninguno en el repo (`git grep` sin hits fuera de `skills/` y `closing.md`)». Aclarar que quien tenga la skill invocada fuera del repo (otros proyectos) queda como riesgo aceptado, o avisarlo.
+
+7. Menor · «Lo que se retira o cambia de forma» · El grep `(pasos?|steps?) [0-9]+\b` se aplica solo a `.docs/sdd/capabilities/`. Los «paso N» de `skills/` (aviso-apertura, resumen-cierre) quedan sin comprobar, y la tabla afirma que «no son de esta skill» sin haberlos buscado. · Ampliar el grep a `skills/` y `README.md`/`PRODUCT.md`, o limitar la afirmación a lo realmente buscado.
+
+8. Menor · «Dónde se prueba» · `test ! -e skills/aviso-cierre` es sintaxis POSIX y depende de que se ejecute desde la raíz del repo. Un `git grep` sin resultados sale con código 1, así que como comprobación «sin resultados» daría un falso fallo en un script con `set -e`. · Indicar el shell y la raíz, y expresar el grep como `! git grep …` o con `|| true` y comprobación de salida vacía.
+
+--- [65]
+La spec corregida está escrita y el revisor de la segunda ronda está en marcha, con su vigilancia. Espero a su notificación para integrar lo que diga. Hasta entonces la spec no está lista para presentártela, y no la presento como aprobada: sigue en `draft` y con la aprobación pendiente.
+
+--- [73]
+1. Crítico · Delta `quality-gate` y decisión 2 · Retirar «Corre el gate» deja el gate sin ningún dueño en el repo. Hoy la única skill que lo corre es `aviso-cierre`. «Lo corre el cierre» apunta a `sdd-archive`, que está fuera del repo y no se verifica. Los THEN «corre una vez, y no se repite aunque el cierre se retome» y «el cierre para» pasan a describir algo que nada en el repo hace. · Decir qué componente corre el gate y dónde está escrito. Si no está en el repo, declararlo como contrato externo con riesgo aceptado, o añadir el paso 3 a `resumen-cierre`. Si no, `quality-gate` queda sin anclaje.
+
+2. Crítico · Dónde se prueba (el gate) · Ningún test ni comando comprueba los dos MODIFIED de `quality-gate`. `node --test && node scripts/lint.mjs` solo verifica `test/skills.test.js` y el lint de tabuladores en `src/app.js`, que no tocan el gate. «Verde» no prueba que el gate corra una vez ni que pare con un test en rojo. · Declarar esos THEN como no verificables en este repo, o reformularlos a algo comprobable. Quitar «en verde» como evidencia del delta.
+
+3. Importante · Delta `closing` y decisión 1 · `resumen-cierre` dice «Usar al acabar el cierre», y `aviso-cierre` se lanzaba al empezar. Con la línea de apertura en `resumen-cierre`, «qué se cierra» se dice al final, no al principio. Eso cambia el momento del aviso y el spec no lo reconoce. El THEN «lo dice antes de sus pasos 1 y 2» solo es cierto dentro del propio mensaje. · Declarar el cambio de momento como decisión. Si hay que avisar al empezar, cambiar el `description` de `resumen-cierre`.
+
+4. Importante · Intent, éxito y 🦆 · «Quien cierra lee un solo mensaje» no es cierto mientras el gate corra antes y su salida sea otro mensaje. El test tampoco comprueba «un solo mensaje». Es una promesa del Intent sin escenario verificable, aunque el AND del delta la enuncie. · Quitar la promesa o reducirla a «una sola skill que avisa». Cambiar el AND «no hay otra skill que dé un aviso de cierre» por algo que el test compruebe.
+
+5. Importante · Delta `closing` (AND «no hay otra skill») · Es una afirmación negativa global. `aviso-apertura` es otra skill que da avisos, pero de apertura, y no se prueba que no lo sea de cierre. El test solo busca el texto `aviso-cierre`. · Concretar el escenario: «ninguna skill de `skills/` salvo `resumen-cierre` se invoca al cerrar». O quitar el AND.
+
+6. Importante · Scope y decisión 7 · `test/skills.test.js` es un fichero nuevo que lee `skills/` y `.docs/sdd/capabilities/`. Esto es una dependencia nueva (el test acoplado a la estructura de docs) que no se lista en «contratos o dependencias». Además, el test del `aviso-cierre` en `capabilities/` falla en rojo hasta el archivado, porque `closing.md` no se toca a mano (decisión 4) y sigue nombrando la skill. · Aclarar que el test no puede comprobar `capabilities/` antes del merge, o limitarlo a `skills/`. Si no, el gate de la rama queda en rojo hasta archivar.
+
+7. Importante · Dónde se prueba (delta) · La salida literal de `sdd capability merge` («sustituido «…»») está afirmada sin haberse ejecutado, porque «copia» y `<spec.md>` son placeholders. Además, `--path <copia>` supone una copia de `.docs/sdd`, y no dice cómo se crea ni que `<spec.md>` apunte a este spec. · Dar los comandos de copia exactos y pegar la salida real, o rebajar la afirmación a «esperado».
+
+8. Menor · Hallazgos de la review · El spec contiene una sección de hallazgos de ronda 1 y la política de modelos. Los hallazgos rechazados («Laura contradice la misión») siguen en pie: la misión dice «una sola persona» y el spec exige una aprobadora. · Resolver la decisión 10 antes del stop o mover la aprobación al dueño del proyecto. Si no, la aprobación depende de una persona que no existe.
+
+9. Menor · Decisión 7 · «No es lo que pedía el roadmap» es hidden scope reconocido, pero el tamaño declarado sigue siendo «~25 líneas en 4 ficheros». El Scope lista 4 ficheros, y dos de ellos (`closing.md`, `quality-gate.md`) no se tocan en la rama. · Corregir el tamaño a los ficheros que de verdad toca la rama (3) y decir que las capacidades las toca el archivado.
+
+10. Menor · Tabla «Lo que se retira» · La fila «Gate de cierre» en `constitution.md:4` dice que no cambia, pero el spec la contradice en la decisión 2: la constitución cita solo `node --test` y `operations.md` añade lint. Hay dos definiciones del gate y el spec elige una sin pedir alinear la otra. · Añadir como deuda o decisión que `constitution.md` queda desalineada con `operations.md`, o incluirla en el Scope.
+
+--- [75]
+Ahora: integro los hallazgos de la segunda ronda (sin tercera ronda, según la regla). Acepto casi todos; el más serio es que `quality-gate` no se puede verificar dentro del repo, así que lo declaro así en vez de fingir cobertura.
+
+--- [78]
+El edit dejó la numeración de ✋ desordenada (9, 11, 12, 9b). Releo la spec y la dejo limpia, junto con lo que falta: Intent, delta, «Dónde se prueba» y los hallazgos de la ronda 2.
+
+--- [94]
+El CLI rechaza mi línea `Se valida en:` suelta. Miro en qué formato la acepta.
+
+--- [103]
+Ahora: la spec está terminada y revisada. Queda: tu aprobación. No he escrito el plan ni tocado código.
+
+## Spec 0030 · Retirar la skill `aviso-cierre`
+
+Está en `.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice/spec.md`, sin commit y con `status: draft`.
+
+**🦆 En llano.** Hoy, al cerrar una feature, se lanzan dos skills y la primera apenas aporta. Tras el cambio queda **un solo aviso**: `resumen-cierre` abre diciendo qué feature se cierra («Cierro la 0099 · Añadir reserva recurrente») y sigue con sus dos pasos de siempre. `aviso-cierre` desaparece.
+
+**Lo que ha cambiado respecto al borrador.**
+- **El gate no se queda huérfano.** Los dos requisitos de `quality-gate` hablaban de «el paso 2», que era el de `aviso-cierre`. Ahora dicen «cuando corre el gate del cierre». El Scope pasa de 2 a 3 ficheros en la rama (el tercero es un test nuevo), más dos capacidades que toca el archivado.
+- **La línea de apertura va sin numerar.** Así los THEN de «El resumen va al final» («paso 1», «paso 2») siguen siendo ciertos.
+
+**✋ Decisiones mías, valida estas**
+1. Redacción de la línea de apertura: «Di qué feature se cierra, con su número y su título.» El roadmap no la fija.
+2. **El gate no se traslada a ninguna skill.** Lo corre el kit al cerrar, con `node --test && node scripts/lint.mjs` de `operations.md`. Eso es un contrato externo que acepto como riesgo: desde este repo no se puede comprobar.
+3. Se borra `skills/aviso-cierre/` entero, sin stub. En el repo nadie más la nombra. Si otros proyectos la invocan, queda como riesgo aceptado.
+4. El aviso de «qué se cierra» pasa de **al empezar** el cierre a **al acabarlo**. No cambio la `description` de `resumen-cierre`.
+5. Añado `test/skills.test.js`, porque la constitución pide tests antes que código. Solo mira `skills/`.
+6. La fila 0030 la pasa a ✅ el archivado.
+7. `constitution.md` cita solo `node --test` como gate y `operations.md` añade el lint. No lo toco, pero queda como posible deuda.
+8. **Laura** figura como aprobadora, pero `mission.md` dice que el proyecto lo usa una sola persona. No lo he cambiado: dime quién aprueba si no es ella.
+
+**Qué no queda verificado.** Los dos THEN de `quality-gate` llevan `Se valida en: validación post-merge con fecha`. Ningún comando de la rama los prueba, y «en verde» solo prueba el test nuevo y el lint.
+
+**Revisión.** Dos revisores en sonnet (dominio y técnica) y una segunda ronda con un tercero, porque acepté Críticos. El detalle está en la spec, con cada hallazgo aceptado o rechazado. El delta se probó sobre una copia de `.docs/sdd` con `sdd capability merge` (salida 0, y ninguna capacidad nombra ya `aviso-cierre`).
+
+**¿Apruebas la spec?**
+
+1. **Apruebo (Recomendada).** Escribo el plan y sigo con la implementación.
+2. **Cambios.** Dime qué ajusto. Lo más probable: la decisión 2, el momento del aviso (decisión 4) o quién aprueba.
+
+Mientras no respondas, la spec queda en espera.
+

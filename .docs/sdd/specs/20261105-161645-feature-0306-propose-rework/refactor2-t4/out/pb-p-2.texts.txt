@@ -1,0 +1,61 @@
+--- [3]
+Ahora: leo el contexto del proyecto y la guía de escritura de la spec. Queda: anuncio, enfoques, spec y revisión hasta la puerta de aprobación, ~10 min.
+
+--- [11]
+Ahora: anuncio y nota de comprensión; después, los enfoques. Queda: enfoque, diseño por secciones (5 tasks), spec, revisión y puerta de aprobación, ~15 min.
+
+Carril: feature, modo full · Perfil: pair, el que me has dicho para esta feature (el proyecto tiene `delegate` en `sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+No hay dependencias que instalar (`package.json` sin `dependencies`, sin `node_modules`). Las 5 tasks tocan la misma superficie (`src/app.js`), sin migración, así que no propongo dividir.
+
+**Lo que he entendido** (corrígeme):
+- Un comando `informes` que imprime cuatro vistas como tabla de texto: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado.
+- `--sala <nombre>` filtra las cuatro vistas.
+- Si no hay reservas, cada vista dice «sin reservas».
+- El plan sale en 5 tasks: una por vista y otra para `--sala`.
+- Sigo sin dar por decididas dos cosas que no me has dicho. Las dejaré en ✋ para que las valides: qué cuenta como «ocupación» (reservas activas o también canceladas) y cómo se ordenan las filas.
+
+**Enfoques para construirlo.** Lo decidido es el qué; el cómo sigue abierto. La constitución y el tech-stack fijan un solo fichero de entrada, así que todo va en `src/app.js` y descarto crear un módulo aparte.
+
+1. **Filtrar primero y calcular después** (recomendado). `--sala` se aplica una sola vez a las reservas y a la lista de salas. Cada vista es una función pura sobre esos datos y devuelve su tabla, y `informes` las junta. Con `--sala Sur`, la vista de salas sin reservas enseña «Sur» si nadie la ha reservado, y las otras tres dicen «sin reservas». Cada task queda aislada y `--sala` no toca el código de ninguna vista.
+2. **Cada vista recibe la sala y filtra por su cuenta.** Es más directo para las primeras tasks. Pero repite el filtro cuatro veces y la task de `--sala` tendría que modificar las cuatro vistas.
+
+¿Con cuál vas, 1 o 2?
+
+--- [13]
+Ahora: diseño por secciones, la 1 de 3 (vistas de ocupación). Queda: 2 secciones más, la spec, la revisión y la puerta de aprobación, ~12 min.
+
+**Sección 1: `informes` y las dos vistas de ocupación**
+
+Con la reserva que hay hoy (Norte, lunes, 10:00-12:00), `node src/app.js informes` empezaría así:
+
+```
+Ocupación por sala
+Sala   Reservas
+Norte  1
+Sur    0
+
+Ocupación por día de la semana
+Día  Reservas
+lun  1
+mar  0
+mié  0
+jue  0
+vie  0
+sáb  0
+dom  0
+```
+
+Esto es lo que yo he decidido, porque no lo habías dicho. Dime si lo cambias:
+- «Ocupación» es el número de reservas **activas**. Las canceladas y las anuladas no cuentan.
+- Las salas salen en el orden en que están dadas de alta (Norte, Sur), y las que tienen 0 también aparecen.
+- Los días salen siempre los siete, de lunes a domingo, con 0 si no hay reservas.
+- Es una tabla de texto con columnas alineadas por espaciado y un título encima de cada vista. La salida sale en castellano y no usa porcentajes.
+- Si no hay ninguna reserva activa, la vista pone su título y debajo «sin reservas», en vez de la tabla de ceros.
+
+En el código, cada vista es una función pura sobre los datos ya filtrados (enfoque 1). Eso cubre las tasks 1 y 2.
+
+¿Va bien?
+
