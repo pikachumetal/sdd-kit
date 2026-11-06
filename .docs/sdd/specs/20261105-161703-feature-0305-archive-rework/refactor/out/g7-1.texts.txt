@@ -1,0 +1,65 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [28]
+Antes de actuar sobre esos hallazgos, compruebo los dos de `tasks.md` contra git.
+
+--- [38]
+Ahora el smoke con ejecución real (una fila por THEN) y la suite. Como la rama toca `package.json`, que es un fichero «Sin filtro», el gate corre entero.
+
+--- [41]
+El smoke falló por un error de sintaxis en mi script, no en el código. Lo rehago con un `import()` dinámico.
+
+--- [44]
+Smoke 4/4 con ejecución real, unit 2/2 y gate 2/2 (bookings 5/5, rooms 1/1) sobre `c39f49a`. Para la historia del cierre, leo cómo se hacen el squash y los hitos de commit.
+
+--- [47]
+Edito `tasks.md`: corrijo el commit de la Task 1, añado la `Re-revisión:` sin sha del tramo (que se junta en el cierre) y anoto qué pasó con el Ruling.
+
+--- [53]
+Ahora la capacidad `bookings`: primero compruebo el bloque «Capacidades» de la spec y luego fusiono el delta con la CLI.
+
+--- [56]
+El primer `check` falló solo porque `bookings.md` todavía no existía. Lo repito tras el merge, junto con el chequeo de ADR.
+
+--- [70]
+Cierre en un solo commit (`a0c36d2`) y los dos shas citados siguen siendo ancestros. Ahora el merge de sincronización de la base, en su propia llamada.
+
+--- [77]
+🦆 Con la 0010, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- La revisión final miró `9f54946`, pero `HEAD` ya iba dos commits por delante. Uno tocaba `package.json`, que no es documentación, así que lancé la única re-revisión del tramo, con `sdd-kit:effort-high` y opus, antes de escribir nada.
+- No encontró nada en el código. Sí encontró dos Important en `tasks.md`:
+  - La fila de la Task 1 citaba `9f54946`, el commit de la Task 2. La corregí a `7f9fa49`.
+  - El Ruling de la Task 2 (`--test-concurrency=1` en el gate) nunca se aplicó: `gate.json` y el gate de la constitution no lo llevan, y `node --test` ya corre cada fichero en su proceso. Lo dejé tal cual, con una nota de cierre, y lo conté en el walkthrough.
+- Esto es decisión mía, sin el dev-lead.
+
+**Validación en campo** (2026-11-05, verificada por mí; el dev-lead no ha probado nada a mano):
+- **Smoke:** 4/4 con ejecución real. Corrí las cuatro llamadas en un mismo proceso, porque el almacén es en memoria. `npm run -s cancelar -- Norte lun --motivo "sala ocupada"` también responde bien.
+- **Suite unitaria:** 2/2.
+- **Gate:** `Gate: node --test test/app.test.js · node scripts/gate.mjs run bookings:test rooms:test` → bookings:test 5/5 · rooms:test 1/1 (sin filtro: cambia el build, porque `package.json` está en «Sin filtro») · 3,5 s · sobre el commit de cierre `a0c36d2`.
+
+**Registros:**
+- **Walkthrough, capacidad y changelog:** escribí `walkthrough.md`, la capacidad nueva `capabilities/bookings.md` (fusionada con `sdd capability merge`) y la entrada del changelog.
+- **Roadmap:** la fila 0010 quedó en `✅`.
+- **Deuda nueva:** abrí tres filas de deuda:
+  - falta el test de «sin `--motivo`»;
+  - el test de `canceladas` depende del orden;
+  - `package.json` no está en los `inputs` del gate.
+- **Retro:** hubo dos señales.
+  - El Ruling desmentido, corregido en su propio documento.
+  - Un chequeo que habría cazado el commit equivocado de la fila de la Task 1: va como ticket del kit.
+- **Sin estimation.md:** no apliqué el tiempo real ni el estimation-log.
+- **Sin ADR:** la spec no tenía ADR candidatas.
+
+**Pendiente y avisos:**
+- `roadmap check` da 2 fallos en líneas que no toqué: la cabecera de «Deuda técnica» y la de la release v0.3.0. No pararon el cierre; los arreglaría la migración v2.3.0.
+- **Versión del kit:** el proyecto pide el kit 3.0.0 y la sesión arrancó con el 2.3.4. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- No había otras ramas abiertas, ni CI de la base declarada, ni `environments.md`.
+- **Merge:** `develop` ya estaba en la rama, así que no hubo merge de sincronización.
+
+**Ticket del kit:** hay una línea `Retro: … → ticket del kit` (nada contrasta el commit de cada fila de `tasks.md` con los ficheros de su task). ¿Quieres que lo redacte con `sdd-feedback`?
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`3439342`) · push: no hecho: `merge.push` es `false` · la rama está en el checkout principal del repo, no hay worktree que borrar.
+

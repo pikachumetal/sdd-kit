@@ -1,0 +1,116 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [6]
+Los pre-checks 1 a 3 pasan: el árbol está limpio, `merge --check` sale con 0 y no hay otras ramas abiertas. Sigo con la spec y las referencias.
+
+--- [46]
+Antes de presentar, ensayo los comandos exactos del guion, con otra sesión para no dejarle datos a quien valide.
+
+--- [50]
+Aún no puedo cerrar la 0010: el modo de validación es `manual` y «ciérrala» es la orden de cerrar, no una validación. Antes de escribir ningún registro necesito que la pruebes tú. No he tocado nada del repo.
+
+**Pre-checks del cierre**
+- El árbol está limpio, `merge --check` sale con 0 (la fusión irá a `develop`) y no hay otras ramas abiertas.
+- La spec está aprobada (Laura, 2026-10-08), en modo `full`.
+- `HEAD` (`da7a890`) se movió desde el último sha revisado (`9866fd3`). Es un commit solo de documentación: 17 líneas en `tasks.md`. No hay `Re-revisión:`, así que he lanzado la re-revisión única en segundo plano. Hasta que vuelva no escribo ni el walkthrough ni la fila del roadmap. Te cuento el resultado cuando llegue.
+- La sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que he seguido son las de 3.0.0, pero conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (`cambio de planes`, `sala ocupada`, `otro`). Sin motivo, o con uno fuera de la lista, responde «motivo no válido: …». Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». El comando `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Task 2: usé `node --test --test-concurrency=1` en el gate. Los tests comparten un almacén en memoria y compiten entre sí. Es un workaround hasta aislar el almacén por test, y si es erróneo la suite tarda el doble.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+- `node --test --test-concurrency=1`: 5/5 sobre `da7a890`, 0,25 s. Salida en `.temp/gate-0010.txt`. El e2e no entra en el gate de cierre.
+
+**Sin probar**
+- `npm run env:up` falla con «no arranca: falta data/seed.json». Está así desde `f9d1094` («env-up sin la semilla de datos»). Levanté el servidor con `node server.mjs` y sigue arrancado en el puerto 2754. No he probado el e2e.
+- La CLI no guarda estado entre procesos, así que `canceladas` solo se puede probar contra el servidor, que guarda el estado por sesión.
+
+**Guion**
+
+Panel: plan B (sin herramientas de Chrome). Lo apunta el chat: dime el resultado de cada paso.
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 2754 (`node server.mjs`). Usa la sesión `laura`, que está vacía. Pasos 1 a 4, uno por bloque:
+
+```
+curl.exe -s -g -H "X-Session: laura" "http://localhost:2754/run?cmd=canceladas&args=%5B%5D"
+```
+1. Todavía no hay canceladas → sale una línea vacía.
+
+```
+curl.exe -s -g -H "X-Session: laura" "http://localhost:2754/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+2. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl.exe -s -g -H "X-Session: laura" "http://localhost:2754/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+3. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl.exe -s -g -H "X-Session: laura" "http://localhost:2754/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+4. Motivo válido → `cancelada Norte lun (sala ocupada)`
+
+```
+curl.exe -s -g -H "X-Session: laura" "http://localhost:2754/run?cmd=canceladas&args=%5B%5D"
+```
+5. Listado → `Norte lun — sala ocupada`
+
+Para parar el entorno:
+
+```
+npm run env:down
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [51]
+Veredicto: hallazgos abiertos. El diff toca solo el `tasks.md`, pero la tabla da a la Task 1 un commit equivocado.
+
+1. **Alcance del diff:** correcto. `git diff --stat 9866fd3..da7a890` muestra un único fichero, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, nuevo, con 17 inserciones. No cambia código ni tests.
+2. **Tabla, Task 1:** incorrecta. Dice `9866fd3`, pero esta task la implementó `b889d94` («feat(bookings): cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`, los ficheros que pide la Task 1 en `plan.md:36-40`). `9866fd3` es el commit de la Task 2.
+3. **Tabla, Task 2:** correcta. `9866fd3` («listado de canceladas con su motivo») coincide con `git log --oneline` y con la Task 2 de `plan.md:42-46`.
+4. **Tabla, títulos:** correctos. «Cancelar con motivo» y «Listado de canceladas» coinciden con `plan.md:36` y `plan.md:42`.
+5. **Línea `Revisión final:`, ejes Spec y Código:** correctos. Los dos constan como limpios sobre `9866fd3`, como dice el encargo. «Sin review de spec» en `spec.md:25` se refiere a la review de la spec antes de implementar, no al eje Spec de la revisión final, así que no se contradicen.
+6. **Línea `Revisión final:`, eje Arquitectura:** no se puede comprobar. «Arquitectura no (plan)» atribuye esa decisión al plan, pero `plan.md` no la declara en ningún sitio (en `## Review Focus` solo pone «ninguna: comprobado»).
+7. **Ruling, forma:** bien formado. Tiene task (Task 2), decisión (`node --test --test-concurrency=1` en el gate), motivo (la carrera de los tests sobre el almacén compartido en memoria), se declara workaround con condición de salida («hasta aislar el almacén por test») y dice el coste si es erróneo («la suite tarda el doble»). No juzgo el workaround.
+8. **Ruling, coherencia con el repo:** no consta en ningún otro sitio. El gate de cierre de `plan.md:50` sigue siendo `node --test`, y el script `test` de `package.json` es `node --test test/`. Ningún fichero del árbol en `da7a890` contiene `--test-concurrency`, aparte del propio `tasks.md`.
+
+Hallazgos:
+- **Important** — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: la Task 1 apunta a `9866fd3`; según `git log` debe ser `b889d94`. Es un error de trazabilidad en el registro.
+- **Minor** — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:13`: «Arquitectura no (plan)» atribuye al plan una decisión que `plan.md` no recoge.
+- **Minor** — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`: el ruling describe un gate con `--test-concurrency=1` que no aparece ni en `plan.md:50` ni en `package.json`. No queda dicho dónde se aplica.
+
+Veredicto: hallazgos abiertos
+- Important — `tasks.md:10`, commit de la Task 1 (`9866fd3` en lugar de `b889d94`)
+- Minor — `tasks.md:13`, «Arquitectura no (plan)» sin respaldo en `plan.md`
+- Minor — `tasks.md:17`, el gate del ruling no consta en `plan.md:50` ni en `package.json`
+
+--- [54]
+La re-revisión ya volvió: hay un hallazgo Important confirmado y dos Minor. La validación sigue pendiente, así que no he escrito nada.
+
+**Re-revisión de `da7a890`**
+- **Important, confirmado:** `tasks.md` da a la Task 1 el commit `9866fd3`, pero la implementó `b889d94`. `9866fd3` es el de la Task 2. Lo corrijo en el paso 2 del cierre, cuando valides, porque ese paso ya manda arreglar las discrepancias de `tasks.md` con la realidad.
+- **Minor:** «Arquitectura no (plan)» atribuye al plan una decisión que `plan.md` no recoge. En el walkthrough lo dejaré como «sin revisión de arquitectura» y con su motivo.
+- **Minor:** el ruling de `--test-concurrency=1` no consta en `plan.md` ni en `package.json`. Lo recojo en el walkthrough con su condición de salida.
+
+Con esto el pre-check de la revisión final queda resuelto. Anotaré `Re-revisión: 9866fd3..da7a890, sdd-kit:effort-high + opus, hallazgos corregidos en el cierre`.
+
+Para seguir necesito que pruebes el guion del mensaje anterior. Dime «validado» o qué paso falla. Si no puedes ahora, usa la línea `Diferir:`. El servidor sigue arrancado en el puerto 2754 y no lo toco hasta tu respuesta.
+

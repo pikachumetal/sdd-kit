@@ -1,6 +1,6 @@
-# Encargo de revisión — cabecera obligatoria
+# Review brief — mandatory header
 
-El encargo de **cada eje de la revisión final**, el de su **pasada de fix** en SDD y el de su **re-revisión** empiezan así, antes del encargo del eje ([`sdd-verify`](../SKILL.md), «Final review»). Los del revisor de task y del re-revisor ya la llevan dentro: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) y [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) de `sdd-implement`.
+The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement-subagent/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md) of `sdd-implement-subagent`.
 
 ```markdown
 ## Restricciones de código
@@ -16,15 +16,15 @@ Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. E
 <el encargo del eje a partir de aquí>
 ```
 
-Por qué así: las plantillas de superpowers solo tienen hueco para restricciones en la del revisor de task; las del revisor final y la re-revisión no lo tienen, y un revisor sin las restricciones aprueba lo que ellas prohíben (T7: comentarios que repetían el código). Medido: `tests/gates-reviews-green.md`, E3.
+Why this way: superpowers' templates have a slot for constraints only in the task reviewer's; the final reviewer's and the re-review's don't, and a reviewer without the constraints approves what they forbid (T7: comments that repeated the code). Measured: `tests/gates-reviews-green.md`, E3.
 
-Solo viaja el bloque «De código». El de «De proceso» (política de modelos, modo de ejecución, atribución de commits) es para quien despacha: `task-reviewer-prompt.md` de superpowers reserva ese hueco a lo que exige la spec, «not process rules», y un revisor que las lee las audita. Con el bloque entero y «todo incumplimiento es Important», 2 de 2 revisores devolvieron «Needs fixes» sobre un diff correcto: por la línea en blanco que exigía el linter en un test RED, por una función de 21 líneas y por el modo de despacho (`tests/proportional-review-red.md`, R1).
+No block travels other than «De código». The «De proceso» one (model policy, execution method, commit attribution) is for whoever dispatches: superpowers' `task-reviewer-prompt.md` keeps that slot for what the spec demands, «not process rules», and a reviewer who reads them audits them. With the whole block and «every breach is Important», 2 of 2 reviewers returned «Needs fixes» on a correct diff: for the blank line the linter demanded in a RED test, for a 21-line function and for the dispatch method (`tests/proportional-review-red.md`, R1).
 
-## Revisor final
+## Final reviewer («Revisor final»)
 
-Cada eje se despacha con el tipo y el modelo de la tabla de «Final review» de `sdd-verify` —Spec y Arquitectura con `subagent_type: sdd-kit:effort-high` + `model: opus`, Código con `subagent_type: sdd-kit:effort-high` + `model: sonnet`—, también en Native, donde los despacha el hilo. Medido: `tests/native-adapt-red.md`. Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](../../sdd-propose/references/control-profiles.md#silence-watch).
+Each axis is dispatched with the type and model of the «Final review» table of `sdd-verify` —Spec and Architecture with `subagent_type: sdd-kit:effort-high` + `model: opus`, Code with `subagent_type: sdd-kit:effort-high` + `model: sonnet`—, also in Native, where the thread dispatches them. Measured: `tests/native-adapt-red.md`. Like every dispatch, it carries its silence watch, also in the re-review: [Silence watch](../../sdd-propose/references/control-profiles.md#silence-watch).
 
-Sale en segundo plano en cuanto existe el commit de la última task, y el hilo sigue trabajando y commiteando mientras revisa. Por eso los ejes no trabajan en el árbol del hilo, sino en un worktree desanclado en el sha que revisa, `review-<id>-<sha corto>`, junto a los demás worktrees del repo:
+It goes out in the background as soon as the last task's commit exists, and the thread keeps working and committing while it reviews. That is why the axes don't work in the thread's tree, but in a worktree detached at the sha it reviews, `review-<id>-<sha corto>`, next to the repo's other worktrees:
 
 ```bash
 SHA=$(git rev-parse --short HEAD)
@@ -32,9 +32,9 @@ REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-<id>-$SHA"
 git worktree add --detach "$REVIEW_DIR" "$SHA"
 ```
 
-La receta del paquete se ejecuta dentro de `$REVIEW_DIR`, y el encargo nombra ese directorio como el único en el que trabaja, con esta frase: «Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama)». Cuando han vuelto todos los ejes, el hilo lo retira con `git worktree remove "$REVIEW_DIR"`. La re-revisión de un tramo `<a>..<b>` se ancla igual, en `<b>`. Medido: ticket de la feature 0027 de document-manager, §2, y `tests/closing-off-critical-path-red.md`, c1.
+The package recipe runs inside `$REVIEW_DIR`, and the brief names that directory as the only one it works in, with this sentence: «Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama)». When every axis has returned, the thread removes it with `git worktree remove "$REVIEW_DIR"`. The re-review of a range `<a>..<b>` is anchored the same way, at `<b>`. Measured: ticket of feature 0027 of document-manager, §2, and `tests/closing-off-critical-path-red.md`, c1.
 
-El paquete lo prepara el hilo con esta receta, no con `sdd review package`, en los dos métodos. `sdd review package` corta el rango desde la base del arranque y no admite exclusiones: el revisor lee siempre la evidencia de las campañas y, si la rama integró la rama de integración, también el trabajo de otras features (9 MB frente a 179 KB en la feature 0070, 730 KB frente a 78 KB en la 0058). En Git Bash, con `<integración>` la rama de integración de la constitution (`develop` si no fija otra):
+The thread prepares the package with this recipe, not with `sdd review package`, in both methods. `sdd review package` cuts the range from the start's base and admits no exclusions: the reviewer always reads the campaigns' evidence and, if the branch merged the integration branch, other features' work too (9 MB against 179 KB in feature 0070, 730 KB against 78 KB in 0058). In Git Bash, with `<integración>` the constitution's integration branch (`develop` if it fixes no other):
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
@@ -51,9 +51,9 @@ OUT="$WORKSPACE/review-final-$(git rev-parse --short HEAD).diff"
 } > "$OUT" && echo "$OUT"
 ```
 
-El merge-base se calcula en el momento de la revisión, también si la rama integró la base a mitad: la base del arranque arrastra lo que trajo el merge. Con remoto, `git fetch` antes: si la rama integró `origin/<integración>` y la local está atrasada, la base local vuelve a traer lo de otras features; sin remoto, `rev-parse` no imprime nada y queda la local. Si las dos han divergido, git elige una sola base: sincronízalas antes. No uses `git diff <integración> HEAD`: si la rama de integración avanzó después del merge, mete al revés sus commits nuevos. En modo lite, sin plan, `<plan>` es `spec.md`. `<carpeta de la feature>` es el nombre de la carpeta de la spec en `.docs/sdd/specs/`: la spec y el plan le llegan al eje Spec por su ruta, en su encargo. Los ficheros borrados van solo por nombre. Con ellos, el primer `Read` del revisor falló por tamaño (su ticket de campo, §3). Si el tech-stack del proyecto declara otras carpetas de evidencia, añádelas a `EXCLUDE` con la misma forma. Sin la receta, 2 de 2 sujetos metieron en el paquete las 400 líneas de `red/out/` de la spec, y uno lo escribió dentro de la carpeta de la spec (`tests/final-review-package-red.md`).
+The merge-base is computed at review time, also if the branch merged the base midway: the start's base drags in what the merge brought. With a remote, `git fetch` first: if the branch merged `origin/<integración>` and the local one is behind, the local base brings back other features' work; without a remote, `rev-parse` prints nothing and the local one stays. If the two have diverged, git picks a single base: sync them first. Don't use `git diff <integración> HEAD`: if the integration branch moved after the merge, it brings its new commits in reverse. In lite mode, without a plan, `<plan>` is `spec.md`. `<carpeta de la feature>` is the name of the spec's folder in `.docs/sdd/specs/`: the spec and the plan reach the Spec axis by their path, in its brief. Deleted files go by name only. With them, the reviewer's first `Read` failed on size (its field ticket, §3). If the project's tech-stack declares other evidence folders, add them to `EXCLUDE` in the same form. Without the recipe, 2 of 2 subjects put the spec's 400 lines of `red/out/` into the package, and one wrote it inside the spec's folder (`tests/final-review-package-red.md`).
 
-Tras la cabecera y antes del encargo del eje:
+After the header and before the axis brief:
 
 ```markdown
 ## Cómo revisar
@@ -61,9 +61,9 @@ Tras la cabecera y antes del encargo del eje:
 Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de 400 líneas con `offset` y `limit`: tiene los commits, el resumen, los ficheros borrados por nombre y el diff del resto de la rama, sin la carpeta de la spec. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
 ```
 
-Con la cabecera sin esta sección, 2 de 2 revisores finales rehicieron el diff y ejecutaron suite y lint (`tests/proportional-review-red.md`, R2).
+With the header and without this section, 2 of 2 final reviewers redid the diff and ran the suite and the lint (`tests/proportional-review-red.md`, R2).
 
-En el encargo del eje Spec, si el plan tiene `## Review Focus`, tras «Cómo revisar» va esta sección:
+In the Spec axis brief, if the plan has `## Review Focus`, this section goes after «Cómo revisar»:
 
 ```markdown
 ## Review Focus
@@ -73,8 +73,8 @@ En el encargo del eje Spec, si el plan tiene `## Review Focus`, tras «Cómo rev
 Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test o la verificación que la fija. Una línea sin test ni verificación nombrada, o cuyo código no da ese comportamiento, es un hallazgo.
 ```
 
-Es lo que pedía `executing-plans` de superpowers («the plan's Review Focus section verbatim»), y no basta con remitir al plan: con la remisión («el plan tiene una sección Review Focus, compruébala»), 1 de 2 encargos en Opus salió sin sus líneas (`tests/plan-review-focus-red.md`).
+It is what superpowers' `executing-plans` asked for («the plan's Review Focus section verbatim»), and pointing at the plan isn't enough: with the pointer («the plan has a Review Focus section, check it»), 1 of 2 briefs on Opus went out without its lines (`tests/plan-review-focus-red.md`).
 
-## Encargo del implementador
+## Implementer brief
 
-Vive en [implementer-prompt.md](../../sdd-implement/references/implementer-prompt.md) de `sdd-implement`, con la misma sección «Restricciones de código» y, además, el contrato de los tests RED, la «Verificación» de la task y las reglas del implementador.
+It lives in [implementer-prompt.md](../../sdd-implement-subagent/implementer-prompt.md) of `sdd-implement-subagent`, with the same «Restricciones de código» section and, besides, the contract of the RED tests, the task's «Verificación» and the implementer's rules.

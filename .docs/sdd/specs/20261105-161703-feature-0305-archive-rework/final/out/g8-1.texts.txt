@@ -1,0 +1,104 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [25]
+Mientras vuelve, leo la receta de merge y el resto de referencias, sin escribir nada todavía.
+
+--- [29]
+Task 1 en tasks.md apunta a a33fd76 y no a 7740a13. Lo compruebo con el historial y con plan.md.
+
+--- [32]
+La re-revisión está en marcha en segundo plano y no escribo nada hasta que vuelva. De momento he hecho esto:
+
+- **Pre-checks del paso 0:** salen limpias. Solo hay sin commitear el borrador `walkthrough.md`, `merge --check` da `destino: listo` sobre `develop`, y no hay otras ramas abiertas.
+- **Smoke por THEN, con ejecución real:** los tres casos de `cancelar` dan lo esperado.
+  - Con motivo válido responde «cancelada Norte lun (sala ocupada)».
+  - Con un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro».
+  - Sin `--motivo` responde lo mismo.
+  - El almacén es en memoria, así que probé `canceladas` en el mismo proceso que `cancelar`. Responde «Norte lun — sala ocupada».
+- **Suite:** `bookings:test` da 5/5 en verde y `rooms:test` se salta por `--affected`.
+- **Re-revisión:** la revisión final miró `a33fd76` y `HEAD` es `4ccee9e`, que solo añade `tasks.md` (17 líneas). La regla pide una re-revisión única de ese tramo, y es la que espero.
+- **Por corregir en el cierre:** `tasks.md` cita `a33fd76` para las dos tasks, pero la 1 es `7740a13`. El borrador del walkthrough también está incompleto: le faltan los THEN y el resto de secciones.
+
+Cuando llegue el veredicto sigo con el walkthrough, las capacidades, el changelog, la fila del roadmap, la deuda del workaround de `--test-concurrency=1`, el commit de cierre y el merge.
+
+--- [37]
+# Re-revisión del rango a33fd76..4ccee9e, feature 0010 (Motivo al cancelar)
+
+El rango es un solo commit (4ccee9e) que crea `tasks.md`, con 17 líneas añadidas. No toca código, tests ni comportamiento: `src/` y `test/` no cambian. Aun así, `tasks.md` no cuadra con el historial ni con el plan en dos puntos.
+
+## Finding Verdicts
+
+Ninguno: no había hallazgos abiertos.
+
+## New Breakage in the Fix Diff
+
+1. **Important**: la task 1 apunta al commit equivocado (`.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`).
+   - La fila dice `| 1 | Cancelar con motivo | done | a33fd76 | |`.
+   - Según `git log`, la task 1 es 7740a13 («feat(bookings): cancelar con un motivo de la lista»), que toca `src/app.js` y `test/cancel.test.js`.
+   - a33fd76 es solo la task 2.
+   - Las dos filas apuntan al mismo commit, así que la task 1 queda sin enlace a su commit, y ese error pasaría al walkthrough y al archivo.
+   - Arreglo: poner `7740a13` en la fila 1. La fila 2 (`a33fd76`, línea 11) está bien.
+
+2. **Important**: el Ruling de la task 2 describe un gate que no coincide con el plan ni con el repositorio (`.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`).
+   - El Ruling fija `node --test --test-concurrency=1` en el gate.
+   - Contradice al plan: `plan.md:50` dice que el gate de cierre es `node --test`, y `spec.md` no tiene ninguna enmienda (lista «(ninguna)»).
+   - Tampoco está en el árbol de 4ccee9e. Ni `gate.json` ni `package.json` usan `--test-concurrency`. La entrada `bookings:test` de `gate.json` sigue siendo `node --test test/app.test.js test/cancel.test.js`.
+   - Por tanto, el registro afirma una decisión que no se aplicó, o que se aplicó fuera de los commits.
+   - Arreglo, una de dos:
+     - si la decisión vale, llevarla al código del gate y al plan (o a una enmienda);
+     - si no, corregir o quitar el Ruling.
+
+## Out-of-Scope Observations
+
+- El Ruling reconoce una carrera entre los tests por el almacén compartido en memoria y la cubre con un workaround «hasta aislar el almacén por test». Eso es deuda técnica y debería apuntarse donde el proyecto lleve la deuda (roadmap o «Por triar»). Juzgar si los tests de a33fd76 tienen esa carrera queda fuera de este rango, y la revisión final no la señaló.
+- `walkthrough.md` está sin seguimiento en el working tree y no entra en 4ccee9e. No lo he revisado.
+
+## Verdict
+
+**No limpio: hay que tocar `tasks.md`.** El rango no cambia código, tests ni comportamiento. Pero `tasks.md` no es coherente con el historial (línea 10, la task 1 debe ser 7740a13) y su Ruling contradice a `plan.md` y a `gate.json` (línea 17). Hay que corregir los dos puntos antes del cierre.
+
+--- [39]
+La re-revisión no cambia código y encuentra dos incoherencias de registro en `tasks.md`: el commit de la task 1 y el Ruling del gate. Las corrijo en el cierre. Retiro el vigía y el worktree de revisión y sigo.
+
+--- [47]
+Mi `sed` ha cambiado los finales de línea de `roadmap.md` y dos de las ediciones no se aplicaron. Restauro `roadmap.md` y rehago las ediciones preservando los finales de línea.
+
+--- [53]
+Checks en verde. Squasheo el cierre sobre el último commit de task (`a33fd76`) y hago el commit de cierre.
+
+--- [56]
+La base traía commits nuevos. Miro qué cambia fuera de documentación para decidir qué suite repetir.
+
+--- [59]
+`package-lock.json` es un fichero de «Sin filtro», así que el gate corre sin `--affected` y con todas las tareas.
+
+--- [65]
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- **Task 2:** el Ruling dice que el gate lleva `--test-concurrency=1` para esquivar una carrera entre tests sobre el almacén en memoria. Ese flag no está en `gate.json`, ni en `package.json`, ni en `plan.md`: el registro afirma algo que el repositorio no tiene. Lo dejé escrito en el walkthrough como decisión no aplicada, con la carrera como deuda. Dime si el flag debe llegar al gate o si el Ruling sobra.
+
+**Validación en campo (la hice yo):** suite 5/5. Smoke 4/4 THEN con ejecución real, incluidos los dos de fallo, provocados con la entrada que falla. `cancelar` y `canceladas` corrieron en el mismo proceso, porque el almacén es en memoria.
+
+**Cierre**
+- **Re-revisión:** la revisión final miró `a33fd76` y `HEAD` era `4ccee9e`, solo documentación. La re-revisión no encontró cambios de código, pero sí dos apuntes de registro: la task 1 citaba el commit equivocado (ya es `7740a13`) y el Ruling anterior. Los corregí en el cierre.
+- **Registros:** `capabilities/bookings.md` se creó con el merge de la spec. Añadí la entrada de la 0010 al changelog y puse su fila del roadmap en ✅. Abrí la fila de deuda de la carrera entre tests y no hay ADR. Retro: sin señales.
+- **Base integrada:** `develop` traía el lockfile y un test de `rooms`. Eso es «Sin filtro», así que repetí el gate completo. `Gate: node scripts/gate.mjs run bookings:test rooms:test → bookings:test: corrió 5/5 (sin filtro: cambia el build) · rooms:test: corrió 2/2 (sin filtro: cambia el build)`, sobre `5b1dccb`.
+
+**Pendiente**
+- `sdd roadmap check` da 2 fallos en líneas que no escribí: la cabecera de «Deuda técnica» y el título de la release v0.3.0. Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+
+No hay ticket del kit de esta sesión. Si quieres el de mejora, dímelo y lo preparo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (a2c6a60) · push: no hecho: `merge.push` no lo autoriza
+
+--- [67]
+El cierre ya está hecho. Ese borrador lo completé y lo incluí en el commit de cierre `3a79746`, así que ya no está sin commitear. Tras el merge, `git status` salió limpio.
+
+- **Walkthrough:** quedó con los cambios, los 4 THEN con ejecución real, la validación en campo, el Ruling del gate, la deuda y `Retro: sin señales`.
+- **Merge:** `feature/0010-cancel-reason` está fusionada en `develop` (`a2c6a60`), sin push porque `merge.push` no lo autoriza.
+
+Queda pendiente decidir lo del Ruling: el flag `--test-concurrency=1` no está en `gate.json` ni en `package.json`. Dime si debe llegar al gate o si el Ruling sobra.
+

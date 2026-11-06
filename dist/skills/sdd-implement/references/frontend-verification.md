@@ -1,66 +1,66 @@
-# Verificación de frontend
+# Frontend verification
 
-El kit decide **cuándo** se verifica lo que se ve y **qué evidencia** hace falta; **con qué** lo declara el proyecto en `§Frontend` de `tech-stack.md`. Un test unitario no ve el layout, y el ojo del modelo tampoco basta: no ve un padding de 0 px ni un texto que se sale de su caja, y un detector sobre la página renderizada los caza en segundos.
+The kit decides **when** what is seen gets verified and **what evidence** is needed; the project declares **what with** in `§Frontend` of `tech-stack.md`. A unit test doesn't see the layout, and the model's eye isn't enough either: it misses a 0 px padding or a text that overflows its box, and a detector over the rendered page catches them in seconds.
 
-## Cuándo
+## When
 
-- **Task full** con «Verificación visual» en el plan: tras su revisión, antes de marcarla hecha (`sdd-implement`).
-- **Feature lite** que cambia lo que se ve: antes de presentar la validación ([modo-lite.md](../../sdd-propose/references/modo-lite.md)).
-- **Patch visual** (ajuste solo de presentación): tras el cambio, antes de pedir la validación (paso 4 de `references/patch-flow.md`).
+- **Full task** with «Verificación visual» in the plan: after its review, before marking it done (`sdd-implement`).
+- **Lite feature** that changes what is seen: before presenting the validation ([modo-lite.md](../../sdd-propose/references/modo-lite.md)).
+- **Visual patch** (an adjustment of presentation alone): after the change, before asking for the validation (step 4 of `references/patch-flow.md`).
 
-## Con qué: `§Frontend`
+## What with: `§Frontend`
 
-Los campos, por su nombre, de la sección `## Frontend` de `tech-stack.md`:
+The fields, by name, of the `## Frontend` section of `tech-stack.md`:
 
-- **URL**: dónde responde la aplicación arrancada con el comando «Arrancar».
-- **Detector**: el comando, con los huecos `{url}` y `{viewport}`, y qué salida cuenta como fallo (p. ej. `npx impeccable@<versión> detect {url} --viewport {viewport}`, fallo con el código de salida 2); o `ninguno`.
-- **Viewports**: escritorio y móvil. Si no los declara, `1280x800` y `390x844`.
-- **Runner E2E**: Playwright, con el MCP si está en la sesión o con un script del paquete `playwright` si no.
-- **Acceso**: cómo entrar, con una URL de entrada que abre la sesión y redirige a `{path}` (p. ej. `/dev/impersonate?user=demo@example.test&next={path}`); el usuario de pruebas; la ruta de la sesión (`storageState`, ignorada por git) y cómo se rehace cuando caduca; o `sin login`.
-- **Temas**: cómo se activa cada uno.
-- **Pantalla de referencia**: la de por defecto; la que nombre la task gana sobre esta.
-- **Skills de apoyo**: las de diseño del proyecto, si las hay. El kit no las invoca por su nombre.
+- **URL**: where the application answers once started with the «Arrancar» command.
+- **Detector**: the command, with the slots `{url}` and `{viewport}`, and which output counts as a failure (e.g. `npx impeccable@<version> detect {url} --viewport {viewport}`, failure with exit code 2); or `ninguno`.
+- **Viewports**: desktop and mobile. If undeclared, `1280x800` and `390x844`.
+- **Runner E2E**: Playwright, with the MCP if the session has it, otherwise with a script of the `playwright` package.
+- **Acceso**: how to get in, with an entry URL that opens the session and redirects to `{path}` (e.g. `/dev/impersonate?user=demo@example.test&next={path}`); the test user; the session's path (`storageState`, ignored by git) and how it is rebuilt when it expires; or `sin login`.
+- **Temas**: how each theme is switched on.
+- **Pantalla de referencia**: the default one; the one the task names wins over it.
+- **Skills de apoyo**: the project's design skills, if any. The kit doesn't invoke them by name.
 
-`§Frontend` gana sobre los valores por defecto de esta página.
+`§Frontend` wins over the defaults of this page.
 
-## Los cinco pasos
+## The five steps
 
-1. **Criterio y referencia, antes de tocar.** El criterio en frases medibles («la tarjeta de resumen muestra cliente, total y estado») y la pantalla del proyecto con la que se compara. En full van en el campo «Verificación visual» del plan; en lite, en el Approach de la spec; en el patch, la intención de §2 es el criterio y la referencia es la captura de la pantalla **antes** del cambio.
-2. **Detector** en los dos viewports, sobre cada pantalla y estado que declara el criterio. Cada hallazgo que el detector cuenta como fallo se arregla o se justifica por escrito, uno por uno; los avisos (*advisory*) no cuentan. El detector no tiene tope de rondas: **no se cierra con un hallazgo abierto sin justificar**.
-   - «Ya estaba antes» solo justifica un hallazgo de una parte que el cambio no toca, nunca uno del elemento que el cambio toca.
-   - «Es un falso positivo» y «es intencional» solo valen si citan la frase del criterio o el rasgo de la pantalla de referencia que lo exige. «Diseño compacto», sin esa cita, no justifica nada.
-   - «La spec no lo fija» o «sería un commit fuera de la task ya revisada» no dejan el hallazgo para el dev-lead: el arreglo va en un commit propio, que entra en la revisión.
-   - En una pantalla con login, el detector abre un navegador sin sesión: escanea la URL de entrada del Acceso con el `{path}` de la pantalla. Sin URL de entrada, el detector de esa pantalla queda «no probado». Escanear el HTML guardado no lo sustituye: no carga el CSS ni aplica el viewport.
-   - Si el detector está declarado y no ejecuta (no se puede instalar ni descargar, sin red o sin Chrome; la URL no responde; el comando da error), di el error concreto: lo visual queda «no probado», nunca «verificado».
-   - Con `Detector: ninguno`, sigue con las capturas y la rúbrica, y la presentación lleva, literal: «composición no medida: `tech-stack.md` no declara detector en §Frontend».
-3. **Ojos.** Una captura por estado y tema, que miras con la rúbrica de composición —jerarquía, ritmo de espaciado, densidad, alineación— contra la referencia. Como máximo 3 rondas de arreglo de composición; si tras la tercera sigue mal, lo dices en la presentación y decide el dev-lead. Las capturas se guardan fuera de git (el scratchpad de la sesión, `%TEMP%`) y no se borran hasta la validación.
-4. **Manos**, solo si el cambio toca comportamiento (en un patch visual no aplica). Recorre el flujo real —la interacción y los estados de carga, error y deshabilitado— con la consola y la red sin errores; el árbol de accesibilidad comprueba presencia, rol y estado. Con el usuario de pruebas de `§Frontend`, nunca contra producción, y sin borrar ni modificar datos que no haya creado la verificación.
-5. **Enseñar.** La presentación (la parada de `pair`, la validación de `sdd-archive`) lleva el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `.card` · arreglado: padding 16 px»), la ruta de cada captura y, solo si el criterio fija un valor, cada medida con su valor y el esperado. O el aviso, o «no probado» con su motivo.
+1. **Criterion and reference, before touching anything.** The criterion in measurable sentences («the summary card shows customer, total and status») and the project screen to compare with. In full they go in the plan's «Verificación visual» field; in lite, in the spec's Approach; in a patch, the intent of §2 is the criterion and the reference is the screenshot of the screen **before** the change.
+2. **Detector** in both viewports, on each screen and state the criterion declares. Each finding the detector counts as a failure is fixed or justified in writing, one by one; advisories don't count. The detector has no round cap: **it doesn't close with a finding open and unjustified**.
+   - «It was already there» justifies a finding only in a part the change doesn't touch, never one in the element the change touches.
+   - «It's a false positive» and «it's intentional» count only if they cite the sentence of the criterion or the trait of the reference screen that requires it. «Compact design», with no such citation, justifies nothing.
+   - «The spec doesn't fix it» or «it would be a commit outside the already reviewed task» don't leave the finding for the dev-lead: the fix goes in its own commit, which enters the review.
+   - On a screen behind a login, the detector opens a browser with no session: it scans the entry URL of the Acceso with the screen's `{path}`. With no entry URL, that screen's detector stays «no probado». Scanning the saved HTML doesn't replace it: it loads no CSS and applies no viewport.
+   - If the detector is declared and doesn't run (it can't be installed or downloaded, no network or no Chrome; the URL doesn't answer; the command errors), say the concrete error: what is seen stays «no probado», never «verificado».
+   - With `Detector: ninguno`, go on with the screenshots and the rubric, and the presentation carries, literally: «composición no medida: `tech-stack.md` no declara detector en §Frontend».
+3. **Eyes.** One screenshot per state and theme, which you look at with the composition rubric —hierarchy, spacing rhythm, density, alignment— against the reference. At most 3 rounds of composition fixes; if it is still wrong after the third, say so in the presentation and the dev-lead decides. Screenshots are kept outside git (the session's scratchpad, `%TEMP%`) and are not deleted until the validation.
+4. **Hands**, only if the change touches behavior (it doesn't apply in a visual patch). Walk the real flow —the interaction and the loading, error and disabled states— with the console and the network free of errors; the accessibility tree checks presence, role and state. With the test user of `§Frontend`, never against production, and without deleting or modifying data the verification didn't create.
+5. **Show.** The presentation (the stop of `pair`, the validation of `sdd-archive`) carries the criterion, the detector's output per viewport with each finding resolved or justified («390x844 · `cramped-padding` in `.card` · fixed: padding 16 px»), the path of each screenshot and, if the criterion fixes a value, each measurement with its value and the expected one. Or the notice, or «no probado» with its reason.
 
-## Proporción por carril
+## Proportion by lane
 
-| | Full | Lite | Patch visual |
+| | Full | Lite | Visual patch |
 | --- | --- | --- | --- |
-| Criterio y referencia | en el plan | en el Approach de la spec | la intención; la captura del antes |
-| Detector, dos viewports | sí | sí | sí |
-| Capturas | por estado y tema | por estado | antes y después de cada pantalla tocada |
-| Manos | si cambia comportamiento | si cambia comportamiento | no |
+| Criterion and reference | in the plan | in the spec's Approach | the intent; the screenshot of before |
+| Detector, two viewports | yes | yes | yes |
+| Screenshots | per state and theme | per state | before and after each touched screen |
+| Hands | if behavior changes | if behavior changes | no |
 
-- Las medidas en estilos computados se toman **solo** cuando el criterio fija un valor numérico (contraste ≥ 4,5:1, padding de 16 px). Sin valor fijado, el detector y la rúbrica miden la composición.
-- Si el usuario tiene la aplicación levantada, verifica sobre ese entorno: no arranques otro ni hagas un build dedicado.
-- Para verificar no escribes una suite de specs E2E nueva: basta un script de capturas o el MCP. Una verificación visual de un cambio de CSS de una línea se cuenta en minutos.
+- Measurements in computed styles are taken when the criterion fixes a numeric value (contrast ≥ 4.5:1, padding of 16 px), and at no other time. With no value fixed, the detector and the rubric measure the composition.
+- If the user has the application up, verify on that environment: don't start another or make a dedicated build.
+- To verify you don't write a new E2E spec suite: a screenshot script or the MCP is enough. A visual verification of a one-line CSS change is counted in minutes.
 
-## Acceso
+## Access
 
-- Con el **Acceso** declarado, el runner y el detector entran por la URL de entrada con el `{path}` de cada pantalla. Si esa entrada gasta algo con límite (un enlace mágico, un código), el runner entra una vez, guarda la sesión en su ruta y la reutiliza en las ejecuciones siguientes; si la aplicación te devuelve al login, rehazla una vez. Si la ruta no está ignorada por git (`git check-ignore <ruta>`), no guardes la sesión ahí y dilo.
-- Si la aplicación pide login y `§Frontend` no dice cómo entrar, **no intentes entrar**: ni pidas enlaces, ni pruebes códigos, ni fuerces el login. Un enlace mágico o un código tienen límite por cuenta, y descubrir el acceso gastándolos lo agota; tampoco borres el registro de ese límite. Lo visual queda «no probado: falta el acceso en §Frontend», y la presentación propone el Acceso: una página de desarrollo que simula la entrada y la sesión guardada con `storageState`. No es una parada nueva: va en la presentación que ya haces.
+- With the **Acceso** declared, the runner and the detector get in through the entry URL with each screen's `{path}`. If that entry spends something with a limit (a magic link, a code), the runner gets in once, saves the session at its path and reuses it in later runs; if the application sends you back to the login, rebuild it once. If the path isn't ignored by git (`git check-ignore <path>`), don't save the session there and say so.
+- If the application asks for a login and `§Frontend` doesn't say how to get in, **don't try to get in**: don't ask for links, don't try codes, don't force the login. A magic link or a code has a limit per account, and finding out the access by spending them exhausts it; don't delete that limit's record either. What is seen stays «no probado: falta el acceso en §Frontend», and the presentation proposes the Acceso: a development page that simulates the entry and the session saved with `storageState`. It is not a new stop: it goes in the presentation you already make.
 
-## Sin `§Frontend`
+## Without `§Frontend`
 
-- Una feature que cambia lo que se ve y cuyo `tech-stack.md` no tiene `§Frontend` (o no tiene el Acceso y la aplicación pide login) lleva en «Decisiones que he tomado yo» de su spec la propuesta de `§Frontend` con los campos rellenos: impeccable como detector, Playwright y el acceso que se ve en el código. Al aprobar la spec, la escribes en `tech-stack.md`.
-- En un patch visual no hay spec: verifica con lo que haya (el aviso o «no probado»), y la presentación de su validación propone `§Frontend`.
-- Si el dev-lead no quiere detector, queda `Detector: ninguno` y no se vuelve a proponer.
+- A feature that changes what is seen and whose `tech-stack.md` has no `§Frontend` (or has no Acceso and the application asks for a login) carries in «Decisiones que he tomado yo» of its spec the proposal of `§Frontend` with the fields filled in: impeccable as the detector, Playwright and the access seen in the code. When the spec is approved, you write it in `tech-stack.md`.
+- A visual patch has no spec: verify with what there is (the notice or «no probado»), and its validation's presentation proposes `§Frontend`.
+- If the dev-lead doesn't want a detector, it stays `Detector: ninguno` and isn't proposed again.
 
-## La regresión por píxeles no es verificación de frontend
+## Pixel regression is not frontend verification
 
-Comparar capturas contra baselines no ve lo que ya estaba mal en la baseline y cuesta minutos por cada cambio de CSS. Puede tener sentido en CI, con entorno fijo y revisión en la PR, pero no es gate del bucle de desarrollo.
+Comparing screenshots against baselines doesn't see what was already wrong in the baseline and costs minutes for each CSS change. It can make sense in CI, with a fixed environment and review in the PR, but it is not a gate of the development loop.

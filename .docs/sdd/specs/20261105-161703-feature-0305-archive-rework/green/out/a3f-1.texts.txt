@@ -1,0 +1,71 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [15]
+La 64d2dff solo toca `tasks.md` (17 líneas, documentación). Es de las que se revisan en el hilo, así que no despacho re-revisión. Sigo con el paso 1, la validación en campo.
+
+--- [24]
+La suite sale en rojo en `test/ids.test.js`, que esta feature no toca. Compruebo si también falla sin la rama, como pide la receta.
+
+--- [30]
+Resultado del contraste: el rojo no se repite. Con el almacén ya creado, el fichero solo y la suite entera pasan, en la rama (6/6) y en `develop` (5/5). Sigo leyendo lo que pide el registro.
+
+--- [33]
+**Validación en campo (la hago yo, sin guion)**
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, o sin motivo, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate corre con `node --test --test-concurrency=1` por la carrera de los tests sobre el almacén en memoria. Es un workaround hasta aislar el almacén por test, y si es erróneo la suite tarda el doble.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar … --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real (`node src/app.js`) | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real, en el mismo proceso que el `cancelar` | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test --test-concurrency=1`: 6/6 sobre 64d2dff. La primera pasada dio 5/6, por el rojo que explico abajo.
+
+**Sin probar**
+
+- `canceladas` lanzado como proceso aparte, después de un `cancelar` en otro proceso, sale vacío. Las reservas viven en memoria y cada invocación de la CLI parte de cero. La spec no pide persistencia, y la fila 0014 del roadmap («Motivo guardado») la cubre. Hoy el listado solo se ve dentro de un mismo proceso.
+- La revisión final fue sobre f530a1a. Lo único posterior es `tasks.md` (17 líneas, solo documentación), que he leído yo: revisado en el hilo.
+
+**Rojo de la suite en `test/ids.test.js` (ajeno a la rama):**
+
+- Ese test escribe un fichero `ids-store` en el `git-common-dir`, compartido por todos los worktrees. Falla la primera vez en un clon nuevo, con `TypeError: Cannot read properties of undefined (reading 'trim')`, y pasa cuando el fichero ya existe.
+- Contraste: con el estado ya creado, la rama pasa 6/6 y `develop` pasa 5/5, tanto el fichero solo como la suite entera.
+- No coincide con ninguna fila de deuda. Abro una en «Deuda técnica».
+
+Sigo con el cierre.
+
+--- [41]
+Ahora el retro, que escribe su línea `Retro:` en el §5 del walkthrough.
+
+--- [59]
+🦆 Ahora cancelar exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+- Task 2: el gate corre con `node --test --test-concurrency=1` por una carrera entre tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test. Si es erróneo, la suite tarda el doble.
+
+**Validación en campo.** Suite 6/6 y los 4 THEN con ejecución real. La revisión final (Spec y Código, limpias) fue sobre f530a1a. El único commit posterior toca `tasks.md` (17 líneas, solo documentación). Lo revisé yo y no despaché re-revisión.
+
+**Pendiente**
+- `canceladas` en una invocación aparte de la CLI sale vacío, porque las reservas viven en memoria. La spec no lo pide y la fila 0014 («Motivo guardado») lo cubre.
+- La primera pasada de la suite dio 5/6: `test/ids.test.js` falló con `TypeError … (reading 'trim')`. Ese test lee un fichero del `git-common-dir` que aún no existía y falla la primera vez en cada clon nuevo. Con el fichero creado, la rama pasa 6/6 y `develop` 5/5. Lo registré en «Deuda técnica» con su evidencia.
+- Abrí otra fila de deuda por el almacén compartido, el origen del workaround.
+- `roadmap check` sigue en rojo en dos líneas que no toqué: la cabecera de «Deuda técnica» y el título de la release v0.3.0. Las arregla la migración de la plantilla del roadmap en 2.3.0.
+- No había `Gate:` declarado en el proyecto, así que la línea es `node --test --test-concurrency=1` → 6/6. Está registrada en el walkthrough como «sobre el commit de cierre».
+- Corregí en `tasks.md` el commit de la Task 1: ponía f530a1a y es c96d529.
+- Creé `capabilities/bookings.md` con `sdd capability merge`. No había ADR, ni fichero de estimación, ni otras ramas abiertas.
+
+El retro salió con `Retro: sin señales`, así que no hay ticket del kit que ofrecer. Si quieres uno, el feedback de mejora lo genera `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (33cad8e) · push: no hecho: `merge.push` es `false` · puedes borrar el worktree `<run>\repo`
+

@@ -1,31 +1,27 @@
 # Merge recipe
 
-Used by the integrated-base and merge steps of `sdd-archive`, once the merge policy has said the change merges: the agent applies it (complete `merge` block, profile `delegate` or `unattended`) or the user asked for it. The destination is `merge.into`, with `--no-ff` if `merge.noFf` is `true`; `Hotfix only:` the stable branch, with the dev-lead's words. What the CLI does isn't repeated here: this says what each output means and what you do next.
+Used by the integrated-base and merge steps of `sdd-archive`, once the merge policy of step 7 says the change merges. What the CLI does isn't repeated here: this says what each output means and what you do next.
 
 ## Integrated base
 
 After the closing commit, in the change's worktree: `sdd merge --sync --project-root "<worktree>"`, the sync merge, which stays the branch's last commit. It fetches `<remote>/<merge.into>` (without a remote, the local `merge.into`) and resolves as the merge does: `estimation-log.md` regenerated with `sdd estimation log`, the registers (`.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md`; in 3.0.0, `ROADMAP.md`, `CHANGELOG.md` and `.docs/sdd/steering/debt.md`) joined by id, hunks where both sides only add joined —two requirements added at the end of a capability too—, and what `mergiraf`, if installed, solves. The commit goes through the hook; never `--no-verify`.
 
-- `base: al día: …`: there's nothing to integrate: no sync merge, no second suite, and the merge carries `--verified-at <sha of the validation's suite>` (if the validation deferred it: «No suite yet»).
-- `base: conflicto en <files>.`: the sync merge stays half-done in the worktree, with the registers already joined by id; `<files>` are the only ones left in conflict. Only Markdown whose sides only add: the agent resolves them as step 6 of `sdd-archive` says. Anything else: quote it; the close stays «No terminado» for a person, who resolves those files and commits the merge, or runs `git merge --abort`.
-- **The suite again**: as step 6 of `sdd-archive` says, only if you resolved a conflict or, since the sha of the validation's suite, something changed outside `.docs/` that isn't `*.md` (`git diff --quiet <sha> HEAD -- . ':!.docs' ':!*.md'` fails), the same predicate as `--verified-at`. Skipped tasks go in the `Gate:` line as `saltada`, with «solo la toca la base» or «la base no toca sus inputs». The merge carries `--verified-at <sha of the sync merge>`; if only docs changed, the validation's sha.
-- **No suite yet**: with another branch open or the base ahead when the validation came, the validation didn't run the suite: run the closing gate once, as declared, on the sync merge (with `base: al día` there is none: on `HEAD`, and `--verified-at` carries `HEAD`); it is the validation's suite: the validation record says it ran on the sync merge (or on `HEAD`, with `base: al día`), and its sha goes in `--verified-at` and the final message.
-
-«The validation's sha», here, in `--verified-at` and in the final message, is the closing commit's when the close squashed the validation's suite into it (a fix pass or a draft after the last task): the same code, still reachable; never the last task's.
+- `base: al día: …`: there's nothing to integrate: no sync merge, no second suite, and the merge carries `--verified-at <sha of the validation's suite>` (if the validation deferred it: «No suite yet» of [closing-suite.md](closing-suite.md#after-the-sync-merge)).
+- `base: conflicto en <files>.`: the sync merge stays half-done in the worktree, with the registers already joined by id; `<files>` are the only ones left in conflict. If every file is Markdown and in each hunk both sides only add, or touch different rows or cells of a list or table, and neither changes what the other wrote —two additions to one line, a closing prefix on a row whose «Destino» the base changed—, the agent resolves it, in any profile: keep both, commit the merge through the hook, repeat the gate and name it with the line of step 6 of `sdd-archive`. If both rewrite one phrase, one hunk sets a value two ways, one side contradicts the other, any file isn't Markdown, or you doubt, resolve nothing: quote it; the close stays «No terminado» for a person, who resolves those files and commits the merge, or runs `git merge --abort`.
 
 `--sync` never touches the destination.
 
 ## A red suite
 
-Save every pass of the suite whole to a file in the session's scratchpad before filtering it: a filter on the pipe loses the failing test's name. A red is contrasted by hand, and nothing merges before the contrast ends:
+A red is contrasted by hand, from the saved output:
 
 1. Create a detached temporary worktree of `<remote>/<merge.into>` (`git worktree add --detach <parent of the worktrees>/base-<id> <remote>/<merge.into>`), removed when done with `git worktree remove`, and prepare it as Step 2 of `sdd-worktrees` says (dependencies; `env:setup` with `environments.md`) before running anything in it: a fresh worktree without them fails on a missing module, not on the test.
-2. Run the failing file alone, with the project's runner (`vitest run <file>`, `node --test <file>`), not the gate nor its whole task: on the branch and in that worktree at once, both in the background in the same turn, without cleaning state or caches first. A red with no file to name (a build, a lint) runs its task as is, without `--affected`.
+2. Run the failing file alone, with the project's runner (`vitest run <file>`, `node --test <file>`), not the gate nor its whole task: on the branch and in that worktree at once, in the background in the same turn. A red with no file to name (a build, a lint) runs its task as is, without `--affected`.
 3. Read both results:
 
 - **Passes without the branch, red on the branch**: it's the branch's; fix it with a failing test first and go back to the gate as «Running a gate» of `sdd-verify` says: the tests that failed and what the fix affects, not the whole suite.
-- **No se repite**: green in both. If the saved error line is a timeout or a machine resource (a busy port, a locked file, a full disk, git's temporary objects), that explains the red: open a debt row of flaky tests, placed as below, with the test, its error line copied whole from the saved log, without «…», and both green passes; go on, in any profile. If it isn't, first run the red task whole in both, without `--affected` (in the base's worktree it selects nothing), and read it the same way: two green passes of the file alone don't make it flaky, since the red can come from another file of its task.
-- **Fails without the branch** (on the branch too, or only there): write `base: en rojo: el mismo comando también falla sin la rama`. Before opening the failing test, search the first error lines (the test file, the error's name) in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap). A row that names it: quote it. None: open one in «Por triar» (in 2.x, in «Deuda técnica») with the evidence. Then stop with the red report and ask whether to merge anyway: that's the dev-lead's call.
+- **No se repite**: green in both. If the saved error line is a timeout or a machine resource (a busy port, a locked file, a full disk, git's temporary objects), that explains the red: open a debt row of flaky tests, placed as below and with what step 6 lists; go on, in any profile. If it isn't, first run the red task whole in both, without `--affected` (in the base's worktree it selects nothing), and read it the same way: two green passes of the file alone don't make it flaky, since the red can come from another file of its task.
+- **Fails without the branch** (on the branch too, or only there): write `base: en rojo: el mismo comando también falla sin la rama`. Search the first error lines (the test file, the error's name) in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap). A row that names it: quote it. None: open one in «Por triar» (in 2.x, in «Deuda técnica») with the evidence. Then stop with the red report and ask whether to merge anyway.
 
 A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …` or `base: en verde: el rojo lo trae la rama`), and the same rule follows.
 
@@ -59,7 +55,7 @@ With `--verify`, the script integrates the destination (remote and local) into t
 | `destino: listo: …` | `--check` found the destination clean | go on |
 | `destino sacado: …` | the destination's checkout has someone else's uncommitted changes | stop before writing: quote it with its `Salidas:`; no `stash`, `reset` or commit of what isn't yours |
 | `cerrojo: …` | another close holds the lock past `--lock-timeout` | quote it; a person decides |
-| `base: conflicto en <files>.` | integrating the destination's remote (or, with `--sync`, into the branch) leaves a conflict nothing resolved | only Markdown whose sides only add: step 6 of `sdd-archive`; otherwise «No terminado»: a person resolves |
+| `base: conflicto en <files>.` | integrating the destination's remote (or, with `--sync`, into the branch) leaves a conflict nothing resolved | «Integrated base» |
 | `merge: conflicto en <files>.` | the change conflicts with the destination | the same; the sync merge above should have caught it |
 | `mergiraf: resuelto <file>` | `mergiraf` solved a conflict the kit's rules didn't | nothing: `--verify` runs on the result |
 | `registros: dos filas distintas con el id …` | two different rows with one id, both kept | quote it in the final message for the dev-lead |
@@ -77,7 +73,7 @@ With `--verify`, the script integrates the destination (remote and local) into t
 | `merge: '<into>' sigue cambiando tras 3 intentos; …` | the destination kept changing | run the script once more in a while |
 | `push: '<into>' avanzó en '<remote>'; integro y reintento (n/3)` | another session published meanwhile | nothing: the script retries |
 | `push: '<into>' sigue moviéndose en '<remote>' tras 3 intentos; …` | the remote kept moving | run the script once more in a while |
-| `push: no se pudo publicar …` | rejected for another reason (credentials, server hook) | quote it; never `--force`, `pull` or `rebase` |
+| `push: no se pudo publicar …` | rejected for another reason (credentials, server hook) | «Denied by the environment»; never `--force`, `pull` or `rebase` |
 | `push: no hecho: sin remoto` | no remote | the final message quotes it |
 
 After any failure the destination is as it was: nothing pushed, the temporary worktree removed, the lock free; with `--verify`, the change's branch is back at its commit too. The report quotes the message literally, the destination's hash and what's left. Never redo it by hand.
@@ -93,7 +89,7 @@ The script pushes with `--push`: only the destination, by its name, to its remot
 3. `merge.push: true` (profile `delegate` or `unattended`): `--push`, without asking.
 4. `merge.push` missing or `false`: no `--push`, and the final message says «push: no hecho: `merge.push` no lo autoriza».
 
-`Hotfix only:` the stable branch and its tag go out only if the dev-lead's words ask to publish; `merge.push` isn't enough.
+`Hotfix only:` the stable branch and its tag go out only with words of the dev-lead that ask to publish, and then with `--push` even if you see no remote: the script answers `push: no hecho: sin remoto`. `merge.push` isn't enough.
 
 ## Hotfix
 
@@ -105,8 +101,29 @@ sdd merge --check --into <stable> --project-root "<worktree>"
 sdd merge --branch <branch> --into <stable> --tag <version> --order "<their words>" [--push]
 ```
 
+With a yes to the pre-check's question («¿Alguno de estos patches pide algo al proyecto…?»), list `skills/sdd-upgrade/references/migrations/` in the repo: if it exists, write the step in `v<version>.md` there before tagging, whatever the project is; if it doesn't, the final message lists the step as pending for the dev-lead.
+
 The script fetches the remote's `release/*` itself and decides the way back with them before touching anything. Under one lock it merges into the stable branch, tags, merges the same branch into the integration branch (or the open `release/*`) and pushes everything atomically. `vuelta: conflicto en <files>; se deshacen …` means the script undid it all: the close stays «No terminado», and a person ports the fix to the integration branch and runs the hotfix again.
 
 ## Denied by the environment
 
-The policy authorizes the merge and the environment denies it (the harness's classifier, a hook). Don't retry with another tool or another form of the command: a person unblocks it. The final report gives the **command**, literal, in a code block; the **denial's text**, quoted; the destination's **hash**, untouched (`git rev-parse --short <destination>`; if it changed when you look again, another session merged meanwhile: say so); and that the rest of the close is done, with only the merge left.
+The policy authorizes the merge and the environment or the remote stops it: the harness's classifier and a hook deny it, and a push whose SSH key fails says `Permission denied (publickey)`. A denial is retried by no one but a person: don't retry with another tool or another form of the command. A `publickey` failure with `gh auth status` showing a session is run once more, the same command, over HTTPS with gh's token, set for that command alone (`$env:` in PowerShell, cleared after; `VAR=… cmd` in POSIX): `GIT_CONFIG_COUNT=2`, `GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf`, `GIT_CONFIG_VALUE_0=<the remote's git@github.com: prefix>`, `GIT_CONFIG_KEY_1=credential.helper`, `GIT_CONFIG_VALUE_1=!gh auth git-credential`, without touching `~/.ssh` or `.gitconfig`; the final message says `Push relanzado por HTTPS: Permission denied (publickey) por SSH`. If that run fails too, or `gh` has no session, it's a denial. The final report of a denial gives the **command**, literal, in a code block; the **denial's text**, quoted; the destination's **hash**, untouched (`git rev-parse --short <destination>`; if it changed when you look again, another session merged meanwhile: say so); and that the rest of the close is done, with only the merge left.
+
+## Removing the worktree
+
+With `merge.removeWorktree: true`, remove a linked, clean worktree from outside it (`git worktree remove <ruta>`); if git refuses, show the files and ask, never `--force`. Before discarding work, list what would be deleted and wait for the typed word `discard`.
+
+## Common Rationalizations
+
+| Excuse | Reality |
+| --- | --- |
+| "They obviously want it merged" | Integration is the merge policy's or the dev-lead's decision, never a guess. |
+| "They seem done with this — I'll offer to discard it" | Discard happens only when the dev-lead asks for it, in those words. |
+| "«Yeah, get rid of it» confirms the discard" | Deletion waits for the typed word `discard`; any other phrase is not it. |
+| "The PR is open: the worktree is just clutter" | Review feedback is fixed in that worktree; it stays until the work merges. |
+| "This other worktree looks stale — I'll clean it too" | Clean up only this change's worktree. Everything else belongs to someone else. |
+| "Git refused the removal; `--force` finishes the job" | Git refuses because some files live nowhere else, and `--force` deletes them for good: show them and ask. |
+| "The merged-result failure is probably flaky" | A failing merged result stops the merge until step 6's contrast ends; flaky is only green on the branch and the base, with its debt row. |
+| "The base branch is obviously main" | The destination is `merge.into`; `main` only for a hotfix, with the dev-lead's words. |
+| "The push was rejected — force-push will fix it" | A rejected push means the remote moved: `sdd merge` integrates and retries, and never forces. |
+| "It's trivial and urgent: I merge and go" | Urgency is the first cause of broken merges. Merge only if the user decided it or the `merge` block declares it. |

@@ -261,7 +261,7 @@ function validated0010() {
   const head = short('HEAD');
   s.put(`${F10}/walkthrough.md`, ['# Walkthrough — Motivo al cancelar', '', '## 4. Verificación', '', '### 4.1 Builds', '',
     `- Suite completa: \`${FILTERED_GATE}\` → verde, 1 s, sobre ${head}`, '',
-    `Validación en campo: 2026-10-26 · smoke por THEN (\`node src/app.js cancelar Norte lun --motivo sala-ocupada\`) y suite en verde sobre ${head}`, ''].join('\n'));
+    `Validación en campo: 2026-10-26 · smoke por THEN (\`node src/app.js cancelar Norte lun --motivo "sala ocupada"\`) y suite en verde sobre ${head}`, ''].join('\n'));
 }
 // Tras la validación, develop gana la 0015, que solo cambia el test de las salas.
 function developRoomsTest() {
@@ -329,6 +329,32 @@ function ghFake(reply) {
   s.env[key] = `${GH_BIN}${delimiter}${s.env[key] ?? ''}`;
 }
 const ghRun = (conclusion, rev) => ({ stdout: `${JSON.stringify([{ conclusion, headSha: s.git('rev-parse', rev).trim() }])}\n` });
+const GH_LOGGED_IN = { stdout: 'github.com\n  ✓ Logged in to github.com account fake (keyring)\n' };
+const pushAllowed = () => (MARKER = MARKER.replace('"push": false', '"push": true'));
+const BARE = join(s.RUN, 'origin.git');
+const GITHUB_URL = 'git@github.com:fake/reservas.git';
+// Un ssh falso: el fetch llega a la carpeta; el push falla con publickey salvo con el token de gh en el entorno del relanzamiento.
+const fakeSsh = (bare) => [
+  '#!/bin/sh',
+  'for a; do cmd="$a"; done',
+  `case "$cmd" in git-upload-pack*) exec git upload-pack "${bare}" ;; esac`,
+  `for k in "$GIT_CONFIG_KEY_0" "$GIT_CONFIG_KEY_1" "$GIT_CONFIG_KEY_2"; do [ "$k" = "credential.helper" ] && exec git receive-pack "${bare}"; done`,
+  'echo "git@github.com: Permission denied (publickey)." >&2',
+  'exit 255',
+  '',
+].join('\n');
+// El remoto se ve como github.com en `git remote -v`. El insteadOf deja la URL igual y gana al del relanzamiento por más largo: el push sigue por el ssh falso, sin red.
+function publickeyRemote() {
+  const bare = BARE.replaceAll('\\', '/');
+  s.git('init', '-q', '--bare', BARE);
+  s.git('push', '-q', bare, 'main', 'develop');
+  s.git('remote', 'add', 'origin', GITHUB_URL);
+  s.git('config', `url.${GITHUB_URL}.insteadOf`, GITHUB_URL);
+  s.git('fetch', '-q', bare, '+refs/heads/*:refs/remotes/origin/*');
+  const ssh = join(s.RUN, 'ssh.sh');
+  writeFileSync(ssh, fakeSsh(bare), { mode: 0o755 });
+  s.env.GIT_SSH_COMMAND = `sh ${ssh.replaceAll('\\', '/')}`;
+}
 const GH_LOGGED_OUT = { stderr: 'To get started with GitHub CLI, please run:  gh auth login\nAlternatively, populate the GH_TOKEN environment variable with a GitHub API authentication token.\n', code: 4 };
 // Tras la CI, develop gana un cambio de código: el último verde de la CI ya no es del HEAD.
 function developAfterCi() {
@@ -505,6 +531,20 @@ const molds = {
     s.commit('docs(sdd): la decisión que deja la revisión final');
   },
   'reservas-campo': () => (moldReservas(), done0010()),
+  'reservas-ticket': () => {
+    moldReservas();
+    done0010();
+    s.env.TURN2 = 'Sí, escribe el ticket del kit.';
+  },
+  'reservas-ticket-wt': () => {
+    moldReservas();
+    done0010();
+    s.git('checkout', '-q', 'develop');
+    s.git('worktree', 'add', '-q', join(s.RUN, 'wt'), 'feature/0010-cancel-reason');
+    s.R = join(s.RUN, 'wt');
+    s.env.TURN2 = 'Sí, escribe el ticket del kit.';
+  },
+  'reservas-publickey': () => (pushAllowed(), moldReservas(), publickeyRemote(), ghFake(GH_LOGGED_IN), done0010()),
   'reservas-cap': () => {
     moldReservas();
     done0010();
@@ -561,5 +601,7 @@ s.save([
   existsSync(join(GH_BIN, 'gh.json')) ? `## llamadas a gh\n${existsSync(join(GH_BIN, 'gh.log')) ? readFileSync(join(GH_BIN, 'gh.log'), 'utf8') : 'ninguna\n'}` : '',
   `## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all', '--graph')}## etiquetas\n${s.git('tag', '-n1')}`,
   `## timing.json en la historia\n${gitQuiet('log', '--all', '--name-only', '--format=', '--', `${F10}/timing.json`)}`,
+  `## kit-feedback en develop\n${gitQuiet('log', 'develop', '--name-only', '--format=', '--', '.docs/sdd/kit-feedback')}`,
+  existsSync(BARE) ? `## develop en origin\n${gitQuiet('--git-dir', BARE, 'log', '--oneline', 'develop')}` : '',
   `## roadmap en develop\n${gitQuiet('show', 'develop:.docs/sdd/roadmap.md')}## bookings en develop\n${gitQuiet('show', `develop:${CAP}`)}## tech-stack en develop\n${tail}`,
 ].join(''));

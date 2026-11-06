@@ -58,7 +58,7 @@ Skip any step = lying, not verifying
 2. If the branch —or, after `sdd merge --sync`, what the base brought— touches a file of «Sin filtro» (without the field: `package.json`, `*.csproj`, `*.sln`, `pom.xml`, `build.gradle*`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `composer.json`, `Gemfile`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `packages.lock.json`, `poetry.lock`, `uv.lock`, `go.sum`, `Cargo.lock`, `composer.lock`, `Gemfile.lock`, `.moon/**`, `tsconfig*.json`, `Directory.Build.*`, `Directory.Packages.props`, `global.json`, `.prototools`, `vitest.config.*`, `jest.config.*`, `playwright.config.*`, at any depth), the gate runs without `--affected` and every task carries `(sin filtro: cambia el build)`. A project's `moon.yml` is «cambia su definición», not the build.
 3. After a red pass at `<sha>`:
    - A fix that only touches `.docs/` or `*.md` reruns only the tests that failed, alone: no gate and no suite, even if a task's inputs include that file. The line starts after the arrow with `tras el rojo en <sha>, arreglo <sha> solo de docs:`.
-   - Otherwise, with the project's runner, every test that failed and the red task's tests that never ran (bail, a crashed process; the whole task if the output doesn't tell); then the unit suites of item 1 and the gate with `--base <sha>` instead of `--base <merge.into>`, plus the tasks the tool skipped because they depend on the red one, each as `<tarea>: corrió <N>/<M> (no corrió en la pasada roja)`. A fix that touches «Sin filtro» runs everything without the filter. The line starts after the arrow with `tras el rojo en <sha>, arreglo <sha>:`.
+   - Otherwise, with the project's runner, every test that failed and the red task's tests that never ran (bail, a crashed process; the whole task if the output doesn't tell); then the unit suites of item 1 and the gate with `--base <sha>`, not `--base <merge.into>`, plus the tasks the tool skipped because they depend on the red one, each as `<tarea>: corrió <N>/<M> (no corrió en la pasada roja)`. A fix that touches «Sin filtro» runs everything without the filter. The line starts after the arrow with `tras el rojo en <sha>, arreglo <sha>:`.
    - A red that isn't a test (a build, a typecheck) reruns its task whole.
 4. Lint is not part of the gate: a lint red is fixed in its file, the pre-commit checks it, and it reruns no test.
 
@@ -129,7 +129,7 @@ Skip any step = lying, not verifying
 - Delegating to agents
 
 **In the kit, that means:**
-- A task's `complete` line: `sdd task done` runs the task's «Verificación» and writes its result; you read that output before the line counts (`sdd-implement`, completion contract).
+- A task's `complete` line: `sdd task done` runs the task's «Verificación» and writes its result; you read that output before the line counts (`sdd-implement-native`, completion contract).
 - The `Revisión final:` line of `tasks.md`, the validation's smoke and the walkthrough: each says only what a command or a reviewer's report you read in this session shows.
 
 **Rule applies to:**
@@ -147,7 +147,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 ### When to Request Review
 
 **Mandatory:**
-- After each task in subagent-driven development: the task review of `sdd-implement`, with its own prompt.
+- After each task in subagent-driven development: the task review of `sdd-implement-subagent`, with its own prompt.
 - After completing major feature: the final whole-branch review, in axes ([Final review](#final-review)).
 - Before the closing merge to the integration branch: the review's single closing. The merge to `main` is always a person's call.
 
@@ -162,7 +162,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 
 ### Act on feedback
 
-- Re-grade each finding by its effect, then act as [Closing the review](#closing-the-review) says: ONE fix pass for Critical and Important —and Minor with `review.minors: fix`—, other Minors to the ledger.
+- Re-grade each finding by its effect, then act as [Closing the review](references/closing-the-review.md) says: ONE fix pass for Critical and Important —and Minor with `review.minors: fix`—, other Minors to the ledger.
 - Push back if the reviewer is wrong (with reasoning): a finding you don't fix is a `Final: Ruling:` with why the code stands.
 
 ### Common Rationalizations
@@ -177,7 +177,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 **Never:**
 - Skip review because "it's simple"
 - Ignore Critical issues
-- Proceed with unfixed Important issues beyond the one fix pass and the re-review of [Closing the review](#closing-the-review)
+- Proceed with unfixed Important issues beyond the one fix pass and the re-review of [Closing the review](references/closing-the-review.md)
 - Argue with valid technical feedback
 
 **If reviewer wrong:**
@@ -209,7 +209,7 @@ If the diff crosses one the plan didn't foresee, the axis goes out and you ledge
 
 **Each axis gets its silence watch** (`sdd-implement`, «Every dispatch»). A hung axis is relaunched alone, once, as [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch) says; the others go on.
 
-**Read the reports by axis.** A change can pass one axis and fail another: code that follows every standard can implement the wrong thing, and code that does exactly what the spec asked can break the project's conventions. Keep the reports under one heading per axis, as they came; do not merge or rerank findings across axes, because that is how one axis masks another. Re-grading each finding by its effect happens inside its axis ([Closing the review](#closing-the-review)).
+**Read the reports by axis.** A change can pass one axis and fail another: code that follows every standard can implement the wrong thing, and code that does exactly what the spec asked can break the project's conventions. Keep the reports under one heading per axis, as they came; do not merge or rerank findings across axes, because that is how one axis masks another. Re-grading each finding by its effect happens inside its axis ([Closing the review](references/closing-the-review.md)).
 
 **Without a subagent tool:** read each axis brief and perform each review yourself against the package, as separate passes after the last task's ledger line. Write `Final review: self-review (no subagent tool)` to the ledger, and say so in your final message: a self-review by the author is weaker than fresh reviewers, and the user decides whether that is enough before merge.
 
@@ -234,32 +234,4 @@ Minor · possible Feature Envy in cancelledList (src/app.js:36)
 
 ## Closing the review
 
-**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ships, not whether the spec names the input that triggers it — a reviewer who set a finding at Minor because the spec was silent has graded the spec, not the effect. Then:
-
-- **Critical and Important** enter the fix pass.
-- A **«no verificado»**: verify it yourself before the validation, or adjudicate it with `Final: Ruling:`.
-- **Minor**, with `"review": {"minors": "fix"}` in `sdd-kit.json`, enters the fix pass with them, without asking; in Native its ledger line is `Final: fixed <finding> — <test> RED→GREEN, suite <N>/<N>`, or `Final: fixed <finding> — suite <N>/<N>` when no test can reproduce it (a name, a wording). Any other value, or no key, it goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors»: deferred Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
-
-**Native:** fix the Critical and Important findings of every axis, and the Minor ones with `review.minors: fix`, yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD: write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite. Record each in the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>`. A fix without a test that failed first is not verified, except a Minor no test reproduces; a suite that is not green after the pass means the pass is not over. A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
-
-**SDD:** if the final review returns findings, dispatch ONE fix subagent with the complete findings list of every axis — not one fixer per finding. Per-finding fixers each rebuild context and re-run suites; a real session's final-review fix wave cost more than all its tasks combined. Its scoped re-review is the single re-review below: don't dispatch another for the fix wave. There is no second fix wave.
-
-In both, the reproduce-before-fixing rule of the fix loop applies.
-
-**The single re-review.** Right before you present the validation —with `validation.mode: field`, before you go on to the closing— dispatch ONE re-review in the background, with its silence watch: `sdd-kit:effort-high` + `opus`; the header of [encargo-revision.md](references/encargo-revision.md) and [re-review-prompt.md](../sdd-implement/references/re-review-prompt.md), filled with the open findings of every axis and the «What to Check» of the axes that went out; over `sdd review package <plan> <last reviewed> HEAD`, in its own detached worktree at `HEAD`. It covers the fix pass and every later commit of yours. Write `Re-revisión: <last reviewed>..<head>, sdd-kit:effort-high + opus, <verdict>` in `tasks.md`. A `Re-revisión:` line already in `tasks.md` means it went out: never dispatch another. If, since the last reviewed sha, you only have commits you review in the thread (`sdd-implement`, «Every commit of yours»), don't dispatch it.
-
-**What it leaves open:**
-
-- **A Critical, or an Important the fix pass brought in (its lines, or the re-review says so), is never adjudicated.** Fix it yourself: the test that reproduces it fails first, then the whole suite. It reaches ✋ as `sin revisar: <sha> — <what it fixes>`. If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).
-- Any other Important or Minor: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the presentation and walkthrough.
-
-**A re-review never opens another.** A commit after it —a fix the validation asked for— is reviewed in the thread if `sdd-implement`'s «Every commit of yours» allows it (`revisado en el hilo: <sha> · <files> · <n> líneas`); any other goes to ✋ as `sin revisar: <sha> — <what it changes>`, in any profile and with any `validation.mode`. If no re-review went out yet (a clean review, no fixes), that commit opens it, and it is the only one. While a `sin revisar` or a «no verificado» is unresolved, neither the `Validación en campo:` line nor the walkthrough says the review was clean: they say how many are left («…, 1 sin revisar»).
-
-| Excuse | Reality |
-| --- | --- |
-| "The commit after the re-review isn't covered: it needs its own re-review" | That is how a feature chained three re-reviews. It goes to ✋ as `sin revisar`; a re-review never opens another. |
-| "This re-review is small: a cheap model is enough" | The single re-review is the closing's only fresh eyes on the fix pass: `sdd-kit:effort-high` + `opus`. |
-
-**The last reviewed sha** is the second sha of the `Re-revisión:` line; without one, the `sobre` of `Revisión final:`; and if the line says «juntada en el cierre», the closing commit. A `Revisión final:` line in the 2.x format (`Revisión final: sdd-kit:effort-high + opus, <verdict>, sobre <sha>`, without axes) counts as the final review, and the range starts at its `sobre`, with the fix pass inside.
-
-**`tasks.md`.** When the axes return, write `Revisión final: Spec opus+high, <verdict> · Código sonnet+high, <verdict> · Arquitectura <opus+high, <verdict> | no (plan)>, sobre <sha corto>`, with the `HEAD` they reviewed (without `tasks.md`, in the validation's presentation). A raised axis reads `Arquitectura opus+high, <verdict> (subido: <reason>)`, and a check an axis couldn't make adds `, <n> sin verificar` to its verdict. After the fix pass, `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`. At most one `Re-revisión:` line.
+When the axes return, the first thing in this step is to read [references/closing-the-review.md](references/closing-the-review.md) and follow it, before you act on any finding.

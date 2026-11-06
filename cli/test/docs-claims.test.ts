@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { WHOLE_LINE_MARK } from '../../build/dist.ts';
 import { VERBS } from '../src/cli/verbs.ts';
 
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -92,7 +93,7 @@ describe('skills and capabilities do not name retired scripts', () => {
     const offending = readFileSync(file, 'utf8')
       .split(/\r?\n/)
       .map((line, index) => ({ line, index }))
-      .filter(({ line }) => forbidden.some((pattern) => pattern.test(line)))
+      .filter(({ line }) => !WHOLE_LINE_MARK.test(line) && forbidden.some((pattern) => pattern.test(line)))
       .map(({ line, index }) => `${index + 1}: ${line.trim().slice(0, 120)}`);
     expect(offending).toEqual([]);
   });

@@ -17,7 +17,8 @@
 │   ├── sdd-init/SKILL.md
 │   ├── sdd-upgrade/SKILL.md       (+ references/migrations/, una por versión)
 │   ├── sdd-propose/SKILL.md
-│   ├── sdd-implement/SKILL.md
+│   ├── sdd-implement/SKILL.md     (la puerta: elige el método)
+│   ├── sdd-implement-{native,subagent}/SKILL.md  (las dos copias, una por método)
 │   ├── sdd-{tdd,debugging,worktrees,parallel-agents,verify}/
 │   ├── sdd-archive/SKILL.md
 │   ├── sdd-roadmap/SKILL.md
@@ -46,6 +47,8 @@
 ## Anatomía de una skill del kit
 
 **Placeholders de una receta**: todo hueco de una plantilla o receta declara **su tipo con un ejemplo real del dominio del documento** ([walkthrough](specs/<carpeta>/walkthrough.md)), no solo su contenido semántico. Con <enlace> a secas, dos sujetos escribieron un enlace Markdown y dos la ruta suelta; con el tipo y el ejemplo, 2 de 2 (task 0018, 2026-09-22).
+
+**Un hueco que el agente rellena con un dato de otro sitio pide la salida literal del comando que lo da**, no una descripción libre: en la 0296, «Copia: <sha7> — <qué cambió>» salió mal en dos tandas (la cita de la marca; un `git show` leído y no transcrito) y `Copia:` más `git log -1 --format='%h %s'` salió 2 de 2.
 
 **Un paso que resume una regla de una referencia lleva todas las condiciones que deciden** (umbrales, qué entra y qué no); la referencia se queda con el porqué y el detalle. Un sujeto con el paso delante no siempre abre el enlace: en la feature 0085, con el umbral de «revisado en el hilo» resumido como «commit pequeño de solo docs», 1 de 2 sujetos revisó en el hilo un commit de 26 líneas; con el tamaño y `numstat` en el paso, 2 de 2. No es duplicar (Art. VIII): la plantilla sigue siendo una.
 
