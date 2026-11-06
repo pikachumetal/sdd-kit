@@ -129,7 +129,7 @@ Skip any step = lying, not verifying
 - Delegating to agents
 
 **In the kit, that means:**
-- A task's `complete` line: `sdd task done` runs the task's «Verificación» and writes its result; you read that output before the line counts (`sdd-implement`, completion contract).
+- A task's `complete` line: `sdd task done` runs the task's «Verificación» and writes its result; you read that output before the line counts (`sdd-implement-native`, completion contract).
 - The `Revisión final:` line of `tasks.md`, the validation's smoke and the walkthrough: each says only what a command or a reviewer's report you read in this session shows.
 
 **Rule applies to:**
@@ -147,7 +147,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 ### When to Request Review
 
 **Mandatory:**
-- After each task in subagent-driven development: the task review of `sdd-implement`, with its own prompt.
+- After each task in subagent-driven development: the task review of `sdd-implement-subagent`, with its own prompt.
 - After completing major feature: the final whole-branch review, in axes ([Final review](#final-review)).
 - Before the closing merge to the integration branch: the review's single closing. The merge to `main` is always a person's call.
 

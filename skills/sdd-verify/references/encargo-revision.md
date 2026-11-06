@@ -1,6 +1,6 @@
 # Review brief — mandatory header
 
-The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) of `sdd-implement`.
+The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement-subagent/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md) of `sdd-implement-subagent`.
 
 ```markdown
 ## Restricciones de código
@@ -77,4 +77,4 @@ It is what superpowers' `executing-plans` asked for («the plan's Review Focus s
 
 ## Implementer brief
 
-It lives in [implementer-prompt.md](../../sdd-implement/references/implementer-prompt.md) of `sdd-implement`, with the same «Restricciones de código» section and, besides, the contract of the RED tests, the task's «Verificación» and the implementer's rules.
+It lives in [implementer-prompt.md](../../sdd-implement-subagent/implementer-prompt.md) of `sdd-implement-subagent`, with the same «Restricciones de código» section and, besides, the contract of the RED tests, the task's «Verificación» and the implementer's rules.

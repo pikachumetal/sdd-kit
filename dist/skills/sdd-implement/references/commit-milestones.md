@@ -1,50 +1,50 @@
-# Un commit por hito
+# One commit per milestone
 
-La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de task de `sdd-implement` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+A feature's branch counts its milestones: **opening**, **one commit per plan task** and **closing** — 2 + N commits from the `merge-base`, 3 in lite. A patch's has two: **fix** and **closing**. While a milestone is open, commit as much as needed: the task review of `sdd-implement-subagent` works by `BASE..HEAD` ranges. When the milestone's review comes back clean, its range is squashed into one commit.
 
-## Qué lleva cada hito
+## What each milestone carries
 
-| Hito | Lleva | Se junta | Base |
+| Milestone | Carries | Squashed | Base |
 | --- | --- | --- | --- |
-| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: solo la spec) | antes de escribir los RED de la primera task (en Native, antes de su `sdd task start`); lite: antes de implementar | `git merge-base HEAD <integración>` |
-| Task N | sus tests RED, su implementación, los arreglos de su revisión, su evidencia | con su revisión (y re-revisión) limpia, antes de despachar la siguiente o la revisión final; en Native, con su contrato de cierre cumplido y antes de `sdd task done` | el `BASE` que apuntaste antes de despacharla (en Native, el que imprime `sdd task start`) |
-| Cierre | documentación de `sdd-archive`, arreglos de la revisión final de rama y de la validación, y `tasks.md` con las líneas de revisión del tramo reescritas sin sha | tras la documentación de cierre, antes del merge | el commit de la última task |
-| Fix (patch) | código, tests y `patch.md` | con el fix verificado | `git merge-base HEAD <integración>` |
-| Cierre (patch) | `patch.md` con hash y tiempo, changelog (2.x), roadmap, estimation-log | antes del merge | el commit del fix |
-| Merge de sincronización | la rama destino integrada en la feature, con los registros resueltos | no se junta | — |
+| Opening | spec, findings of the spec review, `plan.md`, `tasks.md` (lite: the spec alone) | before writing the first task's RED tests (in Native, before its `sdd task start`); lite: before implementing | `git merge-base HEAD <integration>` |
+| Task N | its RED tests, its implementation, the fixes of its review, its evidence | with its review (and re-review) clean, before dispatching the next one or the final review; in Native, with its completion contract met and before `sdd task done` | the `BASE` you noted before dispatching it (in Native, the one `sdd task start` prints) |
+| Closing | `sdd-archive` documentation, fixes of the final branch review and of the validation, and `tasks.md` with the review lines of the range rewritten without sha | after the closing documentation, before the merge | the last task's commit |
+| Fix (patch) | code, tests and `patch.md` | with the fix verified | `git merge-base HEAD <integration>` |
+| Closing (patch) | `patch.md` with hash and time, changelog (2.x), roadmap, estimation-log | before the merge | the fix's commit |
+| Sync merge | the target branch integrated into the feature, with the registries resolved | not squashed | — |
 
-Si el dev-lead fija otra forma de commits («tres commits en orden»), manda la suya sobre «un solo commit» y el hito no se junta. Un test en RED va en el commit de su arreglo o en uno posterior, nunca antes: un `pre-commit` que corre la suite lo rechaza, y sin él la rama llevaría un commit en rojo. El RED queda registrado en `patch.md` §4 (en una feature, en su evidencia). Sin `--no-verify` (ticket del patch 0072 §2).
+If the dev-lead fixes another shape of commits («three commits in order»), theirs wins over «a single commit» and the milestone isn't squashed. A test in RED goes in the commit of its fix or a later one, never before: a `pre-commit` that runs the suite rejects it, and without it the branch would carry a red commit. The RED is recorded in `patch.md` §4 (in a feature, in its evidence). No `--no-verify` (ticket of patch 0072 §2).
 
-El merge de sincronización solo lo pide la [receta del merge](../../sdd-archive/references/merge-recipe.md#integrated-base); va después del commit de cierre y es el último commit de la rama, así que la historia queda en 2 + N (2 en un patch) más ese merge, y el cierre no se vuelve a juntar.
+The sync merge is requested only by the [merge recipe](../../sdd-archive/references/merge-recipe.md#integrated-base); it goes after the closing commit and is the last commit of the branch, so the history stays at 2 + N (2 in a patch) plus that merge, and the closing isn't squashed again.
 
-## Receta
+## Recipe
 
-Primero las dos guardas (siguiente sección). Si ninguna salta:
+First the two guards (next section). If neither trips:
 
 ```bash
 git reset --soft <base>
-git commit        # convención de commits del proyecto
+git commit        # the project's commit convention
 ```
 
-La receta vale también con un solo commit en el rango: el mensaje del hito lo escribes tú con la convención del proyecto, nunca se hereda del implementador, porque el paquete de la revisión de task muestra el asunto y no el cuerpo. Medido en `tests/native-adapt-red.md`: con «un solo commit, nada que juntar», 2 de 2 sujetos dejaron en la rama un cuerpo sin tildes. Nunca `rebase -i`, `push --force` ni `--no-verify`.
+The recipe holds also with a single commit in the range: you write the milestone's message with the project's convention, and it is never inherited from the implementer, because the task review package shows the subject and not the body. Measured in `tests/native-adapt-red.md`: with «a single commit, nothing to squash», 2 of 2 subjects left a body without accents on the branch. Never `rebase -i`, `push --force` or `--no-verify`.
 
-## Guardas
+## Guards
 
-No se junta, y no se hace push forzado, si:
+Nothing is squashed, and no force push is made, if:
 
-- el rango contiene un merge: `git rev-list --merges <base>..HEAD` no sale vacío. Juntarlo metería los cambios de la rama integrada en el commit del hito;
-- el rango ya está publicado: `git branch -r --contains <primer commit del rango>` no sale vacío (el primero lo da `git rev-list --reverse <base>..HEAD`). Reescribirlo obligaría a forzar el push.
+- the range contains a merge: `git rev-list --merges <base>..HEAD` is not empty. Squashing it would put the integrated branch's changes into the milestone's commit;
+- the range is already published: `git branch -r --contains <first commit of the range>` is not empty (`git rev-list --reverse <base>..HEAD` gives the first). Rewriting it would force the push.
 
-El hito queda como está, y el walkthrough (o `patch.md`) dice cuál quedó sin juntar y por qué.
+The milestone stays as it is, and the walkthrough (or `patch.md`) says which one stayed unsquashed and why.
 
-## El hash en los artefactos
+## The hash in the artifacts
 
-Un commit no puede contener su propio hash. El de la task N se escribe en `tasks.md` en el commit del hito siguiente —la task N+1 o, para la última, el cierre—, y el del fix de un patch, en `patch.md` en el commit de cierre. Es siempre el hash del commit ya juntado; la línea del ledger de `sdd-implement` también usa `<base>..<hash juntado>`.
+A commit can't contain its own hash. Task N's goes in `tasks.md` in the next milestone's commit —task N+1 or, for the last one, the closing—, and a patch fix's, in `patch.md` in the closing commit. It is always the hash of the already squashed commit; the ledger line also uses `<base>..<squashed hash>`.
 
-El cierre no tiene hito siguiente, y el squash borra los shas de su tramo. Antes de juntarlo, cada línea `Pasada de fix:`, `Re-revisión:` o `Revisión final:` de `tasks.md` cuyo sha cae en ese tramo se reescribe sin él: `Pasada de fix: 7ea5c37, 1 hallazgo RED→GREEN` pasa a `Pasada de fix: juntada en el cierre, 1 hallazgo RED→GREEN`, y `Re-revisión: 7ea5c37..21c1f70, sdd-kit:effort-high + opus, limpia` pasa a `Re-revisión: juntada en el cierre, sdd-kit:effort-high + opus, limpia`. Lo mismo con cualquier sha del tramo que citen `walkthrough.md`, `patch.md`, la deuda o una ADR de la rama: se reescribe sin él, o ese tramo no se junta. Desde ahí, el último revisado es el commit de cierre. Criterio: tras el commit de cierre, `git merge-base --is-ancestor <sha> HEAD` sale bien para todo sha de esos ficheros.
+The closing has no next milestone, and the squash deletes the shas of its range. Before squashing it, each `Pasada de fix:`, `Re-revisión:` or `Revisión final:` line of `tasks.md` whose sha falls in that range is rewritten without it: `Pasada de fix: 7ea5c37, 1 hallazgo RED→GREEN` becomes `Pasada de fix: juntada en el cierre, 1 hallazgo RED→GREEN`, and `Re-revisión: 7ea5c37..21c1f70, sdd-kit:effort-high + opus, limpia` becomes `Re-revisión: juntada en el cierre, sdd-kit:effort-high + opus, limpia`. The same with any sha of the range that `walkthrough.md`, `patch.md`, the debt or an ADR of the branch cite: it is rewritten without it, or that range isn't squashed. From there, the last reviewed is the closing commit. Criterion: after the closing commit, `git merge-base --is-ancestor <sha> HEAD` succeeds for every sha of those files.
 
-## Tests RED sin commitear
+## RED tests left uncommitted
 
-Los tests RED de la task los escribe el hilo antes del despacho y **no los commitea**: van en el commit de la task. Con un `pre-commit` que exige la suite en verde, un commit de tests en rojo no se puede hacer sin `--no-verify`, y con el juntado ya no aportaría nada a la historia. Antes de despachar, guarda una copia fuera del repo; al volver el implementador, compárala con el test commiteado (`git diff --no-index <copia> <ruta>`). Un cambio que no sea de formato va al revisor de la task.
+The task's RED tests are written by the thread before the dispatch and **not committed**: they go in the task's commit. With a `pre-commit` that demands the suite green, a commit of tests in red can't be made without `--no-verify`, and with the squash it would add nothing to the history. Before dispatching, keep a copy outside the repo; when the implementer returns, compare it with the committed test (`git diff --no-index <copy> <path>`). A change that isn't formatting goes to the task reviewer.
 
-La apertura se junta antes de escribir los RED de la primera task, y cada hito, antes de los de la task siguiente. Si con un RED en el árbol tienes que commitear otra cosa (un ruling, un fix del hilo, un merge de sincronización), apártalo antes —la copia ya está fuera del repo—, commitea y devuélvelo: un `pre-commit` que corre la suite también ve los ficheros sin seguimiento.
+The opening is squashed before writing the first task's RED tests, and each milestone, before the next task's. If with a RED in the tree you must commit something else (a ruling, a thread fix, a sync merge), set it aside first —the copy is already outside the repo—, commit and put it back: a `pre-commit` that runs the suite also sees the untracked files.

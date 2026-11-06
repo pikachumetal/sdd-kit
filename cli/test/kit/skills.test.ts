@@ -17,6 +17,10 @@ function relativeLinks(text: string): string[] {
   return [...text.matchAll(/\]\(((?:references|templates|scripts)\/[^)#]+)\)/g)].map((match) => match[1]);
 }
 
+function siblingLinks(text: string): string[] {
+  return [...text.matchAll(/\]\(((?:\.\.\/|[a-z0-9-]+\.md)[^)#]*)(?:#[^)]*)?\)/g)].map((match) => match[1]);
+}
+
 // Las references/ a las que se llega desde SKILL.md, directo o por el puntero de otra reference, enlace o nombre
 // («See persuasion-principles.md in this directory»), como el reparto de writing-skills de superpowers 7.0.2.
 function reachableReferences(skill: string, skillText: string): Set<string> {
@@ -61,7 +65,7 @@ describe.each(skills)('skill %s', (skill) => {
   });
 
   it('enlaza solo a ficheros que existen', () => {
-    expect(relativeLinks(text).filter((link) => !existsSync(join(distSkills, skill, link)))).toEqual([]);
+    expect([...relativeLinks(text), ...siblingLinks(text)].filter((link) => !existsSync(join(distSkills, skill, link)))).toEqual([]);
   });
 
   it.skipIf(!existsSync(join(distSkills, skill, 'references')))('enlaza todos sus references/ desde SKILL.md', () => {

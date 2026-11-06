@@ -507,8 +507,9 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN la feature 0042 en modo full, con la spec aprobada y el plan con `Ejecución: native, porque 2 tasks encadenadas por la interfaz de Ledger, …`
 - WHEN `sdd-propose` entrega la feature
-- THEN invoca `sdd-implement`, que ejecuta las dos tasks en Native y, con la revisión final de vuelta y su pasada de fix hecha, invoca `sdd-archive`, que abre con la validación
-- AND ningún fichero de `skills/` invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
+- THEN invoca `sdd-implement`, que invoca `sdd-implement-native` con `Skill`; esta ejecuta las dos tasks en Native y, con la revisión final de vuelta y su pasada de fix hecha, invoca `sdd-archive`, que abre con la validación
+- AND con `Ejecución: subagent`, `sdd-implement` invoca `sdd-implement-subagent`
+- AND ningún texto que carga el agente (`skills/` sin las marcas `<!-- kit: … -->`) invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
 - AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
 
 ### Una task Native se registra en el ledger de `sdd-implement`
@@ -528,7 +529,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### El workspace del plan se anuncia
 
 - GIVEN un plan sin workspace en `.temp/sdd/`
-- WHEN `sdd-implement` lo crea
+- WHEN `sdd-implement-native` o `sdd-implement-subagent` lo crea
 - THEN dice al dev-lead `Workspace del plan: .temp/sdd/plan/ — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
 - AND con un ledger del mismo plan con `Task 1: complete …`, la línea acaba en `· retomo en la Task 2`
 
@@ -590,7 +591,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### El worktree de la implementación lo prepara `sdd-worktrees`
 
 - GIVEN la 0010 con la spec y el plan aprobados, abierta en un worktree que creó Orca en la rama `feature/0010-cancel`, y un proyecto con `.docs/sdd/environments.md` y `.docs/sdd/operations.md` §Testing `Gate de cierre: node --test`
-- WHEN `sdd-implement` hace su preparación
+- WHEN la copia del método (`sdd-implement-native` o `sdd-implement-subagent`) hace su preparación
 - THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su rama, y no crea otro
 - AND ejecuta `env:setup` después de instalar las dependencias, y los encargos de implementador dicen dónde está `.sdd-env.json`
 - AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `operations.md`, `tech-stack.md` ni la constitution, lo dice y pregunta qué ejecutar
@@ -730,7 +731,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN la feature 0010 con la spec aprobada y el plan escrito
 - WHEN el hilo pasa de `sdd-propose` a implementar y, al acabar, a cerrar
-- THEN las únicas skills de flujo que invoca son `sdd-implement`, `sdd-verify` y `sdd-archive`
+- THEN las únicas skills de flujo que invoca son `sdd-implement`, la copia de su método (`sdd-implement-native` o `sdd-implement-subagent`), `sdd-verify` y `sdd-archive`
 - AND mientras trabaja el revisor final, `sdd-implement` escribe sin commitear el borrador de `walkthrough.md` y el delta fusionado, sin adelantar el roadmap, y `sdd-archive` los completa
 
 ### Un test del proyecto compara los títulos E2E con Flujos core
@@ -797,6 +798,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN una spec que edita una skill, con el frente «la nota sin fecha» que viene de un ticket y aún no se ha medido
 - WHEN el agente escribe el Scope antes de medirlo
 - THEN el frente va en una línea `Entra, si el RED lo exhibe:`, separada de los `Entra:`
+
+### Tras compactar, las skills de la implementación vuelven enteras
+
+- GIVEN el kit construido en `dist/`
+- WHEN corre `moon run kit:skill-size`
+- THEN `dist/skills/sdd-implement/SKILL.md`, `dist/skills/sdd-implement-native/SKILL.md` y `dist/skills/sdd-implement-subagent/SKILL.md` ocupan menos de 20.000 bytes cada una, por debajo del corte con que Claude Code vuelve a adjuntar cada skill tras compactar
+- AND la fase de ninguna de las tres pasa de 100.000 caracteres
 
 ## Reglas de la capacidad
 
