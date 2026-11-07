@@ -113,3 +113,5 @@ Retro: error que cazaría un chequeo → ticket del kit: `tests/headless/battery
 Retro: error que cazaría un chequeo → ticket del kit: `battery.mjs run` rechaza las etiquetas ya guardadas, así que una tanda cortada al cerrarse la sesión no se reanuda sin un lanzador a mano que llame a `runCampaign`
 
 ## 6. Adendas
+
+- **2026-11-07, sesión `develop`** (triaje del [ticket de la feature 0306](../../field-reports/20261106-132240-feature-0306-propose-rework.md), menores): el precio medio por sujeto de la batería entera es ~0,67 $ (71,43 $ en 107), no los ~0,57 $ que dicen §2, el ruling de la Task 5, §5 y la retro: los 0,57 $ venían de una cuenta parcial a mitad de la tanda. Corregido en `tech-stack.md`, «Entrega de la skill al sujeto».
