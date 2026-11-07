@@ -566,7 +566,7 @@ describe('N sustituye n y umbral', () => {
     expect(fake.log).toContain('r1 · 1/1 · umbral 1/1 · verde');
   });
 
-  it.each(['0', 'dos'])('N=%s para con código 2 y no lanza', async (value) => {
+  it.each(['0', 'dos', ' 1'])('N=%j para con código 2 y no lanza', async (value) => {
     const fake = fakeDeps(toyFs());
     await expect(runBattery(env({ N: value, SCENARIOS: 'r1' }), CWD, fake.deps)).rejects.toMatchObject({ code: 2, message: `N tiene que ser un entero positivo: ${value}` });
     expect(fake.launched).toEqual([]);
@@ -578,8 +578,8 @@ describe('N sustituye n y umbral', () => {
     expect(lineOf(verdict(TABLE, OUT, [], fs, '1').lines, 'r1')).toBe('r1 · 1/1 · umbral 1/1 · verde');
   });
 
-  it('verdict con n = 0 para con código 2', () => {
-    expect(() => verdict(TABLE, OUT, [], toyFs(), '0')).toThrow(new BatteryError('N tiene que ser un entero positivo: 0', 2));
+  it.each(['0', 'dos', ' 1'])('verdict con n = %j para con código 2', (value) => {
+    expect(() => verdict(TABLE, OUT, [], toyFs(), value)).toThrow(new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2));
   });
 });
 
@@ -661,8 +661,8 @@ describe('plan', () => {
     expect(plan(fs).at(-1)).toBe(MEASURED);
   });
 
-  it('con N=0 para con código 2', () => {
-    expect(() => plan(planFs(), { N: '0' })).toThrow(new BatteryError('N tiene que ser un entero positivo: 0', 2));
+  it.each(['0', 'dos', ' 1'])('con N=%j para con código 2', (value) => {
+    expect(() => plan(planFs(), { N: value })).toThrow(new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2));
   });
 });
 

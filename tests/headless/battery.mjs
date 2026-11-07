@@ -7,7 +7,7 @@
 //                                           con --resume, solo las etiquetas sin tools.txt ni sujeto vivo (una tanda cortada)
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
-// N=<n> sustituye n y umbral (<n>/<n>) de los escenarios filtrados, en run y en verdict.
+// N=<n> sustituye n y umbral (<n>/<n>) de los escenarios filtrados, en run, verdict y plan.
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia o no hay escenarios.
 // Con 0 y `puerta verde`, la conducta sigue sin leer: las filas en prosa las lee el hilo. `verde` solo si todas sus filas son de máquina:
 // `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea, y `text: /<regex>/`, que falla si <salida>/<etiqueta>.texts.txt falta o no casa, también con emoji.
@@ -134,8 +134,8 @@ function selectScenarios(rows, ids) {
 
 const words = (value) => (value ?? '').split(/\s+/).filter(Boolean);
 
-// Sin N, un humo con n = 1 sobre una tabla de n = 2 obligaba a copiar tests/batteries/ entera con junctions.
-export function withN(rows, value) {
+// N cambia la tanda sin tocar battery.md: los subject.mjs leen su tabla y los moldes de otras baterías por ruta relativa.
+function withN(rows, value) {
   if (value === undefined || value === '') return rows;
   if (!/^[0-9]+$/.test(value) || Number(value) === 0) throw new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2);
   const n = Number(value);
@@ -411,7 +411,7 @@ async function main([command, batteryPath, ...rest]) {
     const { realDeps, stopOnSignal } = await import('./real-deps.mjs');
     const deps = realDeps();
     stopOnSignal(batteryPlan(process.env, process.cwd(), deps.fs).config, deps);
-    process.exitCode = await runBattery(process.env, process.cwd(), deps, { resume: batteryPath === '--resume' });
+    process.exitCode = await runBattery(process.env, process.cwd(), deps, { resume: [batteryPath, ...rest].includes('--resume') });
   } else {
     throw new BatteryError('uso: node battery.mjs plan|field|verdict|run …');
   }
