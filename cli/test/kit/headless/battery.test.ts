@@ -535,3 +535,50 @@ describe('runBattery', () => {
     expect(fake.log.at(-1)).toBe('t1 · 0/1 · umbral 1/1 · sin evidencia · sin tools.txt: t1-1');
   });
 });
+
+describe('N sustituye n y umbral', () => {
+  const labels = (fake: ReturnType<typeof fakeDeps>) => fake.launched.map((request) => request.args[1]);
+
+  it('N=1 con SCENARIOS=r1 lanza solo r1-1 y juzga 1/1', async () => {
+    const fake = fakeDeps(toyFs());
+    expect(await runBattery(env({ N: '1', SCENARIOS: 'r1' }), CWD, fake.deps)).toBe(0);
+    expect(labels(fake)).toEqual(['r1-1']);
+    expect(fake.log).toContain('r1 · 1/1 · umbral 1/1 · verde');
+  });
+
+  it('N=3 sobre r1 (n = 2) lanza r1-1, r1-2 y r1-3 con umbral 3/3', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ N: '3', SCENARIOS: 'r1' }), CWD, fake.deps);
+    expect(labels(fake)).toEqual(['r1-1', 'r1-2', 'r1-3']);
+    expect(fake.log).toContain('r1 · 3/3 · umbral 3/3 · verde');
+  });
+
+  it('N=1 sin SCENARIOS ni STEPS deja n = 1 en todos', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ N: '1' }), CWD, fake.deps);
+    expect(labels(fake).sort()).toEqual(['a1-1', 'd1-1', 'f1-1', 'r1-1', 'r2-1', 't1-1']);
+  });
+
+  it('N=01 deja n = 1 y umbral 1/1', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ N: '01', SCENARIOS: 'r1' }), CWD, fake.deps);
+    expect(labels(fake)).toEqual(['r1-1']);
+    expect(fake.log).toContain('r1 · 1/1 · umbral 1/1 · verde');
+  });
+
+  it.each(['0', 'dos'])('N=%s para con código 2 y no lanza', async (value) => {
+    const fake = fakeDeps(toyFs());
+    await expect(runBattery(env({ N: value, SCENARIOS: 'r1' }), CWD, fake.deps)).rejects.toMatchObject({ code: 2, message: `N tiene que ser un entero positivo: ${value}` });
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('verdict con n juzga sobre esa n', () => {
+    const fs = toyFs();
+    tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    expect(lineOf(verdict(TABLE, OUT, [], fs, '1').lines, 'r1')).toBe('r1 · 1/1 · umbral 1/1 · verde');
+  });
+
+  it('verdict con n = 0 para con código 2', () => {
+    expect(() => verdict(TABLE, OUT, [], toyFs(), '0')).toThrow(new BatteryError('N tiene que ser un entero positivo: 0', 2));
+  });
+});

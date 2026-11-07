@@ -2,10 +2,11 @@
 // Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n>, una línea por escenario
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
 //      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas>|rojo|sin evidencia: la puerta y las filas de máquina
-//      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
+//      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] [N=<n>] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
 //      node battery.mjs run                 lanza la batería, entera, por tramos o por escenarios, y da el veredicto de lo lanzado
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
+// N=<n> sustituye n y umbral (<n>/<n>) de los escenarios filtrados, en run y en verdict.
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia o no hay escenarios.
 // Con 0 y `puerta verde`, la conducta sigue sin leer: las filas en prosa las lee el hilo. `verde` solo si todas sus filas son de máquina:
 // `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea, y `text: /<regex>/`, que falla si <salida>/<etiqueta>.texts.txt falta o no casa, también con emoji.
@@ -132,6 +133,14 @@ function selectScenarios(rows, ids) {
 
 const words = (value) => (value ?? '').split(/\s+/).filter(Boolean);
 
+// Sin N, un humo con n = 1 sobre una tabla de n = 2 obligaba a copiar tests/batteries/ entera con junctions.
+export function withN(rows, value) {
+  if (value === undefined || value === '') return rows;
+  if (!/^[0-9]+$/.test(value) || Number(value) === 0) throw new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2);
+  const n = Number(value);
+  return rows.map((row) => ({ ...row, n: String(n), Umbral: `${n}/${n}` }));
+}
+
 function selectSteps(rows, steps) {
   if (steps.length === 0) return rows;
   const known = new Set(rows.map((row) => row.Paso));
@@ -217,7 +226,8 @@ function judgeRows(batteryPath, selected, { outDir, fs }) {
   return { lines, red: lines.some((line) => line.includes('· rojo')), noEvidence: lines.some((line) => line.includes('· sin evidencia')) };
 }
 
-export const verdict = (batteryPath, outDir, steps, fs) => judgeRows(batteryPath, selectSteps(readScenarios(batteryPath, fs), steps), { outDir, fs });
+export const verdict = (batteryPath, outDir, steps, fs, n) =>
+  judgeRows(batteryPath, withN(selectSteps(readScenarios(batteryPath, fs), steps), n), { outDir, fs });
 
 // Sin evidencia no es verde: con 0, un script leería que todos pasan.
 function exitCode({ lines, red, noEvidence }) {
@@ -257,8 +267,9 @@ export function batteryPlan(env, cwd, fs) {
   const all = readScenarios(table, fs);
   // El id se valida contra la tabla entera: fuera del tramo pedido es un cruce vacío, no un id desconocido.
   const wanted = selectScenarios(all, words(env.SCENARIOS));
-  const rows = selectSteps(all, words(env.STEPS)).filter((row) => wanted.includes(row));
-  if (rows.length === 0) throw new BatteryError(noScenarios(table), 3);
+  const crossed = selectSteps(all, words(env.STEPS)).filter((row) => wanted.includes(row));
+  if (crossed.length === 0) throw new BatteryError(noScenarios(table), 3);
+  const rows = withN(crossed, env.N);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
   return { table, rows, launchEnv, config };
@@ -304,7 +315,7 @@ async function main([command, batteryPath, ...rest]) {
     console.log(row[column]);
   } else if (command === 'verdict') {
     const [outDir, ...steps] = rest;
-    const result = verdict(batteryPath, outDir, steps, fileFs);
+    const result = verdict(batteryPath, outDir, steps, fileFs, process.env.N);
     console.log(result.lines.length ? result.lines.join('\n') : noScenarios(batteryPath));
     process.exitCode = exitCode(result);
   } else if (command === 'run') {
