@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BatteryError, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
+import { BatteryError, planLines, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
 // Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
@@ -456,7 +456,7 @@ describe('runBattery', () => {
     const fs = toyFs();
     tools(fs, 'r1-1', finished('marca'));
     const fake = fakeDeps(fs);
-    await expect(runBattery(env({ STEPS: 'roadmap' }), CWD, fake.deps)).rejects.toThrow(`ya existe r1-1 en ${OUT}: borra esa carpeta o cambia PHASE`);
+    await expect(runBattery(env({ STEPS: 'roadmap' }), CWD, fake.deps)).rejects.toThrow(`ya existe r1-1 en ${OUT}: borra esa carpeta, cambia PHASE o reanuda con --resume`);
     expect(fake.launched).toEqual([]);
   });
 
@@ -500,7 +500,7 @@ describe('runBattery', () => {
     const fs = toyFs();
     tools(fs, 'f1-1', finished('marca'));
     const fake = fakeDeps(fs);
-    await expect(runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toThrow(`ya existe f1-1 en ${OUT}: borra esa carpeta o cambia PHASE`);
+    await expect(runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toThrow(`ya existe f1-1 en ${OUT}: borra esa carpeta, cambia PHASE o reanuda con --resume`);
     expect(fake.launched).toEqual([]);
   });
 
@@ -533,5 +533,229 @@ describe('runBattery', () => {
     };
     expect(await runBattery(env({ STEPS: 'directa' }), CWD, fake.deps)).toBe(3);
     expect(fake.log.at(-1)).toBe('t1 · 0/1 · umbral 1/1 · sin evidencia · sin tools.txt: t1-1');
+  });
+});
+
+describe('N sustituye n y umbral', () => {
+  const labels = (fake: ReturnType<typeof fakeDeps>) => fake.launched.map((request) => request.args[1]);
+
+  it('N=1 con SCENARIOS=r1 lanza solo r1-1 y juzga 1/1', async () => {
+    const fake = fakeDeps(toyFs());
+    expect(await runBattery(env({ N: '1', SCENARIOS: 'r1' }), CWD, fake.deps)).toBe(0);
+    expect(labels(fake)).toEqual(['r1-1']);
+    expect(fake.log).toContain('r1 · 1/1 · umbral 1/1 · verde');
+  });
+
+  it('N=3 sobre r1 (n = 2) lanza r1-1, r1-2 y r1-3 con umbral 3/3', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ N: '3', SCENARIOS: 'r1' }), CWD, fake.deps);
+    expect(labels(fake)).toEqual(['r1-1', 'r1-2', 'r1-3']);
+    expect(fake.log).toContain('r1 · 3/3 · umbral 3/3 · verde');
+  });
+
+  it('N=1 sin SCENARIOS ni STEPS deja n = 1 en todos', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ N: '1' }), CWD, fake.deps);
+    expect(labels(fake).sort()).toEqual(['a1-1', 'd1-1', 'f1-1', 'r1-1', 'r2-1', 't1-1']);
+  });
+
+  it('N=01 deja n = 1 y umbral 1/1', async () => {
+    const fake = fakeDeps(toyFs());
+    await runBattery(env({ N: '01', SCENARIOS: 'r1' }), CWD, fake.deps);
+    expect(labels(fake)).toEqual(['r1-1']);
+    expect(fake.log).toContain('r1 · 1/1 · umbral 1/1 · verde');
+  });
+
+  it.each(['0', 'dos', ' 1'])('N=%j para con código 2 y no lanza', async (value) => {
+    const fake = fakeDeps(toyFs());
+    await expect(runBattery(env({ N: value, SCENARIOS: 'r1' }), CWD, fake.deps)).rejects.toMatchObject({ code: 2, message: `N tiene que ser un entero positivo: ${value}` });
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('verdict con n juzga sobre esa n', () => {
+    const fs = toyFs();
+    tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    expect(lineOf(verdict(TABLE, OUT, [], fs, '1').lines, 'r1')).toBe('r1 · 1/1 · umbral 1/1 · verde');
+  });
+
+  it.each(['0', 'dos', ' 1'])('verdict con n = %j para con código 2', (value) => {
+    expect(() => verdict(TABLE, OUT, [], toyFs(), value)).toThrow(new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2));
+  });
+});
+
+describe('plan', () => {
+  const PLAN_TABLE = join(CWD, 'plan', 'battery.md');
+  const SPECS = join(CWD, 'specs');
+  const OLD = '20261101-000000-feature-0001-x';
+  const NEW = '20261102-000000-feature-0002-y';
+  const PLAN = `| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| a1 | uno | Haz A. | salas | ninguna | 2 | 2/2 | sonnet | toy |
+| b1 | uno | Haz B. | salas | ninguna | 1 | 1/1 | sonnet | toy |
+`;
+
+  interface Saved {
+    folder: string;
+    label: string;
+    cost?: string;
+    ask?: string;
+  }
+
+  function save(fs: MemoryFs, { folder, label, cost, ask = 'Haz A.' }: Saved) {
+    const out = join(SPECS, folder, 'red', 'out');
+    fs.write(join(out, `${label}.tools.txt`), cost === undefined ? '>>> Read: x\n' : `>>> Read: x\n=== RESULTADO (3 turnos, ${cost} $)\n`);
+    if (ask !== '') fs.write(join(out, `${label}.state.txt`), `## petición\n${ask}\n## git status\n`);
+  }
+
+  function planFs(): MemoryFs {
+    const fs = memoryFs();
+    fs.write(PLAN_TABLE, PLAN);
+    save(fs, { folder: OLD, label: 'a1-1', cost: '1.00' });
+    save(fs, { folder: NEW, label: 'a1-1', cost: '0.40' });
+    save(fs, { folder: NEW, label: 'a1-2', cost: '0.60' });
+    return fs;
+  }
+
+  const plan = (fs: MemoryFs, env: Record<string, string> = {}) => planLines(PLAN_TABLE, [], env, SPECS, fs);
+  const MEASURED = 'suma: 3 sujetos · coste previsto: 1.50 $ · sin precio medido: b1 (a 0.50 $, la media de los escenarios medidos)';
+  const UNSAVED = 'suma: 3 sujetos · coste previsto: sin campañas guardadas de esta batería';
+
+  it('suma y coste con la carpeta más reciente y la media para b1', () => {
+    expect(plan(planFs())).toEqual(['a1 sonnet 2', 'b1 sonnet 1', MEASURED]);
+  });
+
+  it('no cuentan a10-1, otra petición, sin state.txt ni sin RESULTADO', () => {
+    const fs = planFs();
+    save(fs, { folder: NEW, label: 'a10-1', cost: '9.00' });
+    save(fs, { folder: NEW, label: 'a1-3', cost: '9.00', ask: 'Otra cosa.' });
+    save(fs, { folder: NEW, label: 'a1-4', cost: '9.00', ask: '' });
+    save(fs, { folder: NEW, label: 'a1-5' });
+    expect(plan(fs).at(-1)).toBe(MEASURED);
+  });
+
+  it('sin campañas que casen', () => {
+    const fs = memoryFs();
+    fs.write(PLAN_TABLE, PLAN);
+    save(fs, { folder: NEW, label: 'a1-1', cost: '0.40', ask: 'Otra cosa.' });
+    expect(plan(fs).at(-1)).toBe(UNSAVED);
+  });
+
+  it('sin la carpeta specs', () => {
+    const fs = memoryFs();
+    fs.write(PLAN_TABLE, PLAN);
+    expect(plan(fs).at(-1)).toBe(UNSAVED);
+  });
+
+  it('con N=1, suma: 2 sujetos', () => {
+    expect(plan(planFs(), { N: '1' }).at(-1)).toBe('suma: 2 sujetos · coste previsto: 1.00 $ · sin precio medido: b1 (a 0.50 $, la media de los escenarios medidos)');
+  });
+
+  it('con SCENARIOS=a1, suma: 2 sujetos · coste previsto: 1.00 $', () => {
+    expect(plan(planFs(), { SCENARIOS: 'a1' })).toEqual(['a1 sonnet 2', 'suma: 2 sujetos · coste previsto: 1.00 $']);
+  });
+
+  it('salta ficheros sueltos de specs/', () => {
+    const fs = planFs();
+    fs.write(join(SPECS, NEW, 'spec.md'), '# Spec\n');
+    fs.write(join(SPECS, 'README.md'), '# Specs\n');
+    expect(plan(fs).at(-1)).toBe(MEASURED);
+  });
+
+  it.each(['0', 'dos', ' 1'])('con N=%j para con código 2', (value) => {
+    expect(() => plan(planFs(), { N: value })).toThrow(new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2));
+  });
+});
+
+describe('run --resume', () => {
+  const RESUME = { resume: true };
+  const labels = (fake: ReturnType<typeof fakeDeps>) => fake.launched.map((request) => request.args[1]);
+
+  function savedFs(...saved: string[]): MemoryFs {
+    const fs = toyFs();
+    for (const label of saved) tools(fs, label, finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    return fs;
+  }
+
+  it('lanza solo lo que falta', async () => {
+    const fake = fakeDeps(savedFs('r1-1', 'r1-2', 'd1-1'));
+    await runBattery(env({ SCENARIOS: 'r1 d1' }), CWD, fake.deps, RESUME);
+    expect(labels(fake)).toEqual(['d1-2']);
+    expect(fake.log).toContain('reanudo: guardadas 3, lanzo 1');
+    expect(lineOf(fake.log, 'r1')).toBeDefined();
+    expect(lineOf(fake.log, 'd1')).toBeDefined();
+  });
+
+  it('con todo guardado no lanza y da el veredicto', async () => {
+    const fake = fakeDeps(savedFs('r1-1', 'r1-2', 'd1-1', 'd1-2'));
+    await runBattery(env({ SCENARIOS: 'r1 d1' }), CWD, fake.deps, RESUME);
+    expect(fake.launched).toEqual([]);
+    expect(fake.log).toContain('reanudo: guardadas 4, lanzo 0');
+    expect(lineOf(fake.log, 'r1')).toBe('r1 · 2/2 · umbral 2/2 · verde');
+  });
+
+  it('con N=1 mira solo -1', async () => {
+    const fake = fakeDeps(savedFs('r1-1', 'd1-1'));
+    await runBattery(env({ SCENARIOS: 'r1 d1', N: '1' }), CWD, fake.deps, RESUME);
+    expect(fake.launched).toEqual([]);
+    expect(fake.log).toContain('reanudo: guardadas 2, lanzo 0');
+  });
+
+  it.each([
+    [true, []],
+    [false, ['d1-2']],
+  ])('una marca de d1-2 con el PID vivo = %s', async (alive, launched) => {
+    const fs = savedFs('r1-1', 'r1-2', 'd1-1');
+    fs.write(join(RUNS, 'dry', 'live', 'battery.d1-2'), '7\n');
+    const fake = fakeDeps(fs);
+    fake.deps.isAlive = () => alive;
+    await runBattery(env({ SCENARIOS: 'r1 d1' }), CWD, fake.deps, RESUME);
+    expect(labels(fake)).toEqual(launched);
+  });
+
+  it('cuenta lo guardado en el techo de la previsión', async () => {
+    const fs = savedFs('r1-1', 'r1-2', 'd1-1');
+    fs.write(join(SPEC, 'spec.md'), '# Spec\n\n## Previsión de coste\n\n| Tanda | Sujetos (batería) | $ |\n| --- | --- | --- |\n| Suma | 3 | 1 |\n');
+    const fake = fakeDeps(fs);
+    const { SUBJECT_CAP: _cap, ...withoutCap } = env({ SCENARIOS: 'r1 d1' });
+    await runBattery(withoutCap, CWD, fake.deps, RESUME);
+    expect(fake.launched).toEqual([]);
+    expect(fake.log).toContain(`techo de 3 sujetos de la previsión de ${join(SPEC, 'spec.md')} alcanzado: decide el dev-lead; subirlo exige enmendar la spec`);
+  });
+
+  it('con SCENARIOS mira solo lo filtrado', async () => {
+    const fake = fakeDeps(savedFs('f1-1', 'r1-1'));
+    await runBattery(env({ SCENARIOS: 'r1' }), CWD, fake.deps, RESUME);
+    expect(labels(fake)).toEqual(['r1-2']);
+    expect(fake.log).toContain('reanudo: guardadas 1, lanzo 1');
+  });
+});
+
+describe('la skill de una petición slash', () => {
+  const GRILLING = finished('>>> Skill: sdd-kit:sdd-grilling');
+  const judgeF1 = (state: string | null, text = GRILLING) => {
+    const fs = toyFs();
+    tools(fs, 'f1-1', text);
+    if (state !== null) fs.write(join(OUT, 'f1-1.state.txt'), state);
+    return verdict(TABLE, OUT, ['feature'], fs).lines[0].split(' · ')[1];
+  };
+
+  it.each([
+    ['## petición\n/sdd-kit:sdd-propose añade el motivo\n', '1/1'],
+    ['## petición\r\n/sdd-kit:sdd-propose\r\n', '1/1'],
+    ['## petición\n/sdd-propose\n', '0/1'],
+    ['## petición\n/clear\n', '0/1'],
+    ['## petición\nAñade un filtro.\n', '0/1'],
+    ['## git status\n', '0/1'],
+    ['## petición\n/sdd-kit:sdd-nope\n', '0/1'],
+  ])('state.txt %j → f1 %s', (state, passed) => {
+    expect(judgeF1(state)).toBe(passed);
+  });
+
+  it('sin state.txt manda la primera llamada a Skill', () => {
+    expect(judgeF1(null)).toBe('0/1');
+  });
+
+  it('el slash de using-sdd no cuenta: manda la primera Skill que no es using-sdd', () => {
+    expect(judgeF1('## petición\n/sdd-kit:using-sdd\n', finished('>>> Skill: sdd-kit:using-sdd\n>>> Skill: sdd-kit:sdd-propose'))).toBe('1/1');
   });
 });

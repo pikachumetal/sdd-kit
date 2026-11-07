@@ -1,20 +1,22 @@
 // Lee la tabla de escenarios de una batería (tests/batteries/<skill>/battery.md), la lanza y da su veredicto.
-// Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n>, una línea por escenario
+// Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n> por escenario, y la suma de n con el coste previsto (SCENARIOS y N como run)
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
 //      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas>|rojo|sin evidencia: la puerta y las filas de máquina
-//      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
-//      node battery.mjs run                 lanza la batería, entera, por tramos o por escenarios, y da el veredicto de lo lanzado
+//      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] [N=<n>] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
+//      node battery.mjs run [--resume]      lanza la batería, entera, por tramos o por escenarios, y da el veredicto de lo lanzado;
+//                                           con --resume, solo las etiquetas sin tools.txt ni sujeto vivo (una tanda cortada)
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
+// N=<n> sustituye n y umbral (<n>/<n>) de los escenarios filtrados, en run, verdict y plan.
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia o no hay escenarios.
 // Con 0 y `puerta verde`, la conducta sigue sin leer: las filas en prosa las lee el hilo. `verde` solo si todas sus filas son de máquina:
 // `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea, y `text: /<regex>/`, que falla si <salida>/<etiqueta>.texts.txt falta o no casa, también con emoji.
 // Lo que hace fallar el primer lanzamiento: KIT_DIR es una copia sin .docs/ ni tests/, sacada con git archive <commit>:dist;
 // SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda, y la previsión de la spec manda sobre él (cabecera de run.mjs); y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CampaignError, hasResult, readConfig, runCampaign } from './campaign.mjs';
+import { CampaignError, hasResult, labelTaken, lastCost, readConfig, runCampaign } from './campaign.mjs';
 
 export class BatteryError extends Error {
   constructor(message, code = 1) {
@@ -132,6 +134,14 @@ function selectScenarios(rows, ids) {
 
 const words = (value) => (value ?? '').split(/\s+/).filter(Boolean);
 
+// N cambia la tanda sin tocar battery.md: los subject.mjs leen su tabla y los moldes de otras baterías por ruta relativa.
+function withN(rows, value) {
+  if (value === undefined || value === '') return rows;
+  if (!/^[0-9]+$/.test(value) || Number(value) === 0) throw new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2);
+  const n = Number(value);
+  return rows.map((row) => ({ ...row, n: String(n), Umbral: `${n}/${n}` }));
+}
+
 function selectSteps(rows, steps) {
   if (steps.length === 0) return rows;
   const known = new Set(rows.map((row) => row.Paso));
@@ -149,6 +159,14 @@ function firstSkill(text) {
   return skills.find((skill) => skill !== ROUTER) ?? 'ninguna';
 }
 
+const askOf = (state) => state.replaceAll('\r\n', '\n').match(/^## petición\n([\s\S]*?)(?:\n## |\n?$)/)?.[1].trim();
+
+// «/plugin:skill» en claude -p carga la skill sin llamada a Skill: sin leer la petición, la puerta salía roja.
+function slashSkill(state) {
+  const skill = askOf(state ?? '')?.split('\n')[0].match(/^\/([\w-]+:[\w-]+)(?:\s|$)/)?.[1];
+  return skill && skill !== ROUTER ? skill : null;
+}
+
 // Con KIT_DIR relativo, --plugin-dir no resolvía y los sujetos siguieron sin el kit: daban verde sin medir nada.
 function kitMissing(text) {
   const lines = text.split(/\r?\n/);
@@ -160,8 +178,9 @@ function kitMissing(text) {
 // Un sujeto cortado por tiempo o que no arrancó también deja tools.txt, pero sin RESULTADO: no ha medido nada.
 function readRuns(row, outDir, fs) {
   const all = Array.from({ length: Number(row.n) }, (_, i) => {
-    const path = join(outDir, `${row.Id}-${i + 1}.tools.txt`);
-    return { label: `${row.Id}-${i + 1}`, text: fs.exists(path) ? fs.read(path) : undefined };
+    const label = `${row.Id}-${i + 1}`;
+    const [tools, state] = ['tools', 'state'].map((kind) => join(outDir, `${label}.${kind}.txt`));
+    return { label, text: fs.exists(tools) ? fs.read(tools) : undefined, state: fs.exists(state) ? fs.read(state) : undefined };
   });
   const finished = ({ text }) => text !== undefined && hasResult(text);
   const labels = (runs) => runs.map(({ label }) => label);
@@ -198,8 +217,10 @@ function judge(row, { outDir, fs, rubric: { checks, prose } }) {
   const failedChecks = failedChecksOf(row, runs, checks, { outDir, fs });
   // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito.
   const passed = runs.filter(
-    ({ label, text }) =>
-      !unloaded.includes(label) && !failedChecks.some(({ labels }) => labels.includes(label)) && (row.Esperado === ANY || firstSkill(text) === row.Esperado),
+    ({ label, text, state }) =>
+      !unloaded.includes(label) &&
+      !failedChecks.some(({ labels }) => labels.includes(label)) &&
+      (row.Esperado === ANY || (slashSkill(state) ?? firstSkill(text)) === row.Esperado),
   ).length;
   const state = scenarioState({ passed, missing: n - runs.length, needed, kitFailed: unloaded.length > 0 });
   const notes = [
@@ -217,7 +238,8 @@ function judgeRows(batteryPath, selected, { outDir, fs }) {
   return { lines, red: lines.some((line) => line.includes('· rojo')), noEvidence: lines.some((line) => line.includes('· sin evidencia')) };
 }
 
-export const verdict = (batteryPath, outDir, steps, fs) => judgeRows(batteryPath, selectSteps(readScenarios(batteryPath, fs), steps), { outDir, fs });
+export const verdict = (batteryPath, outDir, steps, fs, n) =>
+  judgeRows(batteryPath, withN(selectSteps(readScenarios(batteryPath, fs), steps), n), { outDir, fs });
 
 // Sin evidencia no es verde: con 0, un script leería que todos pasan.
 function exitCode({ lines, red, noEvidence }) {
@@ -233,20 +255,34 @@ function batteryDir(env) {
   return join(REPO_ROOT, 'tests', 'batteries', env.BATTERY);
 }
 
+const labelsOf = (rows) => rows.flatMap((row) => Array.from({ length: Number(row.n) }, (_, i) => `${row.Id}-${i + 1}`));
+
 // La batería numera SUBJECT por su cuenta: con una etiqueta ya guardada, run.mjs la saltaría y el veredicto sería el viejo.
 function refuseSavedLabels(rows, out, fs) {
-  for (const row of rows) {
-    for (let i = 1; i <= Number(row.n); i++) {
-      if (fs.exists(join(out, `${row.Id}-${i}.tools.txt`))) throw new BatteryError(`ya existe ${row.Id}-${i} en ${out}: borra esa carpeta o cambia PHASE`);
-    }
+  const saved = labelsOf(rows).find((label) => fs.exists(join(out, `${label}.tools.txt`)));
+  if (saved) throw new BatteryError(`ya existe ${saved} en ${out}: borra esa carpeta, cambia PHASE o reanuda con --resume`);
+}
+
+// Una tanda cortada se retoma saltando lo mismo que salta runCampaign: lo guardado y lo que aún corre.
+// Un sujeto guardado sin RESULTADO no se relanza: ya se pagó, y el veredicto lo da «sin RESULTADO».
+function pendingLabels(rows, config, deps) {
+  const all = labelsOf(rows);
+  const pending = all.filter((label) => !labelTaken(config, deps, label));
+  deps.log(`reanudo: guardadas ${all.length - pending.length}, lanzo ${pending.length}`);
+  return new Set(pending);
+}
+
+async function launchIndex(rows, index, launch, isPending) {
+  for (const model of [...new Set(rows.map((row) => row.Modelo))].sort()) {
+    const ids = rows.filter((row) => row.Modelo === model && Number(row.n) >= index && isPending(`${row.Id}-${index}`)).map((row) => row.Id);
+    if (ids.length > 0) await launch({ MODEL: model, SUBJECT: String(index), SCENARIOS: ids.join(' ') });
   }
 }
 
-async function launchIndex(rows, index, launch) {
-  for (const model of [...new Set(rows.map((row) => row.Modelo))].sort()) {
-    const ids = rows.filter((row) => row.Modelo === model && Number(row.n) >= index).map((row) => row.Id);
-    if (ids.length > 0) await launch({ MODEL: model, SUBJECT: String(index), SCENARIOS: ids.join(' ') });
-  }
+// El id se valida contra la tabla entera: fuera del tramo pedido es un cruce vacío, no un id desconocido.
+function pickRows(all, steps, env) {
+  const wanted = selectScenarios(all, words(env.SCENARIOS));
+  return withN(selectSteps(all, steps).filter((row) => wanted.includes(row)), env.N);
 }
 
 // La configuración de la batería entera: la que comprueba las etiquetas guardadas y la que barre al parar.
@@ -254,30 +290,94 @@ export function batteryPlan(env, cwd, fs) {
   const dir = batteryDir(env);
   const table = join(dir, 'battery.md');
   if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
-  const all = readScenarios(table, fs);
-  // El id se valida contra la tabla entera: fuera del tramo pedido es un cruce vacío, no un id desconocido.
-  const wanted = selectScenarios(all, words(env.SCENARIOS));
-  const rows = selectSteps(all, words(env.STEPS)).filter((row) => wanted.includes(row));
+  const rows = pickRows(readScenarios(table, fs), words(env.STEPS), env);
   if (rows.length === 0) throw new BatteryError(noScenarios(table), 3);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
   return { table, rows, launchEnv, config };
 }
 
-export async function runBattery(env, cwd, deps) {
+export async function runBattery(env, cwd, deps, { resume = false } = {}) {
   const { table, rows, launchEnv, config } = batteryPlan(env, cwd, deps.fs);
   const failure = deps.syntaxError(launchEnv.SUBJECT_SH);
   if (failure) throw new BatteryError(`subject.mjs no compila:\n${failure}`);
-  refuseSavedLabels(rows, config.out, deps.fs);
+  let isPending = () => true;
+  if (resume) {
+    const pending = pendingLabels(rows, config, deps);
+    isPending = (label) => pending.has(label);
+  } else {
+    refuseSavedLabels(rows, config.out, deps.fs);
+  }
   const launch = (overrides) => runCampaign(readConfig({ ...launchEnv, ...overrides }, cwd, deps.fs), deps);
   const maxN = Math.max(0, ...rows.map((row) => Number(row.n)));
-  for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launch);
+  for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launch, isPending);
   const result = judgeRows(table, rows, { outDir: config.out, fs: deps.fs });
   for (const line of result.lines) deps.log(line);
   return exitCode(result);
 }
 
-const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync };
+// Las salidas guardadas de las campañas: <specs>/<carpeta de spec>/<fase>/out/<fichero>.
+function* savedOutputs(specsRoot, fs) {
+  for (const folder of fs.list(specsRoot)) {
+    for (const phase of fs.list(join(specsRoot, folder))) {
+      const out = join(specsRoot, folder, phase, 'out');
+      if (fs.exists(out)) yield* fs.list(out).map((name) => ({ folder, out, name }));
+    }
+  }
+}
+
+// Los ids se repiten entre baterías y varios escenarios comparten petición: solo casa la pareja id + petición.
+function measuredSubject({ folder, out, name }, askById, fs) {
+  const id = name.match(/^(.+)-[0-9]+\.tools\.txt$/)?.[1];
+  const state = join(out, name.replace(/\.tools\.txt$/, '.state.txt'));
+  if (!askById.has(id) || !fs.exists(state) || askOf(fs.read(state)) !== askById.get(id)) return null;
+  const cost = lastCost(fs.read(join(out, name)));
+  return cost === null ? null : { id, folder, cost };
+}
+
+const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+
+// El precio de cada escenario es la media de la carpeta más reciente que lo midió: la que lleva el kit y el modelo de hoy.
+export function scenarioPrices(rows, specsRoot, fs) {
+  const askById = new Map(rows.map((row) => [row.Id, row['Petición'].replaceAll('\\|', '|').trim()]));
+  const byId = new Map();
+  if (fs.exists(specsRoot)) {
+    for (const output of savedOutputs(specsRoot, fs)) {
+      const subject = measuredSubject(output, askById, fs);
+      if (subject) byId.set(subject.id, [...(byId.get(subject.id) ?? []), subject]);
+    }
+  }
+  return new Map(
+    [...byId].map(([id, subjects]) => {
+      const latest = subjects.map(({ folder }) => folder).sort().at(-1);
+      return [id, mean(subjects.filter(({ folder }) => folder === latest).map(({ cost }) => cost))];
+    }),
+  );
+}
+
+export function forecastCost(rows, prices) {
+  if (prices.size === 0) return { cost: null, unmeasured: rows.map((row) => row.Id), fallback: null };
+  const fallback = mean([...prices.values()]);
+  const cost = rows.reduce((sum, row) => sum + Number(row.n) * (prices.get(row.Id) ?? fallback), 0);
+  return { cost, unmeasured: rows.filter((row) => !prices.has(row.Id)).map((row) => row.Id), fallback };
+}
+
+function sumLine(rows, { cost, unmeasured, fallback }) {
+  const subjects = `suma: ${rows.reduce((sum, row) => sum + Number(row.n), 0)} sujetos`;
+  if (cost === null) return `${subjects} · coste previsto: sin campañas guardadas de esta batería`;
+  const missing = unmeasured.length ? ` · sin precio medido: ${unmeasured.join(', ')} (a ${fallback.toFixed(2)} $, la media de los escenarios medidos)` : '';
+  return `${subjects} · coste previsto: ${cost.toFixed(2)} $${missing}`;
+}
+
+// Un escenario sin medir se precia con los de toda la batería, no solo con los filtrados.
+export function planLines(batteryPath, steps, env, specsRoot, fs) {
+  const all = readScenarios(batteryPath, fs);
+  const rows = pickRows(all, steps, env);
+  return [...rows.map((row) => `${row.Id} ${row.Modelo} ${row.n}`), sumLine(rows, forecastCost(rows, scenarioPrices(all, specsRoot, fs)))];
+}
+
+const listDir = (dir) => (existsSync(dir) && statSync(dir).isDirectory() ? readdirSync(dir) : []);
+const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync, list: listDir };
 
 export const scenarios = (batteryPath) => readScenarios(batteryPath, fileFs);
 const findScenario = (batteryPath, id) => scenarios(batteryPath).find((candidate) => candidate.Id === id);
@@ -296,7 +396,7 @@ export const moldFrom = (cell, s, molds) => molds[cell('Molde')] ?? s.die(`molde
 
 async function main([command, batteryPath, ...rest]) {
   if (command === 'plan') {
-    for (const row of selectSteps(readScenarios(batteryPath, fileFs), rest)) console.log(`${row.Id} ${row.Modelo} ${row.n}`);
+    for (const line of planLines(batteryPath, rest, process.env, join(REPO_ROOT, '.docs', 'sdd', 'specs'), fileFs)) console.log(line);
   } else if (command === 'field') {
     const [id, column] = rest;
     const row = findScenario(batteryPath, id);
@@ -304,14 +404,14 @@ async function main([command, batteryPath, ...rest]) {
     console.log(row[column]);
   } else if (command === 'verdict') {
     const [outDir, ...steps] = rest;
-    const result = verdict(batteryPath, outDir, steps, fileFs);
+    const result = verdict(batteryPath, outDir, steps, fileFs, process.env.N);
     console.log(result.lines.length ? result.lines.join('\n') : noScenarios(batteryPath));
     process.exitCode = exitCode(result);
   } else if (command === 'run') {
     const { realDeps, stopOnSignal } = await import('./real-deps.mjs');
     const deps = realDeps();
     stopOnSignal(batteryPlan(process.env, process.cwd(), deps.fs).config, deps);
-    process.exitCode = await runBattery(process.env, process.cwd(), deps);
+    process.exitCode = await runBattery(process.env, process.cwd(), deps, { resume: [batteryPath, ...rest].includes('--resume') });
   } else {
     throw new BatteryError('uso: node battery.mjs plan|field|verdict|run …');
   }

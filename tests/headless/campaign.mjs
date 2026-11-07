@@ -30,7 +30,8 @@ function positiveInt(env, name, fallback) {
   return Number(value);
 }
 
-// Una prosa en la celda daría un techo falso: solo vale el número, y lo demás cae a SUBJECT_CAP con aviso.
+// Una prosa en la celda daría un techo falso: solo vale un número o un rango «<a> a <b>», cuyo techo es el mayor;
+// lo demás cae a SUBJECT_CAP con aviso.
 export function forecastSubjects(text) {
   const lines = text.split(/\r?\n/);
   const start = lines.findIndex((line) => /^#+ Previsión de coste/.test(line));
@@ -38,8 +39,8 @@ export function forecastSubjects(text) {
   const section = lines.slice(start + 1);
   const end = section.findIndex((line) => line.startsWith('#'));
   const sum = section.slice(0, end < 0 ? undefined : end).find((line) => /^\|\s*Suma\s*\|/.test(line));
-  const match = sum?.match(/^\|\s*Suma\s*\|\s*([0-9]+)(?: sujetos)?\s*\|/);
-  return match ? Number(match[1]) : null;
+  const match = sum?.match(/^\|\s*Suma\s*\|\s*([0-9]+)(?:\s+a\s+([0-9]+))?(?: sujetos)?\s*\|/);
+  return match ? Math.max(Number(match[1]), Number(match[2] ?? 0)) : null;
 }
 
 // El lanzador no concede superar la previsión: un SUBJECT_CAP mayor no la sube, y uno menor aprieta sin conceder nada.
@@ -150,13 +151,13 @@ function countLive(config, deps) {
 
 const countFinished = (config, fs) => outDirs(config, fs).reduce((sum, dir) => sum + toolsFiles(dir, fs).length, 0);
 
-// El último RESULTADO de cada tools.txt; null si no lo tiene.
-function costsIn(dir, fs) {
-  return toolsFiles(dir, fs).map((name) => {
-    const matches = [...fs.read(join(dir, name)).matchAll(/=== RESULTADO \([0-9]* turnos, ([0-9.]*) \$/g)];
-    return matches.length ? Number(matches.at(-1)[1]) : null;
-  });
+// El coste del último RESULTADO de un tools.txt; null si no lo tiene.
+export function lastCost(text) {
+  const matches = [...text.matchAll(/=== RESULTADO \([0-9]* turnos, ([0-9.]*) \$/g)];
+  return matches.length ? Number(matches.at(-1)[1]) : null;
 }
+
+const costsIn = (dir, fs) => toolsFiles(dir, fs).map((name) => lastCost(fs.read(join(dir, name))));
 
 const spent = (config, fs) => outDirs(config, fs).flatMap((dir) => costsIn(dir, fs)).reduce((sum, cost) => sum + (cost ?? 0), 0);
 const totalSpent = (config, fs, cut) => spent(config, fs) + cut * Number(config.subjectCost);
@@ -193,7 +194,7 @@ async function waitForSlot(config, deps) {
   return live;
 }
 
-function labelTaken(config, deps, label) {
+export function labelTaken(config, deps, label) {
   if (deps.fs.exists(join(config.out, `${label}.tools.txt`))) return true;
   const pid = readPid(deps.fs, join(config.live, `${config.phase}.${label}`));
   return pid !== null && (pid === '' || deps.isAlive(Number(pid)));
