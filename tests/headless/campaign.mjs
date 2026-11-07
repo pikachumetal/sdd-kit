@@ -30,7 +30,8 @@ function positiveInt(env, name, fallback) {
   return Number(value);
 }
 
-// Una prosa en la celda daría un techo falso: solo vale el número, y lo demás cae a SUBJECT_CAP con aviso.
+// Una prosa en la celda daría un techo falso: solo vale un número o un rango «<a> a <b>», cuyo techo es el mayor;
+// lo demás cae a SUBJECT_CAP con aviso.
 export function forecastSubjects(text) {
   const lines = text.split(/\r?\n/);
   const start = lines.findIndex((line) => /^#+ Previsión de coste/.test(line));
@@ -38,8 +39,8 @@ export function forecastSubjects(text) {
   const section = lines.slice(start + 1);
   const end = section.findIndex((line) => line.startsWith('#'));
   const sum = section.slice(0, end < 0 ? undefined : end).find((line) => /^\|\s*Suma\s*\|/.test(line));
-  const match = sum?.match(/^\|\s*Suma\s*\|\s*([0-9]+)(?: sujetos)?\s*\|/);
-  return match ? Number(match[1]) : null;
+  const match = sum?.match(/^\|\s*Suma\s*\|\s*([0-9]+)(?:\s+a\s+([0-9]+))?(?: sujetos)?\s*\|/);
+  return match ? Math.max(Number(match[1]), Number(match[2] ?? 0)) : null;
 }
 
 // El lanzador no concede superar la previsión: un SUBJECT_CAP mayor no la sube, y uno menor aprieta sin conceder nada.

@@ -220,9 +220,21 @@ describe('el techo de la previsión de la spec', () => {
   });
 
   it.each([
+    ['2 a 4', 4],
+    ['4 a 8 sujetos', 8],
+    ['4 a 2', 4],
+    ['5', 5],
+  ])('lee «%s» como techo %i sin aviso', (cell, cap) => {
+    const config = readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, specFs(forecast(cell)));
+    expect(config.subjectCap).toBe(cap);
+    expect(config.capNotice).toBeUndefined();
+  });
+
+  it.each([
     ['sin spec.md', null],
     ['con la celda vacía', forecast('')],
     ['con la celda en prosa', forecast('hasta 4 sujetos, 4 $ de techo; real: 6 sujetos')],
+    ['con un rango con más texto', forecast('2 a 4 sujetos por tanda')],
     ['con una Suma fuera de la previsión', '# Spec\n\n## Topes\n\n| Suma | 9 | 3 |\n\n## Previsión de coste\n\nNinguna.\n\n## Otra\n\n| Suma | 9 | 3 |\n'],
   ])('%s usa SUBJECT_CAP y avisa', async (_case, text) => {
     const { labels, log } = await launchAbc(text === null ? kitFs() : specFs(text), { SUBJECT_CAP: '2' });
