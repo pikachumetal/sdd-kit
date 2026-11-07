@@ -135,7 +135,7 @@ Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las s
 - **El texto que planta un molde tiene que ser cierto en el molde** (feature 0236): en `m1` y `m2`, la rama nombraba en `tech-stack.md` un `src/rooms.js` y una dependencia que el molde no tiene; el sujeto lo corrigió al cerrar y el conflicto que se medía desapareció (4 sujetos, 2,8 $ perdidos).
 - **Un hueco de plantilla gana a la receta del paso** (feature 0236): con la línea `Gate:` literal en el paso 1 de `sdd-archive`, 0 de 3 sujetos pusieron la suite unitaria antes de la flecha, porque calcaban el hueco de una sola orden de `walkthrough-template.md`; se arregla el hueco (Art. II, elemento omitido).
 - **Un humo con n = 1 sobre una batería de n = 2 va con `N=1`** (feature 0320): antes había que copiar `tests/batteries/` entera con junctions a `tests/headless` y `build`, porque los `subject.mjs` importan `../../headless/` y leen moldes de otras baterías, y al borrarla las junctions vaciaban sus destinos si no se quitaban antes una a una (0312 y 0307).
-- **«/sdd-kit:<skill>» en `claude -p` carga la skill sin `>>> Skill:`** (feature 0160): la puerta de `battery.mjs run` sale roja; se puntúa la conducta.
+- **«/sdd-kit:<skill>» en `claude -p` carga la skill sin `>>> Skill:`** (feature 0160): desde la feature 0320, `battery.mjs verdict` toma como primera skill la del slash cualificado (`/<plugin>:<skill>`) de la primera línea bajo `## petición` de `state.txt`; antes la puerta salía roja (`c1` de `sdd-propose`, 0/2 en la 0306). No ve si el harness cargó esa skill: la conducta la siguen leyendo las filas de la rúbrica.
 
 ### Entrega de la skill al sujeto
 

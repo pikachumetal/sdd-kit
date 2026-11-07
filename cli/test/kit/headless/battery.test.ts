@@ -729,3 +729,33 @@ describe('run --resume', () => {
     expect(fake.log).toContain('reanudo: guardadas 1, lanzo 1');
   });
 });
+
+describe('la skill de una petición slash', () => {
+  const GRILLING = finished('>>> Skill: sdd-kit:sdd-grilling');
+  const judgeF1 = (state: string | null, text = GRILLING) => {
+    const fs = toyFs();
+    tools(fs, 'f1-1', text);
+    if (state !== null) fs.write(join(OUT, 'f1-1.state.txt'), state);
+    return verdict(TABLE, OUT, ['feature'], fs).lines[0].split(' · ')[1];
+  };
+
+  it.each([
+    ['## petición\n/sdd-kit:sdd-propose añade el motivo\n', '1/1'],
+    ['## petición\r\n/sdd-kit:sdd-propose\r\n', '1/1'],
+    ['## petición\n/sdd-propose\n', '0/1'],
+    ['## petición\n/clear\n', '0/1'],
+    ['## petición\nAñade un filtro.\n', '0/1'],
+    ['## git status\n', '0/1'],
+    ['## petición\n/sdd-kit:sdd-nope\n', '0/1'],
+  ])('state.txt %j → f1 %s', (state, passed) => {
+    expect(judgeF1(state)).toBe(passed);
+  });
+
+  it('sin state.txt manda la primera llamada a Skill', () => {
+    expect(judgeF1(null)).toBe('0/1');
+  });
+
+  it('el slash de using-sdd no cuenta: manda la primera Skill que no es using-sdd', () => {
+    expect(judgeF1('## petición\n/sdd-kit:using-sdd\n', finished('>>> Skill: sdd-kit:using-sdd\n>>> Skill: sdd-kit:sdd-propose'))).toBe('1/1');
+  });
+});

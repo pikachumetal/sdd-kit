@@ -159,6 +159,14 @@ function firstSkill(text) {
   return skills.find((skill) => skill !== ROUTER) ?? 'ninguna';
 }
 
+const askOf = (state) => state.replaceAll('\r\n', '\n').match(/^## petición\n([\s\S]*?)(?:\n## |\n?$)/)?.[1].trim();
+
+// «/plugin:skill» en claude -p carga la skill sin llamada a Skill: sin leer la petición, la puerta salía roja.
+function slashSkill(state) {
+  const skill = askOf(state ?? '')?.split('\n')[0].match(/^\/([\w-]+:[\w-]+)(?:\s|$)/)?.[1];
+  return skill && skill !== ROUTER ? skill : null;
+}
+
 // Con KIT_DIR relativo, --plugin-dir no resolvía y los sujetos siguieron sin el kit: daban verde sin medir nada.
 function kitMissing(text) {
   const lines = text.split(/\r?\n/);
@@ -170,8 +178,9 @@ function kitMissing(text) {
 // Un sujeto cortado por tiempo o que no arrancó también deja tools.txt, pero sin RESULTADO: no ha medido nada.
 function readRuns(row, outDir, fs) {
   const all = Array.from({ length: Number(row.n) }, (_, i) => {
-    const path = join(outDir, `${row.Id}-${i + 1}.tools.txt`);
-    return { label: `${row.Id}-${i + 1}`, text: fs.exists(path) ? fs.read(path) : undefined };
+    const label = `${row.Id}-${i + 1}`;
+    const [tools, state] = ['tools', 'state'].map((kind) => join(outDir, `${label}.${kind}.txt`));
+    return { label, text: fs.exists(tools) ? fs.read(tools) : undefined, state: fs.exists(state) ? fs.read(state) : undefined };
   });
   const finished = ({ text }) => text !== undefined && hasResult(text);
   const labels = (runs) => runs.map(({ label }) => label);
@@ -208,8 +217,10 @@ function judge(row, { outDir, fs, rubric: { checks, prose } }) {
   const failedChecks = failedChecksOf(row, runs, checks, { outDir, fs });
   // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito.
   const passed = runs.filter(
-    ({ label, text }) =>
-      !unloaded.includes(label) && !failedChecks.some(({ labels }) => labels.includes(label)) && (row.Esperado === ANY || firstSkill(text) === row.Esperado),
+    ({ label, text, state }) =>
+      !unloaded.includes(label) &&
+      !failedChecks.some(({ labels }) => labels.includes(label)) &&
+      (row.Esperado === ANY || (slashSkill(state) ?? firstSkill(text)) === row.Esperado),
   ).length;
   const state = scenarioState({ passed, missing: n - runs.length, needed, kitFailed: unloaded.length > 0 });
   const notes = [
@@ -314,8 +325,6 @@ function* savedOutputs(specsRoot, fs) {
     }
   }
 }
-
-const askOf = (state) => state.replaceAll('\r\n', '\n').match(/^## petición\n([\s\S]*?)(?:\n## |\n?$)/)?.[1].trim();
 
 // Los ids se repiten entre baterías y varios escenarios comparten petición: solo casa la pareja id + petición.
 function measuredSubject({ folder, out, name }, askById, fs) {
