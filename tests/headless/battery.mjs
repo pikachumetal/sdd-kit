@@ -3,7 +3,8 @@
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
 //      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas>|rojo|sin evidencia: la puerta y las filas de máquina
 //      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] [N=<n>] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
-//      node battery.mjs run                 lanza la batería, entera, por tramos o por escenarios, y da el veredicto de lo lanzado
+//      node battery.mjs run [--resume]      lanza la batería, entera, por tramos o por escenarios, y da el veredicto de lo lanzado;
+//                                           con --resume, solo las etiquetas sin tools.txt ni sujeto vivo (una tanda cortada)
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
 // N=<n> sustituye n y umbral (<n>/<n>) de los escenarios filtrados, en run y en verdict.
@@ -15,7 +16,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CampaignError, hasResult, lastCost, readConfig, runCampaign } from './campaign.mjs';
+import { CampaignError, hasResult, labelTaken, lastCost, readConfig, runCampaign } from './campaign.mjs';
 
 export class BatteryError extends Error {
   constructor(message, code = 1) {
@@ -243,18 +244,26 @@ function batteryDir(env) {
   return join(REPO_ROOT, 'tests', 'batteries', env.BATTERY);
 }
 
+const labelsOf = (rows) => rows.flatMap((row) => Array.from({ length: Number(row.n) }, (_, i) => `${row.Id}-${i + 1}`));
+
 // La batería numera SUBJECT por su cuenta: con una etiqueta ya guardada, run.mjs la saltaría y el veredicto sería el viejo.
 function refuseSavedLabels(rows, out, fs) {
-  for (const row of rows) {
-    for (let i = 1; i <= Number(row.n); i++) {
-      if (fs.exists(join(out, `${row.Id}-${i}.tools.txt`))) throw new BatteryError(`ya existe ${row.Id}-${i} en ${out}: borra esa carpeta o cambia PHASE`);
-    }
-  }
+  const saved = labelsOf(rows).find((label) => fs.exists(join(out, `${label}.tools.txt`)));
+  if (saved) throw new BatteryError(`ya existe ${saved} en ${out}: borra esa carpeta, cambia PHASE o reanuda con --resume`);
 }
 
-async function launchIndex(rows, index, launch) {
+// Una tanda cortada se retoma saltando lo mismo que salta runCampaign: lo guardado y lo que aún corre.
+// Un sujeto guardado sin RESULTADO no se relanza: ya se pagó, y el veredicto lo da «sin RESULTADO».
+function pendingLabels(rows, config, deps) {
+  const all = labelsOf(rows);
+  const pending = all.filter((label) => !labelTaken(config, deps, label));
+  deps.log(`reanudo: guardadas ${all.length - pending.length}, lanzo ${pending.length}`);
+  return new Set(pending);
+}
+
+async function launchIndex(rows, index, launch, isPending) {
   for (const model of [...new Set(rows.map((row) => row.Modelo))].sort()) {
-    const ids = rows.filter((row) => row.Modelo === model && Number(row.n) >= index).map((row) => row.Id);
+    const ids = rows.filter((row) => row.Modelo === model && Number(row.n) >= index && isPending(`${row.Id}-${index}`)).map((row) => row.Id);
     if (ids.length > 0) await launch({ MODEL: model, SUBJECT: String(index), SCENARIOS: ids.join(' ') });
   }
 }
@@ -277,14 +286,20 @@ export function batteryPlan(env, cwd, fs) {
   return { table, rows, launchEnv, config };
 }
 
-export async function runBattery(env, cwd, deps) {
+export async function runBattery(env, cwd, deps, { resume = false } = {}) {
   const { table, rows, launchEnv, config } = batteryPlan(env, cwd, deps.fs);
   const failure = deps.syntaxError(launchEnv.SUBJECT_SH);
   if (failure) throw new BatteryError(`subject.mjs no compila:\n${failure}`);
-  refuseSavedLabels(rows, config.out, deps.fs);
+  let isPending = () => true;
+  if (resume) {
+    const pending = pendingLabels(rows, config, deps);
+    isPending = (label) => pending.has(label);
+  } else {
+    refuseSavedLabels(rows, config.out, deps.fs);
+  }
   const launch = (overrides) => runCampaign(readConfig({ ...launchEnv, ...overrides }, cwd, deps.fs), deps);
   const maxN = Math.max(0, ...rows.map((row) => Number(row.n)));
-  for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launch);
+  for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launch, isPending);
   const result = judgeRows(table, rows, { outDir: config.out, fs: deps.fs });
   for (const line of result.lines) deps.log(line);
   return exitCode(result);
@@ -387,7 +402,7 @@ async function main([command, batteryPath, ...rest]) {
     const { realDeps, stopOnSignal } = await import('./real-deps.mjs');
     const deps = realDeps();
     stopOnSignal(batteryPlan(process.env, process.cwd(), deps.fs).config, deps);
-    process.exitCode = await runBattery(process.env, process.cwd(), deps);
+    process.exitCode = await runBattery(process.env, process.cwd(), deps, { resume: batteryPath === '--resume' });
   } else {
     throw new BatteryError('uso: node battery.mjs plan|field|verdict|run …');
   }

@@ -194,7 +194,7 @@ async function waitForSlot(config, deps) {
   return live;
 }
 
-function labelTaken(config, deps, label) {
+export function labelTaken(config, deps, label) {
   if (deps.fs.exists(join(config.out, `${label}.tools.txt`))) return true;
   const pid = readPid(deps.fs, join(config.live, `${config.phase}.${label}`));
   return pid !== null && (pid === '' || deps.isAlive(Number(pid)));

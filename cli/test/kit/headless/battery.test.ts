@@ -456,7 +456,7 @@ describe('runBattery', () => {
     const fs = toyFs();
     tools(fs, 'r1-1', finished('marca'));
     const fake = fakeDeps(fs);
-    await expect(runBattery(env({ STEPS: 'roadmap' }), CWD, fake.deps)).rejects.toThrow(`ya existe r1-1 en ${OUT}: borra esa carpeta o cambia PHASE`);
+    await expect(runBattery(env({ STEPS: 'roadmap' }), CWD, fake.deps)).rejects.toThrow(`ya existe r1-1 en ${OUT}: borra esa carpeta, cambia PHASE o reanuda con --resume`);
     expect(fake.launched).toEqual([]);
   });
 
@@ -500,7 +500,7 @@ describe('runBattery', () => {
     const fs = toyFs();
     tools(fs, 'f1-1', finished('marca'));
     const fake = fakeDeps(fs);
-    await expect(runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toThrow(`ya existe f1-1 en ${OUT}: borra esa carpeta o cambia PHASE`);
+    await expect(runBattery(env({ SCENARIOS: 'f1' }), CWD, fake.deps)).rejects.toThrow(`ya existe f1-1 en ${OUT}: borra esa carpeta, cambia PHASE o reanuda con --resume`);
     expect(fake.launched).toEqual([]);
   });
 
@@ -663,5 +663,69 @@ describe('plan', () => {
 
   it('con N=0 para con código 2', () => {
     expect(() => plan(planFs(), { N: '0' })).toThrow(new BatteryError('N tiene que ser un entero positivo: 0', 2));
+  });
+});
+
+describe('run --resume', () => {
+  const RESUME = { resume: true };
+  const labels = (fake: ReturnType<typeof fakeDeps>) => fake.launched.map((request) => request.args[1]);
+
+  function savedFs(...saved: string[]): MemoryFs {
+    const fs = toyFs();
+    for (const label of saved) tools(fs, label, finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    return fs;
+  }
+
+  it('lanza solo lo que falta', async () => {
+    const fake = fakeDeps(savedFs('r1-1', 'r1-2', 'd1-1'));
+    await runBattery(env({ SCENARIOS: 'r1 d1' }), CWD, fake.deps, RESUME);
+    expect(labels(fake)).toEqual(['d1-2']);
+    expect(fake.log).toContain('reanudo: guardadas 3, lanzo 1');
+    expect(lineOf(fake.log, 'r1')).toBeDefined();
+    expect(lineOf(fake.log, 'd1')).toBeDefined();
+  });
+
+  it('con todo guardado no lanza y da el veredicto', async () => {
+    const fake = fakeDeps(savedFs('r1-1', 'r1-2', 'd1-1', 'd1-2'));
+    await runBattery(env({ SCENARIOS: 'r1 d1' }), CWD, fake.deps, RESUME);
+    expect(fake.launched).toEqual([]);
+    expect(fake.log).toContain('reanudo: guardadas 4, lanzo 0');
+    expect(lineOf(fake.log, 'r1')).toBe('r1 · 2/2 · umbral 2/2 · verde');
+  });
+
+  it('con N=1 mira solo -1', async () => {
+    const fake = fakeDeps(savedFs('r1-1', 'd1-1'));
+    await runBattery(env({ SCENARIOS: 'r1 d1', N: '1' }), CWD, fake.deps, RESUME);
+    expect(fake.launched).toEqual([]);
+    expect(fake.log).toContain('reanudo: guardadas 2, lanzo 0');
+  });
+
+  it.each([
+    [true, []],
+    [false, ['d1-2']],
+  ])('una marca de d1-2 con el PID vivo = %s', async (alive, launched) => {
+    const fs = savedFs('r1-1', 'r1-2', 'd1-1');
+    fs.write(join(RUNS, 'dry', 'live', 'battery.d1-2'), '7\n');
+    const fake = fakeDeps(fs);
+    fake.deps.isAlive = () => alive;
+    await runBattery(env({ SCENARIOS: 'r1 d1' }), CWD, fake.deps, RESUME);
+    expect(labels(fake)).toEqual(launched);
+  });
+
+  it('cuenta lo guardado en el techo de la previsión', async () => {
+    const fs = savedFs('r1-1', 'r1-2', 'd1-1');
+    fs.write(join(SPEC, 'spec.md'), '# Spec\n\n## Previsión de coste\n\n| Tanda | Sujetos (batería) | $ |\n| --- | --- | --- |\n| Suma | 3 | 1 |\n');
+    const fake = fakeDeps(fs);
+    const { SUBJECT_CAP: _cap, ...withoutCap } = env({ SCENARIOS: 'r1 d1' });
+    await runBattery(withoutCap, CWD, fake.deps, RESUME);
+    expect(fake.launched).toEqual([]);
+    expect(fake.log).toContain(`techo de 3 sujetos de la previsión de ${join(SPEC, 'spec.md')} alcanzado: decide el dev-lead; subirlo exige enmendar la spec`);
+  });
+
+  it('con SCENARIOS mira solo lo filtrado', async () => {
+    const fake = fakeDeps(savedFs('f1-1', 'r1-1'));
+    await runBattery(env({ SCENARIOS: 'r1' }), CWD, fake.deps, RESUME);
+    expect(labels(fake)).toEqual(['r1-2']);
+    expect(fake.log).toContain('reanudo: guardadas 1, lanzo 1');
   });
 });
