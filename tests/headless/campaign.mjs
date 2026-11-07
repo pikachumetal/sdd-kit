@@ -151,13 +151,13 @@ function countLive(config, deps) {
 
 const countFinished = (config, fs) => outDirs(config, fs).reduce((sum, dir) => sum + toolsFiles(dir, fs).length, 0);
 
-// El último RESULTADO de cada tools.txt; null si no lo tiene.
-function costsIn(dir, fs) {
-  return toolsFiles(dir, fs).map((name) => {
-    const matches = [...fs.read(join(dir, name)).matchAll(/=== RESULTADO \([0-9]* turnos, ([0-9.]*) \$/g)];
-    return matches.length ? Number(matches.at(-1)[1]) : null;
-  });
+// El coste del último RESULTADO de un tools.txt; null si no lo tiene.
+export function lastCost(text) {
+  const matches = [...text.matchAll(/=== RESULTADO \([0-9]* turnos, ([0-9.]*) \$/g)];
+  return matches.length ? Number(matches.at(-1)[1]) : null;
 }
+
+const costsIn = (dir, fs) => toolsFiles(dir, fs).map((name) => lastCost(fs.read(join(dir, name))));
 
 const spent = (config, fs) => outDirs(config, fs).flatMap((dir) => costsIn(dir, fs)).reduce((sum, cost) => sum + (cost ?? 0), 0);
 const totalSpent = (config, fs, cut) => spent(config, fs) + cut * Number(config.subjectCost);

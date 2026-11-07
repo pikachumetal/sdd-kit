@@ -1,5 +1,5 @@
 // Lee la tabla de escenarios de una batería (tests/batteries/<skill>/battery.md), la lanza y da su veredicto.
-// Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n>, una línea por escenario
+// Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n> por escenario, y la suma de n con el coste previsto (SCENARIOS y N como run)
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
 //      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas>|rojo|sin evidencia: la puerta y las filas de máquina
 //      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] [N=<n>] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
@@ -12,10 +12,10 @@
 // `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea, y `text: /<regex>/`, que falla si <salida>/<etiqueta>.texts.txt falta o no casa, también con emoji.
 // Lo que hace fallar el primer lanzamiento: KIT_DIR es una copia sin .docs/ ni tests/, sacada con git archive <commit>:dist;
 // SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda, y la previsión de la spec manda sobre él (cabecera de run.mjs); y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CampaignError, hasResult, readConfig, runCampaign } from './campaign.mjs';
+import { CampaignError, hasResult, lastCost, readConfig, runCampaign } from './campaign.mjs';
 
 export class BatteryError extends Error {
   constructor(message, code = 1) {
@@ -259,17 +259,19 @@ async function launchIndex(rows, index, launch) {
   }
 }
 
+// El id se valida contra la tabla entera: fuera del tramo pedido es un cruce vacío, no un id desconocido.
+function pickRows(all, steps, env) {
+  const wanted = selectScenarios(all, words(env.SCENARIOS));
+  return withN(selectSteps(all, steps).filter((row) => wanted.includes(row)), env.N);
+}
+
 // La configuración de la batería entera: la que comprueba las etiquetas guardadas y la que barre al parar.
 export function batteryPlan(env, cwd, fs) {
   const dir = batteryDir(env);
   const table = join(dir, 'battery.md');
   if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
-  const all = readScenarios(table, fs);
-  // El id se valida contra la tabla entera: fuera del tramo pedido es un cruce vacío, no un id desconocido.
-  const wanted = selectScenarios(all, words(env.SCENARIOS));
-  const crossed = selectSteps(all, words(env.STEPS)).filter((row) => wanted.includes(row));
-  if (crossed.length === 0) throw new BatteryError(noScenarios(table), 3);
-  const rows = withN(crossed, env.N);
+  const rows = pickRows(readScenarios(table, fs), words(env.STEPS), env);
+  if (rows.length === 0) throw new BatteryError(noScenarios(table), 3);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
   return { table, rows, launchEnv, config };
@@ -288,7 +290,70 @@ export async function runBattery(env, cwd, deps) {
   return exitCode(result);
 }
 
-const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync };
+// Las salidas guardadas de las campañas: <specs>/<carpeta de spec>/<fase>/out/<fichero>.
+function* savedOutputs(specsRoot, fs) {
+  for (const folder of fs.list(specsRoot)) {
+    for (const phase of fs.list(join(specsRoot, folder))) {
+      const out = join(specsRoot, folder, phase, 'out');
+      if (fs.exists(out)) yield* fs.list(out).map((name) => ({ folder, out, name }));
+    }
+  }
+}
+
+const askOf = (state) => state.replaceAll('\r\n', '\n').match(/^## petición\n([\s\S]*?)(?:\n## |\n?$)/)?.[1].trim();
+
+// Los ids se repiten entre baterías y varios escenarios comparten petición: solo casa la pareja id + petición.
+function measuredSubject({ folder, out, name }, askById, fs) {
+  const id = name.match(/^(.+)-[0-9]+\.tools\.txt$/)?.[1];
+  const state = join(out, name.replace(/\.tools\.txt$/, '.state.txt'));
+  if (!askById.has(id) || !fs.exists(state) || askOf(fs.read(state)) !== askById.get(id)) return null;
+  const cost = lastCost(fs.read(join(out, name)));
+  return cost === null ? null : { id, folder, cost };
+}
+
+const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+
+// El precio de cada escenario es la media de la carpeta más reciente que lo midió: la que lleva el kit y el modelo de hoy.
+export function scenarioPrices(rows, specsRoot, fs) {
+  const askById = new Map(rows.map((row) => [row.Id, row['Petición'].replaceAll('\\|', '|').trim()]));
+  const byId = new Map();
+  if (fs.exists(specsRoot)) {
+    for (const output of savedOutputs(specsRoot, fs)) {
+      const subject = measuredSubject(output, askById, fs);
+      if (subject) byId.set(subject.id, [...(byId.get(subject.id) ?? []), subject]);
+    }
+  }
+  return new Map(
+    [...byId].map(([id, subjects]) => {
+      const latest = subjects.map(({ folder }) => folder).sort().at(-1);
+      return [id, mean(subjects.filter(({ folder }) => folder === latest).map(({ cost }) => cost))];
+    }),
+  );
+}
+
+export function forecastCost(rows, prices) {
+  if (prices.size === 0) return { cost: null, unmeasured: rows.map((row) => row.Id), fallback: null };
+  const fallback = mean([...prices.values()]);
+  const cost = rows.reduce((sum, row) => sum + Number(row.n) * (prices.get(row.Id) ?? fallback), 0);
+  return { cost, unmeasured: rows.filter((row) => !prices.has(row.Id)).map((row) => row.Id), fallback };
+}
+
+function sumLine(rows, { cost, unmeasured, fallback }) {
+  const subjects = `suma: ${rows.reduce((sum, row) => sum + Number(row.n), 0)} sujetos`;
+  if (cost === null) return `${subjects} · coste previsto: sin campañas guardadas de esta batería`;
+  const missing = unmeasured.length ? ` · sin precio medido: ${unmeasured.join(', ')} (a ${fallback.toFixed(2)} $, la media de los escenarios medidos)` : '';
+  return `${subjects} · coste previsto: ${cost.toFixed(2)} $${missing}`;
+}
+
+// Un escenario sin medir se precia con los de toda la batería, no solo con los filtrados.
+export function planLines(batteryPath, steps, env, specsRoot, fs) {
+  const all = readScenarios(batteryPath, fs);
+  const rows = pickRows(all, steps, env);
+  return [...rows.map((row) => `${row.Id} ${row.Modelo} ${row.n}`), sumLine(rows, forecastCost(rows, scenarioPrices(all, specsRoot, fs)))];
+}
+
+const listDir = (dir) => (existsSync(dir) && statSync(dir).isDirectory() ? readdirSync(dir) : []);
+const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync, list: listDir };
 
 export const scenarios = (batteryPath) => readScenarios(batteryPath, fileFs);
 const findScenario = (batteryPath, id) => scenarios(batteryPath).find((candidate) => candidate.Id === id);
@@ -307,7 +372,7 @@ export const moldFrom = (cell, s, molds) => molds[cell('Molde')] ?? s.die(`molde
 
 async function main([command, batteryPath, ...rest]) {
   if (command === 'plan') {
-    for (const row of selectSteps(readScenarios(batteryPath, fileFs), rest)) console.log(`${row.Id} ${row.Modelo} ${row.n}`);
+    for (const line of planLines(batteryPath, rest, process.env, join(REPO_ROOT, '.docs', 'sdd', 'specs'), fileFs)) console.log(line);
   } else if (command === 'field') {
     const [id, column] = rest;
     const row = findScenario(batteryPath, id);

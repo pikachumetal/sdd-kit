@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BatteryError, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
+import { BatteryError, planLines, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
 // Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
@@ -580,5 +580,88 @@ describe('N sustituye n y umbral', () => {
 
   it('verdict con n = 0 para con código 2', () => {
     expect(() => verdict(TABLE, OUT, [], toyFs(), '0')).toThrow(new BatteryError('N tiene que ser un entero positivo: 0', 2));
+  });
+});
+
+describe('plan', () => {
+  const PLAN_TABLE = join(CWD, 'plan', 'battery.md');
+  const SPECS = join(CWD, 'specs');
+  const OLD = '20261101-000000-feature-0001-x';
+  const NEW = '20261102-000000-feature-0002-y';
+  const PLAN = `| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| a1 | uno | Haz A. | salas | ninguna | 2 | 2/2 | sonnet | toy |
+| b1 | uno | Haz B. | salas | ninguna | 1 | 1/1 | sonnet | toy |
+`;
+
+  interface Saved {
+    folder: string;
+    label: string;
+    cost?: string;
+    ask?: string;
+  }
+
+  function save(fs: MemoryFs, { folder, label, cost, ask = 'Haz A.' }: Saved) {
+    const out = join(SPECS, folder, 'red', 'out');
+    fs.write(join(out, `${label}.tools.txt`), cost === undefined ? '>>> Read: x\n' : `>>> Read: x\n=== RESULTADO (3 turnos, ${cost} $)\n`);
+    if (ask !== '') fs.write(join(out, `${label}.state.txt`), `## petición\n${ask}\n## git status\n`);
+  }
+
+  function planFs(): MemoryFs {
+    const fs = memoryFs();
+    fs.write(PLAN_TABLE, PLAN);
+    save(fs, { folder: OLD, label: 'a1-1', cost: '1.00' });
+    save(fs, { folder: NEW, label: 'a1-1', cost: '0.40' });
+    save(fs, { folder: NEW, label: 'a1-2', cost: '0.60' });
+    return fs;
+  }
+
+  const plan = (fs: MemoryFs, env: Record<string, string> = {}) => planLines(PLAN_TABLE, [], env, SPECS, fs);
+  const MEASURED = 'suma: 3 sujetos · coste previsto: 1.50 $ · sin precio medido: b1 (a 0.50 $, la media de los escenarios medidos)';
+  const UNSAVED = 'suma: 3 sujetos · coste previsto: sin campañas guardadas de esta batería';
+
+  it('suma y coste con la carpeta más reciente y la media para b1', () => {
+    expect(plan(planFs())).toEqual(['a1 sonnet 2', 'b1 sonnet 1', MEASURED]);
+  });
+
+  it('no cuentan a10-1, otra petición, sin state.txt ni sin RESULTADO', () => {
+    const fs = planFs();
+    save(fs, { folder: NEW, label: 'a10-1', cost: '9.00' });
+    save(fs, { folder: NEW, label: 'a1-3', cost: '9.00', ask: 'Otra cosa.' });
+    save(fs, { folder: NEW, label: 'a1-4', cost: '9.00', ask: '' });
+    save(fs, { folder: NEW, label: 'a1-5' });
+    expect(plan(fs).at(-1)).toBe(MEASURED);
+  });
+
+  it('sin campañas que casen', () => {
+    const fs = memoryFs();
+    fs.write(PLAN_TABLE, PLAN);
+    save(fs, { folder: NEW, label: 'a1-1', cost: '0.40', ask: 'Otra cosa.' });
+    expect(plan(fs).at(-1)).toBe(UNSAVED);
+  });
+
+  it('sin la carpeta specs', () => {
+    const fs = memoryFs();
+    fs.write(PLAN_TABLE, PLAN);
+    expect(plan(fs).at(-1)).toBe(UNSAVED);
+  });
+
+  it('con N=1, suma: 2 sujetos', () => {
+    expect(plan(planFs(), { N: '1' }).at(-1)).toBe('suma: 2 sujetos · coste previsto: 1.00 $ · sin precio medido: b1 (a 0.50 $, la media de los escenarios medidos)');
+  });
+
+  it('con SCENARIOS=a1, suma: 2 sujetos · coste previsto: 1.00 $', () => {
+    expect(plan(planFs(), { SCENARIOS: 'a1' })).toEqual(['a1 sonnet 2', 'suma: 2 sujetos · coste previsto: 1.00 $']);
+  });
+
+  it('salta ficheros sueltos de specs/', () => {
+    const fs = planFs();
+    fs.write(join(SPECS, NEW, 'spec.md'), '# Spec\n');
+    fs.write(join(SPECS, 'README.md'), '# Specs\n');
+    expect(plan(fs).at(-1)).toBe(MEASURED);
+  });
+
+  it('con N=0 para con código 2', () => {
+    expect(() => plan(planFs(), { N: '0' })).toThrow(new BatteryError('N tiene que ser un entero positivo: 0', 2));
   });
 });
