@@ -12,6 +12,7 @@ import { openRows, stateProblem, tableBlockProblems, tableHeaderProblems } from 
 import { duplicateIdWarnings } from './duplicates.ts';
 import { idsMode } from '../ids/scan.ts';
 import { roadmapWarnings } from './warnings.ts';
+import { overlapWarnings, twoPointOverlapRows } from './overlap.ts';
 
 export interface RoadmapResult {
   errors: string[];
@@ -59,7 +60,11 @@ function twoPointRoadmapReport(lines: string[], file: string): Report {
   const blocks = tableBlocks(lines, parseSections(lines));
   return {
     errors: prefixed(file, roadmapProblems(lines, dirname(file))),
-    warnings: prefixed(file, [...roadmapWarnings(lines, blocks).map((warning) => `aviso: ${warning}`), ...duplicateIdWarnings(lines)]),
+    warnings: prefixed(file, [
+      ...roadmapWarnings(lines, blocks).map((warning) => `aviso: ${warning}`),
+      ...duplicateIdWarnings(lines),
+      ...overlapWarnings(twoPointOverlapRows(lines, blocks)),
+    ]),
   };
 }
 
