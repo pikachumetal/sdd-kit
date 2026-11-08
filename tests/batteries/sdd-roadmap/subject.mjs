@@ -39,6 +39,42 @@ function layerQa() {
   writeFileSync(CHANGELOG, changelog.replace(/^## \[0\.3\.0\]/m, `${versions}\n\n## [0.3.0]`));
 }
 
+const QA_REPORT = join(s.R, 'docs', 'qa', '2026-10-12-informe.md');
+const FLOOR_FINDING = '2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.';
+
+// El informe de QA propone para la planta un arreglo que no la arregla: con `<`, la planta 2 sigue dando Norte.
+function withProposedFix() {
+  const report = readLf(QA_REPORT);
+  if (!report.split('\n').includes(FLOOR_FINDING)) s.die('el informe del molde cambió: no hay hallazgo 2');
+  writeFileSync(QA_REPORT, report.replace(FLOOR_FINDING, `${FLOOR_FINDING} Arreglo propuesto: en \`roomsOnFloor\` de \`src/app.js\`, cambiar \`<=\` por \`<\`.`));
+}
+
+// salas-3 con el arreglo propuesto y un hallazgo de ayuda que sustituye solo media frase.
+function layer3Fix() {
+  layer3();
+  s.copy(join(HERE, 'mold-salas-3-fix'));
+  withProposedFix();
+  // `libres --planta` deja fuera las salas ocupadas y, sin número, da las libres de todas las plantas:
+  // el hallazgo de ayuda es cierto, y sustituir solo su fragmento deja dos «sin número» que se contradicen.
+  const app = join(s.R, 'src', 'app.js');
+  const code = readLf(app);
+  const floorCall = "if (cmd === 'libres' && params[0] === '--planta') return roomsOnFloor(Number(params[1])).join(', ');";
+  const busy = code
+    .replace("const rooms = ['Norte', 'Sur'];", "const rooms = ['Norte', 'Oeste', 'Sur'];")
+    .replace('const floors = { Norte: 1, Sur: 3 };', "const floors = { Norte: 1, Oeste: 1, Sur: 3 };\nconst occupiedNow = ['Oeste'];")
+    .replace('floors[room] <= floor)', 'floors[room] <= floor && !occupiedNow.includes(room))')
+    .replace(floorCall, "if (cmd === 'libres' && params[0] === '--planta') return (params[1] ? roomsOnFloor(Number(params[1])) : rooms.filter((room) => !occupiedNow.includes(room)).map((room) => `${room} (planta ${floors[room]})`)).join(', ');");
+  if (busy.split('\n').length !== code.split('\n').length + 1 || !busy.includes('!occupiedNow') || busy.includes(floorCall)) s.die('el molde salas-3 cambió: no hay dónde filtrar las salas ocupadas');
+  writeFileSync(app, busy);
+  const helpFinding = '3. `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres, ni qué da sin número. Arreglo propuesto: cambiar «`libres --planta <n>` lista las salas de la planta <n>» por «`libres --planta <n>` lista las salas libres de la planta <n>; sin número, las libres de todas las plantas».';
+  writeFileSync(QA_REPORT, `${readLf(QA_REPORT).replace(/\n$/, '')}\n${helpFinding}\n`);
+  const debt = join(s.R, '.docs', 'sdd', 'steering', 'debt.md');
+  const floorRow = '| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |';
+  const text = readLf(debt);
+  if (!text.split('\n').includes(floorRow)) s.die('la deuda del molde cambió: no hay fila de la planta');
+  writeFileSync(debt, text.replace(floorRow, `${floorRow}\n| \`docs/ayuda.md\` no dice que \`libres --planta\` lista solo las salas libres, ni qué da sin número | \`docs/qa/2026-10-12-informe.md\` | 2026-10-12 |`));
+}
+
 function salas0013() {
   const row = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
   const roadmap = readLf(ROADMAP);
@@ -136,6 +172,11 @@ const molds = {
     s.put('.temp/gate-times.log', 'test/app.test.js 1,2 s\ntest/store.test.js 31 min 40 s\ntest/report.test.js 8 min 12 s\ntotal 40 min\n');
   },
   'salas-qa': layerQa,
+  'salas-3-fix': layer3Fix,
+  'salas-qa-fix': () => {
+    layerQa();
+    withProposedFix();
+  },
   'salas-0013': salas0013,
 };
 const mold = moldFrom(cell, s, molds);
