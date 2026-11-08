@@ -7,7 +7,7 @@ description: Use when an entry goes into the project's changelog — invoked by 
 
 ## Overview
 
-The changelog is the project's **technical** record (Keep a Changelog 1.1.0), *backward-looking*. The roadmap is *forward-looking*: touching one doesn't replace the other. Talk to the user in their language. Entries follow the changelog's language; in an empty one, the user's.
+The changelog is the project's **technical** record (Keep a Changelog 1.1.0): touching it doesn't replace touching the roadmap, nor the reverse. Talk to the user in their language. Entries follow the changelog's language; in an empty one, the user's.
 
 ## Entry format (contract)
 

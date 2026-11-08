@@ -1,0 +1,66 @@
+--- [14]
+## Review final, eje Spec: `899f5d3` (feature 0025, quitar el aviso por correo al anular)
+
+Lo he revisado en una sola pasada, porque el diff es corto (2 ficheros, +8/−5).
+
+### Strengths
+
+- `anular` sigue respondiendo «anulada <sala> <día>», así que la decisión 1 («✋ valida estas») se cumple, y `test/void.test.js:5-7` lo comprueba por el comando `anular`, como pide «Dónde se prueba».
+- El alcance es correcto: `anular-todas` (`src/app.js:22-26`) no se ha tocado, como dice «No entra».
+- ADR 0003, Confirmación «`src/` no importa `node:fs` ni ningún paquete de base de datos»: cumplida. `src/app.js` no tiene imports y las reservas y la cola siguen en memoria.
+- No hay comentarios y el texto que ve el usuario sigue en castellano.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. El aviso que la spec da por quitado se sigue generando y se sigue listando en `salida`.** `src/app.js:18` y `src/app.js:28-30`
+- **Qué falla:** el requisito REMOVED «Avisar por correo» describe esto (`.docs/sdd/capabilities/bookings.md:15-20`): *«`salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo»*. El commit solo borra `formatMail`, el `subject` y el sufijo «(enviado por correo)». `voidBooking` todavía hace `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`, y `pending()` (comando `salida`) sigue devolviendo `responsable: anulada Norte lun`.
+- **Ejemplo:** se ejecuta `anular Norte lun` y luego `salida`. La salida es «responsable: anulada Norte lun», que es la línea que la oficina reenvía por correo. El comportamiento que se quería quitar no ha cambiado; solo ha cambiado cómo está formateado.
+- **Por qué importa:** es justo lo que el requisito REMOVED pide que desaparezca, y la decisión del dev-lead («El aviso por correo al anular desaparece… "el correo sobra"») no se cumple.
+- **Cómo arreglarlo:** quitar el `outbox.push` de `voidBooking`. Después hay que decidir si `outbox`, `pending()` y el comando `salida` siguen teniendo sentido, porque `anular` era lo único que escribía en la cola. Eso lo cubre el hallazgo 3.
+- **Gap:** `contradicts`.
+- **Origen:** REMOVED «Avisar por correo», capacidad `bookings`.
+
+#### Important (Should Fix)
+
+**2. El test no comprueba que el aviso haya desaparecido.** `test/void.test.js:5-7`
+- **Qué falla:** el test se llama «anular responde sin aviso», pero solo comprueba la respuesta del comando, que ya era «anulada Norte lun» antes del cambio. No mira `salida` ni `outbox`. Con el código de base, `7d5c211`, el test también pasaría. Por eso no detecta el hallazgo 1.
+- **Por qué importa:** la línea de «Dónde se prueba» («Anular sin aviso: por el comando `anular`, como `test/void.test.js`») no tiene una verificación que de verdad cubra lo de «sin aviso». La decisión del dev-lead tampoco queda protegida por ningún test.
+- **Cómo arreglarlo:** después de `run('anular', ['Norte', 'lun'])`, comprobar que `run('salida', [])` devuelve `''` (o que `outbox` queda vacío). Ese test tiene que fallar con el código actual.
+- **Gap:** `partial`.
+- **Origen:** la línea de «Dónde se prueba» y la decisión del dev-lead.
+
+**3. Una decisión del dev-lead queda cubierta solo a medias.** `src/app.js:18`, `src/app.js:28-30`, `src/app.js:36`
+- **Decisión:** «El aviso por correo al anular desaparece: el responsable avisa en persona».
+- **Qué deja fuera:** la regla que implementa el diff solo cambia el formato del mensaje (quita el asunto y el texto «(enviado por correo)»). El aviso sigue existiendo y sigue llegando a la cola que lee la oficina. Tampoco se decide qué pasa con `salida`, que se queda como un canal de avisos que ya no debería recibir nada.
+- **Gap:** `partial`.
+- **Origen:** «Decisiones tomadas con el dev-lead».
+
+#### Minor (Nice to Have)
+
+Ninguno.
+
+### Declined to judge
+
+- `test/app.test.js` (`reservar --cada-semana`) y `test/cancel.test.js` (`cancelar`) prueban comandos que `run` no reconoce (`src/app.js:32-38`). Esos comandos ya faltaban en `7d5c211`, así que no lo trae este diff. Lo dejo fuera por no ser parte de la spec, pero es probable que la suite completa falle.
+- La spec no tiene escenario GIVEN/WHEN/THEN en el delta. Un requisito REMOVED solo lleva el motivo, así que no lo cuento como hallazgo.
+- No he revisado la calidad del código ni la arquitectura. Le corresponden a otros ejes, y el plan dice «Eje Arquitectura: no».
+
+### Not verified
+
+- **Que `test/void.test.js` pase:** no verificado. El paquete no trae el informe de la task con la salida de `node --test test/void.test.js`, y la instrucción es no ejecutar la suite.
+- **Ledger:** no había ledger, así que no hay `Ruling:`, `minor (deferred)` ni `parked` que valorar.
+
+### Recommendations
+
+- Quitar el `outbox.push` de `voidBooking` y añadir un test que compruebe que `salida` queda vacía después de `anular`. Ese test tiene que fallar antes de corregir el código.
+- Que el hilo principal ejecute la suite completa (`node --test`). Por lo que he leído, `app.test.js` y `cancel.test.js` deberían fallar sin que este cambio tenga que ver.
+- Al archivar, quitar «Avisar por correo» de `capabilities/bookings.md`.
+
+### Assessment
+
+**Ready to merge?** No.
+
+**Reasoning:** El requisito REMOVED «Avisar por correo» se sigue cumpliendo: `anular` mete el aviso en la cola y `salida` lo lista para que la oficina lo envíe. El commit solo cambia el formato del mensaje, y el único test nuevo pasaría igual con el código de antes.
+
