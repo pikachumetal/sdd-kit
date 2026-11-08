@@ -1,6 +1,6 @@
 // Sujeto de la batería de sdd-roadmap: algo que apuntar en el roadmap, o el prompt de arranque de una fila.
 // Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { subjectCell, moldFrom } from '../../headless/battery.mjs';
@@ -37,6 +37,61 @@ function layerQa() {
   const source = readLf(join(HERE, 'mold-salas-3', 'CHANGELOG.md'));
   const versions = source.slice(source.search(/^## \[1\.4\.1\]/m)).replace(/\n$/, '');
   writeFileSync(CHANGELOG, changelog.replace(/^## \[0\.3\.0\]/m, `${versions}\n\n## [0.3.0]`));
+}
+
+const QA_REPORT = join(s.R, 'docs', 'qa', '2026-10-12-informe.md');
+const FLOOR_FINDING = '2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.';
+
+// El informe de QA propone para la planta un arreglo que no la arregla: con `<`, la planta 2 sigue dando Norte.
+function withProposedFix() {
+  const report = readLf(QA_REPORT);
+  if (!report.split('\n').includes(FLOOR_FINDING)) s.die('el informe del molde cambió: no hay hallazgo 2');
+  writeFileSync(QA_REPORT, report.replace(FLOOR_FINDING, `${FLOOR_FINDING} Arreglo propuesto: en \`roomsOnFloor\` de \`src/app.js\`, cambiar \`<=\` por \`<\`.`));
+}
+
+function replaceOnce(text, from, to, where) {
+  if (!text.includes(from)) s.die(`el molde salas-3 cambió: ${where}`);
+  return text.replace(from, to);
+}
+
+// `libres --planta` deja fuera las salas ocupadas y, sin número, da las libres de todas las plantas:
+// el hallazgo de ayuda es cierto, y sustituir solo su fragmento deja dos «sin número» que se contradicen.
+function withOccupiedRoom() {
+  const app = join(s.R, 'src', 'app.js');
+  const floorCall = "if (cmd === 'libres' && params[0] === '--planta') return roomsOnFloor(Number(params[1])).join(', ');";
+  const freeOnAnyFloor = "rooms.filter((room) => !occupiedNow.includes(room)).map((room) => `${room} (planta ${floors[room]})`)";
+  let code = readLf(app);
+  code = replaceOnce(code, "const rooms = ['Norte', 'Sur'];", "const rooms = ['Norte', 'Oeste', 'Sur'];", 'no hay lista de salas');
+  code = replaceOnce(code, 'const floors = { Norte: 1, Sur: 3 };', "const floors = { Norte: 1, Oeste: 1, Sur: 3 };\nconst occupiedNow = ['Oeste'];", 'no hay plantas');
+  code = replaceOnce(code, 'floors[room] <= floor)', 'floors[room] <= floor && !occupiedNow.includes(room))', 'no hay filtro de planta');
+  code = replaceOnce(code, floorCall, `if (cmd === 'libres' && params[0] === '--planta') return (params[1] ? roomsOnFloor(Number(params[1])) : ${freeOnAnyFloor}).join(', ');`, 'no hay libres --planta');
+  writeFileSync(app, code);
+}
+
+function withHelpFinding() {
+  const oldHelp = '«`libres --planta <n>` lista las salas de la planta <n>»';
+  const newHelp = '«`libres --planta <n>` lista las salas libres de la planta <n>; sin número, las libres de todas las plantas»';
+  const helpFinding = `3. \`docs/ayuda.md\` no dice que \`libres --planta\` lista solo las salas libres, ni qué da sin número. Arreglo propuesto: cambiar ${oldHelp} por ${newHelp}.`;
+  writeFileSync(QA_REPORT, `${readLf(QA_REPORT).replace(/\n$/, '')}\n${helpFinding}\n`);
+}
+
+function withHelpDebtRow() {
+  const debt = join(s.R, '.docs', 'sdd', 'steering', 'debt.md');
+  const floorRow = '| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |';
+  const helpRow = '| `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres, ni qué da sin número | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |';
+  const text = readLf(debt);
+  if (!text.split('\n').includes(floorRow)) s.die('la deuda del molde cambió: no hay fila de la planta');
+  writeFileSync(debt, text.replace(floorRow, `${floorRow}\n${helpRow}`));
+}
+
+// salas-3 con el arreglo propuesto y un hallazgo de ayuda que sustituye solo media frase.
+function layer3Fix() {
+  layer3();
+  s.copy(join(HERE, 'mold-salas-3-fix'));
+  withProposedFix();
+  withOccupiedRoom();
+  withHelpFinding();
+  withHelpDebtRow();
 }
 
 function salas0013() {
@@ -89,6 +144,13 @@ const molds = {
     layer3();
     s.put('.docs/sdd/releases/v1.5.0/retro.md', '# Retro — v1.5.0\n\n## Propuestas\n\n| Causa | Filas | Cambio | Arreglo |\n| --- | --- | --- | --- |\n| carga o paralelismo | «El lote de avisos agota su tiempo» | Lanzar el lote con un solo worker | conectar comprobación |\n\n## Estimación y action items\n\n- **Action items nuevos**:\n  - [A1] Medir el lote con la máquina cargada — su tiempo en el log\n');
   },
+  // salas-3-retro sin `release` en el marcador: el paso del destinatario pregunta.
+  'salas-3-retro-ask': () => {
+    molds['salas-3-retro']();
+    const marker = MARKER.replace('"release": {"hasRecipient": false}, ', '');
+    if (marker === MARKER) s.die('el marcador cambió: no hay release que quitar');
+    s.putKitMarker(marker);
+  },
   // salas-3 sin la exportación a CSV ni su fila de deuda: m5 apunta la exportación como fila nueva.
   'salas-3-plain': () => {
     layer3();
@@ -129,6 +191,11 @@ const molds = {
     s.put('.temp/gate-times.log', 'test/app.test.js 1,2 s\ntest/store.test.js 31 min 40 s\ntest/report.test.js 8 min 12 s\ntotal 40 min\n');
   },
   'salas-qa': layerQa,
+  'salas-3-fix': layer3Fix,
+  'salas-qa-fix': () => {
+    layerQa();
+    withProposedFix();
+  },
   'salas-0013': salas0013,
 };
 const mold = moldFrom(cell, s, molds);
@@ -146,4 +213,12 @@ keepIfPresent(ROADMAP, 'roadmap.md');
 keepIfPresent(join(s.R, PATCH_0007), 'patch-0007.md');
 keepIfPresent(join(s.R, 'ROADMAP.md'), 'roadmap-3.md');
 keepIfPresent(join(s.R, '.docs', 'sdd', 'steering', 'debt.md'), 'debt.md');
+// La propuesta que escribe el sujeto, para leer su forma.
+for (const base of ['specs', 'changes']) {
+  const dir = join(s.R, '.docs', 'sdd', base);
+  if (!existsSync(dir)) continue;
+  for (const folder of readdirSync(dir).filter((name) => name.includes('-proposal-'))) {
+    keepIfPresent(join(dir, folder, 'proposal.md'), `${folder.replace(/^\d{8}-\d{6}-/, '')}.md`);
+  }
+}
 s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## ficheros\n${s.git('ls-files', '--others', '--exclude-standard')}`);
