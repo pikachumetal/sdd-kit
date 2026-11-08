@@ -130,9 +130,12 @@ Cifras de `node tests/headless/battery.mjs plan` (2026-11-08), con `SCENARIOS` y
 | Una tanda de REFACTOR | 2: `fb1` con n = 2 (decisión 10; 0,17 $ por sujeto según `plan`) | 0,34 |
 | Controles | 1: el escenario que salga rojo, con el kit de `develop` (~20 %; el más caro, 0,17 $) | 0,17 |
 | Medición tras la revisión final | 1: el escenario de la skill que toque la pasada de fix, si toca una (el más caro, 0,17 $) | 0,17 |
-| Suma | 7 sujetos | 1,17 |
+| Enmienda 2026-11-08 | 1: `fb1-2` de la medición tras la pasada de fix (0,20 $, lo que costó `fix/fb1-1`) | 0,20 |
+| Suma | 8 sujetos | 1,37 (gastado antes de la enmienda: 1,38) |
 
 ## Enmiendas
+
+- 2026-11-08 (aprobada por el dev-lead, «1»: «Subo a 8 sujetos y lanzo el que falta»): la previsión sube de 7 a 8 sujetos (1,38 $ gastados + 0,20 $): `fb1-2` de la medición tras la pasada de fix. La tanda de REFACTOR dio un rojo en la fila P (`fb1-2`) que el control con `develop` no dio; la pasada de fix sustituye la frase del paso 5 de `sdd-feedback` y `fix/fb1-1` ya pasa.
 
 ## Aprobaciones
 
