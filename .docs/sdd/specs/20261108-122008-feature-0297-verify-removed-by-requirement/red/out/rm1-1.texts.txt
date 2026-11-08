@@ -1,0 +1,67 @@
+--- [11]
+## Review de Spec: `657163b`, feature 0025 «Quitar el aviso por correo al anular»
+
+Leí todo el paquete en una pasada (61 líneas). También leí la spec, el plan, la ADR 0003, `.docs/sdd/capabilities/bookings.md`, el `src/app.js` completo y los tests que ya existían.
+
+### Strengths
+
+- El cambio se limita a lo que pide el plan. Solo toca `src/app.js` y `test/void.test.js`, y no tocó `anular-todas`, que la spec deja fuera.
+- Se mantiene la decisión ✋1: `anular` sigue respondiendo «anulada <sala> <día>» y `test/void.test.js:6` lo comprueba.
+- Se borró `formatMail` entero, sin dejar código muerto. El test nuevo pasa por el comando `anular`, como pide «Dónde se prueba».
+- Se cumple la ADR 0003. Su Confirmación dice «`src/` no importa `node:fs` ni ningún paquete de base de datos», y `src/app.js` no tiene ningún `import`.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. El comportamiento eliminado «Avisar por correo» se sigue ejecutando.** `src/app.js:18`
+- **Qué falla:** la línea `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` });` sigue en `voidBooking`. Solo cambió la forma del objeto: se quitaron `subject` y el sufijo «(enviado por correo)». El aviso se sigue preparando y encolando.
+- **Ejemplo:** con la reserva de Norte del lunes, `anular Norte lun` y después `salida` devuelve «responsable: anulada Norte lun» (`src/app.js:29`). El requisito que se quita (`bookings.md`, «Avisar por correo») dice: «`salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo». Eso sigue pasando igual, y la oficina sigue recibiendo un aviso que enviar.
+- **Por qué importa:** la spec pide que el aviso desaparezca, y sigue saliendo. El título del commit («anular sin aviso por correo») dice algo que el código no hace.
+- **Cómo arreglarlo:** quitar el `outbox.push` de `voidBooking`.
+- **Gap:** `contradicts`.
+- **Origen:** `#### REMOVED — Avisar por correo`.
+
+#### Important (Should Fix)
+
+**2. La decisión del dev-lead no queda cubierta.** `src/app.js:18`
+- **Qué falla:** la decisión es «El aviso por correo al anular desaparece: el responsable avisa en persona — «el correo sobra»». Ninguna regla del diff la cubre: el aviso sigue llegando a la cola de `salida`.
+- **Formato pedido:** «decisión del dev-lead cubierta a medias: El aviso por correo al anular desaparece — la regla solo cambia el formato del mensaje (quita `subject` y «(enviado por correo)») y deja fuera que el aviso deje de existir».
+- **Gap:** `partial`.
+- **Origen:** Decisiones tomadas con el dev-lead.
+
+**3. El test no comprueba que el aviso haya desaparecido.** `test/void.test.js:5-7`
+- **Qué falla:** el único test comprueba la respuesta de `anular`, que era la misma antes del cambio. También habría pasado con el código de `8c4d504`, así que no fija nada del comportamiento eliminado. Su nombre, «anular responde sin aviso», promete algo que no comprueba.
+- **Por qué importa:** por esto el hallazgo 1 pasó la verificación de la Task 1 (`node --test test/void.test.js`).
+- **Cómo arreglarlo:** añadir la aserción que fija la eliminación. Tras `run('anular', ['Norte', 'lun'])`, comprobar que `run('salida', [])` no lista «anulada Norte lun» (con el estado actual del módulo, que devuelve `''`).
+- **Gap:** `partial`.
+- **Origen:** la línea «Anular sin aviso» de «Dónde se prueba».
+
+#### Minor (Nice to Have)
+
+Ninguno de este eje. No hay ledger, así que no hay minors aplazados que valorar.
+
+### Declined to judge
+
+- **El requisito «Avisar por correo» sigue en `.docs/sdd/capabilities/bookings.md`:** lo dejo fuera porque, según el encargo, `.docs/` no cuenta y aplicar la delta a la capacidad es tarea del cierre (archive).
+- **`cancelar` y `reservar` no están implementados en `run`, aunque `test/app.test.js` y `test/cancel.test.js` los prueban:** lo dejo fuera porque no lo toca el diff, viene de antes de la rama y no lo cubren ni el plan ni la spec.
+- **`salida` sigue existiendo aunque ningún comando encole avisos:** lo dejo fuera porque la spec no pide quitar el comando, solo el aviso de `anular`. Que `salida` devuelva vacío es lo que esperaría una persona razonable.
+- **El estado del módulo se comparte entre tests (la reserva de Norte del lunes se anula una sola vez por proceso):** lo dejo fuera porque es calidad de los tests, no de la spec. Le toca al eje de calidad.
+
+### Not verified
+
+- **La evidencia de que pasa `node --test test/void.test.js`:** no verificado. El paquete no trae el informe de la task y no ejecuto la suite. Aunque pase, no sirve como verificación de la eliminación (ver hallazgo 3).
+- **Las restricciones de código:** no encontré nada. El diff no añade comentarios y el único texto de interfaz que toca está en castellano.
+
+### Recommendations
+
+- Arreglar los hallazgos 1 y 3 juntos: primero el test RED sobre `salida` y después quitar el `push`.
+- Que el hilo principal ejecute la suite completa después del arreglo. `test/app.test.js` y `test/cancel.test.js` parecen fallar desde antes de la rama, y conviene confirmarlo para no achacarlo a esta feature.
+- Sobre el plan: la verificación de la Task 1 solo nombra un comando. Para un `REMOVED`, debería nombrar la observación que demuestra que el comportamiento ya no está (aquí, `salida`).
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** el comportamiento que la spec elimina sigue ejecutándose: `anular` todavía deja el aviso para el responsable en `salida`, y solo cambió su formato. El único test nuevo no lo detecta, porque comprueba una respuesta que ya era la misma antes del cambio.
+

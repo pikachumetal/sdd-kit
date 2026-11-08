@@ -104,14 +104,16 @@ function emptyListText() {
   edit('src/app.js', (text) => text.replace(".join('\\n');", ".join('\\n') || 'sin canceladas';"));
   s.commit('fix(bookings): canceladas sin canceladas dice «sin canceladas»');
 }
-// El encargo del eje de f3, f3n, f4, f5, f6 o f6b, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
+const REMOVED_SCENARIOS = ['rm1', 'rm2', 'rm3'];
+const briefScenario = () => (REMOVED_SCENARIOS.includes(s.SC) ? 'rm' : s.SC.replace(/n$/, ''));
+// El encargo del eje de f3, f3n, f4, f5, f6, f6b o rm1-rm3, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
 function axisBrief(base, headSha, pkg) {
   const axis = ['f4', 'f5', 'f6', 'f6b'].includes(s.SC) ? 'code' : 'spec';
   const files = s.git('diff', '--name-only', base, 'HEAD', '--', '.', ':(exclude,glob).docs/sdd/specs/**').split('\n').filter(Boolean);
   const adrs = sddCli('decision', 'index', '--path', '.docs/sdd', '--files', ...files);
   const caps = sddCli('capability', 'index', '--path', '.docs/sdd');
   const comments = sddCli('review', 'comments', '--base', base);
-  const args = [`--kit=${s.KIT}`, `--superpowers=${s.env.SUPERPOWERS_DIR ?? ''}`, `--axis=${axis}`, `--scenario=${s.SC.replace(/n$/, '')}`,
+  const args = [`--kit=${s.KIT}`, `--superpowers=${s.env.SUPERPOWERS_DIR ?? ''}`, `--axis=${axis}`, `--scenario=${briefScenario()}`,
     `--package=${forward(pkg)}`, `--sha=${headSha}`, `--dir=${forward(s.R)}`, `--adrs=${adrs.replace(/\n+$/, '')}`, `--caps=${caps.replace(/\n+$/, '')}`, `--comments=${comments.replace(/\n+$/, '')}`];
   return (spawnSync(s.NODE, [join(HERE, 'compose-axis.mjs'), ...args], { env: s.env, encoding: 'utf8' }).stdout ?? '').replace(/\n+$/, '');
 }
@@ -176,9 +178,32 @@ function reviewBase() {
   const text = s.SC === 'f3n' ? readLf(adr).replace(/^ {2}- src\/\*\*$/m, '  - docs/**') : readFileSync(adr);
   writeFileSync(at('.docs/sdd/decisions/0003-bookings-in-memory.md'), text);
   for (const name of readdirSync(join(FIX, 'capabilities')).filter((file) => file.endsWith('.md'))) cp(join(FIX, 'capabilities', name), `.docs/sdd/capabilities/${name}`);
-  cp(['f4', 'f6', 'f6b'].includes(s.SC) ? join(IMPL, 'fixtures', 'app-done.js') : join(FIX, 'app-f3-base.js'), 'src/app.js');
+  if (REMOVED_SCENARIOS.includes(s.SC)) cp(join(FIX, 'capabilities-rm', s.SC === 'rm2' ? 'bookings-rm2.md' : 'bookings-rm1.md'), '.docs/sdd/capabilities/bookings.md');
+  cp(join(...baseApp()), 'src/app.js');
   s.commit('feat: la app antes del cambio');
   return s.git('rev-parse', 'HEAD').trim();
+}
+function baseApp() {
+  if (['f4', 'f6', 'f6b'].includes(s.SC)) return [IMPL, 'fixtures', 'app-done.js'];
+  return [FIX, REMOVED_SCENARIOS.includes(s.SC) ? 'app-rm-base.js' : 'app-f3-base.js'];
+}
+const F25 = '.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail';
+// La 0025 quita el aviso por correo y deja la cola de salida: rm1-rm3 solo cambian el requisito vigente o su historia.
+function reviewRemoved() {
+  let base = reviewBase();
+  if (s.SC === 'rm3') {
+    cp(join(FIX, 'capabilities-rm', 'bookings-rm3.md'), '.docs/sdd/capabilities/bookings.md');
+    s.commit('docs(sdd): fusionar el delta de la 0024 en bookings');
+    base = s.git('rev-parse', 'HEAD').trim();
+  }
+  s.git('checkout', '-q', '-b', 'feature/0025-void-no-mail');
+  s.put(`${F25}/spec.md`, readFileSync(join(FIX, 'spec-0025.md'), 'utf8'));
+  s.put(`${F25}/plan.md`, readFileSync(join(FIX, 'plan-0025.md'), 'utf8'));
+  s.commit('docs(sdd): abrir la feature 0025');
+  cp(join(FIX, 'app-rm.js'), 'src/app.js');
+  cp(join(FIX, 'void-rm.test.js'), 'test/void.test.js');
+  s.commit('feat(bookings): anular sin aviso por correo');
+  ASK = reviewPackage(base, true);
 }
 function voidWithReason() {
   s.put(`${F21}/spec.md`, readFileSync(join(FIX, 'spec-0021.md'), 'utf8'));
@@ -358,11 +383,13 @@ steps.c7 = () => {
 };
 steps.f2 = steps.f1;
 for (const id of ['f3', 'f3n', 'f4', 'f6', 'f6b', 'sv1']) steps[id] = reviewF3;
+for (const id of REMOVED_SCENARIOS) steps[id] = reviewRemoved;
 steps[s.SC]?.();
 
-if (['v1', 'f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b', 'sv1'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+const axisSubjects = ['f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b', 'sv1', ...REMOVED_SCENARIOS];
+if (['v1', ...axisSubjects].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { f1: '30', f2: '30', mp1: '30', c2: '30', c3: '30', c4: '30' };
-for (const id of ['f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b', 'sv1']) turns[id] = '25';
+for (const id of axisSubjects) turns[id] = '25';
 for (const id of ['c1', 'c1f', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c10e']) turns[id] = '50';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
