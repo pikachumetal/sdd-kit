@@ -25,16 +25,16 @@ With `ROADMAP.md` at the root, the project is on the **3.0.0 form**: Now, Next a
 | The `**Requisitos:**` of the brief (the proposal's path) | «`proposal: <id>`» in the «Ítem» cell |
 | A patch in Now, with `**Carril:** patch` | «Próximo», with «Patch:» at the start of the item |
 | Preparing a release | `## Release <N>` with «Ficheros que toca» |
-| Lista | A «Deuda técnica» row with `**Actuar** → <id of its «Próximo» row> · causa: <causa> · arreglo: <arreglo>` (or `sin fila`; with two cases, `· remedio: <remedio>`) in «Destino»; the «Próximo» row never replaces the debt row (`tests/sdd-roadmap-0150-green.md`, m6) |
-| En espera | `**Esperar 2.º ticket** · causa: <causa> — falta <what is missing>` |
-| Descartada | `**Descartada** · causa: <causa>: <reason>` |
-| Por triar | does not exist: triage decides one of the three |
+| «Lista» | A «Deuda técnica» row with `**Actuar** → <id of its «Próximo» row> · causa: <causa> · arreglo: <arreglo>` (or `sin fila`; with two cases, `· remedio: <remedio>`) in «Destino»; the «Próximo» row never replaces the debt row (`tests/sdd-roadmap-0150-green.md`, m6) |
+| «En espera» | `**Esperar 2.º ticket** · causa: <causa> — falta <what is missing>` |
+| «Descartada» | `**Descartada** · causa: <causa>: <reason>` |
+| «Por triar» | does not exist: triage decides one of the three |
 
 ## Which entry it is (you decide, without asking)
 
 Look at what the request brings, in this order:
 
-1. **Give a row's prompt** — «dame el prompt de la <id>»: read the row, its proposal with its amendments and `.docs/sdd/sdd-kit.json`, check with step 1 whether its branch is open, and give the launch prompt traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md). Nothing else: you don't write, reserve, publish or commit. If the row is closed (✅, 🧪) or in flight (🔄 or an open `feature/<id>-*` branch), say so instead of giving the prompt (`tests/sdd-explore-0161-red.md`, m1). A Later row gives no prompt: say it is in Later and that raising it to Next writes its brief. An open «Tras» doesn't stop it: give the prompt.
+1. **Give a row's prompt** — «dame el prompt de la <id>»: read the row, its proposal with its amendments and `.docs/sdd/sdd-kit.json`, check with step 1 whether its branch is open, and give the launch prompt traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md). Nothing else: you don't write, reserve, publish or commit. If the row is closed or in flight (checklist step 1), say so instead of giving the prompt (`tests/sdd-explore-0161-red.md`, m1). A Later row gives no prompt: say it is in Later and that raising it to Next writes its brief. An open «Tras» doesn't stop it: give the prompt.
 2. **What comes next** — «qué sigue», «dame la siguiente». After checklist step 1, offer first, in roadmap order, the open rows carrying the `parent:` or `proposal:` (3.0.0: its path in `**Requisitos:**`) of something started (a piece closed or in flight), then Now's other open rows in order, then Next's (2.x: «Próximo» in order). Never offer, and say why: in flight, blocked («Tras» open or 🔒), a split mother (pieces carry its `parent:`), Later. Give the first one's prompt as in entry 1, the template's exact form, title included, without waiting; naming another gives that one's. Nothing to offer: say so. You write nothing.
 3. **Tracker items** — `ids.mode: tracker` in `.docs/sdd/sdd-kit.json` and ticket ids in the request.
 4. **A meeting** — notes or minutes of a meeting with the client.
@@ -47,7 +47,7 @@ Against `sdd-propose` the verb decides: doing it now («añade», «hazme», «a
 
 ## Checklist (create a todo per step)
 
-1. **Real state** — read `ROADMAP.md` of the integration branch (`git show develop:ROADMAP.md`, or the one the constitution sets; without it, `.docs/sdd/roadmap.md`) and `.docs/sdd/steering/debt.md`, and, **for each `feature/*` branch** that `git branch --all` lists, the same files (`git show <branch>:<path>`): what a branch split or reserved is only in its roadmap. Read `ids.mode` too and, if you are going to write rules or name capabilities, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` and read the ones that, by their purpose, are touched: a file's name doesn't say where a rule lives (`tests/capabilities-index-red.md`, r). With that state, in **any** entry: a feature in flight (branch `feature/<id>` open or 🔄) is not touched —neither its row nor its spec—, even if the new thing is on its topic: it goes to a new row «tras» it. A feature closed (✅ or 🧪) in the integration branch doesn't receive new work either: it goes to a new row.
+1. **Real state** — read `ROADMAP.md` of the integration branch (`git show develop:ROADMAP.md`, or the one the constitution sets; without it, `.docs/sdd/roadmap.md`) and `.docs/sdd/steering/debt.md`, and, **for each `feature/*` branch** that `git branch --all` lists, the same files (`git show <branch>:<path>`): what a branch split or reserved is only in its roadmap. Read `ids.mode` too and, if you are going to write rules or name capabilities, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` and read the ones that, by their purpose, are touched: a file's name doesn't say where a rule lives (`tests/capabilities-index-red.md`, r). A row is in flight with 🔄 or an open `feature/<id>-*` branch, and closed with ✅ or 🧪 in the integration branch. In **any** entry, an in-flight or closed feature is not touched —neither its row nor its spec—, even if the new thing is on its topic: it goes to a new row, «tras» it if in flight.
 2. **What each entry leaves** — the section below that matches.
 3. **Propose and wait** — in `pair` and `delegate`, present the rows, the proposal and the split before writing them, and wait for the user's decision. A «decide tú» or «no hay nadie a quien preguntar» is a delegated decision: write, and leave the decisions you took in the proposal or in the commit body. In `unattended`, the most conservative option, registered the same way.
 4. **Ids** — in `sequence`, the N new ids (N + 1 if there is a proposal) come from **one** reservation: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" id next --project-root "<root>" --reserve --count N`. Without `--reserve` the script only proposes, and another worktree can take the same one. Later and Backlog rows enter that reservation too, never `B<n>`. In `tracker`, the tracker sets the id; a Later row without ticket takes `0000`. Never a number by eye.
@@ -59,13 +59,7 @@ Against `sdd-propose` the verb decides: doing it now («añade», «hazme», «a
 
 ### Something big
 
-Interview with the `sdd-grilling` skill (invoke it with `Skill`): **the interview never ends in a spec** or a plan; it ends in `proposal.md` and in roadmap rows.
-
-- The proposal lives in `<ts>-proposal-<id>-<slug>/proposal.md` (under `.docs/sdd/changes/` in 3.0.0, under `.docs/sdd/specs/` in 2.x), traced from `proposal-template.md` of the `sdd-templates` skill with `source: interview`.
-- Every business rule carries an example with input and output data.
-- The split lists the features in their order, each with its id and its dependency.
-- Each feature is a roadmap row. In 3.0.0, the proposal's path goes in the `**Requisitos:**` of its brief and the dependency in «Tras». In 2.x, «`proposal: <id>`» and «tras NNNN» go in the «Ítem» cell.
-- The rules do **not** go to the roadmap: the roadmap is the index every skill reads; the definition lives in the proposal.
+First thing in this entry: read [references/proposal.md](references/proposal.md), the shape of the proposal and of its rows. Interview with the `sdd-grilling` skill (invoke it with `Skill`): **the interview never ends in a spec** or a plan; it ends in `proposal.md` and in roadmap rows. The rules do **not** go to the roadmap: the roadmap is the index every skill reads; the definition lives in the proposal.
 
 ### Something concrete
 
@@ -93,16 +87,13 @@ If the user asks for a section that is not in the template of its form («abre u
 
 - You change only the rows the request names; the rest stays the same.
 - A dependency goes in the «Tras» column (2.x: in the «Ítem» cell as «tras NNNN», with no new column and no owner column). The order of the rows is the priority.
-- **If the definition of a proposal changes**: you add a dated entry in «Enmiendas» (which rule changes, the old and the new value with its example with data, who asked for it) and you **don't rewrite** «Reglas de negocio» or the minutes. You re-split **only what is pending**: a closed feature (✅ or 🧪) or one in flight (branch `feature/<id>` open or 🔄) is not touched, and what the change asks of it goes to a new row «tras» it. A new feature also enters the proposal's split; one that is parked is marked there, not deleted.
+- **If the definition of a proposal changes**: you add a dated entry in «Enmiendas» (which rule changes, the old and the new value with its example with data, who asked for it) and you **don't rewrite** «Reglas de negocio» or the minutes. You re-split **only what is pending**: a closed or in-flight feature (checklist step 1) is not touched, and what the change asks of it goes to a new row «tras» it. A new feature also enters the proposal's split; one that is parked is marked there, not deleted.
 
 ### Prepare a release
 
+First thing in this entry: read [references/prepare-release.md](references/prepare-release.md), steps 2 to 6 (order, scope, recipient, state and the section). Step 1:
+
 1. **Inventory** — Later (2.x: Backlog), the technical debt (the «Lista» of `debt.md`; 2.x: «Deuda técnica»), and the «Propuestas» and action items of the newest `.docs/sdd/releases/v*/retro.md`, if any. Technical debt enters only if it is a verifiable prerequisite of an item in scope or by the user's explicit decision, not in bulk.
-2. **Order** — risk first, then cost-benefit, counting dependencies, with the **blocks marked** (🔒 + which decision is missing + who must make it).
-3. **Scope** — the user decides, item by item or by blocks. A stakeholder's pressure («todo es importante») is registered, not obeyed.
-4. **Recipient** — if `sdd-kit.json` has no `release.hasRecipient`, ask once whether the release is delivered to someone other than who makes it and write the answer in that field, merging without touching the rest; with the field present, apply its value without asking. You never write it without an explicit answer.
-5. **State** — **comprometida** (scope promised to the recipient, normally with a date) only if the user says so and there are no external blocks; otherwise **en preparación**. With `release.hasRecipient: false`, always en preparación, without asking.
-6. **Section** — in 3.0.0, the title of Now becomes `## Now — <version> · en preparación` or `## Now — <version> · comprometida`, with the version the user gives, never an assumed one; the rows in scope go in Now in the decided order (the order is the priority), each brief with its `**Toca:**`, and what is pending and doesn't enter goes to Next; the line `Perfil de control: <perfil>` stays under `## Now`. In 2.x, `## Release <N>` in the roadmap, with the literal header of `roadmap-template.md`: `| id | Feature | Origen | Ficheros que toca | Estado |`. The `**Toca:**` and the «Ficheros que toca» cell name the planned files or modules, read from the code; if they don't exist yet, the folder or module where they will go, never «por definir»: the scope brake uses them to see overlaps. In `sequence`, each row with its reserved id (step 4 of the checklist). Without a tracker, the roadmap is the only source of the scope; with a tracker, the source is the tracker.
 
 ### Triage
 
@@ -131,14 +122,11 @@ The rules:
 ## Red flags — STOP
 
 - You're about to create a branch, a feature folder or a `spec.md` from this skill.
-- You're about to open a section that is not in the template of its form because the user asked, or to commit without `sdd roadmap check` having passed over what you wrote.
 - You're about to delete a row, replace it with a tracker item or merge two without the user saying so.
 - You're about to leave the business rules of something big in a block of the roadmap.
 - You're about to note a big tracker item with «trocear al arrancarlo» instead of proposing the split now.
 - You're about to reopen a closed or in-flight feature because the definition changed.
-- You're about to write in the roadmap an id that doesn't come from the tracker or from `sdd id next --reserve`.
 - You're about to mark a release «comprometida» without the user saying so, or with external blocks open.
-- You're planning with the roadmap of your worktree without having read the integration branch's and the `feature/*` branches'.
 
 | Rationalization | Reality |
 | --- | --- |
@@ -146,5 +134,4 @@ The rules:
 | «The Azure item and the row are the same; I keep one row» | Deleting or replacing a row is the user's decision, not a cleanup (p3). Ask about the duplicate. |
 | «It's an epic; it gets split when it starts» | When it starts nobody looks at the whole roadmap. The split is proposed now, so the PM creates the children (p3). |
 | «The proposal's example was incomplete; I rewrite it» | The proposal is historical: the change goes to «Enmiendas» with its date. Rewriting it erases what was agreed before (p10). |
-| «Now that the change is clear, I start the feature and write the spec» | Planning is not doing. `sdd-roadmap` ends in the roadmap (p10). |
 | «The note is on the topic of the feature in flight; I group it in its row» | Its branch is editing that row and that spec. Grouping it there causes the conflict on closing and changes an approved scope: it goes to a new row «tras» it. |

@@ -1,6 +1,6 @@
 // Sujeto de la batería de sdd-roadmap: algo que apuntar en el roadmap, o el prompt de arranque de una fila.
 // Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { subjectCell, moldFrom } from '../../headless/battery.mjs';
@@ -89,6 +89,13 @@ const molds = {
     layer3();
     s.put('.docs/sdd/releases/v1.5.0/retro.md', '# Retro — v1.5.0\n\n## Propuestas\n\n| Causa | Filas | Cambio | Arreglo |\n| --- | --- | --- | --- |\n| carga o paralelismo | «El lote de avisos agota su tiempo» | Lanzar el lote con un solo worker | conectar comprobación |\n\n## Estimación y action items\n\n- **Action items nuevos**:\n  - [A1] Medir el lote con la máquina cargada — su tiempo en el log\n');
   },
+  // salas-3-retro sin `release` en el marcador: el paso del destinatario pregunta.
+  'salas-3-retro-ask': () => {
+    molds['salas-3-retro']();
+    const marker = MARKER.replace('"release": {"hasRecipient": false}, ', '');
+    if (marker === MARKER) s.die('el marcador cambió: no hay release que quitar');
+    s.putKitMarker(marker);
+  },
   // salas-3 sin la exportación a CSV ni su fila de deuda: m5 apunta la exportación como fila nueva.
   'salas-3-plain': () => {
     layer3();
@@ -146,4 +153,12 @@ keepIfPresent(ROADMAP, 'roadmap.md');
 keepIfPresent(join(s.R, PATCH_0007), 'patch-0007.md');
 keepIfPresent(join(s.R, 'ROADMAP.md'), 'roadmap-3.md');
 keepIfPresent(join(s.R, '.docs', 'sdd', 'steering', 'debt.md'), 'debt.md');
+// La propuesta que escribe el sujeto, para leer su forma (M2b).
+for (const base of ['specs', 'changes']) {
+  const dir = join(s.R, '.docs', 'sdd', base);
+  if (!existsSync(dir)) continue;
+  for (const folder of readdirSync(dir).filter((name) => name.includes('-proposal-'))) {
+    keepIfPresent(join(dir, folder, 'proposal.md'), `${folder.replace(/^\d{8}-\d{6}-/, '')}.md`);
+  }
+}
 s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## ficheros\n${s.git('ls-files', '--others', '--exclude-standard')}`);
