@@ -204,7 +204,7 @@ Medido con el conteo de `word-budget.test.ts` (`split(/\s+/)`) sobre `skills/` y
 | Controles | batería entera de `sdd-roadmap` con el kit de `develop`, sin `ts1`, `ts2` ni `m7r`: `battery.mjs plan` da «suma: 34 sujetos · coste previsto: 5.89 $», más un sujeto de `m7` al pasar a n = 2 (~0,18 $) | 6,07 |
 | Batería entera en la rama | los 35 del control más `ts1`, `ts2` y `m7r` (6) | 7,07 |
 | Medición tras la revisión final | el tramo del paso que toque la pasada de fix, ~4 sujetos al precio de `m2`/`m7` | 0,74 |
-| Suma | 96 sujetos | 16,92 |
+| Suma | 102 sujetos | 16,92 |
 
 **Umbral de parada: 20 $** en sujetos. `battery.mjs plan` se quedó un 16 % corto contra el control de la 0306 (`tech-stack.md`, «Entrega de la skill al sujeto»), y 16,92 × 1,16 ≈ 19,6 $; pasado el umbral, una tanda de REFACTOR incluida, paro y decides tú (Art. I). Aparte, los revisores de la spec (~2 $) y la revisión final.
 
@@ -214,6 +214,7 @@ Medido con el conteo de `word-budget.test.ts` (`split(/\s+/)`) sobre `skills/` y
 - 2026-11-08, Task 2, aprobada por el dev-lead («1»): GREEN 0/4 limpio con la frase de la decisión 6 (ts1-1 corrió su `===` en una copia pero citó media frase de la ayuda; ts1-2 y ts2-1 fijan `===` sin correrlo; ts2-2 corrió el `<` del informe y no su `===`). Se reescribe el literal de la decisión 6: dice dónde vive la solución (las «Decisiones ya tomadas» del brief, el ítem en 2.x), que la copia va fuera del árbol, que vale también para la solución propia y que la frase que sale se cita del fichero, no del ticket.
 - 2026-11-08, Task 2, aprobada por el dev-lead («2»): con la frase nueva, la solución sale 4/4 y la cita 0/2, porque en el molde sustituir media frase no hacía daño. La capa `salas-3-fix` (decisión 7) y el AND GIVEN de la ayuda pasan a un informe que propone un texto que ya dice qué da sin número; `libres --planta` sin número da las libres de todas las plantas. Se repite `ts1` con n = 2.
 - 2026-11-08, Task 2, aprobada por el dev-lead («2, pero usa sonnet a ver»): con el molde endurecido, la cita sale 1/2 (ts1-2 describe la frase nueva sin citar la que sale). La frase de la cita de la decisión 6 pasa a la que propuso un agente sonnet: cita literal de la frase entera que sale y de la que entra, nunca un fragmento ni una descripción.
+- 2026-11-08, Task 4, aprobada por el dev-lead («1»): las tres rondas extra de la Task 2 dejan la campaña en 6,34 $ antes del control; la previsión de la Task 4 (13,34 $, ~22 $ con el +16 %) pasaba el umbral. La rama corre los mismos escenarios que el control, sin `ts1`, `ts2` ni `m7r`, ya medidos en las Tasks 1 y 2, y el umbral de parada sube a 21 $. El techo de sujetos de la fila Suma pasa de 96 a 102: 28 de las Tasks 1 a 3, 35 del control, 35 de la rama y los 4 de la medición tras la revisión final.
 
 ## Aprobaciones
 
