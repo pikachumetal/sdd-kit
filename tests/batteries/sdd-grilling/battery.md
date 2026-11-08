@@ -2,7 +2,7 @@
 
 Cómo pregunta el kit cuando una skill necesita decisiones del usuario. Cada escenario lanza una petición que lleva a una de las seis skills que entrevistan (`sdd-explore`, `sdd-init` sin código, `sdd-init` con código, `sdd-propose`, `sdd-roadmap`, `sdd-config`) y mide la forma de sus preguntas. El **paso** es la skill que llama: una edición de su regla de preguntas lanza su tramo.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-grilling/mold-reservas`, con glosario en `PRODUCT.md`) o carpeta vacía.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-grilling/mold-reservas`, con glosario en `PRODUCT.md`), `salas-csv` (el de `salas` con una fila 2 en «Próximo» de su roadmap, que fija separador y salida) o carpeta vacía.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo: un juez automático sería otro modelo, con su propio ruido.
 
@@ -28,6 +28,9 @@ Turnos extra por escenario, en `subject.mjs`: g3 lleva `TURN2` «sí, adelante: 
 | fl | flujo | Carril feature, modo full: que una reserva pase por pendiente, confirmada y cancelada; desde pendiente se confirma o se cancela, desde confirmada solo se cancela, y una cancelada puede volver a pendiente. Lo que no tengo claro es si el flujo está bien. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | patch 0172: un flujo se enseña como diagrama (texto de `brainstorming` 7.0.0 recuperado, ADR 0013) |
 | ag | anti-goal | Carril feature, modo full: añade una lista de espera para cuando la sala que quiero está ocupada. Empieza ya, no me preguntes más. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | patch 0172: Intent con el éxito medible y lo que haría fracasar la feature aunque funcione; lo supuesto, a ✋ |
 | sk-c | boceto | Carril feature: añade a la web una página nueva de informes: una fila por sala con su porcentaje de ocupación de la semana. Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, pantalla nueva: boceto aparte; sin Artifact, en texto con su escena |
+| p1 | sdd-propose | Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido) |
+| p2 | sdd-propose | Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido) |
+| p3 | sdd-propose | Carril feature, modo full: arranca la 2 del roadmap. | salas-csv | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido); molde `salas` con la fila 2 en «Próximo» de su roadmap |
 
 ## Rúbrica
 
@@ -56,6 +59,11 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | T1 Contraste de lenguaje | t1 | antes de seguir con el diseño, no dice que el glosario de `PRODUCT.md` llama «Cancelación» a la que anula el cliente y «Anulación» a la del responsable de sala, y que «dar de baja» (_Evitar_) por el admin encaja con Anulación, ni pregunta cuál quiere decir |
 | B1 Boceto sobre la app real | sk | ante cómo se ve la columna o sus colores, pregunta sin ofrecer enseñarlo, u ofrece una maqueta aparte (HTML suelto, Artifact) en vez de la variante sobre la app real (`node src/server.mjs`, impeccable en vivo o una captura del listado actual junto a la variante) |
 | B2 Boceto de pantalla nueva | sk-c | ante cómo se ve la página, pregunta sin ofrecer un boceto; o, sin Artifact en la sesión, no lo describe en texto con su escena ni dice por qué no lo enseña |
+| W1 Porqué primero | p1 | la primera pregunta de diseño o de descubrimiento del último mensaje no es para qué lo quiere; la lleva con alternativas, recomendación, hipótesis o ejemplos de respuesta; o antes pregunta una de diseño. Las operativas del llamante (carril, perfil, aprobar) no cuentan |
+| W2 Sin relleno | p2, p3 | la pregunta de diseño o de descubrimiento del último mensaje pregunta lo que la petición o el proyecto ya contestan (el porqué, lo que dice la fila 2) o algo que no cambia lo que se construye, su alcance, nivel ni coste: en qué fichero va el código, cómo se llama una función interna o un fichero temporal. No falla una pregunta sobre lo que sale en el CSV (separador, columnas, cabecera, codificación o rango), salvo lo que la fila 2 ya fija. Las operativas del llamante no cuentan |
+| W3 Proceso | p1, p2, p3 | pregunta un paso de proceso (si escribe o apunta algo, dónde va, si busca más) en vez de hacerlo y decirlo. Las operativas del llamante (carril, perfil, aprobar) no cuentan |
+| W4 Lo ya decidido | p3 | una pregunta o una alternativa reabre el punto y coma o la salida estándar. Repetirlos para confirmar lo entendido no es reabrirlos |
+| W5 Lo del dev | p1, p2, p3 | «decidido por mí» o una propuesta fija lo que solo sabe el usuario (para quién, para qué), el alcance, el nivel o el coste |
 
 ## Procedencia de las reglas
 

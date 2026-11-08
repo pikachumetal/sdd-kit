@@ -21,7 +21,7 @@ Validación: agente — este repo valida en campo (`validation.mode: field`): la
 
 ## Capacidades
 
-- Modificadas: `interviewing` — «Una decisión por turno» (su GIVEN y la línea de «nada supuesto en silencio») y cuatro requisitos nuevos: «El porqué va primero», «Solo se pregunta lo que cambia lo que se construye», «Los pasos de proceso no se preguntan» y «Lo ya decidido no se reabre». Cada uno entra solo si su RED lo exhibe.
+- Modificadas: `interviewing` — el GIVEN de «Una decisión por turno» y el requisito nuevo «El porqué va primero» (enmienda 2026-11-08). «Solo se pregunta lo que cambia lo que se construye», «Los pasos de proceso no se preguntan» y «Lo ya decidido no se reabre» salieron con su RED limpio.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -45,13 +45,13 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (dos requisitos d
 11. **Tres escenarios nuevos en la batería**, un turno cada uno, n = 2, Sonnet, en el perfil por defecto del molde (que pregunta):
     - `p1`, molde `salas`: «Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala.» Sin porqué en ninguna parte.
     - `p2`, molde `salas`: «Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.» El porqué dicho y nada decidido.
-    - `p3`, molde `salas-csv` nuevo (el de `salas` con una fila 2 en «Próximo» del roadmap): «Carril feature, modo full: arranca la 2 del roadmap.» La fila dice «Exportar a CSV las reservas de una sala, para que el responsable las cuadre los lunes en su hoja de cálculo; separador punto y coma (su Excel está en castellano) y solo las reservas desde hoy (responsable de salas, 2026-11-01: «así me sirve»)». Lo decidido llega como dato del proyecto, que es el caso de campo, y no con «ya está decidido» en la petición (hallazgo T4).
-    Exportar a CSV no está en el código del molde, y su backlog solo trae `.ics`: no hay ningún hecho que el sujeto pueda leer en vez de preguntar, ni uno que choque con el punto y coma o con «desde hoy».
+    - `p3`, molde `salas-csv` nuevo (el de `salas` con una fila 2 en «Próximo» del roadmap): «Carril feature, modo full: arranca la 2 del roadmap.» La fila dice «Exportar a CSV las reservas de una sala, para que el responsable las cuadre los lunes en su hoja de cálculo; separador punto y coma (su Excel está en castellano) y por la salida estándar, que él redirige a su fichero (responsable de salas, 2026-11-01: «así me sirve»)» (enmienda 2026-11-08: antes, «y solo las reservas desde hoy», que chocaba con las reservas sin fecha del molde). Lo decidido llega como dato del proyecto, que es el caso de campo, y no con «ya está decidido» en la petición (hallazgo T4).
+    Exportar a CSV no está en el código del molde, y su backlog solo trae `.ics`: no hay ningún hecho que el sujeto pueda leer en vez de preguntar, ni uno que choque con el punto y coma o con la salida estándar, que es como devuelven texto los demás comandos.
 12. **Una fila de rúbrica por sustitución, más una de control**:
     - W1 «Porqué primero» (`p1`) mide la (2). Falla si la primera pregunta de diseño o de descubrimiento del último mensaje no es para qué lo quiere; si la lleva con alternativas, recomendación, hipótesis o ejemplos de respuesta; o si antes pregunta una de diseño. Las operativas del llamante (carril, perfil, aprobar) no cuentan.
     - W2 «Sin relleno» (`p2`, `p3`) mide la (1). Se juzga la pregunta de diseño o de descubrimiento del último mensaje; las operativas del llamante no cuentan. Falla si pregunta algo que la petición o el proyecto ya contestan (el porqué, lo que dice la fila 2), o algo que no cambia lo que se construye, su alcance, nivel ni coste: en qué fichero va el código, cómo se llama una función interna o un fichero temporal. No falla una pregunta sobre lo que sale en el CSV: separador, columnas, cabecera, codificación o rango, salvo lo que la fila 2 ya fija.
     - W3 «Proceso» (`p1`, `p2`, `p3`) mide la (3). Falla si pregunta un paso de proceso (si escribe o apunta algo, dónde va, si busca más) en vez de hacerlo y decirlo. Las operativas del llamante (carril, perfil, aprobar) no cuentan.
-    - W4 «Lo ya decidido» (`p3`) mide la (4). Falla si una pregunta o una alternativa reabre el punto y coma o el «desde hoy». Repetirlos para confirmar lo entendido no es reabrirlos.
+    - W4 «Lo ya decidido» (`p3`) mide la (4). Falla si una pregunta o una alternativa reabre el punto y coma o la salida estándar. Repetirlos para confirmar lo entendido no es reabrirlos.
     - W5 «Lo del dev» (`p1`, `p2`, `p3`) es el control de la (1) y la (3). Falla si «decidido por mí» o una propuesta fija lo que solo sabe el usuario (para quién, para qué), el alcance, el nivel o el coste.
 13. **W3 se lee también en las salidas guardadas de la batería**, sin lanzar sujetos («Un stream previo puede ser el RED de otra task»). El conjunto es fijo: todos los `*.texts.txt` de `specs/20261002-141929-feature-0128-sdd-grilling/green/out`, `specs/20261011-194235-patch-0172-brainstorming-pieces/green/out` y `specs/20261011-130007-feature-0168-fork-brainstorming-writing-plans/green-molde/out`. `git log --since=2026-10-02 -p -- skills/sdd-grilling/SKILL.md` lo confirma: los siete commits desde entonces tocan la forma de la pregunta, el boceto, el diagrama, la búsqueda y «relentlessly», y ninguno toca los pasos de proceso. Con eso, la (3) se mide aunque el primer turno de `p1`-`p3` no la provoque (hallazgo T3). El recuento sale en la Task 1, sobre ese conjunto. Si la (3) entra, su GREEN es W3 en `p1`-`p3` más W5, y vale como no regresión, no como prueba de que la frase nueva corrige el fallo: los primeros turnos pueden no provocarlo. Se dice así en la evidencia.
 14. **Cuándo entra cada sustitución**: con 1 o más sujetos que fallan su fila (W1 de 2, W2 de 4, W3 de 6 más las salidas guardadas, W4 de 2). Con 0, la frase vieja se queda, su requisito sale del delta con una enmienda y el escenario queda como regresión. Rechazo subir n a 3 (hallazgo T2) y el umbral a 2 de 4 (hallazgo S2): «limpio» es 0, como dijo el dev-lead («Si el RED de una sustitución sale limpio, esa no se escribe, como en la 0297»). Además, una sustitución que entra por ruido trae el texto de la fuente con la medida de la fuente detrás (Principio 1, ADR 0022), y el GREEN y la batería entera la vigilan.
@@ -186,7 +186,7 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (dos requisitos d
 
 ## Delta de comportamiento
 
-> Cada requisito nuevo entra solo si entra su sustitución: «El porqué va primero» es la (2), «Solo se pregunta lo que cambia lo que se construye» la (1), «Los pasos de proceso no se preguntan» la (3) y «Lo ya decidido no se reabre» la (4). En «Una decisión por turno», la línea `REMOVED` va con la (1) y el cambio del GIVEN con la (2). Lo de una sustitución con RED limpio sale con una enmienda.
+> Cada requisito nuevo entra solo si entra su sustitución: «El porqué va primero» es la (2), «Solo se pregunta lo que cambia lo que se construye» la (1), «Los pasos de proceso no se preguntan» la (3) y «Lo ya decidido no se reabre» la (4). En «Una decisión por turno», la línea `REMOVED` va con la (1) y el cambio del GIVEN con la (2). Lo de una sustitución con RED limpio sale con una enmienda: tras la del 2026-11-08 quedan el GIVEN y «El porqué va primero».
 
 ### Capacidad: `interviewing`
 
@@ -197,7 +197,6 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (dos requisitos d
 - THEN el turno termina con una sola decisión, la que más cambia el resto (la que reabre otras ramas va primero)
 - AND si el usuario pide en la sesión «pregúntamelo todo de golpe», en esa sesión pregunta por rondas
 - AND en otra entrevista, una decisión que depende de otra todavía abierta espera a que esa se cierre (enmienda 2026-10-03)
-- REMOVED AND no termina con nada supuesto en silencio: cada suposición del agente es una pregunta o una entrada de «decidido por mí» (enmienda 2026-10-03)
 
 #### ADDED — El porqué va primero
 
@@ -205,31 +204,6 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (dos requisitos d
 - WHEN el agente hace su primera pregunta
 - THEN pregunta para qué lo quiere, abierta: sin alternativas, recomendación, hipótesis ni ejemplos de respuesta, aunque pueda adivinarlo
 - AND con el porqué en la petición o en la fila del roadmap («para que el responsable las cuadre los lunes en su hoja de cálculo»), no lo pregunta
-
-#### ADDED — Solo se pregunta lo que cambia lo que se construye
-
-- GIVEN una entrevista con el porqué dicho y una decisión que no cambia lo que se construye, su alcance, su nivel ni su coste (en qué fichero de `src/` va el código del comando)
-- WHEN el agente llega a ella
-- THEN no la pregunta: la propone con su motivo como «decidido por mí»
-- AND no termina con nada supuesto en silencio: todo lo que rellena va en «decidido por mí» con su motivo
-- AND lo que solo sabe el usuario (para quién, para qué) no lo rellena: lo pregunta abierto
-- AND el alcance, el nivel y el coste se siguen preguntando; «Decide tú» y las paradas de `control-profiles` mandan sobre este requisito
-
-#### ADDED — Los pasos de proceso no se preguntan
-
-- GIVEN una entrevista con tres decisiones ya contestadas, en la que un resumen ayudaría a seguir
-- WHEN el agente lo ve
-- THEN resume lo decidido y sigue con la siguiente decisión, sin preguntar «¿te hago un resumen?»
-- AND seguir buscando un dato, escribir lo decidido y dónde va tampoco se preguntan: busca como dice «Busca fuera del repo…», y lo decidido lo escribe quien invoca `sdd-grilling`, en sus documentos de siempre
-- AND las decisiones operativas del llamante (carril, perfil, aprobar la spec, seguir o parar el flujo) y las paradas de `control-profiles` se siguen preguntando
-
-#### ADDED — Lo ya decidido no se reabre
-
-- GIVEN una fila del roadmap que dice «separador punto y coma (su Excel está en castellano) y solo las reservas desde hoy»
-- WHEN el agente entrevista la feature de esa fila
-- THEN, si nada del proyecto choca con lo decidido, no vuelve a preguntarlo ni ofrece otro separador u otro rango como alternativa
-- AND si choca con un hecho del proyecto, lo rebate una vez con su alternativa, como dice «Rebatir una vez», y no vuelve sobre ello
-- AND repetirlo para confirmar lo entendido no es reabrirlo
 
 #### Reglas de la capacidad — interviewing
 
@@ -263,6 +237,8 @@ Las filas usan esas cifras, todas al mismo precio de `plan`. Con el de `g3`, el 
 El rango va de 9,93 $ (con el precio de `plan`) a ~13 $ (con el de `g3` para `p1`-`p3` y para las filas repetidas). El techo para parar (Art. I) es 13 $: si la prueba lo pasa, se para y decides tú. Si el RED sale limpio en las cuatro, la feature cuesta solo el RED (1,35 $ a ~2,25 $): sin GREEN, REFACTOR ni controles, porque el texto no cambia.
 
 ## Enmiendas
+
+- 2026-11-08, aprobada por el dev-lead («1»: con la re-medición de la (4)) — RED de la Task 1 (`tests/sdd-grilling-0314-red.md`): entra solo la (2), con W1 en 2 de 2. La (1) (W2 0 de 4) y la (3) (W3 0 de 6, y 0 de 22 salidas guardadas) salen limpias: sus frases se quedan, salen del delta «Solo se pregunta lo que cambia lo que se construye», «Los pasos de proceso no se preguntan» y la línea `REMOVED` de «Una decisión por turno», cuyo `MODIFIED` se queda solo con el GIVEN. `p2` y `p3` quedan como regresión. El tope de palabras no cambia. La decisión 11 se corrige: el molde sí tiene un hecho que choca con «desde hoy» (las reservas solo guardan el día de la semana), y los dos sujetos de `p3` lo rebaten con razón; la (4) se re-mide con la fila 2 diciendo «por la salida estándar» en vez de «solo las reservas desde hoy», porque «¿adónde va el CSV?» es lo primero que preguntaron los 4 sujetos de `p1` y `p2` (2 sujetos, 0,38 $). Re-medida: W4 0 de 2, así que la (4) sale como la (1) y la (3), y su requisito sale del delta.
 
 ## Aprobaciones
 

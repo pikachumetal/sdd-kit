@@ -1,0 +1,89 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314r/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -50; ls node_modules 2>&1 | head -3
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1 | head -80; done; git ls-files | head -50
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: cd "<run>/repo" && cat package.json src/app.js README.md; head -40 test/app.test.js; K="D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314r/skills/sdd-propose/references"; cat $K/control-profiles.md | head -80
+<<< {"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314r/skills/sdd-propose/references"; cat $K/nombrado.md; echo =====; cat $K/spec-writing.md
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314r/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve
+<<< 0008
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314r/cli/bin/sdd.js"; git checkout -b feature/0008-exportar-csv develop && node "$S" id claim --project-root "$PWD"
+<<< Switched to a new branch 'feature/0008-exportar-csv'
+sin remoto: la 0008 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.2019037 $)
+**Lo que he entendido** (corrígeme si me equivoco): un comando nuevo, por ejemplo `exportar Norte`, que saca en formato CSV las reservas de una sala. Hoy `src/app.js` tiene las reservas en memoria (`{ room, day, slot }`) y cada comando devuelve un texto que se imprime. Así que la salida actual de `Norte` sería:
+
+```
+dia,franja
+lun,10:00-12:00
+```
+
+Nada de esto toca las reservas semanales ni la cancelación.
+
+❓ **¿Adónde va el CSV?**
+Es lo que más condiciona el resto, porque decide qué hace el comando y cómo se prueba.
+1️⃣ **A la salida estándar (stdout)**: `exportar Norte` imprime el CSV, y lo guardas con `node src/app.js exportar Norte > norte.csv`. Es coherente con los demás comandos, que devuelven texto. A cambio, no escribe ningún fichero por sí solo.
+2️⃣ **A un fichero que indicas**: `exportar Norte --salida norte.csv` crea `norte.csv` y responde `exportadas 1 reservas a norte.csv`. Es más cómodo, pero añade escritura en disco, pide decidir qué pasa si el fichero ya existe y complica los tests.
+3️⃣ **Las dos formas**: stdout por defecto y `--salida` opcional. Cubre todo, pero es más superficie para una herramienta que usas tú solo.
+
+➡️ **Recomiendo 1️⃣**, porque todos los comandos de `run` devuelven un texto que `app.js` imprime. Así el CSV sale por el mismo camino y se prueba con un `assert.equal`, sin tocar el disco. A cambio, la redirección `>` te toca a ti en la terminal.
