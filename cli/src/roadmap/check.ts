@@ -12,7 +12,7 @@ import { openRows, stateProblem, tableBlockProblems, tableHeaderProblems } from 
 import { duplicateIdWarnings } from './duplicates.ts';
 import { idsMode } from '../ids/scan.ts';
 import { roadmapWarnings } from './warnings.ts';
-import { overlapWarnings, twoPointOverlapRows } from './overlap.ts';
+import { nowNextOverlapRows, overlapWarnings, twoPointOverlapRows } from './overlap.ts';
 
 export interface RoadmapResult {
   errors: string[];
@@ -78,7 +78,12 @@ function roadmapReport(sddPath: string, changelog: string): Report | null {
     return { errors: report.errors, warnings: [...shadow, ...report.warnings] };
   }
   const mode = idsMode(resolve(sddPath, '..', '..'));
-  return { errors: prefixed(file, nowNextLaterProblems(lines, changelog, mode)), warnings: [...shadow, ...prefixed(file, duplicateIdWarnings(lines))] };
+  return { errors: prefixed(file, nowNextLaterProblems(lines, changelog, mode)), warnings: [...shadow, ...prefixed(file, nowNextLaterWarnings(lines))] };
+}
+
+function nowNextLaterWarnings(lines: string[]): string[] {
+  const blocks = tableBlocks(lines, parseSections(lines));
+  return [...duplicateIdWarnings(lines), ...overlapWarnings(nowNextOverlapRows(lines, blocks))];
 }
 
 function debtReport(sddPath: string, changelog: string): Report | null {

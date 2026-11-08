@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { runSdd, sddFolder } from '../capability/helpers.ts';
 import { parseSections, tableBlocks } from '../../src/roadmap/parse.ts';
 import { overlapWarnings, twoPointOverlapRows } from '../../src/roadmap/overlap.ts';
+import { brief, checkProject, laterRow, row, validDebt, validRoadmap } from './project.ts';
 
 vi.setConfig({ testTimeout: 20_000 });
 
@@ -137,5 +138,59 @@ describe('dos filas abiertas que tocan lo mismo sin «tras» entre ellas se avis
 
     expect(result.code).toBe(0);
     expect(result.lines).toEqual(['roadmap.md: aviso: línea 9: el id «0040» ya está en la línea 7', `roadmap.md: ${pairWarning}`, 'Roadmap válido']);
+  });
+});
+
+describe('ROADMAP.md (3.0.0) avisa de dos filas abiertas de Now y Next que tocan lo mismo', () => {
+  const overlapLine = /sin «tras» entre ellas$/;
+
+  function withRow(extra: string, roadmap: string[] = validRoadmap): string[] {
+    const lines = [...roadmap];
+    lines.splice(lines.findIndex((line) => line.startsWith('| 0014 |')) + 1, 0, extra);
+    return lines;
+  }
+
+  it('avisa de la 0015 con la 0013 y la 0014', async () => {
+    const result = await checkProject({ roadmap: withRow(row({ id: '0015', after: '—', size: 'S' })), debt: validDebt });
+
+    expect(result.code).toBe(0);
+    expect(result.lines.filter((line) => overlapLine.test(line))).toEqual([
+      'ROADMAP.md: aviso: línea 17: la 0015 y la 0013 (línea 10) tocan `src/avisos.js` sin «tras» entre ellas',
+      'ROADMAP.md: aviso: línea 17: la 0015 y la 0014 (línea 16) tocan `src/avisos.js` sin «tras» entre ellas',
+    ]);
+    expect(result.lines.at(-1)).toBe('Roadmap válido');
+  });
+
+  it('calla con la cadena 0015 tras 0014 tras 0013', async () => {
+    const result = await checkProject({ roadmap: withRow(row({ id: '0015', after: '0014', size: 'S' })), debt: validDebt });
+
+    expect(result.lines.filter((line) => overlapLine.test(line))).toEqual([]);
+  });
+
+  it.each([
+    ['✅', row({ id: '0015', state: '✅', after: '—', size: 'S' })],
+    ['🧪', row({ id: '0015', state: '🧪 validación diferida a x', after: '—', size: 'S' })],
+    ['⏸️', row({ id: '0015', state: '⏸️ aparcada: x', after: '—', size: 'S' })],
+    ['sin Toca', row({ id: '0015', task: '**Aviso 0015**<br>*x.*<details><summary>Brief</summary>**Carril:** feature</details>', after: '—', size: 'S' })],
+  ])('no avisa una fila de Next %s', async (_, extra) => {
+    const result = await checkProject({ roadmap: withRow(extra), debt: validDebt });
+
+    expect(result.lines.filter((line) => overlapLine.test(line))).toEqual([]);
+  });
+
+  it('no cuenta una fila de Later', async () => {
+    const roadmap = validRoadmap.map((line) => (line === laterRow ? `| 0020 | — | **Reservar con QR**<br>*x.*${brief} | ⏳ |  |  |` : line));
+
+    const result = await checkProject({ roadmap, debt: validDebt });
+
+    expect(result.lines.filter((line) => overlapLine.test(line))).toEqual([]);
+  });
+
+  it('con los dos ficheros solo compara ROADMAP.md', async () => {
+    const legacy = { 'roadmap.md': pair(files40, files41).join('\n') + '\n' };
+
+    const result = await checkProject({ roadmap: validRoadmap, debt: validDebt, legacy });
+
+    expect(result.lines.filter((line) => overlapLine.test(line))).toEqual([]);
   });
 });

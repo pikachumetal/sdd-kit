@@ -1,5 +1,5 @@
 import type { Block } from './parse.ts';
-import { openRows } from './tables.ts';
+import { openRows, rowsOf } from './tables.ts';
 import type { Row } from './tables.ts';
 
 export interface OverlapRow {
@@ -20,6 +20,9 @@ const QUOTED = /`([^`]+)`/g;
 const FILES_LABEL = 'Ficheros:';
 const RELEASE_FILES_COLUMN = 3;
 const WILDCARD_ID = '0000';
+const TOUCHES_LABEL = '**Toca:**';
+const BRIEF_END = '</details>';
+const NOW_NEXT = /^(Now|Next)\b/;
 
 export function isOpenState(state: string): boolean {
   return OPEN_STATES.some((prefix) => state.startsWith(prefix));
@@ -54,6 +57,21 @@ function twoPointRow(row: Row): OverlapRow {
 
 export function twoPointOverlapRows(lines: string[], blocks: Block[]): OverlapRow[] {
   return openRows(lines, blocks).map(twoPointRow);
+}
+
+function touchedText(task: string): string {
+  const start = task.indexOf(TOUCHES_LABEL);
+  return start === -1 ? '' : task.slice(start).split(BRIEF_END)[0];
+}
+
+function nowNextRow(row: Row): OverlapRow {
+  const [id = '', , task = '', state = '', after = ''] = row.cells;
+  const afterIds = after.split(',').map((value) => value.trim()).filter((value) => value !== '' && value !== '—');
+  return { id, line: row.index + 1, open: isOpenState(state), paths: quotedPaths(touchedText(task)), after: afterIds, before: [] };
+}
+
+export function nowNextOverlapRows(lines: string[], blocks: Block[]): OverlapRow[] {
+  return blocks.filter((block) => NOW_NEXT.test(block.section?.title ?? '')).flatMap((block) => rowsOf(lines, block).map(nowNextRow));
 }
 
 function orderGraph(rows: OverlapRow[]): OrderGraph {
