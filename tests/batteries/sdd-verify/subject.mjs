@@ -104,7 +104,8 @@ function emptyListText() {
   edit('src/app.js', (text) => text.replace(".join('\\n');", ".join('\\n') || 'sin canceladas';"));
   s.commit('fix(bookings): canceladas sin canceladas dice «sin canceladas»');
 }
-const REMOVED_SCENARIOS = ['rm1', 'rm2', 'rm3'];
+const REMOVED_SCENARIOS = ['rm1', 'rm2', 'rm2b', 'rm3'];
+const BODILESS = ['rm2', 'rm2b'];
 const briefScenario = () => (REMOVED_SCENARIOS.includes(s.SC) ? 'rm' : s.SC.replace(/n$/, ''));
 // El encargo del eje de f3, f3n, f4, f5, f6, f6b o rm1-rm3, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
 function axisBrief(base, headSha, pkg) {
@@ -178,17 +179,19 @@ function reviewBase() {
   const text = s.SC === 'f3n' ? readLf(adr).replace(/^ {2}- src\/\*\*$/m, '  - docs/**') : readFileSync(adr);
   writeFileSync(at('.docs/sdd/decisions/0003-bookings-in-memory.md'), text);
   for (const name of readdirSync(join(FIX, 'capabilities')).filter((file) => file.endsWith('.md'))) cp(join(FIX, 'capabilities', name), `.docs/sdd/capabilities/${name}`);
-  if (REMOVED_SCENARIOS.includes(s.SC)) cp(join(FIX, 'capabilities-rm', s.SC === 'rm2' ? 'bookings-rm2.md' : 'bookings-rm1.md'), '.docs/sdd/capabilities/bookings.md');
+  if (REMOVED_SCENARIOS.includes(s.SC)) cp(join(FIX, 'capabilities-rm', BODILESS.includes(s.SC) ? 'bookings-rm2.md' : 'bookings-rm1.md'), '.docs/sdd/capabilities/bookings.md');
   cp(join(...baseApp()), 'src/app.js');
   s.commit('feat: la app antes del cambio');
   return s.git('rev-parse', 'HEAD').trim();
 }
 function baseApp() {
   if (['f4', 'f6', 'f6b'].includes(s.SC)) return [IMPL, 'fixtures', 'app-done.js'];
+  if (s.SC === 'rm2b') return [FIX, 'app-rm.js'];
   return [FIX, REMOVED_SCENARIOS.includes(s.SC) ? 'app-rm-base.js' : 'app-f3-base.js'];
 }
 const F25 = '.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail';
-// La 0025 quita el aviso por correo y deja la cola de salida: rm1-rm3 solo cambian el requisito vigente o su historia.
+// La 0025 quita el aviso por correo y deja la cola de salida: rm1-rm3 solo cambian el requisito vigente o su historia;
+// en rm2b la base ya no nombra el correo y la rama no toca src/, así que nada del diff delata el aviso.
 function reviewRemoved() {
   let base = reviewBase();
   if (s.SC === 'rm3') {
@@ -200,7 +203,7 @@ function reviewRemoved() {
   s.put(`${F25}/spec.md`, readFileSync(join(FIX, 'spec-0025.md'), 'utf8'));
   s.put(`${F25}/plan.md`, readFileSync(join(FIX, 'plan-0025.md'), 'utf8'));
   s.commit('docs(sdd): abrir la feature 0025');
-  cp(join(FIX, 'app-rm.js'), 'src/app.js');
+  if (s.SC !== 'rm2b') cp(join(FIX, 'app-rm.js'), 'src/app.js');
   cp(join(FIX, 'void-rm.test.js'), 'test/void.test.js');
   s.commit('feat(bookings): anular sin aviso por correo');
   ASK = reviewPackage(base, true);

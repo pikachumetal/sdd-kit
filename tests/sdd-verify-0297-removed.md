@@ -17,3 +17,21 @@ Lo que dice el RED:
 - Regla 1 (leer el vigente y buscar su comportamiento): limpio. El encargo del kit ya trae `The project's capabilities: <salida de sdd capability index>`, que OpenSpec no trae, y los dos sujetos abren la capacidad del `REMOVED` sin que nada se lo pida.
 - Regla 2 (recuperar el vigente del historial): limpio. Sin el vigente en el sha revisado, los dos van al historial de la capacidad.
 - Regla 3 (sin vigente utilizable, «no verificado» y no buscar): falla la fila, pero lo que hacen los sujetos es mejor que lo que pide la regla en este molde. Buscan por el diff y encuentran el Critical real; con la regla habrían escrito «no verificado» y no lo habrían buscado. El molde no reproduce el caso de la fuente: un diff que no delata nada, donde buscar por el título da la retirada por buena sin serlo.
+
+## RED de `rm2b` — kit de `HEAD` (`aec923e`), 2 sujetos, 0,63 $
+
+Enmienda del 2026-11-08: `rm2` no reproducía el caso de la fuente, porque el diff delataba el aviso. `rm2b` lleva el vigente sin cuerpo de `rm2`, la base ya sin «correo» ni «mail» (`app-rm.js`) y una rama que solo añade `test/void.test.js`, sin tocar `src/`.
+
+| Escenario | Fila | Pasan | Lo que hizo cada sujeto |
+| --- | --- | --- | --- |
+| `rm2b` | RM2b | 2/2 | los dos leen `src/app.js` entero, porque el plan lo pone en «Ficheros» y la rama no lo toca, y marcan Critical `contradicts` el `outbox.push` de `voidBooking()` |
+
+RM2 reescrita («falla si da la retirada por buena») sobre las salidas de `rm2` del primer RED: 2/2.
+
+## Resultado
+
+Las tres reglas salen limpias con el texto de hoy: la viñeta del `REMOVED` no cambia (Art. I), y `rm1`, `rm2`, `rm2b` y `rm3` quedan como regresión. OpenSpec v1.16.1 queda revisada en `upstream.json` sin traer texto.
+
+Límite: en `rm2b` el plan de juguete nombra `src/app.js` en «Ficheros» y la rama no lo toca, y `rm2b-1` lo usa como pista. En campo ese plan existe igual, así que la pista es real, pero un caso sin plan no está medido.
+
+Coste de la campaña: 8 sujetos, 2,81 $ (previsión de la spec: 15,17 $; no hubo GREEN ni REFACTOR).

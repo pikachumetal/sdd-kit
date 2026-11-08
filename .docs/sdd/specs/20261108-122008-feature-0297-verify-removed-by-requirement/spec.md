@@ -20,7 +20,7 @@ Validación: agente — validación en campo (`validation.mode: field` en `sdd-k
 
 ## Capacidades
 
-- Modificadas: `verification` — «El eje Spec contrasta el diff con el delta de capacidades» pide el vigente en su GIVEN, y tres requisitos nuevos: el eje Spec busca un `REMOVED` por lo que dice su vigente, lo recupera del historial si ya no está, y lo da por no verificado si no tiene uno utilizable.
+- Modificadas: `verification` — dos requisitos nuevos: el eje Spec busca un `REMOVED` por lo que dice su vigente, y lo recupera del historial si ya no está (conducta medida con el texto de hoy, enmiendas del 2026-11-08).
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -107,9 +107,8 @@ La viñeta del `REMOVED` se sustituye entera por el borrador de la decisión 1, 
 ## Dónde se prueba
 
 - El eje Spec busca el `REMOVED` por el cuerpo del vigente: batería de `sdd-verify`, `rm1` (como `f3`: el sujeto es el eje Spec con su encargo compuesto por `compose-axis.mjs`).
-- El vigente sin cuerpo ni escenarios da «no verificado»: `rm2b` (y `rm2`, que no da la retirada por buena).
+- El vigente sin cuerpo no da la retirada por buena: `rm2` y `rm2b`, como regresión.
 - El vigente que ya no está en el fichero se recupera del historial: `rm3`, con la fila de máquina de la decisión 8.
-- El `REMOVED` con vigente que nombra lo retirado sigue dando Critical (el `MODIFIED`): control `f3`, cuyo `capabilities/bookings.md` dice que al anular se manda el correo.
 - Las copias, las fuentes y los avisos: `node tests/copies/check.ts`, `moon run kit:upstream`, `moon run kit:notices` sin cambios tras regenerar, `moon run kit:build kit:own kit:skill-size` sin rojos nuevos, y el gate de cierre.
 
 ## Términos y ADR
@@ -120,15 +119,6 @@ La viñeta del `REMOVED` se sustituye entera por el borrador de la decisión 1, 
 ## Delta de comportamiento
 
 ### Capacidad: `verification`
-
-#### MODIFIED — El eje Spec contrasta el diff con el delta de capacidades (antes: "GIVEN una spec cuyo delta trae `REMOVED — Las anulaciones se avisan por correo` en `bookings`, y un diff…")
-
-- GIVEN una spec cuyo delta trae `REMOVED — Las anulaciones se avisan por correo` en `bookings`, su requisito vigente en `capabilities/bookings.md`, que al anular manda el correo al responsable de sala, y un diff que deja `sendCancellationMail()` llamado desde `annul()` en `src/annul.js`
-- WHEN revisa el eje Spec
-- THEN marca Critical «REMOVED sigue implementado: Las anulaciones se avisan por correo», con `src/annul.js:<línea>` y el tipo de hueco `contradicts`
-- AND un `ADDED` o `MODIFIED` sin implementación es `missing` o `partial`, con el THEN del que sale
-- AND un THEN cuya verificación nombrada en «Dónde se prueba» (un test, un escenario de batería, una captura) no está en el diff es un hallazgo; si el paquete no deja verlo, es «no verificado»
-- AND con el mismo diff cambiando además la respuesta de `facturar` en `src/invoices.js`, de la capacidad `invoicing` que lista `sdd capability index`, y un delta sin subsección `invoicing`, marca Important `unrequested` «invoicing cambia sin delta: la respuesta de facturar»
 
 #### ADDED — El eje Spec busca un REMOVED por lo que dice su requisito vigente
 
@@ -141,13 +131,6 @@ La viñeta del `REMOVED` se sustituye entera por el borrador de la decisión 1, 
 - GIVEN `REMOVED — Avisar por correo` en `bookings`, un diff que deja `outbox.push` en `voidBooking()`, y «Avisar por correo» fuera de `capabilities/bookings.md` en el sha revisado y con su escenario en un commit anterior
 - WHEN revisa el eje Spec
 - THEN lee el vigente con `git log -p -- .docs/sdd/capabilities/bookings.md` y marca Critical `contradicts` «REMOVED sigue implementado: Avisar por correo» con la línea del `outbox.push` en `src/app.js`
-
-#### ADDED — Un REMOVED sin requisito vigente utilizable queda no verificado
-
-- GIVEN `REMOVED — Avisar por correo` en `bookings`, un diff que deja `outbox.push` en `voidBooking()`, y un vigente que solo dice «- Se avisa por correo.», sin escenarios
-- WHEN revisa el eje Spec
-- THEN escribe en `### Not verified` «no verificado: sin requisito vigente utilizable» para esa entrada
-- AND no la marca `missing` ni `contradicts`, ni la cuenta como superada
 
 ## Topes de palabras
 
@@ -170,6 +153,8 @@ Salida de `node tests/headless/battery.mjs plan` sobre una copia de `battery.md`
 | Suma | 20 | 15,17 |
 
 ## Enmiendas
+
+- 2026-11-08 — RED de `rm2b` (Task 3): 0 de 2 fallan, los dos marcan el Critical leyendo `src/app.js`; la regla 3 no entra, la viñeta del `REMOVED` no cambia, y salen del delta el ADDED «Un REMOVED sin requisito vigente utilizable queda no verificado» y el `MODIFIED` de «El eje Spec contrasta el diff…»; `rm1`, `rm2`, `rm2b` y `rm3` quedan como regresión — Task 3 — sin aprobar (aplica literal la enmienda aprobada del mismo día)
 
 - 2026-11-08 — RED de la Task 1 (`tests/sdd-verify-0297-removed.md`): reglas 1 y 2 limpias (RM1 2/2, RM3 2/2), regla 3 con RM2 0/2 pero con los sujetos encontrando el Critical real por el diff. Propuesta: la viñeta del `REMOVED` no cambia por las reglas 1 y 2; la 3 se mide antes con `rm2b` (vigente sin cuerpo y un diff que no delata el aviso, 2 sujetos, ~1,5 $) y entra con su GREEN solo si `rm2b` da la retirada por buena; RM2 pasa a fallar solo si da la retirada por buena; OpenSpec a `from` en `v1.16.1` e impeccable a `skill-v4.8.1` siguen; del delta se quedan los ADDED 1 y 2, y el ADDED 3 y el `MODIFIED` siguen a la regla 3 — Task 2 (solo `upstream.json` y avisos) y Task 3 (`rm2b`, RM2 y, si entra, la regla 3 con su GREEN) — aprobada: «1»
 

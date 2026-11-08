@@ -1,0 +1,69 @@
+--- [9]
+### Strengths
+
+- The spec is short and consistent. It has one `REMOVED` requirement («Avisar por correo»), a stated reason, a scope that leaves `anular-todas` out explicitly, and a named place to test it (`test/void.test.js`).
+- The new test in `test/void.test.js:5-7` drives the real `anular` command through `run`, with no mocks. Its name and assertion are in Spanish, and it has no comments that repeat the code.
+- The test does pin the spec's own decision 1 ✋ («`anular` sigue respondiendo "anulada <sala> <día>"»).
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The «Avisar por correo» requirement is marked REMOVED, but the email notice still runs** — `src/app.js:18`
+- **What's wrong:** `voidBooking` still does `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })` every time a booking is voided. The feature commit `05d0cec` changes only `test/void.test.js`. It never touches `src/app.js`, even though the plan's Task 1 lists that file under **Ficheros** (plan.md:32).
+- **Why it matters:** the whole feature is to remove this notice, and it is still produced. Running `anular Norte lun` and then `salida` still shows `responsable: anulada Norte lun`.
+- **How to fix:** remove line 18 of `voidBooking`. Then check whether `outbox`, `pending()` and the `salida` command still have a purpose. Today their only producer is `anular`. The plan should say whether `salida` stays as an empty output or goes away.
+- **Gap:** `contradicts`.
+- **Comes from:** the spec's `REMOVED — Avisar por correo` and the dev-lead's decision «El aviso por correo al anular desaparece».
+
+#### Important (Should Fix)
+
+**2. The test can't fail, so it doesn't pin the removal** — `test/void.test.js:5-7`
+- **What's wrong:** the test only checks the response text, and the code produced that same text before this feature. It passes against the unchanged `src/app.js`, so it was never a real RED. It checks nothing about the notice: it doesn't look at `outbox` (which is exported) or at `run('salida', [])` after voiding.
+- **Why it matters:** the spec's «Dónde se prueba» line names this test as the check for «Anular sin aviso», but the test doesn't cover that behavior. That is why Critical issue 1 went unnoticed.
+- **How to fix:** add an assertion that voiding produces no notice. For example, after `run('anular', ['Norte', 'lun'])`, assert `outbox` has length 0, or that `run('salida', [])` returns `''`. That test must fail against the current code before the fix goes in.
+- **Gap:** `partial`.
+- **Comes from:** the «Dónde se prueba» line «Anular sin aviso» and the REMOVED requirement.
+
+**3. The dev-lead's decision is only half covered**
+- **Decision:** «El aviso por correo al anular desaparece».
+- **What's left out:** no rule in the diff removes the notice or checks that it is gone. The only rule added checks the response text.
+- **Gap:** `missing`.
+- **Comes from:** «Decisiones tomadas con el dev-lead».
+
+#### Minor (Nice to Have)
+
+- The commit message body is the placeholder «Cuerpo del commit.» and doesn't describe the change. It also states something that isn't true: the subject says «anular sin aviso por correo», but the code still sends the notice.
+
+### Deferred minors
+
+There is no ledger, so no deferred minors to weigh.
+
+### ADRs
+
+None cover the diff, so there was nothing to apply.
+
+### Declined to judge
+
+- **`test/cancel.test.js` tests a `cancelar` command that doesn't exist in `src/app.js`, so it would return `'salas'` and fail.** This predates the branch (it isn't in the diff) and it's outside this spec. The full suite run will show whether it's red.
+- **`reservar --cada-semana` in `test/app.test.js` has no implementation in `run`.** Same reason: it predates the branch and is outside the spec.
+- **`anular-todas` (`voidAll`) doesn't send a notice.** The spec leaves it out of scope («nunca avisó»), and it is in fact correct today.
+- **`.docs/sdd/capabilities/bookings.md` still lists «Avisar por correo».** Updating the capability belongs at archive time, and matches in `.docs/` don't count for a REMOVED requirement.
+
+### Not verified
+
+- **Whether `test/void.test.js` passes:** I didn't run the suite, per the instructions. From reading the code it should pass, but that is exactly the problem (Important issue 2).
+- **Task evidence:** the package has no task reports, so I couldn't check the RED/GREEN evidence for Task 1.
+
+### Recommendations
+
+- Rewrite the test so it fails first: assert on `outbox` or on `salida`, watch it go RED, then remove `src/app.js:18`.
+- Decide in the plan what happens to `outbox`, `pending` and `salida` once nothing feeds them.
+- Once the fix is in, the main thread should run the full suite (`node --test`), which will also expose the earlier failures in `cancel.test.js` and `app.test.js`.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** the behavior the spec removes (the email notice when voiding) still runs at `src/app.js:18`, because the feature commit only adds a test. That test passes against the old code and doesn't check that the notice is gone.
+
