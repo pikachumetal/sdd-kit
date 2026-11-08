@@ -136,24 +136,43 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 4: RED** — `git archive HEAD:dist` a `.temp/k0297r`, la tanda de 6 sujetos y la rúbrica leída; la tabla del RED y qué reglas entran en `tests/sdd-verify-0297-removed.md`. Con `rm1` limpio, parar como desvío (decisión 4 de la spec).
 - [ ] **Step 5: Commit de la task** — `test(sdd-verify): RED de un REMOVED buscado por su requisito vigente`, con la batería, los fixtures, la evidencia y las salidas en `red/` de la carpeta de la spec.
 
-### Task 2 — La viñeta del `REMOVED`, OpenSpec e impeccable al día, y el GREEN
+### Task 2 — OpenSpec e impeccable al día en `upstream.json` (enmienda del 2026-11-08)
 
 **Tras**: Task 1
-**Modelo**: la sesión (Native); sujetos `opus`.
-**Tests RED**: `rm1` y los de `rm2` y `rm3` que fallaron en la Task 1.
-**Superficies**: skills, tooling (`upstream.json`), docs.
-**Verificación**: `moon run kit:notices`, y `git diff --stat` solo con `THIRD_PARTY_NOTICES.md`, `dist/THIRD_PARTY_NOTICES.md` y los dos `NOTICE` de `sdd-verify` además de lo editado; `moon run kit:build`; `node tests/copies/check.ts` → `Copias al día: 31 ficheros.`; `moon run kit:upstream` sin línea de OpenSpec ni de impeccable (quedan las de superpowers `skills/sdd-grilling/SKILL.md` y `cli/src/tasks/`, y mattpocock `skills/sdd-grilling/SKILL.md`); `moon run kit:own` con las mismas 26 líneas que antes; `moon run kit:skill-size` sin `FALLA` nuevo (la de `sdd-roadmap` ya estaba); desde `cli/`, `npx vitest run test/kit/notices.test.ts test/kit/dist.test.ts test/kit/skills.test.ts test/kit/word-budget.test.ts test/kit/copies.test.ts` → `Test Files  5 passed (5)`. GREEN: `BATTERY=sdd-verify SCENARIOS="rm1 rm2 rm3 f3" … PHASE=green KIT_DIR=.temp/k0297g … node tests/headless/battery.mjs run`, rúbricas `RM1`-`RM3` y `S`.
+**Modelo**: la sesión (Native).
+**Tests RED**: `node tests/copies/check.ts` da hoy `skills/sdd-verify/references/: sin anotar → 0297`, y `moon run kit:upstream` da las líneas de OpenSpec y de impeccable.
+**Superficies**: tooling (`upstream.json`), docs.
+**Verificación**: `moon run kit:notices`, y `git diff --stat` solo con `THIRD_PARTY_NOTICES.md`, `dist/THIRD_PARTY_NOTICES.md` y los dos `NOTICE` de `sdd-verify` además de lo editado; `moon run kit:build`; `node tests/copies/check.ts` → `Copias al día: 31 ficheros.`; `moon run kit:upstream` sin línea de OpenSpec ni de impeccable (quedan las de superpowers `skills/sdd-grilling/SKILL.md` y `cli/src/tasks/`, y mattpocock `skills/sdd-grilling/SKILL.md`); desde `cli/`, `npx vitest run test/kit/notices.test.ts test/kit/dist.test.ts test/kit/copies.test.ts` → `Test Files  3 passed (3)`.
 
 **Interfaces**:
-- Consume: el veredicto del RED (qué reglas entran).
-- Produce: la viñeta nueva, que lee el eje Spec en la revisión final.
+- Consume: nada.
+- Produce: la copia de `spec-reviewer-prompt.md` con OpenSpec en `from`, que la Task 3 anota si entra la regla 3.
 
-**Ficheros**: modificar `skills/sdd-verify/references/spec-reviewer-prompt.md`, `upstream.json`, `tests/batteries/sdd-verify/battery.md` (procedencia), `tests/sdd-verify-0297-removed.md`; regenerar `THIRD_PARTY_NOTICES.md`, `skills/sdd-verify/NOTICE`, `dist/`.
+**Ficheros**: modificar `upstream.json`, y con él la spec, el plan y `tasks.md` de la enmienda; regenerar `THIRD_PARTY_NOTICES.md`, `skills/sdd-verify/NOTICE`, `dist/`.
 
-- [ ] **Step 1: Implementación** — en `spec-reviewer-prompt.md`, la viñeta del `REMOVED` sustituida por el borrador de la decisión 1 de la spec, en un bloque `<!-- kit: 0297 -->` seguido de `<!-- kit: 0312 -->` antes de «Each THEN has…»; sin la frase de la regla 2 o la 3 si su RED salió limpio. En `upstream.json`, la entrada de `spec-reviewer-prompt.md` con `"note": "Las comprobaciones del delta de `openspec-verify-change`, adaptadas en bloques del kit: no son literales y no llevan `de:`."` y `"from": [{ "source": "OpenSpec", "version": "v1.16.1", "path": "src/core/templates/workflows/verify-change.ts" }]`; fuera la entrada `pending: "0297"`; impeccable a `"version": "skill-v4.8.1"`.
+- [ ] **Step 1: Implementación** — en `upstream.json`, la entrada de `spec-reviewer-prompt.md` con `"note": "Las comprobaciones del delta de `openspec-verify-change`, adaptadas en bloques del kit: no son literales y no llevan `de:`."` y `"from": [{ "source": "OpenSpec", "version": "v1.16.1", "path": "src/core/templates/workflows/verify-change.ts" }]`; fuera la entrada `pending: "0297"`; impeccable a `"version": "skill-v4.8.1"`.
 - [ ] **Step 2: Build** — `moon run kit:notices` y `moon run kit:build`.
-- [ ] **Step 3: Verificación** — las comprobaciones de «Verificación»; el GREEN de `rm1`-`rm3` y el control `f3` (8 sujetos), con REFACTOR de n = 2 por regla que falle; la tabla del GREEN en la evidencia y la fila de procedencia de `battery.md` («`spec-reviewer-prompt.md`, viñeta del `REMOVED`: el vigente por su título, el historial, el no verificado» → OpenSpec v1.16.1, #2083 y #2114; RED y GREEN de `rm1`-`rm3`).
-- [ ] **Step 4: Commit de la task** — `feat(sdd-verify): un REMOVED se busca por lo que dice su requisito vigente`.
+- [ ] **Step 3: Verificación** — las comprobaciones de «Verificación».
+- [ ] **Step 4: Commit de la task** — `chore(kit): OpenSpec v1.16.1 e impeccable skill-v4.8.1 en upstream.json`, con la enmienda de spec, plan y `tasks.md`.
+
+### Task 3 — enmienda 2026-11-08: la regla 3 con `rm2b`, y RM2
+
+**Tras**: Task 2
+**Modelo**: la sesión (Native); sujetos `opus`.
+**Tests RED**: `rm2b`, con el kit de `HEAD`: el vigente sin cuerpo de `rm2` y un diff que no delata el aviso.
+**Superficies**: tooling (batería), docs; skills solo si la regla 3 entra.
+**Verificación**: `DRY_RUN=1` de `rm2b`; RED `BATTERY=sdd-verify SCENARIOS=rm2b SPEC_DIR=<carpeta de la spec> PHASE=red2 KIT_DIR=<git archive HEAD:dist> RUNS_DIR=.temp/r0297 MAX_PARALLEL=3 COST_CAP=2 node tests/headless/battery.mjs run`, fila RM2b leída a mano. Si RM2b falla en 1 o 2 de 2: la frase de la regla 3 en la viñeta, `moon run kit:build`, `node tests/copies/check.ts` → `Copias al día: 31 ficheros.`, `moon run kit:own` con las mismas 26 líneas, y el GREEN `SCENARIOS="rm2b rm2 f3"` con `PHASE=green` y el kit de `dist/` reconstruido, rúbricas RM2b, RM2 y S. Siempre: `moon run kit:test-headless` → `Tests  448 passed (448)` o más.
+
+**Interfaces**:
+- Consume: la entrada de `upstream.json` de la Task 2 y el montaje `reviewRemoved()` de la Task 1.
+- Produce: la fila RM2 reescrita y, si entra, la viñeta con la regla 3.
+
+**Ficheros**: crear `tests/batteries/sdd-verify/fixtures/app-rm2b-base.js` y `app-rm2b.js`; modificar `tests/batteries/sdd-verify/subject.mjs`, `battery.md`, `tests/sdd-verify-0297-removed.md`; si entra la regla 3, `skills/sdd-verify/references/spec-reviewer-prompt.md` y `dist/`, y la spec (sin la regla 3, salen del delta el ADDED 3 y el `MODIFIED`, por la enmienda aprobada).
+
+- [ ] **Step 1: Molde** — `rm2b`: la base con el aviso sin rastro de correo (`outbox.push({ to: 'responsable', body: … })` y `salida`) y la rama que solo cambia otra cosa del comando `anular` (el texto de «sin reserva»), sin tocar el aviso; `bookings-rm2.md` como vigente. Fila `rm2b` (n 2, `opus`), su montaje y la fila RM2b: falla si da la retirada de «Avisar por correo» por buena o confirmada sin «no verificado». RM2 reescrita: falla si da la retirada por buena o confirmada.
+- [ ] **Step 2: RED** — 2 sujetos con el kit de `HEAD`; tabla en la evidencia. Con 0 de 2 que fallan, la regla 3 no entra: la spec quita el ADDED 3 y el `MODIFIED` del delta (enmienda aprobada) y `rm2b` queda como regresión.
+- [ ] **Step 3: GREEN, si entra** — la frase «A current requirement with nothing beyond its title, no body and no scenarios, is no evidence: write «no verificado: sin requisito vigente utilizable» for that entry and don't search.» en la viñeta del `REMOVED`, que se sustituye entera en un bloque `<!-- kit: 0297 -->` seguido de `<!-- kit: 0312 -->`; GREEN de `rm2b`, `rm2` y `f3`, con REFACTOR de n = 2 si falla; fila de procedencia en `battery.md`.
+- [ ] **Step 4: Commit de la task** — `test(sdd-verify): la regla 3 de OpenSpec medida con rm2b` o, si entra, `feat(sdd-verify): un REMOVED sin requisito vigente utilizable queda no verificado`.
 
 ---
 

@@ -82,8 +82,9 @@ Hoy el eje Spec de la revisión final recibe un `REMOVED` con solo su título y 
 
 ## Scope
 
-- Entra: la viñeta del `REMOVED` de `skills/sdd-verify/references/spec-reviewer-prompt.md`, sustituida entera con la regla 1 (leer el vigente por su título exacto y buscar su comportamiento, nunca su título); `upstream.json` (OpenSpec a `from` de la copia de `spec-reviewer-prompt.md` en `v1.16.1`, sin la entrada `pending: "0297"`; impeccable a `skill-v4.8.1`); `THIRD_PARTY_NOTICES.md` y `skills/sdd-verify/NOTICE`, regenerados con `moon run kit:notices`; `dist/`, con `moon run kit:build`; los escenarios `rm1`, `rm2` y `rm3` de `tests/batteries/sdd-verify/` (`battery.md`, `subject.mjs`, `fixtures/`); la evidencia en `tests/sdd-verify-0297-removed.md`.
-- Entra, si el RED lo exhibe: la regla 2 (recuperar el vigente del historial de git; salida vacía es ruta mal escrita) con `rm3`, y la regla 3 (un vigente sin cuerpo ni escenarios es «no verificado» y no se busca) con `rm2`.
+- Entra: `upstream.json` (OpenSpec a `from` de la copia de `spec-reviewer-prompt.md` en `v1.16.1`, sin la entrada `pending: "0297"`; impeccable a `skill-v4.8.1`); `THIRD_PARTY_NOTICES.md` y `skills/sdd-verify/NOTICE`, regenerados con `moon run kit:notices`; `dist/`, con `moon run kit:build`; los escenarios `rm1`, `rm2` y `rm3` de `tests/batteries/sdd-verify/` (`battery.md`, `subject.mjs`, `fixtures/`); la evidencia en `tests/sdd-verify-0297-removed.md`.
+- Entra, si el RED lo exhibe: la regla 3 (un vigente sin cuerpo ni escenarios es «no verificado» y no se busca) con `rm2b`, un vigente sin cuerpo y un diff que no delata el aviso; con ella, la viñeta del `REMOVED` de `skills/sdd-verify/references/spec-reviewer-prompt.md` se sustituye entera con esa frase y su GREEN (`rm2b`, `rm2`, `f3`). Las reglas 1 y 2 salieron limpias en el RED (RM1 2/2, RM3 2/2): no se escriben, y `rm1` y `rm3` quedan como regresión (enmienda del 2026-11-08).
+- Entra: RM2 falla solo si da la retirada por buena (un Critical por el diff o «no verificado» valen).
 - No entra: traducir `## Restricciones de código` y `## Cómo revisar` (0311); las frases de `sdd-verify` que `kit:own` da repetidas (0311); los demás rojos de `kit:upstream`: superpowers `cli/src/tasks/` (0313), `brainstorming` y `grilling` (0314); el rojo previo de `kit:skill-size` en `sdd-roadmap` (21.680 bytes, no lo toca esta feature); `RENAMED`, que el kit no tiene.
 
 ## Lo que se retira o cambia de forma
@@ -106,7 +107,7 @@ La viñeta del `REMOVED` se sustituye entera por el borrador de la decisión 1, 
 ## Dónde se prueba
 
 - El eje Spec busca el `REMOVED` por el cuerpo del vigente: batería de `sdd-verify`, `rm1` (como `f3`: el sujeto es el eje Spec con su encargo compuesto por `compose-axis.mjs`).
-- El vigente sin cuerpo ni escenarios da «no verificado»: `rm2`.
+- El vigente sin cuerpo ni escenarios da «no verificado»: `rm2b` (y `rm2`, que no da la retirada por buena).
 - El vigente que ya no está en el fichero se recupera del historial: `rm3`, con la fila de máquina de la decisión 8.
 - El `REMOVED` con vigente que nombra lo retirado sigue dando Critical (el `MODIFIED`): control `f3`, cuyo `capabilities/bookings.md` dice que al anular se manda el correo.
 - Las copias, las fuentes y los avisos: `node tests/copies/check.ts`, `moon run kit:upstream`, `moon run kit:notices` sin cambios tras regenerar, `moon run kit:build kit:own kit:skill-size` sin rojos nuevos, y el gate de cierre.
@@ -169,6 +170,8 @@ Salida de `node tests/headless/battery.mjs plan` sobre una copia de `battery.md`
 | Suma | 20 | 15,17 |
 
 ## Enmiendas
+
+- 2026-11-08 — RED de la Task 1 (`tests/sdd-verify-0297-removed.md`): reglas 1 y 2 limpias (RM1 2/2, RM3 2/2), regla 3 con RM2 0/2 pero con los sujetos encontrando el Critical real por el diff. Propuesta: la viñeta del `REMOVED` no cambia por las reglas 1 y 2; la 3 se mide antes con `rm2b` (vigente sin cuerpo y un diff que no delata el aviso, 2 sujetos, ~1,5 $) y entra con su GREEN solo si `rm2b` da la retirada por buena; RM2 pasa a fallar solo si da la retirada por buena; OpenSpec a `from` en `v1.16.1` e impeccable a `skill-v4.8.1` siguen; del delta se quedan los ADDED 1 y 2, y el ADDED 3 y el `MODIFIED` siguen a la regla 3 — Task 2 (solo `upstream.json` y avisos) y Task 3 (`rm2b`, RM2 y, si entra, la regla 3 con su GREEN) — aprobada: «1»
 
 ## Aprobaciones
 
