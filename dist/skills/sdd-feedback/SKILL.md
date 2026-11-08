@@ -20,7 +20,6 @@ The ticket is what this session learned about the kit, written for the agent who
 
 ## Rules
 
-- **Privacy**: never client, project, product or people names, nor code or business rules. If a finding isn't understood without a datum from the domain, replace it with a generic descriptor («una regla de cálculo de precios», «el interlocutor del cliente»); the finding is never omitted for privacy.
 - **Every finding carries its acceptance criterion** — a GIVEN/WHEN/THEN scenario or the RED that fails today and would pass with the proposal. Without it it isn't a finding, it's a complaint.
 - **Every proposal says whether it is verified** (`sí — <cómo>` or `sin verificar`). A cited execution failure carries the exact command, the shell and the error line.
 - **Every version, figure or quote in "Qué pasó" comes from a file or a command named in "Fuente"; one you remember and haven't checked doesn't go in: check it or drop it** (`tests/sdd-feedback-0150-red.md`, fb1). It holds for the header too. "Fuente" names kit metadata or files (`.docs/sdd/sdd-kit.json`, a plugin's version, a skill) or a command; a datum from a project file goes with a generic descriptor, like the rest of the ticket.
