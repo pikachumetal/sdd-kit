@@ -149,7 +149,7 @@ describe('sdd roadmap check: las filas de ROADMAP.md', () => {
 
   it('accepts Tras ids named by the changelog as whole words', async () => {
     const roadmap = lines();
-    roadmap[15] = row({ id: '0014', after: '0011', size: 'S' });
+    roadmap[15] = row({ id: '0014', after: '0011, 0013', size: 'S' });
     const named = await checkProject({ roadmap, changelog: releasedChangelog('- **Feature 0011** — Aviso por correo.') });
     expect(named.lines).toEqual(['Roadmap válido']);
     const inside = await checkProject({ roadmap, changelog: releasedChangelog('- **Feature 0110** — Aviso por SMS.') });
@@ -167,7 +167,7 @@ describe('sdd roadmap check: las filas de ROADMAP.md', () => {
   it('keeps escaped pipes inside the brief', async () => {
     const roadmap = lines();
     const escaped = brief.replace('**Salda:** nada', '**Salda:** la fila de la planta \\| nada');
-    roadmap[15] = row({ id: '0014', task: `**Exportar a CSV**<br>*Las reservas del mes.*${escaped}`, after: '0012', size: 'S' });
+    roadmap[15] = row({ id: '0014', task: `**Exportar a CSV**<br>*Las reservas del mes.*${escaped}`, after: '0012, 0013', size: 'S' });
     expect((await checkProject({ roadmap })).lines).toEqual(['Roadmap válido']);
   });
 });
