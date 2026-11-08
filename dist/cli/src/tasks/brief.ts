@@ -72,8 +72,8 @@ function requireTasksFile(planText: string, plan: string): void {
 export async function writeBrief(request: BriefRequest): Promise<{ path: string; lines: number }> {
   const { plan, task } = request;
   const planText = readPlan(plan);
-  requireTasksFile(planText, plan);
   const path = request.out ?? join(await workspaceFor(plan), `task-${task}-brief.md`);
+  requireTasksFile(planText, plan);
   const picked = briefLines(planText, task);
   if (picked.length === 0) throw new DomainError(`task ${task} not found in ${plan} (no heading matching 'Task ${task}')`);
   writeFileSync(path, `${picked.join('\n')}\n`);

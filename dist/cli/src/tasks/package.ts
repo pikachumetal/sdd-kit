@@ -2,6 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DomainError } from '../cli/args.ts';
 import { git } from '../git/git.ts';
+import { requireRepo } from './repo.ts';
 import { requireRevision } from './revision.ts';
 import { workspaceFor } from './workspace.ts';
 
@@ -44,6 +45,7 @@ async function packageBody(range: string): Promise<string> {
 
 export async function writePackage(request: PackageRequest): Promise<{ path: string; commits: number; bytes: number }> {
   const { base, head } = request;
+  await requireRepo('commit');
   await requireRevision(base, 'BASE');
   await requireRevision(head, 'HEAD');
   const commits = await checkRange({ base, head });
