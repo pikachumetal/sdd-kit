@@ -1,7 +1,7 @@
 import { UsageError } from '../cli/args.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { git } from '../git/git.ts';
-import { writeBrief } from './brief.ts';
+import { isTaskId, writeBrief } from './brief.ts';
 import { finishTask } from './done.ts';
 import { writePackage } from './package.ts';
 import { DIRECTORY_OPTION, enterDirectory, requireRepo } from './repo.ts';
@@ -14,8 +14,8 @@ function positional(args: VerbArgs, index: number, usage: string): string {
   return value;
 }
 
-function taskNumber(value: string, usage: string): string {
-  if (!/^[0-9]+$/.test(value)) throw new UsageError(`usage: ${usage}`);
+function taskId(value: string, usage: string): string {
+  if (!isTaskId(value)) throw new UsageError(`usage: ${usage}`);
   return value;
 }
 
@@ -52,9 +52,10 @@ export const taskStartVerb: Verb = {
   async run(args, io) {
     const usage = 'sdd task start PLAN_FILE TASK_NUMBER';
     const [plan, number] = exactly(args, 2, usage);
-    const task = taskNumber(number, usage);
+    const task = taskId(number, usage);
     await requireRepo('commit');
-    const { path } =await writeBrief({ plan, task });
+    const { path, warnings } = await writeBrief({ plan, task });
+    warnings.forEach((warning) => io.err(warning));
     io.out(`brief: ${path}`);
     io.out(`base: ${(await git(process.cwd(), ['rev-parse', 'HEAD'])).stdout.trim()}`);
     return 0;
@@ -71,8 +72,9 @@ export const taskBriefVerb: Verb = {
     enterDirectory(args);
     const usage = 'sdd task brief PLAN_FILE TASK_NUMBER [OUTFILE]';
     const [plan, number, out] = between(args, [2, 3], usage);
-    const task = taskNumber(number, usage);
+    const task = taskId(number, usage);
     const written = await writeBrief({ plan, task, out });
+    written.warnings.forEach((warning) => io.err(warning));
     io.out(`wrote ${written.path}: ${written.lines} lines`);
     return 0;
   },
@@ -88,7 +90,7 @@ export const taskDoneVerb: Verb = {
     const usage = 'sdd task done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]';
     const [plan, number, base, ...command] = args.positionals;
     if (!args.hasSeparator || command.length === 0 || base === undefined) throw new UsageError(`usage: ${usage}`);
-    return finishTask({ plan, task: taskNumber(number, usage), base, command }, io);
+    return finishTask({ plan, task: taskId(number, usage), base, command }, io);
   },
 };
 
