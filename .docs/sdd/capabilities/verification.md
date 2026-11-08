@@ -221,6 +221,18 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - THEN sale solo el eje Spec, que recibe la ruta de `research.md`
 - AND marca como Important o más la recomendación, una fila cuyo estado su evidencia no sostiene y el fichero de `src/`
 
+### El eje Spec busca un REMOVED por lo que dice su requisito vigente
+
+- GIVEN `REMOVED — Avisar por correo` en `bookings`, su vigente en `capabilities/bookings.md` con «AND `salida` lista «anulada Norte lun» para el responsable», y un diff que quita `formatMail()` y deja `outbox.push` en `voidBooking()`, sin «correo» ni «mail» en el código
+- WHEN revisa el eje Spec
+- THEN marca Critical `contradicts` «REMOVED sigue implementado: Avisar por correo» con la línea del `outbox.push`, porque busca lo que dicen el cuerpo y los escenarios del vigente, no su título
+
+### El eje Spec recupera del historial un requisito vigente que ya no está
+
+- GIVEN `REMOVED — Avisar por correo` en `bookings`, un diff que deja `outbox.push` en `voidBooking()`, y «Avisar por correo» fuera de `capabilities/bookings.md` en el sha revisado y con su escenario en un commit anterior
+- WHEN revisa el eje Spec
+- THEN lee del historial de git la última versión del vigente, la anterior al commit que lo quitó, y marca Critical `contradicts` «REMOVED sigue implementado: Avisar por correo» con la línea del `outbox.push` en `src/app.js`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:` en `tasks.md` (sin él, en la presentación de la validación); los hallazgos, rulings y minors en el ledger del workspace del plan (en lite, el de `spec.md`), hasta que «Finish» los cosecha.

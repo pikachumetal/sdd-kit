@@ -1,0 +1,67 @@
+--- [16]
+Revisión del eje Spec de `3753f22`. Leí el paquete entero (61 líneas, una pasada) y los ficheros que nombra. **No está para merge: el aviso que la spec manda quitar se sigue mandando.**
+
+### Strengths
+- El diff es pequeño y se queda en lo que pide el plan: solo toca `src/app.js` y `test/void.test.js`.
+- `anular` sigue respondiendo «anulada <sala> <día>» (`src/app.js:19`), como pide la decisión ✋ 1. El test `test/void.test.js:5-7` lo fija.
+- `anular-todas` no cambia (`src/app.js:22-26`), así que se respeta lo que el Scope deja fuera.
+- Se quitó `formatMail` sin dejar referencias sueltas.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. El aviso que se debía quitar se sigue mandando** (`contradicts`)
+- **Origen:** el delta `REMOVED — Avisar por correo` y la decisión del dev-lead «El aviso por correo al anular desaparece».
+- **Dónde:** `src/app.js:18`: `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` });`
+- **Qué pasa:** el commit no borra el aviso, solo le cambia el formato. Quitó `formatMail` y el sufijo «(enviado por correo)», pero cada `anular` sigue metiendo un aviso para el responsable en `outbox`, y `salida` (`src/app.js:28-30`) lo saca.
+- **Cómo se ve:** con la reserva de Norte del lunes, `anular Norte lun` y luego `salida` devuelve `responsable: anulada Norte lun`. Según la spec no debería devolver nada.
+- **Por qué importa:** la spec dice que el responsable avisa en persona («el correo sobra»). Si el aviso sigue saliendo, la feature no hace lo que promete, aunque el mensaje del commit diga «sin aviso por correo».
+- **Arreglo:** borrar la línea 18 entera.
+- Por la misma causa, la decisión del dev-lead queda **cubierta a medias**: «El aviso por correo al anular desaparece» — la regla quita el formato de correo y deja el aviso.
+
+#### Important (Should Fix)
+
+**2. El test no comprueba lo que dice su nombre** (`partial`)
+- **Origen:** la línea «Anular sin aviso» de «Dónde se prueba».
+- **Dónde:** `test/void.test.js:5-7`
+- **Qué pasa:** el test se llama «anular responde sin aviso», pero solo mira lo que responde el comando. No mira `outbox` ni `salida`, así que pasa aunque el aviso siga saliendo, que es justo lo que pasa ahora.
+- **Arreglo:** usar una reserva de prueba y comprobar `run('salida', [])` (o `outbox`) antes y después de anular.
+- **Ojo al escribirlo:** `outbox` es un array de módulo compartido y `bookings` solo tiene a Norte-lun, que otros ficheros de test también anulan o cancelan. Hay que medir el cambio en `outbox` dentro del mismo test, sin depender del orden de los tests.
+
+#### Minor (Nice to Have)
+- Nada.
+
+#### Restricciones de código
+- Se cumplen. La interfaz está en castellano y el diff no añade comentarios.
+
+#### ADRs
+- **`0003` (accepted):** su Confirmación se cumple. `src/app.js` no importa `node:fs` ni ningún paquete de base de datos, y el diff no añade imports.
+
+#### Capacidades
+- `bookings` es la única capacidad que toca el diff, y tiene su apartado en el delta.
+- `availability` y `reports` no cambian.
+- No hay nada `unrequested`.
+
+#### Ledger
+- No hay ledger, así que no hay minors aplazados que decidir.
+
+### Declined to judge
+- **`test/app.test.js:9-11` (`reservar`) y `test/cancel.test.js` (`cancelar`):** prueban comandos que `run` no tiene, ni antes del cambio (`7d5cb07`) ni ahora. Seguramente fallan, pero vienen de antes y quedan fuera del diff y de la spec.
+- **Fila del roadmap «Avisos por correo antes de la reserva»:** es planificación futura en `.docs/`, no código que corra.
+- **`.docs/sdd/capabilities/bookings.md:15-17` sigue con el requisito «Avisar por correo»:** quitarlo es tarea del archivado (sdd-archive), no de este diff.
+- **El estado compartido de `outbox` y `bookings` entre tests:** es cosa del eje de calidad. Aquí solo lo nombro como algo a tener en cuenta al arreglar el punto 2.
+
+### Not verified
+- **No ejecuté ningún test.** El encargo prohíbe correr la suite y el paquete no trae informe de la task con la salida de `node --test test/void.test.js`. Que el aviso sigue saliendo lo deduzco leyendo el código (`src/app.js:18` y `:28-30`), sin ejecutarlo.
+
+### Recommendations
+- Antes del merge, el hilo principal debería correr `node --test` completo, con una prueba nueva de `anular` → `salida` que dé vacío.
+- Al archivar, quitar «Avisar por correo» de `.docs/sdd/capabilities/bookings.md`.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** El requisito que el delta marca como REMOVED se sigue ejecutando: `voidBooking` mete el aviso al responsable en `outbox` y `salida` lo muestra. El test que debía impedirlo no mira el aviso, así que no lo detecta.
+
