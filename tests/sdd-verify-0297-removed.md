@@ -1,6 +1,6 @@
 # sdd-verify, feature 0297: un REMOVED buscado por su requisito vigente
 
-Escenarios `rm1`, `rm2` y `rm3` de `tests/batteries/sdd-verify/`, Opus, n = 2. El sujeto es el eje Spec de la revisión final sobre la 0025 de juguete («Quitar el aviso por correo al anular»), con `#### REMOVED — Avisar por correo` en `bookings`. La rama quita `formatMail()` y deja `outbox.push` en `voidBooking()`, sin «correo» ni «mail» en el código. Solo cambia el requisito vigente: con escenario (`rm1`), sin cuerpo (`rm2`) o fuera del sha revisado y en el historial (`rm3`). Salidas en `.docs/sdd/specs/20261108-122008-feature-0297-verify-removed-by-requirement/red/out/`.
+Escenarios `rm1`, `rm2`, `rm2b` y `rm3` de `tests/batteries/sdd-verify/`, Opus, n = 2 (`rm2b`, de la enmienda del 2026-11-08, más abajo). El sujeto es el eje Spec de la revisión final sobre la 0025 de juguete («Quitar el aviso por correo al anular»), con `#### REMOVED — Avisar por correo` en `bookings`. La rama quita `formatMail()` y deja `outbox.push` en `voidBooking()`, sin «correo» ni «mail» en el código. Solo cambia el requisito vigente: con escenario (`rm1`), sin cuerpo (`rm2`) o fuera del sha revisado y en el historial (`rm3`). Salidas en `.docs/sdd/specs/20261108-122008-feature-0297-verify-removed-by-requirement/red/out/`.
 
 ## RED — kit de `HEAD` (`d2532ea`), 6 sujetos, 2,18 $
 
@@ -28,10 +28,12 @@ Enmienda del 2026-11-08: `rm2` no reproducía el caso de la fuente, porque el di
 
 RM2 reescrita («falla si da la retirada por buena») sobre las salidas de `rm2` del primer RED: 2/2.
 
+Pasada de fix de la revisión final (eje Código, Important): el mensaje del commit de la rama, «feat(bookings): anular sin aviso por correo», era otra pista. Con «test(bookings): cubrir anular», 2 sujetos más, 0,54 $: RM2b 2/2, los dos marcan Critical `contradicts` el `outbox.push`, y los dos vuelven a citar el plan que nombra `src/app.js`, así que el límite del caso sin plan pesa. Salidas en `fix/out/`.
+
 ## Resultado
 
 Las tres reglas salen limpias con el texto de hoy: la viñeta del `REMOVED` no cambia (Art. I), y `rm1`, `rm2`, `rm2b` y `rm3` quedan como regresión. OpenSpec v1.16.1 queda revisada en `upstream.json` sin traer texto.
 
 Límite: en `rm2b` el plan de juguete nombra `src/app.js` en «Ficheros» y la rama no lo toca, y `rm2b-1` lo usa como pista. En campo ese plan existe igual, así que la pista es real, pero un caso sin plan no está medido.
 
-Coste de la campaña: 8 sujetos, 2,81 $ (previsión de la spec: 15,17 $; no hubo GREEN ni REFACTOR).
+Coste de la campaña: 10 sujetos, 3,35 $ (previsión de la spec: 15,17 $; no hubo GREEN ni REFACTOR).

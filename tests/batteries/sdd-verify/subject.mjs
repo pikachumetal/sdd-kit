@@ -107,7 +107,7 @@ function emptyListText() {
 const REMOVED_SCENARIOS = ['rm1', 'rm2', 'rm2b', 'rm3'];
 const BODILESS = ['rm2', 'rm2b'];
 const briefScenario = () => (REMOVED_SCENARIOS.includes(s.SC) ? 'rm' : s.SC.replace(/n$/, ''));
-// El encargo del eje de f3, f3n, f4, f5, f6, f6b o rm1-rm3, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
+// El encargo del eje de f3, f3n, f4, f5, f6, f6b, rm1, rm2, rm2b o rm3, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
 function axisBrief(base, headSha, pkg) {
   const axis = ['f4', 'f5', 'f6', 'f6b'].includes(s.SC) ? 'code' : 'spec';
   const files = s.git('diff', '--name-only', base, 'HEAD', '--', '.', ':(exclude,glob).docs/sdd/specs/**').split('\n').filter(Boolean);
@@ -191,7 +191,7 @@ function baseApp() {
 }
 const F25 = '.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail';
 // La 0025 quita el aviso por correo y deja la cola de salida: rm1-rm3 solo cambian el requisito vigente o su historia;
-// en rm2b la base ya no nombra el correo y la rama no toca src/, así que nada del diff delata el aviso.
+// en rm2b la base ya no nombra el correo y la rama no toca src/, con un commit que no nombra el aviso.
 function reviewRemoved() {
   let base = reviewBase();
   if (s.SC === 'rm3') {
@@ -205,7 +205,7 @@ function reviewRemoved() {
   s.commit('docs(sdd): abrir la feature 0025');
   if (s.SC !== 'rm2b') cp(join(FIX, 'app-rm.js'), 'src/app.js');
   cp(join(FIX, 'void-rm.test.js'), 'test/void.test.js');
-  s.commit('feat(bookings): anular sin aviso por correo');
+  s.commit(s.SC === 'rm2b' ? 'test(bookings): cubrir anular' : 'feat(bookings): anular sin aviso por correo');
   ASK = reviewPackage(base, true);
 }
 function voidWithReason() {

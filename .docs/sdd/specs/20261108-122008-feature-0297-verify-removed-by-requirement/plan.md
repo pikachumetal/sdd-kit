@@ -11,15 +11,15 @@ created: 2026-11-08
 
 ## Decisiones que he tomado yo — valida estas
 
-1. Modelo y effort: las dos tasks las hace la sesión (Native); los sujetos de la batería, en `opus`, el modelo de las filas del eje Spec; la revisión final con los ejes de `sdd-verify` (Spec `sdd-kit:effort-high` + `opus`, Código `sdd-kit:effort-high` + `sonnet`).
-2. Ejecución: Native — dos tasks encadenadas (la 2 necesita el RED de la 1 para decidir qué frases entran), un error lo cazan las comprobaciones y la batería de su task, y el plan cabe en un contexto.
+1. Modelo y effort: las tasks (dos al aprobar el plan; la Task 3 la añadió la enmienda del 2026-11-08) las hace la sesión (Native); los sujetos de la batería, en `opus`, el modelo de las filas del eje Spec; la revisión final con los ejes de `sdd-verify` (Spec `sdd-kit:effort-high` + `opus`, Código `sdd-kit:effort-high` + `sonnet`).
+2. Ejecución: Native — tres tasks encadenadas (la 2 necesita el RED de la 1 para decidir qué frases entran), un error lo cazan las comprobaciones y la batería de su task, y el plan cabe en un contexto.
 3. El RED corre con el kit de `HEAD` antes de tocar la viñeta: `KIT_DIR` sale de `git archive HEAD:dist` en `.temp/k0297r` (ruta corta, `tech-stack.md`, «`RUNS_DIR` en una ruta corta»), y el GREEN, de `dist/` reconstruido y sin commitear, copiado a `.temp/k0297g`.
 4. Los tres moldes comparten código y cambian solo la capacidad o su historia (decisión 8 de la spec); `compose-axis.mjs` lee `fixtures/axis-rm.json` para los tres, igual que `f3n` lee el de `f3`.
 5. Tandas de hasta 3 sujetos a la vez (`MAX_PARALLEL=3`, `control.maxParallelAgents`), con `COST_CAP` de la previsión de la spec.
 6. Coste: ~2 h de implementación y campaña; sujetos 15,17 $ como techo (spec, «Previsión de coste»).
 7. Review Focus: 2 entradas que la spec no fija; ver la sección.
 
-**Goal**: el eje Spec busca un `REMOVED` por el cuerpo de su requisito vigente, lo recupera del historial si falta y lo deja «no verificado» si no es utilizable; OpenSpec e impeccable al día en `upstream.json`.
+**Goal**: medir si el eje Spec busca un `REMOVED` por el cuerpo de su requisito vigente, lo recupera del historial si falta y no lo da por bueno sin vigente utilizable, y escribir solo la regla cuyo RED falle; OpenSpec e impeccable al día en `upstream.json`. (Tras las enmiendas del 2026-11-08: las tres salieron limpias y la viñeta no cambia.)
 
 **Architecture**: una viñeta de un encargo de eje, su registro de fuente (`upstream.json` y los avisos que genera) y tres escenarios nuevos de la batería de `sdd-verify`. La frase que falla se sustituye en su sitio (ADR 0022).
 
@@ -27,7 +27,7 @@ created: 2026-11-08
 
 **Spec**: `./spec.md`
 
-**Ejecución**: native, porque son 2 tasks encadenadas por el veredicto del RED, un error lo caza la comprobación o la batería de su propia task y el plan cabe en un contexto. Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: invoca `sdd-implement-subagent` y despacha con él las que quedan sobre el mismo ledger. La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.
+**Ejecución**: native, porque son 3 tasks encadenadas por el veredicto del RED, un error lo caza la comprobación o la batería de su propia task y el plan cabe en un contexto. Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: invoca `sdd-implement-subagent` y despacha con él las que quedan sobre el mismo ledger. La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.
 
 **Eje Arquitectura**: no — cambia una viñeta, una entrada de `upstream.json` y escenarios de batería; ni módulo, ni dependencia, ni contrato, ni datos.
 
@@ -51,8 +51,8 @@ created: 2026-11-08
 
 ## Review Focus
 
-- Un `REMOVED` cuyo vigente sí nombra lo retirado (el correo de `f3`) → sigue saliendo Critical `contradicts` con la viñeta nueva · Task 2, control `f3` (rúbrica S).
-- La entrada de `upstream.json` que deja de existir → `kit:notices` regenerado sin más cambios que las filas de OpenSpec e impeccable, y `notices.test.ts` en verde · Task 2, `git diff --stat` tras `kit:notices` y `npx vitest run test/kit/notices.test.ts`.
+- ~~Un `REMOVED` cuyo vigente sí nombra lo retirado (el correo de `f3`) → sigue saliendo Critical `contradicts` con la viñeta nueva · Task 2, control `f3` (rúbrica S).~~ Sin objeto tras las enmiendas del 2026-11-08: la viñeta no cambia.
+- La entrada de `upstream.json` que deja de existir → `kit:notices` regenerado sin más cambios que las filas de OpenSpec e impeccable, y `notices.test.ts` en verde · Task 2, `git diff --stat` tras `kit:notices` y `pnpm exec vitest run test/kit/notices.test.ts`.
 
 ---
 
@@ -80,9 +80,9 @@ created: 2026-11-08
 
 **Modificar**:
 
-- `tests/batteries/sdd-verify/subject.mjs` — montaje de `rm1`, `rm2` y `rm3`, y `--scenario=rm` para los tres.
-- `tests/batteries/sdd-verify/battery.md` — filas `rm1`-`rm3`, montaje, rúbrica `RM1`-`RM3` y procedencia.
-- `skills/sdd-verify/references/spec-reviewer-prompt.md` — la viñeta del `REMOVED` (Task 2).
+- `tests/batteries/sdd-verify/subject.mjs` — montaje de `rm1`, `rm2`, `rm2b` y `rm3`, y `--scenario=rm` para los cuatro.
+- `tests/batteries/sdd-verify/battery.md` — filas `rm1`-`rm3` y `rm2b`, montaje, rúbrica `RM1`-`RM3` y `RM2b`, y procedencia.
+- ~~`skills/sdd-verify/references/spec-reviewer-prompt.md` — la viñeta del `REMOVED` (Task 2).~~ No se toca: RED limpio (enmiendas del 2026-11-08).
 - `upstream.json` — OpenSpec a `from`, impeccable a `skill-v4.8.1` (Task 2).
 - `THIRD_PARTY_NOTICES.md`, `skills/sdd-verify/NOTICE`, `dist/` — regenerados (Task 2).
 
@@ -183,7 +183,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Estimación de implementación: 2 h
 - Estimación de revisión: 0,5 h
 - Estimación de cierre: 0,5 h
-- Base de la estimación: 2 tasks; la campaña (4 tandas de ~10 min) manda; referencia, la 0307 (3 tasks de texto, humo)
+- Base de la estimación: 2 tasks al aprobar el plan (la 3 vino de la enmienda); la campaña (4 tandas de ~10 min) manda; referencia, la 0307 (3 tasks de texto, humo)
 - Confianza: media (un RED limpio cambia el alcance)
 
 ---
@@ -199,11 +199,11 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ## 4. Self-review (cobertura spec → tasks)
 
-- `MODIFIED` «El eje Spec contrasta el diff…», THEN: Critical del `REMOVED` con vigente que nombra el correo → Task 2, control `f3` (rúbrica S). ✓
-- Sus tres AND (`missing`/`partial`, «Dónde se prueba», `unrequested`) → sin cambio de texto; Task 2, control `f3` (rúbrica S cubre los cinco fallos sembrados). ✓
-- ADDED «busca un REMOVED por lo que dice su requisito vigente», THEN → Task 1 RED y Task 2 GREEN, `rm1` (rúbrica RM1). ✓
-- ADDED «recupera del historial…», THEN → `rm3` (rúbrica RM3, con su fila de máquina sobre `tools.txt`). ✓
-- ADDED «Un REMOVED sin requisito vigente utilizable…», THEN y AND → `rm2` (rúbrica RM2). ✓
-- Las cláusulas «a similar title is not a match» y «empty output means a wrong path» → sin observar: sin escenario propio (spec, decisión 4). ⚠
-- «Lo que se retira o cambia de forma»: la frase vieja → Task 2, `grep -n "for the removed behavior" skills/sdd-verify/references/spec-reviewer-prompt.md` sin salida; la entrada `pending: "0297"` → Task 2, `node tests/copies/check.ts`; OpenSpec `v1.14.1` en el `NOTICE` → Task 2, `kit:notices`; impeccable → Task 2, `kit:upstream`. ✓
-- Review Focus → Task 2, control `f3` y `notices.test.ts`. ✓
+> Tras las enmiendas del 2026-11-08: el `MODIFIED` y el ADDED del «no verificado» salieron del delta, y la viñeta no cambia.
+
+- ADDED «busca un REMOVED por lo que dice su requisito vigente», THEN → Task 1, `rm1` (rúbrica RM1), como regresión. ✓
+- ADDED «recupera del historial…», THEN → Task 1, `rm3` (rúbricas RM3 y RM3h, la de máquina sobre `tools.txt`), como regresión. ✓
+- La regla 3 (vigente sin cuerpo) → Task 3, `rm2b` (RM2b) y `rm2` (RM2), como regresión; sin requisito en el delta. ✓
+- Las cláusulas «a similar title is not a match» y «empty output means a wrong path» → no se escriben. ✓
+- «Lo que se retira o cambia de forma»: la entrada `pending: "0297"` → Task 2, `node tests/copies/check.ts`; OpenSpec `v1.14.1` en el `NOTICE` → Task 2, `kit:notices`; impeccable → Task 2, `kit:upstream`. ✓
+- Review Focus → Task 2, `notices.test.ts`. ✓
