@@ -26,6 +26,4 @@
 
 Git doesn't version empty folders: no folder of `.docs/sdd/` is created empty or with `.gitkeep`.
 
-No `templates/` folder: the templates live in the kit's `sdd-templates` skill and are traced when each document is created. **Tracing** is following the template's sections and table headers with the interview's content; never copying the equivalent document from the kit's `.docs/` or another project's, which drags in other people's notes and decisions.
-
 A 2.x template (`mission.md`, `tech-stack.md`, `roadmap.md`) keeps its shape; the migration moves it. The domain's language lives in `## Terminology` of `PRODUCT.md`, a rule in the constitution, the why of a rule in an ADR of `decisions/`.
