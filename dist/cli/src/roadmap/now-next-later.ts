@@ -6,7 +6,7 @@ import type { FormRules } from './structure.ts';
 import { STATE_HELP, STATE_PREFIXES, headerIs, headerProblem, rowsOf, tableBlockProblems } from './tables.ts';
 import type { Row } from './tables.ts';
 
-const HEADER = '| Id | Externo | Tarea | Estado | Tras | Tamaño |';
+export const HEADER = '| Id | Externo | Tarea | Estado | Tras | Tamaño |';
 const NOW_TITLE = /^## Now( — \S+ · (en preparación|comprometida))?$/;
 const NOW_TITLE_HELP = '«## Now» ni «## Now — <versión> · en preparación|comprometida»';
 const PROFILE_LINE = /^Perfil de control: \S/;
@@ -25,7 +25,7 @@ interface RowContext {
   mode: IdsMode;
 }
 
-function kindOf(section: Section): string {
+export function kindOf(section: Section): string {
   return /^Now\b/.test(section.title) ? 'Now' : section.title;
 }
 

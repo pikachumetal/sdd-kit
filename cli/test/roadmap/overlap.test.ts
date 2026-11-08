@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { runSdd, sddFolder } from '../capability/helpers.ts';
 import { parseSections, tableBlocks } from '../../src/roadmap/parse.ts';
 import { overlapWarnings, twoPointOverlapRows } from '../../src/roadmap/overlap.ts';
-import { brief, checkProject, laterRow, row, validDebt, validRoadmap } from './project.ts';
+import { brief, checkProject, header, laterRow, row, validDebt, validRoadmap } from './project.ts';
 
 vi.setConfig({ testTimeout: 20_000 });
 
@@ -192,5 +192,77 @@ describe('ROADMAP.md (3.0.0) avisa de dos filas abiertas de Now y Next que tocan
     const result = await checkProject({ roadmap: validRoadmap, debt: validDebt, legacy });
 
     expect(result.lines.filter((line) => overlapLine.test(line))).toEqual([]);
+  });
+});
+
+describe('pasada de fix de la revisión final', () => {
+  it('un ciclo fuera del par termina y no calla el par', () => {
+    const lines = [...pair(`tras 0030. ${files40}`, files41), item('0030', 'tras 0040.', '✅')];
+
+    expect(warningsOf(lines)).toEqual([pairWarning]);
+  });
+
+  it.each([
+    ['Tras con mayúscula', `Tras 0040. ${files41}`, []],
+    ['una lista con e', `tras 0039 e 0040. ${files41}`, []],
+    ['tras dentro de una palabra', `detras 0040. ${files41}`, [pairWarning]],
+  ])('el orden de la 2.x: %s', (_, second, expected) => {
+    expect(warningsOf(pair(files40, second))).toEqual(expected);
+  });
+
+  it('las mayúsculas cuentan en las rutas', () => {
+    expect(warningsOf(pair('Ficheros: `Skills/sdd-verify/`.', files41))).toEqual([]);
+  });
+
+  it('dos releases se comparan entre sí', () => {
+    const header = ['| id | Feature | Origen | Ficheros que toca | Estado |', '| --- | --- | --- | --- | --- |'];
+    const lines = [
+      ...['# Roadmap — salas', '', '## Release 3.1', '', ...header, `| 0050 | **Fila 0050** | dev-lead | ${verifyFolder} | ⏳ |`],
+      ...['', '## Release 3.2', '', ...header, `| 0060 | **Fila 0060** | dev-lead | ${reviewerPrompt} | ⏳ |`],
+    ];
+
+    expect(warningsOf(lines)).toEqual([`aviso: línea 13: la 0060 y la 0050 (línea 7) tocan ${reviewerPrompt} sin «tras» entre ellas`]);
+  });
+
+  it('dos filas 0000 no comparten su «tras»', () => {
+    const lines = [...nextHeader, item('0040', files40), item('0000', `tras 0040. ${files41}`), item('0000', files41)];
+
+    expect(warningsOf(lines)).toEqual([
+      `aviso: línea 9: la 0000 y la 0040 (línea 7) tocan ${reviewerPrompt} sin «tras» entre ellas`,
+      `aviso: línea 9: la 0000 y la 0000 (línea 8) tocan ${reviewerPrompt}, \`cli/src/roadmap/\` sin «tras» entre ellas`,
+    ]);
+  });
+
+  it('los avisos de solape van antes que los de debt.md', async () => {
+    const roadmap = [
+      ...pair(files40, files41),
+      ...['', '## Backlog', '', '| # | Ítem | Origen |', '| --- | --- | --- |'],
+      ...['', '## Deuda técnica', '', '| Ítem | Impacto | Destino |', '| --- | --- | --- |'],
+      ...['', '## Patches', '', '| Fecha | Id | Descripción |', '| --- | --- | --- |'],
+      ...['', '## Releases cerradas'],
+    ];
+    const changelog = ['# Changelog', '', '## [1.6.0] - 2026-11-01', '', '## [1.5.0] - 2026-10-01', ''];
+    const sdd = sddFolder({ 'roadmap.md': roadmap.join('\n') + '\n', 'changelog.md': changelog.join('\n'), 'steering/debt.md': validDebt.join('\n') + '\n' });
+
+    const result = await runSdd(['roadmap', 'check', '--path', sdd]);
+
+    expect(result.lines.filter((line) => line.includes('aviso'))).toEqual([
+      `roadmap.md: ${pairWarning}`,
+      'debt.md: aviso: línea 13: en espera desde 2026-09-15, dos releases sin 2.º caso: caduca',
+      'debt.md: aviso: línea 25: descartada el 2026-09-20, dos releases después: sale en el corte',
+    ]);
+  });
+
+  it.each([
+    ['una tabla de Next fuera de plantilla', (line: string) => (line === header ? '| Id | Externo | Tarea | Estado | Tras |' : line)],
+    ['una sección «Next steps»', (line: string) => (line === '## Next' ? '## Next steps' : line)],
+  ])('ROADMAP.md no lee %s', async (_, change) => {
+    const roadmap = validRoadmap.map((line, index) => (index > 10 ? change(line) : line));
+    const next = roadmap.findIndex((line) => line.startsWith('| 0014 |'));
+    roadmap.splice(next + 1, 0, row({ id: '0015', after: '—', size: 'S' }));
+
+    const result = await checkProject({ roadmap, debt: validDebt });
+
+    expect(result.lines.filter((line) => /sin «tras» entre ellas$/.test(line))).toEqual([]);
   });
 });

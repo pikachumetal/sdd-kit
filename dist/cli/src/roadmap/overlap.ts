@@ -1,5 +1,6 @@
 import type { Block } from './parse.ts';
-import { openRows, rowsOf } from './tables.ts';
+import { HEADER as NOW_NEXT_LATER_HEADER, kindOf } from './now-next-later.ts';
+import { headerIs, openRows, rowsOf } from './tables.ts';
 import type { Row } from './tables.ts';
 
 export interface OverlapRow {
@@ -17,18 +18,19 @@ const OPEN_STATES = ['⏳', '🔄'];
 const ORDER = /(?<!\p{L})(tras|antes de) (?:(?:la|el) )?(\d{4}(?:(?:, | y | e )\d{4})*)/giu;
 const TASK_ID = /\d{4}/g;
 const QUOTED = /`([^`]+)`/g;
+const NEXT_SECTION = 'Próximo';
 const FILES_LABEL = 'Ficheros:';
 const RELEASE_FILES_COLUMN = 3;
 const WILDCARD_ID = '0000';
 const TOUCHES_LABEL = '**Toca:**';
 const BRIEF_END = '</details>';
-const NOW_NEXT = /^(Now|Next)\b/;
+const LAUNCHABLE_KINDS = ['Now', 'Next'];
 
-export function isOpenState(state: string): boolean {
+function isOpenState(state: string): boolean {
   return OPEN_STATES.some((prefix) => state.startsWith(prefix));
 }
 
-export function quotedPaths(text: string): string[] {
+function quotedPaths(text: string): string[] {
   return [...text.matchAll(QUOTED)]
     .map((match) => match[1].replace(/\\/g, '/').replace(/^\.\//, ''))
     .filter((token) => !/\s/.test(token) && /[/.]/.test(token));
@@ -47,12 +49,12 @@ function afterLastFilesLabel(text: string): string {
 }
 
 function twoPointRow(row: Row): OverlapRow {
-  const inRelease = row.title !== 'Próximo';
-  const middle = row.cells.slice(1, -1);
-  const orderText = inRelease ? middle.filter((_, index) => index !== RELEASE_FILES_COLUMN - 1) : middle;
-  const filesText = inRelease ? (row.cells[RELEASE_FILES_COLUMN] ?? '') : afterLastFilesLabel(middle[0] ?? '');
+  const inRelease = row.title !== NEXT_SECTION;
+  const last = row.cells.length - 1;
+  const orderCells = row.cells.filter((_, index) => index > 0 && index < last && !(inRelease && index === RELEASE_FILES_COLUMN));
+  const filesText = inRelease ? (row.cells[RELEASE_FILES_COLUMN] ?? '') : afterLastFilesLabel(row.cells[1] ?? '');
   const base = { id: row.cells[0] ?? '', line: row.index + 1, open: isOpenState(row.cells.at(-1) ?? '') };
-  return { ...base, paths: quotedPaths(filesText), ...orderIds(orderText.join(' ')) };
+  return { ...base, paths: quotedPaths(filesText), ...orderIds(orderCells.join(' ')) };
 }
 
 export function twoPointOverlapRows(lines: string[], blocks: Block[]): OverlapRow[] {
@@ -70,16 +72,24 @@ function nowNextRow(row: Row): OverlapRow {
   return { id, line: row.index + 1, open: isOpenState(state), paths: quotedPaths(touchedText(task)), after: afterIds, before: [] };
 }
 
+function isLaunchableTable(lines: string[], block: Block): boolean {
+  return block.section !== undefined && LAUNCHABLE_KINDS.includes(kindOf(block.section)) && headerIs(lines, block, NOW_NEXT_LATER_HEADER);
+}
+
 export function nowNextOverlapRows(lines: string[], blocks: Block[]): OverlapRow[] {
-  return blocks.filter((block) => NOW_NEXT.test(block.section?.title ?? '')).flatMap((block) => rowsOf(lines, block).map(nowNextRow));
+  return blocks.filter((block) => isLaunchableTable(lines, block)).flatMap((block) => rowsOf(lines, block).map(nowNextRow));
+}
+
+function nodeOf(row: OverlapRow): string {
+  return row.id === WILDCARD_ID ? `${row.id}@${row.line}` : row.id;
 }
 
 function orderGraph(rows: OverlapRow[]): OrderGraph {
   const graph: OrderGraph = new Map();
   const link = (later: string, earlier: string) => graph.set(later, (graph.get(later) ?? new Set()).add(earlier));
   for (const row of rows) {
-    row.after.forEach((id) => link(row.id, id));
-    row.before.forEach((id) => link(id, row.id));
+    row.after.forEach((id) => link(nodeOf(row), id));
+    row.before.forEach((id) => link(id, nodeOf(row)));
   }
   return graph;
 }
@@ -88,10 +98,10 @@ function reaches(graph: OrderGraph, from: string, to: string): boolean {
   const seen = new Set<string>();
   const pending = [from];
   while (pending.length > 0) {
-    const id = pending.pop() ?? '';
-    if (seen.has(id)) continue;
-    seen.add(id);
-    const next = graph.get(id) ?? new Set<string>();
+    const node = pending.pop() ?? '';
+    if (seen.has(node)) continue;
+    seen.add(node);
+    const next = graph.get(node) ?? new Set<string>();
     if (next.has(to)) return true;
     pending.push(...next);
   }
@@ -102,16 +112,20 @@ function covers(folder: string, path: string): boolean {
   return path === folder || path.startsWith(folder.endsWith('/') ? folder : `${folder}/`);
 }
 
+function innerOverlap(path: string, other: string): string[] {
+  if (!covers(path, other) && !covers(other, path)) return [];
+  return [other.length > path.length ? other : path];
+}
+
 function sharedPaths(first: string[], second: string[]): string[] {
-  const inner = first.flatMap((path) => second.filter((other) => covers(path, other) || covers(other, path)).map((other) => (other.length > path.length ? other : path)));
-  return [...new Set(inner)];
+  return [...new Set(first.flatMap((path) => second.flatMap((other) => innerOverlap(path, other))))];
 }
 
 function pairWarning(graph: OrderGraph, earlier: OverlapRow, later: OverlapRow): string[] {
   if (earlier.id === later.id && earlier.id !== WILDCARD_ID) return [];
-  if (reaches(graph, earlier.id, later.id) || reaches(graph, later.id, earlier.id)) return [];
   const shared = sharedPaths(earlier.paths, later.paths).map((path) => `\`${path}\``);
   if (shared.length === 0) return [];
+  if (reaches(graph, nodeOf(earlier), nodeOf(later)) || reaches(graph, nodeOf(later), nodeOf(earlier))) return [];
   return [`aviso: línea ${later.line}: la ${later.id} y la ${earlier.id} (línea ${earlier.line}) tocan ${shared.join(', ')} sin «tras» entre ellas`];
 }
 
