@@ -15,6 +15,20 @@ const s = initSubject(process.argv.slice(2), existsSync(join(kit, 'skills', guar
 const cell = subjectCell(HERE, s);
 let ASK = cell('Petición');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"';
+// El comando de previsión del molde reservas-skills: una línea por escenario y la suma, a 0,70 $ por sujeto.
+const PLAN_MJS = [
+  "import { readFileSync } from 'node:fs';", '',
+  "const wanted = (process.env.SCENARIOS ?? '').split(' ').filter(Boolean);",
+  "const rows = readFileSync(process.argv[2], 'utf8').split('\\n').map((line) => line.split('|').map((cell) => cell.trim()))",
+  "  .filter((cell) => /^\\d+$/.test(cell[3] ?? '') && (wanted.length === 0 || wanted.includes(cell[1])));",
+  'let total = 0;',
+  'for (const cell of rows) {',
+  '  const n = Number(process.env.N ?? cell[3]);',
+  '  total += n;',
+  "  console.log(cell[1] + ' · ' + n + ' sujetos · ' + (n * 0.7).toFixed(2) + ' $');",
+  '}',
+  "console.log('suma: ' + total + ' sujetos · coste previsto: ' + (total * 0.7).toFixed(2) + ' $');", '',
+].join('\n');
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
 const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
@@ -119,12 +133,13 @@ const molds = {
     ].join('\n'));
     edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Tareas: \`gate.json\`, con caché: una tarea se salta si no cambia ninguno de sus \`inputs\`. El pre-commit corre \`fast\`.\n`);
   },
-  // Un repo de skills con su batería, la regla de la previsión y dos precios por sujeto: el vigente y uno viejo.
+  // Un repo de skills con su batería, la regla de la previsión, su comando de previsión y dos precios por sujeto: el vigente y uno viejo.
   'reservas-skills'() {
     s.put('skills/aviso-cierre/SKILL.md', '---\nname: aviso-cierre\ndescription: Usar al cerrar una feature.\n---\n\n# aviso-cierre\n\n1. Di qué se cierra.\n2. Corre el gate.\n');
     s.put('tests/batteries/aviso-cierre/battery.md', '# Batería — aviso-cierre\n\n| Id | Paso | n | Modelo |\n| --- | --- | --- | --- |\n| c1 | cierre | 2 | sonnet |\n| c2 | cierre | 2 | sonnet |\n');
     edit('.docs/sdd/constitution.md', (text) => `${text}5. Ninguna edición de una skill sin su prueba con sujetos (RED → GREEN). La previsión de coste (sujetos, minutos y dólares) se declara antes del primer sujeto y la spec la repite; si la prueba la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead.\n`);
-    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Sujetos: Sonnet. Un sujeto de \`aviso-cierre\` cuesta ~0,70 $, porque cierra una feature entera.\n`);
+    s.put('scripts/plan.mjs', PLAN_MJS);
+    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Sujetos: Sonnet. Un sujeto de \`aviso-cierre\` cuesta ~0,70 $, porque cierra una feature entera. La previsión de una tanda: \`SCENARIOS="<escenarios>" N=<n> node scripts/plan.mjs tests/batteries/aviso-cierre/battery.md\`.\n`);
     s.put('.docs/sdd/specs/20260915-090000-patch-0006-aviso/patch.md', '# Patch — aviso\n\nRED y GREEN de `aviso-cierre`, 4 sujetos, ~1,24 $ (~0,31 $ por sujeto).\n');
   },
   // mold-c lleva un pendientes.md que solo se ve abriéndolo.

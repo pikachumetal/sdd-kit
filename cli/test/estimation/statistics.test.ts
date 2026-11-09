@@ -196,7 +196,7 @@ describe('walkthrough con evidencia por THEN', () => {
   const filled = template
     .replace(/^- Tipo: <[^\n]*/m, '- Tipo: docs')
     .replace(/^- Estimación de implementación \(del plan\): <Yh>/m, '- Estimación de implementación (del plan): 2h')
-    .replace(/^- Esfuerzo real: <Zh>/m, '- Esfuerzo real: 3h')
+    .replace(/^- Esfuerzo real: <[^\n]*/m, '- Esfuerzo real: 3h')
     .replace(/^feature: <id>/m, 'feature: 0100');
   const closedFolder = readdirSync(join(repoRoot, '.docs/sdd/specs')).find((name) => name.includes('-task-0077-'))!;
   const closed = readFileSync(join(repoRoot, '.docs/sdd/specs', closedFolder, 'walkthrough.md'), 'utf8');

@@ -569,8 +569,8 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND lo que el agente rellenó sin que el usuario lo dijera va en la sección como su propuesta, con su motivo
 - AND el recuento es el de la feature que se especifica, hecho al entrar en el paso de spec: un lite o un patch que suben a full cuentan ahí, y tras partir cuenta la pieza
 - AND con 2 tasks previstas, en lite o en spike, escribe la spec sin secciones y la presenta en el gate
-- AND en `delegate` no hay mensaje de los enfoques: los enfoques, con el elegido y por qué se descartan los otros, y las secciones van a «✋ Decisiones que he tomado yo»; la parada de la spec los aprueba, sin un turno por enfoque ni por sección
-- AND con la spec aprobada por delegación o en `unattended` no presenta secciones ni mensaje de enfoques: los enfoques y lo que habría preguntado van a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
+- AND en `delegate` no hay mensaje de los enfoques: los enfoques, con su coste y el porqué del elegido, van al Approach de la spec, y «✋ Decisiones que he tomado yo» nombra el elegido y los descartados («Enfoque: A, frente a B y C (ver Approach)») y lleva las secciones; la parada de la spec los aprueba, sin un turno por enfoque ni por sección
+- AND con la spec aprobada por delegación o en `unattended` no presenta secciones ni mensaje de enfoques: los enfoques van al Approach de la spec y lo que habría preguntado, a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
 - AND cada sección abre con lo que cambia para quien usa el producto, con un ejemplo con datos («`informes --sala Norte` enseña las cuatro vistas solo de Norte»), y la pregunta es sobre eso; un nombre de código (`active`, `rooms`, `src/app.js`) no abre ninguna sección y, si hace falta, va detrás
 
 ### Pedir empezar ya no se lleva la spec
@@ -704,10 +704,11 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### La spec que edita una skill con sujetos prevé su coste
 
-- GIVEN un repo con `tests/batteries/aviso-cierre/` y `tech-stack.md` con «un sujeto de `aviso-cierre` cuesta ~0,70 $», y una spec que edita `skills/aviso-cierre/SKILL.md`
+- GIVEN un repo con `tests/batteries/aviso-cierre/`, `tech-stack.md` con «un sujeto de `aviso-cierre` cuesta ~0,70 $» y con la previsión de una tanda en `SCENARIOS="<escenarios>" N=<n> node scripts/plan.mjs <battery.md>`, y una spec que edita `skills/aviso-cierre/SKILL.md`
 - WHEN el agente escribe la spec
 - THEN «Previsión de coste» lleva las filas RED, GREEN, una tanda de REFACTOR, controles y medición tras la revisión final, cada una con sus sujetos y sus dólares
-- AND cada cifra cita su batería y el precio de `tech-stack.md`, y el total es la suma de las filas
+- AND cada fila cita la línea `suma: <n> sujetos · coste previsto: <x> $` del comando de previsión para sus escenarios y su n, y el total es la suma de las filas
+- AND con un `tech-stack.md` que no nombra comando de previsión, cada cifra cita su batería y el precio por sujeto de `tech-stack.md`
 - AND una spec que no edita una skill probada con sujetos no lleva la sección
 
 ### El guion arranca por el entorno y acaba en texto
@@ -814,6 +815,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN corre `moon run kit:skill-size`
 - THEN `dist/skills/sdd-implement/SKILL.md`, `dist/skills/sdd-implement-native/SKILL.md` y `dist/skills/sdd-implement-subagent/SKILL.md` ocupan menos de 20.000 bytes cada una, por debajo del corte con que Claude Code vuelve a adjuntar cada skill tras compactar
 - AND la fase de ninguna de las tres pasa de 100.000 caracteres
+
+### La spec guarda sus enfoques en el Approach
+
+- GIVEN la feature 0013 de `reservas`, en `delegate`, con la entrevista hecha
+- WHEN el agente escribe `spec.md`
+- THEN su `## Approach` lleva dos o tres enfoques, cada uno con lo que cuesta, y una línea `Elegido: <enfoque> — <porqué>`; con una sola vía sensata, esa y por qué no encajan las otras
+- AND en `pair`, los del mensaje de enfoques y el que eligió el dev-lead, con su frase; en `unattended` o tras «empieza ya», los del agente
 
 ## Reglas de la capacidad
 
