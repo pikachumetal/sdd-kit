@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-11-09
 branch: patch/0325-privacy-test-bounded-read
-commit: <hash>
+commit: 8473a12e
 ---
 
 # Patch 0325 — el test de privacidad de la evidencia lee en paralelo y solo lo que git conoce
@@ -65,11 +65,13 @@ Revisor (sonnet, effort medium), sin Críticos ni Importantes; sus cuatro Menore
 - Las medidas de §3 sin decir en qué condiciones → arreglado: §3 dice que se cronometró dentro de vitest con `cli:test-min` a la vez y la caché caliente; la fila 5 lo mide con los 8 workers.
 - `repoEvidence()` vacío con código 0 daría el fallo de forma indirecta → rechazado: el primer test del describe exige salidas de `battery`, `fix` y `campaign`, y falla con una lista vacía; un `expect` más dentro de la lista no añade nada.
 - La cifra «21.000 ficheros» del comentario de `privacy.ts` envejece → arreglado: «decenas de miles de ficheros».
-- `commit:` y la fila de `cli:test-min` sin rellenar → se rellenan al cerrar.
+- `commit:` y la fila de `cli:test-min` sin rellenar → rellenados al cerrar.
+
+Validación en campo: 2026-11-09 · smoke 2/2 por ejecución real (fila 5: `cli:test-min` 136/136 con el `beforeAll` dentro de su tope de 10 s; fila 4: un fichero de evidencia con una ruta de usuario sigue dando rojo) · el gate de cierre corre en el merge de sincronización, porque la `patch/0324` sigue abierta: su línea `Gate:` va en el mensaje final.
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,75 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-09T13:52Z
-- Esfuerzo real: <al cerrar>
+- Esfuerzo real: 0,41 h — reloj de la sesión 0,41 h desde 2026-11-09T13:46Z, sin 0 min de espera al dev-lead (0 esperas). −50 % sobre la estimación (0,82 h con el gate): sin esperas ni huecos; la fila ya traía el rojo medido y su orden, y el gate de cierre aún no ha corrido (va en el merge de sincronización)
 - Coste de sujetos: no aplica

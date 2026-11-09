@@ -157,6 +157,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Patch 0325** — El `beforeAll` de `subject-output-privacy.slow.test.ts` lista la evidencia con `git ls-files` y la lee 32 ficheros a la vez: cabe en los 10 s del hook en `cli:test-min` sin dejar de mirar ningún fichero de evidencia versionado. → [ref](specs/20261109-135213-patch-0325-privacy-test-bounded-read/)
 - **Patch 0321** — `battery.mjs run` sale con 3 sin lanzar nada y avisa de que `COST_CAP` es el techo de toda la campaña si ya está gastado, cuenta cada tanda con el precio que da `plan` a su escenario, `verdict` lee `SCENARIOS` como `run`, y `plan`, `field` y `verdict` dan su uso si les falta un argumento. → [ref](specs/20261109-101902-patch-0321-battery-launcher-cap-and-verdict/)
 - **Feature 0322** — La receta del paquete de la revisión final calcula el workspace con `sdd workspace -C "<worktree de la feature>"`, y el paquete ya no se borra con el worktree de revisión. → [ref](specs/20261109-102437-feature-0322-deviations-and-amendments/)
 - **Patch 0318** — `sdd merge`, `sdd id claim` y `sdd roadmap publish` ya no se paran por un fichero que solo cambia de finales de línea o de stat (`git diff --quiet` en vez de `git status`, y `git add -u` antes de un merge), y `.gitattributes` da `text eol=lf` a la lista blanca del build para que `kit:build` copie LF a `dist/`. → [ref](specs/20261105-115706-patch-0318-eol-only-not-dirty/)
