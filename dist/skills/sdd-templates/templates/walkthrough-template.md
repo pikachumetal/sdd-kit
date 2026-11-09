@@ -23,7 +23,7 @@ created: <YYYY-MM-DD>
 
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Estimación de implementación (del plan): <Yh>
-- Esfuerzo real: <lo que sigue a `Esfuerzo real:` en la salida de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, tal cual: «<Zh> — reloj de la sesión <h> desde <inicio>, sin <min> min de espera al dev-lead (<n> esperas)[, sin <h> h sin actividad (<n> huecos)]» | fuera de Claude Code, `<Yh>, aproximado con las marcas de los commits`, nunca en blanco>
+- Esfuerzo real: <lo que sigue a `Esfuerzo real:` en la salida de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, tal cual: «<Zh> — reloj de la sesión <h> desde <inicio>, sin <min> min de espera al dev-lead (<n> esperas)[, sin <h> h sin actividad (<n> huecos)]» | fuera de Claude Code, `<Yh>, aproximado con las marcas de los commits`, nunca en blanco; los minutos de los subagentes no se suman, y «sumo los despachos» convierte el ratio en el de los subagentes>
 - Desviación: <±h> (<±%>)
 - Causa de la desviación (obligatoria si |desviación| > 30%): <horas y minutos de la línea `Esperas y huecos`, o «sin medir»>
 - Compactación: <`no` · `sí, en la Task <N> → <Native | SDD> desde la Task <M>` · `sí, en la Task <N> → Native` si no quedaba ninguna después, sacado de la línea `Ruling: compactación` del ledger>

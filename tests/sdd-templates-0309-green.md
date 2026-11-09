@@ -62,7 +62,7 @@ Humo de `sdd-archive`: `SCENARIOS="a2 t3" N=1` → `suma: 2 sujetos · coste pre
 
 Tanda: `SCENARIOS="co4 pb" N=1` → `suma: 2 sujetos · coste previsto: 1.73 $`; real 2 sujetos, 1,83 $. Campaña: 16 sujetos, 13,69 $ de los 14 $ previstos.
 
-`co4 · 1/1 · puerta verde · sin leer: CO4, AP, L` (CO4-T, verde: 8 llamadas a `scripts/plan.mjs`) · `pb · 1/1 · puerta verde · sin leer: PB, L`. Leídas por el hilo:
+`co4 · 1/1 · puerta verde · sin leer: CO4, AP, L` (CO4-T, verde: `tools` lleva `node scripts/plan.mjs`) · `pb · 1/1 · puerta verde · sin leer: PB, L`. Leídas por el hilo:
 
 | Sujeto | AP | CO4 | PB | L |
 | --- | --- | --- | --- | --- |
