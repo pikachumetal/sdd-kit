@@ -81,7 +81,12 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Approach
 
-<texto>
+> Los dos o tres enfoques que quedaron tras descartar los débiles, cada uno con lo que cuesta, y el elegido con su porqué; con una sola vía sensata, esa y por qué no encajan las otras. Después, las partes del cómo que fija el elegido.
+
+- <enfoque> — <lo que cuesta: p. ej. «un módulo nuevo `overlap.ts`: una función pura, se prueba sola»>
+- Elegido: <enfoque> — <porqué, o «lo eligió el dev-lead: «<frase literal>»»>
+
+<las partes del cómo que fija el enfoque elegido>
 
 ## Dónde se prueba
 
@@ -146,16 +151,16 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Previsión de coste *(solo si la spec edita una skill que se prueba con sujetos)*
 
-> Obligatoria: no se borra con los bloques de ayuda. Cada cifra cita su batería y el precio por sujeto de `tech-stack.md`, o lo medido; una fila a cero, su porqué; el total es la suma de las filas.
+> Obligatoria: no se borra con los bloques de ayuda. Cada fila cita, tal cual, la línea `suma:` del comando de previsión que nombra `tech-stack.md` para su tanda, con los escenarios y la n, p. ej. `SCENARIOS="co4 pb" N=1 node tests/headless/battery.mjs plan tests/batteries/sdd-propose/battery.md` → `suma: 2 sujetos · coste previsto: 1.73 $`; sin ese comando, su batería y el precio por sujeto de `tech-stack.md`. Una fila a cero, su porqué; el total es la suma de las filas.
 
 | Tanda | Sujetos (batería) | $ |
 | --- | --- | --- |
-| RED | | |
-| GREEN | | |
-| Una tanda de REFACTOR | | |
-| Controles | | |
-| Medición tras la revisión final | | |
-| Suma | | |
+| RED | `SCENARIOS="<escenarios>" N=<n>` → `suma: <n> sujetos · coste previsto: <x> $` | <x> |
+| GREEN | `SCENARIOS="<escenarios>" N=<n>` → `suma: <n> sujetos · coste previsto: <x> $` | <x> |
+| Una tanda de REFACTOR | `SCENARIOS="<escenarios>" N=<n>` → `suma: <n> sujetos · coste previsto: <x> $` | <x> |
+| Controles | `SCENARIOS="<escenarios>" N=<n>` → `suma: <n> sujetos · coste previsto: <x> $` | <x> |
+| Medición tras la revisión final | `SCENARIOS="<escenarios>" N=<n>` → `suma: <n> sujetos · coste previsto: <x> $` | <x> |
+| Suma | <n> sujetos | <x> |
 
 ## Enmiendas
 

@@ -31,7 +31,7 @@ Review de spec propuesta: dos revisores — señales: `MODIFIED` (dos requisitos
 - Mínimo razonable: un revisor con los siete puntos — deja sin la segunda lectura el contrato de forma de los artefactos que leen la CLI y el cierre
 
 1. **Enfoque: A** (ver Approach). Dentro de `sdd-templates`, cada regla con una sola forma; la línea que dos plantillas necesitan va igual en las dos y la regla que la explica, en una; la copia de otra skill (P7, P12-P20) se queda para la 0311 o la fila de esa skill — por qué los otros no: B (`includes/`) choca con el Art. VIII, que pone las plantillas solo en `templates/`, y C (una plantilla nombra a la otra) depende de que el agente abra un fichero que no está usando.
-2. **El Approach guarda los enfoques en todos los perfiles; en `delegate`, el ✋ lleva el elegido y por qué no los otros, sin repetirlos.** Para eso se sustituyen tres frases de `skills/sdd-propose/references/spec-writing.md` (`:16`, `:30` y `:36`), que hoy mandan los enfoques al ✋: es otra skill, fuera de `Ficheros: skills/sdd-templates/` de la fila, pero sin cambiarlas la plantilla nueva quedaría al lado de una frase que dice lo contrario (ADR 0022, regla 2). La fila PB de la batería de `sdd-propose` mide la frase de `:30`, así que PB cambia con ella y se vuelve a medir (`pb` en GREEN).
+2. **El Approach guarda los enfoques, con lo que cuesta cada uno y el porqué del elegido, en todos los perfiles; en `delegate`, el ✋ solo nombra el elegido y los descartados (`Enfoque: A, frente a B y C (ver Approach)`), sin repetir el porqué** (enmienda del 2026-11-09). Para eso se sustituyen tres frases de `skills/sdd-propose/references/spec-writing.md` (`:16`, `:30` y `:36`), que hoy mandan los enfoques al ✋: es otra skill, fuera de `Ficheros: skills/sdd-templates/` de la fila, pero sin cambiarlas la plantilla nueva quedaría al lado de una frase que dice lo contrario (ADR 0022, regla 2). La fila PB de la batería de `sdd-propose` mide la frase de `:30`, así que PB cambia con ella y se vuelve a medir (`pb` en GREEN).
 3. **Qué se hace con cada hallazgo** de la tabla de la 0299 (research §2.1, P10-P20, con P7, que la petición nombra):
 
    | Hallazgo | En `sdd-templates` | Fuera |
@@ -96,7 +96,7 @@ Las plantillas son la forma de lo que escribe el agente, y una regla dicha de do
   - `skills/sdd-templates/templates/spec-template.md`: el hueco del Approach, la «Previsión de coste», la «Regla de reparto» (P16) y la regla del nombre de la capacidad (P12).
   - `skills/sdd-templates/templates/patch-template.md`: P10, P11, P19 y P20.
   - `skills/sdd-templates/templates/walkthrough-template.md`: P10 y P19.
-  - `skills/sdd-propose/references/spec-writing.md:16`, `:30` y `:36` (decisión 2), y `skills/sdd-archive/SKILL.md:29`, el literal `Validado` (P19).
+  - `skills/sdd-propose/references/spec-writing.md:16`, `:30` y `:36` (decisión 2), `skills/sdd-propose/SKILL.md:64` (enmienda del 2026-11-08), y `skills/sdd-archive/SKILL.md:29`, el literal `Validado` (P19).
   - `tests/batteries/sdd-propose/`: las filas CO4, PB y AP, sus filas de procedencia y el molde `reservas-skills` (decisión 5).
   - `cli/test/estimation/statistics.test.ts:198`, que rellena el hueco `- Esfuerzo real: <Zh>` de la plantilla del walkthrough: con el hueco nuevo no casaría y el test dejaría de leer el real.
   - `upstream.json` (decisión 10) y `dist/`, que construye `moon run kit:build`.
@@ -172,7 +172,7 @@ Orden: primero el molde y las filas de la batería, con el RED de `co4` sobre el
 - AND lo que el agente rellenó sin que el usuario lo dijera va en la sección como su propuesta, con su motivo
 - AND el recuento es el de la feature que se especifica, hecho al entrar en el paso de spec: un lite o un patch que suben a full cuentan ahí, y tras partir cuenta la pieza
 - AND con 2 tasks previstas, en lite o en spike, escribe la spec sin secciones y la presenta en el gate
-- AND en `delegate` no hay mensaje de los enfoques: los enfoques van al Approach de la spec, y el elegido, con por qué se descartan los otros, y las secciones van a «✋ Decisiones que he tomado yo»; la parada de la spec los aprueba, sin un turno por enfoque ni por sección
+- AND en `delegate` no hay mensaje de los enfoques: los enfoques, con su coste y el porqué del elegido, van al Approach de la spec, y «✋ Decisiones que he tomado yo» nombra el elegido y los descartados («Enfoque: A, frente a B y C (ver Approach)») y lleva las secciones; la parada de la spec los aprueba, sin un turno por enfoque ni por sección
 - AND con la spec aprobada por delegación o en `unattended` no presenta secciones ni mensaje de enfoques: los enfoques van al Approach de la spec y lo que habría preguntado, a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
 - AND cada sección abre con lo que cambia para quien usa el producto, con un ejemplo con datos («`informes --sala Norte` enseña las cuatro vistas solo de Norte»), y la pregunta es sobre eso; un nombre de código (`active`, `rooms`, `src/app.js`) no abre ninguna sección y, si hace falta, va detrás
 
@@ -207,9 +207,12 @@ Cada fila, con la salida de `node tests/headless/battery.mjs plan` sobre su bate
 | Una tanda de REFACTOR | `SCENARIOS="co4 pb"` → `suma: 4 sujetos · coste previsto: 3.46 $` | 3,46 |
 | Controles | `SCENARIOS="cr1 pb-p" N=1` (sdd-propose) → `suma: 2 sujetos · coste previsto: 1.02 $`; humo, `SCENARIOS="a2 t3" N=1` (sdd-archive) → `suma: 2 sujetos · coste previsto: 0.74 $` | 1,76 |
 | Medición tras la revisión final | `SCENARIOS="co4 pb" N=1` → `suma: 2 sujetos · coste previsto: 1.73 $` | 1,73 |
-| Suma | 16 sujetos, ~50 min en tandas de hasta 3 | 11,88 |
+| Suma | 16 sujetos | 14,00 (por filas, 11,88; sube en la enmienda del 2026-11-09) |
 
 ## Enmiendas
+
+- 2026-11-09 — la decisión 2 y el AND de `delegate` de «Una feature grande…»: el porqué del elegido vive solo en el Approach, y el ✋ nombra el elegido y los descartados; la fila Suma de la previsión pasa a «16 sujetos» (la lee `campaign.mjs`) y a 14 $ — el GREEN dio PB 0/2 porque la spec pedía el porqué en el Approach y en el ✋, la misma regla en dos sitios (ADR 0022); RED y GREEN costaron 5,43 $ frente a 4,93, y lo que queda, a ese ritmo, ~8 $ — aprobada: «sigue» (a la opción D, la recomendada)
+- 2026-11-08 — el Scope añade `skills/sdd-propose/SKILL.md:64`: «they go to the ✋» pasa a «they go to the spec's Approach» (+11 bytes, 19.960 de 20.000) — el paso 4 manda los enfoques al ✋ en `delegate`, `unattended`, con la spec aprobada por delegación y tras «empieza ya», y contradice el Approach nuevo y `spec-writing.md:30` (ADR 0022, regla 2); el repaso de coherencia no lo vio — aprobada (opción «Apruebo la enmienda»)
 
 ## Aprobaciones
 
