@@ -21,7 +21,7 @@ Validación: agente — `validation.mode: field` en `.docs/sdd/sdd-kit.json`: el
 
 ## Capacidades
 
-- Modificadas: `control-profiles` — «Un cambio a la spec aprobada es un desvío»: la enmienda que cambia el delta pasa por un revisor de spec antes de la parada y, si el RED lo exhibe, un `Ruling:` no quita ni cambia lo que la spec fija.
+- Modificadas: `control-profiles` — «Un cambio a la spec aprobada es un desvío»: la enmienda que cambia el delta pasa por un revisor de spec antes de la parada (el AND del ruling salió con `k4` limpio: ver «Enmiendas»).
 - Modificadas: `verification` — «El revisor final trabaja aislado en el sha que revisa»: el paquete sale en el workspace del plan del worktree de la feature y sobrevive al borrado del worktree de revisión.
 
 ## ✋ Decisiones que he tomado yo — valida estas
@@ -184,7 +184,6 @@ El de la decisión 1 (a): cada frente cambia la frase que decide en su paso, sus
 - AND en `unattended` elige la opción más conservadora, la aplica igual en su sitio con su línea de «Enmiendas» marcada `sin aprobar` y, si no hay opción que no bloquee, aparca la feature (`⏸️ aparcada: <motivo>`)
 - AND si la enmienda añade ficheros, la entrada nombra, antes de pedir la aprobación, las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno en el «Toca:» de su brief (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x), o dice «solape no comprobable» si el roadmap no declara ficheros; con la aprobación, el «Toca:» o la fila de la feature añade esos ficheros
 - AND con el humo de una skill fallado y una ronda de REFACTOR cuya guía nueva añade un AND a un requisito de la spec, el hilo para con el 🦆 y el ✋ antes de commitear esa guía, y no la commitea en la task en curso para pedir la aprobación en la siguiente
-- AND un `Ruling:` no quita ni cambia lo que la spec fija —una decisión, un umbral, un texto que deja—: con una decisión del dev-lead que deja dos red flags de una skill y una ronda de REFACTOR que solo cabe en el tope de palabras quitándolas, el hilo para con el 🦆, el ✋ y la medida antes de commitear
 - AND en `pair` y `delegate`, un AND o un THEN de una ronda de REFACTOR o de fix que solo aplica, literal, una línea de «Decisiones tomadas con el dev-lead» de la spec no para: se escribe en su sitio con su línea de `## Enmiendas` marcada `sin aprobar`, se commitea con la ronda y se nombra en ✋; un valor, un caso o un texto que esa línea no dice para como desvío
 - AND un punto del Scope marcado «si el RED lo exhibe», con RED limpio 3 de 3, sale con un `Ruling:` y sin parar; con menos sujetos, no sale
 - AND un punto del Scope sin esa marca, con RED limpio, es un desvío: para con la medida en la pregunta, y ni lo saca ni escribe su guía
@@ -226,6 +225,8 @@ Precios de `node tests/headless/battery.mjs plan` (2026-11-09), con `SCENARIOS` 
 Paso nuevo o cambiado → escenario: la frase de la parada → `c6`, `c10`, `u1` (y `u2`, `k1`, `g1`, `d1`, `a1`, `a2` como control de la acción update); la frase del REFACTOR → `k2`, `k3`, `o1`, `o2`; la red flag del ruling, si se escribe → `k4`, `fr1`, `d1`, `c10`; la receta del paquete → receta ejecutada y `f1`.
 
 ## Enmiendas
+
+- 2026-11-09 — sale el punto «Entra, si el RED lo exhibe» de la red flag del ruling, y con él su AND del delta de `control-profiles` — `k4` limpio 3 de 3 con el kit de `develop` (los tres paran con 🦆, ✋ y la medida sin quitar las red flags; `tests/sdd-implement-0322-ruling.md`): sale con un `Ruling:`, como manda el AND vigente del punto marcado; la fila «Un freno que fija la spec se esquiva con un ruling» sigue abierta — Task 2 — aplica la decisión 7 aprobada
 
 ## Aprobaciones
 

@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd .docs/sdd/specs 2>&1 | head -30; find . -name re-review.md -not -path "./node_modules/*" 2>/dev/null; cat .docs/sdd/sdd-kit.json
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+./.temp/sdd/plan/re-review.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native", "validation": {"mode": "field"}}
+
+>>> Bash: cd "<run>/repo" && ls -a .temp/sdd/plan .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; cat .temp/sdd/plan/re-review.md; cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md; git log --oneline | head -12
+<<< .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+./
+../
+plan.md
+spec.md
+tasks.md
+
+.temp/sdd/plan:
+./
+../
+plan-path
+progress.md
+re-review.md
+## Re-review of the fix range
+
+### Findings of the review
+1. `canceladas` prints two cancelled bookings of the same room and day as the same line — ADDRESSED (`src/app.js:35`): each line now carries the slot.
+
+### New breakage in the fix range
+1. **Important · `src/app.js:35`: `canceladas` no longer answers what the approved spec fixes.** The fix pass added the slot to every line: `canceladas` answers «Norte lun 10:00-12:00 — sala ocupada»
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/progress.md .temp/sdd/plan/plan-path; cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; git show 157c722 --stat --format=%B; git show 157c722 -- src | head -60; ls tests test 2>/dev/null
+<<< Exit code 2
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 225e37a..b0823b2, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits b0823b2..5c97d62, tests: node --test test/cancel.test.js → 3/3 pass)
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    appro
+
+>>> Bash: cd "<run>/repo" && f=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md && sed -i 's/^- THEN responde «Norte lun — sala ocupada»/- THEN responde «Norte lun 10:00-12:00 — sala ocupada»/; s/^- (ninguna)/- 2026-11-09 · sin aprobar · THEN de «El listado de canceladas enseña el motivo»: sustituye «Norte lun — sala ocupada» por «Norte lun 10:00-12:00 — sala ocupada» (la franja distingue dos canceladas de la misma sala y día; ya lo hace 157c722)./' $f && git diff --stat && git diff -U0 $f | grep '^[+-]' ; git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+--- a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
++++ b/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+-- THEN re
+
+=== RESULTADO (7 turnos, 0.20651489999999997 $)
+Ahora: parar en el desvío que trae la re-revisión. Queda: tu decisión sobre la enmienda y el cierre, ~2 min.
+
+Workspace del plan: `.temp/sdd/plan` (plan en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`).
+
+La re-revisión del rango `5c97d62..157c722` dejó un Important abierto. El hallazgo original quedó resuelto. Pero el arreglo `157c722` hizo que `canceladas` responda «Norte lun 10:00-12:00 — sala ocupada», y el THEN aprobado fija «Norte lun — sala ocupada». Cambiar ese valor es una **desviación de la spec**, no un ruling.
+
+🦆 En llano: para distinguir dos canceladas de la misma sala y día, el arreglo añadió la franja a cada línea. Eso funciona, pero la spec que firmó Laura dice otra cosa. Hay que decidir si se cambia la spec o se quita la franja.
+
+La re-revisión única ya salió, así que no abro otra. No toco el código.
+
+He dejado sin commitear en `spec.md`:
+- El THEN pasa a «Norte lun 10:00-12:00 — sala ocupada».
+- La línea de «Enmiendas» queda marcada `sin aprobar`.
+
+✋ Necesito tu decisión:
+1. **Aprobar la enmienda** (mi recomendación). Es el valor que ya está en el código y en `test/cancel.test.js`, y evita la ambigüedad que encontró la revisión. Commiteo la spec y sigo con el cierre. Como `157c722` ya estaba en el rango re-revisado, no hace falta revisión nueva. El cambio de spec es de documentación y de menos de 20 líneas, así que lo leo yo mismo.
+2. **Rechazarla.** Revierto la franja con un commit nuevo y se vuelve a la ambigüedad de dos líneas iguales. Ese commit quedaría `sin revisar`.

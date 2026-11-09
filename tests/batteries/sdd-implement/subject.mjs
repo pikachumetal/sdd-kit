@@ -33,6 +33,7 @@ const F24 = '.docs/sdd/specs/20261014-110000-feature-0024-drop-legacy';
 const F25 = '.docs/sdd/specs/20261014-120000-feature-0025-note-tags';
 const F26 = '.docs/sdd/specs/20261014-130000-feature-0026-note-title-date';
 const F27 = '.docs/sdd/specs/20261014-140000-feature-0027-free-rooms-empty';
+const F28 = '.docs/sdd/specs/20261016-100000-feature-0028-note-tags-kept-flags';
 const F30 = '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk';
 const F31 = '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load';
 const F32 = '.docs/sdd/specs/20261015-120000-feature-0032-free-rooms-fast';
@@ -51,6 +52,7 @@ const LEGACY_TEST = "import { test } from 'node:test';\nimport assert from 'node
   + "test('libres de una franja sin reservas da todas las salas', () => {\n  assert.equal(run('libres', ['08:00-09:00']), 'Norte, Sur');\n});\n";
 const WORDS_TEST = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync } from 'node:fs';\n\n"
   + "test('guardar-nota cabe en 60 palabras', () => {\n  const words = readFileSync('skills/guardar-nota/SKILL.md', 'utf8').split(/\\s+/).filter(Boolean).length;\n  assert.ok(words <= 60, `mide ${words}`);\n});\n";
+const WORDS_TEST_80 = WORDS_TEST.replaceAll('60', '80');
 const GITFLOW = '\n## Art. III — Git\n\nGit-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`.\n';
 const ART_I = '\n## Art. I — Pruebas de skills\n\nLa guidance nueva lleva un test que falla antes de escribirla; si el baseline no exhibe el fallo, no se escribe.\n';
 const CLEAN_H0 = '# Humo h0 — guardar-nota, sin la frase (Task 1 de la 0026)\n\nPetición: «guarda la nota "Reunión lunes 12 de octubre": "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h0-1 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n| h0-2 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n\nRED: 2 de 2 limpios; el baseline no exhibe el fallo.\n';
@@ -86,7 +88,7 @@ function formRules() {
   writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
 }
 
-s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'cp1'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
+s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'k4', 'cp1'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
 s.putKitMarker(MARKER);
 const molds = {
   r1: () => (cp('app-0012.js', 'src/app.js'), cp('cancel-task1.test.js', 'test/cancel.test.js')),
@@ -125,6 +127,12 @@ const molds = {
     writeFileSync(at('test/words.test.js'), WORDS_TEST);
   },
   a2: () => appendFileSync(at('.docs/sdd/constitution.md'), ART_I),
+  // Dos red flags que repiten el paso 1: el paso nuevo solo cabe en 80 palabras quitándolas, y la spec las deja.
+  k4: () => {
+    mkdirSync(at('test'), { recursive: true });
+    writeFileSync(at('test/words.test.js'), WORDS_TEST_80);
+    writeFileSync(at('skills/guardar-nota/SKILL.md'), fixture('skill-0028.md'));
+  },
   b1: () => cp('readme-0027.md', 'README.md'),
   fr1: () => {
     mkdirSync(at('scripts'), { recursive: true });
@@ -285,6 +293,7 @@ const steps = {
   },
   d1: () => openFixture('0024-drop-legacy', F24, '0024'),
   a1: () => openFixture('0025-note-tags', F25, '0025'),
+  k4: () => openFixture('0028-note-tags-kept-flags', F28, '0028'),
   a2: () => {
     openFixture('0026-note-title-date', F26, '0026');
     s.put(`${F26}/red/h0.txt`, CLEAN_H0);
@@ -445,7 +454,7 @@ steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(j
 if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps[s.SC]?.();
 
-const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1', 'rt1'];
+const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'k4', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1', 'rt1'];
 if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_WITHOUT_AGENT].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_WITHOUT_AGENT]) turns[id] = '40';
@@ -453,7 +462,7 @@ s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const folder of [F30, F31, F32, F33, F34, F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27]) {
+for (const folder of [F30, F31, F32, F33, F34, F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27, F28]) {
   for (const kept of ['spec', 'plan', 'tasks', 'research']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
 for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash', 'attempt', 'report', 'legacy', 'free', 'words', 'note-prompt']) keepIf(`test/${test}.test.js`, `${test}.test.js`);

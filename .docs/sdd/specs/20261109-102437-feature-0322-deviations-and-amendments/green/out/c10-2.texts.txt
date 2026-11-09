@@ -1,0 +1,66 @@
+--- [9]
+Retomo la 0010: las dos tasks están cerradas y la revisión final ha vuelto con hallazgos. Cargo el método Native para cerrar la revisión.
+
+--- [17]
+Ahora: compruebo la base y las señales de arquitectura antes de la pasada de fix. Queda: pasada de fix del test, enmienda para los dos hallazgos que tocan la spec y parada, ~10 min.
+
+--- [20]
+Base limpia (ni la fila ni los ficheros de la 0010 cambian en `develop`), suite 5/5. Reproduzco el hallazgo de orden del test:
+
+--- [23]
+RED: solo, el test de `canceladas` falla (`actual: ''`). Arreglo: el test monta su propio GIVEN.
+
+--- [27]
+GREEN: solo 1/1, suite 6/6. Commit de la pasada de fix con el ledger:
+
+--- [30]
+Ahora: escribo la enmienda de los dos hallazgos que cambian la spec y la paso por un revisor. Queda: revisor sonnet y parada ✋, ~5 min, ~0,3 $.
+
+--- [42]
+Compruebo el hallazgo 4 del revisor contra `mission.md`:
+
+--- [52]
+Workspace del plan: `.temp/sdd/plan` — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia · retomo en el cierre de la revisión final
+
+# Parada: un hallazgo de la revisión final cambia la spec
+
+🦆 Las dos tasks y la pasada de fix están hechas. Queda un hallazgo, y arreglarlo cambiaría lo que la spec aprobada promete. Hoy `cancelar Norte lun --motivo "sala ocupada "`, con un espacio al final, responde «motivo no válido». Para que lo acepte hace falta añadir una regla a la spec, y eso lo tienes que aprobar tú antes de que toque el código.
+
+## Lo que he cerrado de la revisión
+
+- **Spec, Minor (el test dependía del orden):** lo arreglé. Ejecutado solo, el test de `canceladas` fallaba (recibía `''`). Ahora monta su propio estado de partida y pasa solo y con los demás. He añadido además el test de «cancelar sin `--motivo`», que la spec pide y no tenía. La suite pasa 6/6. Commit `a8e9e37`, que también corrige `tasks.md`: la Task 1 marcaba `85e4c2f` y su commit es `151c746`.
+- **Código, Minor (cambiar ` — ` por ` - `):** no lo aplico. El código cumple el THEN y tu decisión 4. El revisor lo justificaba con «la consola cp850 que usa recepción», pero `mission.md` dice que la herramienta solo la usas tú. Si tu consola sí es cp850, dímelo y lo convertimos en una enmienda de una línea.
+
+## ✋ Enmienda pendiente de tu aprobación
+
+**Viene del eje Código, hallazgo Importante:** `reasonOf` no quita los espacios de alrededor del motivo.
+
+He escrito la enmienda en `spec.md`, sin commit y marcada `sin aprobar`. Añade dos AND a «Cancelar pide un motivo de la lista»:
+- No cuentan los espacios al principio y al final del motivo. `--motivo "sala ocupada "` responde «cancelada Norte lun (sala ocupada)», y después `canceladas` responde «Norte lun — sala ocupada».
+- Un motivo vacío o solo de espacios responde «motivo no válido». Los espacios de en medio y las mayúsculas no se normalizan: `"Sala ocupada"` sigue siendo «motivo no válido».
+
+En «Aprobaciones» hay una fila nueva para ti, en estado `pendiente`.
+
+**Revisión de la enmienda** (sonnet, effort medium, los siete puntos) — de sus 8 hallazgos:
+- **Integrados:** 1 (la fila de aprobación) y 3 (el AND se comprueba también con `canceladas`, y quedan fijados el motivo vacío, los espacios de en medio y las mayúsculas).
+- **Hallazgo 4:** me hizo retirar el cambio de separador. Es la comprobación con `mission.md` de arriba.
+- **Hallazgos 2, 5, 6 y 7:** no los trae la enmienda, ya estaban en la spec aprobada. Te los dejo para que decidas:
+  - 2: el requisito de cancelar es `ADDED`, pero cambia el `cancelar` sin motivo que ya existía, así que en realidad es un `MODIFIED`.
+  - 5: no se dice qué enseña `canceladas` cuando la lista está vacía, ni en qué orden lista.
+  - 6: las decisiones saltan de la 1 a la 3.
+  - 7: no hay regla para cancelar una reserva que ya está cancelada, ni límites para el motivo.
+- **Hallazgo 8:** no aplica, porque pedía revisar la enmienda y es lo que se ha hecho.
+
+**Si la apruebas:** como afecta a la Task 1, que ya está cerrada, entra como **Task 3 — enmienda 2026-11-09: motivo sin espacios alrededor**, con sus tests primero. En `tasks.md`, la Task 1 queda marcada como «afectada por enmienda». Después sale la única re-revisión (opus, effort high) sobre `85e4c2f..HEAD`.
+
+**Si la rechazas:** el Importante se queda como ruling («el motivo exacto es la regla»), deshago la enmienda y sigo con la re-revisión.
+
+## Rulings que he tomado
+
+- La revisión de arquitectura no sale: el diff no tiene ninguna de sus señales. `reason` se guarda solo en memoria, no en datos persistidos. Si me equivoco, falta esa revisión.
+- He añadido el test de «cancelar sin `--motivo`». Si sobra, se quita una línea.
+- He corregido el commit de la Task 1 en `tasks.md` y lo he metido en el commit de la pasada de fix. Si está mal, solo afecta al registro.
+- Lo de ` — ` explicado arriba. Si me equivoco, verás `ÔÇö` en una consola cp850.
+
+Aparte: al arrancar la sesión, Claude Code avisó de que tiene cargado el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code; `/reload-plugins` no basta.
+
