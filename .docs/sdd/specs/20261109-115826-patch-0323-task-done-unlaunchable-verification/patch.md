@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-09
 branch: patch/0323-task-done-unlaunchable-verification
-commit: <hash>
+commit: ee69a613
 ---
 
 # Patch 0323 — `sdd task done` rechaza un Vitest con lentos sin `--test-timeout`
@@ -65,11 +65,23 @@ Revisión del patch (un reviewer `sdd-kit:effort-medium`, sonnet): 0 críticos, 
 - Faltaban tests de «sin filtros» y `--testTimeout=…` → añadidos. El comando que no es Vitest ya lo cubre el resto de `executing.slow.test.ts` (`node -e`).
 - `patch.md`: §3 nombraba `done.test.ts`, §4 tenía una fila vacía y §6 no decía `--testTimeout` ni los lentos sin commitear → arreglado.
 
+Smoke del cierre, por ejecución real con `node ../dist/cli/bin/sdd.js task done <plan> 1 HEAD~1 -- …` desde `cli/`, sobre `ee69a613`:
+
+| # | THEN / AND | Evidencia |
+| --- | --- | --- |
+| 1 | `npx vitest run test/roadmap/` → sale con 1 sin lanzar, nombra los lentos y `--test-timeout` | ejecución real: fila 3 de arriba |
+| 2 | `npx vitest run --maxWorkers 8` → el valor no cuenta como filtro: rechaza todos, 3 nombrados y «y 47 más» | ejecución real: `vitest corre cli/test/cli.slow.test.ts, cli/test/comments/verb.slow.test.ts, cli/test/estimation/releases.slow.test.ts y 47 más sin --test-timeout`, exit 1 |
+| 3 | `npx vitest run <ruta absoluta de cut.slow.test.ts>` → casa igual que la relativa | ejecución real: `vitest corre cli/test/roadmap/cut.slow.test.ts sin --test-timeout`, exit 1 |
+| 4 | `npx vitest run test/roadmap/ --test-timeout 120000` → lanza como hasta ahora | ejecución real: `Tests  209 passed (209)`, exit 0, `Task 1: complete` |
+| 5 | `npx vitest run test/roadmap/check.test.ts` (ningún lento) → lanza como hasta ahora | ejecución real: fila 4 de arriba |
+
+Validación en campo: 2026-11-09 · smoke 5/5 por ejecución real · `test/tasks/` 99/99 · el gate de cierre corre en el merge de sincronización, porque la `feature/0322` sigue abierta: su línea `Gate:` va en el mensaje final.
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,07 h del gate de cierre (4 min, patch 0286)
-- Inicio: 2026-11-09T11:46Z
-- Esfuerzo real:
+- Inicio: 2026-11-09T11:58Z
+- Esfuerzo real: 0,26 h — reloj de la sesión 0,26 h desde 2026-11-09T11:55Z, sin 0 min de espera al dev-lead (0 esperas). −54 % sobre la estimación (0,57 h con el gate): sin esperas ni huecos; la medida inicial sacó el caso del builtin de shell, la mitad del alcance, y el gate de cierre aún no ha corrido (corre en el merge de sincronización)
 - Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
@@ -78,8 +90,7 @@ Revisión del patch (un reviewer `sdd-kit:effort-medium`, sonnet): 0 críticos, 
 
 #### ADDED — `sdd task done` no lanza un Vitest con lentos sin `--test-timeout`
 
-- GIVEN un plan con commits en el rango de la task y un repo con `*.slow.test.ts`, commiteados o no
-- WHEN se ejecuta `node sdd.js task done <plan> <n> <base> -- npx vitest run <filtros>` sin `--test-timeout` ni `--testTimeout`, y algún filtro casa como subcadena de la ruta con un `*.slow.test.ts` (o no hay filtros)
-- THEN escribe en stderr `Task <n> NOT recorded: vitest corre <ficheros> sin --test-timeout: añade --test-timeout 120000`, con los 3 primeros ficheros y «y N más» si hay más, sale con 1, no ejecuta el comando y no escribe en el ledger
-- AND el valor de `-t`, `--config`, `--maxWorkers` y las demás opciones con valor conocidas no cuenta como filtro, y una ruta absoluta casa igual que la relativa
-- AND con `--test-timeout <ms>`, o con filtros que no casan con ningún lento, lanza el comando como hasta ahora
+- GIVEN un plan con commits en el rango de la task
+- WHEN se ejecuta `node sdd.js task done <plan> <n> <base> -- npx vitest run <filtros>` sin `--test-timeout`, y algún filtro está en la ruta de un `*.slow.test.ts` (o no hay filtros)
+- THEN escribe en stderr `Task <n> NOT recorded: vitest corre <ficheros> sin --test-timeout: añade --test-timeout 120000`, sale con 1 y no ejecuta el comando
+- AND con `--test-timeout <ms>`, o sin ningún lento entre los filtros, lo lanza como hasta ahora
