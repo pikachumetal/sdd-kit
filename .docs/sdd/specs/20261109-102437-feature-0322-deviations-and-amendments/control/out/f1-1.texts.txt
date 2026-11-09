@@ -1,0 +1,280 @@
+--- [3]
+Primero miro el estado de la feature 0010: spec, plan, ledger y tasks.
+
+--- [21]
+Los 7 tests pasan. Siguiente paso: la revisión final de toda la rama, con `sdd-verify`.
+
+--- [31]
+Ahora: lanzo los dos ejes de la revisión final (Spec y Code) en paralelo, cada uno con su vigilancia de silencio. Queda: esperar sus informes y cerrar la revisión, ~8 min.
+
+--- [48]
+Los dos ejes de la revisión final (Spec y Code) están lanzados sobre `6ee2e1e`, cada uno con su vigilancia de silencio. Espero a que terminen.
+
+Los borradores de cierre (`walkthrough.md` y el delta de `capabilities/`) no los he escrito todavía. Los dejo para `sdd-archive`, porque el proyecto aún no tiene `capabilities/` y no quiero inventar su formato.
+
+Hasta ahora esta sesión ha dejado esto:
+- **Tasks:** la 1 y la 2 estaban completas en el ledger. Los 7 tests de `node --test` pasan.
+- **`tasks.md`:** no existía y lo he creado.
+- **Tests añadidos:** el commit `6ee2e1e` cubre dos huecos. El AND de la spec «sin `--motivo`» no tenía test, y la Task 1 había borrado el de «sin reserva». Está anotado como `Ruling:` en el ledger.
+- **Eje Arquitectura:** no sale. No hay módulo nuevo, dependencia ni contrato entre módulos.
+
+Falta cerrar la revisión con los informes y pasar a `sdd-archive`.
+
+El hook de inicio avisó de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que he usado vienen de una copia local del kit, no de la 2.3.4. Si algo no cuadra, actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+--- [53]
+### Strengths
+- El cambio es pequeño y legible. `reasonOf` aísla el parseo de `--motivo` y `cancelBooking` queda como una función corta con cláusulas de guarda.
+- `--motivo` sin valor da `params[index + 1] === undefined`, que `reasons.includes` rechaza. Ese caso y el de no pasar `--motivo` acaban en el mismo mensaje en castellano, sin excepciones.
+- La lista de motivos es una sola constante (`reasons`). El mensaje de error se genera con `reasons.join`, así que la lista permitida y el texto no pueden desincronizarse.
+- No hay comentarios que repitan el código ni números mágicos. Todo el texto de interfaz está en castellano, como exige la restricción.
+- Los nombres de los tests describen comportamiento. Cubren motivo válido, motivo fuera de la lista, listado, falta de `--motivo` y falta de reserva.
+- `voidBooking` no se ha tocado. El diff no mezcla refactors ajenos.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+1. **`test/cancel.test.js:93-95`: el test `canceladas enseña sala, día y motivo` depende del estado que deja otro test.**
+   - `bookings` es estado mutable a nivel de módulo en `src/app.js`. El test espera `'Norte lun — sala ocupada'`, que solo existe si el primer test (`:83`) ya canceló esa reserva.
+   - Si se ejecuta aislado (`--test-name-pattern`), si se reordena o si se paraleliza, devuelve `''` y falla. Lo marco Important por el criterio explícito de independencia entre tests.
+   - Arreglo: que el test haga su propia precondición, por ejemplo llamando a `run('cancelar', [... '--motivo', 'sala ocupada'])` antes de listar. Eso sigue sin ser independiente del resto, porque deja la reserva cancelada para los demás tests. Lo más sólido es exponer un reseteo del estado o recibir `bookings` por parámetro.
+
+#### Minor (Nice to Have)
+1. **`test/cancel.test.js:97-99`: el test `cancelar sin --motivo responde motivo no válido` no fija el orden de validación.**
+   - Usa `Norte lun`. Según el orden de ejecución, esa reserva ya está cancelada o sigue activa. En ambos casos el resultado es el mismo, porque la validación del motivo va antes de la búsqueda.
+   - Es correcto, pero con una reserva activa y una cancelada el mismo test probaría cosas distintas. Conviene dejar explícito qué se prueba, por ejemplo usando `Sur mar`, que no existe y no cambia con el orden.
+2. **`src/app.js:35-38` y `:65`: `reasonOf` y los argumentos posicionales conviven sin contrato.**
+   - `cancelar --motivo otro Norte lun` toma `'--motivo'` como sala. `cancelar Norte --motivo otro` toma `'--motivo'` como día, y la respuesta es `sin reserva Norte --motivo`.
+   - Es una posible fragilidad de parseo (heurística). Se arregla filtrando la bandera y su valor de `params` antes de leer `room` y `day`. Solo merece la pena si el uso real mezcla el orden.
+3. **`src/app.js:57-59`: `cancelledList()` devuelve cadena vacía cuando no hay canceladas.**
+   - El usuario ve una línea en blanco sin saber si falló algo. Un texto como `sin reservas canceladas` sería más claro. No hay test del caso vacío.
+4. **`src/app.js:41`: el mensaje de error no distingue «falta `--motivo`» de «motivo fuera de lista».**
+   - Para quien olvida la bandera, `motivo no válido: …` es mejorable. Está cubierto por test y es aceptable.
+5. **Posible duplicación entre `cancelBooking` y `voidBooking`.**
+   - Comparten búsqueda, mensaje `sin reserva` y cambio de estado. Son 2 apariciones, por debajo del umbral de 3 (heurística), así que no abstraigas todavía. Si aparece un tercer cierre, extrae el cambio de estado.
+
+### Declined to judge
+- Si el listado `canceladas` y el alcance de los motivos coinciden con lo que pidió la spec: es el eje Spec.
+- Si `app.js` mezcla CLI, dominio y presentación en un solo módulo con estado global: es el eje Architecture.
+- Que las reservas vivan en memoria: lo recoge una decisión previa (`179b277`), fuera de este diff.
+- Falta de tests para `voidBooking`: código no modificado por esta rama.
+
+### Recommendations
+- Resolver el punto Important dando aislamiento al estado de `bookings`, con reseteo o inyección. Los demás tests mutadores quedarían igual de protegidos.
+- Considerar un test para `--motivo` sin valor y otro para `canceladas` sin canceladas.
+- La suite completa debe ejecutarla el hilo principal. Con el estado compartido, conviene comprobar que pasa también filtrando por nombre de test, para confirmar la dependencia de orden.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** El código de producción es limpio y maneja bien los casos límite de `--motivo`. Pero un test depende del estado mutable que deja otro, y eso lo vuelve frágil ante reordenaciones o ejecución aislada.
+
+--- [55]
+El eje Code ha vuelto con veredicto «con arreglos»: un Important, la dependencia de orden entre tests, y varios Minor. Espero al eje Spec antes de cerrar la revisión, porque el cierre re-gradúa dentro de cada eje y hace una sola pasada de arreglos.
+
+--- [56]
+Ese aviso es solo el fin de la vigilancia del eje Code, que ya había vuelto. El eje Spec sigue en marcha, así que no cierro la revisión todavía.
+
+--- [58]
+### Strengths
+
+- Las tres afirmaciones del ADDED «Cancelar pide un motivo de la lista» se cumplen al pie de la letra en `src/app.js:41-48` y cada una tiene su test en `test/cancel.test.js`, que es el sitio que indica «Dónde se prueba»:
+  - con motivo válido responde «cancelada Norte lun (sala ocupada)» (test en la línea 84);
+  - con un motivo fuera de la lista responde «motivo no válido: …» (línea 90);
+  - sin `--motivo` responde lo mismo (línea 98).
+- El ADDED «El listado de canceladas enseña el motivo» se cumple en `src/app.js:58-60,67`, con su test en `test/cancel.test.js:94`. La salida es «Norte lun — sala ocupada».
+- La lista cerrada de motivos que la spec decidió con el dev-lead (punto 1) está en una sola constante, `src/app.js:24`. El mismo array valida el motivo y compone el mensaje de error, así que los dos no pueden desincronizarse.
+- El motivo se comprueba antes que la reserva. Así, «sin `--motivo`» da el mismo mensaje haya reserva o no, que es lo que pide el AND. El test de la línea 98 fija ese orden porque Norte lun ya está cancelada en ese punto.
+- `voidBooking` no se toca y las anuladas no salen en `canceladas`. Respeta el «No entra: anulaciones (0011)».
+- Todo el texto nuevo de la interfaz está en castellano.
+- ADR 0003, Confirmación cumplida: `src/` no tiene ningún `import` ni `require` (lo he buscado en el worktree de `6ee2e1e`), así que no hay `node:fs` ni paquetes de base de datos.
+- La Ruling del ledger (recuperar el test de «sin reserva» que se borró en la Task 1 y añadir el de «sin --motivo») es correcta: cubre un AND de la spec que no tenía test y restaura una regresión de cobertura. La acepto.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+Ninguno.
+
+#### Minor (Nice to Have)
+
+1. **`src/app.js:58-60`: `canceladas` sin canceladas imprime una línea vacía.**
+   - Qué falla: `join('\n')` sobre un array vacío devuelve `''`, y `console.log` pinta una línea en blanco.
+   - Por qué importa: por el ADR 0003 cada invocación del CLI empieza con la memoria vacía. En uso real desde la terminal `salas canceladas` va a caer casi siempre en este caso, y una línea vacía no distingue «no hay ninguna» de «algo ha fallado». Una persona razonable espera un mensaje.
+   - Cómo arreglarlo: devolver un texto como «sin canceladas» cuando el filtro quede vacío y añadir un test.
+   - Gap: `partial`.
+   - Origen: ADDED «El listado de canceladas enseña el motivo». La spec no dice nada del caso vacío; aplico la expectativa razonable.
+
+2. **`test/cancel.test.js:94-100`: tests que dependen del orden.**
+   - Qué falla: el GIVEN de `canceladas` («Norte lun cancelada con sala ocupada») no lo prepara su propio test. Lo deja hecho el primer test, `cancelar con un motivo de la lista`, mediante el estado del módulo. El test de «sin --motivo» también trabaja sobre esa reserva ya cancelada.
+   - Por qué importa: con `node:test` los tests de un fichero corren en orden, así que hoy pasan. Pero si alguien filtra con `--test-name-pattern "canceladas"`, lo reordena o lo ejecuta suelto, falla.
+   - Cómo arreglarlo: cancelar dentro del propio test de `canceladas`, sobre otra reserva o con un `cancelBooking` previo, o dejarlo documentado.
+   - Gap: `partial`.
+   - Origen: el GIVEN del segundo ADDED.
+
+3. **Ledger: el commit `6ee2e1e` no aparece en ninguna task.**
+   - Qué falla: la Ruling cuelga de «Task 2», cuyo rango es `49c162f..01a83e0`, pero `6ee2e1e` queda después y no hay ninguna línea con evidencia de tests para él. La última evidencia es «3/3 pass»; el fichero tiene ahora 5 tests.
+   - Por qué importa: los dos tests nuevos, incluido el único que cubre el AND «sin `--motivo`», no tienen ninguna ejecución registrada.
+   - Cómo arreglarlo: correr `node --test` en el gate y anotar el resultado en el ledger.
+   - Gap: `partial`.
+   - Origen: el AND «sin `--motivo` responde lo mismo».
+
+**Minors diferidos del ledger:** el ledger no tiene ninguno (`minor (deferred)` ni `parked`). De los míos, el 3 debe resolverse antes de mergear: basta con la suite verde del gate. El 1 y el 2 pueden quedar como deuda.
+
+### Declined to judge
+
+- **La persistencia entre invocaciones.** `cancelar` y después `canceladas` en dos procesos distintos no muestra nada. El ADR 0003, que está aceptado, asume que las reservas viven solo en memoria, y además es así desde antes para todos los comandos. No es algo que esta spec pueda cambiar.
+- **La etiqueta del delta.** La spec marca como ADDED algo que en realidad modifica `cancelar`, que antes no pedía motivo. El cambio de comportamiento sí está cubierto por el AND «sin `--motivo`»; la etiqueta es cosa de la redacción de la spec, no del diff.
+- **El salto de numeración (1, 3) en las decisiones de la spec.** Es un defecto del documento, no del código.
+- **Que el motivo distinga mayúsculas** («Sala ocupada» se rechaza). La lista es cerrada por decisión y el error enseña los valores válidos, así que el usuario puede corregirlo.
+- **`--motivo` en otra posición** (por ejemplo antes de la sala). La spec fija la sintaxis `cancelar <sala> <día> --motivo <motivo>`.
+- **Que los motivos de las anulaciones no se guarden.** Está fuera de alcance; va en la 0011.
+
+### Not verified
+
+- Que los 5 tests de `test/cancel.test.js` pasen en `6ee2e1e`. No lo he podido comprobar: el encargo me prohíbe ejecutar la suite y el ledger solo trae «3/3» de `01a83e0`.
+- Que `test/app.test.js` siga verde. Por lectura no le afecta el cambio (no usa `cancelar`), pero no lo he ejecutado.
+
+### Recommendations
+
+- El hilo principal debería ejecutar `node --test` completo en `6ee2e1e` antes del merge y anotar el resultado en el ledger.
+- Conviene comentar con el dev-lead que, por el ADR 0003, `canceladas` solo enseña algo dentro del mismo proceso. Desde la terminal, el objetivo de la spec («saber por qué se liberó una sala») no se ve entre comandos. No es un defecto de esta rama, pero puede pedir revisar el ADR.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** Las dos capacidades añadidas y sus tres afirmaciones están implementadas exactamente como pide la spec, cada una con su test, y el ADR 0003 se cumple. Solo falta la evidencia de que la suite pasa en `6ee2e1e` (Minor 3). El mensaje para el listado vacío y el test que depende del orden se pueden diferir.
+
+Rutas relevantes:
+- `<run>/review-0010-6ee2e1e/src/app.js`
+- `<run>/review-0010-6ee2e1e/test/cancel.test.js`
+- `<run>\repo\.temp\sdd\plan\progress.md`
+
+--- [59]
+Los dos informes están. Leo la guía de cierre de la revisión antes de actuar sobre ningún hallazgo.
+
+--- [64]
+RED confirmado: ejecutado solo, el test falla. Ahora lo arreglo haciendo que cree su propia precondición.
+
+--- [68]
+Los 7 tests pasan, y el test de `canceladas` también pasa ejecutado solo. Commit, ledger, `tasks.md` y limpieza del worktree de revisión.
+
+--- [71]
+La pasada de fix es un commit de test de una línea. No es solo de documentación, así que no entra en la excepción de «revisado en el hilo» y hace falta la única re-revisión. Leo su plantilla.
+
+--- [76]
+El diff es mayor de lo esperado: dice 9 inserciones y 8 borrados, y no una línea. Lo investigo antes de enviarlo a revisar.
+
+--- [81]
+El fichero base era CRLF puro, y mi commit `6ee2e1e` le mezcló líneas LF. Lo dejo todo en CRLF con un nuevo commit y compruebo que el diff queda en una línea.
+
+--- [91]
+Necesito ver el código fuente para comprobar si la línea añadida es realmente idempotente.
+
+--- [93]
+La re-revisión única está en marcha sobre `6ee2e1e..d5f93bc`, con su vigilancia. Hasta que vuelva no cierro la 0010 ni borro el workspace.
+
+Estado de la 0010:
+- **Revisión final:** los dos ejes (Spec y Code) dieron «con arreglos», sin Critical.
+- **Pasada de fix:** `c1ff562` corrige el único Important. El test de `canceladas` dependía del orden de los tests y ahora prepara su propia reserva. Lo vi fallar solo antes del arreglo y pasar después. La suite da 7/7.
+- **Diferidos:** quedan 4 Minor y 4 `Ruling:` en el ledger. Los resumiré al final.
+- **Finales de línea:** mi commit `6ee2e1e` guardó finales de línea mezclados en `test/cancel.test.js`. `c1ff562` los normalizó, y por eso el diff crudo entre esos dos commits parece mayor de lo que es. Los dos tests de `6ee2e1e` siguen en el fichero. El revisor tiene el diff con `-w` y la indicación de comprobarlo.
+
+Cuando llegue el veredicto de la re-revisión, anoto `Re-revisión:` en `tasks.md`, borro el workspace si queda limpia y paso a `sdd-archive`.
+
+--- [98]
+## Re-revisión del fix 6ee2e1e..d5f93bc
+
+### Hallazgos
+
+**1. [Code, Important] `canceladas enseña sala, día y motivo` dependía del estado que deja el primer test: resuelto.**
+- El cambio real es una sola línea, `test/cancel.test.js:14`: `run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']);`.
+- He comprobado contra `src/app.js` que la línea sirve en los dos casos:
+  - **El test se ejecuta solo:** la reserva inicial `Norte lun` está en estado `active` (línea 4). La llamada la cancela con motivo, y `cancelledList()` devuelve `Norte lun — sala ocupada`.
+  - **El test se ejecuta tras el primero:** `findBooking` solo busca reservas `active`, así que la llamada devuelve `sin reserva Norte lun` y no toca nada. El listado sigue teniendo una sola entrada con el mismo texto, sin duplicados.
+- Que la llamada de preparación no compruebe su valor de retorno es correcto: sirve para preparar el estado, no es lo que se prueba.
+- Esto también resuelve el Minor 2 del eje Spec, que era el mismo problema.
+- Los otros tests no dependen del orden:
+  - `fuera de la lista` y `sin --motivo` fallan en la validación del motivo (`app.js:20`) antes de buscar ninguna reserva.
+  - `sin reserva Sur mar` funciona porque no existe ninguna reserva `Sur mar`.
+
+**2. [Spec, Minor 3] No había evidencia de tests en 6ee2e1e: resuelto, con la evidencia que aporta el hilo.**
+- El hilo informa de que `node --test` pasa 7/7 en 6ee2e1e y en HEAD. No lo he vuelto a ejecutar porque el encargo lo prohíbe.
+- Los dos tests que añadió 6ee2e1e siguen en HEAD, intactos: `cancelar sin --motivo responde motivo no válido` (líneas 18-20) y `cancelar sin reserva lo dice` (líneas 22-24). El diff neto desde 01a83e0 los confirma, así que la normalización de finales de línea no se ha llevado nada.
+- Los dos THEN de la spec («cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada») tienen su test en `test/cancel.test.js`, que es lo que pide «Dónde se prueba».
+
+### Problemas nuevos que introduce el fix
+- **Critical:** ninguno.
+- **Important:** ninguno.
+  - No se ha tocado ninguna aserción, nombre de test ni dato de los tests que ya existían.
+  - Todos los textos visibles siguen en castellano.
+  - No se ha añadido ningún comentario.
+  - `src/` no cambia, así que el ADR 0003 no se ve afectado.
+- **Minor:** ninguno.
+
+### Out-of-Scope Observations (no bloquean)
+- La línea de preparación del test 3 solo da el mismo resultado en cualquier orden porque usa el mismo motivo que el test 1 (`sala ocupada`). Si alguien cambia el motivo del test 1, la suite completa fallaría en el test 3 aunque el test 3 solo pase. Se resolvería reiniciando el estado del módulo entre tests, pero eso queda fuera de esta pasada.
+- Al revés también hay dependencia: el test 1 fallaría si se ejecutara después del test 3. `node:test` sigue el orden del fichero, así que hoy no ocurre.
+- `test/cancel.test.js` tiene 5 tests. El 7/7 del hilo debe de incluir otros ficheros de test. No lo he verificado.
+
+**Ready to merge?** Yes. Los dos hallazgos están resueltos y el fix, una sola línea de preparación en un test, no introduce problemas nuevos.
+
+Ficheros revisados:
+- `<run>/repo/test/cancel.test.js`
+- `<run>/repo/src/app.js`
+- `<run>\repo\.temp\sdd\plan\rereview-6ee2e1e-d5f93bc.diff`
+
+--- [100]
+La re-revisión da «Yes» y confirma que los dos hallazgos están resueltos, sin problemas nuevos. Ahora vuelco los rulings a `tasks.md`, anoto la línea `Re-revisión:` y borro el workspace.
+
+--- [105]
+No hay Python, así que los rulings no se pegaron en `tasks.md`. El ledger ya está borrado, pero `/tmp/rulings.txt` conserva el texto. Lo pego a mano.
+
+--- [110]
+Con la implementación y la revisión cerradas, `sdd-archive` empieza por sus comprobaciones previas, que no escriben nada.
+
+--- [116]
+La 0010 está implementada y revisada, pero no la he cerrado: `sdd-archive` se para en la validación. La validación es `manual`, así que tiene que decirme usted qué ha probado y que funciona. «Sigue» es la orden de cerrar, no la validación.
+
+🦆 Antes, cancelar una reserva no dejaba rastro. Ahora `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». `canceladas` lista cada cancelación con su motivo, por ejemplo «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Añadí dos tests después de las tasks: el del AND «sin `--motivo`», que no tenía test, y el de «sin reserva», que la Task 1 había borrado.
+- Aislé el test de `canceladas`, que dependía del orden de los tests.
+- El resto de los rulings y 4 Minor diferidos están en `tasks.md`. Los dos que más conviene mirar:
+  - `canceladas` sin canceladas imprime una línea vacía.
+  - Por el ADR 0003 las reservas viven solo en memoria del proceso: `canceladas` solo enseña algo dentro del mismo proceso.
+
+**Evidencia**
+- **Suite:** `node --test` da 7/7 en `HEAD`.
+- **Revisión final:** Spec y Code dieron «con arreglos», sin Critical. La re-revisión única (`6ee2e1e..d5f93bc`) dio «Yes». Después hice dos commits de solo documentación en `tasks.md` (12 líneas en total), que revisé yo en el hilo.
+- **Smoke con ejecución real** (la CLI arranca vacía en cada invocación):
+
+| THEN | Resultado |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | el mismo mensaje |
+| `canceladas` en un proceso nuevo | línea vacía |
+
+El THEN de `canceladas` («Norte lun — sala ocupada») solo lo verifica la suite. Por la CLI no se puede ver entre dos comandos, por lo que es `suite` y no `ejecución real`.
+
+**Para validar, pruebe usted:**
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` debe decir «cancelada Norte lun (sala ocupada)».
+2. Repítalo con `--motivo "me aburro"` y sin `--motivo`: ambos deben dar «motivo no válido: …».
+3. `node --test` debe dar 7/7.
+
+Dígame qué ha probado y que funciona. Si prefiere diferirlo, necesito su frase y un disparador con responsable.
+
+**Decisión aparte:** `merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Hasta que lo defina no puedo fusionar, y la fusión la presento y espero. Mi propuesta: `into: develop`, `noFf: true`.
+
+Falta cerrar: `walkthrough.md`, retro, el delta de capacidades (el proyecto aún no tiene `capabilities/`), el roadmap, el squash del cierre y el merge.
+
+El hook de inicio avisaba de que la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que usé vienen de otra copia del kit. Si algo no cuadra, actualice con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicie.
+

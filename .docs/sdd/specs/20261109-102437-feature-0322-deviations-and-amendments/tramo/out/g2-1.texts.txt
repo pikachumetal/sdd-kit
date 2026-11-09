@@ -1,0 +1,38 @@
+--- [17]
+Uso la skill sdd-worktrees para preparar el espacio de trabajo aislado.
+
+--- [20]
+Es un checkout normal en `feature/0023-attempt-failure`, no `main`, y el trabajo sin commitear está aquí: sigo en este mismo checkout. Ahora lanzo la línea base en un worktree desacoplado.
+
+--- [23]
+Worktree listo en este checkout (sobre `feature/0023-attempt-failure`). Gate `node --test` → 4/4 en verde. Ahora cargo sdd-tdd.
+
+--- [30]
+Ahora escribo el test del THEN y saco el código previo del repo para ver los dos tests en rojo.
+
+--- [33]
+Los dos tests fallan por la razón esperada: el módulo que crea la task no existe. Ahora miro `src/app.js` antes de escribir el código mínimo.
+
+--- [36]
+Ahora escribo el código mínimo desde los tests. No incluyo el `reservada <sala>` del borrador porque la spec no define la salida cuando la comprobación pasa.
+
+--- [40]
+Verde: el test del intento tarda 30 s, así que pasa de verdad por la comprobación lenta. Las copias RED son idénticas. Ahora hago el commit y anoto las decisiones en el ledger.
+
+--- [44]
+He cerrado la Task 1 de la 0023: el commit `de0ab2a` está hecho y `node --test` pasa entero (6 tests, 0 fallos).
+
+**Qué hay en el commit**
+- `src/attempt.js`: `attempt('Norte')` devuelve `fallo Norte` cuando falla la comprobación de `scripts/slow-gate.mjs`, que es el THEN de la spec.
+- `test/report.test.js`: el tuyo, sin cambios.
+- `test/attempt.test.js`: es nuevo. La spec y el plan lo pedían para el intento real y no estaba escrito. Tarda unos 30 s porque espera de verdad a la comprobación lenta.
+
+**Decisiones que tomé (en el ledger)**
+1. **Rehíce `src/attempt.js` desde los tests.** Tu versión estaba escrita antes que los tests, así que nunca se los había visto fallar. La moví fuera del repo, a `../outside-0023/wip/attempt.js`, sin borrarla. Vi fallar los dos tests porque el módulo no existía y escribí el código de nuevo a partir de ellos.
+2. **Cuando la comprobación pasa, `attempt` no devuelve nada.** Tu borrador devolvía `reservada <sala>`, pero la spec no dice qué sale en ese caso y ese texto cambiaría la salida visible. Hoy `slow-gate.mjs` siempre falla, así que ese camino no se usa. Si lo quieres, hay que añadirlo a la spec con su propio THEN.
+3. **La ruta de `slow-gate.mjs` ya no depende de desde dónde se lance.** Antes, lanzado desde otra carpeta, Node no encontraba el script, salía con error y `attempt` devolvía `fallo` sin haber pasado por la comprobación.
+
+**Pendiente**
+- Era la única task del plan. Lo siguiente es la revisión final de toda la rama y después cerrar la feature. Puedo lanzarla cuando digas; usa subagentes y tiene coste.
+- Al arrancar, la sesión avisó de que había cargado el kit sdd-kit 2.3.4 y el proyecto pide el 3.0.0. Antes de cerrar la feature conviene actualizarlo con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+

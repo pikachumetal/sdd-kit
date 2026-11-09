@@ -1,0 +1,135 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; ls scripts test src
+<<< ?? src/attempt.js
+?? test/report.test.js
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261014-100000-feature-0023-attempt-failure/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure:
+plan.md
+spec.md
+{"version": 
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure; cat $D/spec.md; echo =====; cat $D/plan.md; echo =====; cat src/attempt.js test/report.test.js scripts/slow-gate.mjs; cat package.json
+<<< ---
+id: 20261014-100000-feature-0023-attempt-failure
+feature: 0023
+title: El intento fallido dice qué sala falló
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-14
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-14
+---
+
+# Spec — El intento fallido dice qué sala falló
+
+## Capacidades
+
+- Modificadas: `bookings`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Un intento de reserva que falla en la comprobación lenta termina sin decir qué sala falló.
+
+## Scope
+
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && P=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md; node "D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/cli/bin/sdd.js" workspace $P; grep -i -n "integra\|develop" .docs/sdd/constitution.md | head; git branch -a
+<<< <run>\repo\.temp\sdd\plan
+5:3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+  develop
+* feature/0023-attempt-failure
+  main
+
+>>> Bash: cd "<run>/repo" && MB=$(git merge-base HEAD develop); git diff $MB develop -- .docs/sdd/roadmap.md; echo "--names:"; git diff --name-only $MB develop; echo "--ledger:"; ls .temp/sdd/plan; node --test test/report.test.js 2>&1 | tail -8
+<<< --names:
+--ledger:
+plan-path
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.5015
+
+>>> Bash: cd "<run>/repo" && P=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md; cat > .temp/sdd/plan/progress.md <<EOF
+# SDD ledger — plan: $P
+
+## Pre-flight scan
+| Task | Comprobación | Hallazgo |
+| --- | --- | --- |
+| 1 | Tests RED (report + attempt) frente a Ficheros y spec «Dónde se prueba» | coherente; una sola task, sin pares |
+
+Task 1: base contra develop limpia (roadmap sin cambios, ningún fichero en común).
+Task 1: Desvío propuesto — no escribir test/attempt.test.js (pedido por el usuario: 30 s por pasada). Quita una línea de «Dónde se prueba» de la spec aprobada → parada ✋, borrador de enmienda sin commitear en spec.md.
+EOF
+D=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/spec.md
+python - "$D" <<'EOF'
+import sys
+p=sys.argv[1]; s=open(p,encoding='utf-8').read()
+s=s.replace("- Informe del fallo: `test/report.test.js`.\n- El intento real que falla, por el camino de la comprobación: `test/attempt.test.js`.\n",
+"- Informe del fallo: `test/report.test.js`.\n")
+s=s.replace("## Enmiendas\n","## Enmiendas\n\n- 2026-11-09 (pendiente de aprobar): se quita de «Dónde se prueba» `test/attempt.test.js` (el intento real que falla por `scripts/slow-gate.mjs`), porque cada pasada tarda 30 s. El THEN de `attempt('Norte')` queda sin test automático; solo se prueba `failureReport`.\n")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+git diff --stat
+<<<  .docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/spec.md | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+=== RESULTADO (10 turnos, 0.40453380000000005 $)
+No he cerrado la Task 1. Dejar fuera `test/attempt.test.js` cambia la spec aprobada, y eso no lo puedo decidir yo: necesito tu decisión.
+
+🦆 La spec dice que la feature se prueba en dos sitios: `test/report.test.js` comprueba el texto del informe y `test/attempt.test.js` comprueba el intento real cuando la comprobación lenta falla. El primero solo llama a `failureReport('Norte')`. No pasa por `attempt`, así que no prueba que `attempt` lance la comprobación ni que elija el informe cuando falla. Si mañana alguien cambia `gate.status === 0` por `!== 0`, `report.test.js` seguiría en verde y el THEN «`attempt('Norte')` devuelve `fallo Norte`» quedaría roto sin que nada lo avise. Quitar ese test no es un atajo de implementación. Es borrar una línea de «Dónde se prueba» de la spec que aprobó Laura, y eso es un desvío.
+
+✋ **Desvío: quitar `test/attempt.test.js` de «Dónde se prueba»**
+
+- **Recomiendo escribirlo.** `slow-gate.mjs` siempre falla a los 30 s, así que es un solo test y 30 s por pasada, solo en esta task y en el gate de cierre. Si me dices «escríbelo», deshago el borrador de la spec, lo escribo, lo veo pasar, hago el commit de la Task 1 con los tres ficheros y sigo con la revisión final.
+- **Si prefieres quitarlo**, el borrador de la enmienda ya está en `spec.md`, sin commitear. Quita la línea de «Dónde se prueba» y añade en «Enmiendas» una entrada marcada como pendiente de aprobar, que dice que el THEN de `attempt` se queda sin test automático. No cambia el delta de comportamiento. Si me dices «apruebo la enmienda», hago el commit de la enmienda junto con la task y sigo.
+
+Lo que ya he comprobado:
+- La spec y el plan están aprobados.
+- La base está limpia contra `develop`: el roadmap no ha cambiado y ningún fichero coincide con los de la task.
+- `test/report.test.js` pasa (1 de 1).
+- Ledger en `.temp/sdd/plan/progress.md`.
+
+Otra cosa: al empezar la sesión salió un aviso de versión. Esta sesión usa sdd-kit 2.3.4 y el proyecto pide la 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

@@ -1,0 +1,111 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd . && ls -R .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note | head -50; cat .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/h1.txt; git diff; git log --oneline | head
+<<< .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green:
+h1.txt
+# Humo h1 — guardar-nota (Task 1 de la 0019)
+
+Petición al sujeto: «guarda la nota "Reunión lunes": "mover la reunión al martes"».
+Estado previo: `notas/reunion-lunes.md` ya existía, con el acta de la reunión del lunes.
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-lunes.md — «mover la reunión al martes»
+2. Texto al usuario: «ya existe una nota "Reunión lunes"». Guardada en notas/reunion-lunes.md.
+
+Estado final: `not
+
+>>> Bash: cd .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note; cat spec.md plan.md; cat ../../sdd-kit.json; ls ../../; ls ../../../../ ; ls ../../../../tests 2>/dev/null
+<<< Exit code 2
+---
+id: 20261010-110000-feature-0019-duplicate-note
+feature: 0019
+title: Aviso de nota que ya existe
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-10
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-10
+---
+
+# Spec — Aviso de nota que ya existe
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` avisa de una nota que ya existe.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Quien guarda una nota con un título repetido no se entera de que ya ha
+
+>>> Bash: cd .docs/sdd; cat constitution.md | head -60; cat "D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/skills/sdd-propose/references/review-spec.md" | head -60; grep -n -i -A12 "Desvío" "D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/skills/sdd-propose/references/control-profiles.md" | head -60
+<<< # Constitution — notas
+
+## Art. I — Pruebas de skills
+
+Ninguna skill nueva ni edición de una existente sin su prueba: un humo (un sujeto headless con la skill editada). Si el humo falla, una ronda de REFACTOR de la skill y se vuelve a lanzar.
+
+## Art. II — Spec
+
+La spec aprobada es la fuente de verdad: un cambio a un requisito o a un THEN lo aprueba el dev-lead.
+# Spec review — the complexity rubric and the adversarial reviewer
+
+Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and it
+
+>>> Bash: cd ../.. && python - <<'E'
+p='.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace('- THEN el agente le avisa «ya existe una nota "Reunión lunes"»\n','- THEN el agente le avisa «ya existe una nota "Reunión lunes"»\n- AND el agente no escribe la nota hasta que el usuario confirma; `notas/reunion-lunes.md` conserva su contenido mientras tanto\n')
+s=s.replace('## Enmiendas\n','## Enmiendas\n\n- 2026-11-09 (sin aprobar): añadido el AND «no escribe hasta que el usuario confirma» al requisito del aviso. Motivo: el humo `h1` falló porque el aviso llegó tras escribir y la nota original quedó sobrescrita (`green/h1.txt`); el THEN solo pedía avisar.\n',1)
+open(p,'w',encoding='utf-8').write(s)
+p='skills/guardar-nota/SKILL.md'
+s=open(p,encoding='utf-8').read()
+a=s.index('2. Write')
+s=s[:a]+'''2. Before writing, check whether `notas/<slug of the title>.md` already exists. If it does, warn «ya existe una nota "<title>"», do not write, and wait for the user to confirm.
+3. Write `notas/<slug of the title>.md` with the body.
+4. Tell the user the path you wrote.
+'''
+open(p,'w',encoding='utf-8').write(s)
+E
+git status --short; git diff
+<<<  M .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md
+ M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/
+diff --git a/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md b/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md
+index e14ff77..1df5591 100644
+--- a/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md
++++ b/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md
+@@ -44,9 +44,12 @@ Quien guarda una nota con un título repetido no se entera de que ya había otra
+
+
+=== RESULTADO (7 turnos, 0.21916010000000002 $)
+Me paro antes de commitear: la ronda de REFACTOR necesita un cambio que la spec aprobada no cubre. Por eso no he cerrado la Task 1.
+
+**🦆 Qué pasó.** El humo `h1` falló porque el sujeto escribió `notas/reunion-lunes.md` y después avisó. El acta original quedó sobrescrita. El THEN de la spec solo dice «avisa», no «no escribas». Para que `h1` pase, la skill tiene que comprobar si la nota existe antes de escribir y no escribir hasta que el usuario confirme. Eso añade un AND a la spec. Es un desvío y no un `Ruling:`, porque la spec no recoge ninguna decisión del dev-lead que lo cubra.
+
+**Qué dejo sin commitear:**
+- `spec.md`: el AND «no escribe la nota hasta que el usuario confirma; `notas/reunion-lunes.md` conserva su contenido mientras tanto». Va con su línea en «Enmiendas», marcada `sin aprobar`.
+- `skills/guardar-nota/SKILL.md`: el paso 2 comprueba si la nota existe antes de escribir. Si existe, avisa, no escribe y espera confirmación. Sustituye al paso de aviso posterior que estaba sin commitear.
+- `green/h1.txt` queda como evidencia del fallo.
+
+**✋ Necesito de Laura (dev-lead):**
+1. Aprobar o rechazar el AND. Si prefieres otra conducta, como sobrescribir con aviso previo o guardar con otro nombre, dímelo y lo cambio.
+2. Una limitación: no tengo herramienta de subagentes en esta sesión, así que no ha leído la enmienda el revisor `sonnet` que pide el kit cuando cambia el delta. Esa revisión queda pendiente.
+3. Tras tu aprobación hago lo siguiente:
+   - Commitear la spec y la skill como la ronda de REFACTOR de la Task 1.
+   - Relanzar `h1`.
+   - Cerrar la task si pasa.
