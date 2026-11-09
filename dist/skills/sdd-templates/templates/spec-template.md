@@ -26,7 +26,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 > **Estado**: draft / in-review / approved / implementing / done / superseded / cancelled.
 > **Regla de contenido**: si la implementación puede cambiar sin cambiar el comportamiento observable, no va en la spec — va en `plan.md` (datos, UX, riesgos, rollout, restricciones).
-> **Regla de reparto**: el comportamiento observable (tiempos, límites, cuotas, avisos, respuestas, estados) vive solo en `capabilities/`. `tech-stack.md`, `architecture.md` y `environments.md` dicen dónde está la pieza técnica y enlazan la capacidad; no copian el valor.
+> **Regla de reparto**: el comportamiento observable (tiempos, límites, cuotas, avisos, respuestas, estados) vive solo en `capabilities/`.
 > Borra los bloques de ayuda (`>`) al redactar.
 
 ## Capacidades
@@ -103,7 +103,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Delta de comportamiento
 
-> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-archive`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad es un sustantivo del dominio, nunca un ticket. Su slug es un nombre de fichero: va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing`, no `facturacion`), y lo aprueba el dev-lead.
+> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-archive`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad nueva se nombra con la regla 1 de `capability-template.md`, que se calca al declararla.
 >
 > Un escenario de una regla de negocio lleva datos concretos de entrada y de salida, no una frase abstracta: «GIVEN bolsa FR, IT, PT · WHEN oferta en DE · THEN no cubre», no «una oferta fuera de la bolsa no cubre».
 

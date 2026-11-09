@@ -46,3 +46,14 @@ Tras la tanda, la ayuda de la previsión pide la línea `suma:` «tal cual»; lo
 Tanda: `SCENARIOS="cr1 pb-p" N=1` → `suma: 2 sujetos · coste previsto: 1.02 $`; real 2 sujetos, 1,39 $.
 
 `cr1 · 1/1 · verde` · `pb-p · 1/1 · puerta verde · sin leer: PB-P, PB-L`. Leídas por el hilo: PB-P pasa (el primer turno acaba en tres enfoques con su coste y «¿Cuál prefieres?», sin `spec-new.md`; tras «Sigue…», la sección 1 con «¿Va bien?»); PB-L pasa (la sección 1 abre con «Al escribir `salas informes` verás la ocupación por sala» y la tabla con datos).
+
+## Task 2 — una forma por regla (P10, P11, P12, P16, P19, P20)
+
+`cli/test/estimation/statistics.test.ts` («walkthrough con evidencia por THEN»): con el hueco nuevo de `walkthrough-template.md` y el relleno viejo (`/^- Esfuerzo real: <Zh>/m`), `2 failed | 47 passed`; con `/^- Esfuerzo real: <[^\n]*/m`, `49 passed`. `git grep` en `tests/batteries/` de los siete literales que salen: ninguna fila los mide.
+
+Humo de `sdd-archive`: `SCENARIOS="a2 t3" N=1` → `suma: 2 sujetos · coste previsto: 0.74 $`; real 2 sujetos, 0,66 $ (`t3` se lanzó solo, porque el techo de la primera tanda solo dejó correr `a2`).
+
+| Sujeto | Filas | Resultado |
+| --- | --- | --- |
+| a2-1 | P1, P2, P3, L | pasa: fila 0008 ✅, deuda «**[Patch 0008, 2026-11-09: saldada — …]**», sin `walkthrough.md` ni `sdd-retro`. El molde valida en campo y no tiene `estimation.md`: `patch.md` §4 lleva `Validación en campo:` y §5 no llega a usar el hueco de `Esfuerzo real`, así que P10 y P19 en el patch quedan sin observar |
+| t3-1 | T3, L | pasa: `Validación por el agente: 2026-11-09 · la spec declara `Validación: agente`; smoke con ejecución real…`, sin guion ni espera |
