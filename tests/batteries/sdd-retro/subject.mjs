@@ -65,11 +65,10 @@ const DEBT = [
   '## En espera', '', '| Ítem | Causa | Origen | Impacto | Falta | Fecha |', '| --- | --- | --- | --- | --- | --- |',
   '| El aviso sale doble | regla lejos de su paso | [e](e.md) | bajo | 2.º caso | 2026-10-01 |', '',
   '## Lista', '', '| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |', '| --- | --- | --- | --- | --- | --- | --- | --- |', ...LIST, '',
-  '## Descartadas', '', '| Ítem | Causa | Origen | Motivo | Fecha |', '| --- | --- | --- | --- | --- |', '',
 ].join('\n');
 const EMPTY_DEBT = DEBT.split('\n').filter((line) => !/^\| (El |`--planta)/.test(line)).join('\n');
 const PREVIOUS_RETRO = [
-  '# Retro — v1.3.0', '', '## Repaso por causa', '', '| Causa | En espera | Lista | Descartadas |', '| --- | --- | --- | --- |', '| regla lejos de su paso | 0 | 2 | 0 |', '',
+  '# Retro — v1.3.0', '', '## Repaso por causa', '', '| Causa | En espera | Lista |', '| --- | --- | --- |', '| regla lejos de su paso | 0 | 2 |', '',
   '## Abiertas en «Lista»', '', '| Ítem | Causa | Casos | Destino | Abierta desde |', '| --- | --- | --- | --- | --- |',
   '| El anuncio sale 4 de 6 | regla lejos de su paso | 2 | sin fila | 1.2.0 |', '| La fila cerrada | regla lejos de su paso | 1 | sin fila | 1.3.0 |', '', 'Cerradas desde la 1.2.0: 0', '',
   '## Propuestas', '', 'Sin propuestas', '',

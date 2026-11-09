@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/steering/debt.md; echo ----; cat ROADMAP.md; echo ----; cat .docs/sdd/sdd-kit.json; git branch --all; ls .docs/sdd
+<<< # Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Eviden
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; ls -R . | grep -v '^./.git' | head -50; cat src/*.js | head -150; cat package.json
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+.:
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+
+./docs:
+qa/
+
+./docs/qa:
+2026-10-12-informe.md
+
+./src:
+app.js
+
+./test:
+app.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const b
+
+>>> Bash: node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -3; node src/app.js exportar; git log --oneline -- src; cat CHANGELOG.md | head -20; cat test/app.test.js | head -30; cat .docs/sdd/steering/*.md | head -5; ls .docs/sdd/steering .docs/sdd/changes
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+Norte,lun,10:00-12:00
+178e314 feat: base del molde
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [1.4.1] - 2026-10-05
+
+### Fixed
+
+- Las reservas semanales respetan el día de la semana.
+
+## [1.4.0] - 2026-09-01
+
+### Added
+
+- Ocupación por sala en el listado.
+
+## [1.3.0] - 2026-07-20
+
+### Added
+
+import { 
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/patch-0324-debt-keeps-only-live/.temp/p0324/kit-red/cli/bin/sdd.js" roadmap check --path .docs/sdd; echo rc=$?
+<<< ROADMAP.md: línea 21: el id «B1» no es de la secuencia: resérvale uno con sdd id next --reserve
+debt.md: aviso: línea 14: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+rc=1
+
+=== RESULTADO (7 turnos, 0.2068238 $)
+He reproducido las dos filas de «Por triar» y no he escrito nada todavía. Con el perfil `delegate` toca proponer y esperar tu decisión.
+
+## Propuesta
+
+| Ítem | Qué he comprobado | Estado propuesto |
+| --- | --- | --- |
+| **CSV pierde las tildes desde la 1.4.2** | `node src/app.js exportar` saca `sala,día,franja`. Los bytes son UTF-8 correctos (`d 303 255 a`). Además, el CHANGELOG llega solo hasta la 1.4.1, así que la 1.4.2 no existe en el repo. | **En espera**. Causa `sin determinar`, falta `reproducirlo`. Es posible que sea la codificación con que el usuario abre el CSV, por ejemplo Excel sin BOM. |
+| **`libres --planta 2` lista salas de la planta 1** | Se reproduce con `node src/app.js libres --planta 2`, que devuelve `Norte (planta 1)`. La causa está en `src/app.js:10`: `floors[room] <= floor` debería ser `===`. | **Lista**. Causa `defecto del producto`, arreglo `—`. Evidencia: ese comando con su salida. Destino: una fila nueva. |
+| **Reservas de más de 8 h** (ya en «En espera») | Está en espera desde 2026-07-01. `sdd roadmap check` avisa de que caduca, porque han pasado dos releases sin 2.º caso. | **Descartada**, con Motivo `caducada`. |
+
+**Fila nueva para el defecto de `--planta`:**
+- Va en **Now**, como patch (`**Carril:** patch`), con tamaño `S`.
+- Lleva un único test nuevo: `libres --planta 2` solo devuelve salas de la planta 2.
+- Su id sale de una reserva con `sdd id next --reserve`.
+- Su `**Salda:**` apunta a la fila de deuda.
+- No depende de otras filas, así que va sin «Tras».
+
+**Fuera de este triaje:** `sdd roadmap check` falla en la línea 21 de `ROADMAP.md`, porque el id `B1` de Later no es de la secuencia. No lo toco, porque es de antes. Lo dejo como forma heredada, a resolver en el paso de migración.
+
+¿Lo escribo así? Si prefieres otra cosa, por ejemplo mantener la caducada en espera o dejar la fila nueva en Next, dímelo. Con un «decide tú» escribo esto tal cual y dejo las decisiones en el cuerpo del commit.

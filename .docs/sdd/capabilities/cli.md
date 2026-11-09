@@ -270,7 +270,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 - GIVEN el `debt.md` y la `releases/v1.3.0/retro.md` del requisito «Cada corte deja un repaso de la deuda por causa» de `project-retro`, más una fila de «En espera» con `regla lejos de su paso` y, en la retro anterior, «La fila cerrada» abierta desde `1.3.0`, que ya no está en «Lista»
 - WHEN se ejecuta `node sdd.js roadmap causes --path .docs/sdd --version 1.4.0`
-- THEN escribe `## Repaso por causa` y la tabla `| Causa | En espera | Lista | Descartadas |`, con `| regla lejos de su paso | 1 | 2 | 0 |` antes que `| defecto del producto | 0 | 1 | 0 |`, ordenada por «Lista» de mayor a menor y, a igualdad, por el nombre de la causa, y sale con 0
+- THEN escribe `## Repaso por causa` y la tabla `| Causa | En espera | Lista |`, con `| regla lejos de su paso | 1 | 2 |` antes que `| defecto del producto | 0 | 1 |`, ordenada por «Lista» de mayor a menor y, a igualdad, por el nombre de la causa, y sale con 0
 - AND después escribe `## Abiertas en «Lista»` y la tabla `| Ítem | Causa | Casos | Destino | Abierta desde |`, por `Abierta desde` ascendente y, a igualdad, en el orden de `debt.md`, con `| El anuncio sale 4 de 6 | regla lejos de su paso | 2 | sin fila | 1.2.0 |` primero y `1.4.0` en las otras dos
 - AND la última línea es `Cerradas desde la 1.3.0: 1`
 - AND una fila con prefijo `**[… saldada …]**` no cuenta como abierta ni en las causas
@@ -279,7 +279,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - AND sin retro anterior válida, no hay esa línea y todas salen abiertas desde la versión dada
 - AND una retro calcada de `retro-template.md` con esta salida se lee como retro anterior
 - AND con `--json` escribe `{"causes":[…],"open":[…],"closedSinceLast":1}`; sin retro anterior válida, `"closedSinceLast":null`
-- AND sin filas en «En espera», «Lista» ni «Descartadas» escribe `Sin deuda triada` y sale con 0
+- AND sin filas en «En espera» ni en «Lista» escribe `Sin deuda triada` y sale con 0
 - AND sin `.docs/sdd/steering/debt.md` escribe en stderr `roadmap causes: no existe steering/debt.md` y sale con 2; sin `--version`, o con `--version 1.x`, escribe `--version debe ser X.Y.Z` y el uso, y sale con 2
 - AND `--project-root D:\code\reservas` hace lo mismo que `--path D:\code\reservas\.docs\sdd`, y con las dos a la vez escribe `--path y --project-root no van juntas` y el uso, y sale con 2
 

@@ -103,10 +103,10 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - WHEN el usuario pide «Tria lo que hay por triar en la deuda.»
 - THEN `sdd-roadmap` no propone la fila del CSV en «Lista»: como no se reproduce, la propone en «En espera» con «Falta» `reproducirlo` y «Causa» `sin determinar`
 - AND propone la fila de la planta en «Lista», con «Causa» `defecto del producto`, «Evidencia» `node src/app.js libres --planta 2` → `Norte (planta 1)` y un «Destino» no vacío: el id de una fila de Now o Next, nueva o existente, o `sin fila`
-- AND propone la fila de las 8 h, que `roadmap check` avisa que caduca, en «Descartadas» con el «Motivo» `caducada`; toda fila descartada lleva su motivo
+- AND propone descartar la fila de las 8 h, que `roadmap check` avisa que caduca, con el motivo `caducada`: una fila descartada sale de `debt.md`, con su motivo en el cuerpo del commit
 - AND en `pair` y `delegate` no escribe en `debt.md` ni en `ROADMAP.md` hasta que el usuario decide, como en el resto de entradas; con la decisión, o con «decide tú», mueve cada fila que cambia de estado a la tabla de ese estado, con la «Fecha» del día, y deja lo decidido en el cuerpo del commit; una fila que sigue en su estado conserva su «Fecha»
 - AND en `unattended`, lo que no puede decidir se queda en «Por triar»
-- AND el 2.º caso de una fila descartada entra en «Por triar» como fila nueva, con los dos orígenes; y el `**Salda:**` de un brief solo nombra filas de «Lista»
+- AND el 2.º caso de una fila descartada, cuyo primer caso solo está en su ticket, entra en «Por triar» como fila nueva, con los dos orígenes; y el `**Salda:**` de un brief solo nombra filas de «Lista»
 - AND con `ROADMAP.md` y sin `debt.md`, el triaje crea `debt.md` calcando `debt-template.md`
 
 ### Sin `ROADMAP.md`, `sdd-roadmap` escribe la forma 2.x
@@ -137,7 +137,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - GIVEN el molde `salas-3-cause`: en «En espera», «Las salidas de `DRY_RUN=1` no aparecen en `out/`», con «Falta» `2.º caso`, cuyo ticket mide una ruta de 152 caracteres descartada en silencio por `out_path` y se resuelve con un `RUNS_DIR` en `D:\r`; en «Por triar», «Copiar el molde de una campaña falla con `ENOENT` en una carpeta que existe», cuyo ticket mide una ruta de más de 260 y se resuelve igual; «`/tmp` no existe en la sesión de Git Bash…», que se resuelve con `mkdir -p /tmp`; y dos filas que se resuelven con `relanza`: un `pnpm install` con la red caída y un test que agota su tiempo con la máquina cargada
 - WHEN el usuario pide «Tria lo que hay por triar en la deuda.»
 - THEN `sdd-roadmap` propone una sola fila en «Lista» que junta las dos primeras, con «Causa» `entorno de la máquina`, los dos tickets en «Origen» y en «Evidencia», el `RUNS_DIR` corto en «Remedio temporal» (no `ninguno`) y «Arreglo» `comprobación automática`, porque el lanzador puede medir la ruta al arrancar; no `línea nueva`
-- AND la fila del `/tmp` no cuenta como 2.º caso, aunque comparte la causa: otro cambio y otro remedio son otro problema; se propone aparte, en «En espera» o en «Descartadas», con «Causa» `entorno de la máquina`
+- AND la fila del `/tmp` no cuenta como 2.º caso, aunque comparte la causa: otro cambio y otro remedio son otro problema; se propone aparte, en «En espera» con «Causa» `entorno de la máquina`, o para descartar
 - AND las dos filas de `relanza` no se juntan: un remedio de reintento no es criterio
 - AND el 2.º caso se busca en toda la deuda, también entre las filas de la tanda que se tría, y un hallazgo con el mismo mecanismo y otra categoría se reclasifica y cuenta
 

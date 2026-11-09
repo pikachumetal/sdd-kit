@@ -50,7 +50,6 @@ export const debtHeaders: Record<string, [string, string]> = {
   'Por triar': ['| Ítem | Origen | Fecha |', '| --- | --- | --- |'],
   'En espera': ['| Ítem | Causa | Origen | Impacto | Falta | Fecha |', '| --- | --- | --- | --- | --- | --- |'],
   Lista: ['| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |', '| --- | --- | --- | --- | --- | --- | --- | --- |'],
-  Descartadas: ['| Ítem | Causa | Origen | Motivo | Fecha |', '| --- | --- | --- | --- | --- |'],
 };
 
 export const validDebt = [
@@ -70,11 +69,6 @@ export const validDebt = [
   '',
   ...debtHeaders.Lista,
   '| `libres --planta 2` lista salas de la planta 1 | defecto del producto | [informe de QA](q.md) | alto | `node src/app.js libres --planta 2` → `Norte (planta 1)` | — | — | 0014 |',
-  '',
-  '## Descartadas',
-  '',
-  ...debtHeaders.Descartadas,
-  '| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto | 2026-09-20 |',
 ];
 
 export interface Project {

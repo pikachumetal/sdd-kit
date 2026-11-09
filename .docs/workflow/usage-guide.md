@@ -190,7 +190,7 @@ Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la e
 2. **Smoke y validaciones diferidas.** Te pregunta qué probaste, nombrando lo que tiene la validación diferida a esta release. Lo que nombras queda validado; lo que no, gana un disparador nuevo.
 3. **Changelog.** Una línea por cada fila hecha de Now, y `[Unreleased]` pasa a `[X.Y.Z] - fecha`, con la línea de smoke.
 4. **Now.** Sale lo hecho y validado. Lo que sigue sin validar se queda, con su disparador.
-5. **Deuda.** Lo que lleva dos releases en espera sin segundo caso pasa a «Descartadas», sin preguntar, y lo saldado sale de «Lista».
+5. **Deuda.** Lo que lleva dos releases en espera sin segundo caso sale de `debt.md`, sin preguntar, con `caducada` en el cuerpo del commit del corte, y lo saldado sale de «Lista».
 6. **Notas de la versión**, solo si hay destinatario. Van en `.docs/sdd/releases/vX.Y.Z/`, destiladas del changelog y contadas por lo que gana quien la usa, sin ids ni jerga. Las envías tú.
 7. **Versión, merge y tag.** Pasa el validador, sube la versión, deja la rama lista y te presenta el merge a `main`, el tag y el push. Esperan tu «sí». Después fusiona `main` de vuelta en `develop`.
 
