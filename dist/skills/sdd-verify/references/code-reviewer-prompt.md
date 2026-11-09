@@ -8,11 +8,11 @@ Dispatch it in the background, with its silence watch (`sdd-verify`, «Final rev
 Subagent (sdd-kit:effort-high, model: sonnet):
   description: "Final review — Code axis"
   prompt: |
-    ## Restricciones de código
+    ## Code constraints
 
-    <copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+    <literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>
 
-    Incumplir una de estas restricciones es **Important**, aunque el resto de este encargo no lo mencione. Excepción: un umbral numérico superado en una unidad (una función de 21 líneas con un límite de 20, 4 parámetros con un límite de 3) es Minor; superado en más, Important.
+    Breaking one of these constraints is **Important**, even if the rest of this brief doesn't mention it. A numeric threshold exceeded by one unit (a 21-line function with a limit of 20, 4 parameters with a limit of 3) is Minor; exceeded by more, Important.
 
     Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
 
@@ -26,11 +26,11 @@ Subagent (sdd-kit:effort-high, model: sonnet):
 
     ---
 
-    ## Cómo revisar
+    ## How to review
 
-    Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de 400 líneas con `offset` y `limit`: tiene los commits, el resumen, los ficheros borrados por nombre y el diff del resto de la rama, sin la carpeta de la spec. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+    Read the review package `<path of the package the recipe prints>` in 400-line chunks with `offset` and `limit`: it has the commits, the summary, the deleted files by name and the diff of the rest of the branch, without the spec's folder. Don't redo the diff with git. Don't run the suite, the build or the lint: the task reports bring the test evidence, and the main thread runs the whole suite. If you think a heavy verification is missing, recommend it in your report.
 
-    Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama).
+    You review `<sha>` as if it were the last commit: work only in `<REVIEW_DIR>`, and don't look at later branches or commits (`git log` without `--all` or branch names).
 
     You are a Senior Code Reviewer with expertise in software architecture,
     design patterns, and best practices. Your job is to review completed work
@@ -83,7 +83,7 @@ Subagent (sdd-kit:effort-high, model: sonnet):
     - DRY without premature abstraction?
     - Edge cases handled?
 
-    **Comments:** a comment that repeats what the code says is Important, also when «Restricciones de código» doesn't mention comments. Each `file:line` line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito de la pasarela de pago»), or a citation with its own reason (an ADR, a living document; «lo dice la spec» is no reason), goes to «Declined to judge», never to Issues. A citation «Restricciones de código» forbids is Important, even with a reason. The list doesn't limit you: a citation it missed is a finding too.
+    **Comments:** a comment that repeats what the code says is Important, also when «Code constraints» doesn't mention comments. Each `file:line` line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito de la pasarela de pago»), or a citation with its own reason (an ADR, a living document; «lo dice la spec» is no reason), goes to «Declined to judge», never to Issues. A citation «Code constraints» forbids is Important, even with a reason. The list doesn't limit you: a citation it missed is a finding too.
 
     **E2E tests.** With the fields of «E2E del proyecto» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
     - a new E2E test that names none of the core flows: what no core flow covers is tested one layer down;
@@ -92,7 +92,7 @@ Subagent (sdd-kit:effort-high, model: sonnet):
 
     **The five books.** The tables below come from five books of good design. Two rules bind them:
 
-    - **The repo overrides.** A documented repo standard always wins: «Restricciones de código», above. Where it endorses something a row would flag, suppress the row. If the standard says «functions of 40 lines at most» and a function has 35, the length rows (Clean Code «under 20 lines», Refactoring «under ~10 lines») are suppressed: don't report the length, as Important or as Minor, nor as «still long». Another row (a function that does two things) needs its own evidence.
+    - **The repo overrides.** A documented repo standard always wins: «Code constraints», above. Where it endorses something a row would flag, suppress the row. If the standard says «functions of 40 lines at most» and a function has 35, the length rows (Clean Code «under 20 lines», Refactoring «under ~10 lines») are suppressed: don't report the length, as Important or as Minor, nor as «still long». Another row (a function that does two things) needs its own evidence.
     - **Always a judgement call.** Each row is a labelled heuristic («possible Feature Envy»), never a hard violation. Like any standard here, skip anything tooling already enforces.
 
     A row that asks about the process, the team or the person (estimates, learning time, time spent on design, commit habits) is not about the diff: skip it.

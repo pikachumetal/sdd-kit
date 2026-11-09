@@ -79,7 +79,7 @@ After a machine crash or a quota cut, before anything else, reread the ledger, `
 
 - You're about to start Task 1 without the `Workspace del plan: …` line sent.
 - You're about to edit code and the plan isn't approved.
-- You're about to dispatch an implementer, a final reviewer, a fix wave or a re-review without the `## Restricciones de código` section at the start of its brief.
+- You're about to dispatch an implementer, a final reviewer, a fix wave or a re-review without the `## Code constraints` section at the start of its brief.
 - You're about to dodge a file marked «NO se tocan» with a fix outside its own reviewed commit.
 - You're about to record as a ruling a discovered fix that is already the third, or a decision that changes the observable output, without the scope brake.
 - You're about to start or dispatch a task without crossing its files with the base, because the feature's row didn't change.

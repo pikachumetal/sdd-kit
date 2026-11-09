@@ -3,11 +3,11 @@
 The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement-subagent/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md) of `sdd-implement-subagent`.
 
 ```markdown
-## Restricciones de código
+## Code constraints
 
-<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+<literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>
 
-Incumplir una de estas restricciones es **Important**, aunque la plantilla de abajo no lo mencione. Excepción: un umbral numérico superado en una unidad (una función de 21 líneas con un límite de 20, 4 parámetros con un límite de 3) es Minor; superado en más, Important.
+Breaking one of these constraints is **Important**, even if the template below doesn't mention it. A numeric threshold exceeded by one unit (a 21-line function with a limit of 20, 4 parameters with a limit of 3) is Minor; exceeded by more, Important.
 
 Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
 
@@ -32,7 +32,7 @@ REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-<id>-$SHA"
 git worktree add --detach "$REVIEW_DIR" "$SHA"
 ```
 
-The package recipe runs inside `$REVIEW_DIR`, and the brief names that directory as the only one it works in, with this sentence: «Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama)». When every axis has returned, the thread removes it with `git worktree remove "$REVIEW_DIR"`. The re-review of a range `<a>..<b>` is anchored the same way, at `<b>`. Measured: ticket of feature 0027 of document-manager, §2, and `tests/closing-off-critical-path-red.md`, c1.
+The package recipe runs inside `$REVIEW_DIR`, and the brief names that directory as the only one it works in, with this sentence: «You review `<sha>` as if it were the last commit: work only in `<REVIEW_DIR>`, and don't look at later branches or commits (`git log` without `--all` or branch names)». When every axis has returned, the thread removes it with `git worktree remove "$REVIEW_DIR"`. The re-review of a range `<a>..<b>` is anchored the same way, at `<b>`. Measured: ticket of feature 0027 of document-manager, §2, and `tests/closing-off-critical-path-red.md`, c1.
 
 The thread prepares the package with this recipe, not with `sdd review package`, in both methods. `sdd review package` cuts the range from the start's base and admits no exclusions: the reviewer always reads the campaigns' evidence and, if the branch merged the integration branch, other features' work too (9 MB against 179 KB in feature 0070, 730 KB against 78 KB in 0058). In Git Bash, with `<integración>` the constitution's integration branch (`develop` if it fixes no other):
 
@@ -56,25 +56,25 @@ The merge-base is computed at review time, also if the branch merged the base mi
 After the header and before the axis brief:
 
 ```markdown
-## Cómo revisar
+## How to review
 
-Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de 400 líneas con `offset` y `limit`: tiene los commits, el resumen, los ficheros borrados por nombre y el diff del resto de la rama, sin la carpeta de la spec. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+Read the review package `<path of the package the recipe prints>` in 400-line chunks with `offset` and `limit`: it has the commits, the summary, the deleted files by name and the diff of the rest of the branch, without the spec's folder. Don't redo the diff with git. Don't run the suite, the build or the lint: the task reports bring the test evidence, and the main thread runs the whole suite. If you think a heavy verification is missing, recommend it in your report.
 ```
 
 With the header and without this section, 2 of 2 final reviewers redid the diff and ran the suite and the lint (`tests/proportional-review-red.md`, R2).
 
-In the Spec axis brief, if the plan has `## Review Focus`, this section goes after «Cómo revisar»:
+In the Spec axis brief, if the plan has `## Review Focus`, this section goes after «How to review»:
 
 ```markdown
 ## Review Focus
 
-<copia literal de la sección `## Review Focus` del plan: todas sus líneas, enteras>
+<literal copy of the plan's `## Review Focus` section: all its lines, whole>
 
-Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test o la verificación que la fija. Una línea sin test ni verificación nombrada, o cuyo código no da ese comportamiento, es un hallazgo.
+Check each line on purpose: the input, the expected behavior and the test or verification that pins it. A line without a named test or verification, or whose code doesn't give that behavior, is a finding.
 ```
 
 It is what superpowers' `executing-plans` asked for («the plan's Review Focus section verbatim»), and pointing at the plan isn't enough: with the pointer («the plan has a Review Focus section, check it»), 1 of 2 briefs on Opus went out without its lines (`tests/plan-review-focus-red.md`).
 
 ## Implementer brief
 
-It lives in [implementer-prompt.md](../../sdd-implement-subagent/implementer-prompt.md) of `sdd-implement-subagent`, with the same «Restricciones de código» section and, besides, the contract of the RED tests, the task's «Verificación» and the implementer's rules.
+It lives in [implementer-prompt.md](../../sdd-implement-subagent/implementer-prompt.md) of `sdd-implement-subagent`, with the same «Code constraints» section and, besides, the contract of the RED tests, the task's «Verificación» and the implementer's rules.

@@ -14,13 +14,13 @@ Subagent (sdd-kit:effort-high, model: opus):
 <!-- kit: fin -->
   prompt: |
 <!-- kit: 0312 -->
-    ## Restricciones de código
+    ## Code constraints
 
 <!-- kit: 0312 -->
-    <copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+    <literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>
 
 <!-- kit: 0312 -->
-    Incumplir una de estas restricciones es **Important**, aunque el resto de este encargo no lo mencione. Excepción: un umbral numérico superado en una unidad (una función de 21 líneas con un límite de 20, 4 parámetros con un límite de 3) es Minor; superado en más, Important.
+    Breaking one of these constraints is **Important**, even if the rest of this brief doesn't mention it. A numeric threshold exceeded by one unit (a 21-line function with a limit of 20, 4 parameters with a limit of 3) is Minor; exceeded by more, Important.
 
 <!-- kit: 0312 -->
     Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
@@ -29,22 +29,22 @@ Subagent (sdd-kit:effort-high, model: opus):
     ---
 
 <!-- kit: 0312 -->
-    ## Cómo revisar
+    ## How to review
 
 <!-- kit: 0312 -->
-    Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de 400 líneas con `offset` y `limit`: tiene los commits, el resumen, los ficheros borrados por nombre y el diff del resto de la rama, sin la carpeta de la spec. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+    Read the review package `<path of the package the recipe prints>` in 400-line chunks with `offset` and `limit`: it has the commits, the summary, the deleted files by name and the diff of the rest of the branch, without the spec's folder. Don't redo the diff with git. Don't run the suite, the build or the lint: the task reports bring the test evidence, and the main thread runs the whole suite. If you think a heavy verification is missing, recommend it in your report.
 
 <!-- kit: 0312 -->
-    Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama).
+    You review `<sha>` as if it were the last commit: work only in `<REVIEW_DIR>`, and don't look at later branches or commits (`git log` without `--all` or branch names).
 
 <!-- kit: 0312 -->
     ## Review Focus
 
 <!-- kit: 0312 -->
-    <copia literal de la sección `## Review Focus` del plan: todas sus líneas, enteras>
+    <literal copy of the plan's `## Review Focus` section: all its lines, whole>
 
 <!-- kit: 0312 -->
-    Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test o la verificación que la fija. Una línea sin test ni verificación nombrada, o cuyo código no da ese comportamiento, es un hallazgo.
+    Check each line on purpose: the input, the expected behavior and the test or verification that pins it. A line without a named test or verification, or whose code doesn't give that behavior, is a finding.
 
 <!-- kit: fin -->
     You are a Senior Code Reviewer with expertise in software architecture,
