@@ -19,7 +19,7 @@ An `architecture.md` postponed at init, for example: create it from its template
 
 ## A destination at its word cap
 
-A rule of a skill with a battery (`tests/batteries/<skill>/`) goes to that battery's provenance. Otherwise the oldest piece that already lives elsewhere leaves and the learning enters, without asking: its other home keeps it. With no such piece, ask (`unattended`: «Por triar» of the debt). The cap doesn't rise, and §5 of the walkthrough says where the learning went.
+Before writing a learning into a document with a word cap, `git fetch` and measure the document as the closing's sync merge will leave it (`origin/<integration>`'s version with the branch's changes) plus the learning, against the cap on `origin/<integration>` (`git show origin/<integration>:<the file that sets the cap>`), not the branch's. If it doesn't fit, a rule of a skill with a battery (`tests/batteries/<skill>/`) goes to that battery's provenance; otherwise the oldest piece that already lives elsewhere leaves and the learning enters, without asking: its other home keeps it. With no such piece, ask (`unattended`: «Por triar» of the debt). The cap doesn't rise, and §5 of the walkthrough says where the learning went.
 
 ## A workaround
 

@@ -556,6 +556,24 @@ const molds = {
     s.commit('chore: tope de palabras de tech-stack.md');
     s.git('config', 'core.hooksPath', '.githooks');
   },
+  // El tope en un fichero aparte: con margen en la rama, y en develop otra feature lo baja a la medida exacta tras abrirla.
+  'reservas-cap-base': () => {
+    moldReservas();
+    const stack = '# Tech stack\n\n- Node 22.\n- `src/app.js`.\n- Puerto 4100 (`operations.md`).\n';
+    const exact = stack.split(/\s+/).filter(Boolean).length;
+    writeFileSync(at('.docs/sdd/tech-stack.md'), stack);
+    s.put('.docs/sdd/steering/operations.md', '# Operations\n\n- Puerto de las pruebas: 4100.\n');
+    s.put('scripts/word-cap.mjs', `import { readFileSync } from 'node:fs';\nconst cap = JSON.parse(readFileSync('scripts/word-cap.json', 'utf8'))['tech-stack.md'];\nconst words = readFileSync('.docs/sdd/tech-stack.md', 'utf8').split(/\\s+/).filter(Boolean).length;\nif (words > cap) { console.error('tech-stack.md mide ' + words + ' y el tope es ' + cap); process.exit(1); }\n`);
+    s.put('scripts/word-cap.json', `${JSON.stringify({ 'tech-stack.md': exact + 30 })}\n`);
+    s.put('.githooks/pre-commit', '#!/bin/sh\nexec node scripts/word-cap.mjs\n');
+    s.commit('chore: tope de palabras de tech-stack.md');
+    s.git('config', 'core.hooksPath', '.githooks');
+    done0010();
+    s.git('checkout', '-q', 'develop');
+    s.put('scripts/word-cap.json', `${JSON.stringify({ 'tech-stack.md': exact })}\n`);
+    s.commit('chore: el tope de tech-stack.md en su medida exacta (0014)');
+    s.git('checkout', '-q', 'feature/0010-cancel-reason');
+  },
   'reservas-valida-en': () => {
     manualValidation();
     moldReservas();
@@ -594,10 +612,16 @@ for (const adr of files('.docs/sdd/decisions', /\.md$/)) keepIf(`.docs/sdd/decis
 keepIf('.docs/sdd/steering/operations.md', 'operations.md');
 keepIf(`${F10}/timing.json`, 'timing.json');
 for (const doc of ['roadmap', 'tech-stack', 'changelog']) keepIf(`.docs/sdd/${doc}.md`, `${doc}.md`);
+const wordsOf = (text) => text.split(/\s+/).filter(Boolean).length;
+const capOf = (json) => (json ? JSON.parse(json)['tech-stack.md'] : null);
+const caps = existsSync(at('scripts/word-cap.json'))
+  ? `## topes de tech-stack.md\nmide: ${wordsOf(readFileSync(at('.docs/sdd/tech-stack.md'), 'utf8'))} · tope de la rama: ${capOf(readFileSync(at('scripts/word-cap.json'), 'utf8'))} · tope de develop: ${capOf(gitQuiet('show', 'develop:scripts/word-cap.json'))}\n`
+  : '';
 const techStack = gitQuiet('show', 'develop:.docs/sdd/tech-stack.md');
 const tail = techStack ? `${techStack.replace(/\n$/, '').split('\n').slice(-20).join('\n')}\n` : '';
 s.save([
   `## petición\n${ASK}\n## entorno al acabar el sujeto\n${envAtEnd}\n`,
+  caps,
   existsSync(join(GH_BIN, 'gh.json')) ? `## llamadas a gh\n${existsSync(join(GH_BIN, 'gh.log')) ? readFileSync(join(GH_BIN, 'gh.log'), 'utf8') : 'ninguna\n'}` : '',
   `## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all', '--graph')}## etiquetas\n${s.git('tag', '-n1')}`,
   `## timing.json en la historia\n${gitQuiet('log', '--all', '--name-only', '--format=', '--', `${F10}/timing.json`)}`,
