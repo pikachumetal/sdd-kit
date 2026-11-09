@@ -1,0 +1,142 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y presentarte el anuncio, ~2 min.
+
+--- [30]
+Ahora: lanzo en paralelo los dos revisores de la spec (dominio y técnica, ambos Sonnet). Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~8 min, ~1–2 $.
+
+--- [40]
+Los dos revisores de la spec (dominio y técnica) están en marcha. Hasta que terminen no sé qué han encontrado.
+
+Hasta ahora:
+- **Rama:** `feature/0012-informes`, con el id 0012 reservado.
+- **Spec:** escrita en `.docs/sdd/specs/20261109-090038-feature-0012-informes/spec.md`. Describe la capacidad nueva `reports`, con 7 requisitos y sus reglas.
+- **Delta:** lo probé en una copia de `.docs/sdd` y se fusiona sin rechazos.
+- **Todavía no hay commit.**
+
+Cuando los revisores devuelvan sus hallazgos, los integro en la spec. Después te la presento en el gate de aprobación, con los puntos que decidí yo en ✋.
+
+Un aviso del arranque: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Sigo con lo cargado. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+
+--- [42]
+1. Importante · Decisiones 3 y 8 / escenarios «Ocupación por sala» y «Filtrar por sala» · La decisión 3 dice que salen todas las salas, también con 0. La decisión 8 y el escenario de `--sala Este` dicen que, sin reservas que cuenten, la vista pone solo `sin reservas`. Con las reservas de prueba, o con una sala sin reservas, esa vista no puede cumplir las dos reglas a la vez. · Acotar la decisión 3 con «salvo que no haya ninguna reserva que cuente» y añadir un escenario sin reservas en absoluto que fije cuál de las dos gana.
+
+2. Importante · Approach («Partes del cómo») vs «Filtrar los informes por sala» · El enfoque dice que «Salas sin reservas» compara las salas con las reservas que quedan tras filtrar. Con `--sala Sur` que lista sería Norte y Este, y el escenario exige `ninguna`. La comparación solo da `ninguna` si la lista de salas también se filtra, y eso no está dicho. · Escribir en el Approach que, con `--sala`, la cuarta vista compara solo la sala pedida con sus reservas.
+
+3. Importante · Decisión 8 / escenario «Salas sin reservas» · Con `--sala Este`, o con ninguna reserva activa, la vista «Salas sin reservas» dice `sin reservas` en vez de listar las salas que nadie ha reservado. Eso contradice el Intent, que pide «salas que nadie ha reservado». Además `sin reservas` y `ninguna` pasan a decir lo mismo en la práctica. · O bien la vista lista las salas sin reservas activas en todos los casos y `sin reservas` queda fuera de ella, o se justifica en el Intent la excepción y se corrige el escenario.
+
+4. Menor · Intent vs Scope («No entra: rangos de fechas») · El Intent habla de «las reservas reales de la semana» como criterio de éxito. El Scope y las reglas dicen que el informe cubre todas las reservas en memoria, sin límite de fechas. Promete un recorte semanal que el alcance no ofrece. · Cambiar el Intent a «con las reservas que hay», o meter el recorte semanal en el Scope.
+
+5. Menor · «Informes con los datos que trae la herramienta» y «Sala desconocida» vs «Dónde se prueba» · El escenario de la herramienta usa las salas Norte y Sur. El de sala desconocida pone Norte, Sur y Este, pero se prueba por `run`, que según el escenario anterior solo trae Norte y Sur. Con `run`, `--sala Este` sería «desconocida» y contradiría los datos de prueba. · Unificar el GIVEN de «Sala desconocida» con las salas que trae `run`, o decir que se prueba con los datos de prueba.
+
+6. Menor · Decisión 5 vs mission.md · La decisión habla de «solo hay reservas de una oficina», pero la misión describe las salas de reuniones de un coworking, y es un dato inventado. · Cambiar «oficina» por «un coworking» o quitar la justificación.
+
+7. Menor · Decisiones 4 y 9 vs Scope y «Reglas de la capacidad» · Hay comportamientos fijados que ni el Scope ni las reglas ni los escenarios recogen: un día fuera de `lun…dom` va después de `dom`, los argumentos sobrantes tras `informes` se ignoran y `--sala` distingue mayúsculas. En «Límites» solo cuenta `solo cuentan las reservas activas`, y eso no es un límite. · Listar esos comportamientos en el Scope y en «Reglas de la capacidad» (el día desconocido, la comparación exacta de `--sala`, los argumentos ignorados), o declararlos fuera de alcance.
+
+8. Menor · «Reglas de la capacidad» · «Límites» mezcla un filtro de negocio (solo activas) con la falta de tope de filas. «Regla ante conflicto: no aplica» es correcta para un informe de solo lectura, pero no dice por qué. · Separar «sin tope de filas» de «solo activas» (esto último a una regla de negocio) y escribir en «no aplica» que el informe no escribe datos.
+
+--- [45]
+Ha vuelto el revisor de dominio; el técnico sigue en marcha. Voy aplicando los hallazgos de dominio mientras llega el otro.
+
+--- [46]
+1. Crítico · Delta «Filtrar los informes por sala» · La tabla de `Sur` no sigue la regla de la decisión 7. Con `--sala Sur`, la columna `sala` mide max(`sala`, `Sur`) = 4, así que la fila es `Sur` + 1 espacio de relleno + 2 de separación, es decir `Sur   3` (3 espacios). El THEN dice `Sur  3` (2 espacios), y una implementación correcta fallaría el test escrito a partir de él. · Corregir a `Sur   3`. Mejor aún, dar en cada escenario el texto completo y literal de la salida en un bloque y no fragmentos de filas.
+
+2. Importante · Delta, todos los escenarios de tablas · Ningún THEN da la salida completa. Faltan el título y la cabecera en líneas consecutivas, la línea en blanco entre vistas y si hay salto de línea final. «Comprobable carácter a carácter» no se cumple, y el único texto completo (`Datos de prueba`) no se usa como oráculo. · Añadir un bloque con la salida exacta de `informes` sobre los datos de prueba (cuatro vistas completas) y otro con la de `--sala Sur`. Fijar si la cadena termina o no en `\n`.
+
+3. Importante · Delta, los AND «si no hay reservas…» (4 escenarios) y «si todas las salas tienen alguna reserva activa» · Heredan el GIVEN «los datos de prueba», que sí tienen reservas, así que contradicen su propio GIVEN. Ninguno dice con qué datos se verifica el caso vacío o el de `ninguna`. · Convertirlos en escenarios con su propio GIVEN: sin reservas activas (solo canceladas, solo anuladas, lista vacía) y todas las salas con reservas. Los datos de prueba sirven para esto último solo si se quita a Este.
+
+4. Importante · Decisiones 3, 4, 5 y 9 frente al Delta · Hay reglas sin escenario que las cubra:
+   - El empate de franjas por franja.
+   - El día fuera de la lista, que va después de `dom`.
+   - El orden de varios días desconocidos entre sí.
+   - La comparación exacta con `norte` en minúscula, que debería dar `sala desconocida: norte`.
+   - El argumento extra ignorado.
+   
+   · Añadir un escenario por cada regla, con datos que las ejerciten.
+
+5. Importante · Decisión 3 frente al Delta «Filtrar» · La decisión 3 dice «salen todas las salas, también con 0». El escenario con `--sala Sur` solo muestra `Sur  3`, sin `Norte 0` ni `Este 0`. Que el filtro reduzca la vista a la sala filtrada es una decisión tomada en el cuerpo y no figura en «✋ Decisiones». · Declararla en «✋ Decisiones» (con `--sala`, la vista 1 lista solo esa sala) y reflejarla en la decisión 3.
+
+6. Importante · Delta «Informes con los datos que trae la herramienta» · El GIVEN afirma que la herramienta trae Norte y Sur con una única reserva activa (Norte lun 10:00-12:00), pero el spec no dice dónde está ese dato inicial. La decisión 12 admite que por `run` no se pueden preparar reservas sin tocar el estado compartido. El test depende de que otros tests de `app.test.js` (`reservar`, `cancelar`) no hayan mutado la memoria antes, y es frágil por el orden de ejecución. · Indicar de dónde sale el estado inicial. Si no es verificable, quitar la afirmación y probar por `run` solo lo que no depende de las reservas, o hacer que el test fije y restablezca el estado.
+
+7. Importante · Decisiones 3, 4 y 5, «Approach» y «Dónde se prueba» · Los criterios de orden no están definidos:
+   - Franjas «por franja»: ¿comparación de cadenas? La herramienta no valida la franja, y `9:00-10:00` iría después de `10:00-11:00`.
+   - Nombres «por nombre»: ¿mayúsculas y minúsculas distinguidas, `localeCompare` o punto de código?
+   - Reservas con una sala que no está en la lista `salas`: ¿cuentan en la vista 1 o se ignoran?
+   
+   Todo esto es decisión técnica tomada sin declarar. · Fijar el comparador (p. ej. orden por punto de código), decir qué pasa con una sala fuera de `salas` y listarlo en «✋ Decisiones».
+
+8. Importante · Approach A y decisión 9 · Es ambiguo dónde se valida `--sala`. La función pura recibe `(reservas, salas, parámetros)`, pero «Dónde se prueba» dice que sala desconocida y `--sala` sin nombre se prueban «por `run`». Tampoco se dice qué devuelve la función en esos casos, ni cómo se analizan `informes --sala --sala` o `informes x --sala Sur`. · Definir si la validación y los dos avisos viven en la función o en `run`, y añadir el caso de `--sala` seguido de otra opción (¿`sala desconocida: --x`?).
+
+9. Menor · Sección «Dónde se prueba» y decisión 12 · Se prueba la función pura desde `test/informes.test.js`, lo que exige exportarla de `src/app.js`. Eso es un cambio de contrato del módulo (hoy se exporta al menos `run`) y no se menciona. Tampoco se nombran los campos de las reservas (`room`, `day`, `slot`, `status`) que consume la función. · Declarar la exportación nueva en Scope o Approach y fijar la forma de los datos de prueba (`room/day/slot/status`).
+
+10. Menor · «Lo que se retira o cambia de forma» y Scope · `run` pasa a conocer `informes`, que hoy cae en el valor por defecto `salas`. Se dice «sin tocar a los demás», pero ningún escenario protege ese comportamiento ni se menciona el texto de ayuda o uso, si lo hay. · Añadir un escenario de que un comando desconocido sigue devolviendo `salas`, o aclarar que no hay ayuda que actualizar.
+
+--- [60]
+El delta se fusiona, pero dos requisitos pasan de los 500 caracteres aconsejados. Los parto: una vista por requisito, que además encaja con las cuatro tasks de vistas.
+
+--- [74]
+La segunda ronda está en marcha, con un revisor que relee la spec corregida. Espero su resultado antes de seguir.
+
+Hasta aquí:
+- **Primera ronda integrada:** 16 hallazgos aceptados y 2 rechazados, cada uno con su motivo en `### Hallazgos de la review`.
+- **Delta:** ahora son 11 requisitos, uno por vista y uno por caso límite. Cada tabla lleva la salida exacta. `sdd capability merge` los fusiona y `sdd capability check` ya no avisa de requisitos largos.
+- **Pendiente:** integrar la segunda ronda y presentarte la spec en el gate de aprobación.
+
+--- [77]
+1. Importante · Delta de comportamiento (escenarios 1–4, «Orden en empate», «Día fuera de la lista», «Todas las salas tienen reservas», «Filtrar») y «Dónde se prueba» · «Dónde se prueba» dice que cada THEN se compara con la cadena completa, y los hallazgos dicen que cada escenario da ya la salida completa. No es así. Los escenarios 1–4 dan una sola vista cada uno. «Orden en empate» y «Día fuera de la lista» dan solo trozos de filas. «Filtrar» abrevia las cuatro vistas, sin títulos ni líneas en blanco. Eso no se puede comparar carácter a carácter ni sin deducir el resto. · Poner la cadena completa en un escenario con los datos de prueba (por ejemplo «Informe completo»), o cambiar «Dónde se prueba» a «cada THEN se compara con el fragmento exacto que cita». Dar la salida literal de `--sala Sur` con las cuatro vistas.
+
+2. Importante · Decisiones 14 y 15, y decisiones 3 y 4 · Hay reglas sin escenario. No hay ninguno que pruebe que `10:00-11:00` va antes que `9:00-10:00`, ni el orden que distingue mayúsculas, ni que las reservas de una sala que no está en la lista no cuentan. Los escenarios tampoco cubren una sala con reservas y otra sin ellas entre las que no están en el filtro. · Añadir escenarios (o ANDs) para el comparador letra a letra y para la sala fuera de lista. Si no se van a probar, quitar la decisión.
+
+3. Importante · «Reglas de la capacidad — reports» · La regla de negocio central (solo cuentan las reservas activas, y ocupación es el número de reservas, no un porcentaje) vive solo en la decisión 1, en los Términos y en un AND de un escenario. Las 5 reglas no la recogen, así que al archivar la capacidad `reports` no la tendrá. «Límites» tampoco incluye «ocupación = número de reservas» ni «una sala que no está en la lista no cuenta». · Añadir a «Límites» (o a un ADDED propio) «solo cuentan las reservas activas; la ocupación es un número, no un porcentaje; las reservas de salas fuera de la lista no cuentan».
+
+4. Importante · Decisión 17 y escenarios · La firma `informes(reservas, salas, parámetros)` no dice qué es `parámetros` (¿lista de argumentos tras `informes`? ¿objeto ya parseado?) ni qué devuelve (¿cadena?, ¿también para los dos avisos?). Los tests con datos de prueba dependen de eso, y los escenarios dicen «se pide `informes --sala Sur`» sin decir cómo se le pasa a la función pura. Esto es contrato nuevo que se exporta. · Fijar en la decisión 17 la forma de `parámetros` (por ejemplo, el array de argumentos tal cual llega a `run`) y que el valor devuelto es la cadena final.
+
+5. Menor · Cabecera de «Decisiones» frente a «Dónde se prueba» · «Dos ficheros de test» no encaja con lo que se describe. Solo se nombra `test/informes.test.js` como fichero nuevo; los tests de `run` también parecen ir ahí (se explica por qué `cancel.test.js` no los afecta), y `app.test.js` solo se cita como patrón. · Decir cuáles son los dos ficheros, o corregir el tamaño estimado.
+
+6. Menor · Escenario «Filtrar» (AND con `informes --sala Este`) · Dice «la salida es la de “Sin reservas”», pero ese escenario tiene otro GIVEN (Este con una única reserva cancelada y sin más reservas). Aquí hay otras reservas activas de Norte y Sur, así que la equivalencia solo vale por el filtro y no se ve. · Escribir la salida literal, o decir «con el filtro, la misma salida que en “Sin reservas”».
+
+7. Menor · Decisiones 8 y 6 frente al 🦆 y al Intent · Sin reservas y sin filtro, «Salas sin reservas» dice `sin reservas` aunque todas las salas estén sin reservar, lo que va contra el nombre de la vista («salas que nadie ha reservado»). Ya se rechazó el hallazgo y queda en la decisión 8, pero el Intent debería avisarlo. · Añadir en el Intent o en la 🦆 que, sin reservas que cuenten, la cuarta vista no lista salas.
+
+8. Menor · «Decisiones tomadas con el dev-lead» («5 tasks, una por vista y otra para `--sala`») frente al Approach A · Las 5 tasks no tienen sitio para el ayudante de tabla compartido, el cableado en `run`, la exportación ni los avisos (`sala desconocida`, `falta la sala…`). Esas decisiones del cuerpo quedan sin task asignada, y el escenario «Sin reservas» cruza todas las vistas. · Decir en qué task entra el ayudante y el cableado (por ejemplo, la primera), y a qué task pertenecen los avisos.
+
+9. Menor · Decisión 9 y Límites · No se dice qué pasa con `--sala` repetido (`informes --sala Sur --sala Norte`) ni con `--sala ""`. «Cualquier otro argumento se ignora» no basta para decidir cuál `--sala` manda. · Fijar una regla (el primero, o el último) o dejarlo como fuera de alcance.
+
+10. Menor · Mission frente a «Validación: dev-lead» y el texto «la pediste» · La misión dice que no hay más usuarios ni desarrolladores. «dev-lead» en tercera persona y «la pediste» en segunda persona no cuadran con un único autor. Es un desajuste de redacción más que una contradicción. · Unificar el sujeto (el autor/dev-lead es quien usa la herramienta) y sacar el «pediste» de la decisión 8.
+
+--- [79]
+La segunda ronda no deja ningún Crítico, así que no hay tercera. Integro los hallazgos: acepto 9 y rechazo 1 (el reparto en tasks es del plan, no de la spec).
+
+--- [82]
+Ahora: te presento la spec para aprobar. Queda: tu respuesta; con ella escribo el plan y paso a la implementación, ~3 min.
+
+La spec está en `.docs/sdd/specs/20261109-090038-feature-0012-informes/spec.md`, en la rama `feature/0012-informes`. Pasó dos rondas de revisión: la primera con dos revisores y la segunda con uno. No quedó ningún Crítico sin resolver.
+
+🦆 Hoy se pueden reservar, cancelar y anular salas, pero no ver cómo se usan. Con `informes` sale una tabla de texto con cuatro vistas: reservas por sala, por día de la semana, franjas más reservadas y salas que nadie ha reservado. Con Norte reservada 3 veces y Sur otras 3, la primera vista dice `Norte  3` y `Sur    3`. `informes --sala Sur` enseña las cuatro vistas solo con las reservas de Sur. Las canceladas y las anuladas no cuentan, y si no hay reservas cada vista dice «sin reservas».
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Solo cuentan las reservas activas, también en «Salas sin reservas»: una sala con todas sus reservas canceladas sale como sin reservas.
+2. Ocupación es el número de reservas, no un porcentaje: el proyecto no define cuántas franjas tiene una sala.
+3. Por sala salen todas las salas, también con 0, de más a menos reservas y, en empate, por nombre. Con `--sala` sale solo la sala pedida.
+4. Por día salen solo los días con reservas, en orden `lun mar mie jue vie sab dom` (sin tildes, como el dato `lun` que ya guarda la herramienta). Un día fuera de la lista va después de `dom`.
+5. Las franjas salen todas, de más a menos reservas y, en empate, por franja, sin tope de filas.
+6. Si todas las salas tienen reservas, «Salas sin reservas» dice `ninguna`.
+7. Forma de la tabla: columnas alineadas a la izquierda y separadas por dos espacios, una línea en blanco entre vistas y sin salto de línea final. Títulos y cabeceras literales en la spec.
+8. Si no hay reservas que cuenten (con el filtro aplicado), cada vista dice `sin reservas`, también la cuarta. Consecuencia: con `--sala` sobre una sala con reservas, la cuarta vista dice `ninguna`, y no lista salas.
+9. `--sala` compara el nombre exacto (`Norte`, no `norte`). Una sala que no existe da `sala desconocida: Oeste`. `--sala` sin nombre da `falta la sala tras --sala`. Los demás argumentos se ignoran.
+10. Capacidad nueva `reports`.
+11. Enfoque A: una función pura y un ayudante de tabla en `src/app.js`, frente a un módulo aparte y a escribir cada vista a mano.
+12. Dos costuras de prueba: `informes` con datos de prueba, y `run('informes')` con los datos que trae la herramienta.
+13. Validación del cierre: `dev-lead`. No concedo `agente`, porque tu frase de delegación no lo nombra.
+14. «Por nombre» y «por franja» comparan los textos tal cual: `10:00-11:00` va antes que `9:00-10:00`.
+15. Las reservas de una sala que no está en la lista de salas no cuentan.
+16. `--sala --x` toma `--x` como el nombre. Si `--sala` aparece dos veces, manda la primera.
+17. `informes(reservas, salas, parámetros)` se exporta de `src/app.js`. Recibe la lista de argumentos tal como llega a `run`, valida `--sala` y devuelve siempre una cadena.
+
+Rechacé dos hallazgos de la revisión, con motivo en la spec. Uno pedía listar salas cuando no hay reservas, y es tu decisión literal. El otro pedía asignar el ayudante de tabla a una task, y eso es del plan.
+
+Cuando apruebes, el plan sale en 5 tasks, una por vista y otra para `--sala`. El ayudante de tabla, el cableado en `run` y la exportación entran en la Task 1, y el filtro con sus avisos en la Task 5.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan, lo dejo en su commit de apertura y paso a la implementación sin parar.
+2. **Cambios**: dime qué decisión o texto cambiar y lo ajusto antes de volver a pedir aprobación.
+
