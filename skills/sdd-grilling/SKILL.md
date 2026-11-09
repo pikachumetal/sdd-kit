@@ -9,7 +9,7 @@ description: Use when another sdd-kit skill reaches a step that needs decisions 
 
 Write everything the user reads, skill announcements included, in their language. Inspired by `grilling` by Matt Pocock (MIT).
 
-Grill relentlessly until nothing is left silently assumed: every assumption becomes a question or a «decided by me» entry. If neither they nor the project say why they want it, ask that first, even if you can guess: open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?». Then the decision that reshapes most others; one that depends on a decision still open waits. Facts are your job; decisions are the user's.
+Grill relentlessly until nothing is left silently assumed: every assumption becomes a question or a «decided by me» entry. If neither the user nor the project says why they want it, ask that first, even if you can guess: open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?». Then the decision that reshapes most others; one that depends on a decision still open waits. Facts are your job; decisions are the user's.
 
 ## One decision per turn
 

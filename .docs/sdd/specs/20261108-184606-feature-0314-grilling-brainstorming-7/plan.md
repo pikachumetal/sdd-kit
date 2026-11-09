@@ -187,11 +187,11 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ## 4. Self-review (cobertura spec → tasks)
 
-- MODIFIED «Una decisión por turno», GIVEN con el porqué dicho → Task 2, con la (2): `p2` (el porqué dicho, W1 no aplica) y R1 de la batería entera. ✓
-- MODIFIED, REMOVED de «nada supuesto en silencio» → Task 2, con la (1): el AND vive en «Solo se pregunta…», W5 en `p1`-`p3`. ✓
-- ADDED «El porqué va primero», THEN → Task 1 y 2, `p1`, W1. AND (con el porqué, no lo pregunta) → `p2` y `p3`, W2. ✓
-- ADDED «Solo se pregunta lo que cambia…», THEN y primer AND → `p2`, `p3`, W2; AND de lo que solo sabe el usuario y AND de alcance, nivel y coste → W5, y R5, R8 y R10 en la batería entera (controles). ✓
-- ADDED «Los pasos de proceso no se preguntan», THEN y AND → `p1`-`p3` y las 25 salidas guardadas, W3; AND de las operativas del llamante → W3 no las cuenta, y la puerta y R2 de la batería entera las vigilan. ⚠ el GREEN es no regresión (decisión 13), avisado en la spec.
-- ADDED «Lo ya decidido no se reabre», THEN → `p3`, W4; AND «rebate una vez» → `g4`, R7, en la batería entera; AND «repetirlo no es reabrir» → W4 no lo cuenta. ✓
-- «Lo que se retira o cambia de forma»: las cuatro frases → Task 2, Step 1; `upstream.json` y avisos → Task 2, `kit:upstream` y `notices.test.ts`; tope → `word-budget.test.ts`. ✓
-- Review Focus → Task 2, controles con `develop` y `notices.test.ts`. ✓
+> Tras las enmiendas del 2026-11-08 y del 2026-11-09: solo entra la (2); la (1), la (3) y la (4) salen del delta con su RED limpio, y la fila 2 de `salas-csv` dice «por la salida estándar» en vez de «solo las reservas desde hoy». El texto final de la (2) es el del Approach de la spec, con el contraejemplo; los pasos de arriba conservan el texto con el que se aprobó el plan.
+
+- MODIFIED «Una decisión por turno», GIVEN con el porqué dicho → Task 2: `g3` con su `TURN2` nuevo y el kit de REFACTOR 2 llega a una sola decisión de diseño (R1), y `p2` y `p3` preguntan una sola decisión con el porqué dicho. ✓
+- MODIFIED, el AND «no termina con nada supuesto en silencio» se queda (la (1) no entra) → W5 en `p1`-`p3`, línea base 1 de 6 igual con y sin la rama. ✓
+- ADDED «El porqué va primero», THEN → Task 1 (RED 2/2 falla) y Task 2, `p1`, W1 (REFACTOR 2: 2/2; tras la revisión, `p1` N = 1). AND (con el porqué, no lo pregunta) → `p2` y `p3`, W2 (GREEN 4/4, REFACTOR 1 4/4). ✓
+- Los requisitos de la (1), la (3) y la (4) → sin requisito en el delta; `p2` y `p3` quedan como regresión (W2, W3, W4). ✓
+- «Lo que se retira o cambia de forma»: la frase de la (2) → Task 2, Step 1; `upstream.json` y avisos → Task 2, `kit:upstream` y `notices.test.ts`; tope → sin cambio (872 de 900). ✓
+- Review Focus → Task 2, controles con `develop` (`g7`, `u1`, `g8`) y `notices.test.ts`. ✓

@@ -40,8 +40,8 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | --- | --- | --- |
 | R1 Una decisión por turno | g1, g2, g3, g4, g8, g9 | el mensaje pide más de una decisión al usuario (dos preguntas, una lista numerada de preguntas, «y además…») |
 | R2 Formato | todos | una decisión de diseño sin alternativas marcadas ni recomendación separada, o con `AskUserQuestion` intentado en `tools.txt` |
-| R3 Alternativas reales | g1, g3, g4, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
-| R4 Recomendada con razón | g1, g3, g4, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
+| R3 Alternativas reales | g3, g4, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
+| R4 Recomendada con razón | g3, g4, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
 | R5 Descubrimiento sin ancla | g2, g5, g8 | una pregunta sobre lo que solo sabe el usuario (para quién, qué problema) lleva recomendación o hipótesis; en g8, no enseña el hecho del código con su fuente |
 | R6 Escena concreta | g3, g6 | una decisión sobre lo que ve el usuario de `salas` sin un ejemplo con datos (sala, franja, qué sale en la terminal) |
 | R7 Rebatir una vez | g4 | el turno 1 no señala que `--cada-semana` ya existe; o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
@@ -71,11 +71,11 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra) | RED R1 4 de 16; GREEN g9-2 | g1, g2, g3, g8, g9 |
+| Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra) | RED R1 4 de 16; GREEN g9-2 | g1, g2, g3, g8, g9; p3 (W4: «Skip what the request says…», RED limpio en la 0314) |
 | Buscar fuera antes de preguntar; probarlo en otra versión no cuenta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; GREEN 2 de 2 antes del contra; dev-lead 2026-10-02 | g9 + micro-test m3 |
 | Formato fijo en texto para el diseño; diálogo para lo operativo | dev-lead 2026-10-02; RED R2 | todos |
-| Alternativas reales; «no creo que la quieras» es relleno | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1 | g1, g3, g9 |
-| La recomendada con razón del caso; empate → preguntar de qué depende | RED R4 («son los defaults del kit») | g1, g3, g7, g8, g9 |
+| Alternativas reales; «no creo que la quieras» es relleno | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1 | g3, g9 (g1 no, desde la 0314: su turno 1 pregunta el porqué) |
+| La recomendada con razón del caso; empate → preguntar de qué depende | RED R4 («son los defaults del kit») | g3, g7, g8, g9 (g1 no, desde la 0314) |
 | Escena con datos en las decisiones de producto | RED R6 2 de 2; ticket de la feature 0035 de document-manager | g3, g6 |
 | Descubrimiento abierto, sin recomendación, hipótesis ni menú; con hecho, el hecho y su fuente | RED R5 4 de 4; micro-test m2 5 de 5 sin guía | g2, g5, g8 |
 | Rebatir una vez | dev-lead 2026-10-01 (abogado del diablo); RED limpio por una regla de `sdd-roadmap` | g4 (control) |
@@ -83,7 +83,7 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 | Rechazo: prosa hasta que conteste, sin volver a las opciones | RED R9 1 de 2; ticket de la feature 0115 §10 | g6 |
 | Cierre en tres listas; la confirmación es el gate del llamante | RED R10 2 de 2 | g7 |
 | Todo en el idioma del usuario, también los anuncios | RED R12 3 de 17 | todos |
-| Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill); p2, p3 (W2, W3 y W4: RED limpio de brainstorming 7.0.2 en la feature 0314, frases sin cambio) |
+| Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill); p2, p3 (W2 y W3: RED limpio de brainstorming 7.0.2 en la feature 0314, frases sin cambio) |
 | El porqué primero, abierto, si ni el dev ni el proyecto lo dicen; después la que más cambia el resto | `brainstorming` 7.0.2 de superpowers; feature 0314: RED W1 2 de 2 («¿Adónde va el CSV?» sin el porqué); GREEN 1 de 2 por un menú de ejemplos, que corrige el contraejemplo literal tras dos rondas | p1 (W1); p2, p3 (no lo pregunta si ya está) |
-| El número de alternativas lo pone la decisión; «dos más una 🔀» por costumbre es relleno | dev-lead 2026-10-03: «estás cayendo mucho en presentar 2 soluciones y una híbrida» (5 de 7 preguntas del agente en la sesión de la 0128) | g1, g3 (no regresión: la batería no reproduce el fallo) + micro-test m4; «una sola alternativa», sin escenario |
+| El número de alternativas lo pone la decisión; «dos más una 🔀» por costumbre es relleno | dev-lead 2026-10-03: «estás cayendo mucho en presentar 2 soluciones y una híbrida» (5 de 7 preguntas del agente en la sesión de la 0128) | g3 (g1 no, desde la 0314; no regresión: la batería no reproduce el fallo) + micro-test m4; «una sola alternativa», sin escenario |
 | Boceto: si la pantalla existe, sobre la app real con `§Frontend`; si no, un Artifact; sin app ni Artifact, en texto con su escena y el motivo; «no he arrancado la app» no es motivo; parar por PID o puerto | feature 0168: RED `sk` 2/2 maqueta aparte; GREEN `sk-3` falla por el motivo, REFACTOR con contraejemplo, `sk-4` y `sk-5` pasan; parada por nombre vista en `sk-4` | sk, sk-c |
