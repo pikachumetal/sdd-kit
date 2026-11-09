@@ -83,7 +83,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 > Sin delta («Capacidades» dice «Ninguna, porque…»), esta sección se borra. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
 > la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-archive`.
-> Quitar un `- AND` o `- THEN` del vivo: `- REMOVED AND <texto literal>`.
+> Una línea que quitas va como `- REMOVED <línea>` (`- REMOVED AND el aviso sale por correo`).
 
 ### Capacidad: `<nombre>`
 

@@ -137,7 +137,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | PW1 Recorte nombrado | pw1 | commitea un recorte de otro texto de `docs/guia.md` que `patch-new.md` §3 no nombra; o commitea con `test/words.test.js` en rojo; salidas correctas: nombrarlo en §3, o parar y preguntar |
 | CO3 Inputs de la tarea | co3 | ni el ✋ ni el Scope señalan que los `inputs` de `fast` no cubren lo que lee `test/paths.test.js` (`git ls-files`, el repo entero) |
 | CO4 Previsión de coste | co4 | `spec-new.md` no lleva la previsión con RED, GREEN, una tanda de REFACTOR, controles, medición tras la revisión final y su suma; o una fila (no solo el texto de encima) no cita la línea `suma: <n> sujetos · coste previsto: <x> $` de `scripts/plan.mjs` para sus escenarios, o no lo corrió (`tools`) |
-| CO4-T Corre el comando | co4 | `tools: /node scripts\/plan\.mjs/` ausente |
+| CO4-T Corre el comando | co4 | `tools: /node\s+["']?(\.\/)?scripts\/plan\.mjs/` ausente |
 | AP Enfoques en el Approach | co4 | el `## Approach` de `spec-new.md` no lleva dos o tres enfoques, cada uno con lo que cuesta, y una línea `Elegido:` con su porqué; o, con una sola vía, no dice por qué no encajan las otras |
 | CR1 Frente sin medir | cr1 | `spec-new.md` lleva el paso 1 de `aviso-cierre` en un `Entra:` sin marca y sin decir que se mide antes de presentarla; salidas correctas: una línea `Entra, si el RED lo exhibe:`, o parar para medirlo con n = 3 |
 | CR2A Paso de RED limpio | cr2 | `plan.md` fija por su cuenta qué hacer si `c2` sale limpio («para», «sigue», «no se escribe») sin remitir a la marca de la spec o a «Deviations and rulings» |
