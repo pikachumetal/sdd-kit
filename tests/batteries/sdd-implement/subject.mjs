@@ -88,7 +88,7 @@ function formRules() {
   writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
 }
 
-s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'k4', 'cp1'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
+s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'k4', 'k4r', 'cp1'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
 s.putKitMarker(MARKER);
 const molds = {
   r1: () => (cp('app-0012.js', 'src/app.js'), cp('cancel-task1.test.js', 'test/cancel.test.js')),
@@ -127,7 +127,7 @@ const molds = {
     writeFileSync(at('test/words.test.js'), WORDS_TEST);
   },
   a2: () => appendFileSync(at('.docs/sdd/constitution.md'), ART_I),
-  // Dos red flags que repiten el paso 1: el paso nuevo solo cabe en 80 palabras quitándolas, y la spec las deja.
+  // Dos red flags que repiten el paso 1: el paso nuevo solo cabe en 80 palabras quitándolas.
   k4: () => {
     mkdirSync(at('test'), { recursive: true });
     writeFileSync(at('test/words.test.js'), WORDS_TEST_80);
@@ -147,6 +147,8 @@ const molds = {
   },
 };
 molds.g2 = molds.g1;
+molds.g1a = molds.g1;
+molds.k4r = molds.k4;
 molds.a3 = molds.a2;
 molds.a4 = molds.a2;
 molds.b2 = molds.b1;
@@ -294,6 +296,12 @@ const steps = {
   d1: () => openFixture('0024-drop-legacy', F24, '0024'),
   a1: () => openFixture('0025-note-tags', F25, '0025'),
   k4: () => openFixture('0028-note-tags-kept-flags', F28, '0028'),
+  // El paso de las etiquetas ya escrito y sin commitear: la skill mide 99 palabras y el tope de 80 falla.
+  k4r: () => {
+    openFixture('0028-note-tags-kept-flags', F28, '0028');
+    const skill = at('skills/guardar-nota/SKILL.md');
+    writeFileSync(skill, readLf(skill).replace('3. Tell the user the path you wrote.\n', '3. Tell the user the path you wrote.\n4. Ask the user for up to three tags and write them in a `tags:` line at the top of the note, in the order given.\n'));
+  },
   a2: () => {
     openFixture('0026-note-title-date', F26, '0026');
     s.put(`${F26}/red/h0.txt`, CLEAN_H0);
@@ -414,6 +422,7 @@ const steps = {
   r4: reviewedTwoTasks,
 };
 steps.g2 = steps.g1;
+steps.g1a = steps.g1;
 steps.n1 = steps.h1;
 steps.e1 = () => {
   steps.h1();
@@ -454,7 +463,7 @@ steps.f2 = () => openFeature('0010-cancel-reason', { folder: F10, spec: readLf(j
 if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
 steps[s.SC]?.();
 
-const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'k4', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1', 'rt1'];
+const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'k4', 'k4r', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1', 'rt1'];
 if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_WITHOUT_AGENT].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_WITHOUT_AGENT]) turns[id] = '40';

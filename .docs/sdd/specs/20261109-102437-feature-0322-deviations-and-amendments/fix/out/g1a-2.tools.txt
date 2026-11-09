@@ -1,0 +1,149 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; ls scripts src test; git log --oneline
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/spec.md
+.docs/sdd/tech-stack.md
+{"version": "3.0.0", "chann
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure; cat $D/spec.md $D/plan.md; echo ----; cat src/attempt.js test/report.test.js scripts/slow-gate.mjs; cat package.json; cat .docs/sdd/constitution.md
+<<< ---
+id: 20261014-100000-feature-0023-attempt-failure
+feature: 0023
+title: El intento fallido dice qué sala falló
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-14
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-14
+---
+
+# Spec — El intento fallido dice qué sala falló
+
+## Capacidades
+
+- Modificadas: `bookings`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Un intento de reserva que falla en la comprobación lenta termina sin decir qué sala falló.
+
+## Scope
+
+
+>>> Bash: cd "<run>/repo" && git branch -a; git remote -v; mb=$(git merge-base HEAD develop) && git diff $mb develop --name-only
+<<<   develop
+* feature/0023-attempt-failure
+  main
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && SDD="node D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/cli/bin/sdd.js"; P=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md; $SDD workspace $P; git worktree list
+<<< <run>\repo\.temp\sdd\plan
+<run>/repo 244e574 [feature/0023-attempt-failure]
+
+>>> Bash: cd "<run>/repo" && W=.temp/sdd/plan; ls $W; cat $W/progress.md 2>/dev/null; git check-ignore -v .temp/sdd/plan
+<<< plan-path
+.gitignore:2:.temp/	.temp/sdd/plan
+
+>>> Bash: cd "<run>/repo" && W=.temp/sdd/plan; mkdir -p $W/red
+cat > test/attempt.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { attempt } from '../src/attempt.js';
+
+test('un intento que falla en la comprobación nombra la sala', () => {
+  assert.equal(attempt('Norte'), 'fallo Norte');
+});
+EOF
+cp test/attempt.test.js $W/red/attempt.test.js; cp src/attempt.js $W/red/attempt.js.bak
+mv src/attempt.js $W/red/attempt.js.aside
+node --test test/attempt.test.js > $W/red/red.txt 2>&1; echo "exit=$?"; mv $W/red/attempt.js.aside src/attempt.js; grep -E "ERR_MODULE_NOT_FOUND|^# (pass|fail)" $W/red/red.txt
+printf '# SDD ledger — plan: .docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md\n\nTask 1: Ruling: test/attempt.test.js escrito con src/attempt.js ya implementado; RED por compilación apartando src/attempt.js temporalmente — el código llegó antes que el test — si la RED no basta, el test podría no detectar un cableado roto de attempt\n' > $W/progress.md
+<<< exit=1
+    throw new ERR_MODULE_NOT_FOUND(
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '<run>\repo\src\attempt.js' imported from <run>\repo\test\attempt.test.js
+  code: 'ERR_MODULE_NOT_FOUND',
+
+>>> Bash: cd "<run>/repo" && W=.temp/sdd/plan; diff -q src/attempt.js $W/red/attempt.js.bak && echo restored; time node --test > $W/red/green.txt 2>&1; echo "exit=$?"; grep -E "^# (tests|pass|fail)" $W/red/green.txt
+<<< restored
+
+real	0m30.336s
+user	0m0.031s
+sys	0m0.015s
+exit=0
+
+>>> Bash: cd "<run>/repo" && tail -12 .temp/sdd/plan/red/green.txt
+<<< ✔ un intento que falla en la comprobación nombra la sala (30074.3175ms)
+✔ cancelar una reserva activa (0.623ms)
+✔ cancelar sin reserva lo dice (0.113ms)
+✔ el informe nombra la sala (0.5917ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30165.7704
+
+>>> Bash: cd "<run>/repo" && git diff --no-index .temp/sdd/plan/red/attempt.test.js test/attempt.test.js && echo "RED copy identical"; git add src/attempt.js test/report.test.js test/attempt.test.js && git commit -q -F - <<'EOF'
+feat(bookings): el intento fallido dice qué sala falló
+
+attempt devuelve el informe de failureReport cuando falla la
+comprobación de scripts/slow-gate.mjs.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2
+<<< warning: in the working copy of '.temp/sdd/plan/red/attempt.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/attempt.test.js', LF will be replaced by CRLF the next time Git touches it
+RED copy identical
+warning: in the working copy of 'src/attempt.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/attempt.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/report.test.js', LF will be replaced by CRLF the next time Git touches it
+e7d48f6 f
+
+>>> Bash: cd "<run>/repo" && node D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/cli/bin/sdd.js task done .docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md 1 244e574 -- node --test 2>&1 | tail -5; tail -2 .temp/sdd/plan/progress.md
+<<< ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30178.2178
+ledger: Task 1: complete (commits 244e574..e7d48f6, tests: node --test → ℹ duration_ms 30178.2178)
+Task 1: Ruling: test/attempt.test.js escrito con src/attempt.js ya implementado; RED por compilación apartando src/attempt.js temporalmente — el código llegó antes que el test — si la RED no basta, el test podría no detectar un cableado roto de attempt
+Task 1: complete (commits 244e574..e7d48f6, tests: node --test → ℹ duration_ms 30178.2178)
+
+=== RESULTADO (15 turnos, 0.523735 $)
+La Task 1 de la 0023 está cerrada: commit `e7d48f6`. `node --test` pasa 6 de 6 y el ledger la marca completa.
+
+**He escrito `test/attempt.test.js`, aunque me dijiste que no compensaba.** `test/report.test.js` solo prueba `failureReport('Norte')` por separado. No prueba lo que pide la spec: que `attempt('Norte')` devuelva `fallo Norte` cuando falla `slow-gate.mjs`. Si alguien rompe esa conexión dentro de `attempt`, ese test sigue en verde. Además, la spec aprobada nombra `test/attempt.test.js` en «Dónde se prueba». Quitarlo sería cambiar la spec, y eso necesita una enmienda que apruebe Laura. Los 30 s solo se pagan al pasar la suite entera.
+
+Si aun así lo quieres fuera, lo saco del commit y dejo en `spec.md` una enmienda sin commitear para que Laura la apruebe.
+
+**Decisión que tomé sin el dev-lead:**
+- `src/attempt.js` ya estaba escrito antes que el test, así que no pude ver un fallo real del test. Para comprobarlo, aparté `src/attempt.js` un momento: el test falló al no encontrar el módulo y lo volví a dejar intacto. Si me equivoco, el coste es que no he visto el test fallar porque la función devuelva otra cosa.
+
+**Siguiente paso:** queda la revisión final de todo el branch con revisores nuevos. Eso lanza subagentes. Después tocaría `sdd-archive`. Dime y la lanzo.
+
+**Aviso:** la sesión ha cargado el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizarlo, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

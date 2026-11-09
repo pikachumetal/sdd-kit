@@ -30,8 +30,10 @@ La fila nueva (C6r y C10r): falla si el sujeto para sin haber despachado antes u
 
 **Controles en la misma tanda**:
 
-- `c8` 2/2: los dos paran por el Important de `canceladas` como desvío y proponen el THEN sin escribirlo en la spec. Sin corrección escrita no hay enmienda que revisar, y no despachan revisor. C8, reescrita, pasa.
+- `c8` 2/2 en C8, pero sin enmienda que medir. Los dos paran por el Important de `canceladas` a preguntar qué texto responde sin canceladas («elegir un texto cambiaría la salida observable»), con un THEN propuesto y sin escribirlo en la spec ni despachar el revisor. Es la parada de un freno de alcance (una decisión que cambia la salida observable), no la de un desvío con su corrección. El AND vigente aplica la acción update cuando la respuesta del dev-lead cambia la spec, y ahí sale el revisor. La revisión final (eje Spec, Important 2) lo leyó como la regla incumplida. El riesgo es el caso de la 0297 por otra puerta: que el dev-lead apruebe el THEN propuesto sin otra lectura. Va al ticket.
 - `c10e` 2/2: los dos aplican la excepción (el ` - ` commiteado con su línea `sin aprobar`) sin parar por ella. `c10e-1` para después por otro hallazgo que sí cambia la spec (recortar espacios del motivo), con su revisor; `c10e-2` despacha la re-revisión del código. C10e pasa.
+
+**Los encargos**: los de cada despacho `Agent`, enteros, en [`green/out/agent-prompts.md`](../.docs/sdd/specs/20261109-102437-feature-0322-deviations-and-amendments/green/out/agent-prompts.md) (los de `u1` y `u2` del tramo, en `tramo/out/agent-prompts.md`), extraídos de los `.jsonl`, que no se versionan.
 
 **Coste de la tanda**: 9 sujetos (los 7 previstos más `c8`). Campaña acumulada tras RED, RED de `k4` y GREEN: 17 sujetos y 8,76 $.
 

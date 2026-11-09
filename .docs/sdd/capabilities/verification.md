@@ -137,7 +137,8 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 
 - GIVEN los ejes despachados sobre `a1b2c3d`, y el hilo que commitea después `e4f5a6b` (un fix de la verificación visual)
 - WHEN los ejes leen el código y el historial
-- THEN trabajan en un worktree desanclado `review-0096-a1b2c3d`, creado con `git worktree add --detach` en `a1b2c3d`, con el paquete construido allí, y su encargo les dice que no miren ramas ni commits posteriores
+- THEN trabajan en un worktree desanclado `review-0096-a1b2c3d`, creado con `git worktree add --detach` en `a1b2c3d`, donde se calcula el diff del paquete, y su encargo les dice que no miren ramas ni commits posteriores
+- AND el paquete se escribe en el workspace del plan del worktree de la feature, no en el de `review-0096-a1b2c3d`, y sigue ahí después de `git worktree remove` del worktree de revisión
 - AND ningún informe cita `e4f5a6b`
 - AND la re-revisión se ancla igual, en el último sha de su tramo
 - AND el hilo retira el worktree con `git worktree remove` cuando han vuelto todos los ejes
