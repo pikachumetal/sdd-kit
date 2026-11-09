@@ -57,3 +57,16 @@ Humo de `sdd-archive`: `SCENARIOS="a2 t3" N=1` → `suma: 2 sujetos · coste pre
 | --- | --- | --- |
 | a2-1 | P1, P2, P3, L | pasa: fila 0008 ✅, deuda «**[Patch 0008, 2026-11-09: saldada — …]**», sin `walkthrough.md` ni `sdd-retro`. El molde valida en campo y no tiene `estimation.md`: `patch.md` §4 lleva `Validación en campo:` y §5 no llega a usar el hueco de `Esfuerzo real`, así que P10 y P19 en el patch quedan sin observar |
 | t3-1 | T3, L | pasa: `Validación por el agente: 2026-11-09 · la spec declara `Validación: agente`; smoke con ejecución real…`, sin guion ni espera |
+
+## Medición tras la revisión final — `dist/` tras la pasada de fix (`e8069923`)
+
+Tanda: `SCENARIOS="co4 pb" N=1` → `suma: 2 sujetos · coste previsto: 1.73 $`; real 2 sujetos, 1,83 $. Campaña: 16 sujetos, 13,69 $ de los 14 $ previstos.
+
+`co4 · 1/1 · puerta verde · sin leer: CO4, AP, L` (CO4-T, verde: 8 llamadas a `scripts/plan.mjs`) · `pb · 1/1 · puerta verde · sin leer: PB, L`. Leídas por el hilo:
+
+| Sujeto | AP | CO4 | PB | L |
+| --- | --- | --- | --- | --- |
+| co4-1 | pasa: cuatro líneas en el Approach y `Elegido:` con la frase del dev-lead | pasa: cada fila, `` `SCENARIOS="c1 c2" N=2` → `suma: 4 sujetos · coste previsto: 2.80 $` ``; controles a 0 con su porqué | — | falla: «Ahora: dispatching the single spec reviewer (sonnet), after the coherence pass. Queda: …» |
+| pb-1 | — | — | pasa: «Enfoque: funciones puras … frente a leer el estado del módulo o a un fichero nuevo `src/informes.js` (ver Approach)»; 15 decisiones, una por vista; sin preguntas | pasa |
+
+CO4 en la campaña: GREEN 1/2, REFACTOR 1/2, y con «tal cual» en la ayuda, 1/1 (dev-lead: «1», medirlo aquí). El rojo de L es un aviso de fase en inglés, y el cambio no toca el idioma de ningún texto; L pasó en los 13 sujetos anteriores de la campaña.
