@@ -76,7 +76,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 - Estimación: <Xh, la de la pregunta del carril de `sdd-propose`, escrita antes del fix; si llega en el commit de cierre, `<Xh> (post hoc)`: no calibra>
 - Inicio: <hora UTC en que se abrió el patch, p. ej. 2026-10-09T11:20Z>
-- Esfuerzo real: <la línea `Esfuerzo real:` de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, tal cual: «<Zh> — reloj de la sesión <h> desde <inicio>, sin <min> min de espera al dev-lead (<n> esperas)[, sin <h> h sin actividad (<n> huecos)]» | fuera de Claude Code, `<Yh>, aproximado con las marcas de los commits`, nunca en blanco; los minutos de los subagentes no se suman, y «sumo los despachos» convierte el ratio en el de los subagentes>
+- Esfuerzo real: <lo que sigue a `Esfuerzo real:` en la salida de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, tal cual: «<Zh> — reloj de la sesión <h> desde <inicio>, sin <min> min de espera al dev-lead (<n> esperas)[, sin <h> h sin actividad (<n> huecos)]» | fuera de Claude Code, `<Yh>, aproximado con las marcas de los commits`, nunca en blanco>
 - Coste de sujetos: <X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica
 
 ## 6. Delta de capacidad *(si existe `.docs/sdd/capabilities/` y el fix cambia lo que dice una capacidad)*
