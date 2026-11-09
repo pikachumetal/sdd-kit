@@ -9,7 +9,9 @@ description: Use when sdd-implement closes a task or finishes its last one, or s
 ## Overview
 
 <!-- kit: 0312 -->
-Claiming work is complete without verification is dishonesty, not efficiency. Write everything the user reads in the language of their message. Forked from `verification-before-completion` and `requesting-code-review` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+Claiming work is complete without verification is dishonesty, not efficiency.
+<!-- kit: incluye user-language -->
+Forked from `verification-before-completion` and `requesting-code-review` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** Evidence before claims, always.
 
@@ -60,7 +62,8 @@ Skip any step = lying, not verifying
 **Running a gate.** Wherever you run the closing gate —the validation, the close, the config lane, the baseline—, from `operations.md` §Testing (without it, `tech-stack.md` §Testing); after a red, item 3 holds for any gate, the merge's `--verify` too:
 
 <!-- kit: 0312 -->
-1. In the validation and the close, a branch that only touches `.docs/` or `*.md` runs nothing. Otherwise each suite of «Suites» with level `unitario` or `pendiente` (a suite without a level counts as `pendiente`) runs whole, with its command, before the gate, unless its command is the gate's or one of the tasks the gate runs.
+1. In the validation and the close:
+<!-- kit: incluye suites-before-gate -->
 2. If the branch —or, after `sdd merge --sync`, what the base brought— touches a file of «Sin filtro» (without the field: `package.json`, `*.csproj`, `*.sln`, `pom.xml`, `build.gradle*`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `composer.json`, `Gemfile`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `packages.lock.json`, `poetry.lock`, `uv.lock`, `go.sum`, `Cargo.lock`, `composer.lock`, `Gemfile.lock`, `.moon/**`, `tsconfig*.json`, `Directory.Build.*`, `Directory.Packages.props`, `global.json`, `.prototools`, `vitest.config.*`, `jest.config.*`, `playwright.config.*`, at any depth), the gate runs without `--affected` and every task carries `(sin filtro: cambia el build)`. A project's `moon.yml` is «cambia su definición», not the build.
 3. After a red pass at `<sha>`:
    - A fix that only touches `.docs/` or `*.md` reruns only the tests that failed, alone: no gate and no suite, even if a task's inputs include that file. The line starts after the arrow with `tras el rojo en <sha>, arreglo <sha> solo de docs:`.
@@ -215,7 +218,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 **Dispatch it in the background as soon as the last task's commit exists** —in Native, the last task's; in SDD, the squashed one after its clean review—, before starting the app for its «Verificación visual»: while it reviews, you do that check and write the closing drafts of step 7. It works isolated from the moving `HEAD`, in a detached worktree at the sha it reviews (`git worktree add --detach <worktrees parent>/review-<id>-<short sha> <sha>`), with the package built there and the brief telling it not to look at later branches or commits; when it returns, remove it with `git worktree remove`. (`tests/closing-off-critical-path-red.md`, c1)
 
 <!-- kit: 0312 -->
-**The axes.** With `mode: spike`, only the Spec axis goes out. Otherwise the review goes out in axes, each with its own brief, model and effort, in parallel: load `sdd-parallel-agents` with `Skill` and dispatch them in the same message, never more at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (with 2 and three axes, two go out and the third when one returns). In `delegate`, a `Política de modelos:` line in the approved spec's ✋ that names the axes is the confirmation a user instruction asks before parallelizing: dispatch them without asking again (two of two stopped here: `tests/sdd-propose-0185-green.md`); an Architecture axis you raise isn't in the line: confirm it. Each axis brief carries, inside its block, the header, «Cómo revisar» and the worktree sentence of [encargo-revision.md](references/encargo-revision.md): fill every `<…>`, and use its package recipe —not `sdd review package`—. Every `sdd <verb>` here and in `references/` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`. What each axis gets:
+**The axes.** With `mode: spike`, only the Spec axis goes out. Otherwise the review goes out in axes, each with its own brief, model and effort, in parallel: load `sdd-parallel-agents` with `Skill` and dispatch them in the same message, never more at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (with 2 and three axes, two go out and the third when one returns). In `delegate`, a `Política de modelos:` line in the approved spec's ✋ that names the axes is the confirmation a user instruction asks before parallelizing: dispatch them without asking again (two of two stopped here: `tests/sdd-propose-0185-green.md`); an Architecture axis you raise isn't in the line: confirm it. Each axis brief carries, inside its block, the header, «How to review» and the worktree sentence of [encargo-revision.md](references/encargo-revision.md): fill every `<…>`, and use its package recipe —not `sdd review package`—. Every `sdd <verb>` here and in `references/` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`. What each axis gets:
 
 <!-- kit: 0312 -->
 | Axis | Brief | Model | Gets, besides the package |

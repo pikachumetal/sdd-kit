@@ -1,0 +1,84 @@
+--- [3]
+Ahora: leo el estado de la feature 0010 (spec, plan, tasks y los dos informes de revisión). Queda: decidir qué hacer con los hallazgos, ~3 min.
+
+--- [16]
+Ahora: abro el cierre de la revisión (`sdd-verify`) con un hallazgo Important y un Minor. Queda: arreglar con RED primero, re-revisar y cerrar, ~10 min.
+
+--- [23]
+RED confirmado (el motivo con espacios se rechaza). Ahora el arreglo.
+
+--- [34]
+Ahora: lanzo la única re-revisión del fix (`effort-high` + `opus`) con su vigilancia de silencio. Queda: esperar su veredicto y cerrar, ~5 min, ~1 $.
+
+--- [40]
+La re-revisión del fix está en marcha, en segundo plano. Me paro aquí hasta que vuelva su veredicto.
+
+**Estado**
+- Las dos tasks de la 0010 están completas (`09283e4`), con su `complete` en el ledger.
+- **Arreglado (Important del eje Código):** `reasonOf` conservaba los espacios del motivo.
+  - **Test RED:** `cancelar acepta el motivo con espacios alrededor`. Falló con `motivo no válido…` antes del arreglo.
+  - **Arreglo:** `.trim()` en `src/app.js:16`.
+  - **Suite:** pasa 6/6 con `node --test`.
+  - **Commit:** `3ff99b8`.
+- **Diferido (Minor del eje Spec):** el test de `canceladas` depende del orden respecto al de `cancelar`. `sdd-kit.json` no tiene `review.minors: fix`, así que va al ledger y a «Minors diferidos» de `tasks.md`.
+- **Eje Arquitectura:** no sale. El plan dice `no` y el diff no cruza ninguna señal.
+
+**Queda**
+- Esperar el veredicto de la re-revisión (`3ff99b8`, `effort-high` + `opus`). Escribiré su línea `Re-revisión:` en `tasks.md`.
+- Quitar el worktree `review-0010-3ff99b8` y borrar el workspace del plan.
+- Pegar los rulings en `tasks.md` y pasar a `sdd-archive`.
+
+Dos cosas que debes saber:
+- `tasks.md` sigue sin commit (estaba sin seguimiento al empezar) y ahora lleva las líneas de revisión.
+- Lancé por error un `find /` y lo paré enseguida. No escribió nada.
+
+--- [44]
+### Finding Verdicts
+- **[Code axis, Important] `src/app.js:14-17`, `reasonOf` kept the spaces around the reason: ADDRESSED.** `src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`. `cancelBooking` gets the trimmed value, so the check at `src/app.js:20` passes. The trimmed value is also what gets stored at `src/app.js:24` and later shown by `canceladas`. The new test at `test/cancel.test.js:17-19` sends `' sala ocupada '` and expects the result after the reason check (`sin reserva Sur mar`). Before the fix the same test returned the «motivo no válido…» message, so it really covers the change.
+- **[Spec axis, Minor] `test/cancel.test.js:13`, the `canceladas` test depends on test order: deferred by decision.** It is still unfixed in `test/cancel.test.js:13-15`. As instructed, I do not count it as open.
+
+### New Breakage in the Fix Diff
+None. I checked the edge cases:
+- **No `--motivo`:** `index === -1` still gives `undefined`, which leads to «motivo no válido…», as spec.md:54 requires.
+- **`--motivo` as the last argument:** `params[index + 1]` is `undefined`, and `?.trim()` keeps it `undefined`. The result is the same message, with no TypeError.
+- **Reason made only of spaces:** it trims to `''`, which is not in the list, so the reason is rejected.
+- **Constraint on interface text in Spanish:** the fix adds no new interface text.
+
+### Out-of-Scope Observations
+- `test/cancel.test.js:18` (Minor, not blocking): the new test uses `Sur mar`, which has no booking. It shows that the reason passes the check, but not the reported case: that `cancelar Norte lun --motivo "sala ocupada "` succeeds and stores `sala ocupada` without spaces. The test likely uses `Sur mar` to avoid the existing order problem, because `Norte lun` is already cancelled by the first test. The trimmed value being stored is clear from reading `src/app.js:16,24`, but no test checks it.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [49]
+Ahora: la revisión final está limpia y el workspace del plan, borrado. Paso a `sdd-archive`, que empieza por la validación.
+
+--- [57]
+**No terminado.** El cierre de la 0010 no ha empezado: no he escrito ningún registro y no he fusionado nada. Faltan dos decisiones tuyas.
+
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `canceladas` lista cada cancelada con su motivo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada "` (con un espacio al final) responde «cancelada Norte lun (sala ocupada)».
+
+**Qué paró el cierre**
+1. **Validación manual:** `sdd-kit.json` no define `validation.mode`, así que cuenta como `manual`. Con el perfil `delegate`, el cierre espera a que lo pruebes tú. «Cierra» o una revisión limpia no cuentan como validación.
+2. **Política de merge incompleta:** `sdd merge --check` falla con «falta `merge.into` o `merge.noFf`». Necesito que me digas en qué rama fusionar y si va con `--no-ff`, o que completes el bloque `merge` de `.docs/sdd/sdd-kit.json`. Sin eso no fusiono.
+
+**Script de prueba**
+Cada ejecución del CLI arranca con las reservas en memoria, así que `cancelar` y `canceladas` no comparten estado entre comandos. Esto lo ejecuté yo desde la raíz del repo:
+
+| Comando | Responde |
+| --- | --- |
+| `node src/app.js cancelar Norte lun --motivo "sala ocupada "` | `cancelada Norte lun (sala ocupada)` |
+| `node src/app.js cancelar Norte lun --motivo "me aburro"` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `node src/app.js cancelar Norte lun` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `node src/app.js canceladas` | vacío: es un proceso nuevo |
+
+El caso de `canceladas` con datos (`Norte lun — sala ocupada`) solo lo cubre la suite (`node --test`: 6/6). Es evidencia `suite`, no `ejecución real`. Dime qué probaste y si funciona. Si prefieres diferir, dame también un disparador y quién lo asume.
+
+**Estado**
+- **Revisión final:** limpia. Re-revisión de `09283e4..3ff99b8` con `opus`, sin hallazgos abiertos. `HEAD` es `3ff99b8` y no se movió.
+- **Minor diferido:** el test de `canceladas` depende del orden respecto al de `cancelar`.
+- **Ruling:** la re-revisión señaló que el test nuevo usa `Sur mar`, así que no comprueba que se guarde el motivo recortado. Lo dejé así porque el valor guardado se lee en `src/app.js:16,24`. Si falla, `canceladas` mostraría el motivo con espacios y ningún test lo avisaría.
+- **`tasks.md`:** sigue sin commit y lleva las líneas de revisión y los rulings. Va en el commit de cierre.
+
+Worktree `<run>\repo`: no lo borres todavía.
+

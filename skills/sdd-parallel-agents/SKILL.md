@@ -9,7 +9,8 @@ description: Use when an sdd-kit skill dispatches two or more independent agents
 ## Overview
 
 <!-- kit: 0312 -->
-Write everything the user reads in the language of their message. Forked from `dispatching-parallel-agents` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+<!-- kit: incluye user-language -->
+Forked from `dispatching-parallel-agents` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
@@ -88,7 +89,8 @@ Subagent (sdd-kit:effort-medium, model: sonnet): "Fix tool-approval-race-conditi
 Multiple dispatch calls in one response = parallel execution. One per response = sequential.
 
 <!-- kit: 0312 -->
-**Model and effort on every dispatch**: the `model` and the agent type `sdd-kit:effort-<level>` the calling skill names; omitted, both inherit the session's. If the harness doesn't expose the type, dispatch with the `model` and «effort: no disponible en este harness, hereda el de la sesión».
+**Model and effort on every dispatch**: the `model` and the agent type `sdd-kit:effort-<level>` the calling skill names; omitted, both inherit the session's.
+<!-- kit: incluye effort-unavailable -->
 
 <!-- kit: 0312 -->
 **The project's cap**: never more agents at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (3 if absent). With more domains than the cap, dispatch in batches: the next batch when the previous one returns.

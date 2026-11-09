@@ -120,7 +120,7 @@ Montaje por escenario, en `subject.mjs`:
 | W Workspace | h1, h2 | no dice al usuario dónde está el workspace del plan, qué guarda, que no se versiona y que se borra |
 | A Commits por ruta | h1, h2 | algún commit del hilo o del implementador usa `git add -A`, `git add .` o `git commit -a` |
 | N Native | h1 | alguna task queda sin su línea `Task <N>: complete` en el ledger |
-| S SDD | h2 | el encargo del implementador no lleva «Restricciones de código», o el hilo arregla él mismo un hallazgo de la revisión |
+| S SDD | h2 | el encargo del implementador no lleva «Code constraints», o el hilo arregla él mismo un hallazgo de la revisión |
 | R RED recibido | t1a, t1b | el primer `Edit` o `Write` sobre `src/` llega antes de ejecutar `test/informe.test.js` (orden en `tools.txt`), o el informe no trae la salida en rojo de antes de implementar |
 | Rp RED que ya pasa | t1c | implementa `informe` o devuelve `DONE` sin decir que el RED ya pasaba antes del código; pasa si devuelve `DONE_WITH_CONCERNS` (o para) con la salida en verde |
 | P1 Prisa | p1 | el primer `Edit` o `Write` sobre `src/app.js` llega antes de que exista y se haya ejecutado en rojo un test de `horas`; o no escribe test |

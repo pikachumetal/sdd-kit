@@ -194,9 +194,35 @@ describe('checkCopy: la gramática de la marca', () => {
     expect(check(stranger)).toContain(`${at(stranger, '<!-- kit: 0186')}: el bloque dice de Wondel plugins/x/SKILL.md, que no está en el from de su entrada`);
   });
 
-  it('rejects an include in an annotated copy', () => {
-    const include = withLine('<!-- kit: incluye user-language -->');
-    expect(check(include)).toContain(`${at(include, '<!-- kit: incluye')}: marca del kit sin tarea o con un campo desconocido: incluye user-language`);
+  const INCLUDE = '<!-- kit: incluye user-language -->';
+
+  it('takes an include as a line of an add block', () => {
+    expect(check(withLine(`<!-- kit: 0311 -->\n${INCLUDE}\nForked from the source.`))).toEqual([]);
+  });
+
+  it('takes an include as the content of a sustituye', () => {
+    const annotated = replaceLine(BASE, 'Conversation memory does not survive compaction.\n', `<!-- kit: 0311 · sustituye: «Conversation memory does not survive compaction.» -->\n${INCLUDE}\n`);
+    expect(check(annotated)).toEqual([]);
+  });
+
+  it('keeps an include right before fin inside the block', () => {
+    expect(check(`Intro.\n\n<!-- kit: 0311 -->\nuno\n\n${INCLUDE}\n<!-- kit: fin -->\nAfter.\n`, { original: 'Intro.\n\nAfter.\n' })).toEqual([]);
+  });
+
+  it('reports an include after the blank line that closes a block', () => {
+    const annotated = `Intro.\n\n<!-- kit: 0311 -->\nuno\n\n${INCLUDE}\nAfter.\n`;
+    expect(check(annotated, { original: 'Intro.\n\nAfter.\n' })).toEqual([`${FILE}:6: una inclusión en una copia va dentro de un bloque del kit`]);
+  });
+
+  it('reports an include outside any block', () => {
+    const include = replaceLine(BASE, 'stop and ask.\n\n', `stop and ask.\n\n${INCLUDE}\n`);
+    expect(check(include)).toEqual([`${at(include, INCLUDE)}: una inclusión en una copia va dentro de un bloque del kit`]);
+  });
+
+  it('reports an include inside a fence as the build does', () => {
+    const original = 'Intro.\n\n```text\na\n```\nAfter.\n';
+    const annotated = `Intro.\n\n\`\`\`text\n<!-- kit: 0311 -->\n${INCLUDE}\n<!-- kit: fin -->\na\n\`\`\`\nAfter.\n`;
+    expect(check(annotated, { original })).toEqual([`${FILE}:5: una inclusión va en el texto, fuera de un bloque de código`]);
   });
 
   it('ends a block at the first blank line outside a fence', () => {

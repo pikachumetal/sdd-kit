@@ -12,7 +12,8 @@ const tempDir = tempDirs();
 const FRONT = (name: string): string => `---\nname: ${name}\ndescription: Use when testing.\n---\n\n`;
 const RULE = 'Write everything the user reads in their language, skill announcements included.';
 const RULE_WORDS = 'write everything the user reads in their language skill announcements';
-const REMEDY = 'déjala en un solo sitio, en includes/ si la necesitan varias propias';
+const REMEDY =
+  'déjala en un solo sitio, en includes/ si la necesitan varias skills; antes de quitar una copia, relee cada paso que la nombra por su posición: su orden tiene que dejar aplicarla';
 const OWN = ['skills/example-a/', 'skills/example-b/', 'skills/example-c/'];
 const SOURCES = { superpowers: { repo: 'obra/superpowers', tagPrefix: 'v', license: 'MIT', copyright: 'x' } };
 
@@ -202,18 +203,33 @@ describe('kit:own: la absoluta con excepción', () => {
 });
 
 describe('kit:own: la inclusión en una copia', () => {
-  it('reports an include in a copy, pending too', () => {
-    const files = {
-      ...skill('example-a', '<!-- kit: incluye rule -->\n'),
-      ...skill('example-b', 'Text.\n\n<!-- kit: incluye rule -->\n'),
-      'includes/rule.md': 'A rule.\n',
-    };
-    const entries = [copyEntry('skills/example-a/SKILL.md'), copyEntry('skills/example-b/', '0305')];
+  const include = '<!-- kit: incluye user-language -->\n';
 
-    expect(report({ files, own: [], entries }).lines).toEqual([
-      'skills/example-a/SKILL.md:6: una inclusión es solo de las propias, y skills/example-a/SKILL.md es una copia',
-      'skills/example-b/SKILL.md:8: una inclusión es solo de las propias, y skills/example-b/SKILL.md es una copia',
-    ]);
+  it('ignores a run included in a copy block and in an own skill', () => {
+    const files = {
+      ...skill('example-a', `Original text.\n\n<!-- kit: 0311 -->\n${include}`),
+      ...skill('example-b', include),
+      'includes/user-language.md': `${RULE}\n`,
+    };
+
+    expect(report({ files, own: ['skills/example-b/'], entries: [copyEntry('skills/example-a/SKILL.md')] }).code).toBe(0);
+  });
+
+  it('accepts an include anywhere in a pending copy', () => {
+    const files = { ...skill('example-a', `Text.\n\n${include}`), 'includes/user-language.md': `${RULE}\n` };
+
+    expect(report({ files, own: [], entries: [copyEntry('skills/example-a/', '0305')] }).code).toBe(0);
+  });
+
+  it('reports the run written by hand in a copy block next to the include of an own skill', () => {
+    const files = {
+      ...skill('example-a', `Original text.\n\n<!-- kit: 0311 -->\n${RULE}\n`),
+      ...skill('example-b', include),
+      'includes/user-language.md': `${RULE}\n`,
+    };
+    const result = report({ files, own: ['skills/example-b/'], entries: [copyEntry('skills/example-a/SKILL.md')] });
+
+    expect(result.lines).toEqual([repeated(['dist/skills/example-a/SKILL.md:8', 'dist/skills/example-b/SKILL.md:6'])]);
   });
 });
 

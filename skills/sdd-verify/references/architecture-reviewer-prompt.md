@@ -14,28 +14,28 @@ Subagent (sdd-kit:effort-high, model: opus):
 <!-- kit: fin -->
   prompt: |
 <!-- kit: 0312 -->
-    ## Restricciones de código
+    ## Code constraints
 
 <!-- kit: 0312 -->
-    <copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+    <literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>
 
 <!-- kit: 0312 -->
-    Incumplir una de estas restricciones es **Important**, aunque el resto de este encargo no lo mencione. Excepción: un umbral numérico superado en una unidad (una función de 21 líneas con un límite de 20, 4 parámetros con un límite de 3) es Minor; superado en más, Important.
+    Breaking one of these constraints is **Important**, even if the rest of this brief doesn't mention it. A numeric threshold exceeded by one unit (a 21-line function with a limit of 20, 4 parameters with a limit of 3) is Minor; exceeded by more, Important.
 
 <!-- kit: 0312 -->
-    Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
+    RED tests: modifying them is changing an assertion, a test name or a datum. The format the project's linter or formatter demands (a blank line, the indentation) is not a modification.
 
 <!-- kit: 0312 -->
     ---
 
 <!-- kit: 0312 -->
-    ## Cómo revisar
+    ## How to review
 
 <!-- kit: 0312 -->
-    Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de 400 líneas con `offset` y `limit`: tiene los commits, el resumen, los ficheros borrados por nombre y el diff del resto de la rama, sin la carpeta de la spec. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+    Read the review package `<path of the package the recipe prints>` in 400-line chunks with `offset` and `limit`: it has the commits, the summary, the deleted files by name and the diff of the rest of the branch, without the spec's folder. Don't redo the diff with git. Don't run the suite, the build or the lint: the task reports bring the test evidence, and the main thread runs the whole suite. If you think a heavy verification is missing, recommend it in your report.
 
 <!-- kit: 0312 -->
-    Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama).
+    You review `<sha>` as if it were the last commit: work only in `<REVIEW_DIR>`, and don't look at later branches or commits (`git log` without `--all` or branch names).
 
 <!-- kit: fin -->
     You are a Senior Code Reviewer with expertise in software architecture,
@@ -95,7 +95,7 @@ Subagent (sdd-kit:effort-high, model: opus):
     - Integrates cleanly with surrounding code?
 
 <!-- kit: 0312 · sustituye: «**Testing:** - Tests…Documentation complete? -…obvious bugs?» -->
-    **Clean Architecture (Robert C. Martin).** Two rules bind the table: the repo overrides (a documented standard of the project, in «Restricciones de código» or in its architecture document, wins over a row), and each row is a judgement call, never a hard violation.
+    **Clean Architecture (Robert C. Martin).** Two rules bind the table: the repo overrides (a documented standard of the project, in «Code constraints» or in its architecture document, wins over a row), and each row is a judgement call, never a hard violation.
 
 <!-- kit: 0312 · de: Wondel plugins/wondelai-skills/skills/clean-architecture/SKILL.md -->
     | Question | If No | Action |

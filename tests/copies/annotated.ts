@@ -1,5 +1,5 @@
 // La fuente anotada de una copia frente a su original: sus marcas, sus bloques y cada diferencia que no lleva marca.
-import { nextBlock, stripMarks, WHOLE_LINE_MARK, type Block as Region } from '../../build/dist.ts';
+import { INCLUDE_MARK, nextBlock, stripMarks, WHOLE_LINE_MARK, type Block as Region } from '../../build/dist.ts';
 import { abbreviate } from '../upstream/clones.ts';
 
 export interface Problem {
@@ -75,6 +75,8 @@ const MESSAGES = {
   crlf: 'tiene finales de línea CRLF; la fuente de una copia va en LF',
   notVerbatim: (label: string): string => `no es su original ${label} byte a byte`,
   ownNow: (kept: number, path: string): string => `conserva el ${kept} % de su original ${path}; por debajo del ${MIN_KEPT} % es propia: pásala a own`,
+  includeOutside: 'una inclusión en una copia va dentro de un bloque del kit',
+  includeFenced: 'una inclusión va en el texto, fuera de un bloque de código',
   eats: (count: number, first: string): string =>
     `el bloque lleva ${count} líneas seguidas del original en su sitio, desde «${abbreviate(first)}»: ciérralo con <!-- kit: fin --> antes de ellas`,
 };
@@ -159,7 +161,7 @@ function finAhead(all: string[]): boolean[] {
   let next = false;
   for (let index = all.length - 1; index >= 0; index--) {
     ahead[index] = next;
-    if (WHOLE_LINE_MARK.test(all[index])) next = 'fin' in parseMark(all[index]);
+    if (WHOLE_LINE_MARK.test(all[index]) && !INCLUDE_MARK.test(all[index])) next = 'fin' in parseMark(all[index]);
   }
   return ahead;
 }
@@ -193,10 +195,18 @@ class Reader {
   }
 
   private take(line: string, index: number, inText: boolean): void {
+    if (INCLUDE_MARK.test(line)) return this.takeInclude(line, index, inText);
     if (WHOLE_LINE_MARK.test(line)) return this.takeMark(line, index, !inText);
     if (!this.open) this.result.text.push({ index, text: line });
     else if (inText && line.trim() === '' && !this.finAhead[index]) this.close(index);
     else this.open.content.push(line);
+  }
+
+  // Una inclusión no abre ni cierra bloque: es una línea más del bloque abierto, que el build expande.
+  private takeInclude(line: string, index: number, inText: boolean): void {
+    if (!inText) return this.problem(index, MESSAGES.includeFenced);
+    if (!this.open) return this.problem(index, MESSAGES.includeOutside);
+    this.open.content.push(line);
   }
 
   private takeMark(line: string, index: number, fenced: boolean): void {

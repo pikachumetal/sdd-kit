@@ -67,6 +67,11 @@ describe('renderLines', () => {
     expect(lines.map((line) => line.source)).toEqual([0, null, 3]);
   });
 
+  it('expands an include inside the kit block of a copy', () => {
+    const copy = `Original.\n\n<!-- kit: 0311 -->\n${INCLUDE}\nForked from the source.\n`;
+    expect(joined(render(copy, { 'user-language': 'Write everything.\n' }))).toBe('Original.\n\nWrite everything.\nForked from the source.\n');
+  });
+
   it('adds the missing newline of an include', () => {
     expect(joined(render(`a\n${INCLUDE}\nb\n`, { 'user-language': 'x' }))).toBe('a\nx\nb\n');
   });

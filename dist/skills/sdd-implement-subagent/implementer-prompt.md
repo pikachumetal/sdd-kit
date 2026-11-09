@@ -15,13 +15,13 @@ Subagent (general-purpose):
          model silently inherits the session's most expensive one]
   subagent_type: [SUBAGENT_TYPE — the agent type the task's **Modelo** line names]
   prompt: |
-    ## Restricciones de código
+    ## Code constraints
 
-    <copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+    <literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>
 
     ## Quality decalogue
 
-    Si una regla de aquí choca con las Restricciones de código, mandan las Restricciones.
+    If a rule here clashes with the Code constraints, the constraints win.
 
     1. Names say what a thing is for; one word per concept in the code you touch.
     2. A function does one thing, at one level of abstraction: choosing the data and formatting it are two functions.

@@ -8,7 +8,8 @@ argument-hint: "<change, roadmap id or ticket>"
 
 ## Overview
 
-The single entry for a change: it reads the project, classifies the change into a lane and writes what comes before implementing (spec and plan, or the patch's opening). This project works with **Spec-Driven Development**: the spec is the source of truth, the code is output. Artifacts (folders, names, document structure) follow the kit's convention. Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+The single entry for a change: it reads the project, classifies the change into a lane and writes what comes before implementing (spec and plan, or the patch's opening). This project works with **Spec-Driven Development**: the spec is the source of truth, the code is output. Artifacts (folders, names, document structure) follow the kit's convention.
+<!-- kit: incluye user-language -->
 
 **Golden rule:** artifacts live ONLY in `.docs/sdd/specs/<task-folder>/`. Never create `docs/superpowers/` or leave loose plans.
 
@@ -73,7 +74,7 @@ The profile line says which level it comes from; one `Aviso:` line per local key
 - You're about to write the spec without having read `references/spec-writing.md` or interviewed with `sdd-grilling`, because "you've already explored the code".
 - You're treating the change as small without citing the predicate's conditions, or without the user confirming lite mode.
 - You're writing `plan.md` and the spec has no explicit approval from the user.
-- You're about to edit code and the plan isn't approved.
+<!-- kit: incluye unapproved-plan-flag -->
 - You're "documenting the decision in the spec" instead of waiting for the answer.
 - You're about to ask a full feature to confirm its lane, or to start a patch, a lite or a config change without asking.
 - You're about to ask the first design question of a feature or a spike without the announcement.

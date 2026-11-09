@@ -1,0 +1,44 @@
+--- [3]
+Empiezo por las comprobaciones previas del cierre de la 0010.
+
+--- [33]
+**No terminado.** La 0010 no está fusionada. Paro antes de escribir ningún registro porque hay una decisión que es tuya.
+
+**Qué ha pasado:** la suite entera (`node --test`) sale en rojo por `test/export.e2e.test.js`. Lo he contrastado como pide el kit:
+- El fichero suelto falla igual en la rama y en un worktree desacoplado de `develop` (ya borrado), con el mismo error: `TimeoutError: export no respondió en 5000 ms`.
+- La suite entera en `develop` da 4 de 5 en verde y ese mismo fallo. En la rama pasan los otros 5, incluidos los 3 de `cancel.test.js`.
+- `base: en rojo: el mismo comando también falla sin la rama`
+- Ya está en el roadmap, en «Deuda técnica»: «`test/export.e2e.test.js` falla con «TimeoutError: export no respondió» también en `develop`». No abro fila nueva.
+
+```
+Comando: node --test   · exit 1 · log: /tmp/tmp.g3fCAQx6TY/suite.txt
+ℹ tests 6 · pass 5 · fail 1
+✖ exportar reservas a csv
+  Error: TimeoutError: export no respondió en 5000 ms
+      at test/export.e2e.test.js:4:9
+develop sin tocar en 76687ea
+```
+
+**La pregunta:** ¿fusiono la 0010 en `develop` aunque esa deuda siga en rojo? Mi recomendación es que sí, porque el fallo es ajeno a la rama y el resto está en verde.
+
+**Pre-checks y validación** (el modo es `field`, así que valido yo):
+- No había cambios sin commitear, `sdd merge --check` dio «destino: listo» y no hay otras ramas abiertas.
+- El spec está aprobado por Laura.
+- **Revisión final:** se hizo sobre `d3f5cf1`. `HEAD` es `8960277`, que solo añade `tasks.md` (17 líneas, el propio registro de la revisión). Lo leí yo y lo anotaré como `revisado en el hilo`, sin lanzar otra revisión.
+- **Smoke con ejecución real:**
+  - `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+  - Con un motivo fuera de la lista y sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro».
+  - `cancelar` y `canceladas` en un mismo proceso → «Norte lun — sala ocupada».
+- **Límite que debes saber:** el almacén es en memoria, así que `node src/app.js canceladas` en un proceso nuevo sale vacío. La fila 0014 del roadmap («Motivo guardado») ya cubre la persistencia, pero el THEN del listado solo se ve de verdad dentro de un proceso.
+
+**Antes de cerrar corregiré esto en el cierre:**
+- `tasks.md` pone `d3f5cf1` en las dos tasks, y la Task 1 es `bc0a5f9`.
+- El ruling de `--test-concurrency=1` es un workaround. Lo apuntaré como fila de deuda con su plan, porque los tests de `cancel.test.js` dependen del orden y del estado compartido.
+- Faltan el walkthrough, `capabilities/bookings` (con `sdd capability merge`) y la entrada del changelog; los escribo en el cierre.
+
+**Dos avisos:**
+- El hook dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (`claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar). El proyecto sigue en forma 2.x (roadmap y changelog dentro de `.docs/sdd/`), y cierro con esa forma.
+- Hay otras dos cosas que dejo sin tocar: el spec numera sus decisiones 1 y 3 (falta la 2), y `sdd-kit.json` declara `merge.push: false`, así que no habrá push.
+
+**No terminado.** Falta tu decisión sobre fusionar con el rojo heredado, y después el cierre completo: walkthrough, capacidad, changelog, roadmap, commit de cierre, sync y merge. No borres todavía el worktree `<run>/repo`.
+

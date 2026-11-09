@@ -5,7 +5,9 @@ description: Use when sdd-archive closes a feature or sdd-end-release cuts a ver
 
 # sdd-retro
 
-Improve the project's environment from evidence, at the cheapest place that fixes it. Write everything the user reads in their language; the literals of the project's documents stay as written here, in Spanish. The argument says the pass: `cierre` or `release <version>`.
+Improve the project's environment from evidence, at the cheapest place that fixes it. Write everything the user reads in their language.
+The literals of the project's documents stay as written here, in Spanish.
+The argument says the pass: `cierre` or `release <version>`.
 
 ## Pass `cierre`
 

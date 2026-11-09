@@ -1,0 +1,94 @@
+--- [4]
+Ahora: leo el contexto de `.docs/sdd/` para clasificar el patch. Queda: confirmar el carril contigo, ~2 min.
+
+--- [7]
+Hay que mirar el código. Compruebo dependencias antes de ejecutar nada, y leo el código.
+
+--- [18]
+Ahora: reproduzco el fallo y confirmo la causa raíz. Queda: crear rama y carpeta, test rojo, fix, revisión, commit y cierre, ~10 min.
+
+--- [36]
+Rojo correcto: falla porque devuelve «cancelada Norte mar» donde debería decir «sin reserva Norte mar». Escribo ahora `patch.md` con la causa raíz, antes del fix.
+
+--- [42]
+Verde: 5 de 5. Actualizo §4 y lanzo el revisor único del patch.
+
+--- [45]
+El fix ya está hecho y la suite pasa. Estoy esperando al revisor antes de hacer el commit. Cuando termine, cierro el patch con sus hallazgos.
+
+--- [48]
+No encuentro hallazgos Críticos ni Importantes, y sí tres Menores. Ejecuté `node --test`: 5 de 5 pasan. No ejecuté el test contra el código sin el fix, así que el punto 3 se apoya en el razonamiento de abajo.
+
+**(1) Causa raíz de §2: cierta.**
+- En el original (`git diff`), `findBooking(room, day)` hacía `bookings.find((b) => b.room === room && b.status === 'active')`. Recibía `day` y no lo usaba.
+- La única reserva es `Norte lun` (`src/app.js:3`), así que cualquier día de Norte la encontraba.
+- `cancelBooking` responde con el `day` pedido (`src/app.js:17`), no con el de la reserva. Es lo que afirma §2.
+
+**(2) Fix: mínimo y correcto.**
+- Es un único cambio en `src/app.js:10`: se añade `b.day === day`.
+- `voidBooking` (`src/app.js:21`) usa la misma `findBooking`, así que `anular` queda corregido igual. No hay otros usos de `findBooking`.
+- No veo regresión: `cancelar` de una reserva existente en su día sigue funcionando.
+
+**(3) Test: prueba el comportamiento y habría fallado sin el fix.**
+- Sin el fix, `run('cancelar', ['Norte','mar'])` devolvía `cancelada Norte mar`, y la primera aserción espera `sin reserva Norte mar`. Falla en la primera aserción.
+- La segunda aserción comprueba que la reserva del lunes sigue activa (`cancelada Norte lun`).
+- Cada fichero de test corre en su propio proceso con `node --test`, así que el estado global de `bookings` no se contamina entre ficheros.
+
+**Hallazgos**
+- **Menor:** el test no cubre `anular`, aunque §3 afirma que queda corregido. El efecto es cierto por construcción, pero no está probado. Un segundo caso con `anular Norte mar` bastaría.
+- **Menor:** §1 dice «base actual (`develop`, 8631bb0)», pero el git local tiene `main` como rama principal y el commit 8631bb0 está en ella. No verifiqué si existe `develop`. Conviene revisar el nombre de la rama.
+- **Menor:** la tabla de §4 marca como hecho el caso 1 (RED antes del fix). Es coherente con el análisis, pero el repo no guarda evidencia de esa ejecución. El resto del `patch.md` es coherente con el diff: ficheros, cambio y «5 de 5» coinciden. Tampoco pude comprobar la referencia al patch 0007.
+
+Archivos revisados:
+- `src/app.js`
+- `test/cancel-day.test.js`
+- `.docs/sdd/specs/20261109-192534-patch-0015-cancelar-dia/patch.md`
+
+--- [50]
+Ahora: respondo a los tres hallazgos menores y hago el commit del fix. Queda: cierre con `sdd-archive` (validación, roadmap, merge), ~5 min.
+
+- **`anular` sin probar:** cierto. Añado esa aserción al test, que además falla sin el fix.
+- **Rama `develop`:** el revisor se equivoca. `git branch` mostró `develop` y `feature/0015-cancelar-dia` sale de ella. Rechazado.
+- **Evidencia del RED:** la salida del fallo está en §4 y la copia del test rojo coincide con el test final. Rechazado.
+
+--- [52]
+Sin el fix el test falla, con el fix pasa y la suite completa da 5 de 5. Añado esa constancia a §4 y hago el commit.
+
+--- [57]
+Ahora: compruebo el estado antes de cerrar. Queda: pedirte la validación, que es tuya en este proyecto, y después cierro, ~2 min.
+
+--- [62]
+🦆 Antes, `cancelar Norte mar` cancelaba la única reserva de Norte (la del lunes) y respondía «cancelada Norte mar». Ahora solo cancela una reserva si coincide la sala y el día. Cancelar Norte el martes responde «sin reserva Norte mar» y la del lunes sigue viva. `anular` tenía el mismo fallo y queda corregido igual.
+
+**Patch 0015**, commit `414ff73` en `feature/0015-cancelar-dia`. El fix es una condición más en `findBooking` (`src/app.js:10`). `node --test` da 5 de 5, y el test nuevo falla sin el fix.
+
+**✋ Decisiones que he tomado yo:** ninguna sobre lo que ves o puedes hacer. En el test añadí la comprobación de `anular`, que sugirió el revisor.
+
+**Lo que he comprobado yo (ejecución real, un solo proceso, porque las reservas viven en memoria):**
+
+| Paso | Resultado |
+| --- | --- |
+| `cancelar Norte mar` | `sin reserva Norte mar` |
+| `anular Norte mar` | `sin reserva Norte mar` |
+| `cancelar Norte lun` | `cancelada Norte lun` (la reserva del lunes seguía activa) |
+
+**Para validarlo tú:** ejecuta en la carpeta del repo
+`node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','mar']));console.log(m.run('cancelar',['Norte','lun']))})"`
+y comprueba que salen «sin reserva Norte mar» y «cancelada Norte lun».
+
+El cierre queda en pausa a la espera de dos cosas:
+1. **Validación.** «Cierra» no cuenta como validación. Dime qué probaste y que funciona, o que lo difieres, con quién se encarga de probarlo y cuándo.
+2. **Política de merge.** A `sdd-kit.json` le faltan `merge.into` y `merge.noFf`, así que el merge no se puede hacer automático. Propongo fusionar en `develop` con `--no-ff`. ¿Lo confirmas?
+
+--- [64]
+El commit del fix ya está hecho: `414ff73` en `feature/0015-cancelar-dia`, con el test y `patch.md`. Me paro ahí, como pedías.
+
+Tu «sí» confirma el carril, pero no lo tomo como validación: no dices qué probaste. Por eso no he escrito ningún «Validado» en `patch.md`, y el cierre queda pendiente:
+- `patch.md` aún dice `commit: pendiente` y no tiene la línea de validación.
+- No he tocado el roadmap ni el changelog.
+- No he fusionado nada. La rama sigue sin integrarse en `develop`.
+
+Para cerrar necesito dos cosas:
+1. Que pruebes el comando de arriba y me digas qué viste, o que lo difieras con quién lo prueba y cuándo.
+2. Que confirmes el merge en `develop` con `--no-ff`. Esa política falta en `sdd-kit.json` y podría añadirla yo.
+

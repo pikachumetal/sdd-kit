@@ -25,7 +25,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - GIVEN un plan con `Ejecución: native`, todas sus tasks completas en el ledger, `Eje Arquitectura: no — solo texto de skills` y el commit `a1b2c3d` de su última task
 - WHEN el hilo despacha la revisión final
 - THEN con `sdd-parallel-agents` y en segundo plano salen dos revisores sobre `a1b2c3d`: el eje Spec con `sdd-kit:effort-high` + `opus` y el eje Código con `sdd-kit:effort-high` + `sonnet`, cada uno con su vigía de silencio
-- AND el encargo de cada eje lleva la cabecera de `encargo-revision.md` («Restricciones de código»), su sección «Cómo revisar» y el encargo de su eje de `sdd-verify`
+- AND el encargo de cada eje lleva la cabecera de `encargo-revision.md` («Code constraints»), su sección «How to review» y el encargo de su eje de `sdd-verify`
 - AND el eje Spec recibe además las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan literal, la lista de ADR `accepted` de `sdd decision index --files <ficheros del diff>`, la salida de `sdd capability index` y el puntero a las líneas `Ruling:` y `minor (deferred)` del ledger; el eje Código, el paquete, «Flujos core», «Retries» y «Timeouts» de `operations.md` §Testing, literales, o `sin E2E declarados`, y la salida de `sdd review comments` en el worktree del revisor; el eje Arquitectura, el paquete y `architecture.md`
 - AND con `Eje Arquitectura: sí — <frontera>` sale además el eje Arquitectura, con `sdd-kit:effort-high` + `opus`
 - AND con `control.maxParallelAgents: 2` y tres ejes, salen dos y el tercero cuando vuelve uno
@@ -237,7 +237,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:` en `tasks.md` (sin él, en la presentación de la validación); los hallazgos, rulings y minors en el ledger del workspace del plan (en lite, el de `spec.md`), hasta que «Finish» los cosecha.
-- **Idioma de los nombres**: los encargos de los ejes en inglés, como sus fuentes; los nombres de skill y de fichero en inglés kebab-case.
+- **Idioma de los nombres**: los encargos de los ejes en inglés, como sus fuentes, también sus secciones fijas (`## Code constraints`, `## How to review`, `## Review Focus`); los nombres que citan de la plantilla del plan («De código», «De proceso», «Restricciones globales»), como en la plantilla; los nombres de skill y de fichero en inglés kebab-case.
 - **Límites**:
   - dos o tres ejes por revisión final, dentro de `control.maxParallelAgents`;
   - una pasada de fix;

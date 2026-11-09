@@ -30,4 +30,6 @@ function sourceText() {
 
 let text = sourceText();
 for (const [literal, value] of fill) text = text.split(literal).join(value);
+const unfilled = ['<copia literal del bloque «De código»', '<literal copy of the «De código» block'].filter((hole) => text.includes(hole));
+if (unfilled.length > 0) throw new Error(`el encargo saldría con el hueco de las restricciones sin rellenar: ${unfilled.join(' · ')}`);
 process.stdout.write(text);

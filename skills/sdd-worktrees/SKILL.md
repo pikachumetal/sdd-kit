@@ -11,7 +11,8 @@ description: Use when sdd-implement sets up the isolated workspace to implement 
 Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
 
 <!-- kit: 0312 -->
-Write everything the user reads in the language of their message. Forked from `using-git-worktrees` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+<!-- kit: incluye user-language -->
+Forked from `using-git-worktrees` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
 
@@ -143,7 +144,9 @@ Run tests to ensure workspace starts clean, with the project's closing gate: `Ga
 **A gate that filters by a base** (`--affected --base <ref>`) runs nothing on a fresh branch and exits 0. Run, without the filter, only its tasks whose inputs —per the tool, `moon task <t>`— include files the spec's Scope or the plan names; the rest go in the report, the `Gate:` line of `sdd-verify`, as `<tarea>: saltada (fuera del Scope de la spec)`. Never report ready from a filter that ran no task; if no task reads the Scope's files (a change only to `.docs/`), name them all skipped, say so, and report ready (`tests/affected-gate-red.md`, w2).
 
 <!-- kit: 0312 -->
-**If tests fail:** run it again in a worktree detached at the integration branch, removed likewise. If it fails there too, the red isn't this branch's: search its first error lines in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap) and quote the row, or open one in «Por triar» (in 2.x, «Deuda técnica») with the evidence. Then report the failures with that verdict and ask whether to proceed or investigate.
+**If tests fail:** run it again in a worktree detached at the integration branch, removed likewise. If it fails there too, the red isn't this branch's.
+<!-- kit: incluye base-red-debt -->
+Then report the failures with that verdict and ask whether to proceed or investigate.
 
 **If tests pass:** Report ready.
 

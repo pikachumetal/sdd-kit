@@ -8,7 +8,9 @@ If the suite already ran for this close (the validation names its sha; the closi
 
 ## What runs
 
-A branch that only touches `.docs/` or `*.md` runs nothing. Otherwise, before the gate, run whole each suite of «Suites» (`operations.md` §Testing, or `tech-stack.md`) with level `unitario`, `pendiente` or none; a suite whose command is the gate's, or one of the tasks the gate runs, runs inside the gate. If the branch touches a file of «Sin filtro» —without the field, the list of «Running a gate» of `sdd-verify`: manifests, lockfiles, `.moon/**` and build and runner configs (`package.json`, `pnpm-lock.yaml`, `*.csproj`, `tsconfig*.json`, `vitest.config.*`…)—, run the gate without `--affected`, every task of the line with `(sin filtro: cambia el build)`, also the ones the filter would have run. After a red, «Running a gate» of `sdd-verify`.
+«Suites» is in `operations.md` §Testing, or `tech-stack.md`.
+A branch that only touches `.docs/` or `*.md` runs nothing. Otherwise each suite of «Suites» with level `unitario` or `pendiente` (a suite without a level counts as `pendiente`) runs whole, with its command, before the gate, unless its command is the gate's or one of the tasks the gate runs.
+If the branch touches a file of «Sin filtro» —without the field, the list of «Running a gate» of `sdd-verify`: manifests, lockfiles, `.moon/**` and build and runner configs (`package.json`, `pnpm-lock.yaml`, `*.csproj`, `tsconfig*.json`, `vitest.config.*`…)—, run the gate without `--affected`, every task of the line with `(sin filtro: cambia el build)`, also the ones the filter would have run. After a red, «Running a gate» of `sdd-verify`.
 
 Each run is recorded with the `Gate:` line of `sdd-verify`, one entry per task, `<tarea>: saltada (<porqué>)` too: it names every command that ran before the arrow, the unit suites first: `` Gate: `<suite unitaria>` · `<gate>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build) `` (`tests/affected-gate-red.md`, g5).
 

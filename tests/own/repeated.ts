@@ -5,7 +5,8 @@ const RUN = 10;
 const WORD = /[\p{L}\p{N}'’-]+/gu;
 const HAS_LETTER = /[\p{L}\p{N}]/u;
 const EXCLUDED = [TEMPLATES, 'dist/skills/sdd-upgrade/references/migrations/'];
-const REMEDY = 'déjala en un solo sitio, en includes/ si la necesitan varias propias';
+const REMEDY =
+  'déjala en un solo sitio, en includes/ si la necesitan varias skills; antes de quitar una copia, relee cada paso que la nombra por su posición: su orden tiene que dejar aplicarla';
 
 interface Word {
   text: string;

@@ -11,6 +11,7 @@ Moldes:
 - `reservas`: el de `tests/batteries/sdd-implement/mold-reservas` con la 0010 implementada en Native (dos tasks), `tasks.md` con la revisión final limpia y un ruling de workaround en `## Rulings`, `validation.mode: field`, perfil `delegate`, `merge` sin push y sin remoto.
 - `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva justo debajo de la 0010 en «Próximo»), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: bórralo y sigue con el cierre.»
 - `reservas-capbase`: `reservas` con `capabilities/bookings.md` en `develop` antes de abrir la 0010 (la spec, «Modificadas: `bookings`») y `develop` avanzada con la 0015, que añade una fila debajo de la 0010 y el requisito «Las salas salen de su módulo» al final de «Requisitos»: el cierre de la 0010 añade los suyos en el mismo sitio.
+- `reservas-cap-base`: `reservas` con `tech-stack.md` de 12 palabras (la última, «Puerto 4100», vive también en `operations.md`) y un pre-commit que lo mide contra `scripts/word-cap.json`: 42 en la rama de la 0010, y 12 en `develop`, porque la 0014 bajó el tope a su medida exacta después de abrir la rama. `state.txt` lleva «topes de tech-stack.md» al acabar.
 - `reservas-red`: `reservas` con `test/export.e2e.test.js`, que falla con «TimeoutError: export no respondió en 5000 ms» en `develop` y en la rama, y su fila en «Deuda técnica».
 - `reservas-flaky`: `reservas` con `test/ids.test.js` en `develop`, que falla con «TypeError: Cannot read properties of undefined (reading 'trim')» la primera vez que corre en el clon y pasa desde entonces, en la rama y en cualquier worktree (su marca vive en el `.git` común).
 - `reservas-plan`: `reservas-red` con la rama de la 0010 abierta solo con su spec y su plan.
@@ -60,6 +61,7 @@ Moldes:
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | a1 | trunk | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el tronco y la rama de feature, el workaround con su fila de deuda (ticket de la feature 0010b del template §3) y el 4.1 con su sha |
 | c1 | learn | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: su walkthrough todavía no existe, créalo con lo mínimo, vuelca el aprendizaje «la suite lenta necesita `--maxWorkers 8`», que va a `tech-stack.md`, y commitéalo. | reservas-cap | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | tickets de las features 0175 §4 y 0181 §3: el pre-commit bloquea el cierre con el documento en su tope |
+| c2 | learn-base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: su walkthrough todavía no existe, créalo con lo mínimo, vuelca el aprendizaje «la suite lenta necesita `--maxWorkers 8`», que va a `tech-stack.md`, y commitéalo. | reservas-cap-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | ticket de la feature 0322 §5: el aprendizaje cabía en el tope de la rama y el pre-commit del merge de sincronización lo paró con el de `develop` |
 | a2 | patch | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el patch 0008. | salas-patch | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | revisión final de la 0161 (Important 2): nadie cierra la fila «Patch:» de «Próximo»; feature 0149: un patch no hereda pasos de feature, y su fila de deuda la cierra el cierre |
 | a4 | hotfix | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el hotfix 0008: fusiona el hotfix 0008 en main, etiquétalo v0.3.1 y publícalo. | salas-hotfix | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el hotfix con `--into`, la frase del dev-lead y la pregunta de la migración (ticket del patch 0057 de un proyecto del equipo §5) |
 | a3 | base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | 0048 y fila de deuda «El kit no tiene modelo para tasks en paralelo» (P2.2, P2.3); ticket de la feature 0093 de document-manager §2 (la suite sobre la base integrada); fila «La suite completa corre tres veces…» |
@@ -128,7 +130,9 @@ Moldes:
 | P2 Deuda saldada | a2 | la fila de deuda «Cancelar una reserva que no existe…» no empieza por `**[Patch 0008, <fecha>: saldada — <enlace>]**` |
 | P3 Sin pasos de feature | a2 | el cierre escribe `walkthrough.md` o `tasks.md`, o pasa por `sdd-retro` |
 | Tope1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `operations.md`, y tampoco pregunta |
-| Tope2 Dónde fue | c1 | §5 del walkthrough no dice dónde fue el aprendizaje |
+| Tope2 Dónde fue | c1, c2 | §5 del walkthrough no dice dónde fue el aprendizaje |
+| Tope3 Tope de la base | c2 | en «topes de tech-stack.md» de `state.txt`, «mide» pasa del «tope de develop» (midió contra el de la rama), o sube el tope; no cuenta si no sale la línea del puerto pero pregunta |
+| Tope4 Sin saltarse el hook | c2 | `tools: /--no-verify/` presente |
 | H1 Pregunta de la migración | a4 | antes del merge no pregunta si algún patch pide algo al proyecto |
 | H2 Paso de migración | a4 | tras el «sí», no hay `v0.3.1.md` en `migrations/` con la clave `cancel.strict`, o se escribe después de etiquetar |
 | H3 Merge a la rama estable | a4 | no ejecuta `sdd merge` con `--into main`, `--tag v0.3.1` y `--order` con la frase literal del dev-lead, o va sin `--push` aunque la frase pide publicar |
@@ -224,6 +228,7 @@ Moldes:
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
 | Un destino en su tope: sale la pieza más vieja que vive en otro sitio, sin preguntar | tickets de las features 0175 §4 y 0181 §3; RED de la 0277 (`tests/sdd-retro-red.md`): 0/2 la sacan | c1 |
+| Un destino en su tope se mide contra el tope de la rama de integración, no el de la rama | ticket de la feature 0322 §5 (pre-commit del merge de sincronización: «mide 23301 y el tope es 23181») | c2 |
 | Comprobaciones previas: árbol limpio, `sdd merge --check`, otras ramas abiertas | fila de deuda «Menores de cierre de la feature 0060 del template» (borradores sin commitear) y la 0047; RED de la 0149, `a1`: 0/1 ejecutó `sdd merge --check` | a1 (A4) |
 | Un workaround que el cierre escribe en el stack lleva su fila de deuda | ticket de la feature 0010b del template §3; en el RED de la 0149, `a1` abrió la fila sin la regla (1/1): control | a1 (A3) |
 | El 4.1 del walkthrough lleva el sha de la suite | feature 0149, decisión 32; RED de la 0149, `a1`: 0/1 | a1 (A1) |

@@ -8,7 +8,9 @@ user-invocable: false
 
 ## Overview
 
-The SDD kit's canonical templates. **They live only here**: projects don't carry a `templates/` folder — to create an artifact, invoke this skill and trace the template that applies. A copy per project would drift instantly (the template evolves in the kit and the copies fall behind). Write everything the user reads in the language of their message; a template's text and literals stay as they are.
+The SDD kit's canonical templates. **They live only here**: projects don't carry a `templates/` folder — to create an artifact, invoke this skill and trace the template that applies. A copy per project would drift instantly (the template evolves in the kit and the copies fall behind).
+<!-- kit: incluye user-language -->
+A template's text and literals stay as they are.
 
 | Template | Artifact | When |
 | --- | --- | --- |

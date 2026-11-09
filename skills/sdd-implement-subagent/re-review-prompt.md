@@ -20,13 +20,13 @@ Subagent (general-purpose):
 <!-- kit: fin -->
   prompt: |
 <!-- kit: 4597d47e -->
-    ## Restricciones de código
+    ## Code constraints
 
-    <copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+    <literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>
 
-    Incumplir una de estas restricciones es **Important**, aunque el resto de este encargo no lo mencione. Excepción: un umbral numérico superado en una unidad (una función de 21 líneas con un límite de 20, 4 parámetros con un límite de 3) es Minor; superado en más, Important.
+    Breaking one of these constraints is **Important**, even if the rest of this brief doesn't mention it. A numeric threshold exceeded by one unit (a 21-line function with a limit of 20, 4 parameters with a limit of 3) is Minor; exceeded by more, Important.
 
-    Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
+    RED tests: modifying them is changing an assertion, a test name or a datum. The format the project's linter or formatter demands (a blank line, the indentation) is not a modification.
 
 <!-- kit: fin -->
 <!-- kit: 1d89f543 · sustituye: «round.» -->

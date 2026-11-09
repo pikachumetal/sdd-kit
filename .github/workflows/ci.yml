@@ -31,4 +31,11 @@ jobs:
       - run: |
           git config --global user.name sdd-kit-ci
           git config --global user.email sdd-kit-ci@users.noreply.github.com
-      - run: node cli/bin/sdd.js lock run -- moon run kit:test-headless cli:typecheck cli:test-min
+      # kit:copies compara cada copia con su original en el tag de upstream.json: un clon entero, con tags, por fuente.
+      - run: |
+          mkdir -p "$RUNNER_TEMP/upstream"
+          for repo in $(node -e "for (const source of Object.values(require('./upstream.json').sources)) console.log(source.repo)"); do
+            git clone -q "https://github.com/$repo.git" "$RUNNER_TEMP/upstream/${repo//\//-}"
+          done
+          echo "SDD_UPSTREAM_DIR=$RUNNER_TEMP/upstream" >> "$GITHUB_ENV"
+      - run: node cli/bin/sdd.js lock run -- moon run kit:test-headless cli:typecheck cli:test-min kit:copies kit:own kit:skill-size
