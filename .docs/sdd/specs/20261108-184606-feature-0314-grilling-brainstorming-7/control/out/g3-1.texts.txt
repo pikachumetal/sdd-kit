@@ -1,0 +1,54 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y presentarte lo que entendí, hasta tu primera respuesta.
+
+--- [15]
+Ahora: clasifico el cambio y empiezo la entrevista. Queda: unas pocas preguntas de diseño, la spec y tu aprobación (~10 min).
+
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (`sdd-kit.json` no fija ninguno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido (corrígeme):**
+- Hoy `src/app.js` solo conoce `libres <franja>`, `reservar … --cada-semana`, `cancelar` y las salas `Norte` y `Sur`. Todo vive en memoria.
+- Quieres que, al intentar reservar una sala que ya está ocupada, la petición no se pierda. Debe quedar en una lista de espera para esa sala y franja.
+- Es una feature nueva (comportamiento visible y varias decisiones abiertas), no un patch. Calculo 2–3 tasks, así que no propongo dividirla.
+- Contexto leído: constitución (castellano, `node --test` en verde, flujo SDD), misión (herramienta CLI de uso personal) y tech stack (Node 22 sin dependencias). No hay capabilities ni dependencias que instalar. La rama `feature/<id>` y el id los reservo al aprobar el enfoque, antes de crear la carpeta.
+
+**Primera pregunta, abierta:** ¿qué te ha pasado, o qué quieres que pase, para pedir esto? Cuéntame un caso concreto. Por ejemplo, la última vez que querías una sala y estaba ocupada, ¿qué hiciste y qué te habría gustado que ocurriera después?
+
+--- [17]
+Ahora: reservo la rama y el id. Queda: escribir la spec con mis decisiones marcadas en ✋ y pasártela para aprobar (~5 min).
+
+--- [28]
+Sigo con la spec de la lista de espera. El `cd` a las referencias del kit me dejó fuera del repo, así que vuelvo a él antes de escribir nada.
+
+--- [46]
+La spec está escrita y revisada. La dejo en `.docs/sdd/specs/20261108-214900-feature-0008-lista-espera/spec.md`, rama `feature/0008-lista-espera`, y aún no hay plan ni código.
+
+Antes de pedirte la aprobación, tengo que avisarte de un problema de fondo.
+
+## 🦆 Qué cambia para ti
+
+Hoy, si la sala que quieres está ocupada, la petición se pierde. Con la feature escribes `espera Norte 10:00-12:00` y la herramienta responde `Norte ocupada; en espera (1.º)`. Repetirlo suma otro puesto: `(2.º)`. Si la sala está libre te dice `Norte está libre: reserva directamente`, y si no existe, `sala desconocida: Este`. Solo apunta y cuenta. No te avisa ni te reserva sola cuando la sala se libera.
+
+## ✋ Decisiones que he tomado yo
+
+0. **⚠️ Necesito que decidas si la lista persiste entre ejecuciones.** Como la escribí, la lista vive en memoria y cada orden de la terminal es un proceso nuevo. En uso real el puesto saldría siempre `1.º`, así que la feature no serviría de nada. El revisor lo marcó como Crítico y tiene razón. Yo la guardaría en un fichero (`espera.json` en la carpeta donde ejecutas). Eso añade un fichero y un efecto fuera del proceso, y por eso no lo he metido en el alcance sin preguntarte.
+1. **El motivo de la feature sigue pendiente.** No me contaste el caso que la motiva y no lo he inventado. La misión dice que la usas solo tú, así que una cola de varias personas tiene poco sentido. Si lo que de verdad quieres es que te avise al liberarse la sala, el alcance cambia.
+2. Enfoque: un comando nuevo `espera <sala> <franja>` con una lista por sala y franja. Descarto colgarlo de `reservar`, porque hoy solo existe como `--cada-semana`.
+3. Textos literales de las respuestas: `<sala> ocupada; en espera (<n>.º)`, `<sala> está libre: reserva directamente` y `sala desconocida: <sala>`.
+4. No hay identidad de persona, así que cada `espera` es un apunte nuevo. El día se ignora, igual que en `libres`.
+5. Nombre de la capacidad: `waitlist`.
+
+Tampoco definí la franja ausente (`espera Norte`) ni la sala en minúsculas. Quedan en «No entra».
+
+**Review:** pasó un revisor en sonnet, con 10 hallazgos, todos integrados. El delta se probó sobre una copia de `.docs/sdd`, sin rechazos. No lancé la segunda ronda de review: la decisión central no cambió, porque la persistencia queda para tu respuesta.
+
+Validación: la haces tú (`dev-lead`), porque es comportamiento que usas desde la terminal.
+
+**¿Aprobamos la spec?**
+1. **Apruebo** tal cual: lista en memoria, sin persistencia, aceptando que solo sirve dentro de un mismo proceso.
+2. **Cambios**: dime qué ajustar. **Recomiendo esta opción**, indicando que persista en fichero y, si puedes, el caso real que te lleva a pedir la lista.
+
+Si no la apruebas, la spec se queda en espera.
+

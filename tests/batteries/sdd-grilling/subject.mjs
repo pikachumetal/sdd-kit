@@ -50,7 +50,8 @@ const mold = moldFrom(cell, s, molds);
 mold();
 s.initRepo();
 
-const turn2 = { g3: 'sí, adelante: feature full con delegate', g4: 'mantengo lo que dije', g5: 'decide tú lo que puedas', g6: 'sí, adelante: feature full con delegate' };
+const goAhead = 'sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato';
+const turn2 = { g3: goAhead, g4: 'mantengo lo que dije', g5: 'decide tú lo que puedas', g6: goAhead };
 if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];
 if (s.SC === 'g9') s.env.EXTRA_ALLOWED = 'WebSearch WebFetch';
 

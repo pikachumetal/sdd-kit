@@ -145,7 +145,7 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (dos requisitos d
 **Sustituciones** (cada una entra solo con su RED; donde entra, la frase vieja sale entera y la nueva ocupa su sitio):
 
 - (1) «Grill relentlessly until nothing is left silently assumed: every assumption becomes a question or a «decided by me» entry.» → «Leave nothing silently assumed: ask only what changes what gets built, its scope, level or cost, and nothing answers; the rest you fill in is a «decided by me» proposal with its reason, never what only the user knows.»
-- (2) «Ask next the decision that reshapes most others; one that depends on a decision still open waits.» → «If neither they nor the project say why they want it, ask that first, open, even if you can guess. Then the decision that reshapes most others; one that depends on a decision still open waits.»
+- (2) «Ask next the decision that reshapes most others; one that depends on a decision still open waits.» → «If neither they nor the project say why they want it, ask that first, even if you can guess: open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?». Then the decision that reshapes most others; one that depends on a decision still open waits.» (enmienda 2026-11-09: el contraejemplo sustituye a «open,» tras dos rondas con W1 en 1 de 2)
 - (3) «Facts are your job; decisions are the user's.» → «Facts and process steps (writing it up, where it goes, looking further) are yours: do them and say so; decisions, the user's.»
 - (4) «Skip what the request says or delegates, or the project shows.» → «Skip what the request says or delegates, what the project shows, and what was already decided: don't reopen it.»
 
@@ -197,6 +197,7 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (dos requisitos d
 - THEN el turno termina con una sola decisión, la que más cambia el resto (la que reabre otras ramas va primero)
 - AND si el usuario pide en la sesión «pregúntamelo todo de golpe», en esa sesión pregunta por rondas
 - AND en otra entrevista, una decisión que depende de otra todavía abierta espera a que esa se cierre (enmienda 2026-10-03)
+- AND no termina con nada supuesto en silencio: cada suposición del agente es una pregunta o una entrada de «decidido por mí» (enmienda 2026-10-03)
 
 #### ADDED — El porqué va primero
 
@@ -232,13 +233,14 @@ Las filas usan esas cifras, todas al mismo precio de `plan`. Con el de `g3`, el 
 | Una tanda de REFACTOR | `p1`-`p3`, n = 2: 6 | 1,35 |
 | Controles | batería entera con N = 1: 19 (4,28 $), más hasta 4 filas rojas repetidas con el kit de `develop`, N = 1, a 0,23 $: 4 (0,92 $) | 5,20 |
 | Medición tras la revisión final | `p1`-`p3`, N = 1: 3 | 0,68 |
-| Suma | 44 | 9,93 |
+| Suma | 47 | 10,60 |
 
 El rango va de 9,93 $ (con el precio de `plan`) a ~13 $ (con el de `g3` para `p1`-`p3` y para las filas repetidas). El techo para parar (Art. I) es 13 $: si la prueba lo pasa, se para y decides tú. Si el RED sale limpio en las cuatro, la feature cuesta solo el RED (1,35 $ a ~2,25 $): sin GREEN, REFACTOR ni controles, porque el texto no cambia.
 
 ## Enmiendas
 
 - 2026-11-08, aprobada por el dev-lead («1»: con la re-medición de la (4)) — RED de la Task 1 (`tests/sdd-grilling-0314-red.md`): entra solo la (2), con W1 en 2 de 2. La (1) (W2 0 de 4) y la (3) (W3 0 de 6, y 0 de 22 salidas guardadas) salen limpias: sus frases se quedan, salen del delta «Solo se pregunta lo que cambia lo que se construye», «Los pasos de proceso no se preguntan» y la línea `REMOVED` de «Una decisión por turno», cuyo `MODIFIED` se queda solo con el GIVEN. `p2` y `p3` quedan como regresión. El tope de palabras no cambia. La decisión 11 se corrige: el molde sí tiene un hecho que choca con «desde hoy» (las reservas solo guardan el día de la semana), y los dos sujetos de `p3` lo rebaten con razón; la (4) se re-mide con la fila 2 diciendo «por la salida estándar» en vez de «solo las reservas desde hoy», porque «¿adónde va el CSV?» es lo primero que preguntaron los 4 sujetos de `p1` y `p2` (2 sujetos, 0,38 $). Re-medida: W4 0 de 2, así que la (4) sale como la (1) y la (3), y su requisito sale del delta.
+- 2026-11-09, aprobada por el dev-lead («1») — la previsión sube de 44 a 47 sujetos (~10,60 $, techo de 13 $ sin cambio) para una segunda ronda de REFACTOR de la (2): en GREEN y en la primera ronda, W1 dio 1 de 2 porque `p1-2` preguntó el porqué con un menú de ejemplos («¿abrirlo en una hoja de cálculo, pasárselo a alguien, guardarlo como copia?»). La frase lleva ahora un contraejemplo literal (Approach). `g3` y `g6` llevan en su segundo turno el porqué, porque el primero lo pregunta ahora. Si W1 sigue en 1 de 2, el menú va al roadmap como fallo de disciplina de «Discovery».
 
 ## Aprobaciones
 

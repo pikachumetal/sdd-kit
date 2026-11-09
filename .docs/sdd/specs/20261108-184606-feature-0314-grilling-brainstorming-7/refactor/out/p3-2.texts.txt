@@ -1,0 +1,43 @@
+--- [4]
+Arranco leyendo el contexto SDD del proyecto.
+
+--- [12]
+Ahora: reservar el id y crear la rama de la feature. Queda: la nota de comprensión y las decisiones de diseño, ~2 min.
+
+--- [18]
+Ahora: entender qué pides y cerrar las decisiones que solo tú sabes. Queda: unas pocas preguntas, luego spec, revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no lo fija)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Id reservado: **0008**, rama `feature/0008-exportar-csv`. Sin remoto, así que el id vale como contador local. Prevé una sola task, así que no propongo partirla. Aviso: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja, así que conviene actualizar luego con `claude plugin update sdd-kit@sdd-kit --scope project`.
+
+**Lo que he entendido (corrígeme):**
+- El responsable de salas cuadra las reservas cada lunes en su hoja de cálculo. Hoy no tiene forma de sacarlas, y quiere un CSV de **una sala**.
+- Separador `;` porque su Excel está en castellano. Sale por la **salida estándar** y él lo redirige a su fichero (`... > norte.csv`).
+- Hoy una reserva solo tiene sala, día y franja (`Norte · lun · 10:00-12:00`). El CSV llevará esos datos y nada más.
+- Fuera de alcance: exportar todas las salas de golpe, otros formatos y escribir ficheros desde la app.
+
+Por ahora estas decisiones van a mi lista «✋ Decisiones que he tomado yo»:
+- El comando es `exportar <sala>`.
+- La primera línea es la cabecera `sala;dia;franja`.
+- Sin tildes en la cabecera, para que no se rompa la codificación en su Excel.
+
+❓ **¿Qué pasa si la sala que escribe no existe o no tiene reservas?**
+Hoy `libres` no valida nada y `reservar` tampoco. El caso importa porque un lunes, con una errata como `Nrte`, un CSV vacío parece «sin reservas» y puede hacerle cuadrar mal.
+1️⃣ **Sala inexistente: error claro; sala sin reservas: solo la cabecera.**
+   - `exportar Nrte` → `sala desconocida: Nrte (salas: Norte, Sur)`, sin CSV.
+   - `exportar Sur` → `sala;dia;franja`.
+   - Cuesta una comprobación más y un mensaje nuevo.
+2️⃣ **Siempre CSV, aunque la sala no exista.**
+   - `exportar Nrte` → `sala;dia;franja`.
+   - Es lo más simple, pero la errata pasa por «sin reservas».
+3️⃣ **Sala sin reservas: mensaje en vez de CSV.**
+   - `exportar Sur` → `Sur sin reservas`.
+   - Esa salida no es CSV y rompe su fichero redirigido.
+
+➡️ **Recomiendo 1️⃣**, porque quien redirige a un fichero no ve la pantalla y una errata no puede parecer «sin reservas». A cambio, añade un caso de error que mantener.
+
