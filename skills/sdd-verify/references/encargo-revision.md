@@ -40,7 +40,7 @@ The thread prepares the package with this recipe, not with `sdd review package`,
 cd "$(git rev-parse --show-toplevel)"
 MERGE_BASE=$(git merge-base HEAD <integración> $(git rev-parse -q --verify origin/<integración>))
 EXCLUDE=(':(exclude,glob).docs/sdd/specs/**/red/**' ':(exclude,glob).docs/sdd/specs/**/green/**' ':(exclude,glob).docs/sdd/specs/<carpeta de la feature>/**')
-WORKSPACE="$(sdd workspace "<plan>")"
+WORKSPACE="$(sdd workspace -C "<worktree de la feature>" "<plan>")"
 OUT="$WORKSPACE/review-final-$(git rev-parse --short HEAD).diff"
 {
   echo "# Review package: ${MERGE_BASE}..HEAD"; echo
@@ -51,7 +51,7 @@ OUT="$WORKSPACE/review-final-$(git rev-parse --short HEAD).diff"
 } > "$OUT" && echo "$OUT"
 ```
 
-The merge-base is computed at review time, also if the branch merged the base midway: the start's base drags in what the merge brought. With a remote, `git fetch` first: if the branch merged `origin/<integración>` and the local one is behind, the local base brings back other features' work; without a remote, `rev-parse` prints nothing and the local one stays. If the two have diverged, git picks a single base: sync them first. Don't use `git diff <integración> HEAD`: if the integration branch moved after the merge, it brings its new commits in reverse. In lite mode, without a plan, `<plan>` is `spec.md`. `<carpeta de la feature>` is the name of the spec's folder in `.docs/sdd/specs/`: the spec and the plan reach the Spec axis by their path, in its brief. Deleted files go by name only. With them, the reviewer's first `Read` failed on size (its field ticket, §3). If the project's tech-stack declares other evidence folders, add them to `EXCLUDE` in the same form. Without the recipe, 2 of 2 subjects put the spec's 400 lines of `red/out/` into the package, and one wrote it inside the spec's folder (`tests/final-review-package-red.md`).
+The merge-base is computed at review time, also if the branch merged the base midway: the start's base drags in what the merge brought. With a remote, `git fetch` first: if the branch merged `origin/<integración>` and the local one is behind, the local base brings back other features' work; without a remote, `rev-parse` prints nothing and the local one stays. If the two have diverged, git picks a single base: sync them first. Don't use `git diff <integración> HEAD`: if the integration branch moved after the merge, it brings its new commits in reverse. In lite mode, `<plan>` is `spec.md`. `<carpeta de la feature>` names the spec's folder in `.docs/sdd/specs/`: the spec and the plan reach the Spec axis by their path, in its brief. Deleted files go by name only. With them, the reviewer's first `Read` failed on size (its field ticket, §3). If the project's tech-stack declares other evidence folders, add them to `EXCLUDE` in the same form. Without the recipe, 2 of 2 subjects put the spec's 400 lines of `red/out/` into the package, and one wrote it inside the spec's folder (`tests/final-review-package-red.md`).
 
 After the header and before the axis brief:
 
