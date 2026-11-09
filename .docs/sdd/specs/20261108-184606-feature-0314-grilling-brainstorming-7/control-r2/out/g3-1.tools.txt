@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch --show-current
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314g3/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+develop
+<<< Sin capacidades
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md tech-stack.md roadmap.md; cd ..; cd ..; git ls-files | grep -v '^.docs' | head -40; ls node_modules 2>&1 | head -2
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: cat src/app.js package.json; head -40 test/app.test.js; cat README.md; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314g3/skills/sdd-propose/references"; head -60 control-profiles.md; grep -n "Aviso\|ignora" control-profiles.md | head
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+=== RESULTADO (10 turnos, 0.1712282 $)
+Ahora: he leído el contexto y el código que toca el cambio, y lo clasifico como feature. Queda: tres o cuatro preguntas de diseño, la spec para tu aprobación y el plan, con una parada tuya en la spec, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres apuntarte a una lista de espera cuando la sala que pides está ocupada en esa franja.
+
+**Lo que he visto en el código:**
+- `src/app.js` guarda las reservas en un array en memoria con una reserva fija de ejemplo, y no escribe nada en disco.
+- `reservar` solo conoce `--cada-semana` y no comprueba si la sala está ocupada. Hoy no existe el caso «ocupada» como tal.
+- Cada comando es una ejecución aparte, así que una lista en memoria se perdería al terminar. La spec tendrá que decidir dónde vive la lista.
+- Calculo unas 3 tasks, sin migración y en una sola superficie, así que no propongo dividirla.
+- El roadmap ya tiene «Avisos por correo antes de la reserva» como ítem 1. Esa feature no es esta, pero conviene no solaparla.
+
+❓ **¿Qué pasa cuando la sala se libera?**
+Esto condiciona casi todo lo demás: el modelo de datos, si hace falta un comando nuevo y qué toca de `cancelar`.
+
+1️⃣ **Solo queda apuntado, y lo consultas tú.** La lista guarda el orden. Hay un comando para verla, y `cancelar` te dice quién es el siguiente.
+   `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   Tras `cancelar lun 10:00`: `cancelada lun 10:00; siguiente en espera: Norte (1.º)`
+   Coste: no reserva nada solo, pero es lo más pequeño y no pisa los avisos por correo.
+
+2️⃣ **Pasa a reserva automáticamente.** Al cancelar, el primero de la lista recibe la sala sin que haga nada.
+   `cancelada lun 10:00; Norte pasa a tu reserva (1.º en espera)`
+   Coste: puedes acabar con reservas que ya no quieres, y hay que decidir cómo se renuncia a una.
+
+3️⃣ **Te avisa y tú confirmas.** Al cancelar, la sala queda retenida para el primero de la lista hasta que la confirme.
+   Coste: necesita un estado intermedio «retenida» y una caducidad. Para que te enteres sin consultar hace falta el canal de avisos, que aún no existe.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta es de un solo usuario y no tiene canal de avisos todavía, así que 2️⃣ y 3️⃣ no aportan lo que prometen. A cambio, tienes que mirar la lista a mano. Si luego llega la feature de correos, puede enganchar el aviso a este mismo punto.
+
+=== RESULTADO (1 turnos, 0.2015274 $)
+Anoto el carril (feature, modo full) y el perfil (delegate). Antes de seguir tengo que corregir mi recomendación anterior, porque tu motivo la contradice.
+
+Dices que hoy tienes que volver a mirar `libres` cada rato. Con la opción 1️⃣ que te recomendé, la lista solo se queda apuntada. Seguirías mirando a mano, solo que mirarías la lista en vez de `libres`. Eso no resuelve lo que te molesta. Recomendé 1️⃣ por ser lo más pequeño, y con lo que me cuentas no es el criterio bueno.
+
+❓ **¿Qué pasa cuando Norte se libera?** Releo las opciones con tu motivo delante.
+
+1️⃣ **Pasa a reserva automáticamente.** Al cancelar la reserva que ocupa Norte, el primero de la lista la recibe sin hacer nada.
+   `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   Después, al cancelar la ocupante: `cancelada lun 10:00; Norte pasa a tu reserva (1.º en espera)`
+   Coste: puedes acabar con una reserva que ya no quieres. Se deshace con `cancelar`, que ya existe, y habrá que decidir cómo salir de la lista antes de que te toque.
+
+2️⃣ **Queda retenida hasta que la confirmes.** Al cancelar, Norte se reserva para el primero de la lista hasta que la confirme.
+   Coste: añade un estado «retenida» y una caducidad. Seguirías teniendo que acordarte de confirmar, así que reduce el problema pero no lo quita.
+
+3️⃣ **Solo queda apuntado, y lo consultas tú.** Es mi recomendación anterior. Es lo más pequeño, pero no te quita el tener que mirar.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que cumple lo que pides: miras una vez, tarde, y la sala ya es tuya, así que el momento en que mires deja de importar. A cambio, tendrás alguna reserva automática que cancelar.
+
+Queda para después, y lo preguntaré aparte, dónde vive la lista. Hoy las reservas están en memoria y se pierden al terminar cada comando, así que la lista tendrá que guardarse en un fichero para que sirva entre ejecuciones.

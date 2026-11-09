@@ -1,6 +1,6 @@
 // Sujeto de la batería de sdd-grilling: una petición de battery.md que lleva a una skill que entrevista.
 // Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
-import { appendFileSync, readFileSync, rmSync } from 'node:fs';
+import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
@@ -23,6 +23,16 @@ const molds = {
     s.copy(join(HERE, 'mold-reservas'));
     s.putKitMarker(SALAS_MARKER);
   },
+  'salas-csv': () => {
+    molds.salas();
+    const roadmap = join(s.R, '.docs', 'sdd', 'roadmap.md');
+    const row1 = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
+    const row2 = '| 2 | Exportar a CSV las reservas de una sala, para que el responsable las cuadre los lunes en su hoja de cálculo; separador punto y coma (su Excel está en castellano) y por la salida estándar, que él redirige a su fichero (responsable de salas, 2026-11-01: «así me sirve») | ⏳ |';
+    const text = readFileSync(roadmap, 'utf8');
+    const eol = text.includes('\r\n') ? '\r\n' : '\n';
+    if (!text.includes(row1 + eol)) throw new Error(`salas-csv: falta la fila 1 en ${roadmap}`);
+    writeFileSync(roadmap, text.replace(row1 + eol, row1 + eol + row2 + eol));
+  },
   'salas-sin-docs': () => {
     s.copy(SALAS);
     rmSync(join(s.R, '.docs'), { recursive: true });
@@ -40,7 +50,8 @@ const mold = moldFrom(cell, s, molds);
 mold();
 s.initRepo();
 
-const turn2 = { g3: 'sí, adelante: feature full con delegate', g4: 'mantengo lo que dije', g5: 'decide tú lo que puedas', g6: 'sí, adelante: feature full con delegate' };
+const goAhead = 'sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato';
+const turn2 = { g3: goAhead, g4: 'mantengo lo que dije', g5: 'decide tú lo que puedas', g6: goAhead };
 if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];
 if (s.SC === 'g9') s.env.EXTRA_ALLOWED = 'WebSearch WebFetch';
 

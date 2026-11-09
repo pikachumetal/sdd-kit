@@ -1,0 +1,32 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap). Queda: clasificar el cambio y presentarte lo que entendí, ~2 min.
+
+--- [16]
+Ahora: reservo el id y creo la rama de la feature. Queda: contarte lo que entendí y hacerte la primera pregunta de diseño, ~3 min.
+
+--- [19]
+Ahora: te cuento lo que entendí y te hago la primera pregunta de diseño. Queda: la entrevista, la spec con su revisión y tu aprobación, ~15 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+He reservado el id 0008 y creado la rama `feature/0008-exportar-csv` desde `develop`.
+
+**Lo que entendí.** Hoy `src/app.js` tiene `libres`, `reservar` y `cancelar`, pero no hay forma de sacar las reservas de una sala. Quieres un comando nuevo que, dada una sala, escriba sus reservas en CSV. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Lo que daría el trabajo por fallido, aunque técnicamente funcione, es que la hoja lo abra mal: columnas mal separadas o tildes rotas. Calculo 1 o 2 tareas, así que no propongo dividirla. Corrígeme si algo no cuadra.
+
+Una cosa del código que conviene tener presente: `bookings` es hoy una lista fija en memoria con una sola reserva (`Norte, lun, 10:00-12:00`). No hay almacenamiento real. El comando exportará esa lista, y no voy a añadir persistencia, porque eso sería otra feature.
+
+❓ **¿Cómo se identifica la sala y adónde va el CSV?**
+Es lo primero que condiciona el resto del diseño. Los tres ejemplos son lo que vería el responsable de Norte:
+1️⃣ **Sala como argumento, CSV por salida estándar**: `exportar Norte` imprime
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+y el responsable lo guarda con `node src/app.js exportar Norte > norte.csv`. Encaja con cómo funcionan hoy los demás comandos, que devuelven texto. Cuesta un paso manual de redirección.
+2️⃣ **Sala como argumento y fichero de salida con nombre fijo**: `exportar Norte` escribe `norte.csv` y responde `exportadas 1 reservas de Norte en norte.csv`. No hace falta saber redirigir, pero escribe en disco sin que lo pidas y puede pisar el fichero del lunes anterior.
+3️⃣ **Sala y ruta como argumentos**: `exportar Norte reservas-norte.csv`. Controlas el nombre, y el comando es más largo y tiene más casos de error (ruta inválida, fichero existente).
+
+➡️ **Recomiendo 1️⃣**, porque `run` devuelve hoy un texto y el comando encaja sin tocar nada más, y porque no escribe en disco ni pisa nada. A cambio, el responsable tiene que saber redirigir con `>`.
+
