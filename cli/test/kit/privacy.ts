@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { accountEmail } from '../../../tests/headless/lib.mjs';
 import { cleanGitEnv, kitRoot, run } from './process.ts';
@@ -44,8 +44,19 @@ export function stagedEvidence(): string[] {
   return selectEvidencePath(result.output.split(/\r?\n/).filter((path) => path !== ''));
 }
 
-export function readEvidence(paths: string[]): EvidenceFile[] {
-  return paths.map((path) => ({ path, text: readFileSync(join(kitRoot, path), 'utf8') }));
+// 32 lecturas a la vez: en serie, toda la evidencia del repo (decenas de miles de ficheros) pasaba de los 10 s del hook en
+// cli:test-min, y sin tope se abrirían todos los ficheros a la vez, más de los que deja abrir macOS (patch 0325).
+export async function readEvidence(paths: string[]): Promise<EvidenceFile[]> {
+  const files: EvidenceFile[] = [];
+  let next = 0;
+  const reader = async (): Promise<void> => {
+    while (next < paths.length) {
+      const index = next++;
+      files[index] = { path: paths[index], text: await readFile(join(kitRoot, paths[index]), 'utf8') };
+    }
+  };
+  await Promise.all(Array.from({ length: 32 }, reader));
+  return files;
 }
 
 export function gitUserConfig(key: string, env: NodeJS.ProcessEnv = cleanGitEnv): string {

@@ -33,8 +33,8 @@ describe('La evidencia que lleva el commit no tiene el home de la máquina', () 
     expect(selectEvidencePath([...evidence, ...others])).toEqual(evidence);
   });
 
-  it('ningún fichero de evidencia del commit tiene una ruta de usuario, el usuario ni el user.name de git', () => {
-    expect(findMachineLeak(readEvidence(stagedEvidence())), 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean').toEqual([]);
+  it('ningún fichero de evidencia del commit tiene una ruta de usuario, el usuario ni el user.name de git', async () => {
+    expect(findMachineLeak(await readEvidence(stagedEvidence())), 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean').toEqual([]);
   });
 
   it('da por fuga la evidencia con el email de la cuenta de .claude.json, y solo nombra el fichero', () => {
