@@ -7,11 +7,13 @@
 // veces va en su references/, que el agente lee del disco en el paso que lo pide.
 //
 // Mide bytes, más estricto que caracteres con tildes. Uso: node tests/skill-size/check.ts
-// (moon run kit:skill-size). Corre al cortar la release, no en el pre-commit (patch 0298).
+// (moon run kit:skill-size). Corre en el pre-commit y en la CI.
 //
 // La fase, en caracteres: tras compactar vuelven juntas la skill que dirige y las que manda invocar, cada una ya cortada.
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { includesFrom, renderLines } from '../../build/dist.ts';
+import { BuildError } from '../../build/errors.ts';
 import { elementsOf, textLines } from '../own/kit-text.ts';
 import { splitSentences } from '../own/sentences.ts';
 
@@ -31,19 +33,23 @@ export function invokedSkills(text: string, self: string, names: string[]): stri
   return [...new Set(found)].filter((name) => name !== self && names.includes(name));
 }
 
+// La fuente con sus marcas quitadas y sus inclusiones expandidas: lo mismo que escribe el build, sin reconstruir dist/.
 function skillTexts(repoRoot: string): Map<string, string> {
-  const skillsDir = join(repoRoot, 'dist', 'skills');
+  const skillsDir = join(repoRoot, 'skills');
+  const readInclude = includesFrom(repoRoot);
   const texts = new Map<string, string>();
   for (const name of readdirSync(skillsDir).sort()) {
     const skill = join(skillsDir, name, 'SKILL.md');
-    if (existsSync(skill)) texts.set(name, readFileSync(skill, 'utf8'));
+    if (!existsSync(skill)) continue;
+    const rendered = renderLines(readFileSync(skill, 'utf8'), `skills/${name}/SKILL.md`, readInclude);
+    texts.set(name, rendered.map((line) => line.text).join(''));
   }
   return texts;
 }
 
-function byteLines(repoRoot: string, names: string[]): string[] {
-  const lines = names.flatMap((name) => {
-    const size = statSync(join(repoRoot, 'dist', 'skills', name, 'SKILL.md')).size;
+function byteLines(texts: Map<string, string>): string[] {
+  const lines = [...texts].flatMap(([name, text]) => {
+    const size = Buffer.byteLength(text, 'utf8');
     return size >= LIMIT ? [`FALLA: dist/skills/${name}/SKILL.md ocupa ${size} bytes (límite: menos de ${LIMIT})`] : [];
   });
   return lines.length > 0 ? [...lines, 'Mueve a su references/ lo que la skill solo necesita a veces.'] : [`OK: todos los SKILL.md ocupan menos de ${LIMIT} bytes`];
@@ -65,12 +71,18 @@ function phaseLines(texts: Map<string, string>): string[] {
 
 export function checkSkillSize(repoRoot: string): { code: number; lines: string[] } {
   const texts = skillTexts(repoRoot);
-  const lines = [...byteLines(repoRoot, [...texts.keys()]), ...phaseLines(texts)];
+  const lines = [...byteLines(texts), ...phaseLines(texts)];
   return { code: lines.some((line) => line.startsWith('FALLA')) ? 1 : 0, lines };
 }
 
 if (resolve(process.argv[1] ?? '') === import.meta.filename) {
-  const { code, lines } = checkSkillSize(REPO_ROOT);
-  for (const line of lines) (code === 0 ? console.log : console.error)(line);
-  process.exitCode = code;
+  try {
+    const { code, lines } = checkSkillSize(REPO_ROOT);
+    for (const line of lines) (code === 0 ? console.log : console.error)(line);
+    process.exitCode = code;
+  } catch (error) {
+    if (!(error instanceof BuildError)) throw error;
+    console.error(error.message);
+    process.exitCode = 1;
+  }
 }

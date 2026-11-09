@@ -10,8 +10,8 @@ function repoWithTexts(texts: Record<string, string>): string {
   const root = mkdtempSync(join(tmpdir(), 'skill-size-'));
   roots.push(root);
   for (const [name, text] of Object.entries(texts)) {
-    mkdirSync(join(root, 'dist', 'skills', name), { recursive: true });
-    writeFileSync(join(root, 'dist', 'skills', name, 'SKILL.md'), text);
+    mkdirSync(join(root, 'skills', name), { recursive: true });
+    writeFileSync(join(root, 'skills', name, 'SKILL.md'), text);
   }
   return root;
 }
@@ -44,10 +44,18 @@ describe('kit:skill-size', () => {
 
   it('mide bytes, no caracteres', () => {
     const root = repoWithSkills({});
-    mkdirSync(join(root, 'dist', 'skills', 'tildes'), { recursive: true });
-    writeFileSync(join(root, 'dist', 'skills', 'tildes', 'SKILL.md'), 'á'.repeat(10_000));
+    mkdirSync(join(root, 'skills', 'tildes'), { recursive: true });
+    writeFileSync(join(root, 'skills', 'tildes', 'SKILL.md'), 'á'.repeat(10_000));
 
     expect(checkSkillSize(root).lines[0]).toBe('FALLA: dist/skills/tildes/SKILL.md ocupa 20000 bytes (límite: menos de 20000)');
+  });
+
+  it('measures the source with its includes expanded and its marks stripped, without dist/', () => {
+    const root = repoWithTexts({ grows: `<!-- kit: 0311 -->\n<!-- kit: incluye padding -->\n${'x'.repeat(10_000)}` });
+    mkdirSync(join(root, 'includes'));
+    writeFileSync(join(root, 'includes', 'padding.md'), `${'y'.repeat(9_999)}\n`);
+
+    expect(checkSkillSize(root).lines[0]).toBe('FALLA: dist/skills/grows/SKILL.md ocupa 20000 bytes (límite: menos de 20000)');
   });
 });
 
@@ -74,7 +82,7 @@ describe('kit:skill-size: la fase', () => {
 
   it('prints no phase line without skills', () => {
     const root = repoWithTexts({});
-    mkdirSync(join(root, 'dist', 'skills'), { recursive: true });
+    mkdirSync(join(root, 'skills'), { recursive: true });
 
     expect(checkSkillSize(root)).toEqual({ code: 0, lines: ['OK: todos los SKILL.md ocupan menos de 20000 bytes'] });
   });
