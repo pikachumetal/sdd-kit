@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-11-09
 branch: feature/0321-battery-launcher-cap-and-verdict
-commit: <hash>
+commit: 5d0a9ab4
 ---
 
 # Patch 0321 — el lanzador de baterías, el techo antes de la tanda, el veredicto con SCENARIOS, el precio del sujeto y el uso de plan
@@ -85,7 +85,11 @@ Revisión (un revisor, Sonnet, effort medium; «Con arreglos»):
 - Minor 7, `refuseSpentCap` valora los cortados con `COST_CAP / techo` y `runCampaign` con el precio de `plan`: rechazado. Un cortado no deja `tools.txt` ni dice qué costó; las dos cifras son estimaciones, y la diferencia solo mueve el borde exacto del rechazo previo, que después vuelve a mirar `capReached` sujeto a sujeto.
 - Minor 8, la línea de `launch`: arreglado, la constante `priced`.
 
+Validación en campo: 2026-11-09 · smoke 5/5 por ejecución real (tabla de arriba: el CLI real en seco para el techo gastado, `verdict` con `SCENARIOS` y `N` sobre las baterías de `sdd-retro` y `sdd-feedback`, `plan` y `verdict` sin argumentos) y el precio de `plan` por `suite` · `battery.test.ts`, `campaign.test.ts` y `lib.test.ts` 279/279 · el gate de cierre corre en el merge de sincronización, porque la base avanzó con la 0309 y la 0322 sigue abierta: su línea `Gate:` va en el mensaje final.
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 1 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-09T10:19Z
+- Esfuerzo real: 0,28 h — reloj de la sesión 0,28 h desde 2026-11-09T10:14Z, sin 0 min de espera al dev-lead (0 esperas). −72 % sobre la estimación (1,07 h con el gate): las cuatro causas estaban localizadas en la fila y los tickets, las reproducciones corrieron en proceso y en seco sin sujetos de pago, y el gate de cierre aún no ha corrido (corre en el merge de sincronización)
+- Coste de sujetos: no aplica
