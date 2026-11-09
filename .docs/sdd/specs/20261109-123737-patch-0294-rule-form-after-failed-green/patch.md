@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-09
 branch: patch/0294-rule-form-after-failed-green
-commit: <hash>
+commit: 4895faaa
 ---
 
 # Patch 0294 — un olvido de orden o de búsqueda se comprueba con su orden
@@ -52,7 +52,11 @@ Comprobado lo que da por existente: el Art. II tiene cinco viñetas (disciplina,
 | 2 | El Art. II sigue con cinco viñetas | ✅ conteo con Node: `viñetas 5` |
 | 3 | La constitution cabe en su tope de palabras | ✅ `split(/\s+/)` → 2.250 de 2.250; `moon run cli:test -- test/kit/word-budget.test.ts` → 78 passed (78) |
 | 4 | `sdd decision check` y el check del roadmap | ✅ `Decisiones válidas`; `moon run kit:roadmap cli:typecheck` → 2 completed |
-| 5 | Pre-commit en verde (`git config core.hooksPath` → `.githooks`) | ✅ en el commit del fix |
+| 5 | Pre-commit en verde (`git config core.hooksPath` → `.githooks`) | ✅ en el commit del fix: `moon run cli:typecheck cli:test kit:roadmap` → 3 completed |
+
+Gate: la rama solo toca `.docs/`: no corre nada (`closing-suite.md`, «What runs»).
+
+Validación en campo: 2026-11-09 · smoke 5/5 (Art. II leído a mano, viñetas y palabras contadas con Node, `sdd decision check`, pre-commit) · `word-budget.test.ts` 78/78
 
 Revisor único (Sonnet, effort medium):
 
@@ -65,5 +69,5 @@ Revisor único (Sonnet, effort medium):
 
 - Estimación: 0,3 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-09T12:37Z
-- Esfuerzo real:
+- Esfuerzo real: 0,16 h — reloj de la sesión 0,16 h desde 2026-11-09T12:32Z, sin 0 min de espera al dev-lead (0 esperas). −57 % sobre la estimación (0,37 h con el gate): sin esperas ni huecos; los dos casos ya estaban medidos en sus tickets y el gate de cierre no corre en una rama de solo `.docs/`
 - Coste de sujetos: no aplica
