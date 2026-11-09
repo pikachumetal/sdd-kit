@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: ls -a; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/debt.md; git branch --all
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 20
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; cat ROADMAP.md; ls -R src test docs | head -50; cat package.json
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala con una fila por reserva*<details><summary>Brief</summary>**Carril:** f
+
+>>> Bash: cat src/app.js; cat test/app.test.js; git log --oneline -5; ls .docs/sdd .docs/sdd/changes 2>&1
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -3; node src/app.js exportar; ls .docs/sdd/changes/*; ls .docs/sdd/steering
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+Norte,lun,10:00-12:00
+proposal.md
+debt.md
+
+=== RESULTADO (7 turnos, 0.1401268 $)
+Estoy triando las dos filas de «Por triar». Ya he reproducido ambas contra el código y propongo el reparto antes de escribir nada, porque el perfil es `delegate` y el reparto es decisión tuya.
+
+## Propuesta de triaje
+
+**1. La exportación a CSV pierde las tildes → «En espera»**
+- No lo reproduzco: `node src/app.js exportar` devuelve `sala,día,franja`, y los bytes son UTF-8 correctos (`d 303 255 a`).
+- El informe dice que sale `d?a`, así que el fallo parece estar en la consola o en el programa que abre el CSV, no en el código. Es una hipótesis mía, sin comprobar.
+- Entra con Causa `sin determinar`, Falta `reproducirlo` y Fecha 2026-11-08.
+- Para reproducirlo hace falta saber qué consola, qué sistema y qué programa abre el CSV. Con eso se puede probar desde la 1.4.2.
+
+**2. `salas libres --planta 2` lista salas de la planta 1 → «Lista»**
+- Lo reproduzco: `node src/app.js libres --planta 2` imprime `Norte (planta 1)`.
+- La causa está en `src/app.js:12`, donde el filtro `floors[room] <= floor` debería ser `===`.
+- Causa: `defecto del producto`. Arreglo: `—`. Remedio temporal: `ninguno`, porque lo he buscado y no hay ninguno.
+- Evidencia: el comando anterior con su salida.
+- Destino: una fila nueva en Next, tamaño `S`, carril `patch`, con un test de regresión. Reservaría un id con `sdd id next --reserve`.
+- Su brief diría `**Salda:** el ítem de «Lista» de la planta`, y «Toca» sería `src/app.js` y `test/app.test.js`.
+- No toca 0012 (cerrada) ni 0013 (Next, tras 0012).
+- Todavía no he ejecutado la solución en una copia fuera del árbol. Antes de escribirla, la probaría con `===`, o la marcaría como «solución por confirmar».
+
+**Lo que haría tras tu confirmación**
+1. Reservar el id.
+2. Escribir `debt.md` y la fila nueva en `ROADMAP.md`.
+3. Pasar `sdd roadmap check`.
+4. Publicar con `sdd roadmap publish` en `develop`.
+5. Darte el prompt de lanzamiento de la fila nueva.
+
+¿Te parece bien este reparto? Si prefieres que lo decida yo, dime «decide tú» y escribo directamente.

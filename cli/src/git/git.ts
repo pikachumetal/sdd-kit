@@ -26,7 +26,8 @@ export function git(cwd: string, args: string[]): Promise<GitResult> {
   return new Promise((done) => {
     execFile('git', ['-c', 'core.quotePath=false', ...args], options, (error, stdout, stderr) => {
       const code = error === null ? 0 : typeof error.code === 'number' ? error.code : 1;
-      done({ code, stdout, stderr });
+      const notStarted = error !== null && typeof error.code === 'string';
+      done({ code, stdout, stderr: notStarted ? error.message : stderr });
     });
   });
 }

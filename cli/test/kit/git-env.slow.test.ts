@@ -70,6 +70,14 @@ describe('git() de cli/src/git', () => {
 
     expect(run('git', ['-C', mine, 'rev-parse', '--show-toplevel']).output).toBe(mine);
   });
+
+  it('git() deja vacío el stderr de un git que falla sin escribir en él', async () => {
+    const mine = newRepo('git-env-quiet-');
+    const result = await git(mine, ['-c', 'core.autocrlf=false', 'diff', '--quiet', '--no-index', '--', join(mine, '.git', 'HEAD'), join(mine, '.git', 'config')]);
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toBe('');
+  });
 });
 
 describe('Los tests que llaman a git limpian las variables de git', () => {

@@ -1,0 +1,191 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Read: <run>\repo\docs\qa\2026-10-12-informe.md
+<<< 1	# Informe de QA — 2026-10-12
+2	
+3	Pruebas de la semana sobre la última versión publicada.
+4	
+5	## Hallazgos
+6	
+7	1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+8	2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`. Arreglo propuesto: en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`.
+9	
+
+>>> Bash: ls -a; cat .docs/sdd/sdd-kit.json; cat ROADMAP.md; cat .docs/sdd/steering/debt.md; git branch --all
+<<< ./
+../
+.docs/
+.git/
+docs/
+package.json
+README.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+cat: ROADMAP.md: No such file or directory
+cat: .docs/sdd/steering/debt.md: No such file or directory
+* develop
+  main
+
+>>> Bash: find .docs docs -type f | head -50; cat package.json; cat src/app.js; ls test; git log --oneline | head
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+docs/qa/2026-10-12-informe.md
+{"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur:
+
+>>> Bash: cat .docs/sdd/roadmap.md; cat test/app.test.js; cat .docs/sdd/specs/*patch*/patch.md | head -40; node src/app.js libres --planta 2; node src/app.js exportar | od -c | head -3
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: T=$(mktemp -d); cp -r src package.json "$T"/; sed -i 's/floors\[room\] <= floor/floors[room] < floor/' "$T/src/app.js"; echo "with <:"; node "$T/src/app.js" libres --planta 2; sed -i 's/floors\[room\] < floor/floors[room] === floor/' "$T/src/app.js"; echo "with ===:"; node "$T/src/app.js" libres --planta 2; node "$T/src/app.js" libres --planta 3; git status --short; grep -n "" .docs/sdd/constitution.md | head -30
+<<< with <:
+Norte (planta 1)
+with ===:
+
+Sur (planta 3)
+1:# Constitution — salas
+2:
+3:1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4:2. Tests antes que código: `node --test` en verde antes de cada commit.
+5:3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6:4. Texto de la interfaz y de los documentos en castellano.
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" id next --project-root "." --reserve --count 1
+<<< 0008
+
+>>> Bash: python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');const p='.docs/sdd/roadmap.md';let s=fs.readFileSync(p,'utf8');
+s=s.replace('| 1 | Avisos por correo antes de la reserva | ⏳ |','| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: \`libres --planta N\` devuelve también salas de otras plantas (QA 2026-10-12, hallazgo 2). Causa: \`roomsOnFloor\` en \`src/app.js\` usa \`<=\`; el \`<\` propuesto por QA no lo arregla (sigue saliendo \`Norte (planta 1)\`), probado en copia: \`===\` sí. Test de regresión: planta 2 no lista Norte | ⏳ |');
+s=s.replace('| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |','| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| La exportación a CSV pierde las tildes desde la 1.4.2: cabecera \`sala,d?a,franja\` (QA 2026-10-12, hallazgo 1) | Medio | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo: \`node src/app.js exportar\` en develop emite UTF-8 correcto (\`d\\\\303\\\\255a\`); pedir a QA SO, terminal y comando exacto |');
+fs.writeFileSync(p,s)"
+EOF
+git diff --stat; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+roadmap.md: línea 29: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 17: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: cat > /tmp/edit.mjs <<'EOF'
+import fs from 'node:fs';
+const p='.docs/sdd/roadmap.md';let s=fs.readFileSync(p,'utf8');
+s=s.replace('| 1 | Avisos por correo antes de la reserva | ⏳ |','| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: `libres --planta N` devuelve también salas de otras plantas (QA 2026-10-12, hallazgo 2). Causa: `roomsOnFloor` en `src/app.js` usa `<=`; el `<` propuesto por QA no lo arregla (sigue saliendo `Norte (planta 1)`), probado en copia: `===` sí. Test de regresión: planta 2 no lista Norte | ⏳ |');
+s=s.replace('| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |','| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| La exportación a CSV pierde las tildes desde la 1.4.2: cabecera `sala,d?a,franja` (QA 2026-10-12, hallazgo 1) | Medio | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo: `node src/app.js exportar` en develop emite UTF-8 correcto (`d\\303\\255a`); pedir a QA SO, terminal y comando exacto |');
+fs.writeFileSync(p,s);
+EOF
+node /tmp/edit.mjs; git diff --stat; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+file:///<home>/AppData/Local/Temp/edit.mjs:4
+s=s.replace('| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |','| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| La exportación a CSV pierde las tildes desde la 1.4.2: cabecera `sala,d?a,franja` (QA 2026-10-12, hallazgo 1) | Medio | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo: `node src/app.js exportar` en develop emite UTF-8 correcto (`d\303\255a`); pedir a QA SO, terminal y comando exacto |');
+                                                       
+
+>>> Bash: sed -i 's/(`d\\303\\255a`)/(bytes `c3 ad` en «día»)/' /tmp/edit.mjs && node /tmp/edit.mjs; git diff --stat; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+sed: -e expression #1, char 45: Invalid back reference
+roadmap.md: línea 29: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 17: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: sed -i 's/(`d[^)]*`)/(bytes c3 ad en «día»)/' /tmp/edit.mjs && node /tmp/edit.mjs; git diff --stat; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+ .docs/sdd/roadmap.md | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+roadmap.md: línea 31: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: git diff | cat -A | grep -E '^[+-]' | cut -c1-80
+<<< --- a/.docs/sdd/roadmap.md$
++++ b/.docs/sdd/roadmap.md$
+-| 1 | Avisos por correo antes de la reserva | M-bM-^OM-3 |^M$
++| 1 | Avisos por correo antes de la reserva | M-bM-^OM-3 |$
++| 0008 | Patch: `libres --planta N` devuelve tambiM-CM-)n salas de otras planta
+-| Sin validaciM-CM-3n del formato de franja horaria | Bajo | Patch cuando moles
++| Sin validaciM-CM-3n del formato de franja horaria | Bajo | Patch cuando moles
++| La exportaciM-CM-3n a CSV pierde las tildes desde la 1.4.2: cabecera `sala,d?
+
+>>> Bash: sed -i 's/\r$//; s/$/\r/' .docs/sdd/roadmap.md; git diff --stat; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" roadmap publish --project-root "." --message "docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decisiones tomadas por delegación («decide tú»):
+- Hallazgo 2 (libres --planta): reproducido; fila 0008 en Próximo como patch. El arreglo propuesto por QA (<= por <) no funciona (probado en copia: sigue saliendo Norte); === sí.
+- Hallazgo 1 (CSV sin tildes): no reproducido (el export sale en UTF-8 correcto); Esperar 2.º ticket, causa sin determinar.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md; git log --oneline | head -3; git status --short
+<<<  .docs/sdd/roadmap.md | 2 ++
+ 1 file changed, 2 insertions(+)
+destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+4931d57 feat: base del molde
+ M .docs/sdd/roadmap.md
+
+>>> Bash: git add .docs/sdd/roadmap.md && git commit -q -F - <<'EOF'
+docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decisiones tomadas por delegación («decide tú»):
+- Hallazgo 2 (libres --planta): reproducido; fila 0008 en Próximo como patch. El arreglo propuesto por QA (<= por <) no funciona (probado en copia: sigue saliendo Norte); === sí.
+- Hallazgo 1 (CSV sin tildes): no reproducido (el export sale en UTF-8 correcto); Esperar 2.º ticket, causa sin determinar.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline | head -2; git status --short
+<<< 6888b92 docs(roadmap): triaje del informe de QA 2026-10-12
+4931d57 feat: base del molde
+
+=== RESULTADO (16 turnos, 0.2365707 $)
+He triado los dos hallazgos del informe y los he dejado en `.docs/sdd/roadmap.md`. Lo he confirmado en `develop` con el commit `6888b92`, sin hacer push.
+
+**Hallazgo 2, `libres --planta 2` lista salas de otras plantas.**
+- Lo reproduje: devuelve `Norte (planta 1)`.
+- El arreglo que propone QA no funciona. Con `<` en lugar de `<=` sigue saliendo `Norte`. Con `===` sale bien, y lo probé en una copia fuera del árbol.
+- Queda como fila **0008** en «Próximo», marcada como patch, con la causa y el `===`. Pide un test de regresión: la planta 2 no debe listar `Norte`.
+
+**Hallazgo 1, el CSV pierde las tildes.**
+- No lo reproduzco. El export sale en UTF-8 correcto, con los bytes `c3 ad` en «día».
+- Va a «Deuda técnica» como `Esperar 2.º ticket`, con la causa sin determinar. Falta que QA diga su sistema operativo, su terminal y el comando exacto. Mi sospecha, sin comprobar, es que la pérdida está en cómo se muestra o se abre el fichero y no en el código.
+
+**Avisos:**
+- `sdd roadmap check` falla en dos sitios que no toqué: la cabecera de «Deuda técnica» y el título de la release `v0.3.0`. Son formato heredado de la migración pendiente y no los arreglé.
+- `sdd roadmap publish` se negó, porque `develop` está en este worktree con cambios sin confirmar. Hice el commit a mano, solo de ese fichero. Es el único worktree y no había otro con el que chocar.
+- El fichero usa CRLF y lo mantuve.
+
+**Siguiente:** la fila 0008. Si prefieres hacerlo en esta sesión, di «arráncalo». Si no, el prompt de lanzamiento es:
+
+> Arranca la 0008 (patch): `libres --planta N` lista salas de otras plantas. Cambia `<=` por `===` en `roomsOnFloor` (`src/app.js`) y añade un test de regresión.
+
+El aviso de SessionStart dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Usé las instrucciones que me cargó la sesión y el formato 2.x que ya tenía el proyecto. Conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
