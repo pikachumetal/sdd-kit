@@ -174,10 +174,20 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - AND dice que la 0019 no se ofrece porque tiene rama abierta
 - AND con Now sin nada que ofrecer, sigue por Next; una fila de Later no se ofrece; sin nada que ofrecer, lo dice
 
+### El triaje solo fija una solución probada con el caso real
+
+- GIVEN el molde `salas-3-fix`: `salas-3` cuyo informe de QA propone, para «`salas libres --planta 2` lista también salas de la planta 1», «en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`»
+- WHEN el usuario pide «Tria lo que hay por triar en la deuda. Decide tú.»
+- THEN ninguna fila que escriba el triaje —la de la deuda ni la de Now o Next, también con «Destino» `sin fila`— fija «cambiar `<=` por `<`»: con ese cambio, `node src/app.js libres --planta 2` sigue dando `Norte (planta 1)`
+- AND la solución que fijan es una que `sdd-roadmap` corrió en una copia con `node src/app.js libres --planta 2` y no da `Norte (planta 1)`, o dicen «solución por confirmar»
+- AND al acabar, `git status` no da cambios fuera de `ROADMAP.md` y `debt.md`
+- AND GIVEN además `docs/ayuda.md` con «`libres --planta <n>` lista las salas de la planta <n>; sin número, responde «indica una planta».», y el informe proponiendo cambiar solo «`libres --planta <n>` lista las salas de la planta <n>» por un texto que ya dice qué da sin número, THEN la fila que fija esa sustitución cita la frase entera que sale, con «sin número, responde «indica una planta»», y la frase entera que entra
+- AND GIVEN el molde `salas-qa-fix`, 2.x, con el mismo informe, WHEN el usuario pide «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.» THEN ni la fila `**Actuar**` de la planta (tampoco tras su `· arreglo:`) ni su fila de «Próximo» fijan «cambiar `<=` por `<`»: fijan una solución corrida en una copia o dicen «solución por confirmar», y `git status` no da cambios fuera de `.docs/sdd/roadmap.md`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz (2.x: `.docs/sdd/roadmap.md`); la deuda, en `.docs/sdd/steering/debt.md` (2.x: «Deuda técnica» del roadmap). La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md` (2.x: bajo `specs/`). El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.
-- **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`; las secciones `Now`, `Next` y `Later`, en inglés, como en `roadmap`. El texto va en castellano, y también las etiquetas del brief (`**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**`, `**Toca:**`), los estados de la deuda, las causas, los tipos de arreglo y los literales del triaje (`reproducirlo`, `2.º caso`, `caducada`, `sin fila`, `ninguno`).
-- **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» (2.x: `Actuar`) sin reproducirse o sin un 2.º caso.
+- **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`; las secciones `Now`, `Next` y `Later`, en inglés, como en `roadmap`. El texto va en castellano, y también las etiquetas del brief (`**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**`, `**Toca:**`), los estados de la deuda, las causas, los tipos de arreglo y los literales del triaje (`reproducirlo`, `2.º caso`, `caducada`, `sin fila`, `ninguno`, `solución por confirmar`).
+- **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs, ni cambia el código: una solución se prueba en una copia. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» (2.x: `Actuar`) sin reproducirse o sin un 2.º caso.
 - **Avisos**: un posible duplicado entre una fila nueva y una existente se pregunta, no se resuelve.
-- **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva.
+- **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva. Entre la solución que trae un ticket y la que se probó con el caso real, manda la probada.
