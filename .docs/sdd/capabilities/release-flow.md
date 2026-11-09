@@ -167,10 +167,10 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 
 ### El corte caduca la deuda en espera
 
-- GIVEN un `CHANGELOG.md` con `## [1.3.0] - 2026-08-01` y `## [1.2.0] - 2026-06-01`; en «En espera», filas del 2026-05-01, 2026-07-01 y 2026-08-15; en «Descartadas», filas del 2026-05-01 y 2026-08-15
+- GIVEN un `CHANGELOG.md` con `## [1.3.0] - 2026-08-01` y `## [1.2.0] - 2026-06-01`; en «En espera», filas del 2026-05-01, 2026-07-01 y 2026-08-15
 - WHEN el corte sella la 1.4.0
-- THEN las dos primeras de «En espera» pasan a «Descartadas» con «Motivo» `caducada` y la fecha del corte, y la del 2026-08-15 se queda: solo tiene una release después
-- AND la descartada del 2026-05-01 sale, y la del 2026-08-15 se queda
+- THEN las dos primeras de «En espera» salen de `debt.md`, con `caducada` en el cuerpo del commit del corte, y la del 2026-08-15 se queda: solo tiene una release después
+- AND `debt.md` no gana una sección «Descartadas»
 - AND un `## [1.3.1]` no cuenta, y el resumen de cierre nombra lo caducado
 - AND el agente no pregunta
 

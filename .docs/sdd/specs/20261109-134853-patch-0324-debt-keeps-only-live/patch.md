@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-09
 branch: patch/0324-debt-keeps-only-live
-commit: <hash>
+commit: d96f6d08
 ---
 
 # Patch 0324 — La deuda guarda solo lo vivo
@@ -73,9 +73,14 @@ Pasos que cambian y su escenario: `sdd-end-release` paso 5, `b`; `sdd-roadmap` t
 | 3 | Triaje de una fila que caduca: `m3` de `sdd-roadmap`, fila M3 | RED ❌: «**Descartada**, con Motivo `caducada`» · GREEN ✅: «Propongo **descartarla** con motivo `caducada`, y que salga de `debt.md`» |
 | 4 | `sdd roadmap check` y `sdd roadmap causes`: `npx vitest run test/roadmap/` desde `cli/`, sin los lentos | RED: 15 fallos por la sección que aún se exigía (copia en el scratchpad de la sesión) · GREEN: 7 ficheros, 186/186; tras el Minor 3, `debt.test.ts` 47/47 con `workflow-docs.test.ts` |
 | 5 | `moon run kit:build kit:copies kit:skill-size` | ✅ `dist/: 254 ficheros` · `Copias al día: 31 ficheros.` · `OK: todos los SKILL.md ocupan menos de 20000 bytes` |
-| 6 | Saldo de palabras de lo que se toca (`git show HEAD:<f>` frente al árbol, separando por espacios) | 11.278 → 11.228 con la plantilla; las cuatro skills, 10.575 → 10.564 (`sdd-roadmap` +17, `sdd-end-release` −10, `v3.0.0.md` −17, `sdd-templates` −1) |
+| 6 | Humo de la CLI, ejecución real: `node dist/cli/bin/sdd.js roadmap check` sobre un `debt.md` de tres secciones con una fila de «En espera» del 2026-07-01 y dos releases después | ✅ `debt.md: aviso: línea 12: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca` · `Roadmap válido` · exit 0 |
+| 7 | El mismo `debt.md` con `## Descartadas` y una fila del 2026-07-01 | ✅ `debt.md: línea 20: sección «Descartadas» fuera de la plantilla` · sin aviso «sale en el corte» · exit 1 |
+| 8 | `node dist/cli/bin/sdd.js roadmap causes --version 1.5.0` sobre ese `debt.md` | ✅ `\| Causa \| En espera \| Lista \|`, sin columna «Descartadas» |
+| 9 | Saldo de palabras de lo que se toca (`git show HEAD:<f>` frente al árbol, separando por espacios) | 11.278 → 11.228 con la plantilla; las cuatro skills, 10.575 → 10.564 (`sdd-roadmap` +17, `sdd-end-release` −10, `v3.0.0.md` −17, `sdd-templates` −1) |
 
-Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → cli:typecheck: corrió · cli:test: corrió 2375/2387 (12 saltados) · kit:test-headless: corrió 467/467 — 118 s.
+Validación en campo: 2026-11-09 · RED→GREEN 3/3 frentes (`m3`, `v1`, humo `b`; 6 sujetos) · `test/roadmap/` 186/186 · humo real de `roadmap check` y `roadmap causes` (filas 6-8) · `kit:build kit:copies kit:skill-size` en verde · el gate de cierre, sobre el merge de `--sync`.
+
+Gate previo a la revisión, sobre el árbol anterior a sus arreglos: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → cli:typecheck: corrió · cli:test: corrió 2375/2387 (12 saltados) · kit:test-headless: corrió 467/467 — 118 s. El gate de cierre corre sobre el merge de `--sync` (hay otra rama abierta, `patch/0325`), y su línea va en el mensaje final.
 
 Revisor (Sonnet, `effort-medium`):
 
@@ -88,8 +93,8 @@ Revisor (Sonnet, `effort-medium`):
 
 - Estimación: 2 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-09T13:48Z
-- Esfuerzo real: <al cerrar>
-- Coste de sujetos: <al cerrar>
+- Esfuerzo real: 0,32 h — reloj de la sesión 0,32 h desde 2026-11-09T13:46Z, sin 0 min de espera al dev-lead (0 esperas). −85 % sobre la estimación (2,07 h con el gate): sin esperas ni huecos; la estimación contaba una ronda de REFACTOR y sujetos en serie, y los tres frentes salieron verdes a la primera mientras la CLI se hacía en paralelo
+- Coste de sujetos: 1,77 $ en 6 sujetos sonnet — RED 0,92 $; GREEN 0,85 $
 
 ## 6. Delta de capacidad
 
