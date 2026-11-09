@@ -2,11 +2,11 @@
 
 Cómo pregunta el kit cuando una skill necesita decisiones del usuario. Cada escenario lanza una petición que lleva a una de las seis skills que entrevistan (`sdd-explore`, `sdd-init` sin código, `sdd-init` con código, `sdd-propose`, `sdd-roadmap`, `sdd-config`) y mide la forma de sus preguntas. El **paso** es la skill que llama: una edición de su regla de preguntas lanza su tramo.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-grilling/mold-reservas`, con glosario en `PRODUCT.md`) o carpeta vacía.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-grilling/mold-reservas`, con glosario en `PRODUCT.md`), `salas-csv` (el de `salas` con una fila 2 en «Próximo» de su roadmap, que fija separador y salida) o carpeta vacía.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo: un juez automático sería otro modelo, con su propio ruido.
 
-Turnos extra por escenario, en `subject.mjs`: g3 lleva `TURN2` «sí, adelante: feature full con delegate», para llegar a la primera decisión de diseño; g4 lleva `TURN2` «mantengo lo que dije»; g5, «decide tú lo que puedas»; g6, «sí, adelante: feature full con delegate» y un tercer turno «no, espera, explícamelo mejor», para rechazar la primera decisión de diseño y no la de carril. g7 conversa con la persona de `persona-g7.md` (Haiku, hasta 8 respuestas). g9 lleva `WebSearch` y `WebFetch` permitidos. Los escenarios del paso `control` solo van en el GREEN.
+Turnos extra por escenario, en `subject.mjs`: g3 lleva `TURN2` «sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato», para llegar a la primera decisión de diseño (con el porqué, desde la feature 0314, porque el primer turno lo pregunta); g4 lleva `TURN2` «mantengo lo que dije»; g5, «decide tú lo que puedas»; g6, el mismo `TURN2` que g3 y un tercer turno «no, espera, explícamelo mejor», para rechazar la primera decisión de diseño y no la de carril. g7 conversa con la persona de `persona-g7.md` (Haiku, hasta 8 respuestas). g9 lleva `WebSearch` y `WebFetch` permitidos. Los escenarios del paso `control` solo van en el GREEN.
 
 ## Escenarios
 
@@ -28,6 +28,9 @@ Turnos extra por escenario, en `subject.mjs`: g3 lleva `TURN2` «sí, adelante: 
 | fl | flujo | Carril feature, modo full: que una reserva pase por pendiente, confirmada y cancelada; desde pendiente se confirma o se cancela, desde confirmada solo se cancela, y una cancelada puede volver a pendiente. Lo que no tengo claro es si el flujo está bien. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | patch 0172: un flujo se enseña como diagrama (texto de `brainstorming` 7.0.0 recuperado, ADR 0013) |
 | ag | anti-goal | Carril feature, modo full: añade una lista de espera para cuando la sala que quiero está ocupada. Empieza ya, no me preguntes más. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | patch 0172: Intent con el éxito medible y lo que haría fracasar la feature aunque funcione; lo supuesto, a ✋ |
 | sk-c | boceto | Carril feature: añade a la web una página nueva de informes: una fila por sala con su porcentaje de ocupación de la semana. Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, pantalla nueva: boceto aparte; sin Artifact, en texto con su escena |
+| p1 | sdd-propose | Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido) |
+| p2 | sdd-propose | Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido) |
+| p3 | sdd-propose | Carril feature, modo full: arranca la 2 del roadmap. | salas-csv | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido); molde `salas` con la fila 2 en «Próximo» de su roadmap |
 
 ## Rúbrica
 
@@ -37,8 +40,8 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | --- | --- | --- |
 | R1 Una decisión por turno | g1, g2, g3, g4, g8, g9 | el mensaje pide más de una decisión al usuario (dos preguntas, una lista numerada de preguntas, «y además…») |
 | R2 Formato | todos | una decisión de diseño sin alternativas marcadas ni recomendación separada, o con `AskUserQuestion` intentado en `tools.txt` |
-| R3 Alternativas reales | g1, g3, g4, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
-| R4 Recomendada con razón | g1, g3, g4, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
+| R3 Alternativas reales | g3, g4, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
+| R4 Recomendada con razón | g3, g4, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
 | R5 Descubrimiento sin ancla | g2, g5, g8 | una pregunta sobre lo que solo sabe el usuario (para quién, qué problema) lleva recomendación o hipótesis; en g8, no enseña el hecho del código con su fuente |
 | R6 Escena concreta | g3, g6 | una decisión sobre lo que ve el usuario de `salas` sin un ejemplo con datos (sala, franja, qué sale en la terminal) |
 | R7 Rebatir una vez | g4 | el turno 1 no señala que `--cada-semana` ya existe; o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
@@ -56,6 +59,11 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | T1 Contraste de lenguaje | t1 | antes de seguir con el diseño, no dice que el glosario de `PRODUCT.md` llama «Cancelación» a la que anula el cliente y «Anulación» a la del responsable de sala, y que «dar de baja» (_Evitar_) por el admin encaja con Anulación, ni pregunta cuál quiere decir |
 | B1 Boceto sobre la app real | sk | ante cómo se ve la columna o sus colores, pregunta sin ofrecer enseñarlo, u ofrece una maqueta aparte (HTML suelto, Artifact) en vez de la variante sobre la app real (`node src/server.mjs`, impeccable en vivo o una captura del listado actual junto a la variante) |
 | B2 Boceto de pantalla nueva | sk-c | ante cómo se ve la página, pregunta sin ofrecer un boceto; o, sin Artifact en la sesión, no lo describe en texto con su escena ni dice por qué no lo enseña |
+| W1 Porqué primero | p1 | la primera pregunta de diseño o de descubrimiento del último mensaje no es para qué lo quiere; la lleva con alternativas, recomendación, hipótesis o ejemplos de respuesta; o antes pregunta una de diseño. Las operativas del llamante (carril, perfil, aprobar) no cuentan |
+| W2 Sin relleno | p2, p3 | la pregunta de diseño o de descubrimiento del último mensaje pregunta lo que la petición o el proyecto ya contestan (el porqué, lo que dice la fila 2) o algo que no cambia lo que se construye, su alcance, nivel ni coste: en qué fichero va el código, cómo se llama una función interna o un fichero temporal. No falla una pregunta sobre lo que sale en el CSV (separador, columnas, cabecera, codificación o rango), salvo lo que la fila 2 ya fija. Las operativas del llamante no cuentan |
+| W3 Proceso | p1, p2, p3 | pregunta un paso de proceso (si escribe o apunta algo, dónde va, si busca más) en vez de hacerlo y decirlo. Las operativas del llamante (carril, perfil, aprobar) no cuentan |
+| W4 Lo ya decidido | p3 | una pregunta o una alternativa reabre el punto y coma o la salida estándar. Repetirlos para confirmar lo entendido no es reabrirlos |
+| W5 Lo del dev | p1, p2, p3 | «decidido por mí» o una propuesta fija lo que solo sabe el usuario (para quién, para qué), el alcance, el nivel o el coste |
 
 ## Procedencia de las reglas
 
@@ -63,11 +71,11 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra) | RED R1 4 de 16; GREEN g9-2 | g1, g2, g3, g8, g9 |
+| Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra) | RED R1 4 de 16; GREEN g9-2 | g1, g2, g3, g8, g9; p3 (W4: «Skip what the request says…», RED limpio en la 0314) |
 | Buscar fuera antes de preguntar; probarlo en otra versión no cuenta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; GREEN 2 de 2 antes del contra; dev-lead 2026-10-02 | g9 + micro-test m3 |
 | Formato fijo en texto para el diseño; diálogo para lo operativo | dev-lead 2026-10-02; RED R2 | todos |
-| Alternativas reales; «no creo que la quieras» es relleno | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1 | g1, g3, g9 |
-| La recomendada con razón del caso; empate → preguntar de qué depende | RED R4 («son los defaults del kit») | g1, g3, g7, g8, g9 |
+| Alternativas reales; «no creo que la quieras» es relleno | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1 | g3, g9 (g1 no, desde la 0314: su turno 1 pregunta el porqué) |
+| La recomendada con razón del caso; empate → preguntar de qué depende | RED R4 («son los defaults del kit») | g3, g7, g8, g9 (g1 no, desde la 0314) |
 | Escena con datos en las decisiones de producto | RED R6 2 de 2; ticket de la feature 0035 de document-manager | g3, g6 |
 | Descubrimiento abierto, sin recomendación, hipótesis ni menú; con hecho, el hecho y su fuente | RED R5 4 de 4; micro-test m2 5 de 5 sin guía | g2, g5, g8 |
 | Rebatir una vez | dev-lead 2026-10-01 (abogado del diablo); RED limpio por una regla de `sdd-roadmap` | g4 (control) |
@@ -75,6 +83,7 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 | Rechazo: prosa hasta que conteste, sin volver a las opciones | RED R9 1 de 2; ticket de la feature 0115 §10 | g6 |
 | Cierre en tres listas; la confirmación es el gate del llamante | RED R10 2 de 2 | g7 |
 | Todo en el idioma del usuario, también los anuncios | RED R12 3 de 17 | todos |
-| Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill) |
-| El número de alternativas lo pone la decisión; «dos más una 🔀» por costumbre es relleno | dev-lead 2026-10-03: «estás cayendo mucho en presentar 2 soluciones y una híbrida» (5 de 7 preguntas del agente en la sesión de la 0128) | g1, g3 (no regresión: la batería no reproduce el fallo) + micro-test m4; «una sola alternativa», sin escenario |
+| Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill); p2, p3 (W2 y W3: RED limpio de brainstorming 7.0.2 en la feature 0314, frases sin cambio) |
+| El porqué primero, abierto, si ni el dev ni el proyecto lo dicen; después la que más cambia el resto | `brainstorming` 7.0.2 de superpowers; feature 0314: RED W1 2 de 2 («¿Adónde va el CSV?» sin el porqué); GREEN 1 de 2 por un menú de ejemplos, que corrige el contraejemplo literal tras dos rondas | p1 (W1); p2, p3 (no lo pregunta si ya está) |
+| El número de alternativas lo pone la decisión; «dos más una 🔀» por costumbre es relleno | dev-lead 2026-10-03: «estás cayendo mucho en presentar 2 soluciones y una híbrida» (5 de 7 preguntas del agente en la sesión de la 0128) | g3 (g1 no, desde la 0314; no regresión: la batería no reproduce el fallo) + micro-test m4; «una sola alternativa», sin escenario |
 | Boceto: si la pantalla existe, sobre la app real con `§Frontend`; si no, un Artifact; sin app ni Artifact, en texto con su escena y el motivo; «no he arrancado la app» no es motivo; parar por PID o puerto | feature 0168: RED `sk` 2/2 maqueta aparte; GREEN `sk-3` falla por el motivo, REFACTOR con contraejemplo, `sk-4` y `sk-5` pasan; parada por nombre vista en `sk-4` | sk, sk-c |

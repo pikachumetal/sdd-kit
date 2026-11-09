@@ -296,29 +296,34 @@
 | 2026-11-05 | 0307 | docs | 1.5 | 0.87 | 0.58 | 58643k | 7101k | 2.04 | 23.12 | 20261105-161928-feature-0307-verify-and-tdd |
 | 2026-11-07 | 0320 | infra/tooling | 2 | 0.67 | 0.34 | 41890k | 2645k | 0.71 | 17.16 | 20261107-211900-feature-0320-battery-launcher-n-forecast-resume |
 | 2026-11-08 | 0319 | infra/tooling | 1.5 | 0.86 | 0.57 | 34496k | 3003k | no aplica | 15.53 | 20261108-120335-feature-0319-roadmap-check-file-overlap |
+| 2026-11-08 | 0297 | infra/tooling | 2 | 1.2 | 0.6 | 83297k | 3102k | 3.35 | 30.74 | 20261108-122008-feature-0297-verify-removed-by-requirement |
 | 2026-11-09 | 0309 | docs | 2.5 | 2.27 | 0.91 | 74870k | 13013k | 13.69 | 36.17 | 20261108-144046-feature-0309-templates-rework |
+| 2026-11-08 | 0308 | docs | 2.5 | 2.57 | 1.03 | 72224k | 5895k | 18.42 | 31.74 | 20261108-144128-feature-0308-roadmap-and-config-rework |
+| 2026-11-08 | 0310 | docs | 1 | 0.77 | 0.77 | 37364k | 5912k | 1.65 | 19.12 | 20261108-144153-feature-0310-init-explore-release-feedback-rework |
+| 2026-11-08 | 0313 | infra/tooling | 1.5 | 1.43 | 0.95 | 37942k | 9422k | — | 21.12 | 20261108-184209-feature-0313-tasks-superpowers-7 |
+| 2026-11-09 | 0314 | docs | 2.5 | 1.73 | 0.69 | 52990k | 3935k | 10.13 | 25.32 | 20261108-184606-feature-0314-grilling-brainstorming-7 |
 
-**Factor de calibración** (ratio mediano real/estimado, 257 artefactos): **0.56** · media 0.71
+**Factor de calibración** (ratio mediano real/estimado, 262 artefactos): **0.57** · media 0.71
 
 - p25–p75: 0.36–0.84
 - p80: 0.95 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 24 % · sobreestimadas: 67 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.28 · mediana 0.8
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.54
+- Dentro de ±25 %: 25 % · sobreestimadas: 67 % · infraestimadas: 8 %
+- Error absoluto (h): media 1.26 · mediana 0.8
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.65
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 104 | 40 % |
-| 0.5–0.8 | 79 | 31 % |
-| 0.8–1.25 | 52 | 20 % |
+| 0.5–0.8 | 82 | 31 % |
+| 0.8–1.25 | 54 | 21 % |
 | 1.25–2 | 13 | 5 % |
-| ≥2 | 9 | 4 % |
+| ≥2 | 9 | 3 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 112 | 0.58 | 0.4–0.8 |
-| infra/tooling | 71 | 0.49 | 0.35–0.71 |
+| docs | 115 | 0.58 | 0.41–0.81 |
+| infra/tooling | 73 | 0.49 | 0.35–0.73 |
 | patch | 72 | 0.66 | 0.26–1.2 |
 | tooling | 1 | 0.6 | — |
 
@@ -339,7 +344,7 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 145 | 270.04 | 0.53 | 866.98 | 2537.7 |
+| sin publicar | 150 | 277.74 | 0.53 | 900.53 | 2665.74 |
 
 > Ver `estimation.md`.
 
@@ -347,9 +352,9 @@
 
 | Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| apertura | 22 | 4.19 | 1.61 | 8.41 | 0 | 14 % | sí | 25.55 | 5.8 | 0.22 |
-| implementación | 22 | 5.39 | 21.46 | 25.57 | 0.24 | 66 % | no | 48 | 26.85 | 0.55 |
-| revisión | 16 | 2.22 | 5.66 | 25.19 | 0 | 19 % | sí | 8.05 | 7.88 | 0.96 |
-| cierre | 20 | 0.23 | 0.16 | 0 | 0.05 | 1 % | sí | 7.6 | 0.39 | 0.04 |
+| apertura | 27 | 5.36 | 2.22 | 16.32 | 0 | 16 % | sí | 35.75 | 7.58 | 0.21 |
+| implementación | 27 | 6.36 | 24.42 | 41.09 | 0.31 | 63 % | no | 57.5 | 30.78 | 0.52 |
+| revisión | 21 | 2.8 | 7 | 29.59 | 0 | 20 % | sí | 10.55 | 9.79 | 0.91 |
+| cierre | 25 | 0.27 | 0.19 | 0 | 0.05 | 1 % | sí | 10.1 | 0.45 | 0.04 |
 
-Ceremonia: 34 % del trabajo (14 tareas, 8 fuera por una fase sin eventos).
+Ceremonia: 37 % del trabajo (19 tareas, 8 fuera por una fase sin eventos).

@@ -1,0 +1,218 @@
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+
+>>> Skill: sdd-kit:sdd-config
+<<< Exit code 1
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+<<< Launching skill: sdd-kit:sdd-config
+
+>>> Bash: ls -a .docs/sdd | head; cat .gitignore 2>/dev/null; git remote -v; git branch -a; head -30 .docs/sdd/mission.md .docs/sdd/tech-stack.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< ./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+* develop
+  main
+==> .docs/sdd/mission.md <==
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+==> .docs/sdd/tech-stack.md <==
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `featur
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.11061480000000001 $)
+Esto es lo que tiene el kit configurado ahora. `sdd-kit.local.json` no existe, así que no hay claves locales ignoradas.
+
+| Clave | Valor | Origen |
+| --- | --- | --- |
+| `ids.mode` | `sequence` | `sdd-kit.json` |
+| `control.profile` | falta, no hay perfil declarado | por defecto |
+| `merge` (`into`, `noFf`, `removeWorktree`, `push`) | falta, el cierre pregunta | por defecto |
+| `control.maxParallelAgents` y `control.silence.*` | faltan, rigen 3 agentes y avisos a los 8 y 20 min | por defecto |
+| `execution` | falta, rige `auto` | por defecto |
+| `validation.mode` | falta, rige `manual` | por defecto |
+| `validation.startEnvironment` | falta, rige `false` | por defecto |
+| `review.minors` | falta, rige `defer` | por defecto |
+| `pricing` | falta, el cierre dice «sin precio» | por defecto |
+| `release.hasRecipient` | `false` | `sdd-kit.json` (no está en el catálogo de preguntas) |
+
+**Versión del kit.** El proyecto pide el kit 3.0.0, pero el aviso de arranque decía que esta sesión cargó el 2.3.4. La actualización va aparte y yo no la hago desde aquí. Se hace con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code, porque `/reload-plugins` no la aplica en ámbito proyecto. Las claves de arriba son las del catálogo que tengo cargado.
+
+Voy preguntando de una en una, empezando por `control.profile` (`pair`, `delegate` o `unattended`). Primero necesito saber a quién se aplica:
+
+1. **Para todo el equipo (`sdd-kit.json`)**: es lo que recomiendo, porque el proyecto aún no tiene la clave. La misión dice que trabajas solo tú, así que "equipo" y "tú" coinciden en la práctica.
+2. **Solo para ti (`sdd-kit.local.json`)**: queda fuera de git y no cambia lo que vea nadie más. Esa opción solo tiene sentido si el proyecto ya tuviera la clave.
+
+¿Cuál eliges, 1 o 2?
+
+=== RESULTADO (1 turnos, 0.12386810000000001 $)
+Anoto las dos cosas. No escribo nada en ningún fichero y `control.profile` queda sin clave, con su valor por defecto. Si más adelante quieres fijarlo, me lo dices.
+
+Siguiente decisión, el merge al cerrar una feature. El proyecto usa git-flow (`main` estable, `develop` de integración), así que la rama de integración es `develop`. Puedo dejar declarado que, al cerrar una feature, se haga el merge a `develop` con `--no-ff` y que borrar el worktree lo decida una persona.
+
+1. **Sí, declararlo** (`merge.into: develop`, `noFf: true`, `removeWorktree: false`): es lo que recomiendo. `--no-ff` deja la feature en un solo commit que se revierte de golpe. Borrar un worktree con cambios sin commitear no se puede deshacer, y por eso no lo automatizo. Se escribe en `sdd-kit.json`.
+2. **No declararlo**: el cierre de cada feature te preguntará cómo mergear.
+
+¿Cuál eliges, 1 o 2?
+
+>>> Bash: cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+EOF
+node -e "JSON.parse(require('fs').readFileSync('.docs/sdd/sdd-kit.json','utf8'));console.log('ok')"
+<<< ok
+
+=== RESULTADO (2 turnos, 0.14029850000000002 $)
+Escrito en `.docs/sdd/sdd-kit.json`: `merge` con `into: develop`, `noFf: true` y `removeWorktree: false`. No he hecho commit.
+
+Siguiente decisión: ¿empujo `develop` a su remoto sin preguntar después de cada merge? Ahora mismo el repo no tiene ningún remoto configurado.
+
+1. **No (`merge.push: false`)**: es lo que recomiendo, porque sin remoto no hay a dónde empujar y un `push` fallaría en cada cierre. Cuando añadas un remoto puedes cambiarlo. `main`, las etiquetas y cualquier otro push seguirían siendo cosa tuya.
+2. **Sí (`merge.push: true`)**: `develop` se empujaría tras cada merge. Hoy no tendría efecto, y fallaría hasta que exista un remoto.
+3. **No sé**: no se escribe nada y el cierre no empuja.
+
+¿Cuál eliges, 1, 2 o 3?
+
+>>> Bash: cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}}
+EOF
+node -e "JSON.parse(require('fs').readFileSync('.docs/sdd/sdd-kit.json','utf8'));console.log('ok')"
+<<< ok
+
+=== RESULTADO (2 turnos, 0.15819380000000002 $)
+Escrito en `.docs/sdd/sdd-kit.json`: `merge.push: true` y `validation.mode: manual`. Sigo sin hacer commit.
+
+Con `push: true` y sin remoto, el push de cada cierre fallará hasta que añadas uno con `git remote add origin <url>`.
+
+Siguiente decisión, `execution`: cómo se ejecutan los planes.
+
+1. **`auto`**: es lo que recomiendo. Cada plan propone su método. Native (en esta sesión) es lo más barato, y los subagentes se reservan para planes largos o con revisión por tarea.
+2. **`native`**: siempre en la sesión. Si hay una compactación con dos o más tareas pendientes, el resto pasa a subagentes.
+3. **`subagent`**: siempre con subagentes.
+4. **No sé**: no se escribe nada y rige `auto`.
+
+También tengo que preguntarte si esto va para todo el equipo (`sdd-kit.json`) o solo para ti (`sdd-kit.local.json`). Como el proyecto aún no tiene la clave, recomiendo el equipo.
+
+¿Qué eliges: 1, 2, 3 o 4?
+
+=== RESULTADO (1 turnos, 0.16759380000000001 $)
+`execution` queda en `auto`, que ya es el valor por defecto. Como tampoco has decidido el fichero, no escribo nada y rige `auto`.
+
+Siguiente decisión, los frenos del kit. Por defecto trabajan hasta 3 agentes en paralelo, y salta un aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo.
+
+1. **Dejarlos como están**: es lo que recomiendo, porque son los valores por defecto del kit y no tienes motivo para cambiarlos. No se escribe nada.
+2. **Poner tus propios números**: dime los tres (agentes en paralelo, minutos entre pasos y minutos en comando largo). Se escribirían en `sdd-kit.json`.
+
+¿Cuál eliges, 1 o 2?
+
+=== RESULTADO (1 turnos, 0.1766097 $)
+Anoto «no sé». No escribo nada y rigen los frenos por defecto.
+
+Siguiente decisión, la pregunta personal: cuando te toque validar una feature, ¿arranco el entorno antes de darte el guion de pruebas?
+
+1. **No**: es lo que recomiendo, el valor por defecto. El guion de validación te dice cómo arrancarlo. Se escribiría `validation.startEnvironment: false` en `sdd-kit.local.json`, que queda fuera de git.
+2. **Sí**: te lo encuentras ya corriendo. Se escribiría `true` en el mismo fichero.
+3. **No sé**: no se escribe nada.
+
+¿Cuál eliges, 1, 2 o 3?
+
+=== RESULTADO (1 turnos, 0.1847088 $)
+Anoto «no sé»: no escribo nada y no creo `sdd-kit.local.json`.
+
+Siguiente decisión, `review.minors`: qué pasa con los hallazgos Minor de la revisión final.
+
+1. **`defer`**: es lo que recomiendo. Un Minor no cambia lo que recibe el usuario del producto, y cada arreglo alarga la pasada de correcciones. Los Minor van al registro como diferidos. Se escribe en `sdd-kit.json`.
+2. **`fix`**: los Minor entran en la pasada de correcciones y se cierran en cada feature. El cierre dura más.
+3. **No sé**: no se escribe nada y rige `defer`.
+
+¿Cuál eliges, 1, 2 o 3?
+
+>>> Bash: cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}, "review": {"minors": "defer"}}
+EOF
+node -e "JSON.parse(require('fs').readFileSync('.docs/sdd/sdd-kit.json','utf8'));console.log('ok')"
+<<< ok
+
+>>> ToolSearch: {"query":"select:WebFetch","max_results":1}
+<<< 
+
+>>> WebFetch: {"url":"https://platform.claude.com/docs/en/about-claude/pricing","prompt":"List the current Opus, Sonnet and Haiku models by API id with prices per million tokens: base input, 5m cache write, 1h cache write, cache read (hit), output. Give exact numbers in a table."}
+<<< <persisted-output>
+Output too large (51.4KB). Full output saved to: <home>\.claude\projects\D--code--worktrees-sdd-kit-feature-0308-roadmap-and-config-rework--temp-r308-smoke-config2-g7-1-repo\bb99f7f1-da12-411d-9e88-d29a5f66ac02\tool-results\toolu_01P2ishCfVKMC6KtP38eucRu.txt
+
+Preview (first 2KB):
+---
+title: Pricing
+url: https://platform.claude.com/docs/en/about-claude/pricing
+description: Learn about Anthropic's pricing structure for models and features
+---
+
+This page provides detailed pricing information for Anthropic’s models and features. All prices are in USD.
+
+For the most current prici
+
+>>> Grep: ^\| Claude (Opus|Sonnet|Haiku)[^|]*\|
+<<< 21:| Claude Opus 5.5                                                                                                                                                        | $4 / MTok             | $5 / MTok       | $8 / MTok       | $0.20 / MTok<sup>2</sup> | $20 / MTok             |
+22:| Claude Opus 5                                                                                                                                                          | $5 / MTok             | $6.25 / MTok    | $10 / MTok      | $0.50 / MTok             | $25 / MTok             |
+23:| Claude Opus 4.8        
+
+=== RESULTADO (5 turnos, 0.23689900000000003 $)
+Leí la página de precios (https://platform.claude.com/docs/en/about-claude/pricing). Esta es la tabla que propongo, con los modelos actuales de cada familia y el id de la API, en USD por millón de tokens:
+
+| Modelo | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0,20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2,50 | 4 | 0,10 | 10 |
+| `claude-haiku-5-5` | 0,10 | 0,125 | 0,20 | 0,01 | 0,50 |
+
+Haiku 5.5 tiene dos tramos. Esos son los precios para prompts de hasta 100.000 tokens. Por encima, los precios suben a 0,50 / 0,625 / 1 / 0,05 / 2,50. Solo propongo el primer tramo.
+
+1. **Sí, escribir la tabla**: es lo que recomiendo, porque así el cierre da el coste de la sesión. Se escribe en `sdd-kit.json` como `pricing.usdPerMillionTokens`, con `source` (la página) y `updated: 2026-11-08`.
+2. **No**: el cierre dirá «sin precio».
+3. **No sé**: no se escribe nada y el cierre dirá «sin precio».
+
+¿Cuál eliges, 1, 2 o 3?
+
+=== RESULTADO (1 turnos, 0.24860320000000002 $)
+Anoto «no sé». No escribo nada, así que el cierre dirá «sin precio».
+
+Con esto termino la revisión de la configuración.
+
+**Decidido por ti y escrito en `.docs/sdd/sdd-kit.json`:**
+- `merge`: `into: develop`, `noFf: true`, `removeWorktree: false`, `push: true`.
+- `validation.mode`: `manual`.
+- `review.minors`: `defer`.
+
+**Sin escribir, rigen los valores por defecto:**
+- `control.profile`.
+- `execution` (`auto`).
+- Los frenos (3 agentes y avisos a los 8 y 20 min).
+- `validation.startEnvironment`.
+- `pricing`.
+
+**Pendiente de tu parte:**
+- **Remoto:** el repo no tiene remoto y `merge.push` está en `true`, así que el push de cada cierre fallará hasta que hagas `git remote add origin <url>`.
+- **Commit:** no he hecho commit del cambio en `sdd-kit.json`.
+- **Versión del kit:** esta sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code, porque `/reload-plugins` no lo aplica.
+
+=== RESULTADO (8 turnos, 0.26700798000000003 $)
+conversación con persona: 8 respuestas

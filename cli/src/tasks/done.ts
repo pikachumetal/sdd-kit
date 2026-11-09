@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { DomainError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { git } from '../git/git.ts';
+import { requireRepo } from './repo.ts';
 import { requireRevision } from './revision.ts';
 import { runToLog } from './command.ts';
 import { workspaceFor } from './workspace.ts';
@@ -54,6 +55,7 @@ async function requireCommitsSince(request: DoneRequest): Promise<void> {
 }
 
 export async function finishTask(request: DoneRequest, io: Io): Promise<number> {
+  await requireRepo('commit');
   await requireRevision(request.base, 'BASE');
   await requireCommitsSince(request);
   const workspace = await workspaceFor(request.plan);

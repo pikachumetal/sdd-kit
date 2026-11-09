@@ -1,0 +1,59 @@
+--- [16]
+Revisado el diff y la spec: el requisito REMOVED todavía se ejecuta. Miro los tests existentes por si alguno fija el aviso.
+
+--- [19]
+## Revisión final, eje Spec: feature 0025 «Quitar el aviso por correo al anular» (`9da6dff`)
+
+**Veredicto: no se puede fusionar.** La rama quita el texto «(enviado por correo)», pero `anular` sigue dejando el aviso para el responsable. El requisito REMOVED, por tanto, se sigue ejecutando. El único test nuevo no lo detecta.
+
+### Strengths
+- El cambio es pequeño y se queda en lo que pide el plan: solo `src/app.js` y `test/void.test.js`. Se ha quitado la función `formatMail`, que ya no tenía uso.
+- La respuesta de `anular` sigue siendo «anulada <sala> <día>», como dice la decisión 1 de la spec, y `test/void.test.js:6` lo fija.
+- `anular-todas` (`voidAll`) no se ha tocado, como pide el Scope.
+- Se cumplen las restricciones de código: el texto de la interfaz está en castellano y no hay comentarios.
+- ADR 0003, Confirmación: `src/app.js` no importa `node:fs` ni ningún paquete de base de datos (no tiene ningún import). Cumplida.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. El aviso al anular sigue saliendo. El REMOVED «Avisar por correo» se sigue ejecutando.**
+- **Dónde:** `src/app.js:18`: `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` });`
+- **Qué pasa:** el requisito borrado decía: «`salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo». Tras el diff, `anular Norte lun` sigue metiendo la entrada en `outbox`. Después, `salida` (`src/app.js:29`, `pending`) sigue mostrando `responsable: anulada Norte lun`. Solo ha cambiado el formato del mensaje: ya no lleva asunto ni el sufijo «(enviado por correo)».
+- **Por qué importa:** la oficina sigue viendo en `salida` un aviso que reenviar por correo. El responsable recibe justo lo que la spec quería quitar.
+- **Cómo arreglarlo:** borrar el `outbox.push` de `voidBooking`. Si después nada más escribe en `outbox`, decidir si `outbox` y `salida` se quedan; esa decisión es del eje de arquitectura o del dev-lead.
+- **Gap:** `contradicts`.
+- **Origen:** el REMOVED «Avisar por correo» del delta de `bookings`, el Approach («`anular` deja de preparar el aviso») y la decisión del dev-lead «El aviso por correo al anular desaparece». Ninguna regla del diff cubre esa decisión.
+
+#### Important (Should Fix)
+
+**2. El test «anular responde sin aviso» no comprueba que no haya aviso.**
+- **Dónde:** `test/void.test.js:5-7`.
+- **Qué pasa:** solo comprueba la respuesta de `anular`. Ni `salida` ni `outbox` aparecen en ninguna aserción. Por eso pasa aunque el aviso siga saliendo, y por eso no detectó el problema 1.
+- **Cómo arreglarlo:** después de anular, comprobar que `run('salida', [])` devuelve `''`, o que `outbox` está vacío. Esa es la verificación que pide «Dónde se prueba»: «Anular sin aviso: por el comando `anular`, como `test/void.test.js`».
+- **Gap:** `partial`.
+- **Origen:** la línea de «Dónde se prueba».
+
+#### Minor (Nice to Have)
+- Ninguno.
+
+**Ledger:** no hay ledger, así que no hay minors aplazados que valorar.
+
+### Declined to judge
+- **`bookings.md` ya no tiene «Avisar por correo».** Lo quitó `afca120`, un commit anterior a esta rama que dice fusionar el delta de la 0024. Queda fuera del rango `afca120..HEAD`. Aun así, el executor debería confirmar que el borrado del requisito vino de la 0024 y no de un adelanto de esta 0025.
+- **Qué hacer con `outbox` y `salida` cuando nada escriba en ellos.** Es una decisión de diseño que la spec no trata, y le toca al eje de arquitectura.
+- **Fila del roadmap «Avisos por correo antes de la reserva».** Es una feature futura y distinta, fuera del alcance de esta.
+
+### Not verified
+- No verificado: que `node --test test/void.test.js` pase. No ejecuté la suite, como pide el encargo, y el paquete no trae el informe de la task.
+
+### Recommendations
+- La verificación del plan (`node --test test/void.test.js`) solo fija la respuesta, no el comportamiento quitado. Cuando un REMOVED quita algo, la verificación de su task debería comprobar la ausencia del efecto (aquí, lo que lista `salida`).
+- Después de arreglarlo, el hilo principal debería ejecutar la suite completa (`node --test`), por si `app.test.js` o `cancel.test.js` leen `outbox` de forma indirecta.
+
+### Assessment
+
+**Ready to merge?** No.
+
+**Reasoning:** el comportamiento que la spec marca como REMOVED sigue funcionando: `anular` añade el aviso a `outbox` y `salida` lo lista para el responsable. El único test nuevo no comprueba esa ausencia, así que la regresión pasa sin que nada falle.
+

@@ -15,12 +15,11 @@ The ticket is what this session learned about the kit, written for the agent who
 2. **Walk the session** — kit skills and steps that ran, gates, detours, decisions nothing backed. Not the project's code.
 3. **Template** — trace `kit-feedback-template.md` from the `sdd-templates` skill. Clean close —no finding above a minor and the clock within the estimate's ceiling, or no estimate— → the template's **minimal ticket**: header and three lines, plus the minors. A ruling, a deviation from the plan, a step worked around or a decision no step covered is already a finding.
 4. **Save** — in `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>.md`, UTC timestamp, id and slug as in the spec folders. One ticket per feature or patch: only this one's own is extended; if the session wrote another's, its own is born and that one is left alone. If the folder doesn't exist, create it and say **once** that it can be git-ignored; do **not** edit `.gitignore`.
-5. **Privacy pass** — before saving, reread the whole ticket looking for proper names and data of the project's domain.
+5. **Privacy pass** — reread the saved ticket, file name and title included, against the template's privacy block, and replace each proper name or datum of the project's domain.
 6. **Lint** — run the project's docs lint on the ticket (the one in `tech-stack.md`, its docs gate or its pre-commit) and fix it until it passes, before the close commits it. With no docs lint, say so in one line.
 
 ## Rules
 
-- **Privacy**: never client, project, product or people names, nor code or business rules. If a finding isn't understood without a datum from the domain, replace it with a generic descriptor («una regla de cálculo de precios», «el interlocutor del cliente»); the finding is never omitted for privacy.
 - **Every finding carries its acceptance criterion** — a GIVEN/WHEN/THEN scenario or the RED that fails today and would pass with the proposal. Without it it isn't a finding, it's a complaint.
 - **Every proposal says whether it is verified** (`sí — <cómo>` or `sin verificar`). A cited execution failure carries the exact command, the shell and the error line.
 - **Every version, figure or quote in "Qué pasó" comes from a file or a command named in "Fuente"; one you remember and haven't checked doesn't go in: check it or drop it** (`tests/sdd-feedback-0150-red.md`, fb1). It holds for the header too. "Fuente" names kit metadata or files (`.docs/sdd/sdd-kit.json`, a plugin's version, a skill) or a command; a datum from a project file goes with a generic descriptor, like the rest of the ticket.

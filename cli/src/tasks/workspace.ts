@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { UsageError } from '../cli/args.ts';
-import { toplevel } from '../git/git.ts';
+import { requireRepo } from './repo.ts';
 
 interface Claim {
   planId: string;
@@ -65,15 +65,15 @@ function chooseDirectory(base: string, slug: string, claim: Claim): string {
 
 async function planContext(plan: string): Promise<{ base: string; slug: string; claim: Claim }> {
   planFile(plan);
-  const root = await toplevel(process.cwd());
-  if (root === null) throw new UsageError('fatal: not a git repository');
+  const root = await requireRepo('repo');
   return { base: join(root, '.temp', 'sdd'), slug: slugOf(plan), claim: planIdentity(plan, root) };
 }
 
 export async function workspaceFor(plan: string): Promise<string> {
   const { base, slug, claim } = await planContext(plan);
   const dir = chooseDirectory(base, slug, claim);
-  writeFileSync(join(base, '.gitignore'), '*\n');
+  const ignore = join(base, '.gitignore');
+  if (!existsSync(ignore)) writeFileSync(ignore, '*\n');
   return dir;
 }
 

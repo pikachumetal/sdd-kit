@@ -8,7 +8,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 
 ### Una decisión por turno
 
-- GIVEN una entrevista de `sdd-grilling` con tres decisiones abiertas sin dependencia entre ellas (nombre del comando, formato de salida, si admite filtro)
+- GIVEN una entrevista de `sdd-grilling` con el porqué ya dicho y tres decisiones abiertas sin dependencia entre ellas (nombre del comando, formato de salida, si admite filtro)
 - WHEN el agente pregunta
 - THEN el turno termina con una sola decisión, la que más cambia el resto (la que reabre otras ramas va primero)
 - AND si el usuario pide en la sesión «pregúntamelo todo de golpe», en esa sesión pregunta por rondas
@@ -109,6 +109,13 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - AND una decisión operativa, cuyas alternativas se entienden en una línea sin explicar nada (aprobar o pedir cambios, seguir o parar, confirmar carril y perfil), va al final del mensaje, con las opciones numeradas y la recomendada primero, y el turno acaba ahí
 - AND no llama a `AskUserQuestion`: su diálogo tapa el mensaje que explica la pregunta
 - AND unas etiquetas cortas no hacen operativa una decisión de diseño: «¿1️⃣ o 2️⃣?» con costes distintos detrás lleva su formato fijo
+
+### El porqué va primero
+
+- GIVEN la petición «añade un comando que exporte a CSV las reservas de una sala», sin porqué en la petición, en la fila del roadmap ni en el proyecto
+- WHEN el agente hace su primera pregunta
+- THEN pregunta para qué lo quiere, abierta: sin alternativas, recomendación, hipótesis ni ejemplos de respuesta, aunque pueda adivinarlo
+- AND con el porqué en la petición o en la fila del roadmap («para que el responsable las cuadre los lunes en su hoja de cálculo»), no lo pregunta
 
 ## Reglas de la capacidad
 
