@@ -41,7 +41,9 @@ The milestone stays as it is, and the walkthrough (or `patch.md`) says which one
 
 A commit can't contain its own hash. Task N's goes in `tasks.md` in the next milestone's commit —task N+1 or, for the last one, the closing—, and a patch fix's, in `patch.md` in the closing commit. It is always the hash of the already squashed commit; the ledger line also uses `<base>..<squashed hash>`.
 
-The closing has no next milestone, and the squash deletes the shas of its range. Before squashing it, each `Pasada de fix:`, `Re-revisión:` or `Revisión final:` line of `tasks.md` whose sha falls in that range is rewritten without it: `Pasada de fix: 7ea5c37, 1 hallazgo RED→GREEN` becomes `Pasada de fix: juntada en el cierre, 1 hallazgo RED→GREEN`, and `Re-revisión: 7ea5c37..21c1f70, sdd-kit:effort-high + opus, limpia` becomes `Re-revisión: juntada en el cierre, sdd-kit:effort-high + opus, limpia`. The same with any sha of the range that `walkthrough.md`, `patch.md`, the debt or an ADR of the branch cite: it is rewritten without it, or that range isn't squashed. From there, the last reviewed is the closing commit. Criterion: after the closing commit, `git merge-base --is-ancestor <sha> HEAD` succeeds for every sha of those files.
+The closing has no next milestone, and the squash deletes the shas of its range.
+Before squashing, each `Pasada de fix:`, `Re-revisión:` or `Revisión final:` line of `tasks.md` whose sha falls in the squashed range is rewritten without it, and so is any sha of the range that `walkthrough.md`, `patch.md`, the debt or an ADR of the branch cites (a cited sha is any 7 to 40 hex characters); otherwise that range isn't squashed.
+So `Pasada de fix: 7ea5c37, 1 hallazgo RED→GREEN` becomes `Pasada de fix: juntada en el cierre, 1 hallazgo RED→GREEN`, and `Re-revisión: 7ea5c37..21c1f70, sdd-kit:effort-high + opus, limpia` becomes `Re-revisión: juntada en el cierre, sdd-kit:effort-high + opus, limpia`. From there, the last reviewed is the closing commit. Criterion: after the closing commit, `git merge-base --is-ancestor <sha> HEAD` succeeds for every sha of those files.
 
 ## RED tests left uncommitted
 

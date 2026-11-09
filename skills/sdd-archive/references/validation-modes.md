@@ -4,7 +4,8 @@ Step 1 of `sdd-archive`.
 
 ## With `validation.mode: field`
 
-You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with an example with data>` and `**✋ Me salí del plan en…**`, with the rulings or «nada». If the user does say what they tried, the line is `Validado` with their words. «El kit no define ese valor, no voy a suponer» doesn't hold: this section defines it.
+You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with an example with data>` and `**✋ Me salí del plan en…**`, with the rulings or «nada». If the user does say what they tried, the line is `Validado` with their words.
+<!-- kit: incluye field-validation-defined -->
 
 ## With `Validación: agente`
 
@@ -18,7 +19,8 @@ A deferred validation has its three conditions at once: present with the work in
 
 ## The smoke, in every mode
 
-One row per THEN (spike: per objective), its evidence `suite`, `ejecución real` or `no probado`. A THEN seen in an interface (screen, HTTP response, CLI output, a file the change produces) counts as verified only with `ejecución real`, and a failure THEN (an error, a rejection) is provoked with the input that fails: «the test covers it» is `suite` (`tests/closing-verification-red.md`). A THEN with `Se valida en:`: prepare that environment (the worktree with the base up to date), and the script uses it. With «Verificación visual», the message carries what §5 of [frontend-verification.md](../../sdd-implement/references/frontend-verification.md) lists, or «composición no medida» or «no probado» with its reason.
+One row per THEN (spike: per objective), its evidence `suite`, `ejecución real` or `no probado`. A THEN seen in an interface (screen, HTTP response, CLI output, a file the change produces) counts as verified only with `ejecución real`, and a failure THEN (an error, a rejection) is provoked with the input that fails: «the test covers it» is `suite` (`tests/closing-verification-red.md`). A THEN with `Se valida en:`: prepare that environment (the worktree with the base up to date), and the script uses it.
+<!-- kit: incluye visual-evidence -->
 
 ## The record
 

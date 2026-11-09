@@ -1,0 +1,1 @@
+A failure on a line you wrote you fix in the roadmap, never in the validator. A failure on a line you didn't touch you don't fix, and it doesn't stop you: your final message says how many, as inherited form that the «Roadmap en la forma de la plantilla» step of the v2.3.0 migration fixes (`tests/release-close-roadmap-red.md`, K1 and P3).

@@ -1,0 +1,1 @@
+End with «si prefieres hacerlo en esta sesión, di "arráncalo"», in the user's language; with «arráncalo», invoke `sdd-propose` with the prompt you gave, and without it, start nothing (`tests/sdd-explore-0161-red.md`, m2).

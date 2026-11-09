@@ -73,7 +73,7 @@ The profile line says which level it comes from; one `Aviso:` line per local key
 - You're about to write the spec without having read `references/spec-writing.md` or interviewed with `sdd-grilling`, because "you've already explored the code".
 - You're treating the change as small without citing the predicate's conditions, or without the user confirming lite mode.
 - You're writing `plan.md` and the spec has no explicit approval from the user.
-- You're about to edit code and the plan isn't approved.
+<!-- kit: incluye unapproved-plan-flag -->
 - You're "documenting the decision in the spec" instead of waiting for the answer.
 - You're about to ask a full feature to confirm its lane, or to start a patch, a lite or a config change without asking.
 - You're about to ask the first design question of a feature or a spike without the announcement.

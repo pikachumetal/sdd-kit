@@ -11,7 +11,7 @@ interface Budget {
 const skillBudgets: Record<string, Budget> = {
   'add-to-changelog': { skillMd: 500, total: 500 },
   'sdd-agent-writing': { skillMd: 2000, total: 8949 },
-  'sdd-archive': { skillMd: 3920, total: 9794 },
+  'sdd-archive': { skillMd: 3920, total: 10010 },
   'sdd-config': { skillMd: 1450, total: 1450 },
   'sdd-explore': { skillMd: 1100, total: 1100 },
   'sdd-end-release': { skillMd: 1920, total: 2500 },
@@ -20,7 +20,7 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-parallel-agents': { skillMd: 1150, total: 1150 },
   'sdd-init': { skillMd: 2648, total: 3193 },
   'sdd-retro': { skillMd: 700, total: 700 },
-  'sdd-roadmap': { skillMd: 3600, total: 3600 },
+  'sdd-roadmap': { skillMd: 3600, total: 3685 },
   'sdd-rubber-duck': { skillMd: 600, total: 600 },
   'sdd-propose': { skillMd: 5250, total: 14200 },
   'sdd-implement': { skillMd: 2658, total: 6657 },
@@ -30,7 +30,7 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-tdd': { skillMd: 1750, total: 4030 },
   'sdd-upgrade': { skillMd: 980, total: 980 },
   'sdd-debugging': { skillMd: 1700, total: 3407 },
-  'sdd-worktrees': { skillMd: 1431, total: 1431 },
+  'sdd-worktrees': { skillMd: 1479, total: 1479 },
   'sdd-templates': { skillMd: 1700, total: 16999 },
   // El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
   'using-sdd': { skillMd: 570, total: 570 },

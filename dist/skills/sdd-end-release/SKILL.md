@@ -7,7 +7,8 @@ description: Use when a release or delivery must be closed in a project with .do
 
 ## Overview
 
-Closing a release is the **publication cut** of what's done, like git-flow's release branch. It runs over changes already closed by `sdd-archive`, whose rows wait in Now, and turns them into a sealed changelog, a Now without the finished rows, trimmed debt, release notes if someone receives them, and a tag. Write everything the user reads in the language of their message. The literals of the project's documents stay as written here, in Spanish.
+Closing a release is the **publication cut** of what's done, like git-flow's release branch. It runs over changes already closed by `sdd-archive`, whose rows wait in Now, and turns them into a sealed changelog, a Now without the finished rows, trimmed debt, release notes if someone receives them, and a tag. Write everything the user reads in the language of their message.
+The literals of the project's documents stay as written here, in Spanish.
 
 **Feedback from a demo or a meeting isn't processed here**: it goes to `sdd-roadmap`, and the cut goes on without waiting for it.
 

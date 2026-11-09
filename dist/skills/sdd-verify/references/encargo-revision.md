@@ -24,7 +24,7 @@ No block travels other than «De código». The «De proceso» one (model policy
 
 Each axis is dispatched with the type and model of the «Final review» table of `sdd-verify` —Spec and Architecture with `subagent_type: sdd-kit:effort-high` + `model: opus`, Code with `subagent_type: sdd-kit:effort-high` + `model: sonnet`—, also in Native, where the thread dispatches them. Measured: `tests/native-adapt-red.md`. Like every dispatch, it carries its silence watch, also in the re-review: [Silence watch](../../sdd-propose/references/control-profiles.md#silence-watch).
 
-It goes out in the background as soon as the last task's commit exists, and the thread keeps working and committing while it reviews. That is why the axes don't work in the thread's tree, but in a worktree detached at the sha it reviews, `review-<id>-<sha corto>`, next to the repo's other worktrees:
+The thread keeps working and committing while the axes review. That is why they don't work in the thread's tree, but in a worktree detached at the sha they review, `review-<id>-<sha corto>`, next to the repo's other worktrees:
 
 ```bash
 SHA=$(git rev-parse --short HEAD)

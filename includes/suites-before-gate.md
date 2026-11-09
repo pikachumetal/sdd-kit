@@ -1,0 +1,1 @@
+A branch that only touches `.docs/` or `*.md` runs nothing. Otherwise each suite of «Suites» with level `unitario` or `pendiente` (a suite without a level counts as `pendiente`) runs whole, with its command, before the gate, unless its command is the gate's or one of the tasks the gate runs.

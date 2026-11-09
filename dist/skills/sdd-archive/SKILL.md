@@ -11,7 +11,9 @@ Closing a change is a **Definition of Done**: a checklist that keeps the project
 
 **Violating the letter of the checklist is violating its spirit.**
 
-**Escalation clause** (`Patch only:`): if the `Decisiones` list of `patch.md` §3 has a decision about what the user sees or can do with author `sin el dev-lead`, or the fix ended up interpreting requirements, it was a feature: close it with the `Feature only:` branches and say so.
+**Escalation clause** (`Patch only:`):
+A decision about what the user sees or can do with author `sin el dev-lead` in the `Decisiones` list of `patch.md` §3 takes the patch out of the lane.
+At the close, such a decision, or a fix that ended up interpreting requirements, means it was a feature: close it with the `Feature only:` branches and say so.
 
 ## Checklist (one todo per step)
 

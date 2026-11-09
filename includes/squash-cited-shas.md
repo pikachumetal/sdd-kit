@@ -1,0 +1,1 @@
+Before squashing, each `Pasada de fix:`, `Re-revisión:` or `Revisión final:` line of `tasks.md` whose sha falls in the squashed range is rewritten without it, and so is any sha of the range that `walkthrough.md`, `patch.md`, the debt or an ADR of the branch cites (a cited sha is any 7 to 40 hex characters); otherwise that range isn't squashed.

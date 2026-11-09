@@ -23,7 +23,8 @@ Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: explorin
 4. **Optional durable output (with approval)** — if the question uncovers an outdated anchor document or produces a decision worth recording, **propose it** and wait for the user's OK; only then write it, in the document it belongs to. Updating a doc **is not** «taking the chance to leave it done».
 5. **When it becomes work, it goes to the roadmap** — once the conversation ends in work («si se puede, lo quiero», «arréglalo», «quiero la tabla de medidas»), say so, name the lane you see and hand it over; the roadmap sizes and splits it:
    - **Feature, patch or spike** → invoke `sdd-roadmap` with `Skill` and hand it what was said: what, why, each decision taken with its literal, and the lane you see. The roadmap writes the row or rows, reserves the id and closes with the launch prompt. You don't write the row, reserve an id or invoke `sdd-propose`: work without a row is work nobody can track (`tests/sdd-explore-0161-red.md`, e3).
-   - **Config** (dependencies, CI, settings, a typo outside visible text: no row) → give its launch prompt yourself, traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md): no id, branch `feature/<slug>`, `Carril: config`, and end with «si prefieres hacerlo en esta sesión, di "arráncalo"», in the user's language. With «arráncalo», invoke `sdd-propose` (e2).
+   - **Config** (dependencies, CI, settings, a typo outside visible text: no row) → give its launch prompt yourself, traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md): no id, branch `feature/<slug>`, `Carril: config`.
+<!-- kit: incluye start-here-offer -->
    - Planning without doing («apúntalo, no lo hagas») → `sdd-roadmap`. A failure to fix is a patch: the first bullet.
 
    «Hazlo ya, aquí» doesn't skip the roadmap: the row comes first, and its «arráncalo» starts it in this session.

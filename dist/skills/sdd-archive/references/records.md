@@ -21,7 +21,8 @@ In the 2.x roadmap (`ROADMAP.md` closes its debt as «Roadmap 3.0.0» says), a d
 - `Patch only:` a row in the «Patches» table (date, id, description): a patch without a row is invisible; deferred, its «Patches» row starts with `🧪 validación diferida a <disparador> — `. A «Patch:» row of «Próximo» for this patch is marked `✅` and stays.
 - `Patch only:` with the validation deferred and an open `## Release <N>` section, the patch also gets a row in its table, with the header of `roadmap-template.md` and `🧪 validación diferida a <disparador>` in «Estado»: the release close looks for deferred items there, not in «Patches». A validated patch gets no row there.
 - If `patch.md` re-measures a debt or backlog row the patch doesn't settle, and the result contradicts what the row claims (its evidence, its count, its proposal), rewrite those cells with the new measurement, its date and a link to `patch.md`: the row can no longer claim what the measurement denies (2/2 left it intact, `tests/fewer-stops-red.md`, s6).
-- After editing and before the closing commit, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`. A failure in a line the close wrote you fix in the roadmap, never in the validator. Failures in lines you didn't touch you don't fix and don't stop the close: the final message says how many and that the «Roadmap en la forma de la plantilla» step of the v2.3.0 migration fixes them (3 of 4 closes left it red without saying so, `tests/release-close-roadmap-red.md`, K1).
+- After editing and before the closing commit, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`.
+A failure on a line you wrote you fix in the roadmap, never in the validator. A failure on a line you didn't touch you don't fix, and it doesn't stop you: your final message says how many, as inherited form that the «Roadmap en la forma de la plantilla» step of the v2.3.0 migration fixes (`tests/release-close-roadmap-red.md`, K1 and P3).
 
 ## Roadmap 3.0.0
 
@@ -44,4 +45,6 @@ The lines are step 9.5's, literal. Besides them:
 ## History
 
 - `Patch only:` the fix commit carries code, tests and `patch.md`; the close commit, `patch.md` with the fix's hash and the time, plus changelog (2.x), roadmap, debt, estimation-log and merged capabilities.
-- `Feature only:` before squashing, rewrite in `tasks.md` each `Pasada de fix:`, `Re-revisión:` or `Revisión final:` line whose sha falls in the squashed range, without the sha: `Pasada de fix: juntada en el cierre, <n> hallazgos RED→GREEN`. The same with any sha of the range that `walkthrough.md`, `patch.md`, the debt or an ADR of the branch cites (a cited sha is any 7 to 40 hex characters): rewritten without it, or that range isn't squashed.
+- `Feature only:`
+Before squashing, each `Pasada de fix:`, `Re-revisión:` or `Revisión final:` line of `tasks.md` whose sha falls in the squashed range is rewritten without it, and so is any sha of the range that `walkthrough.md`, `patch.md`, the debt or an ADR of the branch cites (a cited sha is any 7 to 40 hex characters); otherwise that range isn't squashed.
+The line becomes `Pasada de fix: juntada en el cierre, <n> hallazgos RED→GREEN`.

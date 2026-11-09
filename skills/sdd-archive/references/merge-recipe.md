@@ -21,7 +21,9 @@ A red is contrasted by hand, from the saved output:
 
 - **Passes without the branch, red on the branch**: it's the branch's; fix it with a failing test first and go back to the gate as «Running a gate» of `sdd-verify` says: the tests that failed and what the fix affects, not the whole suite.
 - **No se repite**: green in both. If the saved error line is a timeout or a machine resource (a busy port, a locked file, a full disk, git's temporary objects), that explains the red: open a debt row of flaky tests, placed as below and with what step 6 lists; go on, in any profile. If it isn't, first run the red task whole in both, without `--affected` (in the base's worktree it selects nothing), and read it the same way: two green passes of the file alone don't make it flaky, since the red can come from another file of its task.
-- **Fails without the branch** (on the branch too, or only there): write `base: en rojo: el mismo comando también falla sin la rama`. Search the first error lines (the test file, the error's name) in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap). A row that names it: quote it. None: open one in «Por triar» (in 2.x, in «Deuda técnica») with the evidence. Then stop with the red report and ask whether to merge anyway.
+- **Fails without the branch** (on the branch too, or only there): write `base: en rojo: el mismo comando también falla sin la rama`.
+<!-- kit: incluye base-red-debt -->
+Stop with the red report and ask whether to merge anyway.
 
 A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …` or `base: en verde: el rojo lo trae la rama`), and the same rule follows.
 
