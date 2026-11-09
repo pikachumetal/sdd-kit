@@ -153,6 +153,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Patch 0321** — `battery.mjs run` sale con 3 sin lanzar nada y avisa de que `COST_CAP` es el techo de toda la campaña si ya está gastado, cuenta cada tanda con el precio que da `plan` a su escenario, `verdict` lee `SCENARIOS` como `run`, y `plan`, `field` y `verdict` dan su uso si les falta un argumento. → [ref](specs/20261109-101902-patch-0321-battery-launcher-cap-and-verdict/)
 - **Patch 0318** — `sdd merge`, `sdd id claim` y `sdd roadmap publish` ya no se paran por un fichero que solo cambia de finales de línea o de stat (`git diff --quiet` en vez de `git status`, y `git add -u` antes de un merge), y `.gitattributes` da `text eol=lf` a la lista blanca del build para que `kit:build` copie LF a `dist/`. → [ref](specs/20261105-115706-patch-0318-eol-only-not-dirty/)
 - **Patch 0270** — `sdd capability merge` no da hueco en una línea de un `MODIFIED` que ya está, literal, en el requisito vivo, y rechaza sin escribir la línea suelta y el escenario incompleto, con la comprobación de `sdd capability check`. → [ref](specs/20261102-134956-patch-0270-capability-merge-fixes/)
 - **0285** — Los tests de `cli:test` que esperan a `git` o a `node` tienen un tope de 20 s por fichero y ya no dan `Test timed out in 5000ms` con 8 suites a la vez. → [ref](specs/20261102-120757-feature-0285-load-test-timeouts/)

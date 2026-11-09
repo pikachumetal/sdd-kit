@@ -302,8 +302,9 @@
 | 2026-11-08 | 0310 | docs | 1 | 0.77 | 0.77 | 37364k | 5912k | 1.65 | 19.12 | 20261108-144153-feature-0310-init-explore-release-feedback-rework |
 | 2026-11-08 | 0313 | infra/tooling | 1.5 | 1.43 | 0.95 | 37942k | 9422k | — | 21.12 | 20261108-184209-feature-0313-tasks-superpowers-7 |
 | 2026-11-09 | 0314 | docs | 2.5 | 1.73 | 0.69 | 52990k | 3935k | 10.13 | 25.32 | 20261108-184606-feature-0314-grilling-brainstorming-7 |
+| 2026-11-09 | 0321 | patch | 1 | 0.28 | 0.28 | — | — | no aplica | — | 20261109-101902-patch-0321-battery-launcher-cap-and-verdict |
 
-**Factor de calibración** (ratio mediano real/estimado, 262 artefactos): **0.57** · media 0.71
+**Factor de calibración** (ratio mediano real/estimado, 263 artefactos): **0.57** · media 0.71
 
 - p25–p75: 0.36–0.84
 - p80: 0.95 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
@@ -313,7 +314,7 @@
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 104 | 40 % |
+| <0.5 | 105 | 40 % |
 | 0.5–0.8 | 82 | 31 % |
 | 0.8–1.25 | 54 | 21 % |
 | 1.25–2 | 13 | 5 % |
@@ -324,7 +325,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 115 | 0.58 | 0.41–0.81 |
 | infra/tooling | 73 | 0.49 | 0.35–0.73 |
-| patch | 72 | 0.66 | 0.26–1.2 |
+| patch | 73 | 0.66 | 0.27–1.2 |
 | tooling | 1 | 0.6 | — |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -344,7 +345,7 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 150 | 277.74 | 0.53 | 900.53 | 2665.74 |
+| sin publicar | 151 | 278.02 | 0.53 | 900.53 | 2665.74 |
 
 > Ver `estimation.md`.
 
@@ -352,9 +353,9 @@
 
 | Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| apertura | 27 | 5.36 | 2.22 | 16.32 | 0 | 16 % | sí | 35.75 | 7.58 | 0.21 |
-| implementación | 27 | 6.36 | 24.42 | 41.09 | 0.31 | 63 % | no | 57.5 | 30.78 | 0.52 |
+| apertura | 28 | 5.41 | 2.24 | 16.32 | 0 | 16 % | sí | 35.75 | 7.65 | 0.21 |
+| implementación | 28 | 6.47 | 24.51 | 41.09 | 0.31 | 63 % | no | 57.5 | 30.98 | 0.52 |
 | revisión | 21 | 2.8 | 7 | 29.59 | 0 | 20 % | sí | 10.55 | 9.79 | 0.91 |
-| cierre | 25 | 0.27 | 0.19 | 0 | 0.05 | 1 % | sí | 10.1 | 0.45 | 0.04 |
+| cierre | 26 | 0.27 | 0.19 | 0 | 0.05 | 1 % | sí | 10.1 | 0.47 | 0.04 |
 
-Ceremonia: 37 % del trabajo (19 tareas, 8 fuera por una fase sin eventos).
+Ceremonia: 37 % del trabajo (19 tareas, 9 fuera por una fase sin eventos).

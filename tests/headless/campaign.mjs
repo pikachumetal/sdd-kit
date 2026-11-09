@@ -162,6 +162,9 @@ const costsIn = (dir, fs) => toolsFiles(dir, fs).map((name) => lastCost(fs.read(
 const spent = (config, fs) => outDirs(config, fs).flatMap((dir) => costsIn(dir, fs)).reduce((sum, cost) => sum + (cost ?? 0), 0);
 const totalSpent = (config, fs, cut) => spent(config, fs) + cut * Number(config.subjectCost);
 
+// Lo gastado en todas las fases de la campaña, con los cortados: lo que COST_CAP cuenta.
+export const campaignSpent = (config, deps) => totalSpent(config, deps.fs, countLive(config, deps).cut);
+
 function stopRequested(config, deps) {
   if (!deps.fs.exists(join(config.runsDir, 'stop'))) return false;
   deps.log('parada a petición');
