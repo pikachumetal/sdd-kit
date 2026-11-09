@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BatteryError, planLines, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
+import { BatteryError, main, planLines, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
 // Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
@@ -575,11 +575,11 @@ describe('N sustituye n y umbral', () => {
   it('verdict con n juzga sobre esa n', () => {
     const fs = toyFs();
     tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
-    expect(lineOf(verdict(TABLE, OUT, [], fs, '1').lines, 'r1')).toBe('r1 · 1/1 · umbral 1/1 · verde');
+    expect(lineOf(verdict(TABLE, OUT, [], fs, { N: '1' }).lines, 'r1')).toBe('r1 · 1/1 · umbral 1/1 · verde');
   });
 
   it.each(['0', 'dos', ' 1'])('verdict con n = %j para con código 2', (value) => {
-    expect(() => verdict(TABLE, OUT, [], toyFs(), value)).toThrow(new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2));
+    expect(() => verdict(TABLE, OUT, [], toyFs(), { N: value })).toThrow(new BatteryError(`N tiene que ser un entero positivo: ${value}`, 2));
   });
 });
 
@@ -757,5 +757,124 @@ describe('la skill de una petición slash', () => {
 
   it('el slash de using-sdd no cuenta: manda la primera Skill que no es using-sdd', () => {
     expect(judgeF1('## petición\n/sdd-kit:using-sdd\n', finished('>>> Skill: sdd-kit:using-sdd\n>>> Skill: sdd-kit:sdd-propose'))).toBe('1/1');
+  });
+});
+
+describe('verdict lee SCENARIOS y N como run (ticket de la 0310 §4)', () => {
+  const real = (name: string) => {
+    const fs = memoryFs();
+    fs.write(TABLE, readFileSync(resolve(import.meta.dirname, `../../../../tests/batteries/${name}/battery.md`), 'utf8'));
+    return fs;
+  };
+
+  it('con SCENARIOS=r4 y solo r4-1 da solo la línea de r4 del paso release de sdd-retro', () => {
+    const fs = real('sdd-retro');
+    tools(fs, 'r4-1', finished('>>> Skill: sdd-kit:sdd-end-release'));
+    expect(verdict(TABLE, OUT, ['release'], fs, { SCENARIOS: 'r4' }).lines.map((line: string) => line.split(' ')[0])).toEqual(['r4']);
+  });
+
+  it('con N=2 y dos sujetos de fb1 da fb1 · 2/2', () => {
+    const fs = real('sdd-feedback');
+    for (const label of ['fb1-1', 'fb1-2']) tools(fs, label, finished('>>> Skill: sdd-kit:sdd-feedback'));
+    expect(lineOf(verdict(TABLE, OUT, ['source'], fs, { N: '2' }).lines, 'fb1')).toMatch(/^fb1 · 2\/2 · umbral 2\/2 · /);
+  });
+
+  it('rechaza un escenario que no está en la tabla, como run', () => {
+    expect(() => verdict(TABLE, OUT, [], toyFs(), { SCENARIOS: 'nope' })).toThrow(new BatteryError('escenario desconocido: nope', 2));
+  });
+});
+
+describe('el techo de coste de la campaña', () => {
+  const spent = (fs: MemoryFs, cost: string) => fs.write(join(RUNS, 'dry', 'red', 'out', 'x-1.tools.txt'), `=== RESULTADO (1 turnos, ${cost} $)\n`);
+
+  it('con COST_CAP ya gastado en otras fases sale con 3 sin lanzar, y dice que el techo es de toda la campaña (ticket de la 0314 §1)', async () => {
+    const fs = toyFs();
+    spent(fs, '7.22');
+    const fake = fakeDeps(fs);
+    await expect(runBattery(env({ COST_CAP: '2' }), CWD, fake.deps)).rejects.toMatchObject({
+      code: 3,
+      message: `COST_CAP=2 es el techo de toda la campaña de ${join(RUNS, 'dry')}: van 7.22 $ gastados; pásalo como total, no por tanda`,
+    });
+    expect(fake.launched).toEqual([]);
+  });
+
+  it('con --resume y nada pendiente da el veredicto aunque el techo esté gastado', async () => {
+    const fs = toyFs();
+    spent(fs, '7.22');
+    for (const label of ['r1-1', 'r1-2']) tools(fs, label, finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    const fake = fakeDeps(fs);
+    expect(await runBattery(env({ SCENARIOS: 'r1', COST_CAP: '2' }), CWD, fake.deps, { resume: true })).toBe(0);
+    expect(fake.log).toContain('r1 · 2/2 · umbral 2/2 · verde');
+  });
+
+  it('con --resume y algo pendiente sale con 3 si el techo está gastado', async () => {
+    const fs = toyFs();
+    spent(fs, '7.22');
+    tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    const fake = fakeDeps(fs);
+    await expect(runBattery(env({ SCENARIOS: 'r1', COST_CAP: '2' }), CWD, fake.deps, { resume: true })).rejects.toMatchObject({ code: 3 });
+    expect(fake.launched).toEqual([]);
+  });
+});
+
+describe('el precio de plan de cada escenario', () => {
+  const SPECS = join(CWD, 'specs');
+  const saved = join(SPECS, '20261108-000000-feature-0310-x', 'red', 'out');
+
+  function pricedFs(prices: Record<string, [string, string]>): MemoryFs {
+    const fs = toyFs();
+    for (const [label, [ask, cost]] of Object.entries(prices)) {
+      fs.write(join(saved, `${label}.tools.txt`), `=== RESULTADO (3 turnos, ${cost} $)\n`);
+      fs.write(join(saved, `${label}.state.txt`), `## petición\n${ask}\n`);
+    }
+    return fs;
+  }
+
+  const R1 = ['Apunta lo del filtro.', '0.28'] as [string, string];
+  const firstCost = async (fs: MemoryFs, overrides: Record<string, string>) => {
+    const fake = fakeDeps(fs);
+    await runBattery(env({ N: '1', ...overrides }), CWD, fake.deps, { specsRoot: SPECS });
+    return fake.launched[0].env.SUBJECT_COST;
+  };
+
+  it('no lanza el sujeto que el precio de plan de su escenario saca del techo (ticket de la 0310 §2)', async () => {
+    const fs = pricedFs({ 'r1-1': R1 });
+    fs.write(join(RUNS, 'dry', 'red', 'out', 'x-1.tools.txt'), '=== RESULTADO (1 turnos, 1.38 $)\n');
+    const fake = fakeDeps(fs);
+    await runBattery(env({ SCENARIOS: 'r1', SUBJECT_CAP: '8', COST_CAP: '1.58' }), CWD, fake.deps, { specsRoot: SPECS });
+    expect(fake.launched).toEqual([]);
+    expect(fake.log).toContain('techo de 1.58 $ alcanzado (1.38 $ gastados, 0 en curso a 0.28 $)');
+  });
+
+  it('una tanda de varios escenarios cuenta con el más caro', async () => {
+    const fs = pricedFs({ 'r1-1': R1, 'f1-1': ['Añade un filtro.', '0.50'] });
+    expect(await firstCost(fs, { SCENARIOS: 'r1 f1' })).toBe('0.5');
+  });
+
+  it('un escenario sin precio cuenta con la media de los medidos', async () => {
+    const fs = pricedFs({ 'r1-1': R1, 'd1-1': ['Hay que mejorar las reservas.', '0.40'] });
+    expect(await firstCost(fs, { SCENARIOS: 'f1' })).toBe('0.34');
+  });
+
+  it('un SUBJECT_COST explícito manda sobre el precio de plan', async () => {
+    expect(await firstCost(pricedFs({ 'r1-1': R1 }), { SCENARIOS: 'r1', SUBJECT_COST: '0.05' })).toBe('0.05');
+  });
+});
+
+describe('main', () => {
+  it.each([
+    ['plan', 'uso: node battery.mjs plan <battery.md> [paso…]'],
+    ['field', 'uso: node battery.mjs field <battery.md> <id> <columna>'],
+    ['verdict', 'uso: node battery.mjs verdict <battery.md> <out> [paso…]'],
+  ])('%s sin ruta da su uso, no ERR_INVALID_ARG_TYPE', async (command, usage) => {
+    // Como process.argv sin la ruta: el segundo elemento llega undefined.
+    await expect(main([command, undefined])).rejects.toThrow(new BatteryError(usage));
+  });
+
+  it.each([
+    [['verdict', TABLE] as [string, string], 'uso: node battery.mjs verdict <battery.md> <out> [paso…]'],
+    [['field', TABLE, 'r1'] as [string, string, string], 'uso: node battery.mjs field <battery.md> <id> <columna>'],
+  ])('%j da su uso si falta otro argumento obligatorio', async (args, usage) => {
+    await expect(main(args)).rejects.toThrow(new BatteryError(usage));
   });
 });
