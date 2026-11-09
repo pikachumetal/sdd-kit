@@ -49,4 +49,23 @@ describe('Los verbos de tasks aceptan ids con letras y puntos', () => {
     expect(result.code).toBe(0);
     expect(result.err).toContain('no oculta ningún encabezado de task');
   });
+
+  it('an unclosed block that hides the next task stops with 1', () => {
+    const repo = emptyRepo();
+    write(join(repo, plan), '# Plan\n\n## Task 1: Uno\n\n```\nsin cerrar\n\n## Task 2: Dos\n\nDos.\n');
+    write(join(repo, 'tasks.md'), '# Tasks\n');
+    commitAll(repo, 'fixture');
+    const result = sdd(repo, 'task', 'brief', plan, '1');
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('no se cierra');
+  });
+
+  it('a translated plan without Task headings stops with 1', () => {
+    const repo = emptyRepo();
+    write(join(repo, plan), '# Plan\n\n## Tarea 1: Login\n\nHaz login.\n');
+    commitAll(repo, 'fixture');
+    const result = sdd(repo, 'task', 'brief', plan, '1');
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('no hay encabezados de task');
+  });
 });

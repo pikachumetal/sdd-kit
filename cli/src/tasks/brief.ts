@@ -16,11 +16,13 @@ function splitLines(text: string): string[] {
 }
 
 const TASK_HEADING = /^(#+)[ \t]+Task[ \t]/;
-const ID_PREFIX = /^[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)*/;
+const ID_BODY = '[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+)*';
+const ID_PREFIX = new RegExp(`^${ID_BODY}`);
+const WHOLE_ID = new RegExp(`^${ID_BODY}$`);
 const TASK_SHAPED_HEADING = /^#+[ \t]+[^ \t]+[ \t]+[A-Za-z0-9.]*[0-9]/;
 const MAX_SHAPED = 5;
 
-export interface PlanScan {
+interface PlanScan {
   picked: string[];
   tasks: number;
   shaped: string[];
@@ -29,7 +31,7 @@ export interface PlanScan {
 }
 
 export function isTaskId(value: string): boolean {
-  return /^[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)*$/.test(value) && /[0-9]/.test(value);
+  return WHOLE_ID.test(value) && /[0-9]/.test(value);
 }
 
 class PlanScanner {
@@ -41,17 +43,21 @@ class PlanScanner {
     this.task = task;
   }
 
-  visit(line: string, number: number): void {
-    if (line.startsWith('```')) this.scan.fence = this.scan.fence ? null : { line: number, hidden: false };
+  visit(line: string, lineNumber: number): void {
+    if (line.startsWith('```')) this.toggleFence(lineNumber);
     else if (this.scan.fence) this.scan.fence.hidden ||= TASK_HEADING.test(line);
     else this.visitOutsideFence(line);
     if (this.scan.inTask) this.scan.picked.push(line);
   }
 
+  private toggleFence(lineNumber: number): void {
+    this.scan.fence = this.scan.fence ? null : { line: lineNumber, hidden: false };
+  }
+
   private visitOutsideFence(line: string): void {
     const heading = TASK_HEADING.exec(line);
     const id = heading && ID_PREFIX.exec(line.slice(heading[0].length).trimStart())?.[0];
-    if (heading && id && /[0-9]/.test(id)) this.enterHeading(heading[1].length, id);
+    if (heading && id && isTaskId(id)) this.enterHeading(heading[1].length, id);
     if (TASK_SHAPED_HEADING.test(line) && this.scan.shaped.length < MAX_SHAPED) this.scan.shaped.push(line);
   }
 
@@ -64,7 +70,7 @@ class PlanScanner {
   }
 }
 
-export function scanPlan(planText: string, task: string): PlanScan {
+function scanPlan(planText: string, task: string): PlanScan {
   const scanner = new PlanScanner(task);
   splitLines(planText).forEach((line, index) => scanner.visit(line, index + 1));
   return scanner.scan;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { commitAll, emptyRepo, git, planText, scratchDir, sdd, sddWithEnv, write } from './harness.ts';
 
@@ -142,6 +142,41 @@ describe('Los verbos de tasks paran fuera de un repo o sin commits', () => {
     const repo = repoWithoutCommits();
     expect(sdd(repo, 'workspace', plan).code).toBe(0);
     expect(sdd(repo, 'task', 'brief', plan, '1').code).toBe(0);
+  });
+});
+
+describe('Casos límite de -C y de la parada', () => {
+  it('an -C that points to a file stops with 2', () => {
+    const { dir, run } = outsideAnyRepo();
+    const file = join(dir, plan);
+    const result = run('workspace', '-C', file, plan);
+    expect(result.code).toBe(2);
+    expect(result.err).toContain(`directorio de -C no válido: ${file}`);
+  });
+
+  it('an -C to an existing directory outside a repo stops with that directory', () => {
+    const { dir, run } = outsideAnyRepo();
+    const other = join(dir, 'other');
+    mkdirSync(other);
+    const result = run('workspace', '-C', other, join(dir, plan));
+    expect(result.code).toBe(2);
+    expect(result.err).toContain(repoOnly(other));
+  });
+
+  it('the stop message is followed by the first line of what git said', () => {
+    const { dir, run } = outsideAnyRepo();
+    const result = run('workspace', plan);
+    expect(result.err).toContain(`${repoOnly(dir)}\ngit dijo: `);
+  });
+
+  it('without git in the PATH the stop quotes the process error', () => {
+    const { dir } = outsideAnyRepo();
+    const empty = join(dir, 'empty');
+    mkdirSync(empty);
+    const env = { GIT_CEILING_DIRECTORIES: dirname(dir), PATH: empty, Path: empty, MSYSTEM: '' };
+    const result = sddWithEnv(dir, env, ['workspace', plan]);
+    expect(result.code).toBe(2);
+    expect(result.err).toMatch(/^git dijo: \S/m);
   });
 });
 

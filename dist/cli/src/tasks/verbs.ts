@@ -51,8 +51,8 @@ export const taskStartVerb: Verb = {
   positionals: ['PLAN_FILE', 'TASK_NUMBER'],
   async run(args, io) {
     const usage = 'sdd task start PLAN_FILE TASK_NUMBER';
-    const [plan, number] = exactly(args, 2, usage);
-    const task = taskId(number, usage);
+    const [plan, id] = exactly(args, 2, usage);
+    const task = taskId(id, usage);
     await requireRepo('commit');
     const { path, warnings } = await writeBrief({ plan, task });
     warnings.forEach((warning) => io.err(warning));
@@ -71,8 +71,8 @@ export const taskBriefVerb: Verb = {
   async run(args, io) {
     enterDirectory(args);
     const usage = 'sdd task brief PLAN_FILE TASK_NUMBER [OUTFILE]';
-    const [plan, number, out] = between(args, [2, 3], usage);
-    const task = taskId(number, usage);
+    const [plan, id, out] = between(args, [2, 3], usage);
+    const task = taskId(id, usage);
     const written = await writeBrief({ plan, task, out });
     written.warnings.forEach((warning) => io.err(warning));
     io.out(`wrote ${written.path}: ${written.lines} lines`);
@@ -88,9 +88,9 @@ export const taskDoneVerb: Verb = {
   positionals: ['PLAN_FILE', 'TASK_NUMBER', 'BASE', '--', 'TEST_COMMAND', '[ARGS...]'],
   async run(args, io) {
     const usage = 'sdd task done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]';
-    const [plan, number, base, ...command] = args.positionals;
+    const [plan, id, base, ...command] = args.positionals;
     if (!args.hasSeparator || command.length === 0 || base === undefined) throw new UsageError(`usage: ${usage}`);
-    return finishTask({ plan, task: taskId(number, usage), base, command }, io);
+    return finishTask({ plan, task: taskId(id, usage), base, command }, io);
   },
 };
 
