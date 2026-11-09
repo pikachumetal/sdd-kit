@@ -336,6 +336,13 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN el fichero conserva sus dos líneas
 - AND sin `.temp/sdd/.gitignore`, lo crea con `*`
 
+### `sdd task done` no lanza un Vitest con lentos sin `--test-timeout`
+
+- GIVEN un plan con commits en el rango de la task
+- WHEN se ejecuta `node sdd.js task done <plan> <n> <base> -- npx vitest run <filtros>` sin `--test-timeout`, y algún filtro está en la ruta de un `*.slow.test.ts` (o no hay filtros)
+- THEN escribe en stderr `Task <n> NOT recorded: vitest corre <ficheros> sin --test-timeout: añade --test-timeout 120000`, sale con 1 y no ejecuta el comando
+- AND con `--test-timeout <ms>`, o sin ningún lento entre los filtros, lo lanza como hasta ahora
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.claude/hooks/sdd-kit-loaded.mjs`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`, y el hook, de `hooks/project/` del kit. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe `.docs/sdd/sdd-kit.json`, o, con `--project-hook`, el hook y su entrada en settings. `sdd validation serve` lee los pasos de `--steps` y el panel de `skills/sdd-archive/references/validation-panel.js` del kit cargado, y escribe solo el fichero de `--out`. `sdd hook session-start` escribe la marca de la sesión en la carpeta temporal del sistema. `sdd hook session-end` lee el JSON de stdin, `CLAUDE_CODE_TMPDIR` y `CLAUDE_PROJECT_DIR`, borra esa marca y su `.warned`, y solo borra subcarpetas de `<CLAUDE_CODE_TMPDIR o la carpeta temporal del sistema>/claude/<carpeta del proyecto>/`.

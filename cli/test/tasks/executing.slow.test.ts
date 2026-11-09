@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { commitAll, emptyRepo, git, planText, sdd, sddWithEnv, write } from './harness.ts';
 
@@ -178,6 +178,81 @@ describe('sdd review package', () => {
     const result = sdd(repoWithTwoCommits(), 'review', 'package', plan, 'nope', 'HEAD');
     expect(result.code).toBe(2);
     expect(result.err).toContain('bad BASE: nope');
+  });
+});
+
+describe('sdd task done with vitest and slow tests', () => {
+  // Un node -e que deja ran.txt hace de vitest: los argumentos tras el script son suyos.
+  const mark = 'require("fs").writeFileSync("ran.txt", "x")';
+
+  function repoWithSlowTests(): { repo: string; cli: string; base: string; ledger: string } {
+    const { repo, base, ledger } = repoWithPlan();
+    write(join(repo, 'cli', 'test', 'roadmap', 'cut.slow.test.ts'), '');
+    write(join(repo, 'cli', 'test', 'roadmap', 'check.test.ts'), '');
+    commitAll(repo, 'tests');
+    return { repo, cli: join(repo, 'cli'), base, ledger };
+  }
+
+  it('refuses vitest run over a slow test without --test-timeout, naming the file, before launching', () => {
+    const { cli, base, ledger } = repoWithSlowTests();
+    const result = sdd(cli, 'task', 'done', '../plan.md', '1', base, '--', process.execPath, '-e', mark, 'vitest', 'run', 'test/roadmap/');
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('test/roadmap/cut.slow.test.ts');
+    expect(result.err).toContain('--test-timeout');
+    expect(existsSync(join(cli, 'ran.txt'))).toBe(false);
+    expect(existsSync(ledger)).toBe(false);
+  });
+
+  it('refuses the pnpm --dir form from the repo root', () => {
+    const { repo, base } = repoWithSlowTests();
+    const result = sdd(repo, 'task', 'done', plan, '1', base, '--', process.execPath, '-e', mark, 'pnpm', '--dir', 'cli', 'exec', 'vitest', 'run', 'test/roadmap/');
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('cut.slow.test.ts');
+    expect(existsSync(join(repo, 'ran.txt'))).toBe(false);
+  });
+
+  it('runs vitest over a slow test with --test-timeout', () => {
+    const { cli, base } = repoWithSlowTests();
+    const result = sdd(cli, 'task', 'done', '../plan.md', '1', base, '--', process.execPath, '-e', mark, 'vitest', 'run', 'test/roadmap/', '--test-timeout', '120000');
+    expect(result.code).toBe(0);
+    expect(existsSync(join(cli, 'ran.txt'))).toBe(true);
+  });
+
+  it.each([
+    ['no filters', []],
+    ['an option value that is not a filter', ['--maxWorkers', '8']],
+    ['an absolute path', [join('__CLI__', 'test', 'roadmap', 'cut.slow.test.ts')]],
+  ])('refuses vitest run with %s', (_, extra) => {
+    const { cli, base } = repoWithSlowTests();
+    const args = extra.map((arg) => arg.replace('__CLI__', cli));
+    const result = sdd(cli, 'task', 'done', '../plan.md', '1', base, '--', process.execPath, '-e', mark, 'vitest', 'run', ...args);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('cut.slow.test.ts');
+  });
+
+  it('refuses a slow test that is not committed yet', () => {
+    const { cli, base } = repoWithSlowTests();
+    write(join(cli, 'test', 'new.slow.test.ts'), '');
+    const result = sdd(cli, 'task', 'done', '../plan.md', '1', base, '--', process.execPath, '-e', mark, 'vitest', 'run', 'test/new');
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('test/new.slow.test.ts');
+  });
+
+  it.each([
+    ['--testTimeout=1', ['test/roadmap/', '--testTimeout=1']],
+    ['a test name pattern that reads like a slow file', ['test/roadmap/check.test.ts', '-t', 'slow']],
+  ])('runs vitest with %s', (_, extra) => {
+    const { cli, base } = repoWithSlowTests();
+    const result = sdd(cli, 'task', 'done', '../plan.md', '1', base, '--', process.execPath, '-e', mark, 'vitest', 'run', ...extra);
+    expect(result.code).toBe(0);
+    expect(existsSync(join(cli, 'ran.txt'))).toBe(true);
+  });
+
+  it('runs vitest when no filter matches a slow test', () => {
+    const { cli, base } = repoWithSlowTests();
+    const result = sdd(cli, 'task', 'done', '../plan.md', '1', base, '--', process.execPath, '-e', mark, 'vitest', 'run', 'test/roadmap/check.test.ts');
+    expect(result.code).toBe(0);
+    expect(existsSync(join(cli, 'ran.txt'))).toBe(true);
   });
 });
 

@@ -1,8 +1,8 @@
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 import { DomainError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
-import { git } from '../git/git.ts';
+import { git, gitLines } from '../git/git.ts';
 import { requireRepo } from './repo.ts';
 import { requireRevision } from './revision.ts';
 import { runToLog } from './command.ts';
@@ -54,10 +54,39 @@ async function requireCommitsSince(request: DoneRequest): Promise<void> {
   if (base === head) throw new DomainError(`Task ${request.task} NOT recorded: sin commits en el rango: ¿falló el pre-commit?`);
 }
 
+const VITEST = /(^|[\\/])vitest(\.\w+)?$/i;
+const TEST_TIMEOUT = /^--test-?timeout/i;
+
+// ponytail: solo las opciones con valor más usadas; otra con valor separado (`--pool forks`) cuenta como filtro: añadirla aquí.
+const VALUE_OPTIONS = new Set(['-t', '--testNamePattern', '-c', '--config', '-r', '--root', '--dir', '--reporter', '--maxWorkers', '--minWorkers', '--project', '--pool', '--outputFile', '--shard', '--environment', '--exclude']);
+const NAMED_FILES = 3;
+
+function vitestFilters(args: string[], root: string): string[] {
+  const filters = args.filter((arg, index) => arg !== 'run' && !arg.startsWith('-') && !VALUE_OPTIONS.has(args[index - 1]));
+  return filters.map((arg) => (isAbsolute(arg) ? relative(root, arg) : arg).replace(/\\/g, '/').replace(/^\.\//, ''));
+}
+
+// Vitest corre los ficheros cuya ruta contiene algún filtro, y todos sin filtros (0319: 5 s no bastan a los lentos).
+async function slowWithoutTimeout(command: string[], root: string): Promise<string[]> {
+  const at = command.findIndex((arg) => VITEST.test(arg));
+  if (at === -1 || command.some((arg) => TEST_TIMEOUT.test(arg))) return [];
+  const filters = vitestFilters(command.slice(at + 1), root);
+  const slow = await gitLines(root, ['ls-files', '--cached', '--others', '--exclude-standard', '--', '*.slow.test.ts']);
+  return slow.filter((file) => filters.length === 0 || filters.some((filter) => file.includes(filter)));
+}
+
+async function requireTestTimeout(request: DoneRequest, root: string): Promise<void> {
+  const slow = await slowWithoutTimeout(request.command, root);
+  if (slow.length === 0) return;
+  const more = slow.length > NAMED_FILES ? ` y ${slow.length - NAMED_FILES} más` : '';
+  throw new DomainError(`Task ${request.task} NOT recorded: vitest corre ${slow.slice(0, NAMED_FILES).join(', ')}${more} sin --test-timeout: añade --test-timeout 120000`);
+}
+
 export async function finishTask(request: DoneRequest, io: Io): Promise<number> {
-  await requireRepo('commit');
+  const root = await requireRepo('commit');
   await requireRevision(request.base, 'BASE');
   await requireCommitsSince(request);
+  await requireTestTimeout(request, root);
   const workspace = await workspaceFor(request.plan);
   const log = join(workspace, `task-${request.task}-tests.log`);
   const code = await runToLog(request.command, log);
