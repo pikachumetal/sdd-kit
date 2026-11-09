@@ -30,11 +30,11 @@ El método (baterías, sujetos, matices de campaña) vive en `tech-stack.md`.
 
 - Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
 - Fallo de forma (cumple pero con la forma equivocada) → receta o contrato de cómo es el output.
-- Elemento omitido (cumple, pero falta una pieza de algo que ya produce) → hueco obligatorio en la plantilla que rellena, no un recordatorio en prosa junto a ella.
+- Elemento omitido (cumple, pero falta una pieza del output o un paso de orden o búsqueda) → hueco obligatorio en la plantilla, no prosa al lado; con una orden delante (CLI, `grep`), esa orden, antes de reescribir texto.
 - Comportamiento condicional → predicado observable («si existe `.docs/sdd/estimation.md`…»), nunca cláusulas de excepción.
 - Una excepción de la guía lleva su contraejemplo (el motivo que no vale), y la prueba tiene un escenario donde esa excepción es la salida fácil.
 
-*Por qué*: cada tipo de fallo se corrige con una forma distinta de texto, y una excepción sin contraejemplo se convierte en la salida fácil. [ADR 0003](decisions/0003-form-follows-failure.md) · [ADR 0014](decisions/0014-form-for-omissions.md)
+*Por qué*: cada fallo pide su forma; una excepción sin contraejemplo es la salida fácil. [ADR 0025](decisions/0025-command-checks-order-and-search.md) · [ADR 0014](decisions/0014-form-for-omissions.md)
 
 ## Art. III — Idioma
 

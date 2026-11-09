@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0025
 date: 2026-09-25
 rutas:
   - skills/**/SKILL.md

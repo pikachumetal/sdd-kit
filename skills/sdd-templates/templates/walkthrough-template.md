@@ -23,7 +23,7 @@ created: <YYYY-MM-DD>
 
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Estimación de implementación (del plan): <Yh>
-- Esfuerzo real: <Zh> — reloj de la sesión <h> desde <inicio>, sin <min> min de espera al dev-lead (<n> esperas)[, sin <h> h sin actividad (<n> huecos)] *(tal cual de `sdd session tokens`: desde el arranque de la sesión que lo abrió, investigación previa incluida, sin las esperas al dev-lead. Fuera de Claude Code, nunca en blanco: aproxima el reloj del hilo con las marcas de los commits y dilo; los minutos de los subagentes no se suman, y «sumo los despachos» convierte el ratio en el de los subagentes)*
+- Esfuerzo real: <lo que sigue a `Esfuerzo real:` en la salida de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, tal cual: «<Zh> — reloj de la sesión <h> desde <inicio>, sin <min> min de espera al dev-lead (<n> esperas)[, sin <h> h sin actividad (<n> huecos)]» | fuera de Claude Code, `<Yh>, aproximado con las marcas de los commits`, nunca en blanco; los minutos de los subagentes no se suman, y «sumo los despachos» convierte el ratio en el de los subagentes>
 - Desviación: <±h> (<±%>)
 - Causa de la desviación (obligatoria si |desviación| > 30%): <horas y minutos de la línea `Esperas y huecos`, o «sin medir»>
 - Compactación: <`no` · `sí, en la Task <N> → <Native | SDD> desde la Task <M>` · `sí, en la Task <N> → Native` si no quedaba ninguna después, sacado de la línea `Ruling: compactación` del ledger>
@@ -62,7 +62,7 @@ created: <YYYY-MM-DD>
 > interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado
 > con `ejecución real`; un THEN de fallo se provoca con la entrada que falla.
 
-- Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
+- Validado: <fecha> · «<frase literal>»[ · no detalló qué probó] **o** Validación diferida: <fecha> · «<frase literal>» ·
   disparador: <feature, release o uso con dueño> **o**, con `validation.mode: field` en `sdd-kit.json`,
   Validación en campo: <fecha> · <verificación del agente, p. ej. «suite 412/412 · smoke 5/5 THEN con
   ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia»> **o**, con `Validación: agente` en la spec,

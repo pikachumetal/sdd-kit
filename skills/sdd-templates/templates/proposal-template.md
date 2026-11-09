@@ -24,7 +24,7 @@ created: <YYYY-MM-DD>
 
 ## Capacidades que toca
 
-> Las de `capabilities/` que cambiarán y las nuevas, con su nombre en inglés kebab-case.
+> Las de `capabilities/` que cambiarán y las nuevas. Una capacidad nueva se nombra con la regla 1 de `capability-template.md`, que se calca al declararla.
 
 - `<capability>` — <qué parte>
 
