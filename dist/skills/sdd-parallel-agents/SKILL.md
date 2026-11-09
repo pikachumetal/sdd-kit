@@ -7,7 +7,8 @@ description: Use when an sdd-kit skill dispatches two or more independent agents
 
 ## Overview
 
-Write everything the user reads in the language of their message. Forked from `dispatching-parallel-agents` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Forked from `dispatching-parallel-agents` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 

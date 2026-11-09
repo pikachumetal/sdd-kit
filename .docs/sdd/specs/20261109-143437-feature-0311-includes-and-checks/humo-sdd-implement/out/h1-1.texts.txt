@@ -1,0 +1,84 @@
+--- [3]
+Ahora: reviso la spec, el plan y la configuración de la 0010 antes de elegir el método. Queda: preparar el workspace y arrancar las tasks, ~1 min.
+
+--- [7]
+Ahora: el plan dice Native, así que invoco `sdd-implement-native`. Queda: preparar el workspace y las dos tasks, ~10 min.
+
+--- [10]
+Workspace del plan: se calcula ahora con `sdd workspace`; mientras, miro el código y los tests.
+
+--- [25]
+Ahora: base sin cambios en `develop`; escribo los tests RED de la Task 1. Queda: código, verificación y commit de la Task 1, luego la Task 2.
+
+--- [28]
+RED confirmado: fallan 3 por la razón esperada. Quito el directorio vacío que creé de más y escribo el código.
+
+--- [36]
+Task 1 completa. Ahora: Task 2 (listado de canceladas), empiezo por el test RED.
+
+--- [38]
+RED correcto (devuelve «salas»). Implemento el comando.
+
+--- [41]
+Mi `sed` rompió el `join` (salto de línea literal dentro de comillas). Lo corrijo.
+
+--- [46]
+Las dos tasks están completas. Ahora: revisión final de la rama con `sdd-verify`. Queda: revisión, cierre y paso a `sdd-archive`, ~5 min.
+
+--- [49]
+Ahora: no tengo herramienta de subagentes, así que la revisión final la hago yo mismo en pasadas separadas, como manda la skill. Queda: leer los briefs, revisar, cerrar y pasar a `sdd-archive`.
+
+--- [52]
+Vuelvo a trabajar en el repo del proyecto (el `cd` anterior fue solo para leer los briefs). Ahora: hago las pasadas de revisión sobre el diff de la rama.
+
+--- [55]
+Hallazgo de mi revisión: el diff reescribe `app.js` y `cancel.test.js` enteros, lo que huele a cambio de finales de línea. Lo compruebo.
+
+--- [61]
+`sed -i` de la Task 2 convirtió `src/app.js` de CRLF a LF, y eso entierra el diff real. Compruebo qué ficheros cambiaron de finales de línea en cada commit.
+
+--- [69]
+Diff de la rama ya mínimo (20/3 y 19/2) y 7/7 en verde. Ahora: registro la revisión en el ledger y `tasks.md`.
+
+--- [74]
+Ahora: borro el workspace del plan (ya está todo en git y en `tasks.md`) y paso a `sdd-archive`.
+
+--- [78]
+Ahora: pre-checks del cierre (`merge --check`) y leo cómo se valida en este modo. Queda: presentar el mensaje de validación, porque sin `validation.mode` valida la persona.
+
+--- [82]
+Implementé las dos tasks del plan y la revisión final está hecha. El cierre no está terminado: falta tu validación y falta definir la política de merge. Tests: `node --test` pasa 7/7 (4 de base más 3 nuevos).
+
+🦆 Ahora `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando nuevo `canceladas` lista «Norte lun — sala ocupada».
+
+**Estado de la rama `feature/0010-cancel-reason`** (árbol limpio, HEAD `e52b7e6`)
+- Task 1, `b364f5a`: `cancelar` pide motivo de la lista.
+- Task 2, `d02b239`: comando `canceladas`.
+- Fix `3cf83cd`: mis ediciones habían pasado `src/app.js` y `test/cancel.test.js` de CRLF a LF y el diff reescribía ambos ficheros enteros. Los restauré a CRLF y el diff real queda en 20/3 y 19/2 líneas.
+- Los RED que escribí antes del código no cambiaron (comparados con la copia). El detalle por task está en `tasks.md`.
+
+**Por qué no he cerrado** (los dos stops son del archivo, no un fallo)
+1. **Validación manual.** `sdd-kit.json` no tiene `validation.mode`, así que valida una persona. «Implementa» no cuenta como validar.
+2. **Política de merge incompleta.** `sdd merge --check` falla porque faltan `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. No he merged ni empujado nada. La constitución dice `develop` como integración; confírmame ese valor y si va con `--no-ff`.
+
+**Para validar (script de la spec)**
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)». Lo ejecuté yo: coincide.
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → «motivo no válido: cambio de planes, sala ocupada, otro». Ejecutado: coincide.
+3. `node src/app.js cancelar Norte lun` → el mismo mensaje. Ejecutado: coincide.
+4. `canceladas` → «Norte lun — sala ocupada». Esto solo se ve dentro de un mismo proceso (`run('cancelar', …)` y luego `run('canceladas', [])`), y así lo comprobé. Como comando suelto, `node src/app.js canceladas` imprime una línea vacía, porque las reservas viven en memoria. La spec no pedía persistencia; la cubre la 0014 del roadmap.
+
+**Rulings que tomé** (en `tasks.md`)
+- Una reserva inexistente sigue respondiendo «sin reserva …» aunque falte el motivo. La spec no lo fija; si falla, quien cancele sin reserva ni motivo verá otro mensaje.
+- Reescribí el test existente `cancelar una reserva activa` con motivo, porque el AND «sin --motivo» lo invalidaba.
+- **Revisión final sin subagentes:** este harness no tiene herramienta para lanzarlos, así que la hice yo mismo en pasadas de Spec y Código. Es más débil que revisores frescos y decides tú si basta antes del merge. Arquitectura no salió: no hay módulo, dependencia, contrato ni datos nuevos.
+
+**Minors diferidos**
+- `canceladas` sin ninguna cancelada responde cadena vacía.
+- `optionValue` toma como valor el siguiente argumento aunque sea otro flag.
+- Ningún test cubre los motivos «cambio de planes» ni «otro».
+- El test de `canceladas` depende del orden de los tests del fichero.
+
+**No terminado.** Falta tu validación y el bloque `merge` de `sdd-kit.json`. No borres todavía el worktree `<run>/repo`.
+
+Además, la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+

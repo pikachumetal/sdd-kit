@@ -7,7 +7,9 @@ description: Use when a project with .docs/sdd/sdd-kit.json asks to update to th
 
 ## Overview
 
-Bring an initialized project up to the loaded kit by applying, in order, the migrations it hasn't applied. Write everything the user reads in the language of their message. Each file of [references/migrations/](references/migrations/) is one version's changes, as steps that start with a checkable predicate. You migrate only after the user's «sí» (their request, or their answer to the session's offer), you never move content in bulk, and you ask before deleting or restructuring anything. Every `sdd <verb>` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
+Bring an initialized project up to the loaded kit by applying, in order, the migrations it hasn't applied.
+Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Each file of [references/migrations/](references/migrations/) is one version's changes, as steps that start with a checkable predicate. You migrate only after the user's «sí» (their request, or their answer to the session's offer), you never move content in bulk, and you ask before deleting or restructuring anything. Every `sdd <verb>` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
 
 ## Steps
 

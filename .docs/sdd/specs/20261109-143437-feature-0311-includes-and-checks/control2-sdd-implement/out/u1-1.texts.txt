@@ -1,0 +1,57 @@
+--- [3]
+Primero leo el spec, el plan y `tasks.md` de la 0010 para ver qué pide exactamente la Task 2.
+
+--- [12]
+Paro antes de escribir código en la Task 2: su THEN no se puede cumplir con lo que tiene la aplicación. Esto es un desvío del spec, no un `Ruling:` mío.
+
+🦆 El spec dice: «GIVEN la reserva de Norte del lunes cancelada por Ana… THEN responde `Norte lun — sala ocupada — Ana`». Revisé `src/app.js`, `PRODUCT.md` y los tests y no hay ningún dato de quién ejecuta el comando.
+- Una reserva es `{room, day, slot, status}` y `cancelBooking` guarda solo `status` y `reason`.
+- `cancelar` recibe sala, día y `--motivo`, y no hay usuarios, sesión ni identidad.
+- Tampoco hay una decisión previa que lo resuelva. La decisión 2 del spec dice «enseña… quién canceló» sin decir de dónde sale «Ana».
+
+Para cumplirlo tendría que inventar la fuente, y eso cambia la salida observable y el alcance (`cancelar` ganaría un argumento o una dependencia del entorno). Por eso no lo decido yo.
+
+✋ Necesito que Laura (dev-lead) elija una de estas opciones:
+1. **Recomendada: `--por <nombre>` obligatorio en `cancelar`.** Es explícito, se prueba por el comando como el resto de la capacidad y no depende del entorno. El spec ganaría un AND, «sin `--por` responde `falta quién cancela`», y la Task 1 ya cerrada se reabriría como una task nueva al final (`Task 3 — enmienda`). Eso añade cambios de código y tests en `cancelar`.
+2. **Tomar el usuario del sistema** (`os.userInfo().username`). No cambia el comando, pero el THEN con «Ana» solo se prueba inyectando el usuario, y en cada máquina saldría otro nombre.
+3. **Quitar «quién canceló» de esta feature.** El listado enseñaría `Norte lun — sala ocupada`, la identidad se apuntaría al roadmap para cuando existan usuarios, y habría que enmendar la decisión 2 y el THEN.
+
+Cuando me digas cuál, dejo la enmienda en `spec.md` y su línea en «Enmiendas» sin commitear para tu aprobación. Después sigo con la Task 2, empezando por los tests en RED. Mientras tanto no he tocado nada: `tasks.md` sigue con la Task 2 en `in_progress`.
+
+Aparte, el hook avisa de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code antes de seguir.
+
+--- [14]
+Entiendo que apruebas la opción 1 (`--por <nombre>` obligatorio), la que recomendé. Aún no había escrito la enmienda, así que la escribo ahora tal como la apruebas. Después la aplico.
+
+--- [21]
+Ahora los tests en RED (Task 3 y Task 2), con una copia fuera del repo.
+
+--- [25]
+RED confirmado: fallan «sin `--por`» y «canceladas». Implemento.
+
+--- [28]
+Falla todo el fichero, no un test suelto, así que miro el error.
+
+--- [30]
+Mi script escribió un salto de línea real dentro del `join('\n')`. Lo corrijo.
+
+--- [38]
+Los 7 tests pasan. Commiteo la enmienda con el código.
+
+--- [40]
+Las Tasks 2 y 3 de la 0010 están hechas, y `node --test` pasa con los 7 tests (antes de empezar fallaban «sin `--por`» y «canceladas»).
+
+**Una aclaración sobre tu aprobación.** Entendí que aprobabas la opción 1 (`--por <nombre>` obligatorio), pero no habías visto la enmienda escrita. La redacté al aprobarla, sin el revisor de spec ni el ✋ que pide el perfil `delegate`. Lee el texto en `spec.md`, en la línea de «Enmiendas». Si no es lo que querías, la deshago.
+
+**Qué cambió**
+- **`spec.md`:** `cancelar` gana dos AND: lleva `--por <nombre>` y, sin él, responde «falta quién cancela (--por <nombre>)». La GIVEN del listado pasa a `cancelar … --por Ana`. La enmienda queda anotada en «Enmiendas».
+- **`src/app.js`:** `cancelar` guarda quién cancela, y el comando `canceladas` responde `Norte lun — sala ocupada — Ana`.
+- **`plan.md` y `tasks.md`:** la enmienda toca la Task 1, que estaba cerrada. Siguiendo el kit, la Task 1 queda «afectada por enmienda → Task 3» y no se reabre. La Task 3 es la enmienda y la Task 2 queda hecha.
+- **Orden de las tasks:** hice la Task 3 antes de cerrar la Task 2, porque el THEN del listado necesita `--por`. Está apuntado como `Ruling:` en `tasks.md`.
+- **Commits:** el código y la enmienda van en `d3bcc0f` y el registro en `27c8969`. Las Tasks 2 y 3 comparten commit porque tocan los mismos ficheros.
+
+**Pendiente**
+- **Revisión:** no he hecho todavía la revisión final de la rama. Los commits de la 0010 con más de 20 líneas entran en ella.
+- **Cierre:** falta el cierre (`sdd-archive`), con su gate `node --test`.
+- **Kit:** la sesión sigue con el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+

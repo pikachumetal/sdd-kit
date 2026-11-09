@@ -9,7 +9,8 @@ description: Use when an sdd-kit skill meets a failure to explain — a bug in a
 ## Overview
 
 <!-- kit: 0312 -->
-Write everything the user reads in the language of their message. Forked from `systematic-debugging` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+<!-- kit: incluye user-language -->
+Forked from `systematic-debugging` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
 

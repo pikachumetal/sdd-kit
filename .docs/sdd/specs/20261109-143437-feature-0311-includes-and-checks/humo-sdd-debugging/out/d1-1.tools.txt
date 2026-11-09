@@ -1,0 +1,128 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: ls -la .githooks .docs/sdd/steering 2>&1; echo ---; cat .docs/sdd/steering/debt.md 2>&1 | head -50; echo ---; git config core.hooksPath; echo ---; for f in .githooks/*; do echo "=== $f"; cat "$f"; done; echo ---; cat notas.txt | head -30
+<<< ls: cannot access '.docs/sdd/steering': No such file or directory
+.githooks:
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov  9 20:28 ./
+drwxr-xr-x 1 <user> 197609   0 Nov  9 20:28 ../
+-rwxr-xr-x 1 <user> 197609 845 Nov  9 15:20 pre-commit*
+---
+cat: .docs/sdd/steering/debt.md: No such file or directory
+---
+.githooks
+---
+=== .githooks/pre-commit
+#!/usr/bin/env node
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+const { spawnSync } = require('node:child_process');
+const { rmSync } = require('node:fs');
+const { join } = require('node:path');
+
+const git = (args, options = {})
+
+>>> Bash: node .githooks/pre-commit; echo "exit directo=$?"; echo ---; git worktree list; echo ---; git rev-parse --git-dir; echo "GIT_DIR=${GIT_DIR-<unset>} GIT_INDEX_FILE=${GIT_INDEX_FILE-<unset>} GIT_WORK_TREE=${GIT_WORK_TREE-<unset>}"
+
+>>> Bash: GIT_DIR="$(git rev-parse --absolute-git-dir)" GIT_INDEX_FILE="$(git rev-parse --absolute-git-dir)/index" node .githooks/pre-commit; echo "exit con env de hook=$?"; git worktree list
+<<< file:///<run>/repo/.githooks/pre-commit:3
+const { spawnSync } = require('node:child_process');
+                      ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+    at file:///<run>/repo/.githooks/pre-commit:3:23
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.10.0
+exit directo=1
+---
+<run>/repo 0abf344 [develop]
+---
+.git
+GIT_DIR=<unset> GIT_INDEX_FILE=<unset> GIT_WORK_TREE
+<<< file:///<run>/repo/.githooks/pre-commit:3
+const { spawnSync } = require('node:child_process');
+                      ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+    at file:///<run>/repo/.githooks/pre-commit:3:23
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.10.0
+exit con env de hook=1
+<run>/repo 0abf344 [develop]
+
+>>> Bash: ls -la; echo ---; cat package.json 2>&1; echo ---; git ls-files; echo ---; ls .githooks/package.json ../package.json 2>&1; node --version
+<<< total 11
+drwxr-xr-x 1 <user> 197609  0 Nov  9 20:28 ./
+drwxr-xr-x 1 <user> 197609  0 Nov  9 20:28 ../
+drwxr-xr-x 1 <user> 197609  0 Nov  9 20:28 .docs/
+drwxr-xr-x 1 <user> 197609  0 Nov  9 20:28 .git/
+drwxr-xr-x 1 <user> 197609  0 Nov  9 20:28 .githooks/
+-rw-r--r-- 1 <user> 197609 31 Nov  9 20:28 notas.txt
+-rw-r--r-- 1 <user> 197609 20 Nov  9 15:20 package.json
+-rw-r--r-- 1 <user> 197609 62 Nov  9 15:20 README.md
+drwxr-xr-x 1 <user> 197609  0 Nov  9 20:28 src/
+drwxr-xr-x 1 <user> 197609  0 Nov  9 20:28 test/
+---
+{"type": "module"}
+---
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd
+
+>>> Bash: grep -n -i -A8 "deuda" .docs/sdd/roadmap.md | head -30; echo ---; cp .githooks/pre-commit /tmp/hook-check.cjs && node /tmp/hook-check.cjs; echo "exit como .cjs=$?"; git worktree list; git status --short
+<<< 15:## Deuda técnica
+16-
+17:| Deuda | Impacto | Plan |
+18-| --- | --- | --- |
+19-| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20-
+21-## Patches
+22-
+23-| Fecha | Id | Descripción |
+24-| --- | --- | --- |
+25-| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+---
+exit como .cjs=0
+<run>/repo 0abf344 [develop]
+A  notas.txt
+
+=== RESULTADO (8 turnos, 0.1341762 $)
+Causa raíz encontrada. No he arreglado nada.
+
+## Qué lo provoca
+
+`.githooks/pre-commit` está escrito en CommonJS, pero Node lo carga como módulo ES:
+
+- El hook usa `require('node:child_process')`.
+- No tiene extensión, así que Node decide el formato por el `package.json` más cercano.
+- El `package.json` de la raíz contiene `{"type": "module"}`. Node trata entonces el hook como ESM, donde `require` no existe.
+
+El error es `ReferenceError: require is not defined in ES module scope`, en la línea 3 del hook. Sale con código 1 antes de ejecutar nada de su lógica, y eso hace fallar el commit.
+
+## Evidencia
+
+- Ejecutar `node .githooks/pre-commit` falla con ese error. Pasa igual si simulo `GIT_DIR` y `GIT_INDEX_FILE` como en un hook real, así que no es un problema de entorno.
+- Copié el mismo contenido a `/tmp/hook-check.cjs` y salió con código 0. El código del hook funciona y falla solo por cómo se interpreta el formato.
+- `notas.txt` no tiene nada que ver. Cualquier commit en este repo fallaría igual.
+- No hay deuda en el roadmap que cubra este fallo. La única fila es sobre la validación de franjas horarias.
+
+## Descartado
+
+No he comprobado si el resto del hook funciona bajo un commit real. Con la copia `.cjs` sí pasó, pero fuera del contexto de `git commit`. Como el fallo actual llega antes, no hay señal de otros problemas.
+
+## Siguiente paso, cuando quieras
+
+Cuando des luz verde, el arreglo iría por `sdd-propose`, como patch con su `patch.md`, y empezaría por un test que reproduzca el fallo. Las opciones, de menos a más invasiva, son estas:
+
+1. Convertir el hook a ESM (`import` en vez de `require`).
+2. Poner un `package.json` con `{"type": "commonjs"}` dentro de `.githooks/`.
+3. Renombrarlo a `.cjs` y hacer que `pre-commit` sea un lanzador.
+
+Mi recomendación es la 1. Es coherente con el `"type": "module"` del proyecto y no añade ficheros.

@@ -7,7 +7,8 @@ description: Use when something must go into the roadmap of a project with .docs
 
 ## Overview
 
-The kit has three verbs: **plan** (`sdd-roadmap`) → **do** (`sdd-propose`) → **deliver** (`sdd-end-release`). This skill is the only door into the roadmap: the user brings something, the skill recognizes what it is and leaves the roadmap ready for someone else to start it, with the definition of anything big in a proposal (`proposal.md`) that is never rewritten. Write everything the user reads in their language, skill announcements included.
+The kit has three verbs: **plan** (`sdd-roadmap`) → **do** (`sdd-propose`) → **deliver** (`sdd-end-release`). This skill is the only door into the roadmap: the user brings something, the skill recognizes what it is and leaves the roadmap ready for someone else to start it, with the definition of anything big in a proposal (`proposal.md`) that is never rewritten.
+Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
 
 **Central principle: proposing is not deciding.** You bring the changes in order with your recommendation; what goes in, in what order and what is discarded is the user's decision.
 

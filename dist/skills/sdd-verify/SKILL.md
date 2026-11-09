@@ -7,7 +7,9 @@ description: Use when sdd-implement closes a task or finishes its last one, or s
 
 ## Overview
 
-Claiming work is complete without verification is dishonesty, not efficiency. Write everything the user reads in the language of their message. Forked from `verification-before-completion` and `requesting-code-review` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
+Claiming work is complete without verification is dishonesty, not efficiency.
+Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Forked from `verification-before-completion` and `requesting-code-review` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** Evidence before claims, always.
 

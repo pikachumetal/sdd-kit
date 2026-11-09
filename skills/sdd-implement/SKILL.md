@@ -7,7 +7,9 @@ description: Use when sdd-propose hands off a confirmed patch, or an approved sp
 
 ## Overview
 
-Execute the approved plan, task by task, and leave a record that survives your own forgetting. Write everything the user reads in the language of their message. **Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` that the Setup of the method's skill prints.
+Execute the approved plan, task by task, and leave a record that survives your own forgetting.
+<!-- kit: incluye user-language -->
+**Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` that the Setup of the method's skill prints.
 
 **Notice:** each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects; a counter or a step number alone isn't a notice.
 

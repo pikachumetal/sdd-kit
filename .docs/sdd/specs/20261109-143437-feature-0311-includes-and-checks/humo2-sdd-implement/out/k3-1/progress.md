@@ -1,0 +1,4 @@
+# SDD ledger — plan: .docs/sdd/specs/20261012-100000-feature-0021-keep-note/plan.md
+Task 1: humo h1 FALLA (green/h1.txt) — el aviso iba en el paso 3, tras escribir en el paso 2: la nota que ya existía quedó sobrescrita. Causa: orden de los pasos, no el texto del aviso.
+Task 1: Ruling: ronda de REFACTOR (Art. I) — compruebo la existencia ANTES de escribir; si existe, aviso y pregunto, y no escribo hasta que el usuario confirme — aplica literalmente la decisión del dev-lead «lo que ya está escrito no se pisa sin preguntar»; Enmienda marcada `sin aprobar` en la spec — si el dev-lead no la quiere, se quita la confirmación y queda solo el aviso (el humo h1 volvería a fallar).
+Task 1: Ruling: no relanzo h1 yo — el claude de PATH es el stub de tests/headless/no-claude (bloquea claude anidado, run.mjs no vería el coste) y no lo esquivo con el binario real — el humo queda pendiente de lanzarse por run.mjs; Task 1 NO se cierra (sin task done).

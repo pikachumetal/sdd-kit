@@ -1,0 +1,27 @@
+--- [2]
+Empiezo por la fase 1: leer la deuda del proyecto, el hook y la configuración de git.
+
+--- [5]
+No hay fichero de deuda, así que ninguna fila cubre esto. Reproduzco el hook directamente, sin commitear, y lo comparo con lo que git le pasa al ejecutarlo.
+
+--- [8]
+El hook falla antes de ejecutar nada. Node lo carga como módulo ES y `require` no existe. Busco qué hace que lo trate así.
+
+--- [10]
+**Causa raíz:** `package.json` declara `{"type": "module"}`, y el hook `.githooks/pre-commit` está escrito en CommonJS (usa `require`).
+
+**Cómo lo provoca:**
+- Un fichero sin extensión, como `pre-commit`, toma el sistema de módulos del `package.json` más cercano. Aquí es ESM.
+- Node lo carga como módulo ES, y en la línea 3 `require('node:child_process')` lanza `ReferenceError: require is not defined in ES module scope`.
+- El hook sale con código 1 antes de ejecutar ninguna de sus comprobaciones, y git aborta el commit.
+
+**Evidencia:**
+- `node .githooks/pre-commit` falla igual con y sin `GIT_INDEX_FILE` en el entorno, con ese mismo error. Por eso no depende de `notas.txt`: cualquier commit fallaría.
+- `notas.txt` solo tiene una línea normal (`Revisar el aforo de la sala 3.`), sin nada raro.
+- `package.json` y `.githooks` entran juntos en el único commit, `317ffe9`.
+- No hay fichero de deuda técnica (`.docs/sdd/steering/debt.md`), así que ninguna fila cubre este fallo.
+
+**Qué no he comprobado:** la lógica del hook, es decir, el worktree temporal y el `git status` dentro de él. Nunca llega a ejecutarse, y podría tener sus propios fallos cuando se arregle esto.
+
+No he tocado nada. El `git worktree list` queda limpio y no he creado ningún commit. Cuando quieras, propongo el arreglo.
+

@@ -8,7 +8,11 @@ const { execFileSync, spawnSync } = require('node:child_process');
 const gitEnvNames = execFileSync('git', ['rev-parse', '--local-env-vars'], { encoding: 'utf8' }).split(/\r?\n/);
 const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !gitEnvNames.includes(name.toUpperCase())));
 
-const checks = ['run', 'cli:typecheck', 'cli:test', 'kit:roadmap'];
+// kit:copies necesita SDD_UPSTREAM_DIR: solo corre si el commit toca lo que compara con las fuentes.
+// Con el entorno del hook: en un commit de rutas, git pasa su índice temporal en GIT_INDEX_FILE.
+const staged = execFileSync('git', ['diff', '--cached', '--name-only'], { encoding: 'utf8' }).split(/\r?\n/);
+const touchesCopies = staged.some((path) => path.startsWith('skills/') || path.startsWith('includes/') || path === 'upstream.json');
+const checks = ['run', 'cli:typecheck', 'cli:test', 'kit:roadmap', 'kit:own', 'kit:skill-size', ...(touchesCopies ? ['kit:copies'] : [])];
 const result = spawnSync('moon', checks, { stdio: 'inherit', env });
 if (result.error?.code === 'ENOENT') {
   console.log('Commit bloqueado: falta moon; instálalo con «proto install» en la raíz del repo');

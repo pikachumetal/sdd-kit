@@ -384,7 +384,7 @@ Medido con el conteo de `word-budget.test.ts` sobre `dist/` de la rama (igual a 
 | `sdd-retro` | 622 / 700 · 622 / 700 | 78 · 78 | 0 · 0 | sin cambio |
 | `sdd-implement-native` | 2.990 / 3.038 · 2.990 / 3.038 | 48 · 48 | 0 · 0 | sin cambio |
 | `sdd-implement-subagent` | 2.951 / 2.991 · 8.496 / 9.000 | 40 · 504 | 0 · −10 (la traducción en tres plantillas) | sin cambio |
-| Kit (`kitBudget`) | 103.338 / 103.372 | 34 | −85 | no sube |
+| Kit (`kitBudget`) | 103.338 / 103.372 | 34 | −85 (medido con todo el texto: +173) | sale (enmienda del 2026-11-09) |
 | `tech-stack.md` | 23.181 / 23.181 | 0 | 0 | sin cambio |
 | `architecture.md` | 2.253 / 2.253 | 0 | 0 | sin cambio |
 
@@ -443,6 +443,8 @@ Cada paso que cambia, con su escenario (Art. I):
 `sdd-end-release`, `sdd-tdd`, `sdd-templates`, `sdd-worktrees`, `sdd-parallel-agents`, `sdd-implement-native` y `sdd-implement-subagent` no tienen batería: los miden los escenarios que las cargan (`t2`, `w1`, `h1` y `h2` de `sdd-implement`; `f1` de `sdd-verify`); `sdd-end-release` y `sdd-templates` solo cambian la frase de idioma, que mide la fila L en las demás (`sin medir` propio).
 
 ## Enmiendas
+
+- 2026-11-09 — `kitBudget` y su test «el kit entero cabe en su presupuesto» salen de `word-budget.test.ts`; quedan los topes por skill (`SKILL.md` y total), y los de las skills tocadas bajan a su medida exacta al cierre. El total de las skills tocadas sube 173 palabras en vez de bajar 85 — una inclusión no ahorra palabras (`word-budget.test.ts` cuenta `dist/`), las salidas y la unión de redacciones restaron 84, no las ~340 previstas, y la frase de idioma suma 257; el kit medía 103.511 con `kitBudget` en 103.372. Un total del kit no mide nada que cargue un agente: al arrancar solo se cargan `name` y `description`, el `SKILL.md` al invocar la skill y sus ficheros al leerlos, y la guía de Anthropic solo pone límites por skill ([Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)) — Task 5 — aprobada: «quitamops, solo haz una busqueda por internet a ver si nos d ala razon en quitarlo»
 
 ## Aprobaciones
 

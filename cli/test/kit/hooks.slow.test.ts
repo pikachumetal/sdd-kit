@@ -72,7 +72,8 @@ describe('.githooks/pre-commit y el entorno de git', () => {
     copyFileSync(join(kitRoot, '.githooks', 'pre-commit'), join(common, '.githooks', 'pre-commit'));
     writeFileSync(join(common, '.gitignore'), '.moon/cache\n');
     writeFileSync(join(common, '.moon', 'workspace.yml'), 'projects:\n  cli: cli\n  kit: .\nvcs:\n  client: git\n  defaultBranch: main\n');
-    writeFileSync(join(common, 'moon.yml'), `${shell}tasks:\n  roadmap:\n    ${noop}\n`);
+    const kitTasks = ['roadmap', 'own', 'skill-size', 'copies'].map((task) => `  ${task}:\n    ${noop}\n`).join('');
+    writeFileSync(join(common, 'moon.yml'), `${shell}tasks:\n${kitTasks}`);
     writeFileSync(join(common, 'cli', 'gate.cjs'), gate);
     writeFileSync(join(common, 'cli', 'moon.yml'), `${shell}tasks:\n  typecheck:\n    ${noop}\n  test:\n    command: node\n    args: [gate.cjs]\n    options:\n      cache: false\n`);
     run('git', ['init', '-q', '-b', 'main', common], { env: hookEnv });

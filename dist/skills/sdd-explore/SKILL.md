@@ -8,7 +8,8 @@ argument-hint: "<pregunta>"
 
 ## Overview
 
-The **anti-lane**: ask, understand or think **with the project's context loaded**, without producing artifacts. No spec, plan, branch or closing. Its value is twofold: **answers anchored in the anchor documents**, not in assumptions, and **the discipline of not over-triggering** the process for what was only a question. Write everything the user reads in their language, skill announcements included.
+The **anti-lane**: ask, understand or think **with the project's context loaded**, without producing artifacts. No spec, plan, branch or closing. Its value is twofold: **answers anchored in the anchor documents**, not in assumptions, and **the discipline of not over-triggering** the process for what was only a question.
+Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
 
 Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: exploring the code (semble, Grep, Read) is allowed from the start, as far as the question needs.
 
