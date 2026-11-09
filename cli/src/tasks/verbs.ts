@@ -1,9 +1,10 @@
 import { UsageError } from '../cli/args.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { git } from '../git/git.ts';
-import { writeBrief } from './brief.ts';
+import { isTaskId, writeBrief } from './brief.ts';
 import { finishTask } from './done.ts';
 import { writePackage } from './package.ts';
+import { DIRECTORY_OPTION, enterDirectory, requireRepo } from './repo.ts';
 import { listRulings } from './rulings.ts';
 import { existingWorkspace, workspaceFor } from './workspace.ts';
 
@@ -13,8 +14,8 @@ function positional(args: VerbArgs, index: number, usage: string): string {
   return value;
 }
 
-function taskNumber(value: string, usage: string): string {
-  if (!/^[0-9]+$/.test(value)) throw new UsageError(`usage: ${usage}`);
+function taskId(value: string, usage: string): string {
+  if (!isTaskId(value)) throw new UsageError(`usage: ${usage}`);
   return value;
 }
 
@@ -32,9 +33,10 @@ function between(args: VerbArgs, range: [number, number], usage: string): string
 export const workspaceVerb: Verb = {
   noun: 'workspace',
   summary: 'Resuelve y crea el workspace de SDD de un plan',
-  options: {},
+  options: DIRECTORY_OPTION,
   positionals: ['PLAN_FILE'],
   async run(args, io) {
+    enterDirectory(args);
     const [plan] = exactly(args, 1, 'sdd workspace PLAN_FILE');
     io.out(await workspaceFor(plan));
     return 0;
@@ -49,9 +51,11 @@ export const taskStartVerb: Verb = {
   positionals: ['PLAN_FILE', 'TASK_NUMBER'],
   async run(args, io) {
     const usage = 'sdd task start PLAN_FILE TASK_NUMBER';
-    const [plan, number] = exactly(args, 2, usage);
-    const task = taskNumber(number, usage);
-    const { path } = await writeBrief({ plan, task });
+    const [plan, id] = exactly(args, 2, usage);
+    const task = taskId(id, usage);
+    await requireRepo('commit');
+    const { path, warnings } = await writeBrief({ plan, task });
+    warnings.forEach((warning) => io.err(warning));
     io.out(`brief: ${path}`);
     io.out(`base: ${(await git(process.cwd(), ['rev-parse', 'HEAD'])).stdout.trim()}`);
     return 0;
@@ -62,13 +66,15 @@ export const taskBriefVerb: Verb = {
   noun: 'task',
   verb: 'brief',
   summary: 'Extrae el texto de una task del plan a un fichero',
-  options: {},
+  options: DIRECTORY_OPTION,
   positionals: ['PLAN_FILE', 'TASK_NUMBER', '[OUTFILE]'],
   async run(args, io) {
+    enterDirectory(args);
     const usage = 'sdd task brief PLAN_FILE TASK_NUMBER [OUTFILE]';
-    const [plan, number, out] = between(args, [2, 3], usage);
-    const task = taskNumber(number, usage);
+    const [plan, id, out] = between(args, [2, 3], usage);
+    const task = taskId(id, usage);
     const written = await writeBrief({ plan, task, out });
+    written.warnings.forEach((warning) => io.err(warning));
     io.out(`wrote ${written.path}: ${written.lines} lines`);
     return 0;
   },
@@ -82,9 +88,9 @@ export const taskDoneVerb: Verb = {
   positionals: ['PLAN_FILE', 'TASK_NUMBER', 'BASE', '--', 'TEST_COMMAND', '[ARGS...]'],
   async run(args, io) {
     const usage = 'sdd task done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]';
-    const [plan, number, base, ...command] = args.positionals;
+    const [plan, id, base, ...command] = args.positionals;
     if (!args.hasSeparator || command.length === 0 || base === undefined) throw new UsageError(`usage: ${usage}`);
-    return finishTask({ plan, task: taskNumber(number, usage), base, command }, io);
+    return finishTask({ plan, task: taskId(id, usage), base, command }, io);
   },
 };
 
@@ -92,9 +98,10 @@ export const reviewPackageVerb: Verb = {
   noun: 'review',
   verb: 'package',
   summary: 'Genera el paquete de revisión de un rango de commits',
-  options: {},
+  options: DIRECTORY_OPTION,
   positionals: ['PLAN_FILE', 'BASE', 'HEAD', '[OUTFILE]'],
   async run(args, io) {
+    enterDirectory(args);
     const [plan, base, head, out] = between(args, [3, 4], 'sdd review package PLAN_FILE BASE HEAD [OUTFILE]');
     const written = await writePackage({ plan, base, head, out });
     io.out(`wrote ${written.path}: ${written.commits} commit(s), ${written.bytes} bytes`);

@@ -15,29 +15,65 @@ function splitLines(text: string): string[] {
   return lines;
 }
 
-const ANY_TASK = /^#+[ \t]+Task[ \t]+[0-9]+/;
+const TASK_HEADING = /^(#+)[ \t]+Task[ \t]/;
+const ID_BODY = '[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+)*';
+const ID_PREFIX = new RegExp(`^${ID_BODY}`);
+const WHOLE_ID = new RegExp(`^${ID_BODY}$`);
+const TASK_SHAPED_HEADING = /^#+[ \t]+[^ \t]+[ \t]+[A-Za-z0-9.]*[0-9]/;
+const MAX_SHAPED = 5;
 
-function withFenceState(planText: string): { line: string; inFence: boolean }[] {
-  let inFence = false;
-  return splitLines(planText).map((line) => {
-    if (line.startsWith('```')) inFence = !inFence;
-    return { line, inFence };
-  });
+interface PlanScan {
+  picked: string[];
+  tasks: number;
+  shaped: string[];
+  fence: { line: number; hidden: boolean } | null;
+  inTask: boolean;
 }
 
-export function extractTask(planText: string, task: string): string[] {
-  const heading = new RegExp(`^#+[ \t]+Task[ \t]+${task}([^0-9]|$)`);
-  const picked: string[] = [];
-  let inTask = false;
-  for (const { line, inFence } of withFenceState(planText)) {
-    if (!inFence && ANY_TASK.test(line)) inTask = heading.test(line);
-    if (inTask) picked.push(line);
+export function isTaskId(value: string): boolean {
+  return WHOLE_ID.test(value) && /[0-9]/.test(value);
+}
+
+class PlanScanner {
+  readonly scan: PlanScan = { picked: [], tasks: 0, shaped: [], fence: null, inTask: false };
+  private readonly task: string;
+  private level = 0;
+
+  constructor(task: string) {
+    this.task = task;
   }
-  return picked;
+
+  visit(line: string, lineNumber: number): void {
+    if (line.startsWith('```')) this.toggleFence(lineNumber);
+    else if (this.scan.fence) this.scan.fence.hidden ||= TASK_HEADING.test(line);
+    else this.visitOutsideFence(line);
+    if (this.scan.inTask) this.scan.picked.push(line);
+  }
+
+  private toggleFence(lineNumber: number): void {
+    this.scan.fence = this.scan.fence ? null : { line: lineNumber, hidden: false };
+  }
+
+  private visitOutsideFence(line: string): void {
+    const heading = TASK_HEADING.exec(line);
+    const id = heading && ID_PREFIX.exec(line.slice(heading[0].length).trimStart())?.[0];
+    if (heading && id && isTaskId(id)) this.enterHeading(heading[1].length, id);
+    if (TASK_SHAPED_HEADING.test(line) && this.scan.shaped.length < MAX_SHAPED) this.scan.shaped.push(line);
+  }
+
+  private enterHeading(depth: number, id: string): void {
+    this.scan.tasks++;
+    const extendsTask = id.startsWith(this.task) && /[A-Za-z.]/.test(id[this.task.length] ?? '');
+    if (this.scan.inTask && depth > this.level && extendsTask) return;
+    this.scan.inTask = id === this.task;
+    this.level = depth;
+  }
 }
 
-function countTasks(planText: string): number {
-  return withFenceState(planText).filter(({ line, inFence }) => !inFence && ANY_TASK.test(line)).length;
+function scanPlan(planText: string, task: string): PlanScan {
+  const scanner = new PlanScanner(task);
+  splitLines(planText).forEach((line, index) => scanner.visit(line, index + 1));
+  return scanner.scan;
 }
 
 function readPlan(plan: string): string {
@@ -56,26 +92,51 @@ export function isLiteSpec(text: string): boolean {
   return frontmatter !== undefined && LITE_MODE.test(frontmatter);
 }
 
-function briefLines(text: string, task: string): string[] {
-  return isLiteSpec(text) ? splitLines(text) : extractTask(text, task);
-}
-
-function requireTasksFile(planText: string, plan: string): void {
-  if (isLiteSpec(planText)) return;
-  const count = countTasks(planText);
+function requireTasksFile(count: number, plan: string): void {
   const tasksFile = join(dirname(resolve(plan)), 'tasks.md');
   if (count > 1 && !existsSync(tasksFile)) {
     throw new DomainError(`plan with ${count} tasks and no tasks.md: write ${tasksFile} before the first task (status and commit per task)`);
   }
 }
 
-export async function writeBrief(request: BriefRequest): Promise<{ path: string; lines: number }> {
+function unclosedFence(scan: PlanScan, plan: string): string {
+  return `el bloque de código abierto en la línea ${scan.fence?.line} de ${plan} no se cierra`;
+}
+
+function hidingFence(scan: PlanScan, plan: string): string {
+  return `${unclosedFence(scan, plan)} y oculta los encabezados de task que le siguen: ciérralo en el plan y vuelve a lanzarlo`;
+}
+
+const TRANSLATED_PLAN_HINT = 'no hay encabezados de task: se escriben con la palabra inglesa «Task» («### Task 1: …») aunque el plan esté en otro idioma. Encabezados con forma de task:';
+
+function notFoundMessage(scan: PlanScan, request: BriefRequest): string {
+  const { plan, task } = request;
+  const lines: string[] = [];
+  if (scan.fence?.hidden) lines.push(hidingFence(scan, plan));
+  else if (scan.tasks === 0 && scan.shaped.length > 0) lines.push(TRANSLATED_PLAN_HINT, ...scan.shaped.map((heading) => `  ${heading}`));
+  lines.push(`task ${task} not found in ${plan} (no heading matching 'Task ${task}')`);
+  return lines.join('\n');
+}
+
+function strayFenceWarnings(scan: PlanScan, plan: string): string[] {
+  if (!scan.fence || scan.fence.hidden || !scan.inTask) return [];
+  return [`${unclosedFence(scan, plan)}; no oculta ningún encabezado de task, así que el brief está completo`];
+}
+
+function briefOf(planText: string, request: BriefRequest): { picked: string[]; warnings: string[] } {
+  if (isLiteSpec(planText)) return { picked: splitLines(planText), warnings: [] };
+  const scan = scanPlan(planText, request.task);
+  requireTasksFile(scan.tasks, request.plan);
+  if (scan.fence?.hidden && scan.inTask) throw new DomainError(hidingFence(scan, request.plan));
+  if (scan.picked.length === 0) throw new DomainError(notFoundMessage(scan, request));
+  return { picked: scan.picked, warnings: strayFenceWarnings(scan, request.plan) };
+}
+
+export async function writeBrief(request: BriefRequest): Promise<{ path: string; lines: number; warnings: string[] }> {
   const { plan, task } = request;
   const planText = readPlan(plan);
-  requireTasksFile(planText, plan);
   const path = request.out ?? join(await workspaceFor(plan), `task-${task}-brief.md`);
-  const picked = briefLines(planText, task);
-  if (picked.length === 0) throw new DomainError(`task ${task} not found in ${plan} (no heading matching 'Task ${task}')`);
+  const { picked, warnings } = briefOf(planText, request);
   writeFileSync(path, `${picked.join('\n')}\n`);
-  return { path, lines: picked.length };
+  return { path, lines: picked.length, warnings };
 }
