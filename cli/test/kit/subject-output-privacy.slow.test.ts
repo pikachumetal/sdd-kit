@@ -1,6 +1,6 @@
-import { mkdtempSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   escapeRegExp,
@@ -215,31 +215,25 @@ describe('El lanzador de sujetos oculta el home y el usuario', () => {
   });
 });
 
-function filesUnder(dir: string): string[] {
-  return readdirSync(dir, { recursive: true, encoding: 'utf8' })
-    .map((name) => join(dir, name))
-    .filter((path) => statSync(path).isFile());
-}
-
+// La evidencia del índice: recorrer las carpetas con un statSync por entrada costaba 2,7 s de los 10 del hook, y
+// --others o --deleted, otro segundo; lo que aún no está en el índice lo mira el pre-commit al añadirlo (patch 0325).
 // Toda subcarpeta de la tarea: las fugas que se escaparon estaban en campaign/.
 function repoEvidence(): string[] {
-  const specs = join(kitRoot, '.docs', 'sdd', 'specs');
-  const taskFolders = readdirSync(specs).map((name) => join(specs, name)).filter((path) => statSync(path).isDirectory());
-  const outputs = taskFolders.flatMap((folder) =>
-    readdirSync(folder).map((name) => join(folder, name)).filter((path) => statSync(path).isDirectory()).flatMap(filesUnder),
-  );
-  const campaigns = readdirSync(join(kitRoot, 'tests'))
-    .filter((name) => /-(red|green)\.md$/i.test(name))
-    .map((name) => join(kitRoot, 'tests', name));
-  return [...outputs, ...campaigns].map((path) => relative(kitRoot, path).replaceAll('\\', '/'));
+  const args = ['-c', 'core.quotePath=false', 'ls-files', '--', '.docs/sdd/specs', 'tests'];
+  const result = run('git', args, { cwd: kitRoot });
+  // Un error de git no es «sin evidencia»: la revisión pasaría sin mirar nada.
+  if (result.code !== 0) throw new Error(`git ${args.join(' ')}: ${result.output}`);
+  return result.output
+    .split(/\r?\n/)
+    .filter((path) => (path.startsWith('.docs/sdd/specs/') && path.split('/').length > 5) || /^tests\/[^/]+-(red|green)\.md$/i.test(path));
 }
 
 describe('La evidencia de los sujetos no lleva el home de la máquina', () => {
   const because = 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean';
   let evidence: EvidenceFile[];
 
-  beforeAll(() => {
-    evidence = readEvidence(repoEvidence());
+  beforeAll(async () => {
+    evidence = await readEvidence(repoEvidence());
   });
 
   it('revisa también las salidas de las baterías, de las pasadas de fix y de las campañas', () => {
