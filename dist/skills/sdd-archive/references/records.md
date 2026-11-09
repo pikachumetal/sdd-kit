@@ -22,7 +22,7 @@ In the 2.x roadmap (`ROADMAP.md` closes its debt as «Roadmap 3.0.0» says), a d
 - `Patch only:` with the validation deferred and an open `## Release <N>` section, the patch also gets a row in its table, with the header of `roadmap-template.md` and `🧪 validación diferida a <disparador>` in «Estado»: the release close looks for deferred items there, not in «Patches». A validated patch gets no row there.
 - If `patch.md` re-measures a debt or backlog row the patch doesn't settle, and the result contradicts what the row claims (its evidence, its count, its proposal), rewrite those cells with the new measurement, its date and a link to `patch.md`: the row can no longer claim what the measurement denies (2/2 left it intact, `tests/fewer-stops-red.md`, s6).
 - After editing and before the closing commit, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`.
-A failure on a line you wrote you fix in the roadmap, never in the validator. A failure on a line you didn't touch you don't fix, and it doesn't stop you: your final message says how many, as inherited form that the «Roadmap en la forma de la plantilla» step of the v2.3.0 migration fixes (`tests/release-close-roadmap-red.md`, K1 and P3).
+A failure on a line you wrote you fix in the roadmap, never in the validator. A failure on a line you didn't touch you don't fix, and it doesn't stop you: your final message lists them and says how many, as inherited form that the «Roadmap en la forma de la plantilla» step of the v2.3.0 migration fixes (`tests/release-close-roadmap-red.md`, K1 and P3).
 
 ## Roadmap 3.0.0
 

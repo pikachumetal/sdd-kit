@@ -11,36 +11,36 @@ interface Budget {
 const skillBudgets: Record<string, Budget> = {
   'add-to-changelog': { skillMd: 500, total: 500 },
   'sdd-agent-writing': { skillMd: 2000, total: 8949 },
-  'sdd-archive': { skillMd: 3920, total: 10010 },
+  'sdd-archive': { skillMd: 2932, total: 9904 },
   'sdd-config': { skillMd: 1450, total: 1450 },
-  'sdd-explore': { skillMd: 1100, total: 1100 },
-  'sdd-end-release': { skillMd: 1968, total: 2500 },
+  'sdd-explore': { skillMd: 1066, total: 1066 },
+  'sdd-end-release': { skillMd: 1929, total: 2127 },
   'sdd-feedback': { skillMd: 800, total: 800 },
   'sdd-grilling': { skillMd: 900, total: 900 },
-  'sdd-parallel-agents': { skillMd: 1179, total: 1179 },
-  'sdd-init': { skillMd: 2720, total: 3276 },
-  'sdd-retro': { skillMd: 700, total: 700 },
-  'sdd-roadmap': { skillMd: 3600, total: 3685 },
+  'sdd-parallel-agents': { skillMd: 1156, total: 1156 },
+  'sdd-init': { skillMd: 2667, total: 3212 },
+  'sdd-retro': { skillMd: 622, total: 622 },
+  'sdd-roadmap': { skillMd: 3222, total: 3630 },
   'sdd-rubber-duck': { skillMd: 600, total: 600 },
-  'sdd-propose': { skillMd: 5250, total: 14200 },
-  'sdd-implement': { skillMd: 2658, total: 6657 },
+  'sdd-propose': { skillMd: 3157, total: 13927 },
+  'sdd-implement': { skillMd: 2633, total: 6626 },
   'sdd-implement-native': { skillMd: 3038, total: 3038 },
-  'sdd-implement-subagent': { skillMd: 2991, total: 9000 },
-  'sdd-verify': { skillMd: 3060, total: 9577 },
-  'sdd-tdd': { skillMd: 1750, total: 4117 },
+  'sdd-implement-subagent': { skillMd: 2951, total: 8462 },
+  'sdd-verify': { skillMd: 2606, total: 9503 },
+  'sdd-tdd': { skillMd: 1723, total: 4036 },
   'sdd-upgrade': { skillMd: 980, total: 980 },
-  'sdd-debugging': { skillMd: 1700, total: 3495 },
-  'sdd-worktrees': { skillMd: 1479, total: 1479 },
-  'sdd-templates': { skillMd: 1700, total: 16999 },
+  'sdd-debugging': { skillMd: 1681, total: 3426 },
+  'sdd-worktrees': { skillMd: 1459, total: 1459 },
+  'sdd-templates': { skillMd: 1614, total: 16978 },
   // El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
-  'using-sdd': { skillMd: 570, total: 570 },
+  'using-sdd': { skillMd: 559, total: 559 },
 };
 
 const anchorBudgets: Record<string, number> = {
   'constitution.md': 2250,
   'mission.md': 1808,
-  'architecture.md': 2253,
-  'tech-stack.md': 23181,
+  'architecture.md': 2252,
+  'tech-stack.md': 23169,
 };
 
 function words(text: string): number {
@@ -75,7 +75,6 @@ describe('topes de palabras', () => {
   it.each(skills)('%s: la skill completa cabe en su tope', (skill) => {
     expectWithin(wordsBySkill.get(skill) ?? 0, skillBudgets[skill].total);
   });
-
 
   it.each(Object.keys(anchorBudgets))('%s cabe en su tope', (anchor) => {
     expectWithin(words(readText(`.docs/sdd/${anchor}`)), anchorBudgets[anchor]);

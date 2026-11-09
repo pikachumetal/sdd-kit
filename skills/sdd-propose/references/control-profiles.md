@@ -70,7 +70,7 @@ More:
 
 <!-- kit: incluye deviation -->
 
-A ruling that falls in a scope brake (see «Scope brakes») is treated as a deviation. Its 🦆 comes from `sdd-rubber-duck` in short mode. In `unattended`, if every option blocks the feature, park it (`⏸️ aparcada: <motivo>`).
+A ruling that falls in a scope brake (see «Scope brakes») is treated as a deviation. Its 🦆 comes from `sdd-rubber-duck` in short mode.
 
 The **update action**, besides the above:
 - With the approval: commit the spec. The new task for a closed task, not «Task 1 — enmienda», carries its `Tras`; it reopens none and rewrites none of their commits, the history keeps one commit per task, it goes through `sdd task start` and `sdd task done` like any other, and its commit enters the review that applies. If it only changes the task in progress, the work stays in it, with the amendment's note. Without this form, 1 of 2 subjects put the change to a closed task into the task in progress, and neither stopped with 🦆 or ✋ (`tests/sdd-start-feature-0146-red.md`, u1).

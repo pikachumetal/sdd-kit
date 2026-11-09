@@ -63,7 +63,7 @@ describe('.githooks/pre-commit y el entorno de git', () => {
   afterAll(() => rmSync(tmp, { recursive: true, force: true }));
 
   // Un worktree enlazado, como el del incidente: ahí git exporta a sus hooks el GIT_DIR absoluto.
-  function newWorktree(name: string, gate: string): { common: string; worktree: string } {
+  function newWorktree(name: string, gate: string, copiesFails = false): { common: string; worktree: string } {
     const common = join(tmp, name);
     const worktree = join(tmp, `${name}-wt`);
     mkdirSync(join(common, '.moon'), { recursive: true });
@@ -72,7 +72,8 @@ describe('.githooks/pre-commit y el entorno de git', () => {
     copyFileSync(join(kitRoot, '.githooks', 'pre-commit'), join(common, '.githooks', 'pre-commit'));
     writeFileSync(join(common, '.gitignore'), '.moon/cache\n');
     writeFileSync(join(common, '.moon', 'workspace.yml'), 'projects:\n  cli: cli\n  kit: .\nvcs:\n  client: git\n  defaultBranch: main\n');
-    const kitTasks = ['roadmap', 'own', 'skill-size', 'copies'].map((task) => `  ${task}:\n    ${noop}\n`).join('');
+    const failing = "command: node\n    args: [-e, 'process.exit(1)']\n    options:\n      cache: false";
+    const kitTasks = ['roadmap', 'own', 'skill-size', 'copies'].map((task) => `  ${task}:\n    ${task === 'copies' && copiesFails ? failing : noop}\n`).join('');
     writeFileSync(join(common, 'moon.yml'), `${shell}tasks:\n${kitTasks}`);
     writeFileSync(join(common, 'cli', 'gate.cjs'), gate);
     writeFileSync(join(common, 'cli', 'moon.yml'), `${shell}tasks:\n  typecheck:\n    ${noop}\n  test:\n    command: node\n    args: [gate.cjs]\n    options:\n      cache: false\n`);
@@ -106,6 +107,23 @@ describe('.githooks/pre-commit y el entorno de git', () => {
 
     expect(commit.code, commit.output).toBe(0);
     expect(gitIn(worktree, 'log', '-1', '--format=%s').output).toBe('propio');
+  });
+
+  it('kit:copies corre solo si el commit toca skills/, includes/ o upstream.json', () => {
+    const { worktree } = newWorktree('copies-gate', '', true);
+    mkdirSync(join(worktree, 'skills'));
+    writeFileSync(join(worktree, 'skills', 'nota.md'), 'Nota.\n');
+    gitIn(worktree, 'add', 'skills');
+
+    expect(gitIn(worktree, 'commit', '-m', 'toca skills').code).not.toBe(0);
+
+    gitIn(worktree, 'reset', '-q');
+    mkdirSync(join(worktree, '.docs'));
+    writeFileSync(join(worktree, '.docs', 'nota.md'), 'Nota.\n');
+    gitIn(worktree, 'add', '.docs');
+
+    const docsOnly = gitIn(worktree, 'commit', '-m', 'solo docs');
+    expect(docsOnly.code, docsOnly.output).toBe(0);
   });
 
   it('un gate en rojo sigue bloqueando el commit', () => {

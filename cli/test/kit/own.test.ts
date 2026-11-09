@@ -229,7 +229,7 @@ describe('kit:own: la inclusión en una copia', () => {
     };
     const result = report({ files, own: ['skills/example-b/'], entries: [copyEntry('skills/example-a/SKILL.md')] });
 
-    expect(result.code).toBe(1);
+    expect(result.lines).toEqual([repeated(['dist/skills/example-a/SKILL.md:8', 'dist/skills/example-b/SKILL.md:6'])]);
   });
 });
 

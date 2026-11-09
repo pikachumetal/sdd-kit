@@ -23,16 +23,16 @@ Subagent (sdd-kit:effort-high, model: sonnet):
     Breaking one of these constraints is **Important**, even if the rest of this brief doesn't mention it. A numeric threshold exceeded by one unit (a 21-line function with a limit of 20, 4 parameters with a limit of 3) is Minor; exceeded by more, Important.
 
 <!-- kit: 0312 -->
-    Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
+    RED tests: modifying them is changing an assertion, a test name or a datum. The format the project's linter or formatter demands (a blank line, the indentation) is not a modification.
 
 <!-- kit: 0312 -->
-    ## E2E del proyecto
+    ## Project E2E
 
 <!-- kit: 0312 -->
     <«Flujos core», «Retries» y «Timeouts» de operations.md §Testing, literales, o «sin E2E declarados»>
 
 <!-- kit: 0312 -->
-    ## Comentarios que citan documentos
+    ## Comments that cite documents
 
 <!-- kit: 0312 -->
     <la salida de `sdd review comments`, literal>
@@ -107,10 +107,10 @@ Subagent (sdd-kit:effort-high, model: sonnet):
     - Edge cases handled?
 
 <!-- kit: 0312 · sustituye: «**Architecture:** - Sound…- Reasonable scalability…performance?…Security concerns?…Integrates cleanly with surrounding code? **Testing:**…Tests verify real behavior,…mocks?…Edge cases covered?…Integration…where they matter? - All…passing? **Production readiness:**…Documentation complete? -…obvious bugs?» -->
-    **Comments:** a comment that repeats what the code says is Important, also when «Code constraints» doesn't mention comments. Each `file:line` line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito de la pasarela de pago»), or a citation with its own reason (an ADR, a living document; «lo dice la spec» is no reason), goes to «Declined to judge», never to Issues. A citation «Code constraints» forbids is Important, even with a reason. The list doesn't limit you: a citation it missed is a finding too.
+    **Comments:** a comment that repeats what the code says is Important, also when «Code constraints» doesn't mention comments. Each `file:line` line of «Comments that cite documents» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito de la pasarela de pago»), or a citation with its own reason (an ADR, a living document; «lo dice la spec» is no reason), goes to «Declined to judge», never to Issues. A citation «Code constraints» forbids is Important, even with a reason. The list doesn't limit you: a citation it missed is a finding too.
 
 <!-- kit: 0312 -->
-    **E2E tests.** With the fields of «E2E del proyecto» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
+    **E2E tests.** With the fields of «Project E2E» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
     - a new E2E test that names none of the core flows: what no core flow covers is tested one layer down;
     - a retry or a timeout raised above the declared value, in a test or in the runner's config, without its reason written in `operations.md`;
     - a wait on internal state (an API poll, a store, an attribute the user doesn't see) between two user actions, without a reason in a comment. «Without waiting, the app wouldn't have the data yet» is not a reason: it is the failure the test exists to catch. A wait the test needs is not a strength.

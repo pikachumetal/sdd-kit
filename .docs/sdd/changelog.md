@@ -6,6 +6,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Added
 
+- **Feature 0311** — Una copia incluye una regla de `includes/` dentro de un bloque del kit, y `kit:own`, `kit:skill-size` y `kit:copies` corren en el pre-commit (`kit:copies`, si el commit toca `skills/`, `includes/` o `upstream.json`) y en la CI. → [ref](specs/20261109-143437-feature-0311-includes-and-checks/)
 - **Feature 0313** — Los verbos de tasks al día con superpowers 7.0.2: `-C` en `sdd workspace`, `sdd task brief` y `sdd review package`, parada con 2 fuera de un repo o sin commits, ids `A1`, `6b` y `2.1`, bloque de código sin cerrar y pista de plan traducido en `task brief`, y un `.gitignore` del workspace que no se pisa. → [ref](specs/20261108-184209-feature-0313-tasks-superpowers-7/)
 - **Feature 0319** — `sdd roadmap check` avisa, sin fallar, de dos filas abiertas (⏳ o 🔄) que tocan la misma ruta, o una dentro de la carpeta de la otra, sin una cadena de «tras» (o «antes de», en la 2.x) entre ellas: en «Próximo» y `## Release <N>` con las rutas de «Ficheros:» y «Ficheros que toca», y en Now y Next de `ROADMAP.md` con las de `**Toca:**`. → [ref](specs/20261108-120335-feature-0319-roadmap-check-file-overlap/)
 - **Feature 0297** — OpenSpec v1.16.1 revisada para el eje Spec: sus tres reglas del `REMOVED` (leer el requisito vigente, recuperarlo del historial, «no verificado» sin vigente utilizable) salen limpias en el RED con el texto de hoy, porque el encargo ya lista las capacidades, así que `spec-reviewer-prompt.md` no cambia y la batería de `sdd-verify` gana `rm1`, `rm2`, `rm2b` y `rm3` como regresión. OpenSpec pasa a `from` de la copia de `spec-reviewer-prompt.md` e impeccable sube a `skill-v4.8.1`: `kit:copies` y `kit:upstream` sin rojos de las dos. → [ref](specs/20261108-122008-feature-0297-verify-removed-by-requirement/)
@@ -77,6 +78,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0311** — Cada regla que dos skills repetían vive en un solo sitio, los encargos de los ejes llevan `## Code constraints` y `## How to review`, y el cierre mide un aprendizaje contra el tope de palabras de la rama de integración. → [ref](specs/20261109-143437-feature-0311-includes-and-checks/)
 - **Patch 0294** — El Art. II de la constitution dice que un olvido de orden o de búsqueda con una orden delante (CLI, `grep`) se comprueba con esa orden antes de reescribir texto, en la viñeta «Elemento omitido»; el porqué deja de decir que toda forma es texto y la ADR 0025 sustituye a la 0003. → [ref](specs/20261109-123737-patch-0294-rule-form-after-failed-green/)
 - **Feature 0284** — `word-budget.test.ts` compara cada medida con su tope nominal, sin el margen del 25 %; los 14 topes que se pasaban suben a lo que mide el texto, con su motivo en la spec, y la regla 6 de `CLAUDE.md` cuenta el saldo de palabras sobre las skills que toca. → [ref](specs/20261109-105429-feature-0284-word-budgets-without-slack/)
 - **Feature 0322** — `sdd-implement`: en `pair` y `delegate`, una enmienda que cambia el delta pasa antes de la parada por un revisor `sonnet` con los siete puntos de `review-spec.md`, y sus hallazgos van en el ✋; la regla del ruling que quita lo que la spec fija no se escribe, porque su RED (`k4`) salió limpio 3 de 3. → [ref](specs/20261109-102437-feature-0322-deviations-and-amendments/)
@@ -150,6 +152,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Patch 0324** — `debt.md` guarda solo lo vivo: sin «Descartadas», una fila descartada o caducada sale del fichero con su motivo en el cuerpo del commit, la migración v3.0.0 no pasa las `**Descartada**`, `sdd roadmap check` da esa sección por fuera de la plantilla y `sdd roadmap causes` pierde su columna. → [ref](specs/20261109-134853-patch-0324-debt-keeps-only-live/)
 
 ### Removed
+- **Feature 0311** — `kitBudget`, el tope de palabras del kit entero: quedan los topes por skill. → [ref](specs/20261109-143437-feature-0311-includes-and-checks/)
 - **Feature 0226** — Salen los 57 `tests/*.Tests.ps1` que no son de conducta: las frases de las skills dejan de probarse, y lo que rompe algo (carga de skills y agentes, enlaces, skills invocadas, `NOTICE`, proyectos reales, rutas de 140, contrato del roadmap, manifests) y los topes de palabras pasan a Vitest en `cli/test/kit/`, con `testInputs` de `cli/moon.yml` a `/**/*` y la ADR 0019. → [ref](specs/20261026-162553-feature-0226-drop-phrase-tests/)
 
 - **Feature 0156** — `sdd-init-greenfield`, `sdd-init-brownfield` y las plantillas `mission-template.md`, `tech-stack-template.md` y `environments-template.md`; la pregunta del changelog de cliente en la init. → [ref](specs/20261017-143533-feature-0156-sdd-init/)

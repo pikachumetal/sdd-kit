@@ -9,7 +9,7 @@ The briefs of **each axis of the final review**, of its **fix pass** in SDD and 
 
 Breaking one of these constraints is **Important**, even if the template below doesn't mention it. A numeric threshold exceeded by one unit (a 21-line function with a limit of 20, 4 parameters with a limit of 3) is Minor; exceeded by more, Important.
 
-Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
+RED tests: modifying them is changing an assertion, a test name or a datum. The format the project's linter or formatter demands (a blank line, the indentation) is not a modification.
 
 ---
 

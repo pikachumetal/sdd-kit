@@ -196,9 +196,10 @@ const short = (rev) => s.git('rev-parse', '--short=7', rev).trim();
 // El encargo del implementador, compuesto con el texto del kit que se prueba; el brief, con su CLI.
 function implementerBrief(folder, task, test) {
   const brief = sddCli('task', 'brief', `${folder}/plan.md`, '1').trim().split('\n').at(-1).replace(/^wrote /, '').replace(/: \d+ lines$/, '');
+  const constraints = '- Texto de la interfaz en castellano.\n- Sin comentarios que repitan el código ni que citen documentos.';
   const values = [
-    ['<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>',
-      '- Texto de la interfaz en castellano.\n- Sin comentarios que repitan el código ni que citen documentos.'],
+    ['<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>', constraints],
+    ["<literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>", constraints],
     ['Los tests de `<ruta>`', `Los tests de \`${test}\``], ['<comandos>', `node --test ${test}`], ['<comando de los RED>', `node --test ${test}`],
     [' <Si la task tiene «Verificación lenta»:> `<comando>` es la verificación lenta de tu task: no la ejecutes; la lanza el hilo principal.', ''],
     ['Task N: [task name]', `Task 1: ${task}`], ['[BRIEF_FILE]', brief], ['[REPORT_FILE]', brief.replace(/brief\.md$/, 'report.md')], ['[directory]', forward(s.R)],

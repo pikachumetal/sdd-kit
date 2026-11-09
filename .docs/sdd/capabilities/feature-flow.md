@@ -529,7 +529,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN un plan con el bloque «De código» en sus Restricciones globales
 - WHEN se despacha el implementador de una task, o el hilo prepara la ejecución en Native
-- THEN el encargo lleva, tras «Restricciones de código», la sección `## Quality decalogue` con las diez reglas y la frase de que, si una choca con las Restricciones de código, mandan las Restricciones
+- THEN el encargo lleva, tras `## Code constraints`, la sección `## Quality decalogue` con las diez reglas y la frase de que, si una choca con las Code constraints, mandan las constraints
 - AND en Native el hilo la lee una vez, al preparar la ejecución
 - AND el encargo del revisor de task y el del re-revisor no la llevan
 

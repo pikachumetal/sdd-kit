@@ -40,9 +40,22 @@ function sourceText() {
   return text.includes('  prompt: |') ? dedent(fencedAfter(text, 'prompt: |', 'prompt: |'), 4) : fencedAfter(text, '# ', '```text');
 }
 
+// El kit en inglés nombra igual los huecos que los fixtures guardan en castellano, del kit anterior.
+const ENGLISH_HOLES = {
+  '<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>':
+    "<literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>",
+  '<copia literal de la sección `## Review Focus` del plan: todas sus líneas, enteras>': "<literal copy of the plan's `## Review Focus` section: all its lines, whole>",
+  '<ruta del paquete que imprime la receta>': '<path of the package the recipe prints>',
+};
+const UNFILLED = [...Object.keys(ENGLISH_HOLES), ...Object.values(ENGLISH_HOLES)];
+
+function withEnglishHoles(pairs) {
+  return pairs.flatMap(([literal, value]) => (ENGLISH_HOLES[literal] ? [[literal, value], [ENGLISH_HOLES[literal], value]] : [[literal, value]]));
+}
+
 function briefValues() {
   const fixed = JSON.parse(readFileSync(new URL(`./fixtures/axis-${opt.scenario}.json`, import.meta.url), 'utf8'));
-  return [
+  return withEnglishHoles([
     ...fixed,
     ['<ruta del paquete que imprime la receta>', opt.package],
     ['<sha>', opt.sha],
@@ -52,9 +65,11 @@ function briefValues() {
     ['<la salida de `sdd review comments`, literal>', opt.comments],
     ['[BASE_SHA]', `${opt.sha}~`],
     ['[HEAD_SHA]', opt.sha],
-  ];
+  ]);
 }
 
 let text = sourceText();
 for (const [literal, value] of briefValues()) text = text.split(literal).join(value);
+const unfilled = UNFILLED.filter((hole) => text.includes(hole));
+if (unfilled.length > 0) throw new Error(`el encargo saldría con huecos sin rellenar: ${unfilled.join(' · ')}`);
 process.stdout.write(text);

@@ -115,6 +115,7 @@ Qué viaja en el plugin instalado, cómo sale de la fuente y de dónde salen los
 - AND un rojo dentro de un bloque con `arregla: 0307` acaba en ` → 0307`
 - AND la copia con `pending` da solo `skills/sdd-debugging/SKILL.md: sin anotar → 0312`
 - AND con algún rojo sale con código 1; sin ninguno, escribe `Copias al día: <n> ficheros.`, con `<n>` las copias sin `pending`, y sale con 0
+- AND cuándo corre en el pre-commit y en la CI lo dice «Las comprobaciones de las skills corren en el commit y en la CI»
 
 ### Una copia que ya no lo es da rojo
 
@@ -183,20 +184,19 @@ Qué viaja en el plugin instalado, cómo sale de la fuente y de dónde salen los
 - AND `dist/` no tiene `includes/`
 - AND una inclusión cuyo fichero no existe para el build con `skills/example-a/SKILL.md:<línea>: la inclusión user-language no existe: crea includes/user-language.md`, y `dist/` no cambia
 - AND un `includes/<nombre>.md` con una línea `<!-- kit: … -->` para el build con `includes/<nombre>.md: una inclusión no lleva marcas del kit`
-- AND en la fuente anotada de una copia, `kit:copies` da `<fichero>:<línea>: marca del kit sin tarea o con un campo desconocido: incluye user-language`
-- AND en cualquier copia, `pending` incluida, `kit:own` da `<fichero>:<línea>: una inclusión es solo de las propias, y <fichero> es una copia`
+- AND en una copia, la inclusión sigue «Una copia incluye dentro de un bloque del kit»
 
 ### Una frase del kit repetida en otra skill da rojo
 
 - GIVEN `skills/example-a/SKILL.md` y `skills/example-b/SKILL.md`, propias, cada una con «Write everything the user reads in their language, skill announcements included.»
 - WHEN corre `moon run kit:own`
-- THEN da `dist/skills/example-a/SKILL.md:<línea> y dist/skills/example-b/SKILL.md:<línea> repiten «write everything the user reads in their language skill announcements»: déjala en un solo sitio, en includes/ si la necesitan varias propias`
+- THEN da `dist/skills/example-a/SKILL.md:<línea> y dist/skills/example-b/SKILL.md:<línea> repiten «write everything the user reads in their language skill announcements»: déjala en un solo sitio, en includes/ si la necesitan varias skills; antes de quitar una copia, relee cada paso que la nombra por su posición: su orden tiene que dejar aplicarla`
 - AND una palabra es `[\p{L}\p{N}'’-]+`, en minúsculas; repetida es una racha de 10 palabras seguidas en dos carpetas distintas de `dist/skills/`, fuera del frontmatter, de los bloques de código y del código en línea
 - AND la racha no cruza una línea en blanco, un elemento de lista, un título ni una celda de tabla, y sí las líneas partidas de un mismo párrafo
 - AND una racha de 12 palabras da una sola línea; dos rachas separadas en la misma pareja dan dos
 - AND con la misma racha en tres skills, la línea nombra los tres sitios, ordenados por ruta
 - AND dos copias anotadas que comparten una racha, en su original o en sus bloques del kit, no dan rojo; el bloque del kit de una copia que repite una propia sí lo da
-- AND la racha que entra por `<!-- kit: incluye user-language -->` en dos propias no da rojo; la misma racha escrita a mano en una tercera sí
+- AND la racha que entra por `<!-- kit: incluye user-language -->` en dos skills, propias o copias, no da rojo; la misma racha escrita a mano en una tercera, propia o en un bloque del kit de una copia, sí
 - AND una racha repetida entre el `SKILL.md` de una skill y sus `references/`, o dentro de `sdd-templates/templates/` o de `sdd-upgrade/references/migrations/`, no da rojo
 - AND una copia con `pending` cuenta entera como texto del kit
 
@@ -223,22 +223,24 @@ Qué viaja en el plugin instalado, cómo sale de la fuente y de dónde salen los
 
 ### Lo que dice kit:own
 
-- GIVEN el kit con rojos de las cuatro clases (repetida, absoluta con excepción, castellano e inclusión en una copia)
+- GIVEN el kit con rojos de las tres clases (repetida, absoluta con excepción y castellano)
 - WHEN corre `moon run kit:own`
-- THEN primero reconstruye `dist/` con `kit:build`, y escribe una línea por rojo y sale con código 1
-- AND sin ningún rojo escribe `Skills al día: <n> ficheros.`, con `<n>` los `.md` de `dist/skills/` y de `includes/` que mira, y sale con 0
-- AND no corre en el pre-commit ni en la CI
+- THEN lee `skills/` y `includes/` con las inclusiones expandidas, sin reconstruir `dist/`, escribe una línea por rojo y sale con código 1
+- AND sin ningún rojo escribe `Skills al día: <n> ficheros.`, con `<n>` los `.md` de `skills/` y de `includes/` que mira, y sale con 0
+- AND corre en el pre-commit y en la CI, y un rojo para el commit
 
 ### Ninguna skill ni ninguna fase pasa de su tamaño
 
-- GIVEN `dist/skills/example-a/SKILL.md` de 20.000 bytes
+- GIVEN `skills/example-a/SKILL.md`, que sale del build con 20.000 bytes
 - WHEN corre `moon run kit:skill-size`
 - THEN da `FALLA: dist/skills/example-a/SKILL.md ocupa 20000 bytes (límite: menos de 20000)` y sale con código 1
+- AND mide cada `SKILL.md` de `skills/` con sus marcas quitadas y sus inclusiones expandidas, como sale del build, sin reconstruir `dist/`
 - AND con una skill `lead` de 20.000 caracteres que manda invocar cinco skills de 19.000 (`a`, `b`, `c`, `d`, `e`), da `FALLA: la fase de lead (a, b, c, d, e) suma 115000 caracteres (límite: 100000)`
 - AND cada skill de la fase cuenta como mín(caracteres, 20.000), y una fase de 100.000 exactos pasa
 - AND manda invocar una skill del kit entre comillas invertidas, con o sin `sdd-kit:`, precedida de «invoke», «load» o «**REQUIRED SUB-SKILL:**», o seguida en la misma frase y sin otro código en medio de «with `Skill`» o «with the `Skill` tool»; en «closing in `example-b`: invoke `example-c` with `Skill`» cuenta `example-c` y no `example-b`
 - AND una skill nombrada sin ninguna de esas formas, o dentro de un bloque de código, no cuenta, y solo cuentan las invocaciones directas, no las de las skills invocadas
 - AND sin rojos escribe `OK: todos los SKILL.md ocupan menos de 20000 bytes` y `OK: ninguna fase pasa de 100000 caracteres (la mayor, <skill>: <n>)`, y sale con 0
+- AND corre en el pre-commit y en la CI, y un rojo para el commit
 
 ### Un bloque del kit que se come el original da rojo
 
@@ -272,10 +274,30 @@ Qué viaja en el plugin instalado, cómo sale de la fuente y de dónde salen los
 - AND una línea de menos de 70 caracteres igual a una del clon no da rojo
 - AND sin ninguna línea literal escribe lo de hoy, `Fuentes al día: <n> entradas.`
 
+### Una copia incluye dentro de un bloque del kit
+
+- GIVEN `includes/user-language.md` y la fuente anotada de `skills/sdd-tdd/SKILL.md`, copia sin `pending`, con `<!-- kit: 0312 -->` seguida de `<!-- kit: incluye user-language -->` y de la línea «Forked from `test-driven-development` of superpowers…», en el mismo párrafo
+- WHEN corren `moon run kit:copies` y `moon run kit:build`
+- THEN `kit:copies` no da rojo por la inclusión, que es una línea del bloque, y `dist/skills/sdd-tdd/SKILL.md` lleva el contenido de `includes/user-language.md` en su sitio
+- AND la inclusión no abre ni cierra un bloque: los bordes son los de «La marca del kit se escribe con su gramática». Justo antes del `fin` de un bloque es del bloque y no da rojo; tras la línea en blanco que cierra un bloque sin `fin`, está fuera
+- AND fuera de un bloque `add` o `sustituye`, `kit:copies` da `<fichero>:<línea>: una inclusión en una copia va dentro de un bloque del kit`
+- AND dentro de una valla de código de la copia, `kit:copies` da `<fichero>:<línea>: una inclusión va en el texto, fuera de un bloque de código`, el mismo aviso que el build
+- AND en una copia `pending`, una inclusión vale en cualquier sitio del texto
+- AND lo que entra por la inclusión no es texto del kit de la copia: no lo compara con su original, y no se empareja con lo mismo incluido en otra skill
+
+### Las comprobaciones de las skills corren en el commit y en la CI
+
+- GIVEN un clon con `core.hooksPath` en `.githooks`, `SDD_UPSTREAM_DIR` sin definir, y staged un cambio a `skills/example-a/SKILL.md` que escribe a mano «Write everything the user reads in their language, skill announcements included.», ya escrita en `skills/example-b/SKILL.md`, propia
+- WHEN se ejecuta `git commit`
+- THEN el pre-commit corre `kit:own` y `kit:skill-size` además de `cli:typecheck`, `cli:test` y `kit:roadmap`, y `kit:copies` porque el commit toca `skills/`; el commit no entra, y la salida lleva la línea «… repiten «write everything the user reads in their language skill announcements»: …» de `kit:own` y `Falta SDD_UPSTREAM_DIR: la carpeta con los clones de las fuentes vigiladas.` de `kit:copies`
+- AND un commit staged que solo toca `.docs/` no corre `kit:copies` (lo decide `git diff --cached --name-only`: `skills/`, `includes/` o `upstream.json`) y entra sin la variable
+- AND con la variable y un clon sin el tag que pide `upstream.json`, un commit que toca `skills/` no entra, con `<fuente>: falta <versión> en el clon <ruta>`
+- AND en cada push a `develop`, `feature/**` y `patch/**`, la CI clona cada `repo` de las `sources` de `upstream.json` con sus tags en `$RUNNER_TEMP/upstream`, exporta `SDD_UPSTREAM_DIR` y corre `kit:copies`, `kit:own` y `kit:skill-size` junto a su suite; un rojo de cualquiera deja el run en `failure`
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: la versión de cada fuente de terceros, solo en `upstream.json`, en la raíz del repo, que no viaja, y en los avisos que salen de él; nunca en el texto de una skill. También vive allí si cada fichero de `skills/` es copia o propia (`own`) y qué ficheros de la carpeta de una copia no se copian (`notCopied`). La versión del plugin, solo en `.claude-plugin/plugin.json` de la raíz; `dist/.claude-plugin/plugin.json` es su copia generada. Lo que viaja, en `dist/`, generado desde `skills/` y la lista blanca. Qué frase de una copia es del kit, solo en las marcas de su fuente anotada en `skills/`. Una regla que necesitan dos propias, solo en `includes/<nombre>.md`, en la raíz, que no viaja: el build la pone en cada skill que la incluye; una copia no incluye, y su texto del kit vive en sus bloques.
+- **Dónde viven los datos**: la versión de cada fuente de terceros, solo en `upstream.json`, en la raíz del repo, que no viaja, y en los avisos que salen de él; nunca en el texto de una skill. También vive allí si cada fichero de `skills/` es copia o propia (`own`) y qué ficheros de la carpeta de una copia no se copian (`notCopied`). La versión del plugin, solo en `.claude-plugin/plugin.json` de la raíz; `dist/.claude-plugin/plugin.json` es su copia generada. Lo que viaja, en `dist/`, generado desde `skills/` y la lista blanca. Qué frase de una copia es del kit, solo en las marcas de su fuente anotada en `skills/`. Una regla que necesitan dos skills, solo en `includes/<nombre>.md`, en la raíz, que no viaja: el build la pone en cada skill que la incluye; una copia la incluye dentro de un bloque del kit. Los clones de las fuentes que lee `kit:copies`, en la carpeta de `SDD_UPSTREAM_DIR`, fuera del repo; en la CI, `$RUNNER_TEMP/upstream`.
 - **Idioma de los nombres**: rutas y claves en inglés (`upstream.json`, `kind`, `copy`, `concept`, `pending`, `from`, `own`, `notCopied`, `includes/`, `kit:own`, `kit:dist-compare`); los campos de la marca y los mensajes, en castellano (`sustituye`, `quita`, `de`, `arregla`, `fin`, `incluye`); el `<nombre>` de una inclusión, en inglés kebab-case.
 - **Límites**: una copia conserva al menos el 50 % de su original base, medido por frases de 6 palabras; si no, es propia. Las absolutas son `only`, `never`, `always`, `must` y `every`; las excepciones, `except`, `unless` e `instead of`. La cita S de una marca no lleva `«`, `»` ni `-->`. Una versión escrita en el texto es la clave o el `repo` de una fuente, entre comillas invertidas opcionales, espacios y `v?N.N[.N…]` (`` `?(<clave>|<repo>)`?\s+v?\d+(\.\d+)+ ``), en un `.md` de `skills/` fuera de `migrations/`. Una frase repetida es una racha de 10 palabras en dos skills. Un `SKILL.md` de `dist/` ocupa menos de 20.000 bytes, y una fase suma 100.000 caracteres o menos, con cada skill contada como mín(caracteres, 20.000). Un bloque `add` o `sustituye` se come el original con 2 líneas seguidas o más, sin contar las en blanco, iguales a las de su sitio. Una línea literal de un `own` tiene 70 caracteres o más sin los espacios de los bordes.
 - **Avisos**: `dist/ no es lo que sale del build: ejecuta moon run kit:build` · `<fichero> no es lo que sale de upstream.json: ejecuta moon run kit:notices` · `<fichero>:<línea>: marca mal puesta: una marca va sola en su línea, <!-- kit: … -->, fuera del frontmatter y de un bloque de código` · `<fichero>:<línea>: una inclusión va en el texto, fuera de un bloque de código` · los de la inclusión del requisito «Una inclusión se escribe una vez y el build la expande» · `<fuente>: licencia <licencia> sin plantilla en build/notices.ts` · los de `kit:upstream` de los requisitos «El corte compara cada entrada del registro con su fuente» y «Un fichero propio no lleva líneas literales de una fuente» · los de `kit:copies` y `kit:copies-update` de los requisitos «Una copia es su original más bloques del kit marcados», «Lo que sustituye una marca es lo que el bloque quita», «Una frase sustituida no queda al lado de la del kit», «Un añadido junto a una absoluta del original da rojo», «La marca del kit se escribe con su gramática», «Un bloque del kit que se come el original da rojo», «Lo que dice kit:copies de cada copia», «Una copia que ya no lo es da rojo», «La fuente de una copia va en LF», «Un fichero de la fuente sin mapear da rojo» y «Actualizar una copia es fusionarla con git merge-file» · los de `kit:dist-compare` del requisito «La comparación de dist/ nombra lo que cambia de forma» · los de `kit:own` de los requisitos «Una frase del kit repetida en otra skill da rojo», «Una absoluta con su excepción en la misma frase da rojo», «La prosa en castellano de una skill da rojo» y «Lo que dice kit:own» · los de `kit:skill-size` del requisito «Ninguna skill ni ninguna fase pasa de su tamaño» · `<fichero> no está clasificado en upstream.json: ponlo en una entrada copy o en own` · `upstream.json: la entrada <n> es una copia sin pending con más de un fichero; una copia anotada va fichero a fichero` · `<fichero> dice see NOTICE, y la skill no tiene NOTICE: una skill sin copias no lo genera` · `<fichero>:<línea>: la versión de una fuente vive en upstream.json, no en el texto: «<trozo>»`.
-- **Regla ante conflicto**: manda la fuente (`skills/`, `includes/`, `upstream.json`), y `dist/` y los avisos se regeneran; nunca se edita `dist/` a mano. Entre una copia y su original manda el original en su tag: una diferencia sin marca es un rojo de la copia, nunca del original. Entre una inclusión y el mismo texto escrito a mano en otra propia manda la inclusión: el rojo es de la skill que lo escribe a mano.
+- **Regla ante conflicto**: manda la fuente (`skills/`, `includes/`, `upstream.json`), y `dist/` y los avisos se regeneran; nunca se edita `dist/` a mano. Entre una copia y su original manda el original en su tag: una diferencia sin marca es un rojo de la copia, nunca del original. Entre una inclusión y el mismo texto escrito a mano en otra skill manda la inclusión: el rojo es de la skill que lo escribe a mano.

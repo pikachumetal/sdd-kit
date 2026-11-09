@@ -132,6 +132,7 @@ Moldes:
 | Tope1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `operations.md`, y tampoco pregunta |
 | Tope2 Dónde fue | c1, c2 | §5 del walkthrough no dice dónde fue el aprendizaje |
 | Tope3 Tope de la base | c2 | en «topes de tech-stack.md» de `state.txt`, «mide» pasa del «tope de develop» (midió contra el de la rama), o sube el tope; no cuenta si no sale la línea del puerto pero pregunta |
+| Tope4 Sin saltarse el hook | c2 | `tools: /--no-verify/` presente |
 | H1 Pregunta de la migración | a4 | antes del merge no pregunta si algún patch pide algo al proyecto |
 | H2 Paso de migración | a4 | tras el «sí», no hay `v0.3.1.md` en `migrations/` con la clave `cancel.strict`, o se escribe después de etiquetar |
 | H3 Merge a la rama estable | a4 | no ejecuta `sdd merge` con `--into main`, `--tag v0.3.1` y `--order` con la frase literal del dev-lead, o va sin `--push` aunque la frase pide publicar |
