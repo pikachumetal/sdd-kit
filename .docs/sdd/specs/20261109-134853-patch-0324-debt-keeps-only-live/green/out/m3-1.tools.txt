@@ -1,0 +1,129 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json && echo ---- && cat .docs/sdd/steering/debt.md && echo ---- && cat ROADMAP.md && git branch --all
+<<< .
+..
+.docs
+.git
+CHANGELOG.md
+docs
+package.json
+README.md
+ROADMAP.md
+src
+test
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+----
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026
+
+>>> Bash: cd "<run>/repo" && cat docs/qa/2026-10-12-informe.md; cat package.json; ls -R src test docs; cat CHANGELOG.md | head -20; git log --oneline | head
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+{"type": "module"}
+docs:
+qa
+
+docs/qa:
+2026-10-12-informe.md
+
+src:
+app.js
+
+test:
+app.test.js
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [1.4.1] - 2026-10-05
+
+### Fixed
+
+- Las reservas semanales respetan el día
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres --planta 2; echo "rc=$?"; node src/app.js exportar | od -c | head -3; node src/app.js exportar | iconv -f utf-8 -t latin1 >/dev/null 2>&1; echo; node --version; node src/app.js exportar > /tmp/o.csv; head -c 12 /tmp/o.csv | xxd 2>/dev/null | head -2
+<<< Norte (planta 1)
+rc=0
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+
+v26.10.0
+00000000: 7361 6c61 2c64 c3ad 612c 6672            sala,d..a,fr
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/patch-0324-debt-keeps-only-live/.temp/p0324/kit-green/skills/sdd-templates/templates" && cat debt-template.md; cat launch-prompt-template.md
+<<< # Deuda técnica — <proyecto>
+
+> Documento de estado de la deuda técnica: dice dónde está cada ítem hoy, no su historia. Lo escribe `sdd-roadmap`, al triar, y los cierres (`sdd-archive`), que quitan de «Lista» lo que saldan; lo leen `sdd-roadmap`, `sdd-debugging`, los cierres y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar. Solo ingeniería: las peticiones de producto van a Later de `ROADMAP.md`.
+>
+> **Las tres secciones y sus cabeceras van literales**, en este orden. Una celda vacía se escribe `—`. Un `|` dentro de una celda se escribe `\|`.
+>
+> **Fecha**: `AAAA-MM-DD`, la d
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/patch-0324-debt-keeps-only-live/.temp/p0324/kit-green/cli/bin/sdd.js" roadmap check --path .docs/sdd; grep -n '^## \[' CHANGELOG.md
+<<< ROADMAP.md: línea 21: el id «B1» no es de la secuencia: resérvale uno con sdd id next --reserve
+debt.md: línea 21: sección «Descartadas» fuera de la plantilla
+debt.md: aviso: línea 14: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+5:## [1.4.1] - 2026-10-05
+11:## [1.4.0] - 2026-09-01
+17:## [1.3.0] - 2026-07-20
+
+=== RESULTADO (9 turnos, 0.18700409999999998 $)
+Estoy triando la deuda. He leído `debt.md` y el roadmap, y he reproducido los dos hallazgos del informe de QA. Todavía no he escrito nada: en perfil `delegate` te propongo el triaje y espero tu decisión.
+
+## Propuesta para «Por triar»
+
+**1. La exportación a CSV pierde las tildes → «En espera».**
+- **No lo reproduzco.** `node src/app.js exportar` devuelve `sala,día,franja` y la `í` sale como `c3 ad`, que es UTF-8 válido.
+- **La versión del informe no existe aún.** Dice «desde la 1.4.2», pero el último release del changelog es la 1.4.1.
+- **Entrada propuesta:** Causa `sin determinar`, Impacto `medio`, Falta `reproducirlo`, Fecha `2026-11-09`.
+- **Alternativa:** si QA sabe con qué lector o versión sale `d?a`, pásamelo y vuelvo a mirarlo.
+
+**2. `salas libres --planta 2` lista salas de la planta 1 → «Lista».**
+- **Evidencia:** `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- **Causa:** el filtro de `roomsOnFloor` en `src/app.js` usa `<=` donde debería usar `===`.
+- **Entrada propuesta:** Causa `defecto del producto`, Impacto `medio`, Remedio temporal `ninguno`, Arreglo `—`.
+- **Destino:** una fila nueva en Next, con id reservado, `**Carril:** patch`, tamaño `S`, y que salde esta fila de la Lista.
+- **Antes de escribir la fila:** la solución `<=` → `===` está sin ejecutar. Si apruebas, la pruebo en una copia fuera del árbol; si no la confirmo, la fila dirá «solución por confirmar».
+
+## Otras cosas que he visto
+
+- **Fila caducada:** «Las reservas de más de 8 h no avisan al responsable» lleva en espera desde 2026-07-01, y desde entonces ha habido dos releases (1.3.0 y 1.4.0) sin 2.º caso. `sdd roadmap check` avisa de que caduca. Propongo **descartarla** con motivo `caducada`, y que salga de `debt.md`. Si prefieres conservarla, dímelo.
+- **Fallos de forma heredados:** `sdd roadmap check` da dos fallos en líneas que no he tocado. El id `B1` de Later no es de la secuencia, y `debt.md` tiene una sección «Descartadas» que no está en la plantilla. No los arreglo yo. Los listaré como forma heredada, pendientes de la migración.
+
+## Qué decides
+
+¿Doy por buenos los tres movimientos (CSV a espera, planta a Lista con fila patch en Next, descarte de la caducada)? Con un «adelante», o con un «decide tú», reservo el id, escribo, paso `roadmap check` y publico. Con ese «adelante» te doy también el prompt de arranque de la fila nueva.

@@ -11,12 +11,10 @@ const HEADERS = new Map([
   ['Por triar', '| Ítem | Origen | Fecha |'],
   ['En espera', '| Ítem | Causa | Origen | Impacto | Falta | Fecha |'],
   ['Lista', '| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |'],
-  ['Descartadas', '| Ítem | Causa | Origen | Motivo | Fecha |'],
 ]);
 const DATE_COLUMN = new Map([
   ['Por triar', 2],
   ['En espera', 5],
-  ['Descartadas', 4],
 ]);
 const PRODUCT_DEFECT = 'defecto del producto';
 const UNDETERMINED = 'sin determinar';
@@ -40,7 +38,6 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const RELEASES_TO_EXPIRE = 2;
 const WARNING_TEXT = new Map([
   ['En espera', (date: string) => `en espera desde ${date}, dos releases sin 2.º caso: caduca`],
-  ['Descartadas', (date: string) => `descartada el ${date}, dos releases después: sale en el corte`],
 ]);
 
 export function debtPath(docsPath: string): string {
@@ -97,7 +94,7 @@ function rowProblems(row: Row, kind: string): string[] {
   const column = DATE_COLUMN.get(kind);
   return [
     ...(kind === 'Lista' ? listProblems(row) : []),
-    ...(kind === 'En espera' || kind === 'Descartadas' ? causeProblems(row) : []),
+    ...(kind === 'En espera' ? causeProblems(row) : []),
     ...(column === undefined ? [] : dateProblems(row, column)),
   ];
 }

@@ -249,7 +249,6 @@ describe('pasada de fix de la revisión final', () => {
     expect(result.lines.filter((line) => line.includes('aviso'))).toEqual([
       `roadmap.md: ${pairWarning}`,
       'debt.md: aviso: línea 13: en espera desde 2026-09-15, dos releases sin 2.º caso: caduca',
-      'debt.md: aviso: línea 25: descartada el 2026-09-20, dos releases después: sale en el corte',
     ]);
   });
 

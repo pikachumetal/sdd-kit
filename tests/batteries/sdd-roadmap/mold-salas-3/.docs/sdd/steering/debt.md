@@ -17,8 +17,3 @@
 
 | Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-
-## Descartadas
-
-| Ítem | Causa | Origen | Motivo | Fecha |
-| --- | --- | --- | --- | --- |

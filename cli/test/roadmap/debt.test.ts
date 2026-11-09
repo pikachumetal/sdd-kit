@@ -4,19 +4,17 @@ import { checkProject, debtHeaders, lineOf, templateLines, validDebt, validRoadm
 
 const waitingRow = '| Las reservas de más de 8 h no avisan al responsable | sin determinar | [ticket](t.md) | medio | 2.º caso | 2026-07-01 |';
 const recentRow = '| El aviso semanal sale duplicado | sin determinar | [ticket](u.md) | bajo | reproducirlo | 2026-08-01 |';
-const discardedRow = '| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto | 2026-07-01 |';
 const CAUSE_LIST = 'entorno de la máquina, carga o paralelismo, herramienta del kit, regla lejos de su paso, decisión que no era del agente, fusión de registros, prueba o molde, defecto del producto, sin determinar';
 const FIX_LIST = 'comprobación automática, conectar comprobación, mover regla, línea nueva';
 const listRow = (cause: string, origin: string, remedy: string, fix: string, item = 'La planta 2') => `| ${item} | ${cause} | ${origin} | alto | \`cmd\` | ${remedy} | ${fix} | 0014 |`;
 const agingDebt = [
   '# Deuda técnica — salas', '', '## Por triar', '', ...debtHeaders['Por triar'], '',
   '## En espera', '', ...debtHeaders['En espera'], waitingRow, recentRow, '',
-  '## Lista', '', ...debtHeaders.Lista, '',
-  '## Descartadas', '', ...debtHeaders.Descartadas, discardedRow,
+  '## Lista', '', ...debtHeaders.Lista,
 ];
 const releases = ['# Changelog', '', '## [Unreleased]', '', '## [1.4.1] - 2026-10-05', '', '## [1.4.0] - 2026-09-01', '', '## [1.3.0] - 2026-07-20'];
 const waitingWarning = (line: number) => `debt.md: aviso: línea ${line}: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca`;
-const discardedWarning = (line: number) => `debt.md: aviso: línea ${line}: descartada el 2026-07-01, dos releases después: sale en el corte`;
+const WAITING_ROW_START = '| El aviso semanal';
 
 function debt(): string[] {
   return [...validDebt];
@@ -35,19 +33,18 @@ describe('sdd roadmap check: forma de debt.md', () => {
 
   it('flags a debt.md row with a different cell count', async () => {
     const content = debt();
-    const index = content.indexOf('| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto | 2026-09-20 |');
-    content[index] = '| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto. || 2026-09-20 |';
+    const index = content.findIndex((text) => text.startsWith(WAITING_ROW_START));
+    content[index] = '| El aviso semanal sale duplicado | sin determinar | [ticket](t.md) | bajo. || reproducirlo | 2026-09-15 |';
     const result = await check(content);
-    expect(result.lines).toContain(`debt.md: línea ${index + 1}: la fila tiene 6 celdas y la cabecera 5`);
+    expect(result.lines).toContain(`debt.md: línea ${index + 1}: la fila tiene 7 celdas y la cabecera 6`);
     expect(result.code).toBe(1);
   });
 
-  it('requires the four sections in order, only tables', async () => {
+  it('requires the three sections in order, only tables', async () => {
     const content = [
       '# Deuda técnica — salas', '', '## Por triar', 'Revisar cada lunes', '', ...debtHeaders['Por triar'], '',
       '## Lista', ...debtHeaders.Lista, '| `libres --planta 2` lista salas de la planta 1 | defecto del producto | [informe de QA](q.md) | alto | — | — | — | 0014 |', '', '',
-      '## En espera', ...debtHeaders['En espera'],
-      '## Descartadas', ...debtHeaders.Descartadas, '| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto | ayer |',
+      '## En espera', ...debtHeaders['En espera'], '| El aviso semanal sale duplicado | sin determinar | [ticket](t.md) | bajo | reproducirlo | ayer |',
     ];
     const result = await check(content);
     expect(result.lines).toEqual(
@@ -55,9 +52,18 @@ describe('sdd roadmap check: forma de debt.md', () => {
         'debt.md: línea 4: prosa en «Por triar»; debt.md solo lleva tablas',
         'debt.md: línea 12: fila de «Lista» sin «Evidencia»',
         'debt.md: línea 15: «En espera» va antes que «Lista»',
-        'debt.md: línea 21: «Fecha» «ayer» no es AAAA-MM-DD',
+        'debt.md: línea 18: «Fecha» «ayer» no es AAAA-MM-DD',
       ]),
     );
+    expect(result.code).toBe(1);
+  });
+
+  it('rejects a «Descartadas» section and does not age its rows', async () => {
+    const discarded = '| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto | 2026-07-01 |';
+    const content = [...debt(), '', '## Descartadas', '', '| Ítem | Causa | Origen | Motivo | Fecha |', '| --- | --- | --- | --- | --- |', discarded];
+    const result = await checkProject({ roadmap: validRoadmap, debt: content, changelog: releases });
+    expect(result.lines).toContain(`debt.md: línea ${content.indexOf('## Descartadas') + 1}: sección «Descartadas» fuera de la plantilla`);
+    expect(result.lines.join('\n')).not.toContain('sale en el corte');
     expect(result.code).toBe(1);
   });
 
@@ -70,8 +76,8 @@ describe('sdd roadmap check: forma de debt.md', () => {
 
   it('reports a missing section', async () => {
     const content = debt();
-    content.splice(content.indexOf('## Descartadas'));
-    expect((await check(content)).lines).toContain('debt.md: falta la sección «Descartadas»');
+    content.splice(content.indexOf('## Lista'));
+    expect((await check(content)).lines).toContain('debt.md: falta la sección «Lista»');
   });
 
   it.each(['', '—'])('requires Evidencia and Destino in Lista, not %j', async (empty) => {
@@ -86,8 +92,8 @@ describe('sdd roadmap check: forma de debt.md', () => {
 
   it.each(['ayer', '12/10/2026', '2026-10-1'])('checks the date format %s', async (date) => {
     const content = debt();
-    const index = content.findIndex((text) => text.startsWith('| El tema oscuro'));
-    content[index] = `| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto | ${date} |`;
+    const index = content.findIndex((text) => text.startsWith(WAITING_ROW_START));
+    content[index] = `| El aviso semanal sale duplicado | sin determinar | [ticket](t.md) | bajo | reproducirlo | ${date} |`;
     expect((await check(content)).lines).toContain(`debt.md: línea ${index + 1}: «Fecha» «${date}» no es AAAA-MM-DD`);
   });
 
@@ -107,13 +113,10 @@ describe('sdd roadmap check: causa y arreglo de debt.md', () => {
 
   it('rejects a cause out of the list', async () => {
     const content = debt();
-    const waiting = content.findIndex((text) => text.startsWith('| El aviso semanal'));
-    const discarded = content.findIndex((text) => text.startsWith('| El tema oscuro'));
+    const waiting = content.findIndex((text) => text.startsWith(WAITING_ROW_START));
     content[waiting] = '| El aviso semanal | mala suerte | [ticket](t.md) | bajo | 2.º caso | 2026-09-15 |';
-    content[discarded] = '| El tema oscuro | — | [reunión](r.md) | fuera del producto | 2026-09-20 |';
     const { lines } = await check(content);
     expect(lines).toContain(`debt.md: línea ${waiting + 1}: causa «mala suerte» no admitida: ${CAUSE_LIST}`);
-    expect(lines).toContain(`debt.md: línea ${discarded + 1}: causa «—» no admitida: ${CAUSE_LIST}`);
   });
 
   it('treats an empty cause like a dash', async () => {
@@ -196,9 +199,9 @@ describe('sdd roadmap check: causa y arreglo de debt.md', () => {
 });
 
 describe('sdd roadmap check: caducidad de debt.md', () => {
-  it('warns of a waiting row and a discarded row after two releases', async () => {
+  it('warns of a waiting row after two releases', async () => {
     const result = await checkProject({ roadmap: validRoadmap, debt: agingDebt, changelog: releases });
-    expect(result.lines).toEqual([waitingWarning(lineOf(agingDebt, waitingRow)), discardedWarning(lineOf(agingDebt, discardedRow)), 'Roadmap válido']);
+    expect(result.lines).toEqual([waitingWarning(lineOf(agingDebt, waitingRow)), 'Roadmap válido']);
     expect(result.code).toBe(0);
   });
 

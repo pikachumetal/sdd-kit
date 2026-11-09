@@ -1,0 +1,147 @@
+--- [13]
+Todavía no he movido nada: la migración v3.0.0 tiene tres pasos con *gate* y necesito tu «sí» en cada uno. Estas son las tablas.
+
+Punto de partida: `ea44fbd`, árbol limpio. Los documentos antiguos quedan recuperables con `git show ea44fbd:.docs/sdd/<doc>`.
+
+## Gate 1 — Movimientos
+
+| Qué hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` (no hay uno en la raíz, así que no hay fusión) |
+| `constitution.md` | `git mv` a `steering/constitution.md`. El enlace `decisions/0001-…` pasa a `../decisions/0001-…` |
+| `architecture.md`, `estimation.md` | `git mv` a `steering/`, sin cambios de contenido |
+| `estimation-log.md` | `git mv` a `steering/` y regenerado con `sdd estimation log`. La diferencia es solo la cabecera y las columnas nuevas. Hay 0 filas, así que no se pierde ninguna fila escrita a mano |
+
+## Gate 2 — Producto y operaciones
+
+**`mission.md` → `PRODUCT.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Por qué existe» | `## Product Purpose` |
+| «Usuarios y roles» | `## Users` |
+| «Qué es y qué no es» | `## Capabilities and Constraints` |
+| «Dominio» | `## Terminology`: `**Franja**: una hora reservable, de en punto a en punto.` Sin `_Evitar_`, porque el original no nombra sinónimos |
+
+**`tech-stack.md` y `environments.md` → `steering/operations.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Comandos», «Frontend» | Igual |
+| «Testing» | Se conserva «Gate de cierre: `npm test`». Se añaden: |
+| | • Nivel de la suite Vitest: `pendiente`, porque no hay config que diga qué arranca. |
+| | • «Sin filtro»: se completa al escribirlo. |
+| | • «Lint»: `ninguno`, porque no hay script `lint` ni `format`, ni pre-commit. |
+| | • «CI de la base»: `ninguna`, porque no hay pipeline. |
+| | • «Temporales»: lo propongo al escribirlo. No hay E2E, así que no se añaden los seis campos E2E. |
+| `environments.md` | `## Entornos`, condensado al marcador `.sdd-env.json`, las tres entradas (`env:setup`, `env:clean`, `env:status`) y el runner |
+| «Tecnologías» (Node 22, Vitest 3) | Sale de `operations.md`. `package.json` ya lo dice. Nada va a `architecture.md` |
+| «Decisiones abiertas» | Pasan al gate 3, a Later |
+
+Después se hace `git rm` de `mission.md`, `tech-stack.md` y `environments.md`.
+
+## Gate 3 — Roadmap y deuda
+
+No hay release en preparación, así que «Próximo» va a Now sin título de versión ni perfil.
+
+**`ROADMAP.md`**
+
+| Fila | Destino | Notas |
+| --- | --- | --- |
+| 0021 Cancelar reserva propia | Now ⏳ | Externo SAL-41. Toca `src/app.js`. Carril feature |
+| 0022 Avisar de la cancelación | Now ⏳ | Requisitos: propuesta 0019. Tras 0021. Salda las filas de deuda que apuntan a 0022 |
+| 0024 Informe de ocupación | Now ⏳ | «Tras 0015» pasa a `—`: la 0015 no está en el roadmap ni en `CHANGELOG.md` |
+| Patch 0023 | Now ✅ | Carril patch. Requisitos: su `patch.md`. Fecha 2026-09-25. Salda SAL-44 |
+| B3 Exportar a CSV | Later ⏳ | Id nuevo. Origen: «Recepción, reunión del 2026-09-18» |
+| Decisión abierta «¿Avisos por correo al reservar?» | Later ⏳ | Id nuevo |
+| «Releases cerradas» v1.2.0 | Sale | Vive en `CHANGELOG.md` |
+| «Patches» anteriores | Sale | Solo hay la 0023 |
+
+- **Ids:** una sola reserva `sdd id next --reserve --count 2`, en orden: B3 y luego la decisión.
+- **Validación pendiente de la v1.2.0:** `0016` queda en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`.
+- **Tamaño:** no lo deduzco. **Necesito S, M o L para 0021, 0022, 0024 y 0023.** El gate no cierra sin eso.
+
+**`steering/debt.md`**
+
+Todos los enlaces relativos ganan `../`.
+
+| Ítem | Sección | Notas |
+| --- | --- | --- |
+| Patch 0023 saldada (SAL-44) | Lista | Prefijo intacto. Destino 0023. Evidencia: enlace al `patch.md` |
+| `cancel` sin comprobar dueño (SAL-45) | Lista | Destino 0022. Origen SAL-45. Evidencia: el análisis |
+| Test de avisos depende de la fecha (SAL-46) | Lista | Destino 0022. Causa «prueba o molde». Arreglo «mover regla». Remedio `—` |
+| Rutas largas rompen la copia (SAL-47) | Lista | Destino 0022. Causa «entorno de la máquina». Arreglo «comprobación automática». Remedio «lanza desde D:\r» |
+| Avisos salen dos veces (SAL-48, SAL-49) | Lista | Destino 0022. Causa «herramienta del kit». Arreglo «mover regla». **Con dos enlaces de Origen, tienes que decirme el remedio temporal.** |
+| Pasar `src/app.js` a TypeScript | Por triar | Fecha 2026-09-15 |
+| Mensajes de error mezclados | Por triar | «Actuar: sin fila» pero sin evidencia. Fecha 2026-09-01 |
+| Test de franjas falla en CI | En espera | Falta: «un segundo fallo con su log». Causa `sin determinar`. Fecha 2026-09-01 |
+| Changelog pierde entrada | En espera | Falta: «reproducirlo». Causa «fusión de registros». Fecha 2026-09-01 |
+| Validar formato de franja | Descartadas | Motivo: «duplica la 0018». Causa `sin determinar`. Fecha 2026-09-01 |
+
+- **Origen:** las filas sin ticket ni walkthrough llevan `roadmap 2.x`.
+- **Impacto:** en «Por triar» y «Descartadas» no hay columna para él, y se pierde: «Bajo», «Bajo — confunde» y «Bajo».
+- **Fecha de la fila de SAL-45:** el `git log -S` no la encontró. La pregunto en el gate, no pongo la de hoy. Solo se usa si va a una sección con «Fecha», y ahora va a Lista, que no la lleva.
+
+Después se hace `git rm .docs/sdd/roadmap.md`.
+
+## Después de los gates
+
+Estos pasos no necesitan gate, pero los cuento para que sepas qué más va a cambiar:
+
+- **Enlaces:** se arreglan en `CLAUDE.md` y `README.md`. Las menciones entre acentos graves a `.docs/sdd/roadmap.md` también.
+- **Nombres de skills:** `sdd-end-feature` pasa a `sdd-archive` en `CLAUDE.md`. `/sdd-consult` pasa a `/sdd-explore` en `.claude/commands/pregunta.md`.
+- **Estimación:** se sustituye la línea de «Los patches registran solo el tiempo real» y se amplía la del `walkthrough.md`.
+- **Marcador:** `.temp/` va a `.gitignore`, se crea el hook del proyecto y se marca la 3.0.0.
+- **Gate de merge:** no hay línea «Gate de merge» ni encadenados. «Gate de cierre: `npm test`» no avisa de nada.
+- **Superpowers:** se omite, porque no existe `.claude/settings.json`.
+- **Reglas que el kit ya cubre:** después del commit habrá otro gate. Ya veo una candidata: «el id de una feature se elige a mano» en `constitution.md`, que choca con `nombrado.md`.
+
+## Qué necesito de ti
+
+1. ¿Apruebo los gates 1, 2 y 3 tal cual, o cambias algún destino?
+2. S, M o L para 0021, 0022, 0024 y 0023.
+3. El remedio temporal de «Avisos salen dos veces», o `—` si no hay.
+
+Si no respondes, los tres pasos quedan pendientes y no hay marcador ni commit. El informe llevará el comando para reanudar.
+
+--- [23]
+Los pasos 1 a 6 están aplicados y la verificación pasa. Ahora marco la 3.0.0 y hago el commit.
+
+--- [27]
+La migración v3.0.0 está aplicada y marcada: `sdd-kit.json` está en `"version": "3.0.0"`, commit `08f6d51` (`chore(sdd): migrar al kit v3.0.0`). Antes del commit, `sdd roadmap check` dio «Roadmap válido» y `sdd capability check` dio «Capacidades válidas: 1». El árbol quedó limpio.
+
+## Qué cambió
+
+- **Movimientos:** `CHANGELOG.md` en la raíz. `constitution`, `architecture`, `estimation` y `estimation-log` están en `steering/`. El log se regeneró, con 0 filas, y el enlace de `constitution.md` a la ADR ahora lleva `../`.
+- **Producto y operaciones:** nacieron `PRODUCT.md` y `steering/operations.md`. Borré `mission.md`, `tech-stack.md` y `environments.md`; siguen en `git show ea44fbd:.docs/sdd/<doc>`.
+- **Roadmap y deuda:**
+  - **`ROADMAP.md`:** 0021, 0022 y 0024 están en Now ⏳ y la 0023 en Now ✅, todas con tamaño M. «Tras 0015» de la 0024 pasó a `—`. En Later están B3 (CSV) como `0025` y «¿Avisos por correo?» como `0026`.
+  - **`debt.md`:** tiene las 10 filas repartidas. «Avisos salen dos veces» lleva el remedio «Relanzar el aviso a mano». La fila de SAL-45 acabó en «Lista», que no lleva columna de fecha, así que el 2026-09-01 que me diste no se usó.
+  - Borré `roadmap.md`; sigue en `git show ea44fbd:.docs/sdd/roadmap.md`.
+- **Enlaces y nombres:** arreglados en `CLAUDE.md` y `README.md`. `sdd-end-feature` pasó a `sdd-archive` y `/sdd-consult` a `/sdd-explore`.
+- **Estimación:** `steering/estimation.md` tiene el método nuevo en las dos líneas.
+- **Marcador:** `.temp/` va en `.gitignore`. El hook `.claude/hooks/sdd-kit-loaded.mjs` y su entrada en `.claude/settings.json` existen y no están ignorados por git.
+
+## Pendiente o notable
+
+- **ADR 0001:** `decisions/0001-salas-por-franja.md` sigue enlazando a `../mission.md`. Es inmutable, así que no lo toqué.
+- **Validación de la v1.2.0:** queda pendiente `0016`, en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`.
+- **`operations.md`:** el nivel de la suite Vitest está en `pendiente`. «Sin filtro» (`package.json`, `vitest.config.*`) es una propuesta mía que tú no viste, así que revísala.
+- **Saltados:** el gate de merge no avisa de nada y superpowers no aplica, porque no había `.claude/settings.json`.
+- **Verificación:** no corrí el `sdd capability check` ni el `git grep` de enlaces después del commit.
+
+## Gate final: reglas del proyecto que ya cubre el kit
+
+Este gate espera tu respuesta. Hay una candidata:
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap» | `steering/constitution.md:6` | `skills/sdd-propose/references/nombrado.md` | Choca: en modo `sequence` el id lo reserva `sdd id next --reserve`, o lo da la fila del roadmap | Quitarla |
+
+¿Aplico esta propuesta? Si dices que sí, la quito en un commit aparte, `chore(sdd): reglas del proyecto que ya cubre el kit`. Si no respondes, queda pendiente con «para reanudar: pide "revisa las reglas del proyecto contra el kit"».
+
+--- [29]
+Quité la regla de los ids de `.docs/sdd/steering/constitution.md` y la dejé en su propio commit, `9717f0a`. La regla de «Dónde viven los datos» sigue donde estaba, y el árbol está limpio.
+
+Con esto, el proyecto está en el kit 3.0.0 y no queda ningún gate pendiente.
+

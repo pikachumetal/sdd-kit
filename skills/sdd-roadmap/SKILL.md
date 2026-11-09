@@ -27,7 +27,7 @@ With `ROADMAP.md` at the root, the project is on the **3.0.0 form**: Now, Next a
 | Preparing a release | `## Release <N>` with «Ficheros que toca» |
 | «Lista» | A «Deuda técnica» row with `**Actuar** → <id of its «Próximo» row> · causa: <causa> · arreglo: <arreglo>` (or `sin fila`; with two cases, `· remedio: <remedio>`) in «Destino»; the «Próximo» row never replaces the debt row (`tests/sdd-roadmap-0150-green.md`, m6) |
 | «En espera» | `**Esperar 2.º ticket** · causa: <causa> — falta <what is missing>` |
-| «Descartada» | `**Descartada** · causa: <causa>: <reason>` |
+| Discarded: the row leaves `debt.md` | `**Descartada** · causa: <causa>: <reason>` |
 | «Por triar» | does not exist: triage decides one of the three |
 
 ## Which entry it is (you decide, without asking)
@@ -97,11 +97,11 @@ First thing in this entry: read [references/prepare-release.md](references/prepa
 
 ### Triage
 
-Triage decides the state of each item of the technical debt (3.0.0: `debt.md`; 2.x: «Deuda técnica» of `roadmap.md`). Each item of «Por triar» goes to exactly one of three states. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
+Triage decides the state of each item of the technical debt (3.0.0: `debt.md`; 2.x: «Deuda técnica» of `roadmap.md`). Each item of «Por triar» gets exactly one of three outcomes. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
 
 - **«En espera»** — with «Falta» `reproducirlo` or `2.º caso`.
 - **«Lista»** — with «Evidencia» and «Destino».
-- **«Descartadas»** — with «Motivo».
+- **Discarded** — the row leaves `debt.md`, its reason in the commit body.
 
 The rules:
 
@@ -112,9 +112,9 @@ The rules:
 - Nothing goes to «Lista» without being reproduced or without a second case: an item you could not reproduce goes to «En espera», with «Falta» `reproducirlo` (`tests/sdd-roadmap-0150-red.md`, m3).
 - The «Evidencia» of a «Lista» row is the command that reproduces it, with its output, or the links to the two cases; the report or the line of code is not enough (m3).
 - The «Destino» of a «Lista» row is the id of a row of Now or Next, new or existing, or `sin fila`; never empty. A new row is written like any concrete thing. A solution that row fixes —in its brief's «Decisiones ya tomadas», or in the 2.x item— is one you ran, on a copy outside the tree, with the real case the tickets cite (a command, a file:line, a sha) up to where the failure shows, the row's WHEN: yours as well as the ticket's; if you didn't, the row says «solución por confirmar». A solution that replaces a sentence quotes, literally from the file, the whole sentence that leaves and the whole sentence that enters, never a fragment or a description of the new text. The `**Salda:**` of a brief names only «Lista» rows.
-- A row of «En espera» that `sdd roadmap check` warns expires is proposed in «Descartadas», with «Motivo» `caducada`. A release is a version `X.Y.0` of the changelog: patches don't count (m3).
+- A row of «En espera» that `sdd roadmap check` warns expires is proposed for discarding, with reason `caducada`. A release is a version `X.Y.0` of the changelog: patches don't count (m3).
 - «Origen» links the ticket; «Fecha» is the day (`AAAA-MM-DD`) the row enters its state and is kept while it stays there, so expiry doesn't restart.
-- The second case of a discarded row enters «Por triar» as a new row, with both origins.
+- A discarded row's first case lives only in its ticket: its second case enters «Por triar» as a new row, with both origins.
 - In `unattended`, what you can't decide stays in «Por triar», and the rest is registered in the commit.
 - With `ROADMAP.md` and no `debt.md`, triage creates `.docs/sdd/steering/debt.md` tracing `debt-template.md`.
 - In 2.x nothing stays «por triar»: each item becomes a row of «Deuda técnica» whose «Destino» starts with `**Actuar**`, `**Esperar 2.º ticket**` or `**Descartada**`, per the table above.

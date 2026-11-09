@@ -18,7 +18,6 @@ export interface CauseCount {
   cause: string;
   waiting: number;
   listed: number;
-  discarded: number;
 }
 
 export interface OpenRow {
@@ -82,19 +81,18 @@ export function previousRetro(docsPath: string, version: string): PreviousRetro 
   return null;
 }
 
-function countCauses(waiting: Row[], listed: Row[], discarded: Row[]): CauseCount[] {
+function countCauses(waiting: Row[], listed: Row[]): CauseCount[] {
   const counts = new Map<string, CauseCount>();
-  const tally = (rows: Row[], field: 'waiting' | 'listed' | 'discarded') => {
+  const tally = (rows: Row[], field: 'waiting' | 'listed') => {
     for (const row of rows) {
       const cause = row.cells[CAUSE_COLUMN] ?? '';
-      const count = counts.get(cause) ?? { cause, waiting: 0, listed: 0, discarded: 0 };
+      const count = counts.get(cause) ?? { cause, waiting: 0, listed: 0 };
       count[field]++;
       counts.set(cause, count);
     }
   };
   tally(waiting, 'waiting');
   tally(listed, 'listed');
-  tally(discarded, 'discarded');
   return [...counts.values()].sort((left, right) => right.listed - left.listed || left.cause.localeCompare(right.cause, 'es'));
 }
 
@@ -115,7 +113,7 @@ export function causesReport(lines: string[], previous: PreviousRetro | null, ve
   const open = listed.map((row) => openRow(row, previous?.since, version)).sort((left, right) => compareVersions(left.openSince, right.openSince));
   const stillOpen = new Set(open.map((row) => row.item));
   return {
-    causes: countCauses(sectionRows(lines, 'En espera'), listed, sectionRows(lines, 'Descartadas')),
+    causes: countCauses(sectionRows(lines, 'En espera'), listed),
     open,
     closedSinceLast: previous === null ? null : [...previous.since.keys()].filter((item) => !stillOpen.has(item)).length,
     previous: previous?.version ?? null,
@@ -130,8 +128,8 @@ export function renderCauses(report: CausesReport): string[] {
   if (report.causes.length === 0) return ['Sin deuda triada'];
   return [
     '## Repaso por causa', '',
-    '| Causa | En espera | Lista | Descartadas |', '| --- | --- | --- | --- |',
-    ...report.causes.map(({ cause, waiting, listed, discarded }) => tableLine([cause, waiting, listed, discarded])), '',
+    '| Causa | En espera | Lista |', '| --- | --- | --- |',
+    ...report.causes.map(({ cause, waiting, listed }) => tableLine([cause, waiting, listed])), '',
     `## ${OPEN_SECTION}`, '',
     OPEN_HEADER, '| --- | --- | --- | --- | --- |',
     ...report.open.map(({ item, cause, cases, destination, openSince }) => tableLine([item, cause, cases, destination, openSince])),

@@ -12,17 +12,15 @@ const openHeader = ['## Abiertas en «Lista»', '', '| Ítem | Causa | Casos | D
 
 interface OtherRows {
   waiting?: string[];
-  discarded?: string[];
   untriaged?: string[];
 }
 
-function debt(list: string[], { waiting = [], discarded = [], untriaged = [] }: OtherRows = {}): string {
+function debt(list: string[], { waiting = [], untriaged = [] }: OtherRows = {}): string {
   return [
     '# Deuda técnica — salas', '',
     '## Por triar', '', ...debtHeaders['Por triar'], ...untriaged, '',
     '## En espera', '', ...debtHeaders['En espera'], ...waiting, '',
     '## Lista', '', ...debtHeaders.Lista, ...list, '',
-    '## Descartadas', '', ...debtHeaders.Descartadas, ...discarded, '',
   ].join('\n');
 }
 
@@ -47,12 +45,12 @@ describe('sdd roadmap causes', () => {
     const { lines, code } = await causes(withDebt(tied));
     expect(code).toBe(0);
     expect(lines.slice(0, 6)).toEqual([
-      '## Repaso por causa', '', '| Causa | En espera | Lista | Descartadas |', '| --- | --- | --- | --- |',
-      '| defecto del producto | 0 | 1 | 0 |', '| regla lejos de su paso | 0 | 1 | 0 |',
+      '## Repaso por causa', '', '| Causa | En espera | Lista |', '| --- | --- | --- |',
+      '| defecto del producto | 0 | 1 |', '| regla lejos de su paso | 0 | 1 |',
     ]);
     const { lines: full } = await causes(withDebt(fullDebt));
-    expect(full.indexOf('| regla lejos de su paso | 1 | 2 | 0 |')).toBeLessThan(full.indexOf('| defecto del producto | 0 | 1 | 0 |'));
-    expect(full).toContain('| regla lejos de su paso | 1 | 2 | 0 |');
+    expect(full.indexOf('| regla lejos de su paso | 1 | 2 |')).toBeLessThan(full.indexOf('| defecto del producto | 0 | 1 |'));
+    expect(full).toContain('| regla lejos de su paso | 1 | 2 |');
   });
 
   it('orders open rows by version then debt order and inherits open since from the previous retro', async () => {
@@ -131,12 +129,6 @@ describe('sdd roadmap causes', () => {
     expect(lines.join('\n')).not.toContain('Vieja');
   });
 
-  it('counts discarded rows in the causes table', async () => {
-    const discarded = '| Descartada | prueba o molde | [c](c.md) | motivo | 2026-10-01 |';
-    const { lines } = await causes(withDebt(debt([floorRow], { discarded: [discarded] })));
-    expect(lines).toContain('| prueba o molde | 0 | 0 | 1 |');
-  });
-
   it('omits the closed line without a previous retro', async () => {
     const { lines } = await causes(withDebt(fullDebt));
     expect(lines.join('\n')).not.toContain('Cerradas desde');
@@ -147,7 +139,7 @@ describe('sdd roadmap causes', () => {
     const { lines } = await causes(withDebt(fullDebt, { 'releases/v1.3.0/retro.md': previousRetro }), '--json');
     const report = JSON.parse(lines.join('\n'));
     expect(report.closedSinceLast).toBe(1);
-    expect(report.causes[0]).toEqual({ cause: 'regla lejos de su paso', waiting: 1, listed: 2, discarded: 0 });
+    expect(report.causes[0]).toEqual({ cause: 'regla lejos de su paso', waiting: 1, listed: 2 });
     expect(report.open[0]).toEqual({ item: ANNOUNCE, cause: 'regla lejos de su paso', cases: 2, destination: 'sin fila', openSince: '1.2.0' });
   });
 
