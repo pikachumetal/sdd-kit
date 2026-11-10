@@ -1,0 +1,140 @@
+--- [5]
+Hay una migración pendiente (v3.0.0). Miro qué tiene el proyecto para saber qué pasos aplican.
+
+--- [12]
+No he tocado nada todavía. La migración a v3.0.0 (el proyecto está en 2.3.4) tiene tres pasos con gate, y necesito tu «sí» y unas cuantas decisiones tuyas antes de aplicarlos. Árbol limpio, punto de partida `0028c61`.
+
+## Gate 1 · Movimientos
+
+| Qué hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` en la raíz (no hay otro) |
+| `constitution.md`, `architecture.md`, `estimation.md` | `git mv` a `steering/`. En `constitution.md` el enlace `decisions/0001-…` pasa a `../decisions/0001-…` |
+| `estimation-log.md` (con `estimation.md`) | `git mv` a `steering/` y regenerar con `sdd estimation log`. Antes te enseño el diff, pero el log actual es solo la cabecera, así que no se pierde nada escrito a mano |
+
+## Gate 2 · Producto y operaciones
+
+**`mission.md` → `PRODUCT.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| Por qué existe | `## Product Purpose` |
+| Usuarios y roles | `## Users` |
+| Qué es y qué no es | `## Capabilities and Constraints` |
+| Dominio | `## Terminology`: `**Franja**: una hora reservable, de en punto a en punto.` Sin `_Evitar_`, porque el original no cita sinónimos |
+
+**`tech-stack.md` + `environments.md` → `steering/operations.md`**
+
+| Sección | Destino |
+| --- | --- |
+| Comandos, Frontend | Igual |
+| Testing | Se mantiene el «Gate de cierre: `npm test`». Añado nivel de suite (`pendiente`, no hay config que lo diga), «Sin filtro» (`pendiente`), «Lint» (`ninguno`: no hay script ni pre-commit), «CI de la base» (`ninguna`) y «Temporales» (`pendiente`). Sin E2E. La línea de la task 0012 se queda tal cual (el nombre viejo lo trata el gate 4) |
+| Entornos | Condensado: marcador `.sdd-env.json` (lo deja `env:setup`), entradas `env:setup`/`env:clean`/`env:status`, y el runner (`npm`) |
+| Tecnologías (Node 22, Vitest 3) | Salen, porque ya están en `package.json` |
+| Decisiones abiertas | «¿Avisos por correo al reservar?» pasa a Later (gate 3) |
+
+Después se hace `git rm` de los tres originales. El informe llevará `git show 0028c61:.docs/sdd/mission.md` (y los otros dos).
+
+## Gate 3 · `ROADMAP.md` y `steering/debt.md`
+
+No hay release en preparación declarada salvo «Release 3.0.0», que aparece en 0030, 0031 y 0033, así que el título es `## Now — 3.0.0 · en preparación`. Las filas 0030, 0032 y 0033 no están publicadas (su artefacto no está en el tag `v1.2.0`).
+
+**Roadmap**
+
+| Fila | Destino | Notas |
+| --- | --- | --- |
+| 0030, 0031, 0032, 0033 | Now | 0033 con `**Carril:** patch` y `**Requisitos:**` a su `patch.md` |
+| 0021 | Next | Externo `SAL-41`, Toca `src/app.js` |
+| 0022 | Next | Requisitos `0019`, Tras 0021, Toca `src/app.js, src/notify.js` |
+| 0024 | Next | Tras 0015 pasa a `—`, porque 0015 no está en `ROADMAP.md` ni en `CHANGELOG.md` |
+| 1 «Estreno con recepción» | **Pregunta** | Es un hito sin id. ¿Later, o id nuevo con `sdd id next --reserve`? Su estado `🔄` no cabe en Later, así que tendrías que decirme qué estado toma |
+| Backlog 0040 | Later | Conserva su id |
+| Backlog B3 | Later | Id nuevo por reserva (no puede quedar `B3`) |
+| «¿Avisos por correo…?» | Later | Id nuevo por la misma reserva, así que `--reserve --count 2` |
+| Patch 0023 | Sale | Es anterior a la release y está en `CHANGELOG.md`. *(Matiz: es posterior a 1.2.0, así que va a Now con `✅`, no sale)* |
+| Releases cerradas v1.2.0 | Sale | Vive en `CHANGELOG.md`. Su `validaciones pendientes: 0016` se queda en su walkthrough |
+
+Corrijo la fila del patch 0023: su fecha, 2026-09-25, es posterior a v1.2.0, así que **va a Now con `✅`** y la fila de patch 0033 también.
+
+**Tamaño S/M/L, que decides tú**: 0030, 0031, 0032, 0033, 0021, 0022, 0024 y las tres filas de Later. El gate no cierra sin ello.
+
+**Deuda → `debt.md`**
+
+| Ítem | Sección | Detalle |
+| --- | --- | --- |
+| Doble reserva (SAL-44) | Lista | Con su prefijo «saldada», Evidencia = el patch, Destino 0023 |
+| `cancel` no comprueba dueño (SAL-45) | Lista | Origen SAL-45, Evidencia el análisis (`../field-reports/sal-45.md`), Destino 0022. Causa y arreglo propuestos: `defecto del producto (propuesta)` / `—`. Remedio `—` |
+| Test de avisos y fecha (SAL-46) | Lista | Destino 0022, causa «prueba o molde», arreglo «mover regla», remedio `—` |
+| Rutas largas (SAL-47) | Lista | Destino 0022, causa «entorno de la máquina», arreglo «comprobación automática», remedio «lanza desde D:\r» |
+| Avisos dos veces (SAL-48, SAL-49) | Lista | Origen SAL-48, Evidencia SAL-49, causa «herramienta del kit», arreglo «mover regla». **Remedio: dime cuál, porque hay dos enlaces** |
+| Test de franjas falla en CI | En espera | Falta «un segundo fallo con su log», causa `sin determinar` |
+| Changelog pierde una entrada | En espera | Falta «reproducirlo», causa «fusión de registros» |
+| Pasar `app.js` a TypeScript | Por triar | Fecha 2026-09-15 |
+| Mensajes mezclan idiomas | Por triar | Fecha 2026-09-01 |
+| Validar formato en la API | Sale | Es «Descartada» |
+
+Las fechas salen del commit que añadió cada fila. El «Impacto» se pierde en «Por triar» (no tiene columna): dime si lo quieres dentro del «Ítem» de «Pasar a TypeScript» (Bajo) y «Mensajes» (Bajo — confunde).
+
+## Lo que corre sin gate o con gate aparte
+
+- **Enlaces (paso 4)**: `CLAUDE.md` (constitution, misión, roadmap), `README.md` y la ADR 0001 (`../mission.md`). La ADR no se toca por ser inmutable, así que va al informe.
+- **Nombres de skills (paso 5)**: `CLAUDE.md` (`sdd-end-feature` → `sdd-archive`) y `.claude/commands/pregunta.md` (`/sdd-consult` → `/sdd-explore`) se cambian sin preguntar. **Gate**: `capabilities/cierre.md` (líneas 12 y 19) y la línea de medición de `tech-stack.md`; propongo mantener las tres tal cual, porque son datos, y que me lo confirmes.
+- **Estimación (paso 6)**: tiene las dos líneas 2.x, así que se reemplazan sin gate.
+- **Marcador (paso 7)**: crear `.gitignore` con `.temp/` y el hook del proyecto, y marcar 3.0.0.
+- Después vendrán los gates de reglas del proyecto (por ejemplo, «el id de una feature se elige a mano» en `constitution.md` choca con el kit) y, si procede, el de superpowers (no hay `.claude/settings.json`, así que se salta).
+
+## Qué necesito de ti
+
+1. ¿«Sí» a los gates 1, 2 y 3, con tus cambios?
+2. Hito «Estreno con recepción»: destino y estado.
+3. Tamaño S/M/L de las diez filas.
+4. Remedio temporal de «Avisos dos veces».
+5. ¿Meto el «Impacto» de las dos filas de «Por triar» en el «Ítem»?
+6. ¿Mantengo las tres menciones de nombres viejos como datos?
+
+Hasta que respondas, todo queda sin tocar.
+
+--- [24]
+Migración a 3.0.0 aplicada y commiteada. Me queda el gate de reglas del proyecto contra el kit; compruebo que el fichero del kit fija esa regla antes de proponértela.
+
+--- [26]
+La migración a v3.0.0 está aplicada y commiteada (`6fddc6d`). El proyecto queda en 3.0.0, y `sdd upgrade` confirma que está al día. Solo queda un gate por resolver.
+
+## Qué ha cambiado
+- **Movimientos**: `CHANGELOG.md` va a la raíz. `constitution`, `architecture`, `estimation` y `estimation-log` van a `steering/`, con el log regenerado (0 filas) y los enlaces ajustados.
+- **Producto y operaciones**: `PRODUCT.md` y `steering/operations.md` sustituyen a `mission`, `tech-stack` y `environments`.
+- **Roadmap y deuda**: `ROADMAP.md` y `steering/debt.md` sustituyen a `roadmap.md`. `sdd roadmap check` da «Roadmap válido».
+- **Enlaces y nombres**: arreglados en `CLAUDE.md`, `README.md` y `.claude/commands/pregunta.md`.
+- **Estimación**: el método nuevo está aplicado sin gate.
+- **Marcador**: `.gitignore` con `.temp/` y el hook del proyecto creado.
+
+## Decisiones que tomé yo
+- Reservé tres ids para Later: 0041 (CSV del mes), 0042 («¿Avisos por correo al reservar?») y 0043 (el hito «Estreno con recepción»). Lo del hito lo interpreté como Later con estado `⏳`, porque `🔄` no cabe ahí. Dime si lo querías de otra forma.
+- Las tareas 0023 y 0033 están en Now con `✅`, como corregí en la tabla.
+- El tamaño es M en todas las filas.
+- Las dos filas de «Por triar» llevan su impacto dentro del «Ítem».
+
+## Para el informe
+- **ADR 0001**: tiene un enlace roto, `../mission.md`, que ahora es `PRODUCT.md`. No lo toqué porque las ADR son inmutables.
+- **`sdd capability check` falla**: a `capabilities/cierre.md` le falta «Regla ante conflicto» en «Reglas de la capacidad». No es de la migración y no lo he tocado; queda pendiente para ti.
+- **Nombres viejos que dejé a propósito**: `sdd-end-patch` en `capabilities/cierre.md` (líneas 12 y 19) y en la línea de la task 0012 de `operations.md`.
+- **Rows del 2.x que no cambié de sitio**: el `validaciones pendientes: 0016` de la v1.2.0 se queda en su walkthrough.
+- **Gate de merge (paso 9) y superpowers (paso 10)**: no aplican. El gate es `npm test`, sin encadenar comandos ni lint, y no hay `.claude/settings.json` con superpowers.
+
+## Gate pendiente: reglas del proyecto que el kit ya cubre
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap.» | `.docs/sdd/steering/constitution.md:6` | `${CLAUDE_PLUGIN_ROOT}/skills/sdd-propose/references/nombrado.md` | Choca: con `ids.mode: sequence` el id sale de la fila del roadmap o de `sdd id next --reserve`, y `sdd id claim` lo comprueba contra el remoto | Quitarla |
+
+¿Aplico esta propuesta? Si dices que sí, quito esa línea en un commit aparte, `chore(sdd): reglas del proyecto que ya cubre el kit`. Si no, queda pendiente. Para retomarla más tarde, pide «revisa las reglas del proyecto contra el kit».
+
+--- [28]
+He quitado la regla de los ids de `.docs/sdd/steering/constitution.md` y la he commiteado aparte (`db69b7b`, `chore(sdd): reglas del proyecto que ya cubre el kit`). Las demás reglas siguen como estaban.
+
+El proyecto está en el kit 3.0.0 y ya no queda ningún gate pendiente en la migración.
+
+Quedan dos cosas fuera de la migración, las dos para ti:
+- **ADR 0001**: tiene un enlace roto, `../mission.md`, que ahora es `PRODUCT.md`. No lo toqué porque las ADR son inmutables.
+- **`sdd capability check`**: falla porque a `capabilities/cierre.md` le falta «Regla ante conflicto» en «Reglas de la capacidad». Ya fallaba antes y no lo he tocado.
+

@@ -1,24 +1,24 @@
-# Misión — sdd-kit
+# sdd-kit
 
-## Por qué existe
+## Users
+
+- Developers del equipo trabajando con Claude Code en cualquier proyecto (nuevo o legacy).
+- Los propios agentes: las skills están escritas para que un agente las cumpla bajo presión (validadas contra baselines que fallan sin ellas).
+
+## Product Purpose
 
 El equipo aplicaba SDD con skills copiadas en cada repo (marketplace, legacy, banco de pruebas), y las copias derivaban: rutas distintas, módulos distintos, fraseos distintos. El kit es el **nivel 1 de la taxonomía de skills del equipo** — el proceso, agnóstico de stack — con un único origen de verdad, instalable y actualizable centralmente.
 
 El principio que lo gobierna: **el resultado debe depender del proceso, no del criterio individual de quien ejecuta**. Las skills encapsulan las convenciones; el dev aprueba la spec y valida el resultado, y el resto lo recorre el agente según el perfil de control (ver «Cómo se trabaja con el kit»).
 
-## Usuarios
-
-- Developers del equipo trabajando con Claude Code en cualquier proyecto (nuevo o legacy).
-- Los propios agentes: las skills están escritas para que un agente las cumpla bajo presión (validadas contra baselines que fallan sin ellas).
-
-## Qué es y qué no es
+## Capabilities and Constraints
 
 - **Es**: las 13 skills de proceso (init ×2, feature ×2, patch ×2, release ×2, explore, configuración, changelog, feedback del kit, método de preguntas) y la de plantillas + las plantillas canónicas.
 - **No es**: skills técnicas por stack (nivel 2: sql-migration, backend-*, frontend-*) ni específicas de proyecto (nivel 3: build, dialogs, styles) — esas viven en cada repo o en futuros kits.
 
-## Cómo se trabaja con el kit
+### Cómo se trabaja con el kit
 
-Decidido por el dev-lead el 2026-09-21 a partir del [issue GH #1](field-reports/20260921-gh-1-velocity-ceremony.md) y de la experiencia propia: el kit se sentía lento por ceremonia, no por errores. Es la visión que implementan las tasks de la 1.2.0; el reparto está en el roadmap.
+Decidido por el dev-lead el 2026-09-21 a partir del [issue GH #1](.docs/sdd/field-reports/20260921-gh-1-velocity-ceremony.md) y de la experiencia propia: el kit se sentía lento por ceremonia, no por errores. Es la visión que implementan las tasks de la 1.2.0; el reparto está en el roadmap.
 
 **Flujo por defecto (perfil `delegate`).** El dev pide en lenguaje natural y entra sola la skill que toca (`sdd-propose` o `sdd-explore`). `sdd-propose` clasifica el carril: anuncia feature y spike, y pregunta patch, lite y config. La entrevista pregunta con `sdd-grilling`: una decisión por turno, en texto, con la recomendada y su motivo; lo operativo (aprobar, seguir), con opciones numeradas. Con los datos, el agente escribe la spec con su lista de decisiones ocultas y el dev la aprueba. La review de la spec es opcional: por defecto no se hace; el agente la recomienda solo cuando la feature lo justifica, dice por qué, y se hace antes del gate. Desde la aprobación el agente trabaja solo: planifica sin gate del plan (comprueba que cada escenario de la spec tiene su task y escribe el método que recomienda el plan) y ejecuta en la propia sesión (Native) o, en los planes largos, con subagentes: un máximo de tres en paralelo, cada uno en su worktree y solo en tasks que el plan clasifica como independientes. Al terminar para los procesos que arrancó (front, backend), presenta lo hecho, las decisiones que tomó, los desvíos, cómo arrancar y el guion de prueba, y espera la validación. Validar cierra la feature y hace el merge según la política del proyecto, sin volver a preguntar.
 
@@ -34,9 +34,9 @@ Los interruptores por gate sueltos quedan fuera: cuatro gates opcionales son 16 
 
 **Frenos del modo autónomo.** Tope de reintentos por tipo de fallo: tres rondas de fix y se aparca; un fallo de permisos o de entorno aparca al instante; repetir sin avanzar aparca. Vigía de silencio con dos umbrales configurables en `sdd-kit.json`: 8 minutos entre pasos y 20 dentro de un comando largo. Al saltar, el agente lee el último evento, para lo colgado, lo relanza una vez salvo que esperara un permiso y lo cuenta sin que nadie pregunte; un segundo cuelgue para. Lo largo (subagentes, suites) se lanza en segundo plano para poder vigilarlo, porque la herramienta de subagentes no tiene timeout.
 
-**Por qué.** La calidad la compran pocas piezas, medidas en un proyecto real del equipo ([research del hackaton](releases/v1.0.0/research-hackaton.md)): contrato en la spec, tests RED escritos por el hilo principal, documentos de anclaje, restricciones en cada encargo y la review por defecto. La review adversarial no aportó con el contrato cerrado, y 2–3 agentes fueron más rápidos que 15. El resto de la ceremonia se activa cuando la feature lo pide, no por defecto. Fuera coincide la crítica al SDD: el valor está en escribir la spec antes; las herramientas que ponen un gate humano en cada fase generan revisión de más y no escalan a tareas pequeñas.
+**Por qué.** La calidad la compran pocas piezas, medidas en un proyecto real del equipo ([research del hackaton](.docs/sdd/releases/v1.0.0/research-hackaton.md)): contrato en la spec, tests RED escritos por el hilo principal, documentos de anclaje, restricciones en cada encargo y la review por defecto. La review adversarial no aportó con el contrato cerrado, y 2–3 agentes fueron más rápidos que 15. El resto de la ceremonia se activa cuando la feature lo pide, no por defecto. Fuera coincide la crítica al SDD: el valor está en escribir la spec antes; las herramientas que ponen un gate humano en cada fase generan revisión de más y no escalan a tareas pequeñas.
 
-## Dominio (lenguaje del equipo)
+## Terminology
 
 - **Documentos de anclaje**: mission, constitution, tech-stack, architecture, `capabilities/` (una capacidad por fichero), roadmap — el contexto por capas que sustituye al CLAUDE.md monolítico. **`capabilities/` va primero**: es la idea central del kit, y cualquier hallazgo que la toque se prioriza sobre el resto de la deuda.
 - **Carriles**: la entrada única (`sdd-propose`) clasifica cada cambio en uno de cinco: config (sin comportamiento: dependencias, CI, settings), patch (solución ya fijada), lite (feature acotada), feature (spec y plan) y spike (investigación que deja su evidencia).
@@ -44,7 +44,7 @@ Los interruptores por gate sueltos quedan fuera: cuatro gates opcionales son 16 
 - **Modo lite**: el carril lite, una feature acotada —sin skills propias ni prefijo de carpeta— para cambios acotados que cumplen un predicado observable. Spec corta y sin plan; el gate de la spec, el smoke y el walkthrough se conservan intactos. Lo habilita el predicado y lo activa la confirmación del usuario.
 - **Carril release**: apertura (el acta triada se convierte en scope que decide el usuario) y cierre (Definition of Done del hito: repaso de la deuda por causa, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario). **Es opcional** (task 0004): la apertura es la vía ideal para generar features, y en un equipo con gestor de tickets es herramienta del PM o PO, o no se usa. El cierre es el corte de publicación y funciona sin apertura previa.
 - **Modo incremental**: trabajar solo con feature y patch, acumulando en `[Unreleased]`, y cortar con `sdd-end-release` cuando se publica. No es un interruptor: es lo que ocurre cuando no se abre release.
-- **Destinatario**: persona o grupo, distinto de quien hace la release, que la recibe. Lo declara `release.hasRecipient` en `sdd-kit.json`; qué cambia en el carril con y sin destinatario está en [`release-flow`](capabilities/release-flow.md).
+- **Destinatario**: persona o grupo, distinto de quien hace la release, que la recibe. Lo declara `release.hasRecipient` en `sdd-kit.json`; qué cambia en el carril con y sin destinatario está en [`release-flow`](.docs/sdd/capabilities/release-flow.md).
 - **Retro de release (`retro.md`)**: el repaso de la deuda por causa y sus propuestas, y, si se pide, la estimación y los action items; vive en `.docs/sdd/releases/vX.Y.Z/`.
 - **Explore**: el anti-carril — preguntar, entender o estructurar con el contexto de anclaje cargado, sin producir artefactos. Tres modos: entender (lee y responde), **sondear** (prueba desechable cuya salida es una respuesta, nada persiste) y pensar (interrogatorio sin artefactos). Cuando la conversación se vuelve trabajo, lo pasa al roadmap (un config, a su prompt de arranque).
 - **Prompt de arranque**: el texto con forma fija (título, base, rama, carril y prompt) que arranca un cambio en otro worktree sin repetir la entrevista; lo dan `sdd-roadmap` y, para un config, `sdd-explore`.
@@ -57,6 +57,6 @@ Los interruptores por gate sueltos quedan fuera: cuatro gates opcionales son 16 
 - **Marcador de versión** (`.docs/sdd/sdd-kit.json`): la versión del kit que un proyecto tiene aplicada, con el canal por el que llegó. **Migración**: aplicar, en orden y con gate, los `migrations/vX.Y.Z.md` posteriores a esa versión; la ejecuta `sdd-upgrade`, que el arranque de la sesión ofrece cuando hay migraciones pendientes, con `.docs/sdd/sdd-kit.json` ya escrito y sin init en curso. No es re-inicializar: no regenera anclaje ni vuelca `capabilities/`.
 - **Entorno por worktree**: lo que un worktree necesita además de sus dependencias —base de datos, puertos, servicios, datos de prueba— para trabajar aislado. El kit fija el contrato (`environments.md`, marcador `.sdd-env.json`, entradas `env:setup` / `env:clean` / `env:preflight`); el proyecto escribe los scripts. El worktree lo crea `sdd-worktrees` y lo borra `sdd-archive` con `merge.removeWorktree`.
 - **Fuente intermedia**: `skills/` del repo, la que se edita; admite marcas y no viaja.
-- **`dist/`**: lo que construye `moon run kit:build` desde la fuente y una lista blanca, y lo único que viaja en el plugin ([`kit-distribution`](capabilities/kit-distribution.md)).
+- **`dist/`**: lo que construye `moon run kit:build` desde la fuente y una lista blanca, y lo único que viaja en el plugin ([`kit-distribution`](.docs/sdd/capabilities/kit-distribution.md)).
 - **Marca**: una línea entera `<!-- kit: … -->` de la fuente, que el build quita.
 - **Registro de fuentes** (`upstream.json`): la versión y las rutas de cada copia y cada concepto que el kit toma de otro repo; de él salen `THIRD_PARTY_NOTICES.md` y los `NOTICE`.

@@ -123,7 +123,7 @@ Esto tiene una consecuencia que no esperaba cuando empecé: **más de la mitad d
 
 Si quieres entender el flujo antes de instalar nada, en [`.docs/workflow/`](.docs/workflow/) están los cuatro documentos que lo explican: la [guía de uso](.docs/workflow/usage-guide.md) del día a día, el de [proyectos nuevos](.docs/workflow/greenfield.md), el de [codebases existentes](.docs/workflow/brownfield.md) y un [anexo](.docs/workflow/evidence-and-references.md) con la evidencia que lo sustenta, 25 fuentes verificadas una a una y etiquetadas según lo que valen.
 
-El kit se usa a sí mismo. Sus features salen por `sdd-propose`, sus releases por `sdd-end-release`, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](.docs/sdd/roadmap.md), las [notas de cada versión](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
+El kit se usa a sí mismo. Sus features salen por `sdd-propose`, sus releases por `sdd-end-release`, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](ROADMAP.md), las [notas de cada versión](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
 
 ## Estado
 

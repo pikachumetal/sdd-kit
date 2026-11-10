@@ -98,6 +98,12 @@ describe('sdd hook session-start', () => {
     expect(output.systemMessage).not.toContain('trae migraciones');
   });
 
+  it('does not warn when the loaded kit carries the migration the project asks for', () => {
+    const plugin = pluginWith('2.3.4', ['v2.3.4.md', 'v3.0.0.md']);
+    const output = JSON.parse(sessionStartOutput(projectAt('3.0.0'), plugin, '26.10.0'));
+    expect(output.systemMessage).toBeUndefined();
+  });
+
   it('gives the offer order only to the agent', () => {
     const output = JSON.parse(sessionStartOutput(project('pending-migration'), pluginRoot, '26.10.0'));
     expect(output.systemMessage).not.toContain('Antes de atender la primera petición');

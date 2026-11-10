@@ -19,6 +19,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN el usuario ve un aviso con las dos versiones, `claude plugin update sdd-kit@sdd-kit --scope project` y que hay que reiniciar Claude Code, porque `/reload-plugins` no aplica una actualización de ámbito proyecto
 - AND el agente recibe el mismo aviso al principio de su contexto
 - AND con la versión cargada igual o mayor, o sin `sdd-kit.json`, no hay aviso
+- AND con el proyecto en `3.0.0` y el kit cargado en `2.3.4` con `migrations/v3.0.0.md` entre las suyas, no hay aviso: ese kit ya sabe leer la forma del proyecto
 
 ### Cada release lleva su migración
 
@@ -234,7 +235,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 ### La migración a v3.0.0 lleva el roadmap a Now, Next y Later
 
-- GIVEN un `roadmap.md` 2.x sin release en preparación, con la 0021 y la 0022 en «Próximo» (la 0022 con «tras 0021» y «`proposal: 0019`»), B3 en «Backlog», el patch 0023 posterior a la última release cerrada y el 0017 anterior, y la release cerrada con `validaciones pendientes: 0016`, en un proyecto en modo `sequence`
+- GIVEN un `roadmap.md` 2.x sin release en preparación, con la 0021 y la 0022 en «Próximo» (la 0022 con «tras 0021» y «`proposal: 0019`»), B3 en «Backlog», el patch 0023 posterior a la última release cerrada y el 0017 anterior, y la release cerrada con `validaciones pendientes: 0016`, con la etiqueta git de la última release cerrada, que no contiene el `patch.md` del 0023, en un proyecto en modo `sequence`
 - WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla, con el Tamaño `M` para la 0021 y la 0022
 - THEN `ROADMAP.md` tiene en Now la 0021 y la 0022 con su brief plegado (la 0022 con «Tras» 0021 y `**Requisitos:**` hacia la propuesta 0019), Tamaño `M`, y el patch 0023 con `✅` y `**Carril:** patch`; en Later, el ítem de la B3 con el id `0024`, de la reserva de la migración, y ningún `B<n>`
 - AND no aparecen ni el 0017 ni la 0016, y la tabla y el informe nombran la 0016 como validación pendiente que sigue en su walkthrough
@@ -243,7 +244,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 ### La migración a v3.0.0 lleva la deuda a `debt.md` sin inventar celdas
 
-- GIVEN una «Deuda técnica» 2.x con una fila `**Actuar** → 0022` cuyo «Ítem» enlaza su ticket, una `**Actuar** → sin fila` sin evidencia, una `**Esperar 2.º ticket**`, una `**Descartada**: duplica la 0018`, una con destino `versión siguiente`, una saldada posterior a la última release cerrada, una `**Actuar** → 0030 · causa: prueba o molde · arreglo: mover regla`, y una `**Esperar 2.º ticket** · causa: fusión de registros — falta reproducirlo`
+- GIVEN una «Deuda técnica» 2.x con una fila `**Actuar** → 0022` cuyo «Ítem» enlaza su ticket, una `**Actuar** → sin fila` sin evidencia, una `**Esperar 2.º ticket**`, una `**Descartada**: duplica la 0018`, una con destino `versión siguiente`, una saldada cuyo artefacto de cierre no contiene la etiqueta de la última release cerrada, una `**Actuar** → 0030 · causa: prueba o molde · arreglo: mover regla`, y una `**Esperar 2.º ticket** · causa: fusión de registros — falta reproducirlo`
 - WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
 - THEN `.docs/sdd/steering/debt.md` tiene la primera en «Lista» con destino 0022 y el ticket como evidencia, y la saldada en «Lista» con su prefijo `**[… saldada …]**` intacto
 - AND la de `sin fila` y la de `versión siguiente` están en «Por triar», la de `**Esperar**` en «En espera», y la `**Descartada**` no está en `debt.md`: sigue en el `roadmap.md` 2.x que guarda git
@@ -262,13 +263,14 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 ### La migración a v3.0.0 cambia los nombres de las skills retiradas
 
-- GIVEN un proyecto en 2.3.4 cuyo `CLAUDE.md` dice «Cierra cada feature con `sdd-end-feature`.», con `.claude/commands/pregunta.md` que dice «Usa `/sdd-consult` para responder.» y con una carpeta de `specs/` cuyo `walkthrough.md` cita `sdd-end-feature`
+- GIVEN un proyecto en 2.3.4 cuyo `CLAUDE.md` dice «Cierra cada feature con `sdd-end-feature`.», con `.claude/commands/pregunta.md` que dice «Usa `/sdd-consult` para responder.», con una carpeta de `specs/` cuyo `walkthrough.md` cita `sdd-end-feature` y con `capabilities/cierre.md` cuyo escenario dice «`sdd-end-patch` pasa a `sdd-archive`»
 - WHEN se aplica la v3.0.0
 - THEN `CLAUDE.md` dice «Cierra cada feature con `sdd-archive`.» y `pregunta.md` dice «Usa `/sdd-explore` para responder.», sin gate
-- AND `sdd-end-patch` pasa a `sdd-archive`, y `sdd-init-greenfield` y `sdd-init-brownfield` a `sdd-init`, en `CLAUDE.md`, `AGENTS.md`, `.docs/sdd/*.md`, `.docs/sdd/steering/*.md`, `.docs/sdd/capabilities/*.md`, `.claude/skills/` y `.claude/commands/`
+- AND `sdd-end-patch` pasa a `sdd-archive`, y `sdd-init-greenfield` y `sdd-init-brownfield` a `sdd-init`, en `CLAUDE.md`, `AGENTS.md`, `.docs/sdd/*.md`, `.docs/sdd/steering/*.md`, `.claude/skills/` y `.claude/commands/`
+- AND lo que encuentra en `.docs/sdd/capabilities/*.md` va a una tabla con gate, y `cierre.md` sigue diciendo «`sdd-end-patch` pasa a `sdd-archive`» si el dev-lead lo mantiene
 - AND el `walkthrough.md` de `specs/` sigue citando `sdd-end-feature`, y tampoco cambian `CHANGELOG.md`, `decisions/`, `releases/` ni `kit-feedback/`
 - AND el informe lista los ficheros cambiados; sin ninguna mención, el paso se salta y lo dice
-- AND la «Verification», con `git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)'` sobre esas rutas (las carpetas con `:(glob)`, y sin `changelog.md`, `client-changelog.md` ni `roadmap.md` de `.docs/sdd/`), no devuelve nada, también sin `AGENTS.md` ni `.claude/`
+- AND la «Verification», con `git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)'` sobre esas rutas (las carpetas con `:(glob)`, y sin `changelog.md`, `client-changelog.md` ni `roadmap.md` de `.docs/sdd/`), solo devuelve las líneas de su tabla con gate que el dev-lead mantiene, también sin `AGENTS.md` ni `.claude/`
 
 ### La migración a v3.0.0 lleva el método nuevo al `estimation.md` del proyecto
 
@@ -379,6 +381,39 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND con esa misma clave en `false`, el marketplace se quita: un plugin desactivado no lo usa
 - AND no desinstala nada ni toca `~/.claude/settings.json`
 - AND sin ninguna de las dos claves, o con solo el marketplace y otro plugin en `true`, el paso se salta y lo dice
+
+### La v3.0.0 enseña antes las mediciones fechadas
+
+- GIVEN un `tech-stack.md` 2.x con la línea «Una validación escrita de antemano no valida (task 0012): 2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0 a preguntar.»
+- WHEN se aplica la v3.0.0
+- THEN la línea va a la tabla con gate del paso 5, con la propuesta de mantenerla
+- AND con el dev-lead de acuerdo, `steering/operations.md` la conserva con `sdd-end-patch`
+
+### Los enlaces relativos de lo que la v3.0.0 mueve siguen apuntando a su sitio
+
+- GIVEN un `roadmap.md` 2.x cuya fila enlaza `[walkthrough](specs/x/walkthrough.md)`, un `changelog.md` que enlaza `[ref](specs/x/walkthrough.md)` y un `mission.md` que cita `[no es enlace](decisions/0001.md)` dentro de código
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba las tablas
+- THEN `ROADMAP.md` y `CHANGELOG.md`, en la raíz, enlazan `.docs/sdd/specs/x/walkthrough.md`
+- AND el texto dentro de código de `PRODUCT.md` no cambia
+
+### La v3.0.0 decide lo publicado por la etiqueta de la última release
+
+- GIVEN «Releases cerradas» hasta la 2.3.0, `changelog.md` hasta la 2.3.4 con su etiqueta `v2.3.4`, el patch 0130 cuyo `patch.md` entró en un commit que la etiqueta `v2.3.4` contiene, el patch 0164 cuyo `patch.md` entró en `develop` en un commit que ninguna etiqueta contiene, y la 0128, cuya fila entró antes de la 2.3.0 y cuyo `walkthrough.md` ninguna etiqueta contiene
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
+- THEN el 0130 no está en `ROADMAP.md`, y el 0164 y la 0128 están en Now con `✅`
+
+### La v3.0.0 reconoce la release en preparación por el prefijo de sus filas
+
+- GIVEN «Próximo» sin `## Release <N>`, con la 0040 «**Release 3.0.0**. …» en `✅`, la 0041 «**Release 3.0.0** (dev-lead, …).» en `⏳`, la 0042 sin prefijo en `✅` que ninguna etiqueta contiene, la 0043 sin prefijo en `⏳`, y en «Patches» otra fila 0040
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
+- THEN Now se titula `## Now — 3.0.0 · en preparación` y tiene la 0040 una sola vez, la 0041 y la 0042; Next tiene la 0043
+
+### La v3.0.0 conserva los ids del Backlog
+
+- GIVEN un «Backlog» con la 0050 y con una fila sin id, y una fila sin id en «Próximo» con estado `🔄 en curso`, en un proyecto en modo `sequence`
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
+- THEN Later tiene la 0050 con su id, y la fila sin id del Backlog con uno de la reserva
+- AND la tabla pregunta qué estado lleva en Later la fila `🔄`, que Later no admite
 
 ## Reglas de la capacidad
 
