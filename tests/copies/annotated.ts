@@ -471,6 +471,16 @@ export function checkCopy(input: CopyInput): Problem[] {
   return context.problems.sort(byLine);
 }
 
+export type IndexEol = 'lf' | 'crlf' | 'mixed' | 'none' | '-text';
+
+// El índice de git decide si una copia tiene CRLF; el disco, qué texto se compara. Un checkout anterior a
+// `eol=lf` con autocrlf guarda LF en el índice y CRLF en el disco: esa copia está limpia (feature 0311).
+export function eolVerdict(indexEol: IndexEol | undefined, text: string): { problem: 'crlf' } | { text: string } {
+  if (indexEol === 'crlf' || indexEol === 'mixed') return { problem: 'crlf' };
+  if (indexEol === 'lf') return { text: text.replace(/\r\n/g, '\n') };
+  return text.includes('\r') ? { problem: 'crlf' } : { text };
+}
+
 export function checkVerbatim({ file, annotated, original, label }: Omit<CopyInput, 'fragments'>): Problem[] {
   if (annotated.includes('\r')) return [{ file, message: MESSAGES.crlf }];
   return annotated === original.replace(/\r\n/g, '\n') ? [] : [{ file, message: MESSAGES.notVerbatim(label) }];
