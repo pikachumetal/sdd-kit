@@ -310,8 +310,9 @@
 | 2026-11-09 | 0324 | patch | 2 | 0.32 | 0.16 | — | — | 1.77 | — | 20261109-134853-patch-0324-debt-keeps-only-live |
 | 2026-11-09 | 0325 | patch | 0.75 | 0.41 | 0.55 | — | — | no aplica | — | 20261109-135213-patch-0325-privacy-test-bounded-read |
 | 2026-11-09 | 0311 | infra/tooling | 7 | 2.57 | 0.37 | 188367k | 37203k | 27.25 | 70.77 | 20261109-143437-feature-0311-includes-and-checks |
+| 2026-11-10 | 0326 | infra/tooling | 2 | 3.3 | 1.65 | no medido | no medido | 5.66 | no medido | 20261109-223338-feature-0326-orphans-eol-and-forecast |
 
-**Factor de calibración** (ratio mediano real/estimado, 270 artefactos): **0.57** · media 0.71
+**Factor de calibración** (ratio mediano real/estimado, 271 artefactos): **0.57** · media 0.71
 
 - p25–p75: 0.36–0.84
 - p80: 0.95 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
@@ -321,17 +322,17 @@
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 107 | 40 % |
+| <0.5 | 107 | 39 % |
 | 0.5–0.8 | 86 | 32 % |
 | 0.8–1.25 | 54 | 20 % |
-| 1.25–2 | 14 | 5 % |
+| 1.25–2 | 15 | 6 % |
 | ≥2 | 9 | 3 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 116 | 0.59 | 0.42–0.8 |
-| infra/tooling | 75 | 0.49 | 0.35–0.73 |
+| infra/tooling | 76 | 0.5 | 0.36–0.73 |
 | patch | 77 | 0.6 | 0.27–1.2 |
 | tooling | 1 | 0.6 | — |
 
@@ -352,7 +353,7 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 158 | 284.32 | 0.53 | 957.76 | 2782.79 |
+| sin publicar | 159 | 287.62 | 0.53 | 963.42 | 2782.79 |
 
 > Ver `estimation.md`.
 

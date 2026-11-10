@@ -31,7 +31,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Capacidades
 
-> Se escribe con la salida de `sdd capability index`, con el nombre exacto que da el índice. Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo»; una que el delta vacía, en «Retiradas», y la fusión borra su fichero. Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta.
+> Se escribe con el nombre exacto que da `sdd capability index`. Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo»; una que el delta vacía, en «Retiradas», y la fusión borra su fichero. Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta.
 
 - Nuevas: `<nombre>` — <qué cubre>
 - Modificadas: `<nombre>` — <qué requisito cambia>
@@ -103,7 +103,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Delta de comportamiento
 
-> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-archive`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad nueva se nombra con la regla 1 de `capability-template.md`, que se calca al declararla.
+> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-archive`: estable. Una capacidad nueva se nombra con la regla 1 de `capability-template.md`, que se calca al declararla.
 >
 > Un escenario de una regla de negocio lleva datos concretos de entrada y de salida, no una frase abstracta: «GIVEN bolsa FR, IT, PT · WHEN oferta en DE · THEN no cubre», no «una oferta fuera de la bolsa no cubre».
 
@@ -143,11 +143,11 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Topes de palabras *(solo si el proyecto pone topes a lo que la spec edita: un test limita en palabras un fichero que edita, como `cli/test/kit/word-budget.test.ts`)*
 
-> Si se cumple, es obligatoria y no se borra con los bloques de ayuda: una fila por fichero con tope que la spec edita, también si la edición lo acorta; un margen dicho en una decisión o en «Dónde se prueba» no es la tabla. Mide cada uno antes de presentarla, con el conteo del test que lo fija. El tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix de la revisión final, y lo aprueba el dev-lead en el gate. El de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más ese margen. Lo que se recorte para caber es una edición de skill: si quita una instrucción, lleva su RED.
+> Si se cumple, es obligatoria y no se borra con los bloques de ayuda: una fila por fichero con tope que la spec edita, también si la edición lo acorta; un margen dicho en una decisión o en «Dónde se prueba» no es la tabla. Mide cada uno antes de presentarla, con el conteo del test que lo fija, y lo previsto igual, sobre lo que entra y sale. El tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix, y lo aprueba el dev-lead en el gate. El de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más ese margen. Lo que se recorte para caber es una edición de skill: si quita una instrucción, lleva su RED.
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
-| <skill o documento> | <palabras / tope> | <tope − medido> | <medido + previsto + 2 % · sin cambio> |
+| <skill o documento> | <palabras / tope> | <tope − medido> | <medido + previsto (`<comando> → <n>` \| sin medir, y al ✋) + 2 % · sin cambio> |
 
 ## Previsión de coste *(solo si la spec edita una skill que se prueba con sujetos)*
 

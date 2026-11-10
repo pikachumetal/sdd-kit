@@ -489,7 +489,7 @@ async function runClaude(s, deps, { args, stdout = s.JSONL, append = false }) {
   const code = await child.exited;
   cancel();
   if (!timedOut) return code;
-  deps.err(`[${s.LABEL}] tope de ${seconds} s: sujeto cortado`);
+  deps.err(`[${s.LABEL}] colgado: tope de ${seconds} s, sujeto cortado`);
   s.exitCode = 124;
   return 124;
 }

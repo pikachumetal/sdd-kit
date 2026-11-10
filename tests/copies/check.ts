@@ -6,13 +6,28 @@ import { BuildError } from '../../build/errors.ts';
 import { readRegistry, watchedRefs, type Entry, type Registry } from '../../build/sources.ts';
 import { git } from '../../cli/src/git/git.ts';
 import { DEFAULT_REGISTRY, findClones, hasCommit, MISSING_UPSTREAM_DIR, report, showAt } from '../upstream/clones.ts';
-import { checkCopy, checkVerbatim, copyShareProblem, formatProblem, outputOf } from './annotated.ts';
+import { checkCopy, checkVerbatim, copyShareProblem, eolVerdict, formatProblem, outputOf, type IndexEol } from './annotated.ts';
 
 interface Originals {
   registry: Registry;
   clones: Map<string, string>;
   dir: string;
   repoRoot: string;
+  eols: Map<string, IndexEol>;
+}
+
+// Una sola llamada para todas las copias; `-z` separa los registros por NUL y las rutas van literales, sin globs.
+// Sin repo, o con git fallando, el mapa queda vacío y el disco decide.
+export async function indexEols(repoRoot: string, files: string[]): Promise<Map<string, IndexEol>> {
+  const eols = new Map<string, IndexEol>();
+  if (files.length === 0) return eols;
+  const result = await git(repoRoot, ['--literal-pathspecs', 'ls-files', '--eol', '-z', '--', ...files]);
+  if (result.code !== 0) return eols;
+  for (const record of result.stdout.split('\0').filter((line) => line !== '')) {
+    const match = /^i\/(\S+)\s+w\/\S*\s+attr\/[^\t]*\t(.+)$/.exec(record);
+    if (match) eols.set(match[2], match[1] as IndexEol);
+  }
+  return eols;
 }
 
 function cloneOf(originals: Originals, source: string): string | undefined {
@@ -69,7 +84,9 @@ async function checkFile(originals: Originals, entry: Entry, clone: string): Pro
   const [path] = entry.paths;
   const original = await showAt(clone, entry.version, path);
   if (original === null) return [`${file}: su original ${path} no existe en ${entry.version}`];
-  const annotated = readFileSync(resolve(originals.repoRoot, file), 'utf8');
+  const verdict = eolVerdict(originals.eols.get(file), readFileSync(resolve(originals.repoRoot, file), 'utf8'));
+  if ('message' in verdict) return [formatProblem({ file, message: verdict.message })];
+  const annotated = verdict.text;
   const label = `${path}@${entry.version}`;
   if (!file.endsWith('.md')) return checkVerbatim({ file, annotated, original, label }).map(formatProblem);
   const problems = checkCopy({ file, annotated, original, label, fragments: await fragmentsOf(originals, entry) }).map(formatProblem);
@@ -87,9 +104,11 @@ async function checkEntry(originals: Originals, entry: Entry): Promise<string[]>
 }
 
 export async function checkRegistryCopies(registry: Registry, repoRoot: string, clonesDir: string): Promise<string[]> {
-  const originals: Originals = { registry, clones: await findClones(clonesDir), dir: clonesDir, repoRoot };
+  const copies = registry.entries.filter((candidate) => candidate.kind === 'copy');
+  const eols = await indexEols(repoRoot, copies.flatMap((entry) => entry.kit));
+  const originals: Originals = { registry, clones: await findClones(clonesDir), dir: clonesDir, repoRoot, eols };
   const lines: string[] = [];
-  for (const entry of registry.entries.filter((candidate) => candidate.kind === 'copy')) lines.push(...(await checkEntry(originals, entry)));
+  for (const entry of copies) lines.push(...(await checkEntry(originals, entry)));
   return [...new Set(lines)];
 }
 

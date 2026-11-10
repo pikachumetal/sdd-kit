@@ -348,6 +348,7 @@ steps.co6 = () => {
   s.put(`${F30}/spec.md`, readFileSync(join(FIX, 'spec-0030.md'), 'utf8'));
 };
 steps.co2 = () => branch('feature/0014-notice-room');
+steps.co2p = steps.co2;
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
 steps.cr1 = () => {
