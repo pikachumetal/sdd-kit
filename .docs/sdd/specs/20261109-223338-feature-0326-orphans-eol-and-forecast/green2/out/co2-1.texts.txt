@@ -1,0 +1,60 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio y escribir la spec, hasta presentártela para aprobar.
+
+--- [17]
+Ahora: ya leí el contexto y el código. Voy a escribir la spec en su carpeta y a lanzar la revisión de la spec. Queda: presentártela para aprobar.
+
+--- [25]
+La spec está escrita y el revisor está trabajando. Espero su resultado antes de presentártela.
+
+--- [34]
+1. Importante · Intent y «Decisiones tomadas con el dev-lead» · La misión dice que la usa una sola persona y que no hay más usuarios ni desarrolladores. La spec habla de «el cliente», de «quien lo recibe» y de un «dev-lead» que decide, y ofrece pasar la validación a `dev-lead`. Esos roles no existen en el proyecto. · Reescribir con el rol real, que es el autor y único usuario. Quitar «cliente» y la salida a `dev-lead`, o explicar quién recibe el aviso.
+2. Importante · Intent y «Dónde se prueba» · El éxito dice que `aviso.md` «termina con» la línea y el Scope dice «después de la existente». El único THEN comprueba que una línea cualquiera sea igual a `Conserjería: 5500`. Mover la línea al principio, o borrar la original, pasaría el test. · Añadir un scenario que compruebe la última línea no vacía. Añadir otro que compruebe que la línea `Aviso de sala: {sala} el {dia}.` se mantiene. O bajar el éxito a «contiene».
+3. Menor · «Dónde se prueba», GIVEN/WHEN/THEN · El GIVEN repite el resultado esperado («con la línea»). El «se parte por líneas» no dice con qué separador. Con `\n` y un fichero en CRLF, la línea sería `Conserjería: 5500\r` y el test fallaría. Con `trim` pasaría aunque hubiera espacios sobrantes. · Fijar `split(/\r?\n/)` y decir si se compara con `trim` o exacto. Escribir el GIVEN como el estado inicial real: el fichero con una sola línea.
+4. Menor · «✋ Decisiones» · Hay decisiones que están en el cuerpo y no en la lista. La primera es el gate de cierre `node --test && node scripts/lint.mjs`, mientras la constitución solo exige `node --test`. La segunda es el nombre y la ubicación de `test/aviso.test.js`. La tercera es dejar sin tocar el tope de 60 («sin cambio»). · Añadirlas a la lista, o quitar `lint.mjs` del gate si no es decisión de esta spec.
+5. Menor · «Topes de palabras» · Mide bien (6 + 46 = 52, y 52 + 2 = 54, comprobado con `wc -w`). Pero el test cuenta con `split(/\s+/)` y no con `wc`, y esa regla no se cita. Tampoco se dice qué cuenta como palabra, por ejemplo `{sala}` o `Conserjería:`. · Citar la regla de conteo del test, que es separar por espacios en blanco. Así el 54 se puede comprobar sin ambigüedad.
+6. Menor · «Decisiones» 7 y «Lo que se retira» · La decisión 7 dice que no se añade fila de roadmap y deja que «el cierre decida». Es una decisión diferida sin responsable. · Decidir ahora si hace falta fila, o decir quién la decide.
+7. Menor · «Decisiones» 5 y «Capacidades» · «Ninguna, porque docs» está bien razonado. Pero el texto del aviso es un contrato de cara a quien lo recibe: lleva un teléfono fijo y un literal de formato. La spec lo trata como «sin datos» y no menciona que el 5500 es un dato nuevo, sin fuente ni forma de cambiarlo. · Declarar el 5500 como dato nuevo (límite o formato) y decir de dónde sale. O confirmar que es un valor de ejemplo inventado.
+
+--- [44]
+Ahora: te presento la spec para aprobar. Queda: tu respuesta. Sin aprobación no escribo el plan ni toco código.
+
+**Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)** · Método: native.
+Si te vas a ausentar, puedes decir: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+
+**Aviso del entorno:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+**Spec:** `.docs/sdd/specs/20261110-110049-feature-0014-notice-room/spec.md`
+
+🦆 El aviso de sala gana una segunda línea con el teléfono de conserjería: «Aviso de sala: Norte el 2026-11-12.» y debajo «Conserjería: 5500». Solo cambia el texto de `docs/plantillas/aviso.md`. Ningún comando lee esa plantilla todavía. Un test nuevo fija la línea. El tope de 60 palabras de las plantillas se sigue cumpliendo (de 52 a 54).
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Carril:** lo trato como feature en modo full porque pediste spec. Cabría en lite o patch, pero un carril que fijas tú no lo bajo.
+2. **Enfoque:** añado la línea al final de `aviso.md`. Descarto un fichero nuevo, porque nadie lo incluiría, y un marcador `{telefono}`, porque ningún código rellena plantillas.
+3. **Forma:** la línea va después de la existente, sin punto final, tal cual tu literal.
+4. **Test nuevo** `test/aviso.test.js`.
+   - La última línea no vacía es `Conserjería: 5500`.
+   - La primera sigue siendo la del aviso.
+   - Hoy falla, y con la línea pasa.
+   - Sin este test, borrar la línea pasaría el gate.
+5. **Sin capacidad ni delta:** el proyecto no tiene `capabilities/` y nada renderiza la plantilla. Por eso no hay delta que probar sobre una copia.
+6. **Validación: agente**, porque es un documento y un test mide el literal. Si prefieres verlo tú, dilo y pasa a `dev-lead`.
+7. **Sin fila de roadmap:** la 0014 no la tiene y no la añado. Dime si la quieres.
+8. **Sin cambios en el resto:** el gate de cierre es el del proyecto (`node --test && node scripts/lint.mjs`) y el 5500 queda como literal tuyo, sin parametrizar.
+
+**Review de la spec:** un revisor (sonnet) con los siete puntos. No hubo ningún Crítico, así que no hay segunda ronda.
+- **Aceptados:**
+  - Escenarios más estrictos en el test: «termina con», `split(/\r?\n/)` y comparación exacta.
+  - Regla de conteo de palabras citada.
+  - Decisiones sueltas pasadas a la lista.
+  - «cliente» fuera del 🦆.
+- **Rechazados:**
+  - Quitar `dev-lead`: es el rol que usáis tú y el kit.
+  - Declarar el 5500 como regla de datos: no hay dónde ponerla.
+
+**Decisión tuya ya registrada:** añadir el teléfono de conserjería a `aviso.md` — «Conserjería: 5500».
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

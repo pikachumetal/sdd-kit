@@ -165,29 +165,52 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ### Task 3 — «Previsto» lleva su origen
 
+*(Enmienda del 2026-11-10: pasa de `co2` a `co2p`; ver la spec, decisiones 9 a 11.)*
+
 **Tras**: —
-**Modelo**: Native, el hilo; sujetos de `co2` en sonnet, `N=2`.
-**Tests RED**: `SCENARIOS="co2" N=2 PHASE=red node tests/headless/battery.mjs run tests/batteries/sdd-propose/battery.md` con `KIT_DIR` del kit de `develop`, tras mover el molde de `co2`.
+**Modelo**: Native, el hilo; sujetos de `co2p` en sonnet, `N=2`.
+**Tests RED**: `SCENARIOS="co2p" N=2 PHASE=red node tests/headless/battery.mjs run tests/batteries/sdd-propose/battery.md` con `KIT_DIR` del kit de `develop` y la batería de la rama.
 
 **Superficies**: docs (skill), tooling (batería).
-**Verificación**: `SCENARIOS="co2" N=2 PHASE=green node tests/headless/battery.mjs run …` → `co2 · 2/2`; `pnpm --dir cli exec vitest run test/kit/word-budget.test.ts` → `Tests  78 passed (78)`; `moon run kit:build kit:skill-size kit:own`.
-**Verificación lenta**: las tandas de `co2` (sujetos de pago, ~0,36 $ cada una) se lanzan en segundo plano.
+**Verificación**: `SCENARIOS="co2p" N=2 PHASE=green node tests/headless/battery.mjs run …` → `co2p · 2/2` y las filas `CO2P`, `CO2P-C` y `CO2P-M` en verde; `pnpm --dir cli exec vitest run test/kit/word-budget.test.ts` en verde con `sdd-templates` a 16.978; `moon run kit:build kit:skill-size kit:own`.
+**Verificación lenta**: las tandas de `co2p` (sujetos de pago, ~1,31 $ cada una) se lanzan en segundo plano.
 
 **Interfaces**:
 - Consume: nada.
 - Produce: nada.
 
-**Ficheros**: modificar `skills/sdd-templates/templates/spec-template.md`, `tests/batteries/sdd-propose/battery.md` y el molde de `co2` en `tests/batteries/sdd-propose/subject.mjs`; `dist/` por el build.
+**Ficheros**: modificar `skills/sdd-templates/templates/spec-template.md`, `tests/batteries/sdd-propose/battery.md` y `tests/batteries/sdd-propose/subject.mjs` (`steps.co2p`); `cli/test/kit/word-budget.test.ts` vuelve a 16.978; `dist/` por el build.
 
 - [ ] **Step 1: Implementación**
-  - Molde de `co2`: la petición pasa a pedir una spec que añade una línea a `docs/plantillas/aviso.md`, con tope en `docs/plantillas` (52 / 60); el fichero existe con 52 palabras.
-  - Fila CO2 de la rúbrica: pasa `spec-new.md` con «Topes de palabras» cuya celda «Tope propuesto» lleva `borrador` con un `tools.txt` que cuenta palabras de un borrador antes de escribir la fila, o lleva `sin medir` y la fila está también en ✋; falla con un previsto sin origen. Fila de máquina: `text: /borrador|sin medir/` en `spec-new.md`.
-  - RED con el kit de `develop` (`git archive origin/develop:dist`), n = 2: se espera 0/2.
-  - Plantilla: la celda `<medido + previsto (borrador | sin medir) + 2 % · sin cambio>` y «para la pasada de fix,».
+  - Escenario `co2p`: el molde de `co2` y un párrafo de 42 palabras en la petición, «carril feature»; `co2` sin cambios.
+  - Filas `CO2P` (juicio), `CO2P-C` (`tools:` con una llamada que cuenta y contiene «pizarra») y `CO2P-M` (`file: spec-new.md`, la fila con `→` o `sin medir`).
+  - RED con el kit de `develop` (`git archive origin/develop:dist`), n = 2: se espera rojo.
+  - Plantilla: la celda «medido + previsto (`<comando> → <n>` \| sin medir, y al ✋) + 2 % · sin cambio», «, y lo previsto igual, sobre lo que entra y sale», «para la pasada de fix,» y los recortes de las líneas 34 y 106.
   - `moon run kit:build`; GREEN con la rama, n = 2: 2/2. Medir `word-budget.test.ts`: `sdd-templates` 16.978.
 - [ ] **Step 2: Build** — `moon run kit:build`.
 - [ ] **Step 3: Verificación** — los comandos de arriba; evidencia en `tests/sdd-templates-0326-red.md` y `-green.md`.
 - [ ] **Step 4: Commit de la task** — `feat(sdd-templates): lo previsto de los topes de palabras lleva su origen`.
+
+### Task 4 — El aviso del tope dice `colgado`
+
+*(Enmienda del 2026-11-10; spec, decisión 12 y Scope (4).)*
+
+**Tras**: —
+**Modelo**: Native, el hilo.
+**Tests RED**: `pnpm --dir cli exec vitest run test/kit/headless/lib.test.ts -t "SUBJECT_TIMEOUT mata"` con el literal nuevo → falla.
+
+**Superficies**: tooling.
+**Verificación**: `pnpm --dir cli exec vitest run test/kit/headless/lib.test.ts` en verde.
+
+**Interfaces**:
+- Consume: nada.
+- Produce: el aviso `[<id>] colgado: tope de <N> s, sujeto cortado` en el error de la tanda.
+
+**Ficheros**: modificar `tests/headless/lib.mjs` y `cli/test/kit/headless/lib.test.ts`.
+
+- [ ] **Step 1: Implementación** — test con el literal nuevo (RED), y `lib.mjs:492` (GREEN).
+- [ ] **Step 2: Verificación** — el comando de arriba.
+- [ ] **Step 3: Commit de la task** — `fix(headless): el aviso del tope de un sujeto dice colgado`.
 
 ---
 
@@ -222,7 +245,8 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - AND fuera de un repo con CRLF → aviso → Task 2, `Map` vacío + `eolVerdict(undefined, crlf)`. ✓
 - Regla ante conflicto → la fusiona `sdd-archive`; su conducta es la de arriba. ✓
 - `feature-flow` THEN y AND de la fórmula → N/A, sin cambios. ✓
-- AND lo previsto lleva su origen (`borrador` | `sin medir`, y al ✋) → Task 3, fila CO2 y `text:`. ✓
+- AND lo previsto lleva el comando y su cifra (o `sin medir`, y al ✋) → Task 3, filas `CO2P`, `CO2P-C` y `CO2P-M` de `co2p`. ✓
+- Decisión 12, aviso `colgado` → Task 4, test del tope de `lib.test.ts`. ✓
 - AND recorte con RED, AND sin topes → N/A, sin cambios. ✓
 - Éxito «la tanda de la 0311 termina sola» → Task 1, `la tanda termina con un nieto que hereda la salida`. ✓
 - Éxito «no se pierden las últimas líneas» → Task 1, `reenvía la cola entera del sujeto`. ✓

@@ -14,14 +14,14 @@ approvers:
 
 # Spec — El lanzador no se cuelga por un huérfano, `kit:copies` mira el índice y «Previsto» se mide
 
-🦆 Tres arreglos de las herramientas del kit, antes de migrar el repo. Una tanda de baterías ya no se queda colgada horas porque un sujeto deje un `find /` vivo con la salida de la tanda: en la 0311 fueron ~3 h. `kit:copies` decide si una copia tiene CRLF por lo que guarda git, no por el disco de un checkout viejo, así que no para un merge por nada y sigue avisando de un CRLF de verdad. Y la tabla «Topes de palabras» de una spec ya no admite un «previsto» sin origen: lleva la medida de un borrador o dice `sin medir`.
+🦆 Tres arreglos de las herramientas del kit, antes de migrar el repo. Una tanda de baterías ya no se queda colgada horas porque un sujeto deje un `find /` vivo con la salida de la tanda: en la 0311 fueron ~3 h. `kit:copies` decide si una copia tiene CRLF por lo que guarda git, no por el disco de un checkout viejo, así que no para un merge por nada y sigue avisando de un CRLF de verdad. Y la tabla «Topes de palabras» de una spec ya no admite un «previsto» sin origen: lleva el comando que contó lo que entra y sale, con su cifra, o dice `sin medir`. Y un sujeto que vence el tope sale en la tanda como `colgado`.
 
 Validación: agente — son herramientas del repo y una línea de plantilla: lo que se ve es la salida de tests y de comandos, que el agente mide; la validación en campo de este repo la hacen los tickets.
 
 ## Capacidades
 
 - Modificadas: `kit-distribution` — la comprobación de LF de una copia mira el blob del índice
-- Modificadas: `feature-flow` — «Topes de palabras» de la spec mide lo previsto sobre un borrador o dice `sin medir`
+- Modificadas: `feature-flow` — «Topes de palabras» de la spec lleva el comando y la cifra de lo previsto, o `sin medir`
 - El lanzador de baterías (`tests/headless/`) es herramienta del repo, sin capacidad: no tiene delta.
 
 ## ✋ Decisiones que he tomado yo — valida estas
@@ -40,15 +40,15 @@ Review de spec propuesta: dos revisores — señales: `MODIFIED` (dos requisitos
 6. **Enfoque de (2): `kit:copies` pregunta siempre al índice**, con una sola llamada `git ls-files --eol -z -- <copias>` por `execFile`, frente a preguntar solo con `\r` en el disco (dejaría pasar un `i/crlf w/lf`) o leer siempre el blob (perdería los cambios sin `git add`). El índice decide si hay aviso; el disco, qué contenido se compara, en LF.
 7. **`i/crlf` e `i/mixed` dan el aviso de hoy, sea cual sea el disco; `i/lf` no, y la copia se compara en LF.** Cualquier otro caso (otro `i/`, un fichero sin seguir por git o fuera de un repo) se juzga por el disco, como hoy: no se calla un CRLF por falta de índice.
 8. **`git` pasa a ser dependencia en ejecución de `kit:copies`**, que hoy solo lee ficheros: `--eol` existe desde git 2.10; `-z` evita el escapado de `core.quotePath`, y `--` separa las rutas. `checkCopy` y `checkVerbatim` no cambian de firma: la decisión va antes, en `check.ts`, con una función pura `eolVerdict(<estado i/ o nada>, <texto del disco>)` que devuelve el aviso o el texto que se compara (sin `\r` si `i/lf`). Los tests de `copies.test.ts:324` y `:370` siguen como están; `eolVerdict` tiene su test con texto, y la llamada a git, el suyo con un repo.
-9. **La celda de (3) lleva el origen de lo previsto**: `<medido + previsto (borrador | sin medir) + 2 % · sin cambio>`, y la frase de ayuda no cambia. Con `sin medir`, la fila va también al ✋ y su tope propuesto es «sin cambio» hasta la medida.
-10. **El saldo de `sdd-templates` queda en 0, medido sobre el borrador**: la celda nueva suma 4 palabras y la ayuda pasa de «para la pasada de fix de la revisión final,» a «para la pasada de fix,» (−4), contado con el `split(/\s+/)` de `word-budget.test.ts`. «lo aprueba el dev-lead en el gate» se queda: es la regla del Art. I.
-11. **RED de (3)**: `co2` de la batería de `sdd-propose`, con su molde movido para que la spec prevea añadir texto a un fichero con tope; la fila de la rúbrica mira en `tools.txt` que el sujeto contó palabras de un borrador antes de escribir la fila, o que la fila dice `sin medir`; n = 2.
-12. **La deuda «El lanzador de sujetos no tiene tope de tiempo ni de ruta» queda parcial**, no saldada: el tope de 1800 s y el rechazo de un `RUNS_DIR` largo ya los dejó la 0238; esta feature quita la herencia de la salida; quedan el literal «colgado» y el servidor del panel que deja el sujeto.
+9. **La celda de (3) lleva el comando y la cifra de lo previsto**, como la «Previsión de coste» cita la línea de `battery.mjs plan`: «medido + previsto (`<comando> → <n>` | sin medir, y al ✋) + 2 % · sin cambio». La ayuda dice que lo previsto se mide igual que lo medido, «sobre lo que entra y sale»: el comando lleva ese texto y la batería lo encuentra en `tools.txt`. Con `sin medir`, la fila va también al ✋ y su tope propuesto es «sin cambio» hasta la medida.
+10. **El saldo de `sdd-templates` queda en 0 frente a `develop`, medido: 16.978**. La ayuda suma «, y lo previsto igual, sobre lo que entra y sale» y la celda su paréntesis; salen «de la revisión final», «la salida de … el índice» (línea 34: «Se escribe con el nombre exacto que da `sdd capability index`.») y «no cambia salvo que la spec lo renombre explícitamente» (línea 106; el renombrado lo dice la ayuda de `MODIFIED`), sin quitar ninguna instrucción. «lo aprueba el dev-lead en el gate» se queda: es la regla del Art. I.
+11. **RED de (3): un escenario nuevo, `co2p`**, con el molde de `co2` (`reservas-tope-carpeta`, 52 / 60) y un párrafo de 42 palabras en la petición: 52 + 42 pasa de 60 y lo previsto decide el tope propuesto (~114). `co2` se queda como está, porque prueba la fila de la 0224. La petición dice «carril feature». Tres filas: `CO2P` (juicio de la cifra y el tope), `CO2P-C` (`tools.txt` lleva una llamada que cuenta y contiene «pizarra», palabra que solo está en el párrafo) y `CO2P-M` (la fila de la tabla lleva `→` o `sin medir`); n = 2. Límite conocido: un sujeto que escriba el párrafo con `Write` y lo cuente en otra llamada da falso rojo en `CO2P-C`; lo resuelve `CO2P`, que se juzga leyendo.
+12. **La deuda «El lanzador de sujetos no tiene tope de tiempo ni de ruta» queda saldada.** El tope de 1800 s y el rechazo de un `RUNS_DIR` largo los dejó la 0238 (`lib.test.ts:630`, `campaign.test.ts:129`); el servidor del panel lo para `campaign.mjs` desde la 0254 (`campaign.test.ts:504`); un proceso suelto del sujeto no queda vivo (`run.test.ts:101`); la herencia de la salida la quita la Task 1; y el aviso pasa a `[<id>] colgado: tope de <N> s, sujeto cortado` (`lib.mjs:492`), el literal que pide el ticket de la 0230 §1.
 13. **Validación: agente**, con la validación en campo de este repo (`validation.mode: field`): lo que se ve es la salida de tests y comandos.
 14. No entran: el `pwsh` de `processes()` en `real-deps.mjs` y el aviso de `run.mjs` en un patch (menor de la 0324), porque no son de los tres casos.
-- Política de modelos: revisores de la spec, dominio opus y técnica sonnet · segunda ronda, un revisor sonnet con los siete puntos · ejes de la revisión final: Spec opus+high, Código sonnet+high · sujetos de `co2` en sonnet, en una tanda · en paralelo hasta `control.maxParallelAgents`
+- Política de modelos: revisores de la spec, dominio opus y técnica sonnet · segunda ronda, un revisor sonnet con los siete puntos · ejes de la revisión final: Spec opus+high, Código sonnet+high · sujetos de `co2p` en sonnet, en una tanda · en paralelo hasta `control.maxParallelAgents`
 
-Resultado del delta en una copia (`sdd capability merge`, 2026-11-09, tras incorporar la review): «kit-distribution.md: sustituido «La fuente de una copia va en LF»», «kit-distribution.md: regla «Regla ante conflicto» sustituida» y «feature-flow.md: sustituido «La spec mide el margen de palabras de lo que edita»».
+Resultado del delta en una copia (`sdd capability merge`, 2026-11-09, tras incorporar la review): «kit-distribution.md: sustituido «La fuente de una copia va en LF»», «kit-distribution.md: regla «Regla ante conflicto» sustituida» y «feature-flow.md: sustituido «La spec mide el margen de palabras de lo que edita»». Repetido el 2026-11-10 tras la última enmienda: las mismas tres líneas.
 
 ### Hallazgos de la review
 
@@ -86,15 +86,16 @@ Resultado del delta en una copia (`sdd capability merge`, 2026-11-09, tras incor
 
 ## Intent
 
-Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías espera sin fin cuando un sujeto deja un proceso vivo con la salida de la tanda heredada: en la 0311, ~3 h de reloj parado. `kit:copies`, ya en el pre-commit, para el `sdd merge` de un checkout viejo por un CRLF que solo está en el disco. Y la previsión de palabras de una spec puede escribirse sin medir: en la 0311 previó −85 y midió +189, con una parada del dev-lead. Éxito: la tanda de la 0311 termina sola; una copia con CRLF solo en el disco no para `kit:copies`; y cada previsión de palabras dice de dónde sale, o `sin medir`. Fracaso aunque funcione: un lanzador que mate procesos de otra tanda, una tanda que pierda las últimas líneas de un sujeto, o un `kit:copies` que calle un CRLF del índice.
+Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías espera sin fin cuando un sujeto deja un proceso vivo con la salida de la tanda heredada: en la 0311, ~3 h de reloj parado. `kit:copies`, ya en el pre-commit, para el `sdd merge` de un checkout viejo por un CRLF que solo está en el disco. Y la previsión de palabras de una spec puede escribirse sin medir: en la 0311 previó −85 y midió +189, con una parada del dev-lead. Éxito: la tanda de la 0311 termina sola; una copia con CRLF solo en el disco no para `kit:copies`; cada previsión de palabras cita el comando que la contó, o dice `sin medir`; y un sujeto cortado por el tope sale como `colgado`. Fracaso aunque funcione: un lanzador que mate procesos de otra tanda, una tanda que pierda las últimas líneas de un sujeto, o un `kit:copies` que calle un CRLF del índice.
 
 ## Scope
 
 - Entra: (1) `tests/headless/real-deps.mjs` (`launch`): la salida y el error del sujeto van a pipes propios que la tanda reenvía; al salir el sujeto, espera su `close` hasta 5 s. Su test en `cli/test/kit/headless/`.
 - Entra: (2) `tests/copies/check.ts` (y `annotated.ts` si el plan lo pide): el estado de fin de línea de cada copia sale de `git ls-files --eol -z`; el contenido que se compara, del disco en LF. Su test con un repo git en `cli/test/kit/copies.test.ts`.
-- Entra: (3) `skills/sdd-templates/templates/spec-template.md`, «Topes de palabras»: la celda de la decisión 9 y el recorte de la decisión 10; `dist/skills/sdd-templates/` con `moon run kit:build`; y el escenario `co2` de `tests/batteries/sdd-propose/` con lo previsto.
+- Entra: (3) `skills/sdd-templates/templates/spec-template.md`: la celda y la ayuda de la decisión 9 y los recortes de la decisión 10; `dist/skills/sdd-templates/` con `moon run kit:build`; y el escenario `co2p` de `tests/batteries/sdd-propose/` (decisión 11).
+- Entra: (4) `tests/headless/lib.mjs`: el aviso del tope dice `colgado` (decisión 12), con su test en `cli/test/kit/headless/lib.test.ts`.
 - Entra: las filas de deuda de «Filas que implementa».
-- No entra: matar procesos huérfanos por nombre o por fecha (decisión 2); el literal «colgado» y el servidor del panel (decisión 12); lo de la decisión 14.
+- No entra: matar procesos huérfanos por nombre o por fecha (decisión 2); lo de la decisión 14.
 
 ## Lo que se retira o cambia de forma
 
@@ -102,11 +103,13 @@ Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías 
 | --- | --- | --- |
 | La celda `<medido + previsto + 2 % · sin cambio>` | `skills/sdd-templates/templates/spec-template.md:150` y su copia en `dist/` | Scope (3), decisión 9 |
 | «para la pasada de fix de la revisión final,» | `spec-template.md:146` y su copia en `dist/` | Scope (3), decisión 10: pasa a «para la pasada de fix,» |
+| «Se escribe con la salida de `sdd capability index`, con el nombre exacto que da el índice.» y «estable, no cambia salvo que la spec lo renombre explícitamente» | `spec-template.md:34` y `:106`, y sus copias en `dist/` | Scope (3), decisión 10: misma instrucción, más corta |
+| `[<id>] tope de <N> s: sujeto cortado` | `tests/headless/lib.mjs:492`; `cli/test/kit/headless/lib.test.ts:627` | Scope (4), decisión 12: `[<id>] colgado: tope de <N> s, sujeto cortado` |
 | «el tope propuesto es lo medido más lo previsto más un 2 %» | `.docs/sdd/capabilities/feature-flow.md:630` y `:830` (Límites) | la 630, delta `MODIFIED`; la de Límites no cambia: la fórmula es la misma |
 | Cuándo sale el aviso `tiene finales de línea CRLF; la fuente de una copia va en LF` | `tests/copies/annotated.ts:75`, `:462`, `:475`; `cli/test/kit/copies.test.ts:324`, `:370`; `capabilities/kit-distribution.md:131` | el literal no cambia; cuándo sale: delta `MODIFIED` y decisión 7 |
 | `stdio: 'inherit'` del sujeto | `tests/headless/real-deps.mjs:14`; lo usan `run.mjs` y `battery.mjs run` por `realDeps()`; los tests de `launch` de `battery.test.ts:402` y `campaign.test.ts:79` lo sustituyen por un falso | Scope (1), decisiones 3 y 4 |
 
-- Filas que implementa: 0326 → `.docs/sdd/roadmap.md` (fila 0326, la 0198 tras ella); salda «`kit:copies` da CRLF por el disco de un checkout viejo y para el merge» y «La previsión de palabras de la spec no se mide sobre un borrador», y deja parcial «El lanzador de sujetos no tiene tope de tiempo ni de ruta» (decisión 12): las marca `sdd-archive` · comprobado con `git grep -n "0326"` fuera de las carpetas de evidencia.
+- Filas que implementa: 0326 → `.docs/sdd/roadmap.md` (fila 0326, la 0198 tras ella); salda «`kit:copies` da CRLF por el disco de un checkout viejo y para el merge» «La previsión de palabras de la spec no se mide sobre un borrador» y «El lanzador de sujetos no tiene tope de tiempo ni de ruta» (decisión 12): las marca `sdd-archive` · comprobado con `git grep -n "0326"` fuera de las carpetas de evidencia.
 
 ## Approach
 
@@ -125,7 +128,8 @@ Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías 
 - La tanda termina con un nieto vivo: `cli/test/kit/headless/`, como los tests de `launch` de la 0320, en Windows. Un `subject.mjs` falso lanza un nieto `node -e "setTimeout(() => {}, 120000)"` con `stdio: 'inherit'` y sale; el test lanza la tanda con su salida en un pipe y espera `close` con un tope de 60 s. Antes del arreglo vence el tope (RED); después, cierra en menos de 15 s. El test guarda el PID del nieto y lo para en `afterEach`; corre también en Linux, en la CI, donde el descriptor heredado da el mismo cuelgue.
 - No se pierde la cola: un `subject.mjs` falso escribe 64 KB y una línea final justo antes de salir; la tanda la reenvía entera.
 - `kit:copies` y el índice: `cli/test/kit/copies.test.ts`, con un repo git de prueba como los de la suite: `i/lf w/crlf` igual a su original → sin aviso; `i/crlf w/lf` → aviso; `i/mixed` → aviso; un fichero sin seguir con CRLF → aviso; fuera de un repo con CRLF en el disco → aviso. `eolVerdict`, con texto.
-- «Topes de palabras»: `co2` de la batería de `sdd-propose`, RED con el kit de `develop` y GREEN con la rama, n = 2.
+- «Topes de palabras»: `co2p` de la batería de `sdd-propose`, RED con el kit de `develop` y GREEN con la rama, n = 2, y la medición tras la revisión final, n = 2.
+- El aviso `colgado`: el test del tope de `cli/test/kit/headless/lib.test.ts`, con el literal nuevo.
 
 ## Términos y ADR
 
@@ -159,7 +163,7 @@ Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías 
 - WHEN el agente escribe la spec
 - THEN la sección «Topes de palabras» lleva una fila por skill o documento con tope que la spec edita, con lo medido, el tope, el margen y el tope propuesto: `sdd-propose · 4.908 / 5.000 y 6.324 / 6.325 · 92 y 1 · 5.200 / 6.700`
 - AND el tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix, y el gate lo aprueba como decisión del dev-lead
-- AND lo previsto lleva su origen: `+40, borrador` si se contó sobre un borrador de lo que sale y lo que entra, con el conteo del test; o `sin medir`, y entonces la fila va también al ✋ y su tope propuesto es «sin cambio» hasta la medida
+- AND lo previsto lleva el comando que contó lo que entra y sale, con el conteo del test, y su cifra: +40 (`echo "<texto que entra>" | wc -w` → 40); o `sin medir`, y entonces la fila va también al ✋ y su tope propuesto es «sin cambio» hasta la medida
 - AND el de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más margen
 - AND si durante la feature se recorta texto para caber, el recorte es una edición de skill: si quita una instrucción, lleva su RED
 - AND sin topes en el proyecto, la sección no se escribe
@@ -168,20 +172,27 @@ Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías 
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
-| `sdd-templates` (total, `dist/`) | 16.978 / 16.978 | 0 | 16.978 + 0 (borrador) · sin cambio |
+| `sdd-templates` (total, `dist/`) | 16.978 / 16.978 | 0 | 16.978 + 0 (`split(/\s+/)` de `dist/skills/sdd-templates` con el texto final → 16.978) · sin cambio |
 
 ## Previsión de coste
 
 | Tanda | Sujetos (batería) | $ |
 | --- | --- | --- |
-| RED | `SCENARIOS="co2" N=2` → `suma: 2 sujetos · coste previsto: 0.36 $` | 0,36 |
-| GREEN | `SCENARIOS="co2" N=2` → `suma: 2 sujetos · coste previsto: 0.36 $` | 0,36 |
-| Una tanda de REFACTOR | 0: la sustitución es la forma mínima; si hiciera falta, la misma línea | 0 |
+| Gastado en `co2` (RED, green, green2, green3) | 8 sujetos, medidos | 3,40 |
+| RED | `SCENARIOS="co2p" N=2` → `suma: 2 sujetos · coste previsto: 1.31 $ · sin precio medido: co2p (a 0.65 $, la media de los escenarios medidos)` | 1,31 |
+| GREEN | `SCENARIOS="co2p" N=2` → `suma: 2 sujetos · coste previsto: 1.31 $ · sin precio medido: co2p (a 0.65 $, la media de los escenarios medidos)` | 1,31 |
+| Una tanda de REFACTOR | 0: la forma es la mínima; si hiciera falta, la misma línea | 0 |
 | Controles | 0: el RED ya corre con el kit de `develop` | 0 |
-| Medición tras la revisión final | `SCENARIOS="co2" N=2` → `suma: 2 sujetos · coste previsto: 0.36 $` | 0,36 |
-| Suma | 6 sujetos | 1,08 |
+| Medición tras la revisión final | `SCENARIOS="co2p" N=2` → `suma: 2 sujetos · coste previsto: 1.31 $ · sin precio medido: co2p (a 0.65 $, la media de los escenarios medidos)` | 1,31 |
+| Suma | 14 sujetos | 7,33 |
+
+El techo aprobado es 7,0 $. `co2` costó 0,58 $ por sujeto (6,88 $ a ese precio); si lo gastado más 1,31 $ pasa de 7,0 $ antes de la medición final, se para y se pregunta.
 
 ## Enmiendas
+
+- 2026-11-10 — (3) pasa a citar el comando que contó lo previsto y su cifra (`<comando> → <n>` o `sin medir`), con la ayuda más corta y dos recortes que dejan `sdd-templates` en 16.978, sin subir el tope (decisiones 9 y 10; deja sin efecto la subida a 17.010 de la enmienda de abajo); el RED y el GREEN pasan a un escenario nuevo, `co2p`, y `co2` vuelve a su rúbrica de la 0224 (decisión 11); el aviso del tope dice `colgado` y la fila del lanzador queda saldada (decisión 12, Scope (4)); techo de la campaña, 7,0 $ — green3 salió 1/2 y ningún sujeto contó un borrador (`green3/out/co2-*.tools.txt`); la revisión Opus de la enmienda vio que la rúbrica de `co2` no podía distinguir un conteo de lo previsto y que `co2` se acierta a ojo — aprobada: «1»
+- 2026-11-10 — la ayuda de «Topes de palabras» dice en una frase que lo previsto se cuenta sobre un borrador de lo que sale y lo que entra, con el conteo del test, o se escribe `sin medir` y la fila va al ✋ (decisión 9 decía «la frase de ayuda no cambia»); el tope total de `sdd-templates` sube de 16.978 a 17.010 con ese motivo (decisión 10 decía saldo 0) — el GREEN de `co2` con solo la celda nueva salió 0/2: los sujetos siguen escribiendo «previsto 2» sin origen (`green2/out/co2-1/spec-new.md`); la Suma pasa a 4,20 $ (`green3` n = 2 y medición final n = 1) — aprobada: «1»
+- 2026-11-10 — la Suma de la previsión pasa de 1,08 $ a 3,60 $ — el RED de `co2` costó 0,58 $ por sujeto (1,16 $ la tanda), frente a los 0,18 $ que daba `battery.mjs plan` con las campañas guardadas — aprobada: «1» (subir la previsión a 3,6 $: GREEN n = 2 y medición final n = 2)
 
 ## Aprobaciones
 
