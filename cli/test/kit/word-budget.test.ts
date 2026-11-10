@@ -37,10 +37,10 @@ const skillBudgets: Record<string, Budget> = {
 };
 
 const anchorBudgets: Record<string, number> = {
-  'constitution.md': 2250,
-  'mission.md': 1808,
-  'architecture.md': 2252,
-  'tech-stack.md': 23169,
+  '.docs/sdd/steering/constitution.md': 2250,
+  'PRODUCT.md': 1799,
+  '.docs/sdd/steering/architecture.md': 4877,
+  '.docs/sdd/steering/operations.md': 20785,
 };
 
 function words(text: string): number {
@@ -77,7 +77,7 @@ describe('topes de palabras', () => {
   });
 
   it.each(Object.keys(anchorBudgets))('%s cabe en su tope', (anchor) => {
-    expectWithin(words(readText(`.docs/sdd/${anchor}`)), anchorBudgets[anchor]);
+    expectWithin(words(readText(anchor)), anchorBudgets[anchor]);
   });
 
   it('una skill por encima de su tope sale en rojo con las dos cifras', () => {

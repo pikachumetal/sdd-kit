@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readText, repoRoot } from './kit-files.ts';
+import { brokenRelativeLinks } from './relative-links.ts';
 
 // Estos documentos describen el kit y no viajan con él. Nada en las skills los nombra, así que
 // sin el marcador el desfase vuelve solo: pasó entre julio y septiembre de 2026, cuando siguieron
@@ -20,27 +21,6 @@ function compareVersions(left: string, right: string): number {
 function markerIsCurrent(text: string, version: string): boolean {
   const marker = /Última revisión: kit v(\d+\.\d+\.\d+)/.exec(text);
   return marker !== null && compareVersions(marker[1], version) >= 0;
-}
-
-// El slug de GitHub: minúsculas, sin puntuación (las letras con tilde se quedan), espacios a guiones.
-// shortcut: no numera los títulos repetidos (-1, -2) como GitHub; ningún enlace apunta hoy a uno.
-function headingSlugs(path: string): string[] {
-  const outsideCode = readFileSync(path, 'utf8').replace(/^```[\s\S]*?^```/gm, '');
-  return [...outsideCode.matchAll(/^#{1,6} +(.+?) *$/gm)].map((match) =>
-    match[1].toLowerCase().replace(/[^\p{L}\p{N} _-]/gu, '').replace(/ /g, '-'),
-  );
-}
-
-function brokenRelativeLinks(text: string, baseDir: string): string[] {
-  const targets = [...new Set([...text.matchAll(/\]\(([^)\s]+)\)/g)].map((match) => match[1]))];
-  return targets
-    .filter((target) => !target.includes(':') && !target.startsWith('#'))
-    .filter((target) => {
-      const [path, anchor] = target.split('#', 2);
-      const full = join(baseDir, path);
-      if (!existsSync(full)) return true;
-      return Boolean(anchor) && !headingSlugs(full).includes(anchor);
-    });
 }
 
 describe('documentación de flujo', () => {

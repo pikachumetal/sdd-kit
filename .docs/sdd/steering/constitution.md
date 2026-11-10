@@ -1,6 +1,6 @@
 # Constitution — sdd-kit
 
-Reglas no negociables del kit. La constitution manda sobre cualquier spec. Cada artículo es una regla con su porqué en una frase; la historia de cada regla está en su ADR de [`decisions/`](decisions/).
+Reglas no negociables del kit. La constitution manda sobre cualquier spec. Cada artículo es una regla con su porqué en una frase; la historia de cada regla está en su ADR de [`decisions/`](../decisions/).
 
 ## Principios
 
@@ -22,9 +22,9 @@ Ninguna skill nueva ni edición de una existente —recortes, traducciones y ren
 
 **Una pieza entra, otra sale**: la spec de toda feature o patch del kit dice qué retira o adelgaza; «nada» se justifica y se aprueba en el gate. Los topes de palabras viven en `cli/test/kit/word-budget.test.ts` y solo suben por decisión del dev-lead escrita en la spec.
 
-El método (baterías, sujetos, matices de campaña) vive en `tech-stack.md`.
+El método (baterías, sujetos, matices de campaña) vive en `steering/operations.md`.
 
-*Por qué*: una skill se escribe para que un agente la cumpla bajo presión, y solo una prueba dice si lo hace; la campaña completa en cada edición costaba más de lo que pagaba. [ADR 0002](decisions/0002-skill-testing-by-battery.md)
+*Por qué*: una skill se escribe para que un agente la cumpla bajo presión, y solo una prueba dice si lo hace; la campaña completa en cada edición costaba más de lo que pagaba. [ADR 0002](../decisions/0002-skill-testing-by-battery.md)
 
 ## Art. II — La forma sigue al fallo
 
@@ -34,13 +34,13 @@ El método (baterías, sujetos, matices de campaña) vive en `tech-stack.md`.
 - Comportamiento condicional → predicado observable («si existe `.docs/sdd/estimation.md`…»), nunca cláusulas de excepción.
 - Una excepción de la guía lleva su contraejemplo (el motivo que no vale), y la prueba tiene un escenario donde esa excepción es la salida fácil.
 
-*Por qué*: cada fallo pide su forma; una excepción sin contraejemplo es la salida fácil. [ADR 0025](decisions/0025-command-checks-order-and-search.md) · [ADR 0014](decisions/0014-form-for-omissions.md)
+*Por qué*: cada fallo pide su forma; una excepción sin contraejemplo es la salida fácil. [ADR 0025](../decisions/0025-command-checks-order-and-search.md) · [ADR 0014](../decisions/0014-form-for-omissions.md)
 
 ## Art. III — Idioma
 
 Texto humano (docs, tests, cuerpo de los commits) en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case. Las skills se escriben en inglés y cada una le dice al agente que hable con el usuario en su idioma; las que siguen en castellano se traducen al reescribirlas y hasta entonces conviven.
 
-*Por qué*: el inglés es el idioma del ecosistema de skills y gasta menos tokens por instrucción, y el equipo lee en castellano. [ADR 0004](decisions/0004-skills-in-english.md)
+*Por qué*: el inglés es el idioma del ecosistema de skills y gasta menos tokens por instrucción, y el equipo lee en castellano. [ADR 0004](../decisions/0004-skills-in-english.md)
 
 ## Art. IV — Convenciones que el kit fija a los proyectos
 
@@ -54,13 +54,13 @@ Texto humano (docs, tests, cuerpo de los commits) en castellano con ortografía 
 
 Cambiar cualquiera de estas convenciones es un cambio mayor: spec dedicada y revisión de las skills afectadas. Un proyecto consumidor puede desviarse, por escrito en su propia constitution.
 
-*Por qué*: el resultado debe depender del proceso y no de quien ejecuta, y el coste lo deciden el método y los modelos, medidos en turnos y no en precio por token. [ADR 0005](decisions/0005-artifact-and-branch-conventions.md) · [ADR 0012](decisions/0012-documents-by-reader.md) · [ADR 0006](decisions/0006-model-policy-and-execution.md) · [ADR 0015](decisions/0015-final-review-in-three-axes.md)
+*Por qué*: el resultado debe depender del proceso y no de quien ejecuta, y el coste lo deciden el método y los modelos, medidos en turnos y no en precio por token. [ADR 0005](../decisions/0005-artifact-and-branch-conventions.md) · [ADR 0012](../decisions/0012-documents-by-reader.md) · [ADR 0006](../decisions/0006-model-policy-and-execution.md) · [ADR 0015](../decisions/0015-final-review-in-three-axes.md)
 
 ## Art. V — Versionado
 
-SemVer en `.claude-plugin/plugin.json`. Una release es **mayor** si tras ella un proyecto tiene que cambiar algo para seguir trabajando (una frase o un comando que deja de funcionar, un artefacto que cambia de forma, una migración con pasos además del marcador); si no, menor, o patch si solo arregla. Cada release: bump de versión, entrada en `.docs/sdd/changelog.md` y `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`, con «no changes to the project», su verificación y su línea `**Writes**:` si no cambia nada. El proyecto declara en `.docs/sdd/sdd-kit.json` la versión que tiene aplicada, y «actualízame al kit» aplica solo las migraciones posteriores. Toda pregunta o dato que añade una migración va también en las init, desde una sola fuente. Cada release revisa las versiones nuevas de sus fuentes (`upstream.json`) y apunta en la deuda lo que convenga traer.
+SemVer en `.claude-plugin/plugin.json`. Una release es **mayor** si tras ella un proyecto tiene que cambiar algo para seguir trabajando (una frase o un comando que deja de funcionar, un artefacto que cambia de forma, una migración con pasos además del marcador); si no, menor, o patch si solo arregla. Cada release: bump de versión, entrada en `CHANGELOG.md` y `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`, con «no changes to the project», su verificación y su línea `**Writes**:` si no cambia nada. El proyecto declara en `.docs/sdd/sdd-kit.json` la versión que tiene aplicada, y «actualízame al kit» aplica solo las migraciones posteriores. Toda pregunta o dato que añade una migración va también en las init, desde una sola fuente. Cada release revisa las versiones nuevas de sus fuentes (`upstream.json`) y apunta en la deuda lo que convenga traer.
 
-*Por qué*: sin migración en cada release el marcador de los proyectos no avanza, y un proyecto nuevo nunca pasa por las migraciones viejas. [ADR 0007](decisions/0007-versioning-and-migrations.md)
+*Por qué*: sin migración en cada release el marcador de los proyectos no avanza, y un proyecto nuevo nunca pasa por las migraciones viejas. [ADR 0007](../decisions/0007-versioning-and-migrations.md)
 
 ## Art. VI — Commits
 
@@ -78,13 +78,13 @@ Los cambios no triviales del kit pasan por su propio flujo (arranque de feature 
 
 Las plantillas canónicas viven solo en `skills/sdd-templates/templates/`. Ninguna copia a mano, ni en este repo ni en los proyectos: al crear un artefacto se calca del skill `sdd-templates`, y la de `dist/` la genera el build y un test la compara.
 
-*Por qué*: las copias de cada proyecto derivaban de las del kit sin que nadie se enterara. [ADR 0008](decisions/0008-single-template-source.md) · [ADR 0023](decisions/0023-dist-committed.md)
+*Por qué*: las copias de cada proyecto derivaban de las del kit sin que nadie se enterara. [ADR 0008](../decisions/0008-single-template-source.md) · [ADR 0023](../decisions/0023-dist-committed.md)
 
 ## Art. IX — Fuentes y fork
 
 El kit es un fork propio. Copia y adapta de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator, con su aviso en `THIRD_PARTY_NOTICES.md` (fuente, versión y licencia). Una pieza copiada es del kit: la mantiene el kit y se prueba con el Art. I. Parte de su fuente sin tocar lo que funciona: la evidencia de la fuente vale para el Principio 1, y quitar una frase sin sustituirla exige un A/B que demuestre que funciona sin ella. Lo que el kit hace distinto sustituye la frase de la fuente; nunca se añade al lado contradiciéndola. Un problema, en una copia o en una skill propia, se arregla mejorando la frase que falla, no añadiendo otra.
 
-*Por qué*: vestir superpowers con overrides costaba una revisión por cada versión suya y dejaba fuera lo mejor de otros métodos; y una frase del kit junto a la de su fuente deja dos reglas que se contradicen. [ADR 0009](decisions/0009-fork-instead-of-dressing-superpowers.md) · [ADR 0022](decisions/0022-three-rules-for-kit-text.md)
+*Por qué*: vestir superpowers con overrides costaba una revisión por cada versión suya y dejaba fuera lo mejor de otros métodos; y una frase del kit junto a la de su fuente deja dos reglas que se contradicen. [ADR 0009](../decisions/0009-fork-instead-of-dressing-superpowers.md) · [ADR 0022](../decisions/0022-three-rules-for-kit-text.md)
 
 ## Art. X — Calidad de código
 
@@ -95,7 +95,7 @@ Aplica al código ejecutable del kit (scripts, tests) y viaja **literal** en las
 - Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación, sin alias de PowerShell. Texto humano (mensajes, warnings, ayuda) en castellano con tildes (Art. III).
 - El revisor marca el incumplimiento como Important, no como estilo, salvo un umbral numérico superado en una unidad (21 líneas con un límite de 20), que es Minor.
 
-*Por qué*: un subagente no hereda el `CLAUDE.md` del dev-lead, y un comentario que cita un documento envejece con él sin explicar nada. [ADR 0010](decisions/0010-executable-code-quality.md), [ADR 0011](decisions/0011-node-cli.md)
+*Por qué*: un subagente no hereda el `CLAUDE.md` del dev-lead, y un comentario que cita un documento envejece con él sin explicar nada. [ADR 0010](../decisions/0010-executable-code-quality.md), [ADR 0011](../decisions/0011-node-cli.md)
 
 ## Art. XI — Documentos acotados
 
@@ -103,8 +103,8 @@ Todo documento de `.docs/sdd/` y de la raíz que fija el Art. IV es de uno de es
 
 - **Documento de estado**: dice cómo es el proyecto hoy. Se reescribe; no se le añade.
 - **Artefacto de evento**: dice qué pasó y por qué, un fichero por evento. Su cuerpo no se reescribe: lo posterior se añade como adenda fechada.
-- **ADR** (`.docs/sdd/decisions/NNNN-<slug>.md`): el porqué de una regla, en la forma de la [ADR 0001](decisions/0001-bounded-documents-and-adr.md). Es inmutable: una decisión nueva escribe otra ADR y la vieja solo cambia su `status` a `superseded by NNNN`.
+- **ADR** (`.docs/sdd/decisions/NNNN-<slug>.md`): el porqué de una regla, en la forma de la [ADR 0001](../decisions/0001-bounded-documents-and-adr.md). Es inmutable: una decisión nueva escribe otra ADR y la vieja solo cambia su `status` a `superseded by NNNN`.
 
 Fuera quedan el changelog, un diario que solo crece por arriba y del que solo se lee la cabecera, y el log de estimación, que genera un script. Cada documento declara quién lo escribe, quién lo lee y qué lo acota, en la tabla de `architecture.md`; un documento sin dueño o sin lector no se crea. Lo que no cabe en un documento de estado va al artefacto del evento que lo produjo (el porqué de una feature, a su spec; lo decidido para una release, a su resumen; una decisión de una consulta, a una propuesta); una regla o un descarte, al documento de anclaje de su tema, y su historia, a una ADR.
 
-*Por qué*: un documento al que solo se le añade crece hasta que nadie lo lee entero, y el porqué de una regla no es estado ni pertenece a una sola feature. [ADR 0001](decisions/0001-bounded-documents-and-adr.md)
+*Por qué*: un documento al que solo se le añade crece hasta que nadie lo lee entero, y el porqué de una regla no es estado ni pertenece a una sola feature. [ADR 0001](../decisions/0001-bounded-documents-and-adr.md)
