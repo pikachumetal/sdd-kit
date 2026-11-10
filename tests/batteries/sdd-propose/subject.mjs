@@ -33,13 +33,14 @@ const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
 const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
 const F28 = '.docs/sdd/specs/20261008-130000-feature-0028-close-notice-pending';
+const F31 = '.docs/sdd/specs/20261012-090000-feature-0031-close-notice-row';
 const F29 = '.docs/sdd/specs/20261008-140000-feature-0029-room-floors';
 const F30 = '.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice';
 const F18 = '.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone';
 const F19 = '.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot';
 const F20 = '.docs/sdd/specs/20261008-180000-feature-0020-export-dir';
 const F21 = '.docs/sdd/specs/20261008-190000-feature-0021-slot-check';
-const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30];
+const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30, F31];
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
@@ -349,6 +350,17 @@ steps.co6 = () => {
 };
 steps.co2 = () => branch('feature/0014-notice-room');
 steps.co2p = steps.co2;
+steps.rc1 = () => {
+  branch('feature/0031-close-notice-row');
+  s.put(`${F31}/spec.md`, readFileSync(join(FIX, 'spec-0031.md'), 'utf8'));
+};
+// Como en la 0326: la fila floja vive en la batería y la spec solo la nombra.
+steps.rc2 = () => {
+  edit('tests/batteries/aviso-cierre/battery.md', (text) => `${text}\n## Rúbrica\n\n| Fila | Escenario | Falla si |\n| --- | --- | --- |\n| C1-A Aviso | c1 | \`text: /pendiente/\` |\n`);
+  s.commit('test(aviso-cierre): rúbrica de c1');
+  steps.rc1();
+  edit(`${F31}/spec.md`, (text) => text.replace(/^- El paso 1: .*$/m, '- El paso 1: `c1` de `tests/batteries/aviso-cierre/battery.md`, fila `C1-A`, n = 2.'));
+};
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
 steps.cr1 = () => {

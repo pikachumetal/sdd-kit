@@ -52,3 +52,9 @@ Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y l
 - GIVEN el molde `exportes` en la rama de la feature 0013, cuya Task 2 pone cuatro espacios delante de dos líneas de ayuda de `README.md`, ya dentro de un recuadro de código
 - WHEN una skill invoca `sdd-rubber-duck` en modo corto para el 🦆 de ese freno de alcance, y su material dice, sin comprobarlo, que con esos espacios la ayuda se verá como código
 - THEN el párrafo no atribuye a los cuatro espacios un cambio en cómo se ve la ayuda, o abre `README.md` o el diff antes de nombrar el efecto
+
+### El 🦆 de una parada no nombra un id de la batería sin decir qué es
+
+- GIVEN una parada por dinero cuyo material dice «RED de `co2p` 0/2, `CO2P-M` falla en co2p-1 y co2p-2; el GREEN cuesta 1,31 $ más»
+- WHEN una skill invoca `sdd-rubber-duck` en modo corto
+- THEN el párrafo dice qué se mide y qué cuesta seguir sin nombrar `co2p` ni `CO2P-M`, o diciendo antes qué es cada uno
