@@ -824,6 +824,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN su `## Approach` lleva dos o tres enfoques, cada uno con lo que cuesta, y una línea `Elegido: <enfoque> — <porqué>`; con una sola vía sensata, esa y por qué no encajan las otras
 - AND en `pair`, los del mensaje de enfoques y el que eligió el dev-lead, con su frase; en `unattended` o tras «empieza ya», los del agente
 
+### El revisor de la spec señala una prueba que pasa sin la conducta
+
+- GIVEN una spec que edita `skills/aviso-cierre/SKILL.md` para que el aviso nombre la fila 0011, y prueba su THEN con la fila de rúbrica `` `text: /pendiente/` ``
+- WHEN la revisa el revisor de la spec
+- THEN devuelve un hallazgo que dice que la fila pasa con un aviso que dice «pendiente» sin nombrar la 0011
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.

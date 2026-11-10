@@ -78,6 +78,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0327** — El revisor de la spec señala el escenario o la fila de batería que pasa sin la conducta (una palabra que escribe el agente, un valor que acierta a ojo); las baterías de `sdd-propose` y `sdd-rubber-duck` ganan `rc1`, `rc2` y `s5`. → [ref](specs/20261110-141415-feature-0327-review-conduct-plain-names/walkthrough.md)
 - **Feature 0326** — La celda «Tope propuesto» de «Topes de palabras» de la plantilla de spec pide lo previsto con el comando que lo contó y su cifra (`<comando> → <n>`), o `sin medir` y la fila al ✋; la batería de `sdd-propose` gana `co2p`. → [ref](specs/20261109-223338-feature-0326-orphans-eol-and-forecast/)
 - **Feature 0311** — Cada regla que dos skills repetían vive en un solo sitio, los encargos de los ejes llevan `## Code constraints` y `## How to review`, y el cierre mide un aprendizaje contra el tope de palabras de la rama de integración. → [ref](specs/20261109-143437-feature-0311-includes-and-checks/)
 - **Patch 0294** — El Art. II de la constitution dice que un olvido de orden o de búsqueda con una orden delante (CLI, `grep`) se comprueba con esa orden antes de reescribir texto, en la viñeta «Elemento omitido»; el porqué deja de decir que toda forma es texto y la ADR 0025 sustituye a la 0003. → [ref](specs/20261109-123737-patch-0294-rule-form-after-failed-green/)

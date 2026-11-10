@@ -3,7 +3,7 @@ id: 20261110-141415-feature-0327-review-conduct-plain-names
 feature: 0327
 title: Plan de implementación — La revisión de la spec ve una prueba que pasa sin la conducta, y el 🦆 no nombra ids sin explicarlos
 spec: ./spec.md
-status: approved
+status: done
 created: 2026-11-10
 ---
 
