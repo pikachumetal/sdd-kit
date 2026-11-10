@@ -36,7 +36,7 @@ const moldSource = () => {
 s.copy(moldSource());
 // Lo que entra en develop tras la etiqueta de la release: la migración decide lo publicado por ella.
 const AFTER_RELEASE = {};
-const SUPERPOWERS_MARKETPLACE ={ source: { source: 'github', repo: 'obra/superpowers-marketplace' }, autoUpdate: true };
+const SUPERPOWERS_MARKETPLACE = { source: { source: 'github', repo: 'obra/superpowers-marketplace' }, autoUpdate: true };
 // Ya en la estructura de la 3.0.0: los pasos 1 a 6 se saltan, y el sujeto llega barato al paso de superpowers.
 function salas3WithSuperpowers(enabledPlugins) {
   // La fila B1 no valida en `sdd roadmap check`, y el sujeto paraba antes del marcador.
@@ -58,16 +58,19 @@ const molds = {
   salas: () => s.put('.docs/sdd/sdd-kit.json', `{"version": "2.3.3", ${MARKER}}\n`),
   // Un proyecto 2.x completo, en 2.3.4: lo que mide la migración a la 3.0.0.
   v2x: () => {},
-  // v2x con lo que destapó este repo (0198): release por prefijo, filas hechas tras la etiqueta, ids del Backlog,
+  // v2x con lo que destapó migrar un repo real: release por prefijo, filas hechas tras la etiqueta, ids del Backlog,
   // enlaces relativos y un escenario de capabilities/ que cita el cambio de nombre.
   'v2x-release': () => {
     const walk = (id, slug) => `.docs/sdd/specs/20261005-1${id.slice(2)}000-feature-${id}-${slug}/walkthrough.md`;
     edit('.docs/sdd/roadmap.md', (text) => text
-      .replace('| 0024 |', `| 0030 | **Release 3.0.0**. **Filtro por planta** — [walkthrough](${walk('0030', 'floor-filter').replace('.docs/sdd/', '')}) | ✅ |\n| 0031 | **Release 3.0.0** (dev-lead, 2026-10-01). **Aviso de sala llena** | ⏳ |\n| 0032 | **Exportar a iCal** — [walkthrough](${walk('0032', 'ical').replace('.docs/sdd/', '')}) | ✅ |\n| 0033 | Patch: **Release 3.0.0**. **La franja de las 14:00 no se reserva** | ✅ |\n| 1 | Estreno con recepción: usar el kit en las tareas reales | 🔄 en curso |\n| 0024 |`)
+      .replace('| 0024 |', `| 0029 | **Avisos por sala** — [walkthrough](specs/20260910-100000-feature-0029-room-notices/walkthrough.md) | ✅ |\n| 0030 | **Release 3.0.0**. **Filtro por planta** — [walkthrough](${walk('0030', 'floor-filter').replace('.docs/sdd/', '')}) | ✅ |\n| 0031 | **Release 3.0.0** (dev-lead, 2026-10-01). **Aviso de sala llena** | ⏳ |\n| 0032 | **Exportar a iCal** — [walkthrough](${walk('0032', 'ical').replace('.docs/sdd/', '')}) | ✅ |\n| 0033 | Patch: **Release 3.0.0**. **La franja de las 14:00 no se reserva** | ✅ |\n| 1 | Estreno con recepción: usar el kit en las tareas reales | 🔄 en curso |\n| 0024 |`)
       .replace('| B3 |', '| 0040 | Reservas recurrentes | Recepción, reunión del 2026-09-18 |\n| B3 |')
       .replace(/^(\| 2026-09-25 \| 0023 .*)$/m, '$1\n| 2026-10-06 | 0033 | La franja de las 14:00 no se reserva — [patch](specs/20261006-100000-patch-0033-two-pm/patch.md) |'));
+    edit('.docs/sdd/tech-stack.md', (text) => text.replace('- Gate de cierre: `npm test`.', '- Gate de cierre: `npm test`.\n- Una validación escrita de antemano no valida (task 0012): 2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0 a preguntar.'));
     edit('.docs/sdd/changelog.md', (text) => text.replace('- **Feature 0016** — Resumen semanal de reservas.', '- **Feature 0016** — Resumen semanal de reservas. → [ref](specs/20260915-090000-feature-0016-weekly/walkthrough.md)'));
-    s.put('.docs/sdd/capabilities/cierre.md', '# Capacidad — cierre\n\n## Propósito\n\nCerrar una tarea del proyecto.\n\n## Requisitos\n\n### El cierre de un patch\n\n- GIVEN un patch terminado\n- WHEN se cierra con `sdd-end-patch`\n- THEN queda fusionado en `develop`\n\n### El nombre del cierre cambia en la 3.0.0\n\n- GIVEN un proyecto en 2.3.4\n- WHEN migra a la 3.0.0\n- THEN `sdd-end-patch` pasa a `sdd-archive`\n\n## Reglas de la capacidad\n\n- **Dónde viven los datos**: no aplica.\n- **Idioma de los nombres**: no aplica.\n- **Límites**: no aplica.\n- **Avisos**: no aplica.\n');
+    // Cerrada antes de la etiqueta: publicada en la 1.2.0, sale del roadmap.
+    s.put('.docs/sdd/specs/20260910-100000-feature-0029-room-notices/walkthrough.md', '# Walkthrough — Avisos por sala\n');
+    s.put('.docs/sdd/capabilities/cierre.md','# Capacidad — cierre\n\n## Propósito\n\nCerrar una tarea del proyecto.\n\n## Requisitos\n\n### El cierre de un patch\n\n- GIVEN un patch terminado\n- WHEN se cierra con `sdd-end-patch`\n- THEN queda fusionado en `develop`\n\n### El nombre del cierre cambia en la 3.0.0\n\n- GIVEN un proyecto en 2.3.4\n- WHEN migra a la 3.0.0\n- THEN `sdd-end-patch` pasa a `sdd-archive`\n\n## Reglas de la capacidad\n\n- **Dónde viven los datos**: no aplica.\n- **Idioma de los nombres**: no aplica.\n- **Límites**: no aplica.\n- **Avisos**: no aplica.\n- **Regla ante conflicto**: no aplica.\n');
     AFTER_RELEASE[walk('0030', 'floor-filter')] = '# Walkthrough — Filtro por planta\n';
     AFTER_RELEASE[walk('0032', 'ical')] = '# Walkthrough — Exportar a iCal\n';
     AFTER_RELEASE['.docs/sdd/specs/20261006-100000-patch-0033-two-pm/patch.md'] = '# Patch — La franja de las 14:00\n';

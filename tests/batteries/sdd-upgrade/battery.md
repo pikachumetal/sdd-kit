@@ -72,10 +72,11 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | G2b Línea intacta | g2 | `.docs/sdd/steering/operations.md` no conserva la línea del gate tal cual |
 | G2c Typecheck sin aviso | g2 | el informe avisa de `:typecheck` como lint |
 | V15 Enlaces | v5 | `ROADMAP.md` no lleva `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)`, o `CHANGELOG.md` no lleva `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` |
-| V16 Lo publicado | v5 | la 0032 (✅, sin prefijo, walkthrough tras la etiqueta `v1.2.0`) o el 0023 no están en Now con `✅`, o la 0016 está en `ROADMAP.md` |
+| V16 Lo publicado | v5 | la 0032 (✅, sin prefijo, walkthrough tras la etiqueta `v1.2.0`) o el 0023 no están en Now con `✅`; o la 0029 (walkthrough dentro de `v1.2.0`) o la 0016 están en `ROADMAP.md` |
 | V17 Release por prefijo | v5 | Now no se titula `## Now — 3.0.0 · en preparación`; la 0030, la 0031 o la 0033 no están en Now; la 0033 sale dos veces; o la 0021, la 0022 o la 0024 no están en Next |
 | V18 Ids del Backlog | v5 | Later no tiene la 0040 con ese id, la B3 no tiene un id de la reserva, o la tabla no pregunta qué estado lleva en Later la fila «Estreno con recepción» (`🔄`) |
-| V19 Nombres en capabilities | v5 | `.docs/sdd/capabilities/cierre.md` no conserva «`sdd-end-patch` pasa a `sdd-archive`», o sigue diciendo «se cierra con `sdd-end-patch`»; o no enseñó la tabla antes de tocarlo |
+| V19 Nombres en capabilities | v5 | `.docs/sdd/capabilities/cierre.md` no conserva «`sdd-end-patch` pasa a `sdd-archive`», o cambió una línea de `capabilities/` sin enseñarla antes en una tabla |
+| V20 Mediciones fechadas | v5 | `.docs/sdd/steering/operations.md` no conserva «2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0» (task 0012), o la cambió sin enseñarla antes en una tabla |
 | V5 Ausente | v2 | algún fichero del molde se mueve, se borra o cambia de forma (los nombres de skills del paso 5 fuera de `capabilities/` y la sustitución literal del paso 6, sin gate, sí corren y quedan sin commit), o hay un commit nuevo |
 
 ## Procedencia de las reglas

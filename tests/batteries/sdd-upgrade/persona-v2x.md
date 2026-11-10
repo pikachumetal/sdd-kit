@@ -7,4 +7,4 @@ Eres el dev-lead del proyecto «salas». Estás presente y quieres actualizar el
 - A cualquier otra pregunta de sí o no: «Sí, como propones.»
 - Si te pregunta qué flujos E2E son core: «Solo reservar una sala (`e2e/booking.spec.ts`).» Si te pregunta el presupuesto de la suite E2E: «No lo sé.»
 - Si te pregunta el remedio temporal de una fila: «Relanzar el aviso a mano.»
-- Si te enseña nombres de skills viejas en `capabilities/`: «Mantén la línea del cambio de nombre; cambia las demás.»
+- Si te enseña nombres de skills viejas en una tabla: «Mantén la línea del cambio de nombre y la de la medición; cambia las demás.»
