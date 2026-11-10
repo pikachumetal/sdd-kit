@@ -34,7 +34,7 @@ if (indent) {
 }
 
 // Sin la skill en el kit, la petición de una parada no la nombra.
-if (['s1', 's2', 's3', 's4'].includes(s.SC) && !red) ASK = `Invoca la skill sdd-kit:sdd-rubber-duck en modo corto y ${ASK[0].toLowerCase()}${ASK.slice(1)}`;
+if ((['s1', 's2', 's3', 's4'].includes(s.SC) && !red) || s.SC === 's5') ASK = `Invoca la skill sdd-kit:sdd-rubber-duck en modo corto y ${ASK[0].toLowerCase()}${ASK.slice(1)}`;
 
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);

@@ -33,6 +33,7 @@ const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
 const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
 const F28 = '.docs/sdd/specs/20261008-130000-feature-0028-close-notice-pending';
+const F31 = '.docs/sdd/specs/20261012-090000-feature-0031-close-notice-row';
 const F29 = '.docs/sdd/specs/20261008-140000-feature-0029-room-floors';
 const F30 = '.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice';
 const F18 = '.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone';
@@ -349,6 +350,10 @@ steps.co6 = () => {
 };
 steps.co2 = () => branch('feature/0014-notice-room');
 steps.co2p = steps.co2;
+steps.rc1 = () => {
+  branch('feature/0031-close-notice-row');
+  s.put(`${F31}/spec.md`, readFileSync(join(FIX, 'spec-0031.md'), 'utf8'));
+};
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
 steps.cr1 = () => {
