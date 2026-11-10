@@ -14,4 +14,4 @@ Escenario `rc1` de la [batería de `sdd-propose`](batteries/sdd-propose/battery.
 
 1. **El revisor de hoy ya ve la fila floja** (3/3): cuando la fila de rúbrica está escrita en la spec, la señala y la spec sale con una fila que nombra la 0011. El punto (2) reescrito de `review-spec.md` (decisión 2 de la spec) no se escribe: Scope «si el RED lo exhibe».
 2. **Lo que este escenario no mide**: en la 0326 la fila floja vivía en `battery.md`, no en el texto de la spec, y el revisor lee la spec. Un caso así es otro escenario; queda en el ticket como hipótesis sin segundo caso.
-3. **Defecto de la fixture**: llamaba a la 0011 «Responsables de sala» y el roadmap del molde la llama «Anular reservas de otros»; los tres sujetos lo corrigieron. La fixture usa ya el título del molde.
+3. **Defecto de la fixture**: llamaba a la 0011 «Responsables de sala» y el roadmap del molde la llama «Anular reservas de otros»; los tres sujetos lo corrigieron antes de despachar al revisor. La fixture usa ya el título del molde; `rc1` no se ha medido con ella.

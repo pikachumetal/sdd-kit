@@ -40,7 +40,7 @@ const F18 = '.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone';
 const F19 = '.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot';
 const F20 = '.docs/sdd/specs/20261008-180000-feature-0020-export-dir';
 const F21 = '.docs/sdd/specs/20261008-190000-feature-0021-slot-check';
-const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30];
+const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30, F31];
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 

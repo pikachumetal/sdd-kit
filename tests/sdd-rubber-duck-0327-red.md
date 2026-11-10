@@ -5,7 +5,7 @@ Escenario `s5` de la [batería de `sdd-rubber-duck`](batteries/sdd-rubber-duck/b
 | Sujeto | $ | Cómo nombra la prueba | `R12` | `R7` |
 | --- | --- | --- | --- | --- |
 | `red/s5-1` | 0,08 | «La prueba de la tarea 3 mira si la spec dice con qué comando se contaron las palabras…» | ✅ | ✅ |
-| `red/s5-2` | 0,09 | «La prueba de esta tarea mira si la spec dice con qué herramienta se contaron…» | ✅ | ✅ |
+| `red/s5-2` | 0,08 | «La prueba de esta tarea mira si la spec dice con qué herramienta se contaron…» | ✅ | ✅ |
 | `control/s5-1` | 0,08 | «Probamos la tarea con dos ejecuciones independientes, y las dos dieron la cifra sin la herramienta» | ✅ | ✅ |
 
 `battery.mjs run`: `s5 · 2/2 · umbral 2/2 · puerta verde` y, de control, `s5 · 1/1`. Total: 3 sujetos, 0,25 $.
