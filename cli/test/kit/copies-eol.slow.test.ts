@@ -27,6 +27,14 @@ function newRepo(root: string, files: Record<string, string>): string {
   return repo;
 }
 
+// Guarda en el índice los bytes tal cual, sin los filtros de eol=lf: así queda un blob con CRLF, como en un
+// commit hecho antes de .gitattributes.
+function stageRaw(repo: string, file: string, content: string): void {
+  writeFileSync(join(repo, file), content);
+  const blob = git(['-C', repo, 'hash-object', '-w', '--no-filters', file]).trim();
+  git(['-C', repo, 'update-index', '--cacheinfo', `100644,${blob},${file}`]);
+}
+
 const ORIGINAL = '# Skill A\n\nThe original paragraph, with enough words to make several shingles of six words each.\n';
 
 describe('indexEols', () => {
@@ -36,14 +44,17 @@ describe('indexEols', () => {
     expect(await indexEols(repo, ['skills/a/SKILL.md'])).toEqual(new Map([['skills/a/SKILL.md', 'lf']]));
   });
 
-  it('reads crlf from the index of a file added without conversion and rewritten in LF', async () => {
+  it('reads crlf from the index of a file rewritten in LF on disk', async () => {
     const repo = newRepo(newRoot(), { 'skills/a/SKILL.md': 'a\nb\n' });
-    writeFileSync(join(repo, 'skills/a/SKILL.md'), 'a\r\nb\r\n');
-    git(['-C', repo, '-c', 'core.autocrlf=false', 'add', '--renormalize', 'skills/a/SKILL.md']);
-    git(['-C', repo, 'update-index', '--no-assume-unchanged', 'skills/a/SKILL.md']);
+    stageRaw(repo, 'skills/a/SKILL.md', 'a\r\nb\r\n');
     writeFileSync(join(repo, 'skills/a/SKILL.md'), 'a\nb\n');
-    const eols = await indexEols(repo, ['skills/a/SKILL.md']);
-    expect(['crlf', 'lf']).toContain(eols.get('skills/a/SKILL.md'));
+    expect(await indexEols(repo, ['skills/a/SKILL.md'])).toEqual(new Map([['skills/a/SKILL.md', 'crlf']]));
+  });
+
+  it('reads mixed from the index of a file with both line endings', async () => {
+    const repo = newRepo(newRoot(), { 'skills/a/SKILL.md': 'a\nb\n' });
+    stageRaw(repo, 'skills/a/SKILL.md', 'a\r\nb\n');
+    expect(await indexEols(repo, ['skills/a/SKILL.md'])).toEqual(new Map([['skills/a/SKILL.md', 'mixed']]));
   });
 
   it('reads a path with spaces and accents', async () => {
@@ -64,7 +75,7 @@ describe('indexEols', () => {
   });
 });
 
-// El caso de la feature 0311: un clon con una copia en CRLF solo en el disco fusiona sin tocar ficheros.
+// Un clon con una copia en CRLF solo en el disco fusiona sin tocar ficheros; una copia con CRLF en el índice avisa.
 describe('kit:copies con el índice', () => {
   function newClone(root: string): string {
     const clone = join(root, 'upstream', 'juguete').replaceAll('\\', '/');
@@ -96,6 +107,15 @@ describe('kit:copies con el índice', () => {
     const file = join(repo, 'skills/sdd-a/SKILL.md');
     writeFileSync(file, readFileSync(file, 'utf8').replace(/\n/g, '\r\n'));
     expect(runCheck(registry, join(root, 'upstream'))).toEqual({ output: 'Copias al día: 1 ficheros.', code: 0 });
+  });
+
+  it('reports a copy with CRLF in the index and LF on disk', () => {
+    const root = newRoot();
+    newClone(root);
+    const { registry, repo } = newKit(root, ORIGINAL);
+    stageRaw(repo, 'skills/sdd-a/SKILL.md', ORIGINAL.replace(/\n/g, '\r\n'));
+    writeFileSync(join(repo, 'skills/sdd-a/SKILL.md'), ORIGINAL);
+    expect(runCheck(registry, join(root, 'upstream')).output).toContain('skills/sdd-a/SKILL.md: tiene finales de línea CRLF; la fuente de una copia va en LF');
   });
 
   it('still reports a copy git does not track with CRLF', () => {

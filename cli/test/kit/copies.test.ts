@@ -372,25 +372,27 @@ describe('checkVerbatim', () => {
 });
 
 describe('eolVerdict: el índice decide el aviso de CRLF y el disco, el texto', () => {
+  const CRLF = 'tiene finales de línea CRLF; la fuente de una copia va en LF';
+
   it('compares in LF a copy whose index is LF and whose disk is CRLF', () => {
     expect(eolVerdict('lf', 'a\r\nb\r\n')).toEqual({ text: 'a\nb\n' });
   });
 
   it('reports CRLF in the index even with the disk in LF', () => {
-    expect(eolVerdict('crlf', 'a\nb\n')).toEqual({ problem: 'crlf' });
+    expect(eolVerdict('crlf', 'a\nb\n')).toEqual({ message: CRLF });
   });
 
   it('reports a mixed index', () => {
-    expect(eolVerdict('mixed', 'a\nb\n')).toEqual({ problem: 'crlf' });
+    expect(eolVerdict('mixed', 'a\nb\n')).toEqual({ message: CRLF });
   });
 
   it('judges by the disk without an index entry', () => {
-    expect(eolVerdict(undefined, 'a\r\nb\n')).toEqual({ problem: 'crlf' });
+    expect(eolVerdict(undefined, 'a\r\nb\n')).toEqual({ message: CRLF });
     expect(eolVerdict(undefined, 'a\nb\n')).toEqual({ text: 'a\nb\n' });
   });
 
   it('judges by the disk with another index state', () => {
-    expect(eolVerdict('none', 'a\r\n')).toEqual({ problem: 'crlf' });
+    expect(eolVerdict('none', 'a\r\n')).toEqual({ message: CRLF });
     expect(eolVerdict('-text', 'a\n')).toEqual({ text: 'a\n' });
   });
 });

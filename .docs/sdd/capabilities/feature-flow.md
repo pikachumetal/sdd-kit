@@ -628,6 +628,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el agente escribe la spec
 - THEN la sección «Topes de palabras» lleva una fila por skill o documento con tope que la spec edita, con lo medido, el tope, el margen y el tope propuesto: `sdd-propose · 4.908 / 5.000 y 6.324 / 6.325 · 92 y 1 · 5.200 / 6.700`
 - AND el tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix, y el gate lo aprueba como decisión del dev-lead
+- AND lo previsto lleva el comando que contó lo que entra y sale, con el conteo del test, y su cifra: +40 (`echo "<texto que entra>" | wc -w` → 40); o `sin medir`, y entonces la fila va también al ✋ y su tope propuesto es «sin cambio» hasta la medida
 - AND el de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más margen
 - AND si durante la feature se recorta texto para caber, el recorte es una edición de skill: si quita una instrucción, lleva su RED
 - AND sin topes en el proyecto, la sección no se escribe

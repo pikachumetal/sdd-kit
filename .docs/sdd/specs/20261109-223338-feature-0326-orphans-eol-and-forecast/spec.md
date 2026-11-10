@@ -128,7 +128,7 @@ Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías 
 - La tanda termina con un nieto vivo: `cli/test/kit/headless/`, como los tests de `launch` de la 0320, en Windows. Un `subject.mjs` falso lanza un nieto `node -e "setTimeout(() => {}, 120000)"` con `stdio: 'inherit'` y sale; el test lanza la tanda con su salida en un pipe y espera `close` con un tope de 60 s. Antes del arreglo vence el tope (RED); después, cierra en menos de 15 s. El test guarda el PID del nieto y lo para en `afterEach`; corre también en Linux, en la CI, donde el descriptor heredado da el mismo cuelgue.
 - No se pierde la cola: un `subject.mjs` falso escribe 64 KB y una línea final justo antes de salir; la tanda la reenvía entera.
 - `kit:copies` y el índice: `cli/test/kit/copies.test.ts`, con un repo git de prueba como los de la suite: `i/lf w/crlf` igual a su original → sin aviso; `i/crlf w/lf` → aviso; `i/mixed` → aviso; un fichero sin seguir con CRLF → aviso; fuera de un repo con CRLF en el disco → aviso. `eolVerdict`, con texto.
-- «Topes de palabras»: `co2p` de la batería de `sdd-propose`, RED con el kit de `develop` y GREEN con la rama, n = 2, y la medición tras la revisión final, n = 2.
+- «Topes de palabras»: `co2p` de la batería de `sdd-propose`, RED con el kit de `develop` y GREEN con la rama, n = 2.
 - El aviso `colgado`: el test del tope de `cli/test/kit/headless/lib.test.ts`, con el literal nuevo.
 
 ## Términos y ADR
@@ -183,13 +183,14 @@ Hoy tres herramientas fallan en el cierre de la release. Una tanda de baterías 
 | GREEN | `SCENARIOS="co2p" N=2` → `suma: 2 sujetos · coste previsto: 1.31 $ · sin precio medido: co2p (a 0.65 $, la media de los escenarios medidos)` | 1,31 |
 | Una tanda de REFACTOR | 0: la forma es la mínima; si hiciera falta, la misma línea | 0 |
 | Controles | 0: el RED ya corre con el kit de `develop` | 0 |
-| Medición tras la revisión final | `SCENARIOS="co2p" N=2` → `suma: 2 sujetos · coste previsto: 1.31 $ · sin precio medido: co2p (a 0.65 $, la media de los escenarios medidos)` | 1,31 |
-| Suma | 14 sujetos | 7,33 |
+| Medición tras la revisión final | 0: quitada (enmienda del 2026-11-10), la pasada de fix no toca la plantilla ni la batería | 0 |
+| Suma | 12 sujetos | 6,02 |
 
-El techo aprobado es 7,0 $. `co2` costó 0,58 $ por sujeto (6,88 $ a ese precio); si lo gastado más 1,31 $ pasa de 7,0 $ antes de la medición final, se para y se pregunta.
+El techo aprobado es 7,0 $. Real: 12 sujetos, 5,66 $.
 
 ## Enmiendas
 
+- 2026-11-10 — sin medición de `co2p` tras la revisión final («Dónde se prueba» y la fila de la previsión) — la pasada de fix, juntada en el commit de cierre, no toca la plantilla ni la batería, así que la medición repetiría el GREEN 2/2; campaña cerrada en 5,66 $ — aprobada: «1»
 - 2026-11-10 — (3) pasa a citar el comando que contó lo previsto y su cifra (`<comando> → <n>` o `sin medir`), con la ayuda más corta y dos recortes que dejan `sdd-templates` en 16.978, sin subir el tope (decisiones 9 y 10; deja sin efecto la subida a 17.010 de la enmienda de abajo); el RED y el GREEN pasan a un escenario nuevo, `co2p`, y `co2` vuelve a su rúbrica de la 0224 (decisión 11); el aviso del tope dice `colgado` y la fila del lanzador queda saldada (decisión 12, Scope (4)); techo de la campaña, 7,0 $ — green3 salió 1/2 y ningún sujeto contó un borrador (`green3/out/co2-*.tools.txt`); la revisión Opus de la enmienda vio que la rúbrica de `co2` no podía distinguir un conteo de lo previsto y que `co2` se acierta a ojo — aprobada: «1»
 - 2026-11-10 — la ayuda de «Topes de palabras» dice en una frase que lo previsto se cuenta sobre un borrador de lo que sale y lo que entra, con el conteo del test, o se escribe `sin medir` y la fila va al ✋ (decisión 9 decía «la frase de ayuda no cambia»); el tope total de `sdd-templates` sube de 16.978 a 17.010 con ese motivo (decisión 10 decía saldo 0) — el GREEN de `co2` con solo la celda nueva salió 0/2: los sujetos siguen escribiendo «previsto 2» sin origen (`green2/out/co2-1/spec-new.md`); la Suma pasa a 4,20 $ (`green3` n = 2 y medición final n = 1) — aprobada: «1»
 - 2026-11-10 — la Suma de la previsión pasa de 1,08 $ a 3,60 $ — el RED de `co2` costó 0,58 $ por sujeto (1,16 $ la tanda), frente a los 0,18 $ que daba `battery.mjs plan` con las campañas guardadas — aprobada: «1» (subir la previsión a 3,6 $: GREEN n = 2 y medición final n = 2)

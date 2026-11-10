@@ -624,7 +624,6 @@ describe('Lanzar claude (lib.mjs)', () => {
 
     expect(await launched).toBe(124);
     expect(killed).toEqual([{ pid: 4242, tree: true }]);
-    // El ticket de la feature 0230 §1 pide el literal «[<id>] colgado».
     expect(errs).toEqual(['[a-1] colgado: tope de 5 s, sujeto cortado']);
   });
 

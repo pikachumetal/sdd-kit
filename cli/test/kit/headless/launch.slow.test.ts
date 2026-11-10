@@ -26,7 +26,7 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-// Un sujeto que deja un nieto con su salida heredada y sale, como el `find /` que dejó un bash en la feature 0311:
+// Un sujeto que deja un nieto con su salida heredada y sale, como un `find /` que un bash deja huérfano:
 // desacoplado, porque un hijo de node sin detached muere con su padre en Windows (job object de libuv).
 const LEAVES_GRANDCHILD = `import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
@@ -54,21 +54,26 @@ function writeSubject(name: string, content: string): string {
 }
 
 // La salida de la tanda va por un pipe, como cuando la lanza sdd watch command o un script del hilo.
-function runBatch(subject: string): Promise<{ closedBefore: boolean; stdout: string }> {
+function runBatch(subject: string): Promise<{ closedBefore: boolean; ms: number; stdout: string }> {
   const batch = writeSubject('batch.mjs', batchScript(subject));
+  const start = Date.now();
   return new Promise((resolve) => {
     const child = spawn(process.execPath, [batch], { env: cleanGitEnv, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
     let stdout = '';
     child.stdout.on('data', (chunk) => { stdout += chunk; });
     child.stderr.on('data', (chunk) => process.stderr.write(chunk));
-    const timer = setTimeout(() => resolve({ closedBefore: false, stdout }), 60_000);
-    child.on('close', () => { clearTimeout(timer); resolve({ closedBefore: true, stdout }); });
+    const timer = setTimeout(() => {
+      killProcess(child.pid);
+      resolve({ closedBefore: false, ms: Date.now() - start, stdout });
+    }, 60_000);
+    child.on('close', () => { clearTimeout(timer); resolve({ closedBefore: true, ms: Date.now() - start, stdout }); });
   });
 }
 
 it('la tanda termina con un nieto que hereda la salida', { timeout: 90_000 }, async () => {
-  const { closedBefore } = await runBatch(writeSubject('leaves.mjs', LEAVES_GRANDCHILD));
+  const { closedBefore, ms } = await runBatch(writeSubject('leaves.mjs', LEAVES_GRANDCHILD));
   expect(closedBefore).toBe(true);
+  expect(ms).toBeLessThan(15_000);
 });
 
 it('reenvía la cola entera del sujeto', { timeout: 90_000 }, async () => {

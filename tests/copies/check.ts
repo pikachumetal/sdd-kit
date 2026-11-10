@@ -16,12 +16,12 @@ interface Originals {
   eols: Map<string, IndexEol>;
 }
 
-// Una sola llamada para todas las copias; `-z` deja las rutas con espacios o acentos sin escapar. Sin repo, o con
-// git fallando, el mapa queda vacío y el disco decide.
+// Una sola llamada para todas las copias; `-z` separa los registros por NUL y las rutas van literales, sin globs.
+// Sin repo, o con git fallando, el mapa queda vacío y el disco decide.
 export async function indexEols(repoRoot: string, files: string[]): Promise<Map<string, IndexEol>> {
   const eols = new Map<string, IndexEol>();
   if (files.length === 0) return eols;
-  const result = await git(repoRoot, ['ls-files', '--eol', '-z', '--', ...files]);
+  const result = await git(repoRoot, ['--literal-pathspecs', 'ls-files', '--eol', '-z', '--', ...files]);
   if (result.code !== 0) return eols;
   for (const record of result.stdout.split('\0').filter((line) => line !== '')) {
     const match = /^i\/(\S+)\s+w\/\S*\s+attr\/[^\t]*\t(.+)$/.exec(record);
@@ -85,7 +85,7 @@ async function checkFile(originals: Originals, entry: Entry, clone: string): Pro
   const original = await showAt(clone, entry.version, path);
   if (original === null) return [`${file}: su original ${path} no existe en ${entry.version}`];
   const verdict = eolVerdict(originals.eols.get(file), readFileSync(resolve(originals.repoRoot, file), 'utf8'));
-  if ('problem' in verdict) return [formatProblem({ file, message: 'tiene finales de línea CRLF; la fuente de una copia va en LF' })];
+  if ('message' in verdict) return [formatProblem({ file, message: verdict.message })];
   const annotated = verdict.text;
   const label = `${path}@${entry.version}`;
   if (!file.endsWith('.md')) return checkVerbatim({ file, annotated, original, label }).map(formatProblem);

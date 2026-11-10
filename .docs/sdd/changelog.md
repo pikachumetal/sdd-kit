@@ -78,6 +78,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0326** — La celda «Tope propuesto» de «Topes de palabras» de la plantilla de spec pide lo previsto con el comando que lo contó y su cifra (`<comando> → <n>`), o `sin medir` y la fila al ✋; la batería de `sdd-propose` gana `co2p`. → [ref](specs/20261109-223338-feature-0326-orphans-eol-and-forecast/)
 - **Feature 0311** — Cada regla que dos skills repetían vive en un solo sitio, los encargos de los ejes llevan `## Code constraints` y `## How to review`, y el cierre mide un aprendizaje contra el tope de palabras de la rama de integración. → [ref](specs/20261109-143437-feature-0311-includes-and-checks/)
 - **Patch 0294** — El Art. II de la constitution dice que un olvido de orden o de búsqueda con una orden delante (CLI, `grep`) se comprueba con esa orden antes de reescribir texto, en la viñeta «Elemento omitido»; el porqué deja de decir que toda forma es texto y la ADR 0025 sustituye a la 0003. → [ref](specs/20261109-123737-patch-0294-rule-form-after-failed-green/)
 - **Feature 0284** — `word-budget.test.ts` compara cada medida con su tope nominal, sin el margen del 25 %; los 14 topes que se pasaban suben a lo que mide el texto, con su motivo en la spec, y la regla 6 de `CLAUDE.md` cuenta el saldo de palabras sobre las skills que toca. → [ref](specs/20261109-105429-feature-0284-word-budgets-without-slack/)
@@ -161,6 +162,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Feature 0326** — Una tanda de baterías termina aunque un sujeto deje un proceso vivo con su salida (la salida del sujeto va por pipes propios, con 5 s de gracia para vaciarla), `kit:copies` decide el CRLF de una copia por el índice de git y no por el disco, y el aviso del tope de un sujeto dice `[<id>] colgado: tope de <N> s, sujeto cortado`. → [ref](specs/20261109-223338-feature-0326-orphans-eol-and-forecast/)
 - **Patch 0325** — El `beforeAll` de `subject-output-privacy.slow.test.ts` lista la evidencia con `git ls-files` y la lee 32 ficheros a la vez: cabe en los 10 s del hook en `cli:test-min` sin dejar de mirar ningún fichero de evidencia versionado. → [ref](specs/20261109-135213-patch-0325-privacy-test-bounded-read/)
 - **Patch 0321** — `battery.mjs run` sale con 3 sin lanzar nada y avisa de que `COST_CAP` es el techo de toda la campaña si ya está gastado, cuenta cada tanda con el precio que da `plan` a su escenario, `verdict` lee `SCENARIOS` como `run`, y `plan`, `field` y `verdict` dan su uso si les falta un argumento. → [ref](specs/20261109-101902-patch-0321-battery-launcher-cap-and-verdict/)
 - **Feature 0322** — La receta del paquete de la revisión final calcula el workspace con `sdd workspace -C "<worktree de la feature>"`, y el paquete ya no se borra con el worktree de revisión. → [ref](specs/20261109-102437-feature-0322-deviations-and-amendments/)

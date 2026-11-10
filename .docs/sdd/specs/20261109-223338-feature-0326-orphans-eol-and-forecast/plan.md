@@ -39,7 +39,8 @@ created: 2026-11-10
 - La entrada estándar del sujeto sigue en `inherit`; solo salida y error pasan a pipe (decisión 4).
 - `git ls-files --eol` se invoca con `execFile`, `-z` y `--` antes de las rutas; `i/crlf` e `i/mixed` → aviso; `i/lf` → comparar en LF; cualquier otro caso → el disco decide (decisiones 6 y 7).
 - El aviso sigue siendo literal `tiene finales de línea CRLF; la fuente de una copia va en LF`.
-- Plantilla: la celda pasa a `<medido + previsto (borrador | sin medir) + 2 % · sin cambio>` y «para la pasada de fix de la revisión final,» a «para la pasada de fix,»; nada más cambia (decisiones 9 y 10).
+- Plantilla: la celda pasa a «medido + previsto (`<comando> → <n>` \| sin medir, y al ✋) + 2 % · sin cambio», la ayuda gana «, y lo previsto igual, sobre lo que entra y sale», «para la pasada de fix de la revisión final,» pasa a «para la pasada de fix,» y las líneas 34 y 106 a su forma corta; `sdd-templates` no pasa de 16.978 palabras (decisiones 9 y 10, enmienda del 2026-11-10).
+- El aviso del tope del lanzador es literal `[<id>] colgado: tope de <N> s, sujeto cortado` (decisión 12).
 - Art. X: sin comentarios que repitan el código ni que citen documentos; clean code; funciones cortas.
 
 ### De proceso
@@ -51,7 +52,7 @@ created: 2026-11-10
 
 - Sujeto que escribe 64 KB y sale sin esperar al drenado → la tanda reenvía todo, nada se corta · Task 1, `reenvía la cola entera del sujeto`
 - `git ls-files --eol` con una ruta con espacios o no ASCII → se lee bien gracias a `-z` · Task 2, `lee una ruta con espacios y acentos`
-- Spec que edita un fichero con tope sin borrador → la fila dice `sin medir` y va al ✋ · Task 3, fila CO2 de `co2`
+- Spec que añade un párrafo dado a un fichero con tope → la fila cita el comando que lo contó y su cifra (`wc -w` del párrafo → 42), o dice `sin medir` y va al ✋ · Task 3, filas `CO2P`, `CO2P-C` y `CO2P-M` de `co2p`
 
 ---
 
@@ -80,12 +81,13 @@ created: 2026-11-10
 - `tests/copies/check.ts` — `indexEols` y su uso en `checkFile`.
 - `cli/test/kit/copies.test.ts` — tests de `eolVerdict` con texto.
 - `skills/sdd-templates/templates/spec-template.md` — la celda y la ayuda de «Topes de palabras».
-- `tests/batteries/sdd-propose/battery.md` y su molde de `co2` — lo previsto sobre un fichero con tope.
+- `tests/batteries/sdd-propose/battery.md` y `subject.mjs` — el escenario `co2p` y sus filas.
+- `tests/headless/lib.mjs` y `cli/test/kit/headless/lib.test.ts` — el aviso del tope dice `colgado` (Task 4).
 - `dist/` — `moon run kit:build`.
 
 **NO se tocan**:
 
-- `tests/headless/lib.mjs` — `killProcess` y el tope de 1800 s siguen como están.
+- `tests/headless/lib.mjs`, salvo el aviso — `killProcess` y el tope de 1800 s siguen como están.
 - `tests/headless/deny-kill.mjs` — no se añade ningún patrón.
 - `.docs/sdd/capabilities/` — los fusiona `sdd-archive`.
 
