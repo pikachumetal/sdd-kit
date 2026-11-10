@@ -121,11 +121,28 @@ Sin delta en la apertura: si un arreglo cambia un requisito, entra por enmienda.
 | RED y GREEN de los arreglos (rojos que se repiten y deuda de texto) | sin medir: hasta 8 arreglos × 4 sujetos | 17,60 | ~60 |
 | Re-ejecución tras cambios de `dist/` y sujetos sin evidencia | sin medir: hasta 40 sujetos | 22,00 | ~70 |
 | Una tanda de REFACTOR | 0: las frases son la forma mínima | 0 | 0 |
-| Suma | 690 sujetos | 307,93 | ~1.040 |
+| RED de la enmienda (moldes 3.0.0) | 8 sujetos | 5,00 | ~20 |
+| Suma | 740 sujetos | 332,93 | ~1.120 |
 
 Fuera de los sujetos: lectores de coherencia (5) y de la batería (15) en sonnet, ~35 $; revisión final, ~15 $. Total previsto, ~360 $. La parada cuenta los sujetos (el techo del lanzador, 690) y, aparte, el gasto total: si pasa de 360 $, se para y se pregunta.
 
 ## Enmiendas
+
+- 2026-11-10, en `unattended` (dev-lead: «1, es inaceptable», a arreglarlo dentro de la 0152), tras los cinco lectores de coherencia:
+  1. **Las skills nombran los documentos de la 3.0.0.** 82 menciones en 38 ficheros de `skills/` (e `includes/`) nombran `mission.md`, `tech-stack.md`, `environments.md`, `.docs/sdd/roadmap.md`, `.docs/sdd/changelog.md`, `.docs/sdd/constitution.md`, `.docs/sdd/architecture.md` o `.docs/sdd/estimation.md`: pasan a `PRODUCT.md`, `steering/operations.md` (`## Entornos` para el entorno, `## Frontend` para el detector), `ROADMAP.md` y `steering/debt.md`, `CHANGELOG.md` y `steering/<doc>`. Se quedan las menciones que tratan a propósito la forma 2.x (la puerta de forma de `sdd-roadmap` y `sdd-end-release`, `sdd-upgrade` y sus migraciones, el predicado de `sdd-init`). Sustitución de nombre, sin alargar ninguna skill (`word-budget.test.ts`).
+  2. **Los cambios nacen en `.docs/sdd/changes/`**, como ya dicen `sdd-init`, las plantillas, la migración y la ADR 0012; `sdd-propose` (regla de oro), `patch-flow.md`, `sdd-explore`, `launch-prompt-template.md`, `spec-template.md` y la receta del paquete de `encargo-revision.md` (que excluye también `changes/**/red` y `green`) pasan a `changes/`; `specs/` se lee (proyectos migrados y este repo, cuyas carpetas no se mueven). La CLI ya lee las dos.
+  3. **Los moldes de las baterías pasan a la forma 3.0.0**, para que la batería de release pruebe el camino real: `mold-reservas` de `sdd-propose`, `sdd-implement` y `sdd-grilling`, `mold-exportes` de `sdd-rubber-duck`, `mold-hojas` de `sdd-verify`, `mold-salas` y `mold-ventas` de `using-sdd` y la constitution de `mold-kit`, con su `subject.mjs` y las filas de rúbrica que nombran rutas. Se quedan en 2.x los que miden la migración o la oferta de migrar: `mold-v2x` y una copia 2.x de `mold-salas` para `sdd-upgrade`. Lo hacen dos editores sonnet en paralelo, un grupo de baterías cada uno; verificación: `molds.test.ts` en `kit:test-headless`, `sdd roadmap check` sobre cada molde y el plan en seco.
+  4. **RED antes de renombrar** (Art. I): con los moldes ya en 3.0.0 y el kit de hoy, `sdd-propose:c1`, `sdd-implement:w2`, `sdd-archive:a1` y `using-sdd:u1`, n = 2 (8 sujetos, ~5 $). El GREEN es la batería de release.
+  5. **Lo demás de los lectores**: las guías de `.docs/workflow/` (26 arreglos) y `capabilities/` (14), con un editor sonnet cada grupo; la migración v3.0.0: los tipos de entorno en `## Entornos`, los campos de `## Testing`, las cinco etiquetas del brief y la línea de `estimation.md` con `Build-EstimationLog.ps1` (con `v5` en la batería de release).
+  6. **Coste**: +~60 $ (RED, la re-ejecución que traiga el cambio de moldes y los editores); el techo total pasa de 360 $ a 420 $, y la Suma de sujetos a 700.
+  7. **Revisión opus de la enmienda** (10 hallazgos, 2 Críticos), aceptada, y decisión del dev-lead sobre el soporte 2.x: «no se en qu emomento dijimos eso... pero eso no es posible no podemos dar soporte sin migrar» (2026-11-10). En consecuencia:
+     - las skills de la 3.0.0 asumen la forma 3.0.0 y se quitan las ramas 2.x que quedan (salvo `sdd-upgrade`, sus migraciones y la puerta de forma de `sdd-roadmap` y `sdd-end-release`, que mandan a migrar); el aviso de arranque, con el proyecto por debajo de 3.0.0, dice que hay que migrar antes de seguir; una ADR nueva sustituye la consecuencia de la 0012 «Un proyecto en la 2.x sigue funcionando sin migrar»;
+     - este repo crea sus cambios en `changes/` desde el merge (Art. VII, `CLAUDE.md`, la fila de `architecture.md`, y `battery.mjs`, `subject-output-privacy.slow.test.ts` y `no-shell-scripts.test.ts` leen las dos carpetas); la 0152 se queda en `specs/` entera;
+     - el barrido es por patrón, con un test en `cli/test/kit/` y una lista blanca con nombre (`specs/` y las rutas 2.x fuera de ella fallan), y se miden los bytes de `sdd-propose`, `sdd-roadmap` y `sdd-archive` contra el tope de 20.000;
+     - los moldes: inventario por escenario; una sola copia `mold-salas-2x` para los escenarios que miden la 2.x (`sdd-upgrade` o1, o2, m1, h1, m2, h2; `sdd-roadmap` m1, m2, rl1, m6, c2, re1, wn2, ts2; `using-sdd` u1); fuera las capas que convertían a 3.0.0 un molde 2.x (`layer3`, `release300`, `cutMold`); los `fixtures/` y las secciones de `state.txt` también; `molds.test.ts` comprueba que un molde 3.0.0 no conserva ficheros 2.x;
+     - el orden: los rojos de `develop` y `m2` con los moldes de hoy; `mold-salas` y `mold-reservas` con un solo editor; el resto, por molde; la comprobación de `molds.test.ts`; el RED, con filas que miran la ruta (`tools: /(Read|Glob)[^\n]*\.docs\/sdd\/(mission|tech-stack|environments|roadmap|estimation)\.md/` presente → falla; la carpeta nueva en `specs/` → falla); el renombrado y su test; `kit:build kit:skill-size kit:own kit:copies` (lo que se desvíe de una copia, anotado en `upstream.json`); la batería entera después;
+     - el humo de `add-to-changelog` pasa a `sdd-archive:rc1` y `rc2`;
+     - coste: +20 $; total previsto, ~440 $.
 
 ## Aprobaciones
 
