@@ -624,7 +624,8 @@ describe('Lanzar claude (lib.mjs)', () => {
 
     expect(await launched).toBe(124);
     expect(killed).toEqual([{ pid: 4242, tree: true }]);
-    expect(errs).toEqual(['[a-1] tope de 5 s: sujeto cortado']);
+    // El ticket de la feature 0230 §1 pide el literal «[<id>] colgado».
+    expect(errs).toEqual(['[a-1] colgado: tope de 5 s, sujeto cortado']);
   });
 
   it('sin SUBJECT_TIMEOUT pone un tope de 30 min: sin él, un sujeto colgado paró la tanda una hora (ticket de la feature 0230 §1)', async () => {
