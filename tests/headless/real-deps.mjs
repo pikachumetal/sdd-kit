@@ -10,11 +10,31 @@ const LOCK_TIMEOUT_MINUTES = 120;
 
 const running = new Set();
 
+const DRAIN_GRACE_MS = 5000;
+
+// La salida del sujeto va por pipes propios: con 'inherit', un nieto que el sujeto deje vivo retiene la salida de la
+// tanda y quien la lee no ve el fin de fichero hasta que ese nieto muere (feature 0311, ~3 h). Tras el exit se espera
+// el close, que vacía la cola; si un nieto retiene los pipes del sujeto, se destruyen pasada la gracia.
 function launch({ subjectSh, args, env }) {
-  const child = spawn(process.execPath, [subjectSh, ...args], { env, stdio: 'inherit', windowsHide: true });
+  const child = spawn(process.execPath, [subjectSh, ...args], { env, stdio: ['inherit', 'pipe', 'pipe'], windowsHide: true });
+  child.stdout.pipe(process.stdout, { end: false });
+  child.stderr.pipe(process.stderr, { end: false });
   running.add(child.pid);
   const exited = new Promise((resolve) => {
-    child.on('exit', (code) => resolve(code ?? 1));
+    let code = 1;
+    let grace;
+    child.on('exit', (exitCode) => {
+      code = exitCode ?? 1;
+      grace = setTimeout(() => {
+        child.stdout.destroy();
+        child.stderr.destroy();
+      }, DRAIN_GRACE_MS);
+      grace.unref();
+    });
+    child.on('close', () => {
+      clearTimeout(grace);
+      resolve(code);
+    });
     child.on('error', () => resolve(1));
   }).finally(() => running.delete(child.pid));
   return { pid: child.pid, exited };
