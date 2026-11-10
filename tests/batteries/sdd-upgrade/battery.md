@@ -19,6 +19,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | h1 | handoff | Usa la skill sdd-kit:sdd-init. Ponme el proyecto al día. | salas | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | revisión final de la 0157, eje Spec: nadie medía que el predicado 3 de `sdd-init` entregue la migración |
 | h2 | no-version | Actualízame al kit. | salas-noversion | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | revisión final de la 0157, ejes Spec y Arquitectura: con un `sdd-kit.json` sin `version`, `sdd-upgrade` y `sdd-init` se mandaban el uno al otro |
 | v1 | v3 | Actualízame al kit. | v2x | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0197: la migración a la 3.0.0; la persona (persona-v2x.md) aprueba las tablas y da el Tamaño. 0199: nombres de skills, estimación, backticks y la tabla de reglas, de la que quita la de los ids |
+| v5 | v3-release | Actualízame al kit. | v2x-release | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0198: lo que destapó migrar este repo — release por el prefijo de sus filas, lo publicado por la etiqueta, ids del Backlog, enlaces relativos y el cambio de nombre citado en `capabilities/` |
 | v3 | v3-e2e | Actualízame al kit. | v2x-e2e | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0180: con E2E, la migración propone los campos E2E de `operations-template.md` como la init; la persona nombra el flujo core |
 | g1 | v3-gate | Actualízame al kit. | v2x-gate | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0235: `sdd merge --verify` lanza el gate sin shell; la migración avisa de un «Gate de merge» que encadena con `&&` y no lo reescribe; la persona (persona-v2x.md) aprueba las tablas |
 | v4 | v3-levels | Actualízame al kit. | v2x-levels | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0236: el paso 2 propone el nivel de cada suite, «Sin filtro», «Lint» y «CI de la base» (propuesta 0234); la persona (persona-v2x.md) aprueba las tablas |
@@ -70,7 +71,12 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | G2a Aviso del lint | g2 | el informe final no dice `Gate con lint: «moon run :typecheck :test :lint» — el lint va en «Lint», al editar y en el pre-commit; sácalo del gate` |
 | G2b Línea intacta | g2 | `.docs/sdd/steering/operations.md` no conserva la línea del gate tal cual |
 | G2c Typecheck sin aviso | g2 | el informe avisa de `:typecheck` como lint |
-| V5 Ausente | v2 | algún fichero del molde se mueve, se borra o cambia de forma (los nombres de skills del paso 5 y la sustitución literal del paso 6, sin gate, sí corren y quedan sin commit), o hay un commit nuevo |
+| V15 Enlaces | v5 | `ROADMAP.md` no lleva `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)`, o `CHANGELOG.md` no lleva `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` |
+| V16 Lo publicado | v5 | la 0032 (✅, sin prefijo, walkthrough tras la etiqueta `v1.2.0`) o el 0023 no están en Now con `✅`, o la 0016 está en `ROADMAP.md` |
+| V17 Release por prefijo | v5 | Now no se titula `## Now — 3.0.0 · en preparación`; la 0030, la 0031 o la 0033 no están en Now; la 0033 sale dos veces; o la 0021, la 0022 o la 0024 no están en Next |
+| V18 Ids del Backlog | v5 | Later no tiene la 0040 con ese id, la B3 no tiene un id de la reserva, o la tabla no pregunta qué estado lleva en Later la fila «Estreno con recepción» (`🔄`) |
+| V19 Nombres en capabilities | v5 | `.docs/sdd/capabilities/cierre.md` no conserva «`sdd-end-patch` pasa a `sdd-archive`», o sigue diciendo «se cierra con `sdd-end-patch`»; o no enseñó la tabla antes de tocarlo |
+| V5 Ausente | v2 | algún fichero del molde se mueve, se borra o cambia de forma (los nombres de skills del paso 5 fuera de `capabilities/` y la sustitución literal del paso 6, sin gate, sí corren y quedan sin commit), o hay un commit nuevo |
 
 ## Procedencia de las reglas
 
