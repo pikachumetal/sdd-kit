@@ -40,8 +40,9 @@ function escapeForJson(text) {
 
 const OFFER_ORDER = 'Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres. Con `control.profile: unattended` en `.docs/sdd/sdd-kit.json`, no ofrezcas ni migres: atiende la petición y anótalo en tu mensaje final.';
 
-function versionWarning(loaded, wanted) {
-  if (!loaded || !wanted || !isOlder(loaded, wanted)) return [];
+// un kit que ya trae la migración de la versión del proyecto sabe leerlo, aunque su plugin.json vaya detrás
+function versionWarning(loaded, wanted, migrations) {
+  if (!loaded || !wanted || !isOlder(loaded, wanted) || migrations.includes(wanted)) return [];
   return [`AVISO sdd-kit: esta sesión carga el kit ${loaded} y el proyecto pide el ${wanted} (.docs/sdd/sdd-kit.json), así que las skills pueden ser las de una versión vieja. Actualiza con \`claude plugin update sdd-kit@sdd-kit --scope project\` y reinicia Claude Code: /reload-plugins no aplica una actualización de ámbito proyecto.`];
 }
 
@@ -54,9 +55,10 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   if (!existsSync(join(projectDir, '.docs', 'sdd'))) return '';
   const loaded = readJsonVersion(join(pluginRoot, '.claude-plugin', 'plugin.json'));
   const wanted = readJsonVersion(join(projectDir, '.docs', 'sdd', 'sdd-kit.json'));
-  const latest = latestMigration(join(pluginRoot, 'skills', 'sdd-upgrade', 'references', 'migrations'), loaded);
+  const migrations = join(pluginRoot, 'skills', 'sdd-upgrade', 'references', 'migrations');
+  const latest = latestMigration(migrations, loaded);
   const migration = migrationWarning(wanted, latest);
-  const warnings = [...versionWarning(loaded, wanted), ...migration];
+  const warnings = [...versionWarning(loaded, wanted, migrationVersions(migrations)), ...migration];
   const nodeProblem = nodeVersionProblem(nodeVersion);
   if (nodeProblem) warnings.push(nodeProblem.replace(/^sdd /, 'sdd-kit '));
   const joined = warnings.join('\n\n');
