@@ -38,7 +38,23 @@ function escapeForJson(text) {
   return text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
 }
 
-const OFFER_ORDER = 'Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres. Con `control.profile: unattended` en `.docs/sdd/sdd-kit.json`, no ofrezcas ni migres: atiende la petición y anótalo en tu mensaje final.';
+const OFFER_ORDER = 'Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres.';
+const UNATTENDED_ORDER = 'El perfil vigente es `unattended`: no ofrezcas ni migres; atiende la petición y anótalo en tu mensaje final.';
+
+// el perfil de sdd-kit.local.json manda sobre el del proyecto, como en control-profiles.md
+function controlProfile(projectDir) {
+  for (const name of ['sdd-kit.local.json', 'sdd-kit.json']) {
+    const file = join(projectDir, '.docs', 'sdd', name);
+    if (!existsSync(file)) continue;
+    try {
+      const profile = JSON.parse(readFileSync(file, 'utf8'))?.control?.profile;
+      if (profile) return profile;
+    } catch {
+      continue;
+    }
+  }
+  return '';
+}
 
 // un kit que ya trae la migración de la versión del proyecto sabe leerlo, aunque su plugin.json vaya detrás
 function versionWarning(loaded, wanted, migrations) {
@@ -63,7 +79,8 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   if (nodeProblem) warnings.push(nodeProblem.replace(/^sdd /, 'sdd-kit '));
   const joined = warnings.join('\n\n');
   const skill = readFileSync(join(pluginRoot, 'skills', 'using-sdd', 'SKILL.md'), 'utf8').replace(/\n+$/, '');
-  const order = migration.length > 0 ? [OFFER_ORDER] : [];
+  const unattended = controlProfile(projectDir) === 'unattended';
+  const order = migration.length > 0 ? [unattended ? UNATTENDED_ORDER : OFFER_ORDER] : [];
   const context = [...(joined ? [joined] : []), ...order, skill].join('\n\n');
   const systemMessage = joined ? `  "systemMessage": "${escapeForJson(joined)}",\n` : '';
   return `{\n${systemMessage}  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "${escapeForJson(context)}"\n  }\n}\n`;

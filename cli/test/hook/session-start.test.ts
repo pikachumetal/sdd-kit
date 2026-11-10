@@ -104,6 +104,24 @@ describe('sdd hook session-start', () => {
     expect(output.systemMessage).toBeUndefined();
   });
 
+  it('does not offer the migration with unattended only in sdd-kit.local.json', () => {
+    const plugin = pluginWith('2.3.4', ['v2.3.3.md', 'v2.3.4.md']);
+    const project = projectAt('2.3.3');
+    writeFileSync(join(project, '.docs', 'sdd', 'sdd-kit.local.json'), JSON.stringify({ control: { profile: 'unattended' } }));
+    const context = JSON.parse(sessionStartOutput(project, plugin, '26.10.0')).hookSpecificOutput.additionalContext;
+    expect(context).toContain('no ofrezcas ni migres');
+    expect(context).not.toContain('ofrece aplicarlas');
+  });
+
+  it('offers the migration with pair in sdd-kit.local.json over an unattended project', () => {
+    const plugin = pluginWith('2.3.4', ['v2.3.3.md', 'v2.3.4.md']);
+    const project = projectAt('2.3.3');
+    writeFileSync(join(project, '.docs', 'sdd', 'sdd-kit.json'), JSON.stringify({ version: '2.3.3', control: { profile: 'unattended' } }));
+    writeFileSync(join(project, '.docs', 'sdd', 'sdd-kit.local.json'), JSON.stringify({ control: { profile: 'pair' } }));
+    const context = JSON.parse(sessionStartOutput(project, plugin, '26.10.0')).hookSpecificOutput.additionalContext;
+    expect(context).toContain('ofrece aplicarlas');
+  });
+
   it('gives the offer order only to the agent', () => {
     const output = JSON.parse(sessionStartOutput(project('pending-migration'), pluginRoot, '26.10.0'));
     expect(output.systemMessage).not.toContain('Antes de atender la primera petición');
