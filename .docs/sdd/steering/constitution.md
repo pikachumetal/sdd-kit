@@ -15,7 +15,7 @@ Reglas no negociables del kit. La constitution manda sobre cualquier spec. Cada 
 Ninguna skill nueva ni edición de una existente —recortes, traducciones y renombrados incluidos— sin su prueba:
 
 - La guidance nueva lleva un test que falla antes de escribirla; si el baseline no exhibe el fallo, no se escribe.
-- **Batería completa** en las skills de entrada, propose, verify y archive; **humo** (1-2 escenarios, n = 1) en todas; antes de cada release, las dos. Mientras no existan las skills de propose, verify y archive, la que se escribe nace con su batería, y una edición de una skill de la 2.3.x lleva el tramo de su batería si la tiene y, si no, humo.
+- **Batería completa** en las skills de entrada, propose, verify y archive; **humo** (1-2 escenarios, n = 1) en todas; antes de cada release, las dos. Una edición lleva el tramo de su batería si la tiene y, si no, humo.
 - **A/B** (la versión vigente contra la editada) solo ante una duda concreta. Cada fallo de campo pasa a escenario.
 - **La previsión de coste** (sujetos, minutos y dólares) se declara antes del primer sujeto y la spec la repite. Lista cada paso nuevo o cambiado de lo que el agente sigue (`SKILL.md`, `references/`, `migrations/`) con su escenario o el motivo de no medirlo, y la lente técnica de la review de spec lo comprueba. Si la prueba la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead: seguir, cerrar con lo medido y dejar lo pendiente como deuda, o recortar el alcance.
 - **Renombrar, retirar o fusionar una skill es editarla**: se vuelve a medir su entrada, y la spec lleva una tabla «regla de la skill retirada → dónde vive ahora | por qué se descarta», con una fila por paso, red flag y racionalización.
@@ -38,7 +38,7 @@ El método (baterías, sujetos, matices de campaña) vive en `steering/operation
 
 ## Art. III — Idioma
 
-Texto humano (docs, tests, cuerpo de los commits) en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case. Las skills se escriben en inglés y cada una le dice al agente que hable con el usuario en su idioma; las que siguen en castellano se traducen al reescribirlas y hasta entonces conviven.
+Texto humano (docs, tests, cuerpo de los commits) en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case. Las skills se escriben en inglés y cada una le dice al agente que hable con el usuario en su idioma; `kit:own` rechaza la prosa en castellano en `skills/`.
 
 *Por qué*: el inglés es el idioma del ecosistema de skills y gasta menos tokens por instrucción, y el equipo lee en castellano. [ADR 0004](../decisions/0004-skills-in-english.md)
 
@@ -82,7 +82,7 @@ Las plantillas canónicas viven solo en `skills/sdd-templates/templates/`. Ningu
 
 ## Art. IX — Fuentes y fork
 
-El kit es un fork propio. Copia y adapta de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator, con su aviso en `THIRD_PARTY_NOTICES.md` (fuente, versión y licencia). Una pieza copiada es del kit: la mantiene el kit y se prueba con el Art. I. Parte de su fuente sin tocar lo que funciona: la evidencia de la fuente vale para el Principio 1, y quitar una frase sin sustituirla exige un A/B que demuestre que funciona sin ella. Lo que el kit hace distinto sustituye la frase de la fuente; nunca se añade al lado contradiciéndola. Un problema, en una copia o en una skill propia, se arregla mejorando la frase que falla, no añadiendo otra.
+El kit es un fork propio. Toma de las siete fuentes de `upstream.json` (superpowers, OpenSpec, Spec Kit, mattpocock/skills, MADR, impeccable y Wondel), copiando o solo el concepto según `THIRD_PARTY_NOTICES.md`, con su aviso en `THIRD_PARTY_NOTICES.md` (fuente, versión y licencia). Una pieza copiada es del kit: la mantiene el kit y se prueba con el Art. I. Parte de su fuente sin tocar lo que funciona: la evidencia de la fuente vale para el Principio 1, y quitar una frase sin sustituirla exige un A/B que demuestre que funciona sin ella. Lo que el kit hace distinto sustituye la frase de la fuente; nunca se añade al lado contradiciéndola. Un problema, en una copia o en una skill propia, se arregla mejorando la frase que falla, no añadiendo otra.
 
 *Por qué*: vestir superpowers con overrides costaba una revisión por cada versión suya y dejaba fuera lo mejor de otros métodos; y una frase del kit junto a la de su fuente deja dos reglas que se contradicen. [ADR 0009](../decisions/0009-fork-instead-of-dressing-superpowers.md) · [ADR 0022](../decisions/0022-three-rules-for-kit-text.md)
 
