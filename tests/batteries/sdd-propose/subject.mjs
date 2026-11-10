@@ -354,6 +354,13 @@ steps.rc1 = () => {
   branch('feature/0031-close-notice-row');
   s.put(`${F31}/spec.md`, readFileSync(join(FIX, 'spec-0031.md'), 'utf8'));
 };
+// Como en la 0326: la fila floja vive en la batería y la spec solo la nombra.
+steps.rc2 = () => {
+  edit('tests/batteries/aviso-cierre/battery.md', (text) => `${text}\n## Rúbrica\n\n| Fila | Escenario | Falla si |\n| --- | --- | --- |\n| C1-A Aviso | c1 | \`text: /pendiente/\` |\n`);
+  s.commit('test(aviso-cierre): rúbrica de c1');
+  steps.rc1();
+  edit(`${F31}/spec.md`, (text) => text.replace(/^- El paso 1: .*$/m, '- El paso 1: `c1` de `tests/batteries/aviso-cierre/battery.md`, fila `C1-A`, n = 2.'));
+};
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
 steps.cr1 = () => {

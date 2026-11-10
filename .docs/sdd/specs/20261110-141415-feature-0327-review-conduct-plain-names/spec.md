@@ -136,6 +136,8 @@ En la 0326 se gastaron 3,40 $ en cuatro tandas de una prueba que pasaba si el ag
 
 ## Enmiendas
 
+- 2026-11-10, aprobada por el dev-lead («1»): los RED de `rc1` y `s5` salieron limpios 3/3, y el eje Spec de la revisión final vio que `rc1` no reproduce la 0326: allí la fila floja vivía en la batería, que el revisor no lee, y en `rc1` está escrita en la spec. Entra el escenario `rc2`: la spec solo nombra la fila `C1-A` y la fila (`text: /pendiente/`) vive en `tests/batteries/aviso-cierre/battery.md` del molde; fila `RC2`. Si su RED (n = 2) sale rojo, entra la frase de la decisión 2, con el saldo de la decisión 3, y GREEN n = 2; si sale limpio, un sujeto más y, limpio, no entra. `SCENARIOS="rc2" N=2` → `suma: 2 sujetos · coste previsto: 1.30 $`; medido en `rc1`: ~0,45 $ por sujeto. Gastado: 1,94 $; techo, el de la Suma (3,85 $). La frase de la decisión 5 no entra (`s5` limpio 3/3).
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |
