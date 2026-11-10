@@ -200,7 +200,6 @@ Hotfix de la 2.3.3, sacado de `main`: el kit con superpowers 7.0.0, que reescrib
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **El kit funciona con `brainstorming` de superpowers 7.0.0** — la 7.0.0 reescribe la skill: su primer mensaje ofrece saltarse las preguntas («the skill is done and the gate goes with it»), dimensiona la obra («quick task», «small change», «project»), despacha un builder check y quita el «Spec Self-Review» que citaba el paso 4. Ahora el paso 4 de `sdd-start-feature` no ofrece saltarse las preguntas, y si el usuario pide empezar ya, la spec se escribe con los huecos en «Decisiones que he tomado yo» y pasa por su gate; el repaso de coherencia escribe sus cuatro comprobaciones. `overrides-superpowers.md` deja el tamaño sin gobernar los artefactos, sustituye el builder check por la review de spec del kit y mantiene su estilo de preguntas; versión validada: 7.0.0 ([patch 0167](.docs/sdd/specs/20261010-195847-patch-0167-superpowers-7-compat/patch.md))
 
 ## [2.3.3] - 2026-10-08
@@ -238,7 +237,6 @@ Hotfix de la 2.3.0, sacado de `main`: los scripts de ids, estimación, merge, ca
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **El comando de `task-done` sale con distinto de 0 si algo falla** — `Invoke-Pester` sin `-CI` termina con 0 con un test en rojo, y `task-done` dio por completa una task con un fallo. El paso 6 de `sdd-start-feature` y el campo «Verificación» de `plan-template.md` lo piden ahora; con Pester, `-CI` ([patch 0138](.docs/sdd/specs/20261003-144033-patch-0138-task-done-exit-code/patch.md)).
 
 ### Fixed
@@ -263,7 +261,6 @@ El roadmap en la forma de su plantilla, la validación en campo y el carril patc
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **Feature 0050** — Tickets de `sdd-feedback` con menos ruido: ticket mínimo de tres líneas si el cierre fue limpio, «Verificada» en cada propuesta (con comando, shell y línea de error si cita un fallo), la causa de un coste respaldada por la spec, el walkthrough o un commit, lista final de «Menores», fuera «Errores míos» (lo que una regla del kit pudo evitar es un hallazgo, también si la regla existía), un ticket por feature o patch y el lint de docs del proyecto antes del commit. → [ref](.docs/sdd/specs/20261001-125120-feature-0050-feedback-less-noise/)
 
 - **Feature 0117** — El carril patch lo decide quién fijó la solución, no los minutos: un fallo (la causa raíz), un ajuste o una retirada solo de presentación (la petición) o una petición cerrada (el ticket o el dev-lead); si la fijaría el agente, es feature aunque pidan un patch. `patch.md` declara `solution:` y una lista `Decisiones` con autor, y una decisión visible tomada sin el dev-lead lo pasa a feature; el patch para y pregunta con más de 10 ficheros o 300 líneas de código; la retirada quita elementos y lo que queda muerto y cierra en `Removed`; una migración solo de datos ya no descarta el modo lite, y `sdd-end-patch` nombra el formato `parcial`. → [ref](.docs/sdd/specs/20261001-153446-feature-0117-patch-lane-fixed-solution/)
@@ -284,7 +281,6 @@ Tickets de los primeros días con la 2.0.0 y la 2.1.0 en proyectos del equipo. [
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **Feature 0113** — El plan lleva su Review Focus: `plan-template.md` tiene la sección `## Review Focus` que pide `writing-plans` 6.4.2, entre «Restricciones globales» y «Phase -1», con una línea por entrada que ningún test ejercita, su comportamiento esperado, su task y su test (o «ninguna: comprobado»). «Decisiones que he tomado yo» la resume en una línea y el self-review lleva una fila por línea. El encargo del revisor final de `encargo-revision.md` la copia literal. Antes, con el hilo en Opus, 1 de 2 planes la escribió como «Foco de revisión» entre las decisiones técnicas y 1 de 2 encargos solo remitió al plan (cuatro tickets de campo; en la feature 0027 del template costó 2 Important). → [ref](.docs/sdd/specs/20260929-170930-feature-0113-plan-review-focus/)
 - **Feature 0096** — El cierre fuera del camino crítico: el revisor final de rama sale en segundo plano en cuanto existe el commit de la última task, antes de la verificación visual, y trabaja en un worktree desanclado en ese sha (`review-<id>-<sha corto>`), sin ver los commits que el hilo hace mientras tanto. Mientras revisa, el hilo escribe sin commitear los borradores del walkthrough, la capacidad y el changelog, y la validación se presenta cuando vuelve. Al juntar el cierre, las líneas de revisión de `tasks.md` cuyo sha desaparece se reescriben como «juntada en el cierre», y todo sha que queda es alcanzable. Antes, la revisión y los registros de cierre iban en serie tras la validación (~25 min hasta el merge en una feature de un proyecto del equipo) y el cierre dejaba shas perdidos en `tasks.md` (tres tickets). → [ref](.docs/sdd/specs/20260929-133151-feature-0096-closing-off-critical-path/)
 
@@ -312,7 +308,6 @@ Primeros tickets de uso de la 2.0.0 en proyectos del equipo. [Release notes](.do
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **Feature 0098** — el carril patch acepta un ajuste pedido solo de presentación (solo plantillas o estilos, sin cambiar bindings, directivas de control, eventos, textos visibles, claves de i18n, TypeScript, API, datos ni capacidades): `using-sdd` y `sdd-start-feature` lo mandan a `sdd-start-patch`, que escribe la intención en una frase en lugar de la causa raíz, verifica con una captura fuera de git que `sdd-end-patch` enseña al validar, y lo registra como `Changed`. → [ref](.docs/sdd/specs/20260928-210002-feature-0098-visual-patch-lane/)
 
 ### Fixed
@@ -366,7 +361,6 @@ Abierta como 1.2.0 el 2026-09-20 y publicada como 2.0.0 por el corte del 2026-09
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **Task 0055** — el método de ejecución de un plan lo elige el handoff de `writing-plans` (Native o subagent-driven) o lo fija la clave `execution` de `sdd-kit.json` (`auto` por defecto), con las paradas de la tabla de gates; las init y la migración v1.2.0 la preguntan y el aviso del hook del repo nombra los agentes. → [ref](.docs/sdd/specs/20260924-082516-task-0055-native-default/)
 - **Task 0057** — una task Native usa el ledger de `executing-plans`, comprueba la base antes de cada task y aparta sus RED; el revisor final va con Opus y effort high, el tipo de effort se comprueba antes del primer despacho y el cierre no repite la revisión; tras una compactación con dos o más tasks pendientes, el plan pasa a subagentes; el hilo escribe siempre el mensaje del hito y junta la apertura antes de los RED. → [ref](.docs/sdd/specs/20260924-105352-task-0057-native-adapt/)
 - **Task 0053: menos paradas y avisos llanos** — `sdd-start-task` abre cada cambio de paso con un aviso en llano («Ahora: … Queda: …, ~min») y ofrece en la primera pregunta aprobar la spec por delegación; en el paso 7 la decisión del dev-lead de la revisión final va sola, antes de la validación, y un «sí» sin detalle es validación (también en `sdd-end-task`); `sdd-start-patch` para sin abrir el patch si el fallo no se reproduce, sigue con el síntoma medido si difiere del predicho, y `sdd-end-patch` reescribe la fila de deuda que su re-medición contradice. → [ref](.docs/sdd/specs/20260923-214917-task-0053-fewer-stops/)
@@ -441,7 +435,6 @@ En uso desde el bump del 2026-09-09; cerrada formalmente el 2026-09-20. [Acta](.
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **Convención de nombres (rompe para consumidores)** — los nombres que el kit fija a los proyectos pasan a inglés (Art. III): `funcional/` → `capabilities/`, `funcional/legado.md` → `capabilities/legacy.md`, el placeholder `<capacidad>` → `<capability>`, `changelog-cliente.md` → `client-changelog.md`; las plantillas `funcional-template.md` → `capability-template.md` y `changelog-cliente-template.md` → `client-changelog-template.md`. → [ref](.docs/sdd/specs/20260909-210515-task-0000-english-file-names/)
 - **`migrations/v1.0.0.md`** — corregido en sitio: el `funcional.md` heredado aterriza en `capabilities/legacy.md`. → [ref](.docs/sdd/specs/20260909-210515-task-0000-english-file-names/)
 
@@ -490,7 +483,6 @@ Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por dec
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **sdd-start-task** — la fila de overrides sobre la clasificación de `brainstorming` queda acotada a `bounded`/`architectural` y remite el spike al enrutado; el override en sí se probó 2/2 con `brainstorming` 6.3.0 real y se mantiene sin cambios. → [ref](.docs/sdd/specs/20260907-151234-task-0000-alineacion-superpowers/)
 - **6 skills** — `sdd-start-task`, `sdd-end-release`, `sdd-start-release`, `sdd-end-task`, `sdd-init-greenfield` y `sdd-init-brownfield` bajan su detalle a `references/` leídos en el punto de uso; el conjunto de las 11 pasa de 8011 a 7054 palabras (−12 %). → [ref](.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/)
 - **sdd-start-task** — `subagent-driven-development` pasa a ser el default de implementación; la ejecución en línea es la excepción que el plan declara por task; al despachar, las "Restricciones globales" viajan en el encargo del subagente (hueco de superpowers: lo exige en prosa, su `task-brief` no lo ejecuta). → [ref](.docs/sdd/specs/20260908-095857-task-0000-workflow-ejecucion/)
@@ -519,7 +511,6 @@ Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por dec
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **sdd-start-task** — el paso 4 pasa a redactarse como invocación inequívoca de `superpowers:brainstorming`: 2/2 agentes del baseline lo leían como descripción de actividad y exploraban el código en su lugar. → [ref](.docs/sdd/specs/20260902-084856-task-0000-modo-lite/)
 - **sdd-start-task** — fila nueva de overrides: la clasificación de `brainstorming` (spike/bounded/architectural) no gobierna los artefactos del kit; su rama `bounded` ("no spec file, no implementation plan document") no aplica. → [ref](.docs/sdd/specs/20260902-084856-task-0000-modo-lite/)
 - **spec-template** — secciones marcadas *(solo full)* y bloque de estimación para el modo lite, que no tiene `plan.md` donde alojarlo. Plantilla única: no se crea `spec-lite-template.md` (Art. VIII). → [ref](.docs/sdd/specs/20260902-084856-task-0000-modo-lite/)
@@ -534,7 +525,6 @@ Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por dec
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **sdd-start-hotfix / sdd-end-hotfix → sdd-start-patch / sdd-end-patch** — rename del carril ligero para eliminar el equívoco con `hotfix/*` de git-flow (el carril describe el proceso, no el tipo de rama); plantilla `hotfix-template.md` → `patch-template.md`, artefacto `patch.md`, prefijo de carpeta `patch-`. Histórico preservado. → [ref](.docs/sdd/specs/20260722-103807-task-0000-carril-rama-worktree/)
 - **sdd-start-task** — la fila `using-git-worktrees` del override deja de negar los worktrees: el kit no los gestiona pero respeta el git-flow del proyecto (worktrees incluidos). Verificado con RED→GREEN. → [ref](.docs/sdd/specs/20260722-103807-task-0000-carril-rama-worktree/)
 
@@ -553,7 +543,6 @@ Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por dec
 
 ### Changed
 
-- **Feature 0147** — El paso 6 de `sdd-start-feature` se reduce a invocar `sdd-implement`, que se queda con todo lo de la implementación; el kit deja de invocar `superpowers:executing-plans` y `superpowers:subagent-driven-development` (la lista del README pasa a nombrar `test-driven-development` y `using-git-worktrees`); el motivo del método en el plan pesa cuatro factores sin umbral, y ninguna task pide leer otra. → [ref](.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/)
 - **fuente única de plantillas** — los proyectos dejan de llevar `.docs/sdd/templates/`: las skills afectadas calcan del skill `sdd-templates`. → [ref](.docs/sdd/specs/20260721-082038-task-0000-release-skills/)
 - **add-to-changelog** — el corte de versión queda señalado como acción de `sdd-end-release`. → [ref](.docs/sdd/specs/20260721-082038-task-0000-release-skills/)
 
