@@ -659,6 +659,13 @@ describe('Segundo turno y persona (lib.mjs)', () => {
     expect(results.map((event) => event.total_cost_usd)).toEqual([0.5, 1]);
   });
 
+  it('TURN2 hace salir al sujeto con el código del segundo turno (fila 63 de debt.md)', async () => {
+    let calls = 0;
+    const { subject } = start({ TURN2: 'Sigue.' }, kitFs(), { claude: () => ({ code: ++calls === 2 ? 124 : 0 }) });
+
+    expect(await subject.launch('Primera.')).toBe(124);
+  });
+
   it('resume reanuda la sesión real con claude', async () => {
     const { subject, claudeCalls } = start();
     await subject.launch('x');

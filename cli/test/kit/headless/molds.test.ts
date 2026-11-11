@@ -80,3 +80,16 @@ it.concurrent.each(closing)('el molde de cierre $mold ($id) lleva la versión de
   const check = spawnSync(process.execPath, [join(kitRoot, 'cli', 'bin', 'sdd.js'), 'capability', 'check', '--path', docs], { encoding: 'utf8' });
   expect(check.status, `${check.stdout}${check.stderr}`).toBe(0);
 });
+
+// sdd-init parte sin versión o en la 1.1.0 y sdd-upgrade/salas3* en la 2.3.4: migran a propósito.
+const MIGRATING = new Set(['sdd-upgrade/salas3', 'sdd-upgrade/salas3-shared']);
+const current = (moldCase: MoldCase): boolean => !is2x(moldCase) && moldCase.battery !== 'sdd-init' && !MIGRATING.has(`${moldCase.battery}/${moldCase.mold}`);
+
+// Con el marcador por debajo de la última migración, el hook de inicio avisa de migrar y el sujeto lo atiende en vez de su petición (fila 63 de debt.md).
+it.concurrent.each(cases.filter(current))('el molde $mold de $battery ($id) no queda por debajo de la última migración', async (moldCase) => {
+  const { output } = await buildMold(moldCase);
+  const marker = join(moldCase.runs, 'red', `${moldCase.id}-1`, 'repo', '.docs', 'sdd', 'sdd-kit.json');
+  if (!existsSync(marker)) return;
+
+  expect(JSON.parse(readFileSync(marker, 'utf8')).version, output).toBe(kitVersion(kit));
+});

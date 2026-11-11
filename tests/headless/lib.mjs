@@ -516,8 +516,7 @@ async function launch(s, deps, ask) {
     const code = await runClaude(s, deps, { args: [...s.claudeArgs, ask] });
     if (code !== 0) return code;
   }
-  if (s.env.TURN2) await resume(s, deps, s.env.TURN2);
-  return 0;
+  return s.env.TURN2 ? resume(s, deps, s.env.TURN2) : 0;
 }
 
 // Segundo turno sobre la sesión real del primero: su molde es lo que el primero dejó, no el relato de un ticket.
