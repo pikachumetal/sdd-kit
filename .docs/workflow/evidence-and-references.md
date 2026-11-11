@@ -32,8 +32,8 @@ Hechos destacables:
 
 - **[EVIDENCIA]** AWS ha anunciado el **fin de soporte de Amazon Q Developer** el 30-04-2027, sin nuevas altas desde el 15-05-2026, con migración a Kiro. Es decir: AWS ha sustituido su producto insignia de codificación por uno construido alrededor del SDD.
 - **[EVIDENCIA]** Spec Kit implementa un workflow de siete fases (constitution, specify, clarify, plan, tasks, validate, implement), estructuralmente idéntico al flujo del equipo.
-- **[OPINIÓN]** El framework *superpowers*, base del kit, lo analizó Simon Willison, referente independiente del sector, que destaca precisamente los pasos de planificación y el TDD.
-- **[CONSENSO, crítica]** Las revisiones independientes de Spec Kit señalan que el sobrecoste de la spec puede superar al beneficio en tareas pequeñas. El flujo del equipo lo resuelve con el carril patch y con la regla de que si el cambio se describe en una frase, se hace directamente.
+- **[OPINIÓN]** El framework *superpowers*, del que el kit derivó algunas skills pero que ya no es su base ni una dependencia, lo analizó Simon Willison, referente independiente del sector, que destaca precisamente los pasos de planificación y el TDD.
+- **[CONSENSO, crítica]** Las revisiones independientes de Spec Kit señalan que el sobrecoste de la spec puede superar al beneficio en tareas pequeñas. El flujo del equipo lo resuelve con los carriles ligeros (patch, config y lite) y con la regla de que, si el cambio se describe en una frase, no lleva spec ni plan completos.
 
 ## 3. Las guías oficiales de Anthropic y el flujo del equipo
 
@@ -42,7 +42,7 @@ El flujo descrito en los dos documentos coincide punto por punto con las *best p
 | Recomendación oficial de Anthropic | En el flujo del equipo |
 | --- | --- |
 | Flujo Explore, Plan, Implement, Commit; «dejar que Claude salte directamente al código produce código que resuelve el problema equivocado» | Ciclo spec, plan, implementación, walkthrough |
-| Patrón entrevista a spec: «keep interviewing until we've covered everything, then write a complete spec» | Brainstorming hasta una `spec.md` aprobada antes de continuar |
+| Patrón entrevista a spec: «keep interviewing until we've covered everything, then write a complete spec» | Entrevista (`sdd-grilling`) hasta una `spec.md` aprobada antes de continuar |
 | «Time spent making the spec precise pays off more than time spent watching the implementation» | El dev aprueba la spec antes de implementar y valida el resultado; con el perfil por defecto, en medio el agente trabaja solo y una revisión final de rama lo comprueba |
 | «If you could describe the diff in one sentence, skip the plan» | Sección «Cuándo no usar el ciclo completo» y carril patch |
 | `CLAUDE.md` corto y por capas; «un CLAUDE.md inflado hace que Claude ignore las instrucciones» | `CLAUDE.md` con punteros y documentos de anclaje separados |
@@ -105,7 +105,7 @@ Datos propios de proyectos del equipo que aplican este flujo:
 
 Reconocer los límites es parte de la credibilidad del flujo:
 
-- **Sobrecoste en tareas pequeñas**: la planificación es proporcional a la incertidumbre. Para eso existen el carril patch y la regla del cambio de una frase, que la propia Anthropic recomienda.
+- **Sobrecoste en tareas pequeñas**: la planificación es proporcional a la incertidumbre. Para eso existen los carriles ligeros (patch, config y lite) y la regla del cambio de una frase, que la propia Anthropic recomienda.
 - **Especificaciones largas difíciles de revisar**, que es la crítica de Thoughtworks a algunas herramientas: las plantillas del equipo limitan la estructura de la spec y la revisión humana es obligatoria antes de implementar.
 - **Volumen no es fidelidad**: en brownfield complejo, generar mucha documentación no garantiza que sea correcta. Por eso la regla es documentar el estado real y no el ideal, y hacer crecer la documentación tarea a tarea.
 - **Terminología todavía fluida**: el nombre puede cambiar; el mecanismo, que son artefactos persistentes más trazabilidad más revisión humana, es lo que la industria ha validado.

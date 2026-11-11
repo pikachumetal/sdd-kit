@@ -82,7 +82,7 @@ digraph process {
 
 ## Setup
 
-Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `.docs/sdd/environments.md` exists, and runs the baseline in a detached worktree.
+Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `§Entornos` exists, and runs the baseline in a detached worktree.
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
 

@@ -29,7 +29,7 @@ That the reporter "believes they know the cause" does NOT make the bug determini
 
 ## The patch's estimate
 
-If `.docs/sdd/estimation.md` exists, estimate the patch in hours when you open it, plus the closing gate's duration, named: the last one measured in the project —search the newest `patch.md` and walkthroughs of `specs/` for it; what you time in this patch doesn't count—, or what its «Gate de cierre» says: «0,5 h + 0,55 h del gate de cierre (33 min, patch 0212)». The lane question carries the estimate, and without a question (a lane the request brings, `unattended`) you still hand it over; `sdd-implement` writes it in `patch.md` before the fix.
+If `.docs/sdd/steering/estimation.md` exists, estimate the patch in hours when you open it, plus the closing gate's duration, named: the last one measured in the project —search the newest `patch.md` and walkthroughs of `changes/` or `specs/` for it; what you time in this patch doesn't count—, or what its «Gate de cierre» says: «0,5 h + 0,55 h del gate de cierre (33 min, patch 0212)». The lane question carries the estimate, and without a question (a lane the request brings, `unattended`) you still hand it over; `sdd-implement` writes it in `patch.md` before the fix.
 
 ## Red flags — STOP
 

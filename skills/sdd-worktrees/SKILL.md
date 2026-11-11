@@ -133,12 +133,12 @@ if [ -f go.mod ]; then go mod download; fi
 ```
 
 <!-- kit: 0312 -->
-**The worktree's environment** *(if `.docs/sdd/environments.md` exists)*: after the dependencies, run its `env:setup` with the runner it declares; it leaves the `.sdd-env.json` marker in `active`. Every implementer brief says where that marker is (`tests/entorno-worktree-red.md`, F1). Without `environments.md`, the dependencies are the whole setup.
+**The worktree's environment** *(if `§Entornos` of `operations.md` exists)*: after the dependencies, run its `env:setup` with the runner it declares; it leaves the `.sdd-env.json` marker in `active`. Every implementer brief says where that marker is (`tests/entorno-worktree-red.md`, F1). Without `§Entornos`, the dependencies are the whole setup.
 
 ## Step 3: Verify Clean Baseline
 
 <!-- kit: 0312 · sustituye: «clean: ```bash # Use project-appropriate…npm test /…/ pytest /…test ./... ```…Report failures,» -->
-Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up. It runs as «Running a gate» of `sdd-verify` says, in `git worktree add --detach ../baseline-<id> HEAD`, never in your tree, where your RED tests land (the sandbox fallback aside): Step 2 there, removed when done, red or green (`env:clean` first if `env:setup` ran).
+Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/steering/operations.md` §Testing; without it, the constitution's. With none declared, say so and ask which command to run: never make one up. It runs as «Running a gate» of `sdd-verify` says, in `git worktree add --detach ../baseline-<id> HEAD`, never in your tree, where your RED tests land (the sandbox fallback aside): Step 2 there, removed when done, red or green (`env:clean` first if `env:setup` ran).
 
 <!-- kit: 0312 -->
 **A gate that filters by a base** (`--affected --base <ref>`) runs nothing on a fresh branch and exits 0. Run, without the filter, only its tasks whose inputs —per the tool, `moon task <t>`— include files the spec's Scope or the plan names; the rest go in the report, the `Gate:` line of `sdd-verify`, as `<tarea>: saltada (fuera del Scope de la spec)`. Never report ready from a filter that ran no task; if no task reads the Scope's files (a change only to `.docs/`), name them all skipped, say so, and report ready (`tests/affected-gate-red.md`, w2).
@@ -175,7 +175,7 @@ Ready to implement <feature-name>
 | Directory not ignored | Add to .gitignore + commit |
 | Permission error on create | Sandbox fallback, work in place |
 <!-- kit: 0312 -->
-| `.docs/sdd/environments.md` exists | `env:setup` after dependencies (Step 2) |
+| `§Entornos` of `operations.md` exists | `env:setup` after dependencies (Step 2) |
 | Tests fail during baseline | Report failures + ask |
 <!-- kit: fin -->
 | No package.json/Cargo.toml | Skip dependency install |

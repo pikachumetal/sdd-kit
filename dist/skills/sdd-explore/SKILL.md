@@ -15,7 +15,7 @@ Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: explorin
 
 ## How it works (light, no gates)
 
-1. **Context proportional to the question** — read the relevant anchor documents (`mission`, `constitution`, `tech-stack`, `roadmap`, `architecture`, `capabilities/<capability>`, minutes in `releases/`) before answering, and the code if the question needs it. If the question is about behavior and `capabilities/` exists, pick the capability with `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` before opening any, and read the one its purpose points to. Proportion: a structure question reads `architecture` and the code; a «¿qué hacemos ahora?» reads `roadmap` and the minutes. **Always tell what the doc says from what you infer.**
+1. **Context proportional to the question** — read the relevant anchor documents (`PRODUCT.md`, `ROADMAP.md`, `steering/`, `capabilities/<capability>`, minutes in `releases/`) before answering, and the code if the question needs it. If the question is about behavior and `capabilities/` exists, pick the capability with `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` before opening any, and read the one its purpose points to. Proportion: a structure question reads `architecture` and the code; a «¿qué hacemos ahora?» reads `ROADMAP.md` and the minutes. **Always tell what the doc says from what you infer.**
 2. **Pick the mode:**
    - **Understand / explain** («¿por qué…?», «¿dónde tocaría…?», «¿esto cómo va?») → read and answer. **No interrogation**: grilling a one-off question annoys as much as over-triggering.
    - **Probe / test feasibility** («¿se puede…?», «pruébalo rápido», output = an answer) → explore and try what you need, but everything you build is **throwaway and labeled so**; the output is a recommendation in the conversation. Nothing persists: no spec folder, no branch, no kept code.
@@ -32,7 +32,7 @@ End with «si prefieres hacerlo en esta sesión, di "arráncalo"», in the user'
 
 ## Red flags — STOP, this is no longer exploring
 
-- You're about to create a folder in `.docs/sdd/specs/` (or a `patch.md`, or a branch) from explore.
+- You're about to create a folder in `.docs/sdd/changes/` (or a `patch.md`, or a branch) from explore.
 - You're **reproducing a lane by hand** (copying a spec's or a patch's naming) instead of invoking its skill.
 - You're about to write a **ticket id you made up** because «it's the next free one».
 - You're about to edit `roadmap`, `changelog` or an anchor document without the user's approval.

@@ -16,7 +16,7 @@ The ticket is what this session learned about the kit, written for the agent who
 3. **Template** — trace `kit-feedback-template.md` from the `sdd-templates` skill. Clean close —no finding above a minor and the clock within the estimate's ceiling, or no estimate— → the template's **minimal ticket**: header and three lines, plus the minors. A ruling, a deviation from the plan, a step worked around or a decision no step covered is already a finding.
 4. **Save** — in `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>.md`, UTC timestamp, id and slug as in the spec folders. One ticket per feature or patch: only this one's own is extended; if the session wrote another's, its own is born and that one is left alone. If the folder doesn't exist, create it and say **once** that it can be git-ignored; do **not** edit `.gitignore`.
 5. **Privacy pass** — reread the saved ticket, file name and title included, against the template's privacy block, and replace each proper name or datum of the project's domain.
-6. **Lint** — run the project's docs lint on the ticket (the one in `tech-stack.md`, its docs gate or its pre-commit) and fix it until it passes, before the close commits it. With no docs lint, say so in one line.
+6. **Lint** — run the project's docs lint on the ticket (the one in `operations.md`, its docs gate or its pre-commit) and fix it until it passes, before the close commits it. With no docs lint, say so in one line.
 
 ## Rules
 

@@ -39,6 +39,8 @@ function escapeForJson(text) {
 }
 
 const OFFER_ORDER = 'Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres.';
+const REQUIRED_ORDER = 'El kit cargado exige la forma 3.0.0 y el proyecto sigue en la 2.x: antes de atender ninguna petición, invoca la skill `sdd-upgrade` y migra; sin migrar, las skills no encuentran sus documentos. Con el «no» del usuario, no hagas el trabajo: dile que lo pida tras migrar.';
+const UNATTENDED_REQUIRED_ORDER = 'El kit cargado exige la forma 3.0.0 y el proyecto sigue en la 2.x, con el perfil `unattended`: no hagas el trabajo; anota en tu mensaje final que el proyecto tiene que migrar a la 3.0.0 («actualízame al kit»).';
 const UNATTENDED_ORDER = 'El perfil vigente es `unattended`: no ofrezcas ni migres; atiende la petición y anótalo en tu mensaje final.';
 
 // el perfil de sdd-kit.local.json manda sobre el del proyecto, como en control-profiles.md
@@ -80,7 +82,9 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   const joined = warnings.join('\n\n');
   const skill = readFileSync(join(pluginRoot, 'skills', 'using-sdd', 'SKILL.md'), 'utf8').replace(/\n+$/, '');
   const unattended = controlProfile(projectDir) === 'unattended';
-  const order = migration.length > 0 ? [unattended ? UNATTENDED_ORDER : OFFER_ORDER] : [];
+  const required = migration.length > 0 && isOlder(wanted, '3.0.0') && !isOlder(latest, '3.0.0');
+  const offer = unattended ? UNATTENDED_ORDER : OFFER_ORDER;
+  const order = migration.length > 0 ? [required ? (unattended ? UNATTENDED_REQUIRED_ORDER : REQUIRED_ORDER) : offer] : [];
   const context = [...(joined ? [joined] : []), ...order, skill].join('\n\n');
   const systemMessage = joined ? `  "systemMessage": "${escapeForJson(joined)}",\n` : '';
   return `{\n${systemMessage}  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "${escapeForJson(context)}"\n  }\n}\n`;

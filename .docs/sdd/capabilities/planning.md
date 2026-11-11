@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadmap` en lo que le traen, qué deja en el roadmap y cuándo escribe una propuesta (`specs/<ts>-proposal-<id>-<slug>/proposal.md`).
+Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadmap` en lo que le traen, qué deja en el roadmap y cuándo escribe una propuesta (`changes/<ts>-proposal-<id>-<slug>/proposal.md`).
 
 ## Requisitos
 
@@ -10,7 +10,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 
 - GIVEN «queremos cobrar a los clientes externos: tarifa por sala, factura mensual y bloqueo por impago a los 30 días», en `ids.mode: sequence`, con la última fila en 0013
 - WHEN `sdd-roadmap` termina, con los detalles dados o delegados
-- THEN existe `specs/<ts>-proposal-0014-<slug>/proposal.md` (en un proyecto con `ROADMAP.md`, `changes/<ts>-proposal-0014-<slug>/proposal.md`) con el porqué, las reglas, las capacidades y el reparto, y las features ocupan las filas 0015 en adelante, cada una con «`proposal: 0014`» y su «tras NNNN» en un roadmap 2.x, o con la ruta de esa propuesta en el `**Requisitos:**` de su brief y la dependencia en «Tras» en `ROADMAP.md`
+- THEN existe `changes/<ts>-proposal-0014-<slug>/proposal.md` con el porqué, las reglas, las capacidades y el reparto, y las features ocupan las filas 0015 en adelante, cada una con «`proposal: 0014`» y su «tras NNNN» en un roadmap 2.x, o con la ruta de esa propuesta en el `**Requisitos:**` de su brief y la dependencia en «Tras» en `ROADMAP.md`
 - AND cada regla lleva un ejemplo con datos: «Acme, 3 h en Norte (40 €/h) y 2 h en Sur (25 €/h) en agosto → factura del 1 de septiembre por 170 €»
 - AND no hay rama nueva, ni carpeta de feature, ni `spec.md`
 
@@ -32,7 +32,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 
 - GIVEN las notas «1) la 0012 ya no la quieren; 2) exportar a CSV, lo primero; 3) email al cancelar; 4) franja mínima de 30 minutos»
 - WHEN `sdd-roadmap` las refleja
-- THEN existe `specs/<ts>-proposal-<id>-<slug>/proposal.md` (en un proyecto con `ROADMAP.md`, bajo `changes/`) con las notas literales en «Acta» y la regla «franja mínima de 30 min» con su ejemplo con datos
+- THEN existe `changes/<ts>-proposal-<id>-<slug>/proposal.md` con las notas literales en «Acta» y la regla «franja mínima de 30 min» con su ejemplo con datos
 - AND la fila 0012 queda `⏸️ aparcada: descartada por el cliente, <fecha>`, no borrada
 - AND la fila del CSV queda primera entre las pendientes, y el email al cancelar y la franja mínima tienen cada uno su fila nueva con id reservado y «`proposal: <id>`» en un roadmap 2.x, o con la ruta de la propuesta en el `**Requisitos:**` de su brief en `ROADMAP.md`
 - AND no se abre ninguna sección de release que nadie pidió, ni el título de Now gana una versión que nadie pidió

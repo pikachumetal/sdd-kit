@@ -13,7 +13,7 @@ Smoke, suite, that same message without its script, then `Validación por el age
 
 ## With `manual`
 
-The script is composed and rehearsed as [dev-validation.md](dev-validation.md) says. `Patch only:` what there is, is the smoke of `patch.md` §4; in a visual adjustment, each screenshot's path, which is what the user looks at to validate, and the detector's output or its warning, with a line proposing `§Frontend` if `tech-stack.md` lacks it.
+The script is composed and rehearsed as [dev-validation.md](dev-validation.md) says. `Patch only:` what there is, is the smoke of `patch.md` §4; in a visual adjustment, each screenshot's path, which is what the user looks at to validate, and the detector's output or its warning, with a line proposing `## Frontend` if `operations.md` lacks it.
 
 A deferred validation has its three conditions at once: present with the work in front of them, their words that they'll try it later, a trigger with an owner; in `unattended` the trigger is always the release smoke. A missing or vague trigger: don't ask again; make the nearest use concrete, with whoever defers as owner, and say it in the final message ([deferred validation](../../sdd-propose/references/control-profiles.md)). Accepting the message's `Diferir:` line is the phrase and the trigger: don't ask again.
 

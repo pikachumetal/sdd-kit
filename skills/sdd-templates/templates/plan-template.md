@@ -23,7 +23,7 @@ created: <YYYY-MM-DD>
 
 **Architecture**: <2-3 frases sobre el enfoque técnico y por qué>
 
-**Tech Stack**: <el del proyecto — ver `.docs/sdd/tech-stack.md`; recorta a lo que toca esta feature>
+**Tech Stack**: <el del proyecto — ver `.docs/sdd/steering/operations.md`; recorta a lo que toca esta feature>
 
 **Spec**: `./spec.md`
 
@@ -64,7 +64,7 @@ created: <YYYY-MM-DD>
 - [ ] **Simplicity gate**: ¿se puede hacer más simple?
 - [ ] **YAGNI gate**: ¿se abstrae algo con menos de 3 usos reales?
 - [ ] **Brownfield gate** *(si el proyecto es brownfield)*: ¿retrocompatible? ¿respeta el patrón del módulo? ¿sin refactor oportunista fuera de scope?
-- [ ] **Constitution check**: el plan respeta los artículos relevantes de `.docs/sdd/constitution.md`.
+- [ ] **Constitution check**: el plan respeta los artículos relevantes de `.docs/sdd/steering/constitution.md`.
 
 ---
 
@@ -72,7 +72,7 @@ created: <YYYY-MM-DD>
 
 ### 1.1 Estructura de ficheros
 
-> El comportamiento observable (tiempos, límites, cuotas, avisos, respuestas, estados) vive solo en `capabilities/`. Si una task documenta `tech-stack.md`, `architecture.md` o `environments.md`, dice dónde está la pieza técnica y enlaza la capacidad, sin copiar el valor.
+> El comportamiento observable (tiempos, límites, cuotas, avisos, respuestas, estados) vive solo en `capabilities/`. Si una task documenta `operations.md` o `architecture.md`, dice dónde está la pieza técnica y enlaza la capacidad, sin copiar el valor.
 
 **Crear**:
 
@@ -92,7 +92,7 @@ Cambios de schema; si es grande → `data-model.md`.
 
 ### 1.3 Migraciones *(si aplica)*
 
-Mecanismo y nomenclatura del proyecto (ver `tech-stack.md` y skills de nivel 2).
+Mecanismo y nomenclatura del proyecto (ver `operations.md` y skills de nivel 2).
 
 ### 1.4 Contratos API *(si aplica)*
 
@@ -128,7 +128,7 @@ Endpoints, shape request/response.
 Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada una.
 
 > Cada task es ejecutable y acotada, y verifica solo lo que toca: sus superficies dicen qué
-> comandos corre (`tech-stack.md` §Testing: TDD si hay tests automáticos; smoke manual documentado
+> comandos corre (`operations.md` §Testing: TDD si hay tests automáticos; smoke manual documentado
 > si no los hay). El gate completo corre una vez, en §3. Si hay más de una task → crear `tasks.md`
 > (registro vivo).
 >
@@ -171,7 +171,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ---
 
-## Estimación y esfuerzo *(OBLIGATORIO si existe `.docs/sdd/estimation.md` — no borrar)*
+## Estimación y esfuerzo *(OBLIGATORIO si existe `.docs/sdd/steering/estimation.md` — no borrar)*
 
 > Se rellena al cerrar spec+plan. Unidad: horas (admite decimales).
 
@@ -187,7 +187,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ## 3. Validación final
 
-- [ ] Gate de cierre, una vez y en el hilo principal: <el «Gate de cierre» de `operations.md` §Testing, literal; sin él, el de `tech-stack.md` §Testing; sin ninguno, el de la constitution; si no hay ninguno, `no declarado`, apuntado en las decisiones del plan. Nunca un comando que no salga de ahí>
+- [ ] Gate de cierre, una vez y en el hilo principal: <el «Gate de cierre» de `operations.md` §Testing, literal; sin él, el de la constitution; si no hay ninguno, `no declarado`, apuntado en las decisiones del plan. Nunca un comando que no salga de ahí>
 - [ ] Verificación de los criterios de éxito de la spec (§2)
 - [ ] Spec satisfecha: cada requisito tiene su task (ver Self-review)
 - [ ] Cierre de rama según el flujo del proyecto (`sdd-archive`)

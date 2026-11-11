@@ -43,7 +43,7 @@ If the method is already given —`execution: native` or `subagent` in `.docs/sd
 
 ## The closing gate
 
-§3 copies the closing gate literally from `operations.md` §Testing `Gate de cierre`; without it, from `tech-stack.md` §Testing; without either, the constitution's; with none, `no declarado`, noted in the plan's decisions, never a command you made up (`tests/sdd-propose-0160-red.md`, p2). With Native, the `Ejecución` line also carries the template's method-change sentence, literal: after compaction, the session rereads the plan and the ledger, not this skill (`tests/native-adapt-red.md`).
+§3 copies the closing gate literally from `operations.md` §Testing `Gate de cierre`; without it, the constitution's; with none, `no declarado`, noted in the plan's decisions, never a command you made up (`tests/sdd-propose-0160-red.md`, p2). With Native, the `Ejecución` line also carries the template's method-change sentence, literal: after compaction, the session rereads the plan and the ledger, not this skill (`tests/native-adapt-red.md`).
 
 ## Commits
 

@@ -37,7 +37,7 @@ With the user away, prepare steps 1-6 and leave step 7 **pending**; never resolv
 
 - You chose the version (or jumped to `1.0.0`) without the user's confirmation.
 - You're about to seal the changelog without the full suite green on the sha you cut or the CI's `success` on it.
-- You're about to tag with ✅ rows still in Now, or with `CHANGELOG.md` at the root unsealed because `.docs/sdd/changelog.md` doesn't exist.
+- You're about to tag with ✅ rows still in Now, or with `CHANGELOG.md` at the root unsealed.
 - You took an unvalidated 🧪 row out of Now: an addendum nobody reads doesn't reclaim anything.
 - You wrote an email draft or touched `client-changelog.md`.
 - A row warned `caduca` is still in `debt.md` after the cut.
@@ -50,7 +50,7 @@ With the user away, prepare steps 1-6 and leave step 7 **pending**; never resolv
 | Rationalization | Reality |
 | --- | --- |
 | "The roadmap has no «Releases cerradas»: I'll migrate it to the form the steps expect" | The 3.0.0 form has no such section on purpose. What's done goes to the changelog, and what's pending stays in Now (`tests/sdd-end-release-0177-green.md`). |
-| "No `.docs/sdd/changelog.md`: nothing to seal" | In 3.0.0 it's `CHANGELOG.md` at the root (one subject tagged with every row still in Now). |
+| "There's no changelog in `.docs/sdd/`: nothing to seal" | It's `CHANGELOG.md` at the root (one subject tagged with every row still in Now). |
 | "The 0014 wasn't validated, but it ships: its row goes" | 6 of 9 subjects did that, and nobody reclaimed it. It stays in Now until someone says what they tried. |
 | "Expiring debt is for `sdd-roadmap`" | Between cuts `sdd-roadmap` proposes it. In the cut, the warning applies, with no question. |
 | "The client expects the news: I'll draft the email too" | Release notes are the only document for the client. Sending is the user's. |

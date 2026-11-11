@@ -29,7 +29,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - GIVEN el cierre de la 0081 cuya suite falla sobre la rama con la base integrada con `TimeoutError: tests/e2e/export.spec.ts:12`
 - WHEN el cierre recibe ese rojo
 - THEN la salida de cada pasada de la suite ya está entera en un fichero del scratchpad de la sesión, guardada antes de filtrarla
-- AND crea un worktree temporal desanclado de `origin/develop`, prepara su entorno como el Step 2 de `sdd-worktrees` (dependencias y, con `environments.md`, `env:setup`) y lo retira al acabar; no fusiona hasta que acaba el contraste
+- AND crea un worktree temporal desanclado de `origin/develop`, prepara su entorno como el Step 2 de `sdd-worktrees` (dependencias y, con `## Entornos` en `steering/operations.md`, `env:setup`) y lo retira al acabar; no fusiona hasta que acaba el contraste
 - AND corre primero el fichero que falla, `tests/e2e/export.spec.ts`, con el runner del proyecto, en la rama y en ese worktree a la vez, sin limpiar estado ni cachés
 - AND si también falla, escribe `base: en rojo: el mismo comando también falla sin la rama` y busca `export.spec.ts` y `TimeoutError` en la deuda del proyecto antes de abrir el test; si una fila lo nombra, la cita en el informe; si no, abre una fila en «Por triar» de `debt.md` (o en «Deuda técnica» del roadmap 2.x) con la evidencia
 - AND para con un bloque que lleva el comando, el código de salida, la ruta del log, las últimas 20 líneas, la línea `base:` y «`develop` sin tocar en `<hash>`», con el hash de `git rev-parse develop`, y pregunta si fusiona igual
@@ -71,8 +71,8 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 ### Un workaround que el cierre escribe en el stack lleva su fila de deuda
 
 - GIVEN el walkthrough de la 0081 con el aprendizaje «la suite del backend corre en serie para esquivar la carrera del logger estático»
-- WHEN el cierre lo vuelca a `tech-stack.md`
-- THEN abre en la deuda una fila con ese workaround y el enlace a la línea de `tech-stack.md`
+- WHEN el cierre lo vuelca a `steering/operations.md`
+- THEN abre en la deuda una fila con ese workaround y el enlace a la línea de `steering/operations.md`
 
 ### El kit no invoca `finishing-a-development-branch`
 
@@ -86,8 +86,8 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - GIVEN un cierre de feature cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
 - WHEN `sdd-archive` vuelca los aprendizajes a los docs vivos
 - THEN crea `architecture.md` calcando `architecture-template.md` de `sdd-templates`, vuelca ahí el aprendizaje y lo dice en el informe final («`architecture.md` no existía: creado desde la plantilla»)
-- AND no escribe el aprendizaje estructural en `tech-stack.md` ni en otro documento en su lugar
-- AND lo mismo con cualquier otro destino que falte (`constitution.md`, `tech-stack.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la deuda
+- AND no escribe el aprendizaje estructural en `steering/operations.md` ni en otro documento en su lugar
+- AND lo mismo con cualquier otro destino que falte (`constitution.md`, `operations.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la deuda
 
 ### Una carpeta `-task-` se cierra como legado
 
@@ -215,7 +215,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - THEN corre `PeopleTests.Zero_is_saved` y `PeopleTests.Empty_name_is_rejected` con el runner del proyecto, la suite unitaria entera, el gate con `--base a1b2c3d` y `app:integration`
 - AND la línea es `` Gate: `npm run test:unit` · `moon run :integration --affected --base develop --include-relations` → tras el rojo en `a1b2c3d`, arreglo `e4f5a6b`: PeopleTests.Zero_is_saved: corrió 1/1 · PeopleTests.Empty_name_is_rejected: corrió 1/1 · unit: corrió 510/510 · api:integration: corrió 61/61 · app:integration: corrió 12/12 (no corrió en la pasada roja) ``
 - AND si el runner paró en el primer rojo (bail) y no dice qué tests quedaron sin correr, corre `api:integration` entera
-- AND si el arreglo solo toca `.docs/sdd/specs/<carpeta>/walkthrough.md` y `README.md`, corre solo los dos tests que fallaron, y la línea es `` Gate: `moon run :integration --affected --base develop --include-relations` → tras el rojo en `a1b2c3d`, arreglo `e4f5a6b` solo de docs: PeopleTests.Zero_is_saved: corrió 1/1 · PeopleTests.Empty_name_is_rejected: corrió 1/1 ``
+- AND si el arreglo solo toca `.docs/sdd/changes/<carpeta>/walkthrough.md` y `README.md`, corre solo los dos tests que fallaron, y la línea es `` Gate: `moon run :integration --affected --base develop --include-relations` → tras el rojo en `a1b2c3d`, arreglo `e4f5a6b` solo de docs: PeopleTests.Zero_is_saved: corrió 1/1 · PeopleTests.Empty_name_is_rejected: corrió 1/1 ``
 - AND si el rojo fue de `api:typecheck`, no de un test, repite `api:typecheck` entera
 - AND si el arreglo toca un fichero de «Sin filtro», corre todo sin filtro
 - AND un rojo de lint (markdownlint en `README.md`) no repite el gate: se arregla el fichero, lo comprueba el pre-commit y no corre ningún test
@@ -226,7 +226,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - WHEN el cierre lee el conflicto, en cualquier perfil
 - THEN deja la fila con el prefijo de la rama y el «Destino» de la base, commitea el merge de sincronización con el hook, repite el gate y sigue el cierre
 - AND el cuerpo del commit y el mensaje final llevan `Conflicto de la base resuelto por el agente: .docs/sdd/roadmap.md — el prefijo de cierre de la rama y el «Destino» de la base en la fila «…»`
-- AND lo mismo con una frase que la base añade al final de una línea de `.docs/sdd/tech-stack.md` que la rama reescribe, si no dice lo contrario que la línea de la rama: queda la línea de la rama más la frase de la base
+- AND lo mismo con una frase que la base añade al final de una línea de `.docs/sdd/steering/operations.md` que la rama reescribe, si no dice lo contrario que la línea de la rama: queda la línea de la rama más la frase de la base
 - AND lo mismo fuera de `.docs/`, en cualquier `*.md`: dos adiciones en la línea `**Escribe**` de una migración quedan juntas, y dos filas contiguas de una tabla que toca cada lado quedan con el cambio de cada uno
 - AND si los dos lados reescriben la misma frase de forma distinta, si en un trozo ponen dos «Destino» distintos (`**Actuar → 0240**` y `**Descartada**`), si la frase de la base dice lo contrario que la línea de la rama, si el conflicto incluye un fichero que no es Markdown (`src/slots.js`), o ante la duda, no resuelve nada: el cierre queda «No terminado» para una persona
 
@@ -250,7 +250,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 
 ### Un aprendizaje cuyo destino no cabe tiene salida
 
-- GIVEN el cierre de una feature con un aprendizaje de 40 palabras («la suite lenta necesita `--maxWorkers 8`…») para `tech-stack.md`, que mide 900 palabras en la rama y en `origin/develop`; el tope es 950 en la rama y 920 en `origin/develop`, porque otra feature bajó el tope a 920 sin tocar el contenido después de abrirse la rama; y un pre-commit que lo comprueba
+- GIVEN el cierre de una feature con un aprendizaje de 40 palabras («la suite lenta necesita `--maxWorkers 8`…») para `steering/operations.md`, que mide 900 palabras en la rama y en `origin/develop`; el tope es 950 en la rama y 920 en `origin/develop`, porque otra feature bajó el tope a 920 sin tocar el contenido después de abrirse la rama; y un pre-commit que lo comprueba
 - WHEN se vuelca el aprendizaje
 - THEN antes de escribirlo, tras `git fetch`, mide el documento como lo dejará el merge de sincronización (el de `origin/develop` con los cambios de la rama) más el aprendizaje, 940 palabras, contra el tope de `origin/develop`, 920, y no contra el de la rama
 - AND como no cabe, sale de ese documento la pieza más vieja que ya vive en otro sitio, y el aprendizaje entra

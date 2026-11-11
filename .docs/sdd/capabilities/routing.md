@@ -90,7 +90,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - AND §4 lleva la ruta de una captura en navegador real de cada pantalla tocada antes y después del cambio, guardadas fuera de git, y la salida del detector en los dos viewports con cada hallazgo resuelto o justificado, con los mismos contraejemplos que una task full
 - AND sin detector declarado, el aviso «composición no medida», y con el detector declarado sin ejecutar, «no probado» con el error concreto
 - AND con «sube el badge de estado a 14px», la verificación visual (capturas y detector) dura menos de 5 minutos, sin build dedicado ni suite de specs nueva
-- AND la validación del cierre de `sdd-archive` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `tech-stack.md` no la tiene
+- AND la validación del cierre de `sdd-archive` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `steering/operations.md` no la tiene
 - AND la entrada del changelog va en `Changed`, no en `Fixed`; en una retirada, en `Removed`
 - AND en una retirada, §4 lleva además la búsqueda de cada símbolo retirado, sin otros usos
 - AND un bug determinista sigue con la causa raíz de `sdd-debugging` y cierra en `Fixed`

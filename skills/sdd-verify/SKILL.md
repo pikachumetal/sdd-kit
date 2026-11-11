@@ -59,7 +59,7 @@ Skip any step = lying, not verifying
 **The `Gate:` line.** A gate that filters (`--affected --base <ref>`, a cache) exits 0 even when it skips tasks, so wherever you record a gate —a config commit, the walkthrough's 4.1, `patch.md` §4, the baseline report— the line names every task: `` Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué>) ``, with `<N>/<M>` its tests in green over its total; a gate without tasks (`node --test`) is one entry: `` Gate: `<comando>` → <N>/<M> ``. The reason for a skip comes from the tool (`moon task <t>`: its inputs against the changed files), not from your reading. A task whose definition the change edits (its `moon.yml`, its script, the gate line of §Testing) runs without the filter before you claim the gate, and that entry replaces its `saltada` one: `<tarea>: corrió <N>/<M> (sin filtro: cambia su definición)`. Never `→ verde`, nor the exit code alone (`tests/affected-gate-red.md`, k6). The commands that ran go before the arrow, each in backticks, separated by ` · `.
 
 <!-- kit: 0312 -->
-**Running a gate.** Wherever you run the closing gate —the validation, the close, the config lane, the baseline—, from `operations.md` §Testing (without it, `tech-stack.md` §Testing); after a red, item 3 holds for any gate, the merge's `--verify` too:
+**Running a gate.** Wherever you run the closing gate —the validation, the close, the config lane, the baseline—, from `operations.md` §Testing; after a red, item 3 holds for any gate, the merge's `--verify` too:
 
 <!-- kit: 0312 -->
 1. In the validation and the close:

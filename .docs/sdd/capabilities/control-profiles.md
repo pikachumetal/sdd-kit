@@ -248,7 +248,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 ### La verificación del merge es el gate de merge, no la suite completa
 
-- GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
+- GIVEN un proyecto cuyo `steering/operations.md` §Testing separa un conjunto rápido de la suite completa
 - WHEN el cierre fusiona con `sdd merge`
 - THEN `--verify` es el conjunto rápido, que corre sobre la rama del cambio integrada con la base, antes del merge y del push; con una sola suite, es esa
 - AND el gate de cierre ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
@@ -402,7 +402,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - WHEN se ejecuta `sdd merge --sync --project-root <worktree de la 0186>`
 - THEN integra `origin/develop` en `feature/0186-x` con la misma resolución que el merge del cierre, sin coger el cerrojo, sin `--verify` y sin push; la capacidad queda con los dos requisitos (primero el de `develop`) y el roadmap con las dos filas, y escribe `base: integrada 'origin/develop' en 'feature/0186-x': <hash>`
 - AND si `origin/develop` ya es antecesora de la rama, no hace nada y escribe `base: al día: 'origin/develop' ya está en 'feature/0186-x'`
-- AND con un conflicto que no resuelve, no aborta: deja el merge a medias, con lo que sí resuelve —los registros unidos por id— ya en el índice, y sale con 1 con `base: conflicto en <ficheros>.`, que lista solo lo que queda; con filas contiguas del roadmap y la misma línea de `tech-stack.md` editadas en los dos lados, el roadmap queda unido y solo `tech-stack.md` en conflicto
+- AND con un conflicto que no resuelve, no aborta: deja el merge a medias, con lo que sí resuelve —los registros unidos por id— ya en el índice, y sale con 1 con `base: conflicto en <ficheros>.`, que lista solo lo que queda; con filas contiguas del roadmap y la misma línea de `steering/operations.md` editadas en los dos lados, el roadmap queda unido y solo `steering/operations.md` en conflicto
 - AND con cambios sin commitear, o con otro merge a medias, sale con 1 sin tocar nada: `base: 'feature/0186-x' tiene cambios sin commitear; commitéalos antes de integrar la base`
 - AND en un HEAD desacoplado sale con 1 sin tocar nada: `base: HEAD desacoplado; --sync integra la base en una rama`
 - AND con `--into`, `--tag`, `--order`, `--push`, `--verify`, `--verified-at`, `--check` o `--branch` sale con 2: `--sync no admite <opción>`

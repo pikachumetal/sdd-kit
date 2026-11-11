@@ -4,7 +4,7 @@ Used by the integrated-base and merge steps of `sdd-archive`, once the merge pol
 
 ## Integrated base
 
-After the closing commit, in the change's worktree: `sdd merge --sync --project-root "<worktree>"`, the sync merge, which stays the branch's last commit. It fetches `<remote>/<merge.into>` (without a remote, the local `merge.into`) and resolves as the merge does: `estimation-log.md` regenerated with `sdd estimation log`, the registers (`.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md`; in 3.0.0, `ROADMAP.md`, `CHANGELOG.md` and `.docs/sdd/steering/debt.md`) joined by id, hunks where both sides only add joined —two requirements added at the end of a capability too—, and what `mergiraf`, if installed, solves. The commit goes through the hook; never `--no-verify`.
+After the closing commit, in the change's worktree: `sdd merge --sync --project-root "<worktree>"`, the sync merge, which stays the branch's last commit. It fetches `<remote>/<merge.into>` (without a remote, the local `merge.into`) and resolves as the merge does: `estimation-log.md` regenerated with `sdd estimation log`, the registers (`ROADMAP.md`, `CHANGELOG.md` and `.docs/sdd/steering/debt.md`) joined by id, hunks where both sides only add joined —two requirements added at the end of a capability too—, and what `mergiraf`, if installed, solves. The commit goes through the hook; never `--no-verify`.
 
 - `base: al día: …`: there's nothing to integrate: no sync merge, no second suite, and the merge carries `--verified-at <sha of the validation's suite>` (if the validation deferred it: «No suite yet» of [closing-suite.md](closing-suite.md#after-the-sync-merge)).
 - `base: conflicto en <files>.`: the sync merge stays half-done in the worktree, with the registers already joined by id; `<files>` are the only ones left in conflict. If every file is Markdown and in each hunk both sides only add, or touch different rows or cells of a list or table, and neither changes what the other wrote —two additions to one line, a closing prefix on a row whose «Destino» the base changed—, the agent resolves it, in any profile: keep both, commit the merge through the hook, repeat the gate and name it with the line of step 6 of `sdd-archive`. If both rewrite one phrase, one hunk sets a value two ways, one side contradicts the other, any file isn't Markdown, or you doubt, resolve nothing: quote it; the close stays «No terminado» for a person, who resolves those files and commits the merge, or runs `git merge --abort`.
@@ -15,7 +15,7 @@ After the closing commit, in the change's worktree: `sdd merge --sync --project-
 
 A red is contrasted by hand, from the saved output:
 
-1. Create a detached temporary worktree of `<remote>/<merge.into>` (`git worktree add --detach <parent of the worktrees>/base-<id> <remote>/<merge.into>`), removed when done with `git worktree remove`, and prepare it as Step 2 of `sdd-worktrees` says (dependencies; `env:setup` with `environments.md`) before running anything in it: a fresh worktree without them fails on a missing module, not on the test.
+1. Create a detached temporary worktree of `<remote>/<merge.into>` (`git worktree add --detach <parent of the worktrees>/base-<id> <remote>/<merge.into>`), removed when done with `git worktree remove`, and prepare it as Step 2 of `sdd-worktrees` says (dependencies; `env:setup` with `## Entornos`) before running anything in it: a fresh worktree without them fails on a missing module, not on the test.
 2. Run the failing file alone, with the project's runner (`vitest run <file>`, `node --test <file>`), not the gate nor its whole task: on the branch and in that worktree at once, in the background in the same turn. A red with no file to name (a build, a lint) runs its task as is, without `--affected`.
 3. Read both results:
 
@@ -31,7 +31,7 @@ A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …
 
 ## The base's CI
 
-Before `sdd merge` (not before `--sync`), if «CI de la base» of `tech-stack.md` §Testing (`operations.md` in 3.0.0) declares a pipeline with the command that reads its last result, run it and read `conclusion` and `headSha`:
+Before `sdd merge` (not before `--sync`), if «CI de la base» of `operations.md` §Testing declares a pipeline with the command that reads its last result, run it and read `conclusion` and `headSha`:
 
 - `failure`: don't run `sdd merge`. Write this line, literal, in the final message: `CI de <merge.into> en rojo en <headSha>`; search the `headSha` and the workflow's name in the project's debt as «Fails without the branch» says, and with no row that names them open one with the `headSha`. The close stays «No terminado», with the red in what's pending: what fixes `<merge.into>` is a patch.
 - Any other result (`success`, `cancelled`, the empty `conclusion` of a run in progress, no runs): go on with the merge policy.
@@ -47,7 +47,7 @@ sdd merge --project-root "<worktree>" [--push] [--verify "<merge gate>"] [--veri
 
 With `--verify`, the script integrates the destination (remote and local) into the change's branch in its worktree, resolving as `--sync` does, and runs `--verify` there, without the lock. Then, under one lock per repo, it integrates the destination's remote into the local destination, merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others and pushes the destination by its name. If the destination changed meanwhile outside docs, it integrates and verifies what crosses again, up to 3 times. Without `--verify`, everything happens under the lock. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
 
-- **`--verify`**: the merge gate of `tech-stack.md` §Testing (`operations.md` in 3.0.0); with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it. The script launches it as arguments, without a shell: a gate that chains commands (`&&`, `;`, a pipe) exits 2, and becomes a moon task or a `package.json` script. With a `moon run … --affected` gate it runs only what crosses, the tasks the branch touches whose inputs the base also touched, and its `verificación: corre …` and `verificación: <tarea>: saltada (…)` lines go in the `Gate:` line.
+- **`--verify`**: the merge gate of `operations.md` §Testing; with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it. The script launches it as arguments, without a shell: a gate that chains commands (`&&`, `;`, a pipe) exits 2, and becomes a moon task or a `package.json` script. With a `moon run … --affected` gate it runs only what crosses, the tasks the branch touches whose inputs the base also touched, and its `verificación: corre …` and `verificación: <tarea>: saltada (…)` lines go in the `Gate:` line.
 - **`--verified-at`**: as in «Integrated base». The script writes `verificación: omitida: desde <sha> solo cambian docs` when it skips.
 
 ## Its outputs

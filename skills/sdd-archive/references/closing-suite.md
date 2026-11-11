@@ -8,7 +8,7 @@ If the suite already ran for this close (the validation names its sha; the closi
 
 ## What runs
 
-«Suites» is in `operations.md` §Testing, or `tech-stack.md`.
+«Suites» is in `operations.md` §Testing.
 <!-- kit: incluye suites-before-gate -->
 If the branch touches a file of «Sin filtro» —without the field, the list of «Running a gate» of `sdd-verify`: manifests, lockfiles, `.moon/**` and build and runner configs (`package.json`, `pnpm-lock.yaml`, `*.csproj`, `tsconfig*.json`, `vitest.config.*`…)—, run the gate without `--affected`, every task of the line with `(sin filtro: cambia el build)`, also the ones the filter would have run. After a red, «Running a gate» of `sdd-verify`.
 

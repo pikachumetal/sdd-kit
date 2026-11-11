@@ -24,6 +24,6 @@
 
 | If it exists… | Then… |
 | --- | --- |
-| `.docs/sdd/estimation.md` | The «Estimación y esfuerzo» block is mandatory in `plan.md`, and real time is mandatory in `walkthrough.md` |
-| `.docs/sdd/changelog.md` (2.x) | An entry through `add-to-changelog` during the closing; with `CHANGELOG.md` at the root, the cut of `sdd-end-release` writes it |
-| `.docs/sdd/architecture.md` | It's read in step 1. If it's missing and the feature has to create it, it's traced from `architecture-template.md` of `sdd-templates` |
+| `.docs/sdd/steering/estimation.md` | The «Estimación y esfuerzo» block is mandatory in `plan.md`, and real time is mandatory in `walkthrough.md` |
+| `CHANGELOG.md` at the root | The cut of `sdd-end-release` writes it |
+| `.docs/sdd/steering/architecture.md` | It's read in step 1. If it's missing and the feature has to create it, it's traced from `architecture-template.md` of `sdd-templates` |

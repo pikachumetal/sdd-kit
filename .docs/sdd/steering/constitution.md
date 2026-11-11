@@ -70,7 +70,7 @@ Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only. Las ram
 
 ## Art. VII — Dogfooding
 
-Los cambios no triviales del kit pasan por su propio flujo (arranque de feature → spec → plan → implementación → cierre), con artefactos en `.docs/sdd/specs/`; los fixes pequeños deterministas, por el carril patch.
+Los cambios no triviales del kit pasan por su propio flujo (arranque de feature → spec → plan → implementación → cierre), con artefactos en `.docs/sdd/changes/` (las anteriores a la 3.0.0, en `.docs/sdd/specs/`); los fixes pequeños deterministas, por el carril patch.
 
 *Por qué*: el kit solo se prueba de verdad usándolo, y cada sesión del propio repo es un caso de campo.
 

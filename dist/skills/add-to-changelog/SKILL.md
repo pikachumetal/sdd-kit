@@ -1,6 +1,6 @@
 ---
 name: add-to-changelog
-description: Use when an entry goes into the project's changelog — invoked by the cut of sdd-end-release with `CHANGELOG.md` at the root, by sdd-archive with `.docs/sdd/changelog.md` (2.x), or when the user asks to bring the changelog up to date.
+description: Use when an entry goes into the project's changelog — invoked by the cut of sdd-end-release with `CHANGELOG.md` at the root, or when the user asks to bring the changelog up to date.
 ---
 
 # add-to-changelog
@@ -19,7 +19,7 @@ Each entry is **one line**, exactly:
 
 - `<id>`: the ticket or module (`Ticket 217`, `M4`).
 - The sentence is for a technical reader; cause, evidence and decisions live in the linked folder.
-- `→ [ref](…)` points to the change's folder, relative to the changelog (`specs/` for older ones, and from `.docs/sdd/changelog.md` without `.docs/sdd/`). A change without a folder goes **without a link**: never make up a path.
+- `→ [ref](…)` points to the change's folder, relative to the changelog (`.docs/sdd/specs/` for older ones). A change without a folder goes **without a link**: never make up a path.
 
 ## Where it goes
 

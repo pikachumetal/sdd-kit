@@ -122,6 +122,19 @@ describe('sdd hook session-start', () => {
     expect(context).toContain('ofrece aplicarlas');
   });
 
+  it('requires the migration before any work for a 2.x project with a kit that carries v3.0.0', () => {
+    const plugin = pluginWith('3.0.0', ['v2.3.4.md', 'v3.0.0.md']);
+    const context = JSON.parse(sessionStartOutput(projectAt('2.3.4'), plugin, '26.10.0')).hookSpecificOutput.additionalContext;
+    expect(context).toContain('antes de atender ninguna petición, invoca la skill `sdd-upgrade` y migra');
+    expect(context).not.toContain('ofrece aplicarlas');
+  });
+
+  it('keeps the offer for a migration that does not reach 3.0.0', () => {
+    const plugin = pluginWith('2.3.4', ['v2.3.3.md', 'v2.3.4.md']);
+    const context = JSON.parse(sessionStartOutput(projectAt('2.3.3'), plugin, '26.10.0')).hookSpecificOutput.additionalContext;
+    expect(context).toContain('ofrece aplicarlas');
+  });
+
   it('gives the offer order only to the agent', () => {
     const output = JSON.parse(sessionStartOutput(project('pending-migration'), pluginRoot, '26.10.0'));
     expect(output.systemMessage).not.toContain('Antes de atender la primera petición');

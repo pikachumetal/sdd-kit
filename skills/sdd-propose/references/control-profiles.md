@@ -74,7 +74,7 @@ A ruling that falls in a scope brake (see «Scope brakes») is treated as a devi
 
 The **update action**, besides the above:
 - With the approval: commit the spec. The new task for a closed task, not «Task 1 — enmienda», carries its `Tras`; it reopens none and rewrites none of their commits, the history keeps one commit per task, it goes through `sdd task start` and `sdd task done` like any other, and its commit enters the review that applies. If it only changes the task in progress, the work stays in it, with the amendment's note. Without this form, 1 of 2 subjects put the change to a closed task into the task in progress, and neither stopped with 🦆 or ✋ (`tests/sdd-start-feature-0146-red.md`, u1).
-- If the amendment adds files, before asking for approval the entry names the open features of the roadmap (⏳, 🔄, ⏸️, 🧪) that declare any of those files in the `**Toca:**` of their row's brief (`ROADMAP.md`) or in «Ficheros que toca» (2.x roadmap), or says «solape no comprobable: el roadmap no declara ficheros» if the roadmap doesn't declare it. With the approval, the `**Toca:**` or the feature's row adds those files.
+- If the amendment adds files, before asking for approval the entry names the open features of the roadmap (⏳, 🔄, ⏸️, 🧪) that declare any of those files in the `**Toca:**` of their row's brief (`ROADMAP.md`) or says «solape no comprobable: el roadmap no declara ficheros» if the roadmap doesn't declare it. With the approval, the `**Toca:**` or the feature's row adds those files.
 
 **Ruling** (doesn't change the spec):
 - The agent doesn't stop: it decides, records the ruling (what it decided, why, what it costs if wrong) and goes on.
@@ -105,7 +105,7 @@ Trigger: an execution decision the spec doesn't fix and that changes the observa
 
 ### Row changed in the base
 
-Trigger: before dispatching each task of the plan, `git diff $(git merge-base HEAD <integration>) <integration> -- .docs/sdd/roadmap.md`, looking for the row of the feature in progress. Always compared: without a remote the base moves anyway, because another worktree commits to the local branch; with a remote, `git fetch` first and `origin/<integration>` is compared too. If it changed, it's a possible deviation.
+Trigger: before dispatching each task of the plan, `git diff $(git merge-base HEAD <integration>) <integration> -- ROADMAP.md`, looking for the row of the feature in progress. Always compared: without a remote the base moves anyway, because another worktree commits to the local branch; with a remote, `git fetch` first and `origin/<integration>` is compared too. If it changed, it's a possible deviation.
 
 - `pair` and `delegate`: present the change and stop.
 - `unattended`: goes on with the approved spec and records the new row as an unapproved amendment.
