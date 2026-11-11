@@ -420,6 +420,12 @@ function onlyRow0010() {
   addTableRow(DEBT, 'Lista', '| Los motivos no se traducen (castellano e inglés) | defecto del producto | cliente | bajo | `canceladas` | — | — | 0010 |');
   s.commit('docs(sdd): la 0010 sola en Now y su deuda en debt.md');
 }
+// Lo que tenía [Unreleased] ya salió en la 0.3.1: sin entradas, sin filas ✅ en Now y sin carpetas nuevas en changes/, no queda nada que publicar.
+function sealedChangelog() {
+  edit('CHANGELOG.md', ['## [Unreleased]', '## [Unreleased]\n\n## [0.3.1] - 2026-09-19']);
+  if (!has('CHANGELOG.md', '## [0.3.1] - 2026-09-19')) s.die('no se selló el changelog');
+  s.commit('docs: changelog sellado en la 0.3.1');
+}
 const openPlan0010 = () => {
   moldReservas();
   if (cell('Molde') === 'reservas-gate-plan') affectedGate();
@@ -510,6 +516,7 @@ const molds = {
   'reservas-ci-red': () => (moldReservas(), baseCi(false), ghFake(ghRun('failure', 'develop')), done0010()),
   'reservas-ci-down': () => (moldReservas(), baseCi(false), ghFake(GH_LOGGED_OUT), done0010()),
   'reservas-release-ci': () => (moldReservas(), baseCi(true), onlyRow0010(), ghFake(ghRun('success', 'develop'))),
+  'reservas-release-nothing': () => (moldReservas(), baseCi(true), onlyRow0010(), sealedChangelog(), ghFake(ghRun('success', 'develop'))),
   'reservas-release-ci-old': () => {
     moldReservas();
     baseCi(true);
