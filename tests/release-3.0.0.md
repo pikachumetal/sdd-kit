@@ -245,3 +245,50 @@ Resumen: 7 escenarios verdes (`h1`, `h2`, `c1`, `p4o`, `cs1`, `dp1` y `rn1`) y 5
 - `C1` (c1-2): «hace más de una pasada de fix» no distingue el segundo commit que `closing-the-review.md` manda para «un Important que trajo la pasada de fix» (con `sin revisar` en ✋). `c1-2` lo hace como pide la skill; lo conté como pasa con reparo. Otro reparo menor: `c1-1` y `c1-3` apuntan el Minor de la re-revisión como `Final: Ruling:`, y la skill dice que un Minor no se convierte en ruling; la fila no lo mide.
 - `L` (u1, ml1): cuenta como «mensaje al usuario» la narración en inglés de un error de herramienta («The Python heredoc…», «The `app.js` edit didn't apply…»); lo conté como falla porque la fila dice «algún mensaje», pero no es conducta de la skill.
 - `D1` (d1): no prevé la parada del carril que manda la línea 59 de `sdd-propose` (ver arriba).
+
+## GREEN de los arreglos de 0e7ccfc5, y p4 con la decisión del dev-lead
+
+Se leyeron las salidas de `grn-prp` (d1 ×4, a3 ×2), `grn-imp` (u1 ×2, dos turnos), `grn-upg` (v5 ×2) y `m-imp` (p4 ×3, p4o ×1): `.tools.txt`, `.texts.txt`, `.state.txt`, las carpetas guardadas y los `.jsonl` de los revisores de u1; las filas son las de `battery.md` tal como están hoy (P4a a P4c reescritas el 2026-11-11).
+
+| Batería:escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Sujeto 4 | Veredicto |
+| --- | --- | --- | --- | --- | --- | --- |
+| sdd-propose:d1 | D1 Depuración | pasa (reparo: carga `sdd-debugging` con `Read` de su `SKILL.md`, no con `Skill`): `patch.md` con la causa antes del `Edit` y «RED por la razón correcta»; ya no pregunta | pasa: `Skill: sdd-kit:sdd-debugging`, causa en `patch.md` y RED antes del `Edit` | pasa: `Skill: sdd-kit:sdd-debugging`, `patch.md` y RED «devuelve `cancelada Norte mar` en vez de `sin reserva Norte mar`» | pasa: `Skill: sdd-kit:sdd-debugging`, `patch.md` y test en rojo antes del `Edit` | 4/4 |
+| sdd-propose:d1 | L Idioma | pasa | pasa | pasa | pasa | 4/4 |
+| sdd-propose:d1 | **Escenario** | | | | | verde (D1 4/4) |
+| sdd-propose:a3 | A3 Carril de la petición | pasa (reparo): lee código, explica la causa y solo entonces pregunta «¿Cómo seguimos? 1. **Abrir como patch (Recomendada)**»; la fila solo castiga preguntar antes de investigar | falla: sin pregunta, pero `- Estimación: 0,5 h + gate de cierre` entra en `patch.md` (tools l. 215) después del `Edit` de `src/app.js` (l. 128) y del RED; tampoco carga `sdd-debugging` | — | — | 1/2 |
+| sdd-propose:a3 | L Idioma | pasa | pasa | — | — | 2/2 |
+| sdd-propose:a3 | **Escenario** | | | | | rojo (A3 1/2) |
+| sdd-implement:u1 | U1 Parada con corrección en su sitio | pasa: «Ya escrito en `spec.md`, sin commitear: la decisión 2, el título, el GIVEN y el THEN… y la línea de «Enmiendas»»; 🦆 y ✋ | pasa: «Dejo la corrección que recomiendo en `spec.md`, sin commitear»; línea en «Enmiendas»; 🦆 y ✋ | — | — | 2/2 |
+| sdd-implement:u1 | U1r Revisor de la enmienda | pasa: `Agent` `sonnet` con los siete puntos escritos (1) a (7); el ✋ trae «Hallazgos del revisor» | pasa (reparo): `Agent` `sonnet` que remite a los siete puntos por la ruta de `review-spec.md`, no los copia; el ✋ trae «Qué dijo el revisor» | — | — | 2/2 |
+| sdd-implement:u1 | U2 Sin reabrir | pasa: la Task 1 intacta (`c2ff5d6`); nota en la Task 2 «Spec enmendada (455bd6e): sin «quién canceló»» | pasa: la Task 1 intacta (`39aa906`); Task 2 «afectada por la enmienda 2026-11-11: sin «quién canceló»» | — | — | 2/2 |
+| sdd-implement:u1 | L Idioma | pasa (la narración «El escape `\n` se coló…» está en castellano) | pasa (ídem: «Mi script de Python metió un salto de línea real…») | — | — | 2/2 |
+| sdd-implement:u1 | **Escenario** | | | | | verde (U1, U1r, U2 y L 2/2) |
+| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` con `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` con `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` | pasa: ídem | — | — | 2/2 |
+| sdd-upgrade:v5 | V16 Lo publicado | pasa: 0032 y 0023 en Now con ✅; 0029 y 0016 fuera de `ROADMAP.md` | falla: Now sin 0023 (solo 0030, 0031, 0032 y 0033); dice «Patch 0023 · Sale… está en `CHANGELOG.md`» y el `CHANGELOG.md` solo lleva la 0016 | — | — | 1/2 |
+| sdd-upgrade:v5 | V17 Release por prefijo | pasa: `## Now — 3.0.0 · en preparación` con 0030, 0031 y 0033 (una vez); 0021, 0022 y 0024 en Next | pasa: ídem | — | — | 2/2 |
+| sdd-upgrade:v5 | V18 Ids del Backlog | pasa: Later con 0040 y 0041 (B3); la tabla pregunta «(Later con id nuevo, o qué estado toma)» | pasa: Later 0040 y 0041; «¿Qué estado le doy?» (🔄 no cabe en Later) | — | — | 2/2 |
+| sdd-upgrade:v5 | V19 Nombres en capabilities | pasa: `cierre.md` conserva «`sdd-end-patch` pasa a `sdd-archive`»; la línea 12 sale antes en el gate 5 | pasa: ídem (paso 5) | — | — | 2/2 |
+| sdd-upgrade:v5 | V20 Mediciones fechadas | pasa: `operations.md` conserva «2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0» | pasa: ídem | — | — | 2/2 |
+| sdd-upgrade:v5 | **Escenario** | | | | | rojo (V16 1/2) |
+| sdd-implement:p4 | P4a Excepción sin cerrar | pasa: sin test, sin commit (`git log` igual), «la Task 1 no queda cerrada», sin archivar | pasa: «La Task 1 sigue abierta: no hay tests y no he commiteado nada» | pasa: «La dejo sin marcar como hecha»; sin commit | — | 3/3 |
+| sdd-implement:p4 | P4b Excepción escrita | pasa: «El plan y la constitución («tests antes que código») los pedían, así que lo dejo anotado como excepción tuya» | pasa: «como pediste, no escribí `test/horas.test.js`. La constitución y el plan piden tests antes que código… es un desvío del proceso» | pasa: «como pediste. La constitución (regla 2) y el plan piden los tests RED antes del código, así que esto no cumple el flujo» | — | 3/3 |
+| sdd-implement:p4 | P4c RED visto si hay test | pasa: no escribe ningún test | pasa: ídem | pasa: ídem | — | 3/3 |
+| sdd-implement:p4 | L Idioma | pasa | pasa | pasa | — | 3/3 |
+| sdd-implement:p4 | **Escenario** | | | | | verde (3/3 en las cuatro filas) |
+| sdd-implement:p4o | P4a, P4b y P4c | pasa: para antes de tocar `src/` (el árbol solo lleva el `horas` del dev-lead); ofrece «2. Aplazo el test con una enmienda… La Task 1 queda abierta»; P4b y P4c no se activan | — | — | — | 1/1 |
+| sdd-implement:p4o | L Idioma | pasa | — | — | — | 1/1 |
+| sdd-implement:p4o | **Escenario** | | | | | verde (1/1) |
+
+Resumen: verdes `d1`, `u1`, `p4` y `p4o`; rojos `a3` (1/2) y `v5` (1/2). Antes → ahora:
+
+- `d1` (1/4 → 4/4): cerrado. Con «patch: …» ninguno pregunta «¿Abro el patch?» y los cuatro llegan a causa en `patch.md`, RED y fix.
+- `u1` (U1 y U1r 2/3 → 2/2; U2 y L 2/2): cerrado. Los dos escriben la corrección recomendada en `spec.md` y despachan el revisor antes de parar; ya no hay un sujeto que presente las opciones con «No he tocado nada».
+- `v5` (1/2 → 1/2, pero ya no por el harness): el arreglo funciona; `v5-1` cierra el turno con la pregunta de las tablas, la persona contesta y la migración se completa (V15 a V20 en verde). El rojo es V16 en `v5-2`: dice «Patch 0023 · Sale… está en `CHANGELOG.md`» y no está, así que la 0023 no queda en Now; además se contradice en el mismo mensaje («Los de 0023… llegaron después (no publicados)»). Causa: skill (la regla de qué patch posterior a la última etiqueta entra en Now no está en el paso donde se decide; `v5-1` la aplica y `v5-2` no) más variación del sujeto.
+- `p4` (P4b y P4c 0/3 → 3/3; P4a ahora 3/3): pasan con las filas reescritas, porque los tres sonnet dejan `horas` sin test, sin commit y con la Task 1 abierta, y dicen que va contra el plan y la constitución. El cambio es de rúbrica, no de skill: el comportamiento de los sonnet es el de la tanda anterior. `p4o` sigue verde.
+- `a3` (A3 1/2; no había medida en este documento): rojo por `a3-2`, que escribe `patch.md` con la estimación (tools l. 215) después del `Edit` del fix (l. 128). Causa: skill o sujeto (no cargó `sdd-debugging` ni siguió el orden causa en `patch.md` antes del fix de `patch-flow.md`), con ambigüedad de rúbrica: «antes del fix» no dice si es el `Edit` de `src/` o el commit del fix. Reparo en `a3-1`: pregunta el carril pese a «patch:», cosa que `d1` ya no hace; la fila A3 solo castiga preguntar antes de investigar.
+
+## Receta de borrado del worktree de revisión en Windows (deuda, `debt.md` línea 62)
+
+RED, reproducido el 2026-11-11 en un repo de prueba: un proceso con su directorio de trabajo dentro de `review-x` y `git worktree remove ../review-x` → `error: failed to delete '…/review-x': Permission denied`, salida 255; `git worktree list` ya no lo lista y la carpeta sigue. La receta de antes acaba ahí: la carpeta queda, como en los tickets de document-manager 0035 §5 y de la 0115 §5.
+
+GREEN: con la carpeta ya libre, la receta nueva de `encargo-revision.md` (`git worktree remove "$REVIEW_DIR" || { git worktree list | grep -qF "$REVIEW_DIR " || rm -rf "$REVIEW_DIR"; }`) sale con 0 y la carpeta desaparece. Si la carpeta desaparece a mitad de la revisión, el encargo manda leer con `git show <sha>:<ruta>`. Saldo de palabras de `sdd-verify`: −8 (el ejemplo largo de la R1 de `proportional-review-red.md` y la segunda medida de la 0058 salen; `tech-stack`, nombre 2.x, pasa a `operations.md`).

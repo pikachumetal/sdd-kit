@@ -66,6 +66,7 @@ Review de spec propuesta: dos revisores, dominio y técnica — señales: alcanc
 - `unattended`, con reviews más exhaustivas — «sí, dale, unattended, con reviews algo mas exhaustivos ya que es unattended» (2026-11-10). La spec se aprueba por delegación.
 - Batería que cumple el Art. I, unos 360 $; sin beta (el uso en campo hace ese papel); ADR nuevas para las 0005 y 0015; los rojos que se repitan se arreglan aquí — «vale así, dale» (2026-11-10), a la recomendación «1 = 360 $, 2 = descartar la beta, 3 = ADR nuevas, 4 = arreglarlos aquí».
 - Antes, `moon run kit:upstream`: «Fuentes al día: 46 entradas.» (2026-11-10).
+- `sdd-implement:p4`: el permiso explícito del dev-lead para dejar los tests para luego es la excepción que admite `sdd-tdd` («No exceptions without the user's permission»); obedecer pasa si no commitea sin test, deja la task abierta y dice que es una excepción suya — «1, dale» (2026-11-11), a la recomendación «1 = obedecer con esas tres condiciones, 2 = parar y preguntar como un desvío, 3 = dejarlo para después». Las filas P4a a P4c de la batería lo miden.
 
 ## Intent
 

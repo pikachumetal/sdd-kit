@@ -1,0 +1,100 @@
+--- [29]
+Ahora: los dos tests fallan por la causa esperada (`anulada Norte mar` en lugar de `sin reserva Norte mar`). Aplico el arreglo mínimo en `findBooking`.
+
+--- [33]
+Ahora: completo el §4 del `patch.md` y paso el patch por su revisor (sonnet) antes del commit.
+
+--- [36]
+Estoy esperando al revisor del patch. Hasta que no conteste no hago commit ni cierre.
+
+--- [40]
+**Hallazgos**
+
+1. `test/cancel-day.test.js:5-12`: los dos tests comparten el estado del módulo (`bookings`) y el segundo depende del primero.
+   - Antes del fix, el test 1 (`anular Norte mar`) anula la reserva de Norte del lunes.
+   - En el test 2, la línea 10 (`cancelar Norte mar`) pasa por casualidad, porque ya no queda ninguna reserva activa de Norte.
+   - El test 2 falla en la línea 11, con `sin reserva Norte lun` en vez de `cancelada Norte lun`. No falla en la línea 10, que es el síntoma real de `cancelar`.
+   - Por eso el RED de `patch.md:40` («2 fallos … `anulada Norte mar` en vez de …») solo describe bien el test 1. El segundo fallo es un efecto del primero.
+   - Sugerencia: aislar el estado, por ejemplo cancelando primero en un test aparte o reiniciando `bookings` entre tests. Así `cancelar` se prueba por separado y el fallo sale en la línea 10.
+   - Ordenados al revés, o ejecutados cada uno solo, ambos tests sí fallan antes del fix.
+
+2. `patch.md:40`: la descripción del RED es imprecisa por lo anterior. Debería decir que el test 2 falla en `cancelar Norte lun` por el estado que deja el test 1, o corregirse cuando se aísle el estado.
+
+**Comprobaciones sin hallazgos**
+
+- **Causa raíz (§2):** es la real. En `src/app.js:9-11` (base), `findBooking` ignoraba `day` y devolvía la primera reserva activa de la sala. `cancelBooking` (`src/app.js:13`) y `voidBooking` (`src/app.js:20`) la usan, así que ambas quedan cubiertas.
+- **Fix:** es mínimo. Es una sola línea, `src/app.js:10`, que añade `b.day === day`. Arregla `cancelar` y `anular` a la vez. El texto `sin reserva <sala> <día>` ya existía en `src/app.js:15` y `src/app.js:22`.
+- **Test:** las aserciones no están ajustadas al código. Los valores esperados coinciden con el comportamiento descrito en §1, y la línea 11 comprueba que la reserva del lunes sigue activa.
+
+No ejecuté los tests ni el lint. El análisis sale de leer el código y el diff.
+
+--- [42]
+El revisor tiene razón en un punto: el segundo test depende del estado que deja el primero. Separo `anular` en su propio fichero, para que cada test arranque con estado limpio, y vuelvo a comprobar el RED.
+
+--- [45]
+El RED ahora falla bien, uno por fichero. El `diff` avisó de una diferencia entre `src/app.js` y mi copia, probablemente solo de saltos de línea. Lo compruebo y ejecuto el verde.
+
+--- [48]
+El arreglo está puesto y las 6 pruebas pasan, con lint limpio. Hago el commit del arreglo y paso al cierre.
+
+--- [59]
+Antes de fusionar necesito tu validación del patch 0012. Esto es lo que ha cambiado y lo que he probado.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva de Norte del lunes y decía «cancelada Norte mar». Ahora dice `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva el martes → no toca el lunes | `ejecución real` + `suite` | `sin reserva Norte mar`. El test `cancel-day` comprueba después que `cancelar Norte lun` da `cancelada Norte lun`. |
+| `anular Norte mar` sin reserva el martes → no anula el lunes | `ejecución real` + `suite` | `sin reserva Norte mar`. El test `void-day` comprueba lo mismo con `anular Norte lun`. |
+| `cancelar Norte lun` sigue funcionando | `ejecución real` | `cancelada Norte lun` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y `lint: sin hallazgos`, sobre f34ac0f, ~1 s.
+
+**Sin probar**
+
+- Los dos comandos corren en procesos distintos, porque las reservas viven en memoria. Por eso desde la terminal no se ve que la del lunes sobrevive tras cancelar el martes. Eso lo comprueban los dos tests nuevos, que usan un solo proceso.
+- `sdd merge --check` se para con: `falta 'merge.into' o 'merge.noFf'` en `.docs/sdd/sdd-kit.json`. Antes del merge necesito que me digas esos valores: ¿`merge.into: develop` y `merge.noFf` true o false?
+- Para el plan B del panel he creado `.temp/validation/`, y `.temp/` no está en el `.gitignore`. Propongo añadirlo.
+
+Panel: plan B en http://127.0.0.1:55445/
+
+**Guion**
+
+Rama `feature/0012-cancelar-dia` · worktree `<run>/repo`
+
+Es una CLI y no hay entorno que arrancar. Basta un terminal:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar el martes, que no tienes reservado → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Anular el martes → `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+3. Cancelar la reserva del lunes → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
