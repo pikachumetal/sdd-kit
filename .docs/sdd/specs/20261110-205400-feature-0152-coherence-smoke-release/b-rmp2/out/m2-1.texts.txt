@@ -1,0 +1,60 @@
+--- [2]
+Son tres funcionalidades a la vez (ocupación por sala, exportación a Excel y aviso semanal), así que según las reglas del proyecto entro por `sdd-roadmap`.
+
+--- [15]
+Estoy registrando la propuesta y las tres filas en el roadmap. Solo quedan los dos fallos de forma que ya estaban antes, así que ahora publico la reserva de ids.
+
+--- [20]
+Lo he dejado planificado en el roadmap, sin tocar código. He partido el módulo en tres funcionalidades y lo he commiteado en `develop` (`a396d98`), sin push.
+
+| Id | Qué | Va después de |
+|---|---|---|
+| 0009 | Informe de ocupación por sala (`informe [--semana AAAA-Www]`) | — |
+| 0010 | Exportar el informe a Excel (`informe --exportar`) | 0009 |
+| 0011 | Aviso semanal a los responsables (`aviso-semanal`) | 0009 y la fila 1 |
+
+La propuesta (0008) está en `.docs/sdd/specs/20261111-100931-proposal-0008-reports/proposal.md`, con las reglas y un ejemplo con datos para cada una. Los detalles que he decidido yo:
+
+- **Ocupación:** horas reservadas entre 60 h por sala y semana (lunes a viernes, 08:00 a 20:00), con un decimal. Por ejemplo, Norte con lun 10:00-12:00 da 3,3 %. Las reservas semanales cuentan todas las semanas, y una franja fuera de horario solo cuenta la parte que cae dentro.
+- **Excel:** un CSV en UTF-8 con BOM y separador `;`, que Excel en castellano abre sin asistente. El stack no admite dependencias y un `.xlsx` real las necesitaría. **Si el cliente quiere `.xlsx`, hay que confirmarlo.**
+- **Aviso semanal:** es un comando que lanza el planificador del sistema los lunes, porque la app no tiene planificador. Los responsables de cada sala salen de un fichero de configuración. Reutiliza el envío de correo de la fila 1, por eso 0011 va después de ella.
+
+Esto es lo que no ha ido limpio:
+- `sdd roadmap publish` se negó, porque `develop` está sacada en este worktree y `roadmap.md` aparecía modificado. Hice `git commit` a mano de esos dos ficheros, sin el bloqueo de `sdd merge`.
+- `sdd roadmap check` sigue dando 2 fallos de forma que ya había antes y no son míos: la cabecera de «Deuda técnica» y el título de «v0.3.0». Los corrige la migración v2.3.0.
+
+El primero es el 0009. Su prompt de arranque:
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0009 con sdd-propose, carril feature: un informe de ocupación por sala, hoy inexistente, en un comando `informe` de src/app.js.
+
+Alcance:
+- `informe [--semana AAAA-Www]` en src/app.js: una fila por sala con horas reservadas, horas disponibles y % de ocupación; sin semana, la actual
+
+Fuera de alcance:
+- exportar a Excel: 0010
+- aviso semanal a los responsables: 0011
+
+Decisiones ya tomadas:
+- Ocupación = horas reservadas ÷ 60 h (lunes a viernes, 08:00-20:00), con un decimal, porque es la jornada en que se reservan salas
+- Las reservas `--cada-semana` cuentan en todas las semanas, y una franja fuera de 08:00-20:00 solo cuenta la parte de dentro
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261111-100931-proposal-0008-reports/proposal.md, §Reglas de negocio y §Reparto
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y `node src/app.js informe` imprime `Norte 2 h / 60 h 3,3 %` y `Sur 0 h / 60 h 0,0 %` con los datos de ejemplo.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

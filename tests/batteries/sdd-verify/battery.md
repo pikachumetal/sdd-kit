@@ -1,8 +1,8 @@
 # Batería de regresión — `sdd-verify`
 
-Cómo comprueba el kit el trabajo antes de darlo por hecho: la evidencia antes de afirmar, la revisión final de rama por ejes y su cierre único. Nace en la feature 0148 con su batería completa (Art. I). Los escenarios del hilo entran por `sdd-implement`, que es quien carga `sdd-verify` en el contrato de cierre de cada task y tras la última, con la petición «Invoca la skill sdd-kit:sdd-implement y sigue.»: un escenario de mitad de flujo sin ella no carga la skill (`tech-stack.md`, «Un escenario de mitad de flujo carga la skill»).
+Cómo comprueba el kit el trabajo antes de darlo por hecho: la evidencia antes de afirmar, la revisión final de rama por ejes y su cierre único. Nace en la feature 0148 con su batería completa (Art. I). Los escenarios del hilo entran por `sdd-implement`, que es quien carga `sdd-verify` en el contrato de cierre de cada task y tras la última, con la petición «Invoca la skill sdd-kit:sdd-implement y sigue.»: un escenario de mitad de flujo sin ella no carga la skill (`.docs/sdd/steering/operations.md`, «Un escenario de mitad de flujo carga la skill»).
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-verify`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado. El molde es `reservas` de la batería de `sdd-implement` (`../sdd-implement/mold-reservas/` y sus `fixtures/`), perfil `delegate`, `execution: native`, con la 0010 (motivo al cancelar) abierta: así los dos comparten la app y el plan. Lo propio de esta batería está en `fixtures/`.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-verify`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado. El molde es `reservas` de la batería de `sdd-implement` (`../sdd-implement/mold-reservas/` y sus `fixtures/`), perfil `delegate`, `execution: native`, con la 0010 (motivo al cancelar) abierta: así los dos comparten la app y el plan. Lo propio de esta batería está en `fixtures/`.
 
 Montaje por escenario, en `subject.mjs`:
 

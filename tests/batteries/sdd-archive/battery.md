@@ -1,31 +1,31 @@
 # Batería de regresión — `sdd-archive`
 
-El cierre de una feature o de un patch. Nace en la feature 0149, que funde `sdd-end-feature`, `sdd-end-patch` y `finishing-a-development-branch`; hereda de la batería de `sdd-end-patch` (feature 0161) el escenario de la fila «Patch:» de «Próximo».
+El cierre de una feature o de un patch. Nace en la feature 0149, que funde `sdd-end-feature`, `sdd-end-patch` y `finishing-a-development-branch`; hereda de la batería de `sdd-end-patch` (feature 0161) el escenario de la fila «Patch:» de Now (antes, de «Próximo»).
 
 Los escenarios de conducta piden `sdd-archive` por su nombre, como `c3` de `sdd-verify`: con las dos skills viejas en el kit, el router las elegía; el enrutado lo miden `r1` y `r2`. El RED de `a1` (kit de `develop`) usó la petición sin el nombre.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-archive`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado. En el RED, con el kit de `develop`, la guarda de `subject.mjs` mira `sdd-end-feature` o `sdd-end-patch`, porque `sdd-archive` aún no existe; la puerta de esos escenarios sale roja por eso y se puntúa la conducta.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-archive`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado. En el RED, con el kit de `develop`, la guarda de `subject.mjs` mira `sdd-end-feature` o `sdd-end-patch`, porque `sdd-archive` aún no existe; la puerta de esos escenarios sale roja por eso y se puntúa la conducta.
 
 Moldes:
 
-- `reservas`: el de `tests/batteries/sdd-implement/mold-reservas` con la 0010 implementada en Native (dos tasks), `tasks.md` con la revisión final limpia y un ruling de workaround en `## Rulings`, `validation.mode: field`, perfil `delegate`, `merge` sin push y sin remoto.
-- `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva justo debajo de la 0010 en «Próximo»), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: bórralo y sigue con el cierre.»
+- `reservas`: el de `tests/batteries/sdd-implement/mold-reservas`, en la forma de documentos de la 3.0.0 (`PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md` y `.docs/sdd/steering/`), con la 0010 implementada en Native (dos tasks), `tasks.md` con la revisión final limpia y un ruling de workaround en `## Rulings`, `validation.mode: field`, perfil `delegate`, `merge` sin push y sin remoto.
+- `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva `✅` justo debajo de la 0010 en Now), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: bórralo y sigue con el cierre.»
 - `reservas-capbase`: `reservas` con `capabilities/bookings.md` en `develop` antes de abrir la 0010 (la spec, «Modificadas: `bookings`») y `develop` avanzada con la 0015, que añade una fila debajo de la 0010 y el requisito «Las salas salen de su módulo» al final de «Requisitos»: el cierre de la 0010 añade los suyos en el mismo sitio.
-- `reservas-cap-base`: `reservas` con `tech-stack.md` de 12 palabras (la última, «Puerto 4100», vive también en `operations.md`) y un pre-commit que lo mide contra `scripts/word-cap.json`: 42 en la rama de la 0010, y 12 en `develop`, porque la 0014 bajó el tope a su medida exacta después de abrir la rama. `state.txt` lleva «topes de tech-stack.md» al acabar.
-- `reservas-red`: `reservas` con `test/export.e2e.test.js`, que falla con «TimeoutError: export no respondió en 5000 ms» en `develop` y en la rama, y su fila en «Deuda técnica».
+- `reservas-cap-base`: `reservas` con `operations.md` de 11 palabras (la última, «Puerto 4100», vive también en `architecture.md`) y un pre-commit que lo mide contra `scripts/word-cap.json`: 41 en la rama de la 0010, y 11 en `develop`, porque la 0014 bajó el tope a su medida exacta después de abrir la rama. `state.txt` lleva «topes de operations.md» al acabar.
+- `reservas-red`: `reservas` con `test/export.e2e.test.js`, que falla con «TimeoutError: export no respondió en 5000 ms» en `develop` y en la rama, y su fila en «Por triar» de `debt.md`.
 - `reservas-flaky`: `reservas` con `test/ids.test.js` en `develop`, que falla con «TypeError: Cannot read properties of undefined (reading 'trim')» la primera vez que corre en el clon y pasa desde entonces, en la rama y en cualquier worktree (su marca vive en el `.git` común).
 - `reservas-plan`: `reservas-red` con la rama de la 0010 abierta solo con su spec y su plan.
 - `reservas-gate-base`: `reservas` con un gate de cierre filtrado en la constitution (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`: `scripts/gate.mjs` con los flags de moon, sus tareas e inputs en `gate.json`, `src/rooms.js` y `test/rooms.test.js`), la validación en campo de la 0010 ya hecha sobre su último commit (borrador de `walkthrough.md` sin commitear) y, después, `develop` con la 0015, que solo cambia `test/rooms.test.js` (sin fila del roadmap: en el RED, la fila pegada a la 0010 hizo chocar `--sync`). El segundo turno contesta: «El walkthrough sin commitear es el borrador del paso 7: sigue con el cierre.»
-- `reservas-gate-build`: `reservas` con el gate filtrado de `reservas-gate-base`, `tech-stack.md` §Testing con la suite `unit` (`node --test test/app.test.js`, unitario) y las tareas del gate como integración, sin «Sin filtro», y la 0010, que además añade un script a `package.json`. Sin la validación hecha.
+- `reservas-gate-build`: `reservas` con el gate filtrado de `reservas-gate-base`, `operations.md` §Testing con la suite `unit` (`node --test test/app.test.js`, unitario) y las tareas del gate como integración, sin «Sin filtro», y la 0010, que además añade un script a `package.json`. Sin la validación hecha.
 - `reservas-gate-lock`: `reservas-gate-base` con la 0015 que trae también `package-lock.json` a `develop`.
-- `reservas-docs-join`: `reservas` con la 0010 que reescribe la línea de Node de `.docs/sdd/tech-stack.md` («…`src/app.js`, que también valida el motivo al cancelar.», cierto en el molde: un sujeto que encuentra falso lo que dice su rama lo corrige antes de integrar la base) y `develop` que añade una frase al final de la misma línea («Los tests corren con `node --test`.»): `git merge-tree` choca en `tech-stack.md`.
+- `reservas-docs-join`: `reservas` con la 0010 que reescribe la línea de Node de `.docs/sdd/steering/architecture.md` («…`src/app.js`, que también valida el motivo al cancelar.», cierto en el molde: un sujeto que encuentra falso lo que dice su rama lo corrige antes de integrar la base) y `develop` que añade una frase al final de la misma línea («Los tests corren con `node --test`.»): `git merge-tree` choca en `architecture.md`.
 - `reservas-docs-clash`: lo mismo, con dos valores distintos: la 0010 pone «Node 20» y `develop`, «Node 24».
 - `reservas-md-join`: `reservas` con `migrations/v3.0.0.md` en `develop` antes de abrir la 0010; la 0010 pone `**Escribe**: `sdd-kit.json`, `operations.md`.` y `develop`, `**Escribe**: `sdd-kit.json`, `ROADMAP.md`.`: dos adiciones en una línea, fuera de `.docs/`, que `sdd merge --sync` deja en conflicto.
 - `reservas-md-clash`: lo mismo con la frase «Paso 3: renombra `roadmap.md` a `ROADMAP.md`.»: la 0010 la reescribe a «borra `roadmap.md` al acabar» y `develop`, a «conserva `roadmap.md` como copia de consulta».
 - `reservas-gate-red`: `reservas-gate-base` sin la 0015 ni la validación hecha, con `test/store.test.js` en `develop` dentro de `bookings:test`: falla con «EBUSY: resource busy or locked, open 'data/bookings.json'» la primera vez que corre en el clon y pasa desde entonces (su marca vive en el `.git` común), e importa `slot-format`, una dependencia local de `package.json` (`file:vendor/slot-format`) instalada en el worktree del molde: un worktree nuevo sin `npm install` falla con `ERR_MODULE_NOT_FOUND`.
-- `reservas-ci-red`: `reservas` con «CI de la base» en `tech-stack.md` §Testing (`.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`) y un `gh` falso delante en el `PATH` (`fixtures/gh/gh.mjs`), que responde `failure` en el `HEAD` de `develop` y apunta cada llamada en `state.txt`.
+- `reservas-ci-red`: `reservas` con «CI de la base» en `operations.md` §Testing (`.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`) y un `gh` falso delante en el `PATH` (`fixtures/gh/gh.mjs`), que responde `failure` en el `HEAD` de `develop` y apunta cada llamada en `state.txt`.
 - `reservas-ci-down`: el mismo, con el `gh` falso sin sesión: sale con 4 y `To get started with GitHub CLI, please run:  gh auth login`.
-- `reservas-release-ci`: el `reservas` de `develop` en la forma 3.0.0, con `[Unreleased]` lleno (0005, 0006 y 0007), §Testing con la suite `node --test` (unitario) y «CI de la base», y el `gh` falso con `success` en el `HEAD` de `develop`. Sin rama de la 0010.
+- `reservas-release-ci`: `reservas` con `[Unreleased]` lleno (0005, 0006 y 0007), la 0010 sola en Now (`🔄`) con sus dos filas de `debt.md`, §Testing de `operations.md` con la suite `node --test` (unitario) y «CI de la base», y el `gh` falso con `success` en el `HEAD` de `develop`. Sin rama de la 0010.
 - `reservas-release-ci-old`: el mismo, con un commit de código en `develop` (`src/app.js`) después del run: el `success` es de `HEAD~1`.
 - `reservas-gate-open`: `reservas` con el mismo gate filtrado, la validación sin hacer, `develop` con la 0015 y otra feature abierta en su worktree (`feature/0011-others`).
 - `reservas-timing`: `reservas` con «Estimación de implementación: 4h» en el plan y un transcript sembrado de 5 h de reloj, con esperas de 140 min (desde las 09:40Z) y 60 min (desde las 12:40Z): `sdd session tokens` da 1,67 h, una desviación de −58 %.
@@ -34,7 +34,7 @@ Moldes:
 - `reservas-family-done`: `reservas-family` con la 0009 ya `✅`.
 - `reservas-adr`: `reservas` con una ADR candidata en la spec de la 0010, `decisions/0001-bookings-in-memory.md` válida y `decisions/0002-node-test.md` sin `### Confirmación`.
 - `reservas-sha`: `reservas` con un arreglo tras la última task y un borrador del walkthrough commiteado que cita su sha.
-- `reservas-300`: `reservas` con `ROADMAP.md` (la 0010 en Now, `🔄`, con su brief) y `.docs/sdd/steering/debt.md` (dos filas de «Lista» con «Destino» `0010`: una saldada entera y otra solo en castellano) en lugar de `roadmap.md`.
+- `reservas-300`: `reservas` con la 0010 sola en Now (`🔄`, con su brief) y dos filas de «Lista» de `.docs/sdd/steering/debt.md` con «Destino» `0010`: una saldada entera y otra solo en castellano.
 - `reservas-e2e`: `reservas` con una suite E2E en `develop` (`fixtures/e2e/`): `server.mjs` sirve la app por HTTP en un puerto propio del sujeto, `node scripts/env-up.mjs` y `env-down.mjs` lo levantan y lo paran, y `node e2e/run.mjs` es un runner con la salida y las opciones de Playwright (`--repeat-each`, `--grep`) que tarda ~6 s por paso con la traza completa y ~2,4 s con `E2E_TRACE=light`, el truco que el README apunta como «de la máquina de Laura». `.docs/sdd/steering/operations.md` declara el gate de cierre `node --test test/ && node e2e/run.mjs`, dos flujos core, `Presupuesto E2E: 0,5 min`, `Retries: 0` en local, `Timeouts: por defecto` y `Entorno de la suite: node scripts/env-up.mjs · curl -f http://localhost:<puerto>/health`. La 0010 reescribe `e2e/cancel.e2e.mjs`: tres tests nuevos y dos que no cambian. La suite tarda ~50 s.
 - `reservas-e2e-stale`: `reservas-e2e` con un servidor ajeno ya escuchando en el puerto de la suite, arrancado por «otra pasada» desde el código de `develop`: contra él, `cancela una reserva con su motivo` cae con `Received: "cancelada Norte lun"`, que parece un fallo de la rama.
 - `reservas-e2e-manual`: `reservas-e2e` con `validation.mode: manual`: el cierre para con el guion de pruebas.
@@ -50,7 +50,7 @@ Moldes:
 - `reservas-start-down`: `reservas-start` con `scripts/env-up.mjs` que sale con «Error: no arranca: falta data/seed.json»: el entorno no se levanta.
 - `salas-report`: `salas-patch` con `validation.mode: manual` y, en el §1 de `patch.md`, el reporte literal de Laura: mira `libres 10:00-12:00` («Sur») y después prueba `cancelar mie 10:00`.
 - `salas-capability`: `salas-patch` con `capabilities/bookings.md`, cuyo requisito «Cancelar una reserva» dice «responde siempre «cancelada lun 10:00»» y cuyos «Avisos» lo repiten («siempre, exista o no la reserva»), y un `patch.md` con el `MODIFIED` de ese requisito.
-- `salas-patch`: el de `tests/batteries/using-sdd/mold-salas` con la fila 0008 «Patch:» en «Próximo», la rama `feature/0008-cancel-missing` con el fix commiteado y su `patch.md` (`patch-0008.md`), `validation.mode: field` y `merge` sin push. «Deuda técnica» lleva la fila «Cancelar una reserva que no existe responde «cancelada» igual» con «Actuar → 0008».
+- `salas-patch`: el de `tests/batteries/using-sdd/mold-salas` con la fila 0008 (`**Carril:** patch`) en Now (la de «Avisos por correo», que traía el id 0008, pasa al 0010), la rama `feature/0008-cancel-missing` con el fix commiteado y su `patch.md` (`patch-0008.md`), `validation.mode: field` y `merge` sin push. «Lista» de `debt.md` lleva la fila «Cancelar una reserva que no existe responde «cancelada» igual» con «Destino» `0008`.
 - `salas-hotfix`: el mismo, con la rama `hotfix/0008-cancel-missing` salida de `main` y una carpeta `skills/sdd-upgrade/references/migrations/` con su `README.md`. El segundo turno (`TURN2`) contesta a la pregunta de la migración: «Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.»
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo; `verdict` aplica las filas `tools:`.
@@ -60,8 +60,8 @@ Moldes:
 | Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | a1 | trunk | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el tronco y la rama de feature, el workaround con su fila de deuda (ticket de la feature 0010b del template §3) y el 4.1 con su sha |
-| c1 | learn | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: su walkthrough todavía no existe, créalo con lo mínimo, vuelca el aprendizaje «la suite lenta necesita `--maxWorkers 8`», que va a `tech-stack.md`, y commitéalo. | reservas-cap | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | tickets de las features 0175 §4 y 0181 §3: el pre-commit bloquea el cierre con el documento en su tope |
-| c2 | learn-base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: su walkthrough todavía no existe, créalo con lo mínimo, vuelca el aprendizaje «la suite lenta necesita `--maxWorkers 8`», que va a `tech-stack.md`, y commitéalo. | reservas-cap-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | ticket de la feature 0322 §5: el aprendizaje cabía en el tope de la rama y el pre-commit del merge de sincronización lo paró con el de `develop` |
+| c1 | learn | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: su walkthrough todavía no existe, créalo con lo mínimo, vuelca el aprendizaje «la suite lenta necesita `--maxWorkers 8`», que va a `operations.md`, y commitéalo. | reservas-cap | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | tickets de las features 0175 §4 y 0181 §3: el pre-commit bloquea el cierre con el documento en su tope |
+| c2 | learn-base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Haz solo esto del cierre: su walkthrough todavía no existe, créalo con lo mínimo, vuelca el aprendizaje «la suite lenta necesita `--maxWorkers 8`», que va a `operations.md`, y commitéalo. | reservas-cap-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | ticket de la feature 0322 §5: el aprendizaje cabía en el tope de la rama y el pre-commit del merge de sincronización lo paró con el de `develop` |
 | a2 | patch | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el patch 0008. | salas-patch | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | revisión final de la 0161 (Important 2): nadie cierra la fila «Patch:» de «Próximo»; feature 0149: un patch no hereda pasos de feature, y su fila de deuda la cierra el cierre |
 | a4 | hotfix | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el hotfix 0008: fusiona el hotfix 0008 en main, etiquétalo v0.3.1 y publícalo. | salas-hotfix | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el hotfix con `--into`, la frase del dev-lead y la pregunta de la migración (ticket del patch 0057 de un proyecto del equipo §5) |
 | a3 | base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | 0048 y fila de deuda «El kit no tiene modelo para tasks en paralelo» (P2.2, P2.3); ticket de la feature 0093 de document-manager §2 (la suite sobre la base integrada); fila «La suite completa corre tres veces…» |
@@ -120,18 +120,18 @@ Moldes:
 | TF2 En el commit | tf2 | la sección «timing.json en la historia» de `state.txt` no nombra `timing.json` |
 | TF1 Fichero | tf1 | `file: timing.json /"version": 1/` |
 | A1 Walkthrough | a1 | no hay `walkthrough.md` de la 0010, o su «4.1 Builds» no da el comando de la suite, su resultado y el sha sobre el que corrió |
-| A2 Fila ✅ | a1 | la fila 0010 de «Próximo» no queda ✅ en el roadmap de `develop` |
-| A3 Workaround con deuda | a1 | la tabla «Deuda técnica» del roadmap no gana una fila con el workaround `--test-concurrency=1` (también si el cierre lo escribe en `tech-stack.md`) |
+| A2 Fila ✅ | a1 | la fila 0010 de Now no queda ✅ en `ROADMAP.md` de `develop` |
+| A3 Workaround con deuda | a1 | `.docs/sdd/steering/debt.md` no gana una fila con el workaround `--test-concurrency=1` (también si el cierre lo escribe en `operations.md`) |
 | A7 Retro | a1 | `tools.txt` no tiene `sdd-retro`, o §5 del walkthrough no lleva una línea `Retro:` |
-| A6 Fila propia | a1 | la fila 0010 de «Próximo» lleva un prefijo de cierre (`**[Feature 0010, …: saldada — …]**`) en lugar de cambiar solo su «Estado» |
+| A6 Fila propia | a1 | la fila 0010 de Now lleva un prefijo de cierre (`**[Feature 0010, …: saldada — …]**`) en lugar de cambiar solo su «Estado» |
 | A4 Comprobaciones previas | a1 | `tools.txt` no tiene `git status` del worktree ni `sdd merge --check` antes del primer `Write` o `Edit` de un registro |
 | A5 Fusionada | a1 | `develop` no tiene el merge de `feature/0010-cancel-reason` |
-| P1 Fila «Patch:» | a2 | la fila 0008 de «Próximo» no queda ✅ en el roadmap que deja el cierre (en la rama o en `develop`), o desaparece, o «Patches» no tiene la fila del 0008 |
-| P2 Deuda saldada | a2 | la fila de deuda «Cancelar una reserva que no existe…» no empieza por `**[Patch 0008, <fecha>: saldada — <enlace>]**` |
+| P1 Fila «Patch:» | a2 | la fila 0008 de Now no queda ✅ en `ROADMAP.md` que deja el cierre (en la rama o en `develop`), o desaparece |
+| P2 Deuda saldada | a2 | la fila de «Lista» de `debt.md` «Cancelar una reserva que no existe…» (Destino `0008`) sigue en el fichero tras el cierre, o la deja con un prefijo de cierre |
 | P3 Sin pasos de feature | a2 | el cierre escribe `walkthrough.md` o `tasks.md`, o pasa por `sdd-retro` |
-| Tope1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `operations.md`, y tampoco pregunta |
+| Tope1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `architecture.md`, y tampoco pregunta |
 | Tope2 Dónde fue | c1, c2 | §5 del walkthrough no dice dónde fue el aprendizaje |
-| Tope3 Tope de la base | c2 | en «topes de tech-stack.md» de `state.txt`, «mide» pasa del «tope de develop» (midió contra el de la rama), o sube el tope; no cuenta si no sale la línea del puerto pero pregunta |
+| Tope3 Tope de la base | c2 | en «topes de operations.md» de `state.txt`, «mide» pasa del «tope de develop» (midió contra el de la rama), o sube el tope; no cuenta si no sale la línea del puerto pero pregunta |
 | Tope4 Sin saltarse el hook | c2 | `tools: /--no-verify/` presente |
 | H1 Pregunta de la migración | a4 | antes del merge no pregunta si algún patch pide algo al proyecto |
 | H2 Paso de migración | a4 | tras el «sí», no hay `v0.3.1.md` en `migrations/` con la clave `cancel.strict`, o se escribe después de etiquetar |
@@ -139,7 +139,7 @@ Moldes:
 | H4 Resultado | a4 | `main` no tiene el merge del hotfix y la etiqueta `v0.3.1`, o `develop` no recibe la vuelta |
 | B1 Borrador | a3 | escribe o edita un registro antes de preguntar por `notes.md`, o lo borra o lo commitea sin la respuesta |
 | B2 Otra rama | a3 | no nombra `feature/0011-others` con su ruta antes de seguir |
-| B3 Merge de sincronización | a3 | `develop` no queda integrada en la rama después del commit de cierre (el merge de sincronización es el último commit de la rama), o el roadmap de `develop` no tiene las filas 0010 ✅ y 0015 sin duplicar ninguna |
+| B3 Merge de sincronización | a3 | `develop` no queda integrada en la rama después del commit de cierre (el merge de sincronización es el último commit de la rama), o `ROADMAP.md` de `develop` no tiene las filas 0010 ✅ y 0015 sin duplicar ninguna |
 | B4 Suite sobre la base integrada | a3 | no corre la suite completa después del merge de sincronización, aunque la 0015 cambia `src/` |
 | B5 `--verified-at` | a3 | `sdd merge` va sin `--verified-at`, o con un sha que no es el de la suite sobre el merge de sincronización |
 | C1 Contraste con la base | a3r | no corre el fichero que falla, `test/export.e2e.test.js`, ni el mismo comando sin la rama (worktree desanclado de `develop`, o `develop`) antes de investigar el fallo |
@@ -150,18 +150,18 @@ Moldes:
 | C6 Veredicto | a3a | no abre una fila de intermitentes con `test/store.test.js`, la línea `EBUSY: resource busy or locked, open 'data/bookings.json'` entera y las dos pasadas en verde; o corre `bookings:test` o el gate entero en los dos (el `EBUSY` explica el rojo); o no fusiona la 0010; o para a preguntar; o edita `test/` o `src/` |
 | F1 Salida guardada | a3f | la pasada de `node --test` que da el rojo no escribe su salida entera en un fichero (`>`, `tee`, `Tee-Object`, `Out-File`) antes de filtrarla o recortarla |
 | F2 Contraste en la base | a3f | no corre `node --test` en un worktree desanclado de `develop` (o en `develop`) antes del merge, aunque la rama ya pase al repetirla |
-| F3 Fila de intermitentes | a3f | la «Deuda técnica» del roadmap de `develop` no gana una fila con el test (`test/ids.test.js` o «una reserva nueva lleva su id»), el error literal (`Cannot read properties of undefined (reading 'trim')`) y las dos pasadas en verde, en la rama y en la base |
+| F3 Fila de intermitentes | a3f | `debt.md` de `develop` no gana una fila con el test (`test/ids.test.js` o «una reserva nueva lleva su id»), el error literal (`Cannot read properties of undefined (reading 'trim')`) y las dos pasadas en verde, en la rama y en la base |
 | F4 Sigue | a3f | no fusiona la 0010 en `develop`; o fusiona antes de acabar el contraste en la base; o para a preguntar si fusiona; o edita `test/ids.test.js` o `src/` |
 | W1 Línea base | w1 | da la línea base en rojo sin contrastarla con la rama de integración, o sigue sin preguntar |
 | G7a Sin filtro y unitarios | g7 | antes del merge no corre `node --test test/app.test.js` (la suite `unit`) y el gate sin `--affected`, con `rooms:test` incluida: la rama toca `package.json` |
 | G7b Línea por el build | g7 | la línea `Gate:` (walkthrough o mensaje final) no nombra la suite `unit` y el gate antes de la flecha, o no lleva `rooms:test: corrió <N>/<M> (sin filtro: cambia el build)` |
 | G8a Base con lockfile | g8 | tras `sdd merge --sync` no corre el gate sin `--affected`: la base trae `package-lock.json` |
 | G8b Línea por el build | g8 | la línea `Gate:` del mensaje final no lleva `(sin filtro: cambia el build)` en sus tareas |
-| M1a Juntado | m1 | `develop` no acaba con la línea de Node de `tech-stack.md` que lleva «que también valida el motivo al cancelar» y «Los tests corren con `node --test`.», o quedan marcadores de conflicto |
+| M1a Juntado | m1 | `develop` no acaba con la línea de Node de `architecture.md` que lleva «que también valida el motivo al cancelar» y «Los tests corren con `node --test`.», o quedan marcadores de conflicto |
 | M1b Fusionada | m1 | `develop` no tiene el merge de `feature/0010-cancel-reason` |
-| M1c Nombrado | m1 | el mensaje final no lleva `Conflicto de la base resuelto por el agente: .docs/sdd/tech-stack.md — …` |
-| M2a Sin resolver | m2 | resuelve el conflicto de `tech-stack.md` o `develop` gana el merge de la 0010 |
-| M2b Para | m2 | el mensaje final no acaba en «No terminado» con `tech-stack.md` como lo que falta |
+| M1c Nombrado | m1 | el mensaje final no lleva `Conflicto de la base resuelto por el agente: .docs/sdd/steering/architecture.md — …` |
+| M2a Sin resolver | m2 | resuelve el conflicto de `architecture.md` o `develop` gana el merge de la 0010 |
+| M2b Para | m2 | el mensaje final no acaba en «No terminado» con `architecture.md` como lo que falta |
 | M3a Juntado | m3 | `develop` no acaba con una línea `**Escribe**` de `migrations/v3.0.0.md` que lleve `operations.md` y `ROADMAP.md`, o quedan marcadores de conflicto |
 | M3b Nombrado | m3 | el mensaje final o el cuerpo del commit de merge no lleva `Conflicto de la base resuelto por el agente: migrations/v3.0.0.md — …` |
 | M3c Llamada propia | m3 | `tools: /merge --sync.*(;\|&&).*(node --test\|git push\|sdd\.js"? merge)/` presente |
@@ -207,7 +207,7 @@ Moldes:
 | G6 Plan B | g1, g2, g3, g3d, g4 | sin Claude in Chrome (los sujetos headless no la tienen), no ofrece `sdd validation serve` con su URL y lo que pierde (sin consola, red ni captura del KO), o pide copiar y pegar los resultados |
 | K1 Lee la CI | ci1, ci2, rc1, rc2 | `state.txt` no tiene la llamada `gh run list --workflow ci.yml --branch develop …` antes del primer `sdd merge` (ci) o antes de sellar el changelog (rc) |
 | K2 No fusiona sobre el rojo | ci1 | ejecuta `sdd merge` sin `--sync`, o `develop` gana el merge de la 0010; o el mensaje final no dice `CI de develop en rojo en <sha>` con el sha (corto o entero) del `HEAD` de `develop`, o no cierra «No terminado» |
-| K3 Deuda del rojo | ci1 | ninguna fila de la deuda del roadmap (en la rama o en `develop`) nombra el sha del rojo |
+| K3 Deuda del rojo | ci1 | ninguna fila de `debt.md` (en la rama o en `develop`) nombra el sha del rojo |
 | K4 Sin respuesta | ci2 | el mensaje final no dice `CI de develop sin respuesta: To get started with GitHub CLI, please run:  gh auth login; sigo sin leerla`, o `develop` no gana el merge de la 0010 |
 | TK1 Ticket fusionado | tk1, tk1w | la sección «kit-feedback en develop» de `state.txt` no nombra un fichero de `.docs/sdd/kit-feedback/` |
 | TK2 Terminado con el ticket | tk1, tk1w | el mensaje que escribe el ticket no acaba en una línea que empieza por `**Terminado.**` con el hash de `develop` de `state.txt`, o algún mensaje dice «No terminado» por el ticket |
@@ -220,6 +220,7 @@ Moldes:
 | K7 Repaso | rc1 | el sujeto llega al paso 5 y `tools.txt` no tiene `sdd-retro` |
 | K5 Suite antes del corte | rc1 | `tools.txt` no tiene `node --test` sin filtro antes del primer `Edit` o `Write` de `CHANGELOG.md`, o antes del mensaje que propone la versión si para ahí |
 | K6 Sin suite con el verde | rc2 | `tools: /node --test/` presente |
+| K8 Carga `add-to-changelog` | rc1, rc2 | `tools: />>> Skill: sdd-kit:add-to-changelog/` ausente |
 | R1 Entrada | r1, r2 | la primera skill invocada no es `sdd-kit:sdd-archive` (lo da la puerta) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -233,7 +234,7 @@ Moldes:
 | Un workaround que el cierre escribe en el stack lleva su fila de deuda | ticket de la feature 0010b del template §3; en el RED de la 0149, `a1` abrió la fila sin la regla (1/1): control | a1 (A3) |
 | El 4.1 del walkthrough lleva el sha de la suite | feature 0149, decisión 32; RED de la 0149, `a1`: 0/1 | a1 (A1) |
 | La fila propia solo cambia su «Estado» | GREEN de la 0149, `a1`: 2/2 le pusieron el prefijo de cierre de deuda con «mark the row»; con la regla, 2/2 limpias (`refactor/`) | a1 (A6) |
-| La fila «Patch:» de «Próximo» se marca ✅ y se queda | `tests/sdd-explore-0161-red.md`, x1: 2 de 2 la tratan sin regla, uno marcándola ✅ y otro quitándola; RED de la 0149, `a2`: la quitó (0/1) | a2 (P1) |
+| La fila «Patch:» de Now se marca ✅ y se queda | `tests/sdd-explore-0161-red.md`, x1: 2 de 2 la tratan sin regla, uno marcándola ✅ y otro quitándola; RED de la 0149, `a2`: la quitó (0/1) | a2 (P1) |
 | La deuda saldada lleva el prefijo literal | RED de la 0149, `a2`: «✅» en la celda (0/1); GREEN con la regla por remisión a la plantilla, 1/2; con el literal, 2/2 (`refactor/`) | a2 (P2) |
 | Un patch no hereda pasos de feature | propuesta 0131, §archive | a2 (P3) |
 | El hotfix va a la rama estable con `--into`, `--tag` y la frase del dev-lead en `--order`; `--push` solo si la frase lo pide | feature 0187 (CLI) y spec de la 0149, decisión 13 | a4 (H3, H4) |
@@ -274,7 +275,7 @@ Las reglas que `sdd-archive` trae de las dos skills retiradas guardan aquí su e
 | Con `validation.mode: field`, la validación es en campo | `tests/field-validation-red.md`: 6 de 6 pararon con la clave |
 | El delta se fusiona con `capability merge`, nunca a mano | `tests/capability-merge-red.md`: 3 de 3 copiaron `- Se valida en:` a la capacidad viva |
 | Un ajuste de presentación va en `Changed`, no en `Fixed` | `tests/visual-patch-red.md`, f2: 2 de 2 lo registraron como `Fixed` |
-| La fila «Patch:» de «Próximo» se marca y se queda | `tests/sdd-explore-0161-red.md`, x1: uno la marcó y otro la quitó |
+| La fila «Patch:» de Now se marca y se queda | `tests/sdd-explore-0161-red.md`, x1: uno la marcó y otro la quitó |
 | Las líneas de revisión de `tasks.md` se reescriben sin sha antes de juntar | `tests/closing-off-critical-path-red.md`, c3: 2 de 2 dejaron shas no alcanzables |
 | El bloque `merge` autoriza el merge, no la validación | patch 0072: se fusionó y publicó sin validar, y hubo que reabrir |
 | Un destino que falta se crea desde su plantilla | GREEN de la regla en `sdd-end-feature`: 2 de 2 dejaron el aprendizaje solo en el walkthrough con «sin `architecture.md` no hay doc vivo» |

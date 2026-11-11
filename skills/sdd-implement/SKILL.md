@@ -70,7 +70,7 @@ The approval's detail and the files an amendment adds: [Deviation](../sdd-propos
 
 ## Recovery
 
-After a machine crash or a quota cut, before anything else, reread the ledger, `git log` and the workspace's report files (`task-<n>-report.md`). A task whose report arrived complete —it carries its `Status:`— counts as returned: it goes on to its task review, and that agent's failure notification is ignored. A dispatch without a complete report is relaunched once, with the same brief and model, and its dispatch names the files `git status` shows changed. A task with its `complete` line is never redone. Ledger `Task <N>: Ruling: recuperación tras <caída | corte por cuota> — <qué se retomó>`. (`tests/sdd-implement-red.md`)
+After a crash or a quota cut, first reread the ledger, `git log` and the workspace's report files (`task-<n>-report.md`). A report that arrived complete counts as returned, its agent's failure notification ignored: a task's goes to its task review; the final review's axes, to «Closing the review» of `sdd-verify`, invoked with `Skill`. A dispatch without a complete report is relaunched once, with the same brief and model, and its dispatch names the files `git status` shows changed. A task with its `complete` line is never redone. Ledger `Task <N>: Ruling: recuperación tras <caída | corte por cuota> — <qué se retomó>`. (`tests/sdd-implement-red.md`)
 
 ## After the last task
 

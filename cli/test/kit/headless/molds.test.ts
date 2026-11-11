@@ -58,6 +58,18 @@ it.concurrent.each(cases)('$battery construye en seco el molde $mold ($id)', asy
   for (const kind of ['state', 'tools']) expect(existsSync(join(moldCase.runs, 'out', `${moldCase.id}-1.${kind}.txt`)), output).toBe(true);
 });
 
+// Los moldes que miden la forma 2.x, o la migración desde ella, a propósito; el resto va en la forma de la 3.0.0.
+const MOLDS_2X = new Set(['sdd-init/template', 'sdd-roadmap/salas-qa', 'sdd-roadmap/salas-qa-fix', 'sdd-roadmap/salas-cause-2x', 'sdd-roadmap/salas-family-2x', 'using-sdd/salas-2x']);
+const is2x = ({ battery, mold }: MoldCase): boolean => MOLDS_2X.has(`${battery}/${mold}`) || (battery === 'sdd-upgrade' && !mold.startsWith('salas3'));
+const DOCS_2X = ['mission', 'tech-stack', 'environments', 'roadmap', 'changelog', 'constitution', 'architecture', 'estimation', 'estimation-log'].map((name) => `${name}.md`);
+
+it.concurrent.each(cases.filter((moldCase) => !is2x(moldCase)))('el molde $mold de $battery ($id) no lleva documentos de la 2.x en .docs/sdd', async (moldCase) => {
+  const { output } = await buildMold(moldCase);
+  const docs = join(moldCase.runs, 'red', `${moldCase.id}-1`, 'repo', '.docs', 'sdd');
+
+  expect(DOCS_2X.filter((name) => existsSync(join(docs, name))), output).toEqual([]);
+});
+
 const closing = cases.filter(({ battery }) => battery === 'sdd-archive');
 
 it.concurrent.each(closing)('el molde de cierre $mold ($id) lleva la versión del kit y pasa sdd capability check', async (moldCase) => {

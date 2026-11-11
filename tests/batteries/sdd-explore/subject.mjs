@@ -23,5 +23,5 @@ s.initRepo();
 
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
-s.keep(join(s.R, '.docs', 'sdd', 'roadmap.md'), 'roadmap.md');
+s.keep(join(s.R, 'ROADMAP.md'), 'ROADMAP.md');
 s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## ficheros\n${s.git('ls-files', '--others', '--exclude-standard')}## package.json\n${readFileSync(join(s.R, 'package.json'), 'utf8')}`);

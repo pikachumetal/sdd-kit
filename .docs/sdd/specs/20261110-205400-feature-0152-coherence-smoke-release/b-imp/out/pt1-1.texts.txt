@@ -1,0 +1,71 @@
+--- [9]
+Ahora: he reproducido el fallo leyendo el código y lo he clasificado. Queda: tu confirmación del carril, y después la rama, el test que falla y el arreglo, ~15 min.
+
+🦆 **Qué pasa:** `findBooking(room, day)` en `src/app.js:10` recibe el día pero no lo mira. Busca solo sala y estado `active`. Por eso `cancelar Norte mar` encuentra la reserva del lunes, la cancela y responde con el día que le pasaste (`cancelada Norte mar`). `anular` usa la misma función y tiene el mismo fallo. Arreglarla en `findBooking` corrige las dos. El parche 0007 tocó esto mismo: el test actual solo cubre `lun` y `Sur mar`, nunca una sala con reserva en otro día.
+
+**Por qué es patch:** el fallo es determinista y la causa está confirmada en el código. Lo que debe hacer ya está fijado: si no hay reserva ese día, responde `sin reserva Norte mar`, que es el texto que el programa ya usa. Un test lo reproduce: `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar la del lunes activa. No hay `estimation.md`, así que no hay estimación. Perfil `delegate`, del proyecto (`sdd-kit.json`).
+
+1. **Abrirlo como patch (recomendada).** Creo la rama y la carpeta `patch-`, escribo el test rojo y arreglo `findBooking`. Añado un test para `anular`, que comparte la causa.
+2. **Solo `cancelar`.** Lo mismo, pero `anular` queda con el fallo y habría que anotarlo como deuda.
+3. **Pasarlo a feature.** Solo si quieres decidir además otra cosa, como el texto del mensaje o validar el formato del día. No lo recomiendo: no hay nada por decidir.
+
+¿Cuál?
+
+--- [14]
+Id 0015 reservado, rama creada. Paso a `sdd-implement` con el patch.
+
+--- [25]
+Mi `cd` al directorio del kit ha movido el directorio de trabajo. Vuelvo al repositorio del proyecto antes de seguir.
+
+--- [40]
+Verde 6/6. Completo §4 y paso el revisor único del patch (Sonnet, effort medio) antes del commit.
+
+--- [46]
+Mi reescritura de `cancel.test.js` cambió los finales de línea (CRLF → LF) y ensucia el diff. Los restauro a CRLF, como el resto del proyecto, y hago lo mismo con el fichero nuevo.
+
+--- [49]
+El diff ya es mínimo: 7 líneas añadidas y 1 modificada. `node --test` sigue en 6/6. Falta el revisor del patch, que está corriendo. Cuando conteste, respondo a sus hallazgos en §4 de `patch.md` y hago el commit del fix.
+
+--- [51]
+Revisé el diff y los cuatro ficheros, y ejecuté `node --test`, que da 6/6 en verde. Mi lectura del estado previo al fix es por análisis, no por ejecución, porque era solo lectura. Hay tres hallazgos menores y ninguno bloqueante.
+
+**Causa raíz y fix**
+- (1) La causa raíz de `patch.md` es correcta. Antes del fix, `findBooking(room, day)` filtraba solo por `room` y `status === 'active'` y no leía `day`. `cancelBooking` y `voidBooking` componen el mensaje con el `day` recibido, no con el de la reserva, y eso explica «cancelada Norte mar» sobre la del lunes.
+- (2) El fix es mínimo y toca la causa: añade `b.day === day` en `findBooking`, que usan tanto `cancelBooking` como `voidBooking`. Una sola línea arregla cancelar y anular, y no hay cambio de mensajes ni de API.
+
+**Tests**
+- (3) Los tests encodan el síntoma. Comprueban que `cancelar` y `anular` sobre Norte/mar devuelven «sin reserva» y que la reserva del lunes sigue activa (`libres 10:00-12:00` → `Sur`). Antes del fix fallaban por la causa correcta.
+  - `anular Norte mar` en `void.test.js` fallaba al devolver «anulada Norte mar».
+  - `cancelar Norte mar` fallaba por lo mismo.
+  - «cancelar una reserva activa» también fallaba, pero por arrastre. El primer test ya había cancelado la reserva del lunes, así que daba «sin reserva Norte lun». El «3 de 6 en rojo» de `patch.md` cuadra, pero uno de esos tres no es un fallo propio.
+- (4) Severidad baja: hay dependencia de orden en `cancel.test.js`. El test nuevo asume la reserva del lunes aún activa, y el siguiente la cancela (el estado es del módulo). Si alguien reordena o inserta un test antes, `libres` devolverá `Norte, Sur` y fallará de forma confusa. El comentario del fichero lo documenta y `node --test` aísla cada fichero en su proceso, así que hoy es correcto. Lo más robusto sería moverlo a un fichero propio, como se hizo con `void.test.js`, o hacer que la aserción no dependa del estado compartido.
+- (5) Severidad baja: el diff de `test/cancel.test.js` reescribe el fichero entero. Parece un cambio de finales de línea (git avisa de que LF pasará a CRLF), no de contenido. Mete ruido en la revisión; conviene restaurar el EOL original para que el diff muestre solo las líneas nuevas.
+
+**Otros hallazgos de corrección**
+- (6) Severidad informativa: `anular` solo tiene el caso negativo, sin test positivo («anulada Norte lun»). No es regresión del patch, pero la ruta feliz de `voidBooking` sigue sin cubrir.
+- (7) Severidad informativa: si falta el día (`cancelar Norte`), `day` es `undefined`. Antes cancelaba la primera reserva activa; ahora devuelve «sin reserva Norte undefined». Es un cambio de comportamiento no mencionado en `patch.md` y el mensaje es feo. Está fuera del alcance del síntoma.
+
+**`patch.md`**
+- (8) Severidad informativa: dice `status: done` y `commit: pendiente`, lo cual es coherente con los cambios sin commitear. Hay que rellenar el commit al cerrar.
+
+Ficheros revisados, todos bajo `<run>\repo`:
+- `src/app.js`
+- `test/cancel.test.js`
+- `test/void.test.js`
+- `.docs/sdd/specs/20261110-210821-patch-0015-cancelar-dia/patch.md`
+
+--- [56]
+El fix está en el commit `13f60ef`, en la rama `feature/0015-cancelar-dia`, y `node --test` da 6/6 en verde.
+
+**Causa:** `findBooking` en `src/app.js` recibía el día pero no lo comparaba. Cogía la primera reserva activa de la sala, así que `cancelar Norte mar` cancelaba la del lunes. Además respondía con el día que le pasaste, por eso decía «cancelada Norte mar».
+
+**Arreglo:** una línea, `b.day === day` en `findBooking`. Ahora `cancelar Norte mar` responde `sin reserva Norte mar` y deja la del lunes activa. `anular` tenía el mismo fallo y queda corregido también.
+
+**Tests:** hay dos nuevos, `test/cancel-day.test.js` y `test/void.test.js`, cada uno en su fichero porque las reservas son estado del módulo. Sin el fix fallan los dos por la causa; con él pasa todo.
+
+**Revisor:** lo pasó un revisor independiente, sin hallazgos bloqueantes. Rechacé dos puntos y los anoté en `patch.md`:
+- Falta el test del caso positivo de `anular`. Eso no es de este fallo.
+- `cancelar Norte` sin día ahora responde `sin reserva Norte undefined`. Antes cancelaba la primera reserva activa. Es la deuda «sin validación del formato» del roadmap. Qué mensaje poner lo decides tú.
+
+El commit lleva `commit: pendiente` en `patch.md`; el hash se rellena al cerrar. Me paro aquí, como pediste. Falta el cierre con `sdd-archive`: tu validación del patch, el hash en `patch.md` y la fila en el roadmap.
+

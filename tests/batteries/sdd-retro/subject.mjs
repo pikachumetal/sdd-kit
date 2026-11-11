@@ -88,7 +88,6 @@ function cutMold() {
   s.put('ROADMAP.md', ROADMAP);
   s.put('CHANGELOG.md', CHANGELOG);
   s.put('.docs/sdd/changes/20261020-100000-feature-0040-export/walkthrough.md', WALKTHROUGH.replace('0081', '0040').replace('Recordatorio por correo de cada reserva.', 'Exportar salas a CSV.'));
-  for (const old of ['roadmap.md', 'changelog.md']) rmSync(join(s.R, '.docs/sdd', old), { force: true });
 }
 
 s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
@@ -98,7 +97,7 @@ else if (cell('Molde') === 'corte') cutMold();
 else if (cell('Molde') === 'corte-vacio') {
   cutMold();
   s.put('.docs/sdd/steering/debt.md', EMPTY_DEBT);
-  s.put('.docs/sdd/estimation-log.md', '# Log de estimación\n\n| Id | Estimado | Real |\n| --- | --- | --- |\n| 0040 | 2 h | 1,5 h |\n');
+  s.put('.docs/sdd/steering/estimation-log.md', '# Log de estimación\n\n| Id | Estimado | Real |\n| --- | --- | --- |\n| 0040 | 2 h | 1,5 h |\n');
   rmSync(join(s.R, '.docs/sdd/releases'), { recursive: true, force: true });
 }
 else s.die(`molde desconocido en battery.md: ${s.SC}`);

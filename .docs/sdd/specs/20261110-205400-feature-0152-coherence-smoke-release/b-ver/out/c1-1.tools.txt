@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason | head -50; git status --short; git log --oneline | head
+<<< .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+521e7c5 feat(bookings): listado de canceladas con su motivo
+cb94cf6 feat(bookings): cancelar con un motivo de la lista
+ff9b332 docs(sdd): abrir la feature 0010 con su spec y su plan
+df40031 feat: base del molde
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*/tasks.md; grep -n -i "workspace\|Ejecución" .docs/sdd/specs/*/plan.md | head; find . -name "review-*.md" -not -path "./node_modules/*" 2>/dev/null; ls .. 
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | 521e7c5 | |
+| 2 | Listado de canceladas | done | 521e7c5 | |
+
+18:**Ejecución**: native, porque son dos tasks cortas en el mismo fichero.
+./.temp/sdd/plan/review-code.md
+./.temp/sdd/plan/review-spec.md
+repo/
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/review-code.md; echo ======; cat .temp/sdd/plan/review-spec.md; ls .temp/sdd/plan; git status --short --ignored | head
+<<< ## Code
+
+### Strengths
+- `cancelBooking` validates the reason before touching the booking.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:14-17`: `reasonOf` keeps the spaces around the reason.** `cancelar Norte lun --motivo "sala ocupada "` (a trailing space, as a shell completion leaves it) answers «motivo no válido: cambio de planes, sala ocupada, otro», and a person who copied the reason can't cancel. Fix: trim the reason before checking it against the list.
+
+#### Minor (Nice to Have)
+None.
+
+### Assessment
+**Ready to merge?** With 
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/progress.md; cat src/app.js; cat test/cancel.test.js; sed -n 1,200p .docs/sdd/specs/*/spec.md
+<<< # SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits ff9b332..cb94cf6, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits cb94cf6..521e7c5, tests: node --test test/cancel.test.js → 3/3 pass)
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b
+
+>>> Bash: cd "<run>/repo" && f=$(ls .docs/sdd/specs/*/spec.md | grep 0010) && node -e '
+const fs=require("fs");let s=fs.readFileSync(process.argv[1],"utf8");
+s=s.replace("- AND sin `--motivo` responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»\n","- AND sin `--motivo` responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»\n- AND un motivo de la lista con espacios al principio o al final (`\"sala ocupada \"`) se acepta como el motivo sin espacios\n");
+s=s.replace("- (ninguna)","- 2026-11-10: el motivo se recorta de espacios antes de compararlo con la lista (hallazgo Important de la revisión final) — sin aprobar");
+fs.writeFileSync(process.argv[1],s)' "$f" && git diff --stat
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+=== RESULTADO (8 turnos, 0.16354380000000002 $)
+Workspace del plan: `.temp/sdd/plan` (ledger `progress.md`, informes `review-spec.md` y `review-code.md`). Me detengo antes de arreglar nada: la revisión final dejó un hallazgo que es una desviación del spec.
+
+**🦆 Qué pasa, en llano**
+- Las dos tasks están hechas (521e7c5). La revisión de spec dice «Ready: Yes», con un solo Minor.
+- La revisión de código dice «con arreglos». Su único hallazgo Important es que `cancelar Norte lun --motivo "sala ocupada "`, con un espacio al final, responde «motivo no válido».
+- Arreglarlo es recortar los espacios del motivo antes de compararlo. Eso cambia lo que el spec dice hoy. El spec manda responder «no válido» a todo lo que esté fuera de la lista, y `"sala ocupada "` está fuera de ella al pie de la letra. Aceptarlo añade un AND que no existe. Una ronda de arreglo que añade un AND es una desviación, no un `Ruling:`, así que paro antes de commitear.
+
+**✋ Necesito tu aprobación**
+- **Amendment preparado, sin commit**, en `spec.md`: un AND nuevo («un motivo de la lista con espacios al principio o al final se acepta como el motivo sin espacios») y su línea en «Enmiendas», marcada `sin aprobar`.
+- **Si lo apruebas:** el cambio toca tareas cerradas, así que va como `Task 3 — enmienda 2026-11-10: recortar el motivo`. Lleva su test en RED primero y el cambio de una línea en `reasonOf` en `src/app.js:14-17`. `tasks.md` marcará las Tasks 1 y 2 como `afectada por enmienda → Task 3`.
+- **Si prefieres no cambiar el spec:** descarto el amendment y el hallazgo queda como deuda anotada en el walkthrough.
+- **Aún no he lanzado** el revisor `sonnet` de los siete puntos de `review-spec.md` sobre la enmienda, que las reglas piden antes de presentarla. Lo lanzo si apruebas o si prefieres verlo antes.
+
+**Minor (sin tocar el spec)**
+- El test de `canceladas` depende de que `cancelar` se haya ejecutado antes, porque el estado es compartido. Puedo hacerlo independiente dentro de la Task 3, o dejarlo.
+
+Después queda el cierre con `sdd-archive`: walkthrough y merge de la capability.

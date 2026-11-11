@@ -64,6 +64,8 @@ const HALF_RED = "import { test } from 'node:test';\nimport assert from 'node:as
 const BROKEN_ON_BRANCH = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
   + "test('salas en orden', () => {\n  assert.equal(run('salas', []), 'Norte, Sur');\n});\n";
 const at = (path) => join(s.R, path);
+const OPS = '.docs/sdd/steering/operations.md';
+const CONSTITUTION = '.docs/sdd/steering/constitution.md';
 // En los encargos, la carpeta con barras, la forma que llevaban los encargos medidos.
 const forward = (path) => path.replaceAll('\\', '/');
 const edit = (path, change) => writeFileSync(at(path), change(readLf(at(path))));
@@ -74,7 +76,7 @@ const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, en
 // La copia del kit es `dist/` y no lleva `.docs/` (el sujeto leería la spec medida): las reglas de forma salen del repo del que se lanza.
 const REPO_DOCS = join(HERE, '..', '..', '..', '.docs', 'sdd');
 function formRules() {
-  const constitution = join(REPO_DOCS, 'constitution.md');
+  const constitution = join(REPO_DOCS, 'steering', 'constitution.md');
   const lines = existsSync(constitution) ? readLf(constitution).split('\n') : [];
   const from = lines.findIndex((line) => line.startsWith('## Art. II — La forma sigue al fallo'));
   const to = lines.findIndex((line, i) => i > from && line.startsWith('*Por qué*'));
@@ -82,10 +84,10 @@ function formRules() {
   if (article.length === 0) s.die(`sin el Art. II en la copia del kit: ${constitution}`);
   article[0] = article[0].replace(/^## Art\. II /, '## Art. III ');
   writeFileSync(join(s.RUN, 'form-article.md'), `${article.join('\n')}\n`);
-  appendFileSync(at('.docs/sdd/constitution.md'), `\n${article.join('\n')}\n`);
-  const refactor = readLf(join(REPO_DOCS, 'tech-stack.md')).split('\n').filter((line) => line.includes('- **Una ronda de REFACTOR que da 0/N'));
-  writeFileSync(at('.docs/sdd/tech-stack.md'), ['# Tech stack — notas', '', '## Pruebas de skills', '', ...refactor, ''].join('\n'));
-  writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
+  appendFileSync(at(CONSTITUTION), `\n${article.join('\n')}\n`);
+  const refactor = readLf(join(REPO_DOCS, 'steering', 'operations.md')).split('\n').filter((line) => line.includes('- **Una ronda de REFACTOR que da 0/N'));
+  writeFileSync(at(OPS), ['# Operations — notas', '', '## Testing', '', ...refactor, ''].join('\n'));
+  writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/steering/constitution.md` y `.docs/sdd/steering/operations.md`.\n');
 }
 
 s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'k4', 'k4r', 'cp1'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
@@ -101,8 +103,8 @@ const molds = {
     cp('package-w1.json', 'package.json');
     mkdirSync(at('scripts'), { recursive: true });
     cp('env-setup.mjs', 'scripts/env-setup.mjs');
-    cp('environments-w1.md', '.docs/sdd/environments.md');
-    cp('tech-stack-w1.md', '.docs/sdd/tech-stack.md');
+    cp('operations-w1.md', OPS);
+    cp('architecture-w1.md', '.docs/sdd/steering/architecture.md');
   },
   k1: () => (cp('app-0018.js', 'src/app.js'), cp('readme-0018.md', 'README.md'), cp('readme.test.js', 'test/readme.test.js')),
   // Se escriben aquí y no en fixtures/: el repo del kit no admite scripts de bash. El hook va sin extensión, para que solo lo delate su `#!`.
@@ -126,7 +128,7 @@ const molds = {
     mkdirSync(at('test'), { recursive: true });
     writeFileSync(at('test/words.test.js'), WORDS_TEST);
   },
-  a2: () => appendFileSync(at('.docs/sdd/constitution.md'), ART_I),
+  a2: () => appendFileSync(at(CONSTITUTION), ART_I),
   // Dos red flags que repiten el paso 1: el paso nuevo solo cabe en 80 palabras quitándolas.
   k4: () => {
     mkdirSync(at('test'), { recursive: true });
@@ -143,7 +145,7 @@ const molds = {
     mkdirSync(at('skills/guardar-nota/references'), { recursive: true });
     cp('note-prompt-original.md', NOTE_PROMPT);
     cp('upstream-cp1.json', 'upstream.json');
-    appendFileSync(at('.docs/sdd/constitution.md'), GITFLOW);
+    appendFileSync(at(CONSTITUTION), GITFLOW);
   },
 };
 molds.g2 = molds.g1;
@@ -483,6 +485,8 @@ keepIf('README.md', 'README.md');
 keepIf('skills/guardar-nota/SKILL.md', 'guardar-nota.md');
 const sddTemp = at('.temp/sdd');
 for (const plan of existsSync(sddTemp) ? readdirSync(sddTemp).sort() : []) keepIf(`.temp/sdd/${plan}/progress.md`, 'progress.md');
-const patchFolder = existsSync(at('.docs/sdd/specs')) ? readdirSync(at('.docs/sdd/specs')).filter((name) => name.includes('-patch-')).sort().at(-1) : undefined;
-if (patchFolder) s.keep(at(`.docs/sdd/specs/${patchFolder}/patch.md`), 'patch-new.md');
+// El patch del sujeto nace en changes/; si lo crea en specs/ (donde está el patch 0007 del molde), también se guarda.
+const patchIn = (dir) => (existsSync(at(dir)) ? readdirSync(at(dir)).filter((name) => name.includes('-patch-')).sort().map((name) => `${dir}/${name}`).at(-1) : undefined);
+const patchFolder = patchIn('.docs/sdd/changes') ?? patchIn('.docs/sdd/specs');
+if (patchFolder) s.keep(at(`${patchFolder}/patch.md`), 'patch-new.md');
 s.save(`## petición\n${ASK}\n${markSha ? `## sha de la marca\n${markSha}\n` : ''}## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}## worktrees\n${s.git('worktree', 'list')}`);

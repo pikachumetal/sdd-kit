@@ -258,7 +258,7 @@ function filteredGate(bookingsTests, bookingsInputs) {
     'rooms:test': { command: 'node --test test/rooms.test.js', inputs: ['src/rooms.js', 'test/rooms.test.js'] },
   };
   writeFileSync(at('gate.json'), `${JSON.stringify({ tasks })}\n`);
-  edit('.docs/sdd/constitution.md', (text) => text.replace('Gate de cierre: `node --test` entero en verde.', `Gate de cierre: \`${GATE}\` en verde.`));
+  edit('.docs/sdd/steering/constitution.md', (text) => text.replace('Gate de cierre: `node --test` entero en verde.', `Gate de cierre: \`${GATE}\` en verde.`));
   appendFileSync(at('.git/info/exclude'), '.temp/\n');
   s.commit('chore: gate de cierre filtrado por tareas');
 }

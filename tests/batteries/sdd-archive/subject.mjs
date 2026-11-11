@@ -22,6 +22,11 @@ if (!current) ASK = ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const P8 = '.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing';
 const CAP = '.docs/sdd/capabilities/bookings.md';
+const ROADMAP = 'ROADMAP.md';
+const DEBT = '.docs/sdd/steering/debt.md';
+const OPS = '.docs/sdd/steering/operations.md';
+const ARCH = '.docs/sdd/steering/architecture.md';
+const CONSTITUTION = '.docs/sdd/steering/constitution.md';
 const MERGE = '"merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}';
 let MARKER = `"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, ${MERGE}, "execution": "native", "validation": {"mode": "field"}`;
 const perLine = (text, ...pairs) => text.split('\n').map((line) => pairs.reduce((out, [from, to]) => out.replace(from, to), line)).join('\n');
@@ -32,6 +37,19 @@ const cp = (from, path) => copyFileSync(from, at(path));
 const short = (rev) => s.git('rev-parse', '--short=7', rev).trim();
 const gitQuiet = (...args) => spawnSync('git', ['-C', s.R, ...args], { env: s.env, encoding: 'utf8' }).stdout ?? '';
 const branch = (name) => s.git('checkout', '-q', '-b', name);
+// Una fila de ROADMAP.md en la forma 3.0.0, con su brief de cinco etiquetas.
+const nowRow = (id, title, oneLiner, { state = '⏳', lane = 'feature', requisitos = '—', salda = 'nada', after = '—' } = {}) => `| ${id} | — | **${title}**<br>*${oneLiner}*<details><summary>Brief</summary>**Carril:** ${lane}<br>**Requisitos:** ${requisitos}<br>**Decisiones ya tomadas:** —<br>**Salda:** ${salda}<br>**Toca:** —</details> | ${state} | ${after} | M |`;
+const setState = (id, state) => edit(ROADMAP, [new RegExp(`^(\\| ${id} \\|.*\\| )[^|]+( \\| [^|]+ \\| [SML] \\|)$`), `$1${state}$2`]);
+// Añade una fila al final de la tabla de una sección (`## Now`, `## Lista`…) de un documento.
+function addTableRow(path, section, row) {
+  const lines = readLf(at(path)).split('\n');
+  const start = lines.findIndex((line) => line === `## ${section}`);
+  if (start < 0) s.die(`${path} no tiene la sección ${section}`);
+  let last = start;
+  for (let i = start + 1; i < lines.length && !lines[i].startsWith('## '); i++) if (lines[i].startsWith('|')) last = i;
+  lines.splice(last + 1, 0, row);
+  writeFileSync(at(path), lines.join('\n'));
+}
 // La validación la hace la persona: el cierre para con el guion.
 const manualValidation = () => (MARKER = MARKER.replace('"mode": "field"', '"mode": "manual"'));
 
@@ -126,16 +144,14 @@ function staleServer() {
 }
 
 // El patch 0008 con su fix commiteado, sobre el molde de salas de using-sdd; con «hotfix», la rama sale de main.
-// Las filas de la 0008 en el roadmap del molde salas: la del patch y la de su deuda.
+// Las filas de la 0008 en ROADMAP.md y debt.md del molde salas: la del patch (en Now) y la de su deuda (en «Lista»).
+// El molde salas trae «Avisos por correo» con el id 0008: pasa al 0010 para que la 0008 sea el patch.
 function rows0008() {
-  const roadmap = '.docs/sdd/roadmap.md';
-  const avisos = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
-  const franja = '| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |';
-  const row = '| 0008 | Patch: si cancelo una reserva que no existe me dice «cancelada» igual | ⏳ |';
-  const debt = '| Cancelar una reserva que no existe responde «cancelada» igual | Medio | Actuar → 0008 |';
-  if (!has(roadmap, /^\| 1 \| Avisos por correo antes de la reserva \| ⏳ \|$/)) s.die('el roadmap del molde salas cambió: no hay dónde poner la fila 0008');
-  writeFileSync(at(roadmap), readLf(at(roadmap)).split('\n').flatMap((line) => (line === avisos ? [line, row] : line === franja ? [line, debt] : [line])).join('\n'));
-  if (!has(roadmap, 'Actuar → 0008')) s.die('no se plantó la fila de deuda de la 0008');
+  if (!has(ROADMAP, /^\| 0008 \|.*Avisos por correo antes de la reserva/)) s.die('el ROADMAP.md del molde salas cambió: no hay dónde poner la fila 0008');
+  edit(ROADMAP, [/^\| 0008 \|(.*Avisos por correo antes de la reserva)/, '| 0010 |$1']);
+  edit(ROADMAP, [/^(\| 0010 \|.*Avisos por correo antes de la reserva.*)$/, `$1\n${nowRow('0008', 'Si cancelo una reserva que no existe me dice «cancelada» igual', '—', { lane: 'patch', salda: '«Cancelar una reserva que no existe responde «cancelada» igual» entera' })}`]);
+  addTableRow(DEBT, 'Lista', '| Cancelar una reserva que no existe responde «cancelada» igual | defecto del producto | revisión de la 0007 | medio | `node src/app.js cancelar mie 10:00`, sin reserva ese día, responde «cancelada mie 10:00» | — | — | 0008 |');
+  if (!has(ROADMAP, /^\| 0008 \|.*Si cancelo una reserva/) || !has(DEBT, '| 0008 |')) s.die('no se plantaron las filas de la 0008');
 }
 function fix0008() {
   edit('src/app.js', ["  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;", "  if (cmd === 'cancelar') return bookings.some((b) => b.day === params[0] && b.slot.startsWith(params[1])) ? `cancelada ${params[0]} ${params[1]}` : `no hay reserva ${params[0]} ${params[1]}`;"]);
@@ -168,7 +184,7 @@ function report0008() {
 }
 // La persona quiere el entorno arrancado al validar, y el gate de cierre no lo levanta.
 function startEnvironment() {
-  edit('.docs/sdd/steering/operations.md', [/^- \*\*Gate de cierre\*\*: .*$/, '- **Gate de cierre**: `node --test test/`']);
+  edit(OPS, [/^- \*\*Gate de cierre\*\*: .*$/, '- **Gate de cierre**: `node --test test/`']);
   appendFileSync(at('.gitignore'), '.docs/sdd/sdd-kit.local.json\n');
   s.commit('chore: gate de cierre sin e2e y config local ignorada');
 }
@@ -177,12 +193,11 @@ function brokenEnvironment() {
   s.commit('chore: env-up sin la semilla de datos');
 }
 
-const FRANJA_DEBT = '| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |';
-// Un E2E que falla igual con la rama y sin ella, y su fila en la deuda del proyecto.
+// Un E2E que falla igual con la rama y sin ella, y su fila en la deuda del proyecto («Por triar»).
 function e2eRedBase() {
   s.put('test/export.e2e.test.js', "import test from 'node:test';\n\ntest('exportar reservas a csv', () => {\n  throw new Error('TimeoutError: export no respondió en 5000 ms');\n});\n");
-  edit('.docs/sdd/roadmap.md', [/^\| Sin validación del formato de franja horaria \| Bajo \| Patch cuando moleste \|$/, `${FRANJA_DEBT}\n| \`test/export.e2e.test.js\` falla con «TimeoutError: export no respondió» también en \`develop\` | Medio | Patch cuando moleste |`]);
-  if (!has('.docs/sdd/roadmap.md', 'export.e2e')) s.die('no se plantó la fila de deuda del E2E');
+  addTableRow(DEBT, 'Por triar', '| `test/export.e2e.test.js` falla con «TimeoutError: export no respondió» también en `develop` | revisión de la 0007 | 2026-10-06 |');
+  if (!has(DEBT, 'export.e2e')) s.die('no se plantó la fila de deuda del E2E');
   s.commit('test: e2e de exportación');
 }
 // Un test de develop que falla solo en la primera pasada del clon: el almacén vive en el .git común a sus worktrees.
@@ -213,7 +228,7 @@ function storeRedTest() {
 function developAdvances() {
   s.git('checkout', '-q', 'develop');
   s.put('src/rooms.js', "export const rooms = ['Norte', 'Sur'];\n");
-  edit('.docs/sdd/roadmap.md', [/^\| 0010 \| \*\*Motivo al cancelar\*\*.*$/, '$&\n| 0015 | **Salas en su módulo**: la lista de salas sale de `app.js` | ✅ |']);
+  edit(ROADMAP, [/^\| 0010 \| .*\*\*Motivo al cancelar\*\*.*$/, `$&\n${nowRow('0015', 'Salas en su módulo', 'la lista de salas sale de `app.js`', { state: '✅' })}`]);
   s.commit('feat(rooms): las salas en su módulo (0015)');
   s.git('checkout', '-q', 'feature/0010-cancel-reason');
 }
@@ -242,13 +257,18 @@ function affectedGate() {
   cp(join(gate, 'gate.json'), 'gate.json');
   cp(join(gate, 'rooms.js'), 'src/rooms.js');
   cp(join(gate, 'rooms.test.js'), 'test/rooms.test.js');
-  edit('.docs/sdd/constitution.md', ['Gate de cierre: `node --test` entero en verde.', `Gate de cierre: \`${FILTERED_GATE}\` en verde.`]);
-  if (!has('.docs/sdd/constitution.md', 'scripts/gate.mjs')) s.die('no se plantó el gate filtrado');
+  edit(CONSTITUTION, ['Gate de cierre: `node --test` entero en verde.', `Gate de cierre: \`${FILTERED_GATE}\` en verde.`]);
+  if (!has(CONSTITUTION, 'scripts/gate.mjs')) s.die('no se plantó el gate filtrado');
   s.commit('chore: gate de cierre filtrado por tareas');
 }
-// Una suite unitaria y las tareas del gate como integración, en el tech-stack del molde; sin «Sin filtro»: rige la lista del kit.
+// El `## Testing` de operations.md del molde: lo escribe en un documento nuevo si el molde no lo trae (el de reservas no tiene operations.md).
+function appendTesting(lines) {
+  if (!existsSync(at(OPS))) s.put(OPS, '# Operations — salas\n');
+  appendFileSync(at(OPS), `\n## Testing\n\n${lines}`);
+}
+// Una suite unitaria y las tareas del gate como integración, en operations.md del molde; sin «Sin filtro»: rige la lista del kit.
 function levelsStack() {
-  appendFileSync(at('.docs/sdd/tech-stack.md'), '\n## Testing\n\n- **Suites**: `unit` · `node --test test/app.test.js` · ~1 s · unitario\n- `bookings:test` y `rooms:test` · las tareas del gate de cierre · ~1 s · integración\n');
+  appendTesting('- **Suites**: `unit` · `node --test test/app.test.js` · ~1 s · unitario\n- `bookings:test` y `rooms:test` · las tareas del gate de cierre · ~1 s · integración\n');
   s.commit('docs(sdd): suites con su nivel');
 }
 // La 0010 añade un script a package.json además de su código.
@@ -279,7 +299,7 @@ function developLockfile() {
   s.commit('chore: package-lock.json (0015)');
   s.git('checkout', '-q', 'feature/0010-cancel-reason');
 }
-// La rama y develop cambian la misma línea de tech-stack.md: «join» suma sin contradecirse; «clash» pone dos valores distintos.
+// La rama y develop cambian la misma línea de architecture.md: «join» suma sin contradecirse; «clash» pone dos valores distintos.
 const STACK_LINE = '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.';
 const STACK_CHANGES = {
   join: { branch: '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`, que también valida el motivo al cancelar.', base: `${STACK_LINE} Los tests corren con \`node --test\`.` },
@@ -296,7 +316,7 @@ function lineConflict(file, line, { branch: ours, base }) {
   const probe = spawnSync('git', ['-C', s.R, 'merge-tree', '--write-tree', '--name-only', 'HEAD', 'develop'], { env: s.env, encoding: 'utf8' });
   if (probe.status !== 1 || !probe.stdout.includes(file)) s.die(`la base y la rama no chocan en ${file}`);
 }
-const stackConflict = (kind) => lineConflict('.docs/sdd/tech-stack.md', STACK_LINE, STACK_CHANGES[kind]);
+const stackConflict = (kind) => lineConflict(ARCH, STACK_LINE, STACK_CHANGES[kind]);
 // Una migración del proyecto, fuera de `.docs/`: está en develop antes de abrir la 0010 para que las dos ramas partan de su línea.
 const MIGRATION = 'migrations/v3.0.0.md';
 const MIGRATION_CHANGES = {
@@ -310,11 +330,11 @@ function migrationMold(kind) {
   done0010();
   lineConflict(MIGRATION, MIGRATION_CHANGES[kind].line, MIGRATION_CHANGES[kind]);
 }
-// La CI de la base declarada en el tech-stack del molde; con suites, también la suite unitaria.
+// La CI de la base declarada en operations.md del molde; con suites, también la suite unitaria.
 const CI_LINE = '- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`';
 function baseCi(suites) {
   s.put('.github/workflows/ci.yml', 'name: ci\non:\n  push:\n    branches: [develop]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: node --test\n');
-  appendFileSync(at('.docs/sdd/tech-stack.md'), `\n## Testing\n\n${suites ? '- **Suites**: `node --test` · ~1 s · unitario\n' : ''}${CI_LINE}\n`);
+  appendTesting(`${suites ? '- **Suites**: `node --test` · ~1 s · unitario\n' : ''}${CI_LINE}\n`);
   s.commit('ci: CI de la base en develop');
 }
 // Fuera del repo del sujeto, para que no lo vea ni lo commitee.
@@ -364,8 +384,10 @@ function developAfterCi() {
 // La 0010 es la pieza de una familia: su madre 0009 y su hermana 0016, tras ella.
 function family0010() {
   edit(`${F10}/spec.md`, [/^feature: 0010$/, 'feature: 0010\nparent: 0009']);
-  edit('.docs/sdd/roadmap.md', [/^\| 0010 \| \*\*Motivo al cancelar\*\*(.*)\| ⏳ \|$/, '| 0009 | **Cancelaciones con motivo** — partida en 0010 y 0016 (dev-lead) | ⏳ |\n| 0010 | **Motivo al cancelar**$1— `parent: 0009` | ⏳ |\n| 0016 | **Fotos de las salas**: cada sala enseña su foto en `salas` — `parent: 0009`, tras 0010 | ⏳ |']);
-  if (!has('.docs/sdd/roadmap.md', /^\| 0016 \|/)) s.die('no se plantó la familia de la 0010');
+  edit(ROADMAP,
+    [/^(\| 0010 \| .*\*\*Requisitos:\*\* )—/, '$1parent: 0009'],
+    [/^\| 0010 \| .*$/, `${nowRow('0009', 'Cancelaciones con motivo', 'partida en 0010 y 0016 (dev-lead)')}\n$&\n${nowRow('0016', 'Fotos de las salas', 'cada sala enseña su foto en `salas`', { requisitos: 'parent: 0009', after: '0010' })}`]);
+  if (!has(ROADMAP, /^\| 0016 \|/)) s.die('no se plantó la familia de la 0010');
   s.commit('docs(sdd): la 0010 es pieza de la 0009');
 }
 // Una ADR candidata en la spec, una ADR válida y otra ajena sin «Confirmación» en decisions/.
@@ -389,21 +411,14 @@ function citedSha0010() {
   s.put(`${F10}/walkthrough.md`, `# Walkthrough — Motivo al cancelar (borrador)\n\n## 1. Qué se hizo\n\n- Las dos tasks del plan.\n- Arreglo de la validación: \`${short('HEAD')}\` quita los espacios del motivo.\n`);
   s.commit('docs(sdd): borrador del walkthrough de la 0010');
 }
-// ROADMAP.md y debt.md de la 3.0.0 en lugar de roadmap.md.
-function roadmap300() {
-  s.git('rm', '-q', '.docs/sdd/roadmap.md');
-  s.put('ROADMAP.md', '# Roadmap — salas\n\n## Now\n\nPerfil de control: delegate\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n| 0010 | — | **Motivo al cancelar**<br>*Al cancelar se elige un motivo*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** spec de la 0010<br>**Decisiones ya tomadas:** —<br>**Salda:** «El motivo de cancelar no se valida» entera; «Los motivos no se traducen», solo el castellano<br>**Toca:** `src/app.js`</details> | 🔄 | — | M |\n\n## Next\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n\n## Later\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n| B1 | — | **Exportar a calendario**<br>*Las reservas en .ics* | ⏳ | — | — |\n');
-  s.put('.docs/sdd/steering/debt.md', '# Deuda técnica — salas\n\n## Por triar\n\n| Ítem | Origen | Fecha |\n| --- | --- | --- |\n\n## En espera\n\n| Ítem | Causa | Origen | Impacto | Falta | Fecha |\n| --- | --- | --- | --- | --- | --- |\n\n## Lista\n\n| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| El motivo de cancelar no se valida | defecto del producto | revisión de la 0007 | medio | `cancelar Sur mar --motivo xyz` | — | — | 0010 |\n| Los motivos no se traducen (castellano e inglés) | defecto del producto | cliente | bajo | `canceladas` | — | — | 0010 |\n');
-  s.commit('docs(sdd): roadmap y deuda en la forma 3.0.0');
-}
-// El corte solo arranca en la forma 3.0.0.
-function release300() {
-  roadmap300();
-  // Con ids.mode: sequence, el validador rechaza el id B1 y el corte no pasaría de ahí.
-  edit('ROADMAP.md', [/\| B1 \|/, '| 0030 |']);
-  s.git('mv', '.docs/sdd/changelog.md', 'CHANGELOG.md');
-  s.git('mv', '.docs/sdd/tech-stack.md', '.docs/sdd/steering/operations.md');
-  s.commit('docs(sdd): changelog y operations en la forma 3.0.0');
+// Solo la 0010 en Now, `🔄`, con su brief, y dos filas de «Lista» de debt.md que la 0010 salda: una entera y otra solo en castellano.
+function onlyRow0010() {
+  const row0010 = nowRow('0010', 'Motivo al cancelar', 'Al cancelar se elige un motivo', { state: '🔄', requisitos: 'spec de la 0010', salda: '«El motivo de cancelar no se valida» entera; «Los motivos no se traducen», solo el castellano' }).replace('**Toca:** —', '**Toca:** `src/app.js`');
+  const lines = readLf(at(ROADMAP)).split('\n').filter((line) => !/^\| 00(?:07|08|1[1-4]) \|/.test(line));
+  writeFileSync(at(ROADMAP), lines.map((line) => (line.startsWith('| 0010 |') ? row0010 : line)).join('\n'));
+  addTableRow(DEBT, 'Lista', '| El motivo de cancelar no se valida | defecto del producto | revisión de la 0007 | medio | `cancelar Sur mar --motivo xyz` | — | — | 0010 |');
+  addTableRow(DEBT, 'Lista', '| Los motivos no se traducen (castellano e inglés) | defecto del producto | cliente | bajo | `canceladas` | — | — | 0010 |');
+  s.commit('docs(sdd): la 0010 sola en Now y su deuda en debt.md');
 }
 const openPlan0010 = () => {
   moldReservas();
@@ -425,7 +440,7 @@ const startEnv = (broken) => {
 function timing0010() {
   moldReservas();
   done0010();
-  s.put('.docs/sdd/estimation.md', '# Estimación\n\nEl plan estima y el cierre mide.\n');
+  s.put('.docs/sdd/steering/estimation.md', '# Estimación\n\nEl plan estima y el cierre mide.\n');
   appendFileSync(at(`${F10}/plan.md`), '\n## Estimación y esfuerzo\n\n- Tipo: backend\n- Esfuerzo spec + plan: 0,5h\n- Estimación de implementación: 4h\n');
   s.commit('docs(sdd): estimación de la 0010');
   s.seedTranscript('feature/0010-cancel-reason', [
@@ -447,13 +462,13 @@ const molds = {
     moldReservas();
     done0010();
     family0010();
-    edit('.docs/sdd/roadmap.md', [/^\| 0009 \| \*\*Cancelaciones con motivo\*\*(.*)\| ⏳ \|$/, '| 0009 | **Cancelaciones con motivo**$1| ✅ |']);
-    if (!has('.docs/sdd/roadmap.md', /^\| 0009 .*\| ✅ \|$/)) s.die('no se cerró la madre 0009');
+    setState('0009', '✅');
+    if (!has(ROADMAP, /^\| 0009 .*\| ✅ \|/)) s.die('no se cerró la madre 0009');
     s.commit('docs(roadmap): la 0009 cerrada');
   },
   'reservas-adr': () => (moldReservas(), done0010(), adrs0010()),
   'reservas-sha': () => (moldReservas(), done0010(), citedSha0010()),
-  'reservas-300': () => (moldReservas(), roadmap300(), done0010()),
+  'reservas-300': () => (moldReservas(), onlyRow0010(), done0010()),
   'salas-capability': () => (capability0008(), done0008(), patchDelta0008()),
   'reservas-base': () => {
     moldReservas();
@@ -494,11 +509,11 @@ const molds = {
   'reservas-md-clash': () => migrationMold('clash'),
   'reservas-ci-red': () => (moldReservas(), baseCi(false), ghFake(ghRun('failure', 'develop')), done0010()),
   'reservas-ci-down': () => (moldReservas(), baseCi(false), ghFake(GH_LOGGED_OUT), done0010()),
-  'reservas-release-ci': () => (moldReservas(), baseCi(true), release300(), ghFake(ghRun('success', 'develop'))),
+  'reservas-release-ci': () => (moldReservas(), baseCi(true), onlyRow0010(), ghFake(ghRun('success', 'develop'))),
   'reservas-release-ci-old': () => {
     moldReservas();
     baseCi(true);
-    release300();
+    onlyRow0010();
     const run = ghRun('success', 'develop');
     developAfterCi();
     ghFake(run);
@@ -548,30 +563,30 @@ const molds = {
   'reservas-cap': () => {
     moldReservas();
     done0010();
-    const stack = '# Tech stack\n\n- Node 22.\n- `src/app.js`.\n- Puerto 4100 (`operations.md`).\n';
-    writeFileSync(at('.docs/sdd/tech-stack.md'), stack);
-    s.put('.docs/sdd/steering/operations.md', '# Operations\n\n- Puerto de las pruebas: 4100.\n');
-    s.put('scripts/word-cap.mjs', `import { readFileSync } from 'node:fs';\nconst words = readFileSync('.docs/sdd/tech-stack.md', 'utf8').split(/\\s+/).filter(Boolean).length;\nif (words > ${stack.split(/\s+/).filter(Boolean).length}) { console.error('tech-stack.md pasa de su tope de palabras: ' + words); process.exit(1); }\n`);
+    const stack = '# Operations\n\n- Node 22.\n- `src/app.js`.\n- Puerto 4100 (`architecture.md`).\n';
+    s.put(OPS, stack);
+    s.put(ARCH, '# Architecture\n\n- Puerto de las pruebas: 4100.\n');
+    s.put('scripts/word-cap.mjs', `import { readFileSync } from 'node:fs';\nconst words = readFileSync('${OPS}', 'utf8').split(/\\s+/).filter(Boolean).length;\nif (words > ${stack.split(/\s+/).filter(Boolean).length}) { console.error('operations.md pasa de su tope de palabras: ' + words); process.exit(1); }\n`);
     s.put('.githooks/pre-commit', '#!/bin/sh\nexec node scripts/word-cap.mjs\n');
-    s.commit('chore: tope de palabras de tech-stack.md');
+    s.commit('chore: tope de palabras de operations.md');
     s.git('config', 'core.hooksPath', '.githooks');
   },
   // El tope en un fichero aparte: con margen en la rama, y en develop otra feature lo baja a la medida exacta tras abrirla.
   'reservas-cap-base': () => {
     moldReservas();
-    const stack = '# Tech stack\n\n- Node 22.\n- `src/app.js`.\n- Puerto 4100 (`operations.md`).\n';
+    const stack = '# Operations\n\n- Node 22.\n- `src/app.js`.\n- Puerto 4100 (`architecture.md`).\n';
     const exact = stack.split(/\s+/).filter(Boolean).length;
-    writeFileSync(at('.docs/sdd/tech-stack.md'), stack);
-    s.put('.docs/sdd/steering/operations.md', '# Operations\n\n- Puerto de las pruebas: 4100.\n');
-    s.put('scripts/word-cap.mjs', `import { readFileSync } from 'node:fs';\nconst cap = JSON.parse(readFileSync('scripts/word-cap.json', 'utf8'))['tech-stack.md'];\nconst words = readFileSync('.docs/sdd/tech-stack.md', 'utf8').split(/\\s+/).filter(Boolean).length;\nif (words > cap) { console.error('tech-stack.md mide ' + words + ' y el tope es ' + cap); process.exit(1); }\n`);
-    s.put('scripts/word-cap.json', `${JSON.stringify({ 'tech-stack.md': exact + 30 })}\n`);
+    s.put(OPS, stack);
+    s.put(ARCH, '# Architecture\n\n- Puerto de las pruebas: 4100.\n');
+    s.put('scripts/word-cap.mjs', `import { readFileSync } from 'node:fs';\nconst cap = JSON.parse(readFileSync('scripts/word-cap.json', 'utf8'))['operations.md'];\nconst words = readFileSync('${OPS}', 'utf8').split(/\\s+/).filter(Boolean).length;\nif (words > cap) { console.error('operations.md mide ' + words + ' y el tope es ' + cap); process.exit(1); }\n`);
+    s.put('scripts/word-cap.json', `${JSON.stringify({ 'operations.md': exact + 30 })}\n`);
     s.put('.githooks/pre-commit', '#!/bin/sh\nexec node scripts/word-cap.mjs\n');
-    s.commit('chore: tope de palabras de tech-stack.md');
+    s.commit('chore: tope de palabras de operations.md');
     s.git('config', 'core.hooksPath', '.githooks');
     done0010();
     s.git('checkout', '-q', 'develop');
-    s.put('scripts/word-cap.json', `${JSON.stringify({ 'tech-stack.md': exact })}\n`);
-    s.commit('chore: el tope de tech-stack.md en su medida exacta (0014)');
+    s.put('scripts/word-cap.json', `${JSON.stringify({ 'operations.md': exact })}\n`);
+    s.commit('chore: el tope de operations.md en su medida exacta (0014)');
     s.git('checkout', '-q', 'feature/0010-cancel-reason');
   },
   'reservas-valida-en': () => {
@@ -609,16 +624,15 @@ const files = (dir, pattern) => (existsSync(at(dir)) ? readdirSync(at(dir)).filt
 for (const migration of files('skills/sdd-upgrade/references/migrations', /^v.*\.md$/)) keepIf(`skills/sdd-upgrade/references/migrations/${migration}`, migration);
 for (const kept of ['ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));
 for (const adr of files('.docs/sdd/decisions', /\.md$/)) keepIf(`.docs/sdd/decisions/${adr}`, adr);
-keepIf('.docs/sdd/steering/operations.md', 'operations.md');
+keepIf(OPS, 'operations.md');
 keepIf(`${F10}/timing.json`, 'timing.json');
-for (const doc of ['roadmap', 'tech-stack', 'changelog']) keepIf(`.docs/sdd/${doc}.md`, `${doc}.md`);
 const wordsOf = (text) => text.split(/\s+/).filter(Boolean).length;
-const capOf = (json) => (json ? JSON.parse(json)['tech-stack.md'] : null);
+const capOf = (json) => (json ? JSON.parse(json)['operations.md'] : null);
 const caps = existsSync(at('scripts/word-cap.json'))
-  ? `## topes de tech-stack.md\nmide: ${wordsOf(readFileSync(at('.docs/sdd/tech-stack.md'), 'utf8'))} · tope de la rama: ${capOf(readFileSync(at('scripts/word-cap.json'), 'utf8'))} · tope de develop: ${capOf(gitQuiet('show', 'develop:scripts/word-cap.json'))}\n`
+  ? `## topes de operations.md\nmide: ${wordsOf(readFileSync(at(OPS), 'utf8'))} · tope de la rama: ${capOf(readFileSync(at('scripts/word-cap.json'), 'utf8'))} · tope de develop: ${capOf(gitQuiet('show', 'develop:scripts/word-cap.json'))}\n`
   : '';
-const techStack = gitQuiet('show', 'develop:.docs/sdd/tech-stack.md');
-const tail = techStack ? `${techStack.replace(/\n$/, '').split('\n').slice(-20).join('\n')}\n` : '';
+const architecture = gitQuiet('show', `develop:${ARCH}`);
+const tail = architecture ? `${architecture.replace(/\n$/, '').split('\n').slice(-20).join('\n')}\n` : '';
 s.save([
   `## petición\n${ASK}\n## entorno al acabar el sujeto\n${envAtEnd}\n`,
   caps,
@@ -627,5 +641,5 @@ s.save([
   `## timing.json en la historia\n${gitQuiet('log', '--all', '--name-only', '--format=', '--', `${F10}/timing.json`)}`,
   `## kit-feedback en develop\n${gitQuiet('log', 'develop', '--name-only', '--format=', '--', '.docs/sdd/kit-feedback')}`,
   existsSync(BARE) ? `## develop en origin\n${gitQuiet('--git-dir', BARE, 'log', '--oneline', 'develop')}` : '',
-  `## roadmap en develop\n${gitQuiet('show', 'develop:.docs/sdd/roadmap.md')}## bookings en develop\n${gitQuiet('show', `develop:${CAP}`)}## tech-stack en develop\n${tail}`,
+  `## ROADMAP.md en develop\n${gitQuiet('show', `develop:${ROADMAP}`)}## debt.md en develop\n${gitQuiet('show', `develop:${DEBT}`)}## bookings en develop\n${gitQuiet('show', `develop:${CAP}`)}## architecture en develop\n${tail}`,
 ].join(''));
