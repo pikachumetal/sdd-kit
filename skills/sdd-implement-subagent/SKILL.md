@@ -117,7 +117,7 @@ sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
 <!-- kit: 31783aa5 · sustituye: «at skill start, run this skill's `bash scripts/sdd-workspace PLAN_FILE` by its absolute path, from the working tree you're executing in — it prints the plan's git-ignored directory (under `<repo-root>/.superpowers/sdd/`),» -->
-- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; your next message, under its phase notice and also when you resume, opens with the `Workspace del plan:` line it prints on stderr, word for word (resuming, add `· retomo en la Task <N>`); the path it prints is the plan's git-ignored directory, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`).
+- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it also prints, for the user, the `Workspace del plan:` line; the path it prints is the plan's git-ignored directory, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write.
 <!-- kit: fin -->
 - Check for this plan's ledger at `<workspace>/progress.md`. If one exists,
   read [references/resuming.md](references/resuming.md) before anything

@@ -62,7 +62,7 @@ The closing gate —the project's full build and suite— runs at the baseline o
 ## Deviations and rulings
 
 - **Rulings.** The scope brakes and the deviations below are not rulings, and they stop; a `Ruling:` in the ledger doesn't stop you.
-- **How you stop**, in `pair` and `delegate`: with 🦆 and ✋; a deviation that changes the delta, after its reviewer. When the stop's file is a copy in `upstream.json`, the first line of the ✋ is `Copia:` and the literal output of `git log -1 --format='%h %s' <sha7>`, `<sha7>` the id after `kit:` in the block's mark; with a task id, the first line of `git log -S '<S>' --reverse --format='%h %s' -- <file>` (S the mark's quote); with none, `Copia: no encuentro el commit del kit que lo cambió`.
+- **How you stop**, in `pair` and `delegate`: with 🦆 and ✋. A deviation that changes the delta: write the correction in `spec.md`, dispatch its reviewer, then stop with its findings in ✋. When the stop's file is a copy in `upstream.json`, the first line of the ✋ is `Copia:` and the literal output of `git log -1 --format='%h %s' <sha7>`, `<sha7>` the id after `kit:` in the block's mark; with a task id, the first line of `git log -S '<S>' --reverse --format='%h %s' -- <file>` (S the mark's quote); with none, `Copia: no encuentro el commit del kit que lo cambió`.
 - **Scope brakes** stop the same way: the third discovered fix, a decision that changes the observable output, the feature's row or the task's lines changed in the base ([control-profiles.md](../sdd-propose/references/control-profiles.md)).
 <!-- kit: incluye deviation -->
 The approval's detail and the files an amendment adds: [Deviation](../sdd-propose/references/control-profiles.md#deviation).
@@ -70,11 +70,13 @@ The approval's detail and the files an amendment adds: [Deviation](../sdd-propos
 
 ## Recovery
 
-After a crash or a quota cut, first reread the ledger, `git log` and the workspace's report files (`task-<n>-report.md`). A report that arrived complete counts as returned, its agent's failure notification ignored: a task's goes to its task review; the final review's axes, to «Closing the review» of `sdd-verify`, invoked with `Skill`. A dispatch without a complete report is relaunched once, with the same brief and model, and its dispatch names the files `git status` shows changed. A task with its `complete` line is never redone. Ledger `Task <N>: Ruling: recuperación tras <caída | corte por cuota> — <qué se retomó>`. (`tests/sdd-implement-red.md`)
+After a crash or a quota cut, first reread the ledger, `git log` and the workspace's report files (`task-<n>-report.md`). A report that arrived complete counts as returned, its agent's failure notification ignored: a task's goes to its task review, the final review's axes as «After the last task» says. A dispatch without a complete report is relaunched once, with the same brief and model, and its dispatch names the files `git status` shows changed. A task with its `complete` line is never redone. Ledger `Task <N>: Ruling: recuperación tras <caída | corte por cuota> — <qué se retomó>`. (`tests/sdd-implement-red.md`)
 
 ## After the last task
 
-**Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, launch the command through its watch: `watch command -- <the command…>`, which saves its output and ends with the command (`watch command --path <its output>` only for a command already running). What to do with its warning is in [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch). (`tests/silence-watch-red.md`)
+**When the axes return**, first thing: invoke `sdd-verify` with `Skill` and follow its «Closing the review», before any stop.
+
+**Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, through `watch command -- <the command…>`; its warning, in [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch) (`tests/silence-watch-red.md`).
 
 **Closing drafts**: while the axes review, write in their place, uncommitted, `walkthrough.md` without the verification or the time, and the delta merged into `capabilities/` with the `sdd capability merge` of step 3 of `sdd-archive`; the roadmap isn't touched. `sdd-archive` only completes them (`tests/closing-off-critical-path-red.md`, c1).
 

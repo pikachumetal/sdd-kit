@@ -26,7 +26,7 @@ git reset --soft <base>
 git commit        # the project's commit convention
 ```
 
-The recipe holds also with a single commit in the range: you write the milestone's message with the project's convention, and it is never inherited from the implementer, because the task review package shows the subject and not the body. With «a single commit, nothing to squash», 2 of 2 subjects left a body without accents (`tests/native-adapt-red.md`). Never `add -A`, `add .`, `commit -a`, `rebase -i`, `push --force` or `--no-verify`.
+The recipe holds also with a single commit in the range: you write the milestone's message with the project's convention, and it is never inherited from the implementer, because the task review package shows the subject and not the body. With «a single commit, nothing to squash», 2 of 2 subjects left a body without accents (`tests/native-adapt-red.md`). Never `rebase -i`, `push --force` or `--no-verify`.
 
 ## Guards
 
