@@ -45,17 +45,21 @@ function launch({ subjectSh, args, env }) {
   return { pid: child.pid, exited };
 }
 
-// Una línea por proceso, «<pid>\t<línea de órdenes>»: ConvertTo-Json deja sin escapar algún carácter de control
-// de las líneas de órdenes de otros programas, y el JSON no se puede leer.
-const PROCESS_QUERY = "Get-CimInstance Win32_Process | ForEach-Object { \"$($_.ProcessId)`t$($_.CommandLine -replace '[\\x00-\\x1f]', ' ')\" }";
+// Una línea por proceso, «<pid>\t<padre>\t<arranque>\t<línea de órdenes>»: ConvertTo-Json deja sin escapar algún
+// carácter de control de las líneas de órdenes de otros programas, y el JSON no se puede leer.
+const PROCESS_QUERY = "Get-CimInstance Win32_Process | ForEach-Object { \"$($_.ProcessId)`t$($_.ParentProcessId)`t$($_.CreationDate.Ticks)`t$($_.CommandLine -replace '[\\x00-\\x1f]', ' ')\" }";
 
 const windows = process.platform === 'win32';
 
-// Fuera de Windows (el CI corre esta suite en Linux), la línea de órdenes sale de /proc, sin depender de ps.
+// Fuera de Windows (el CI corre esta suite en Linux), todo sale de /proc, sin depender de ps: en `stat`, tras el
+// nombre entre paréntesis, el padre es el segundo campo y el arranque el vigésimo.
 function linuxProcesses() {
   return readdirSync('/proc').filter((name) => /^\d+$/.test(name)).flatMap((pid) => {
     try {
-      return [{ pid: Number(pid), commandLine: readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' ').trim() }];
+      const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+      const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
+      const commandLine = readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' ').trim();
+      return [{ pid: Number(pid), ppid: Number(fields[1]), created: fields[19], commandLine }];
     } catch {
       return [];
     }
@@ -68,9 +72,16 @@ async function processes() {
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`pwsh salió con ${result.status}: ${(result.stderr ?? '').trim()}`);
   return result.stdout.split(/\r?\n/).filter(Boolean).map((line) => {
-    const tab = line.indexOf('\t');
-    return { pid: Number(line.slice(0, tab)), commandLine: line.slice(tab + 1) };
+    const [pid, ppid, created, ...command] = line.split('\t');
+    return { pid: Number(pid), ppid: Number(ppid), created, commandLine: command.join('\t') };
   });
+}
+
+// Sin unref, la última vuelta pendiente retendría el lanzador hasta 15 s tras el último sujeto.
+function every(ms, tick) {
+  const timer = setInterval(tick, ms);
+  timer.unref();
+  return () => clearInterval(timer);
 }
 
 // Hasta la línea del error: lo que sigue es la pila de node y su versión.
@@ -93,6 +104,7 @@ export function realDeps() {
     lock: (path, body) => withLock({ path, label: 'lanzamiento de sujetos', io, owner: { ...owner, worktree: dirname(path) } }, LOCK_TIMEOUT_MINUTES, body),
     launch,
     processes,
+    every,
     kill: killProcess,
     syntaxError,
   };

@@ -406,6 +406,7 @@ function fakeDeps(fs: MemoryFs) {
       return { pid: 1, exited: Promise.resolve(0) };
     },
     processes: async () => [],
+    every: () => () => undefined,
     kill: () => undefined,
     syntaxError: (_path: string): string | null => null,
   };
