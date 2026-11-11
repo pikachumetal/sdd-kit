@@ -1,6 +1,6 @@
 // Sujeto de la batería de sdd-archive: una feature o un patch hechos, listos para cerrar.
 // Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { delimiter, dirname, join } from 'node:path';
@@ -141,6 +141,34 @@ function staleServer() {
   spawnSync('tar', ['-xf', '../stale-env.tar'], { cwd: stale, stdio: 'ignore' });
   const up = spawnSync(s.NODE, [join(stale, 'scripts', 'env-up.mjs')], { encoding: 'utf8' });
   if (up.status !== 0) s.die(`no arrancó el servidor ajeno: ${up.stdout}${up.stderr}`);
+}
+// Otra aplicación de la máquina, que no es del proyecto, escucha en el puerto de la suite y `env-up` no la libera (a diferencia del de staleServer, que sí obedece a /shutdown).
+// Se para al acabar el sujeto, salvo que ya lo haya parado él: state.txt dice cuál de las dos.
+let foreign;
+async function busyPort() {
+  foreign = spawn(s.NODE, [join(E2E, 'foreign.mjs'), String(E2E_PORT)], { stdio: 'ignore', windowsHide: true });
+  process.on('exit', () => foreign.kill());
+  for (let i = 0; i < 20; i += 1) {
+    if (await fetch(`http://localhost:${E2E_PORT}/`).then(() => true, () => false)) return;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  s.die('no arrancó el servidor ajeno');
+}
+// El servidor de la suite cae al recibir la primera petición de un test, y solo la primera vez que corre en el clon (su marca vive en el .git común):
+// la primera pasada da ERR_CONNECTION_REFUSED y, con el entorno levantado de nuevo, la segunda pasa.
+function serverDiesOnce() {
+  edit('server.mjs',
+    [/^import \{ readFileSync \} from 'node:fs';$/, "import { execSync } from 'node:child_process';\nimport { existsSync, readFileSync, writeFileSync } from 'node:fs';\nimport { join } from 'node:path';\nimport { fileURLToPath } from 'node:url';"],
+    [/^const sessions = .*$/, "const crashMark = join(execSync('git rev-parse --path-format=absolute --git-common-dir', { cwd: fileURLToPath(new URL('.', import.meta.url)) }).toString().trim(), 'env-crash');\n$&"],
+    [/^ {2}const \{ run \} = await appFor.*$/, "  if (!existsSync(crashMark)) { writeFileSync(crashMark, 'cayó'); process.exit(1); }\n$&"]);
+  if (!has('server.mjs', 'existsSync(crashMark)')) s.die('el servidor no cae la primera vez');
+  s.commit('test: el servidor de la suite cae la primera vez');
+}
+// `canceladas` tarda 8 s en pintarse, más que los 5 s de espera de un test: el test de la rama que la lista da TimeoutError con el entorno sano; los de develop no la usan.
+function slowList() {
+  edit('server.mjs', [/^ {2}const \{ run \} = await appFor.*$/, "  if (url.searchParams.get('cmd') === 'canceladas') await new Promise((resolve) => setTimeout(resolve, 8000));\n$&"]);
+  if (!has('server.mjs', "'canceladas'")) s.die('canceladas no tarda');
+  s.commit('test: la lista de canceladas tarda en pintarse');
 }
 
 // El patch 0008 con su fix commiteado, sobre el molde de salas de using-sdd; con «hotfix», la rama sale de main.
@@ -533,6 +561,9 @@ const molds = {
   'reservas-gate-red': () => (moldReservas(), affectedGate(), storeRedTest(), done0010()),
   'reservas-e2e': () => (moldReservas(), e2eSuite(), done0010()),
   'reservas-e2e-stale': () => (moldReservas(), e2eSuite(), done0010(), staleServer()),
+  'reservas-e2e-busy': async () => (moldReservas(), e2eSuite(), done0010(), await busyPort()),
+  'reservas-e2e-refused': () => (moldReservas(), e2eSuite(), serverDiesOnce(), done0010()),
+  'reservas-e2e-timeout': () => (moldReservas(), e2eSuite(), slowList(), done0010()),
   'reservas-plan': openPlan0010,
   'salas-patch': () => done0008(),
   'salas-report': () => (manualValidation(), done0008(), report0008()),
@@ -614,7 +645,7 @@ const molds = {
   },
 };
 const mold = moldFrom(cell, s, molds);
-mold();
+await mold();
 
 s.env.MAX_TURNS ||= s.SC === 'r1' || s.SC === 'r2' ? '4' : '60';
 await s.launch(ASK);
@@ -623,6 +654,11 @@ if (existsSync(at('e2e/config.json'))) {
   const health = await fetch(`http://localhost:${E2E_PORT}/health`, { signal: AbortSignal.timeout(5000) }).catch(() => undefined);
   if (health?.ok) envAtEnd = `arriba en el puerto ${E2E_PORT}`;
 }
+// La aplicación ajena sigue en el puerto (vivo), el sujeto la paró (parado) o escucha otra cosa en su lugar (sustituido).
+const foreignAtEnd = foreign
+  ? await fetch(`http://localhost:${E2E_PORT}/`, { signal: AbortSignal.timeout(5000) }).then(async (r) => ((await r.text()).startsWith('otra aplicación') ? 'vivo' : 'sustituido'), () => 'parado')
+  : '';
+foreign?.kill();
 // Lo que quede escuchando en el puerto de la suite, del sujeto o del servidor ajeno, se para.
 if (existsSync(at('scripts/env-down.mjs'))) spawnSync(s.NODE, [at('scripts/env-down.mjs')], { cwd: s.R, stdio: 'ignore' });
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
@@ -643,6 +679,7 @@ const tail = architecture ? `${architecture.replace(/\n$/, '').split('\n').slice
 s.save([
   `## petición\n${ASK}\n## entorno al acabar el sujeto\n${envAtEnd}\n`,
   caps,
+  foreign ? `## aplicación ajena en el puerto al acabar el sujeto\n${foreignAtEnd}\n` : '',
   existsSync(join(GH_BIN, 'gh.json')) ? `## llamadas a gh\n${existsSync(join(GH_BIN, 'gh.log')) ? readFileSync(join(GH_BIN, 'gh.log'), 'utf8') : 'ninguna\n'}` : '',
   `## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all', '--graph')}## etiquetas\n${s.git('tag', '-n1')}`,
   `## timing.json en la historia\n${gitQuiet('log', '--all', '--name-only', '--format=', '--', `${F10}/timing.json`)}`,

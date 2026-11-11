@@ -292,3 +292,30 @@ Resumen: verdes `d1`, `u1`, `p4` y `p4o`; rojos `a3` (1/2) y `v5` (1/2). Antes �
 RED, reproducido el 2026-11-11 en un repo de prueba: un proceso con su directorio de trabajo dentro de `review-x` y `git worktree remove ../review-x` → `error: failed to delete '…/review-x': Permission denied`, salida 255; `git worktree list` ya no lo lista y la carpeta sigue. La receta de antes acaba ahí: la carpeta queda, como en los tickets de document-manager 0035 §5 y de la 0115 §5.
 
 GREEN: con la carpeta ya libre, la receta nueva de `encargo-revision.md` (`git worktree remove "$REVIEW_DIR" || { git worktree list | grep -qF "$REVIEW_DIR " || rm -rf "$REVIEW_DIR"; }`) sale con 0 y la carpeta desaparece. Si la carpeta desaparece a mitad de la revisión, el encargo manda leer con `git show <sha>:<ruta>`. Saldo de palabras de `sdd-verify`: −8 (el ejemplo largo de la R1 de `proportional-review-red.md` y la segunda medida de la 0058 salen; `tech-stack`, nombre 2.x, pasa a `operations.md`).
+
+## Repetición de a3 y v5, y e2 (kit 0e7ccfc5)
+
+Se leyeron las salidas de `rr-prp` (a3-1 y a3-2), `rr-upg` (v5-1 y v5-2) y `rr-arc` (e2-1 y e2-2): `tools.txt`, `texts.txt` y `state.txt` de cada sujeto, con las filas de `battery.md` de `sdd-propose`, `sdd-upgrade` y `sdd-archive`.
+
+| Batería:escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| sdd-propose:a3 | A3 Carril de la petición | pasa: no pregunta el carril; `patch.md` con `- Estimación: 0,3 h + 0,01 h del gate de cierre` (tools l. 179) antes del `Edit` de `src/app.js` (l. 210) | pasa: no pregunta; `- Estimación: 0,5 h + gate de cierre` (l. 212) antes del `Edit` de `src/app.js` (l. 262) | 2/2 |
+| sdd-propose:a3 | A3-L Lee el carril del patch | pasa: `Read` de `patch-lane.md` (l. 39) | pasa: `Read` de `patch-lane.md` (l. 7) | 2/2 |
+| sdd-propose:a3 | L Idioma | pasa | pasa (el único inglés es el `tool_use_error` de un `Edit` a una ruta inexistente, ruido de herramienta, sin texto del sujeto) | 2/2 |
+| sdd-propose:a3 | **Escenario** | | | verde (A3 2/2, antes 1/2) |
+| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` con `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` con `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` | falla: `CHANGELOG.md` conserva `[ref](specs/20260915-090000-feature-0016-weekly/walkthrough.md)`, sin el prefijo `.docs/sdd/` | 1/2 |
+| sdd-upgrade:v5 | V16 Lo publicado | pasa: 0023 y 0032 en Now con ✅; 0029 y 0016 fuera de `ROADMAP.md` | pasa: ídem (0023 en Now ✅ con enlace a su `patch.md`); reparo: la tabla dice de la 0029 «ya está en `CHANGELOG.md`» y el changelog solo lleva la 0016 | 2/2 |
+| sdd-upgrade:v5 | V17 Release por prefijo | pasa: `## Now — 3.0.0 · en preparación` con 0030, 0031 y 0033 (una vez); 0021, 0022 y 0024 en Next | pasa: ídem | 2/2 |
+| sdd-upgrade:v5 | V18 Ids del Backlog | pasa: Later con 0040 y 0041; la tabla pregunta «Later con un id nuevo… dice qué estado toma» (fila `1`) | pasa: Later 0040 y 0041; «Later no admite 🔄, así que dime qué estado toma» | 2/2 |
+| sdd-upgrade:v5 | V19 Nombres en capabilities | pasa: conserva «`sdd-end-patch` pasa a `sdd-archive`»; la tabla con `cierre.md:12` va antes del `sed` (tools l. 469-477) | falla: conserva la línea 19, pero cambia `cierre.md:12` a `sdd-archive` sin tabla previa (el gate 5 solo trata `CLAUDE.md`, `pregunta.md` y la medición); lo cuenta después | 1/2 |
+| sdd-upgrade:v5 | V20 Mediciones fechadas | pasa: `operations.md` conserva «2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0» | pasa: ídem (la tabla ya lo propone conservar) | 2/2 |
+| sdd-upgrade:v5 | **Escenario** | | | rojo (V15 1/2, V19 1/2) |
+| sdd-archive:e2 | E4 Tanda estimada | falla: ningún mensaje da tests × duración antes de lanzar la tanda (tools l. 135). El único texto previo, `[18]`, dice «run the closing gate once as declared, which also gives the durations»; la estimación aparece solo en el mensaje final («Antes de lanzar la tanda di su línea… ~1,3 min», falso) y en el walkthrough. Alcance bien (11 ejecuciones) y sin edits en marcha | falla: texts `[20]` «Lanzo el gate de cierre literal» y nada antes de la tanda (l. 143, 9 tests ×3 y `anula` ×1 = 11). La estimación, `(7,6 s × 11 ÷ 1)`, solo va en el walkthrough, y su resumen `[54]` ya da el resultado. Alcance bien, sin edits en marcha | 0/2 |
+| sdd-archive:e2 | L Idioma | falla: texts `[18]` «Branch touches only `e2e/cancel.e2e.mjs` (not `free.e2e.mjs`). First I raise the environment myself…» | pasa | 1/2 |
+| sdd-archive:e2 | **Escenario** | | | rojo (E4 0/2, L 1/2) |
+
+Resumen: verde `a3`; rojos `v5` y `e2`. Antes → ahora:
+
+- `a3` (A3 1/2 → 2/2): cerrado. Los dos escriben la `- Estimación:` en `patch.md` antes del `Edit` del fix y ninguno pregunta el carril.
+- `v5` (V16 1/2 → 2/2; V15 2/2 → 1/2 y V19 2/2 → 1/2): V16 cerrado, pero `v5-2` falla otras dos. V15: mueve `changelog.md` a la raíz y no reescribe sus enlaces `specs/…` (su tabla de enlaces solo nombra `CLAUDE.md`, `README.md` y `steering/`). V19: cambia la línea 12 de `cierre.md` sin tabla, porque su gate 5 la deja fuera. Causa: skill, los pasos 4 y 5 no listan el fichero movido ni `capabilities/` como superficie de la tabla, más variación del sujeto.
+- `e2` (E4 0/2 → 0/2; L 1/2): la deuda sigue. Los dos acotan bien la tanda (11 ejecuciones) y sin editar con ella en marcha, pero ninguno dice la estimación antes de lanzarla; `e2-1` afirma en el cierre que sí lo hizo. Causa: skill (`e2e-suite.md` pide la línea `Tanda:` pero no el mensaje antes del lanzamiento), no ruido. L: `e2-1` narra en inglés un mensaje intermedio.
