@@ -1,0 +1,82 @@
+--- [3]
+Primero reviso la spec, el plan y el estado de la rama.
+
+--- [7]
+Ahora: cargar el método Native (plan con `Ejecución: native`). Queda: preparar el workspace y las 2 tasks, ~15 min.
+
+--- [9]
+Ahora: sdd-worktrees para el workspace aislado. Queda: setup, 2 tasks, revisión final, ~15 min.
+
+--- [13]
+Estoy en la rama `feature/0010-cancel-reason` (no `main`), así que trabajo en el sitio y no creo otro worktree. Miro el código, el workspace y el baseline.
+
+--- [16]
+Línea del workspace: `Workspace del plan: …\.temp\sdd\plan`. Ahora: baseline en worktree detached, ledger y `tasks.md`.
+
+--- [19]
+Baseline verde (4/4). Base check: `main` no avanzó, sin diff. Escribo ledger (con scan previo) y `tasks.md`.
+
+--- [23]
+Task 1, RED: escribo los tests (uno por THEN/AND) y guardo copia fuera del repo.
+
+--- [26]
+RED por fallo correcto (3 fallan, el de «sin reserva» ya pasaba y se mantiene). Ahora GREEN.
+
+--- [29]
+Se me enredó el quoting; uso Edit.
+
+--- [35]
+Compruebo GREEN, comparo la copia RED y commiteo la Task 1.
+
+--- [38]
+Task 2, RED: el test de `canceladas` (Norte lun ya cancelada con «sala ocupada» por el test previo del mismo fichero).
+
+--- [40]
+RED correcto (devuelve `salas`). GREEN:
+
+--- [45]
+Las 2 tasks están completas (suite entera 7/7). Ahora: revisión final con `sdd-verify`. Queda: revisión por ejes, cierre y entrega a `sdd-archive`, ~10 min.
+
+--- [48]
+No tengo herramienta de subagentes (el Workflow exige que lo pidas tú), así que aplico el camino «sin subagentes»: reviso yo mismo por ejes y lo dejo anotado. Primero leo el cierre y el diff.
+
+--- [51]
+Self-review por ejes. Spec: los 2 THEN y los 2 AND están cubiertos. Código: veo que el diff de `test/cancel.test.js` es de fichero entero, probablemente por fin de línea. Lo compruebo.
+
+--- [59]
+Implementación terminada. El flujo manda ahora a `sdd-archive`, cuyo primer paso es la validación.
+
+--- [62]
+La implementación está hecha, pero **no he empezado el cierre**. En este proyecto la validación es manual (`sdd-kit.json` no tiene `validation.mode: field`), y sin que la hagas tú `sdd-archive` no valida ni fusiona nada.
+
+## Resultado
+
+| Task | Qué | Commit |
+| --- | --- | --- |
+| 1 | `cancelar <sala> <día> --motivo <motivo>` con lista cerrada | `b13a096` |
+| 2 | Comando `canceladas` («Norte lun — sala ocupada») | `9a31dc3` |
+| – | `tasks.md` con rulings y revisión final | `9d82df7` |
+
+- **Tests:** `node --test` pasa 7/7. Cada task empezó en RED, con la copia de los tests guardada fuera del repo, y la copia coincide con lo commiteado.
+- **Revisión final:** no he podido lanzar revisores independientes, porque este harness no tiene herramienta de subagentes. La hice yo mismo sobre los ejes Spec y Código, sin hallazgos Critical ni Important. Es más débil que una revisión con contexto fresco, así que tú decides si basta antes de fusionar.
+- **Rama:** sigo en `feature/0010-cancel-reason`, sin worktree aparte. No hay nada fusionado ni subido.
+
+## Rulings que tomé
+
+1. **Test viejo reescrito.** Actualicé `cancelar una reserva activa` a la salida de la spec, con motivo. Cuesta un test antiguo reescrito.
+2. **Orden de las comprobaciones.** «Sin reserva» se comprueba antes que el motivo, porque la spec no fija el orden. Cambiarlo habría alterado una salida ya existente. Cuesta que `cancelar Sur mar` sin motivo diga «sin reserva» y no «motivo no válido».
+3. **`canceladas` solo lista `cancelled`.** Excluye las anuladas (`voided`), que son de la 0011. No cuesta nada.
+
+**Minor diferido:** reescribí `test/cancel.test.js` de CRLF a LF, así que su diff aparece como fichero entero (sin cambio de comportamiento).
+
+## Valídalo tú
+
+Desde la raíz del repo:
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"   # cancelada Norte lun (sala ocupada)
+node src/app.js canceladas   # no sirve solo: el estado es en memoria
+```
+`canceladas` no guarda estado entre ejecuciones del CLI, porque las reservas viven en memoria. Por eso, solo desde la línea de comandos, el listado no enseñará nada. Lo veo como una limitación de la spec y el plan, que no piden persistencia. Dime si lo quieres tratar como deuda o como enmienda.
+
+Para validar, prueba `cancelar` con un motivo fuera de la lista y sin `--motivo` (debe responder «motivo no válido: cambio de planes, sala ocupada, otro»), y revisa los tests de `test/cancel.test.js`. Cuando me digas qué probaste y que funciona, retomo con `sdd-archive`.
+
