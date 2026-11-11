@@ -52,7 +52,7 @@ The profile line says which level it comes from; one `Aviso:` line per local key
    - **lite** — a bounded change that meets the predicate (conditions in [modo-lite.md](references/modo-lite.md)).
    - **feature** — everything else, in full mode. A request with parts of several lanes goes by its heaviest part: say which part rides inside it («the README typo goes inside this feature»), and never split a part off on your own.
 
-   **Lane in the request.** «patch: …», «lite: …» or «config: …» that your investigation confirms is not asked again. If you see a heavier lane, ask, with the heavier one recommended and what you'd have to decide in it (`tests/sdd-propose-0160-red.md`, a3 and a4). A request that names a heavier lane than the one you see keeps it: you may offer the lighter one in a question, never move down on your own.
+   **Lane in the request.** «patch: …», «lite: …» or «config: …» that your investigation confirms skips the question below. If you see a heavier lane, ask, with the heavier one recommended and what you'd have to decide in it (`tests/sdd-propose-0160-red.md`, a3 and a4). A request that names a heavier lane than the one you see keeps it: you may offer the lighter one in a question, never move down on your own.
 
    **Ceremony follows the lane.** Read `.docs/sdd/sdd-kit.local.json` even if it doesn't show when listing the folder (`tests/sdd-config-red.md`, c2); the current profile comes from the feature, that file, the release or the project, and you say which level.
    - **feature and spike announce and go on**, with the announcement above.

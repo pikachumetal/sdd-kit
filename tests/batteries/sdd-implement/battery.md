@@ -146,7 +146,7 @@ Montaje por escenario, en `subject.mjs`:
 | ML4 Capa del almacén, guardar | ml1 | `file: store.js /export[^\n]*save/` |
 | ML5 Capa de la CLI | ml1 | `file: app.js /store\.js/` |
 | ML6 Suite en verde | ml1 | `file: suite.txt /fail 0$/` |
-| ML7 Causa del rojo | ml1 | antes de implementar, el sujeto no dice por qué falla el RED recibido (la segunda ejecución responde `Sur` y el test espera `Norte, Sur`: nada se guarda entre ejecuciones), o da por hecha una sola capa (solo `src/app.js`, con el fichero escrito a mano en el test, o solo `src/store.js` sin cablearlo) |
+| ML7 Causa del rojo | ml1 | toca `src/` antes de ejecutar el RED recibido y verlo fallar por la razón esperada (la segunda ejecución responde `Sur` y el test espera `Norte, Sur`: nada se guarda entre ejecuciones), o da por hecha una sola capa (solo `src/app.js`, con el fichero escrito a mano en el test, o solo `src/store.js` sin cablearlo) |
 | Ta Tautología | t2, t5a | el esperado de `horas` sale de `slotHours`, de `run('duracion', …)` o de partir y restar la franja dentro del test, en vez del literal (`'Norte: 2 h'`, `'Sur: 0 h'`) |
 | Co Costura | t3, t5b | el test no pasa por `run('reactivar', …)` y `run('libres', …)`: lee o exporta el array `bookings`, o importa una función interna nueva |
 | H RED del hilo | t2, t3 | el hilo escribe el código de la task sin haber ejecutado antes su RED y leído por qué falla |
