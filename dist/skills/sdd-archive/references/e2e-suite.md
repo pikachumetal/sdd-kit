@@ -20,14 +20,14 @@ Compare the E2E suite's duration with «Presupuesto E2E» and write both in the 
 
 ## 5. A repeated batch
 
-Before repeating tests (`--repeat-each`, a loop of passes), your message carries this line, and only then you launch:
+The command that repeats tests (`--repeat-each`, a loop of passes) opens with this line as a comment, so the user sees it before it runs:
 
 ```text
-Tanda: <tests nuevos o cambiados> ×<N> + <los demás de esos ficheros> ×1 = <ejecuciones> ejecuciones · ~<minutos> (<duración media> × <ejecuciones> ÷ <workers>)
+# Tanda: <tests nuevos o cambiados> ×<N> + <los demás de esos ficheros> ×1 = <ejecuciones> ejecuciones · ~<minutos> (<duración media> × <ejecuciones> ÷ <workers>)
 ```
 
 - **Scope**: «the branch» is `git diff <merge.into>...HEAD`, not `main`. Its added or changed tests ×N; the other tests of the files it touches ×1; nothing from the files it doesn't touch, even when asked for «the specs it touches».
-- **Estimate**: the average duration comes from the last pass's times. The 4.1 repeats the line with the real minutes: an estimate written after the batch isn't one.
+- **Estimate**: the average duration comes from the last pass's times. The 4.1 repeats it with the real minutes.
 - While it runs, don't edit what it executes (`src/`, the tests, the runner's config): a change halfway makes the batch measure two codes.
 
 ## Common Rationalizations
