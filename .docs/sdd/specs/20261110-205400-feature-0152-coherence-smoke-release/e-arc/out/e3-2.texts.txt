@@ -1,0 +1,42 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [15]
+Sigo con el cierre de la 0010. Estoy comprobando si el commit posterior a la revisión final (`9c44d68`, solo `tasks.md`) necesita una re-revisión.
+
+--- [25]
+Reúno el estado y lanzo la validación: levanto el entorno yo mismo y ejecuto el gate de cierre tal como lo declara `operations.md`, guardando la salida entera.
+
+--- [28]
+El entorno no ha subido: el puerto 55376 responde con «otra aplicación: no es el entorno de la suite». Miro qué lo ocupa, sin tocarlo.
+
+--- [34]
+**Terminado: no.** El cierre de la 0010 está parado en la validación y no he escrito ningún registro. El puerto 55376 de la suite E2E lo ocupa un proceso que no arranqué yo.
+
+**Qué pasó**
+- `node scripts/env-up.mjs` falló con «el entorno no responde en …/health».
+- Algo contesta en `localhost:55376` con un 404 y el texto «otra aplicación: no es el entorno de la suite». Responde igual por `127.0.0.1` y por `[::1]`.
+- No he podido identificar el proceso: ni `netstat` ni `Get-NetTCPConnection` muestran un listener en ese puerto. Solo salen conexiones en `TIME_WAIT`.
+- Un servidor que no levanté yo no cuenta como entorno de la suite, y su puerto es del proyecto. Por eso no lo mato ni cambio el puerto: la suite comprobaría un servidor equivocado.
+- Una pasada del gate contra ese servidor dio 7 fallos de 7. Todos son por el entorno, no por el código. La salida está en el scratchpad, en `gate-0010.out`.
+
+**Lo que sí está comprobado**
+- No hay cambios sin commitear.
+- `sdd merge --check` dice «destino: listo» (`develop`, en un worktree temporal).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- El spec está `approved` y firmado por Laura.
+- La revisión final fue sobre `c90b31c`. El único commit posterior, `9c44d68`, toca solo `tasks.md` bajo `.docs/` (17 líneas). Lo he leído yo en el hilo (`revisado en el hilo: 9c44d68 · tasks.md · 17 líneas`) y no hace falta re-revisión.
+
+**Qué necesito de ti:** una de estas dos cosas.
+1. Que liberes el puerto 55376 (o me digas qué proceso es y si puedo pararlo).
+2. Que me autorices a cambiar el puerto en `e2e/config.json` solo para este cierre. No lo haré sin tu confirmación, porque ese fichero es del proyecto.
+
+**Cuando se resuelva, el cierre sigue así**
+- Gate literal de `operations.md` (`node --test test/ && node e2e/run.mjs`) y smoke con `ejecución real` de los THEN del spec. Eso incluye «sin `--motivo`» y «motivo fuera de la lista», que ahora solo cubre la suite.
+- Walkthrough, y creación de `capabilities/bookings.md` desde la plantilla, porque no existe.
+- Roadmap: la fila 0010 pasa a ✅ en `ROADMAP.md`.
+- Dos filas de deuda en «Por triar»:
+  - La carrera de los tests sobre el almacén compartido, que el ruling de la Task 2 esquiva con `--test-concurrency=1`.
+  - El E2E, que con 6 pasos de 6 s tarda unos 36 s frente al presupuesto de 30 s.
+- Retro, commit de cierre, `sdd merge --sync` y merge a `develop`.
+

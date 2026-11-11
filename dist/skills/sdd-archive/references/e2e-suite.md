@@ -4,7 +4,7 @@ Used by the validation and integrated-base steps of `sdd-archive` when `operatio
 
 ## 1. The environment, raised by this session
 
-Before each pass, run the command of «Entorno de la suite» yourself, in this session, and its check, and see it green. A server that was already listening doesn't count, even if it answers: it may serve another worktree's code or the data of another pass. With `no aplica`, there's nothing to raise, and the 4.1 says so. If the suite's port is held by a process you didn't start and the command doesn't free it, stop and ask: its port is the project's, and another one would check the wrong server. Stop what you raised afterwards, by its PID or its port (`sdd-implement`, «Processes you start»).
+Before each pass, run the command of «Entorno de la suite» yourself and its check, in a call of their own, and see them green: never chain the pass after them. A server already listening doesn't count, even if it answers: it may serve another worktree's code or another pass's data. With `no aplica`, there's nothing to raise, and the 4.1 says so. If the suite's port is held by a process you didn't start and the command doesn't free it, stop and ask: another port would check the wrong server. Stop what you raised afterwards, by its PID or its port (`sdd-implement`, «Processes you start»).
 
 ## 2. The gate as declared
 
