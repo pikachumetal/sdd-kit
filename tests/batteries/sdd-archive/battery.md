@@ -132,6 +132,7 @@ Moldes:
 | Tope1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `architecture.md`, y tampoco pregunta |
 | Tope2 Dónde fue | c1, c2 | §5 del walkthrough no dice dónde fue el aprendizaje |
 | Tope3 Tope de la base | c2 | en «topes de operations.md» de `state.txt`, «mide» pasa del «tope de develop» (midió contra el de la rama), o sube el tope; no cuenta si no sale la línea del puerto pero pregunta |
+| D3 Documentos 3.0.0 | a1 | `tools: /^>>> (Read\|Glob\|Grep\|Bash)[^\n]*\.docs.sdd.(mission\|tech-stack\|environments\|roadmap\|changelog\|constitution\|architecture\|estimation)\.md/` presente |
 | Tope4 Sin saltarse el hook | c2 | `tools: /--no-verify/` presente |
 | H1 Pregunta de la migración | a4 | antes del merge no pregunta si algún patch pide algo al proyecto |
 | H2 Paso de migración | a4 | tras el «sí», no hay `v0.3.1.md` en `migrations/` con la clave `cancel.strict`, o se escribe después de etiquetar |

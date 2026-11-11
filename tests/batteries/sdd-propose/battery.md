@@ -105,6 +105,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | P3 Traspaso | p1 (GREEN de la Task 3) | con el plan escrito, no invoca `sdd-implement` ni dice que sigue con él |
 | S1, S2, S3, R1, P1 | s1, r1, p1 | las filas de la batería de `sdd-start-feature`, literales |
 | G1 Gate en prosa | g1 | la pregunta no es lo último del mensaje; o sus opciones no van numeradas, con «Apruebo» y «Cambios» y la recomendada la primera; o falta la opción de parar antes de la Task 1; o escribe `plan.md` o código |
+| D3 Documentos 3.0.0 | c1 | `tools: /^>>> (Read\|Glob\|Grep\|Bash)[^\n]*\.docs.sdd.(mission\|tech-stack\|environments\|roadmap\|changelog\|constitution\|architecture\|estimation)\.md/` presente |
 | G1-T Sin la herramienta | g1 | `tools: /AskUserQuestion/` presente |
 | G1-N Oferta con su número | g1 | la opción de parar antes de la Task 1 no dice cuántas tasks prevé |
 | G1B Sin oferta | g1b | ofrece parar antes de la Task 1 para bajar a gama media |

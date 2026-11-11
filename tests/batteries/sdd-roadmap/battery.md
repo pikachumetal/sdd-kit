@@ -11,7 +11,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-roadmap`); el m
 | Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | m1 | prompt | dame el prompt de la 0013 | salas-0013 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0161; enmienda de la propuesta 0131 del 2026-10-08: el prompt de arranque con forma fija |
-| m2 | closing | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Decide tú los detalles. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0161: el cierre da el prompt de la fila que va primero (nació para medir el dimensionado, que salió por el RED) |
+| m2 | closing | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Decide tú los detalles. | salas | `sdd-kit:sdd-roadmap` | 3 | 2/3 | sonnet | feature 0161: el cierre da el prompt de la fila que va primero (nació para medir el dimensionado, que salió por el RED); feature 0152: n = 3 y umbral 2/3, la tasa medida en develop (5 de 6) |
 | m3 | triage | Tria lo que hay por triar en la deuda. | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el triaje propone el estado de cada ítem; el contraste con la fuente salió limpio y queda de control |
 | m4 | brief | dame el prompt de la 0013 | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: control, sin regla: el prompt sale del brief de la fila (salió limpio) |
 | m5 | write | Apunta en el roadmap: exportar las reservas a CSV. No la arranques. | salas-3-plain | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: la fila nueva entra en Next con su brief |

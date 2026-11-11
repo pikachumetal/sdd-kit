@@ -38,7 +38,9 @@ export const workspaceVerb: Verb = {
   async run(args, io) {
     enterDirectory(args);
     const [plan] = exactly(args, 1, 'sdd workspace PLAN_FILE');
-    io.out(await workspaceFor(plan));
+    const path = await workspaceFor(plan);
+    io.out(path);
+    io.err(`Workspace del plan: ${path} — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`);
     return 0;
   },
 };

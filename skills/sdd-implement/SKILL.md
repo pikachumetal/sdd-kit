@@ -62,7 +62,7 @@ The closing gate —the project's full build and suite— runs at the baseline o
 ## Deviations and rulings
 
 - **Rulings.** The scope brakes and the deviations below are not rulings, and they stop; a `Ruling:` in the ledger doesn't stop you.
-- **How you stop**, in `pair` and `delegate`: with 🦆 and ✋. When the stop's file is a copy in `upstream.json`, the first line of the ✋ is `Copia:` and the literal output of `git log -1 --format='%h %s' <sha7>`, `<sha7>` the id after `kit:` in the block's mark; with a task id, the first line of `git log -S '<S>' --reverse --format='%h %s' -- <file>` (S the mark's `sustituye` or `quita` quote, else its first line); with none, `Copia: no encuentro el commit del kit que lo cambió`.
+- **How you stop**, in `pair` and `delegate`: with 🦆 and ✋; a deviation that changes the delta, after its reviewer. When the stop's file is a copy in `upstream.json`, the first line of the ✋ is `Copia:` and the literal output of `git log -1 --format='%h %s' <sha7>`, `<sha7>` the id after `kit:` in the block's mark; with a task id, the first line of `git log -S '<S>' --reverse --format='%h %s' -- <file>` (S the mark's quote); with none, `Copia: no encuentro el commit del kit que lo cambió`.
 - **Scope brakes** stop the same way: the third discovered fix, a decision that changes the observable output, the feature's row or the task's lines changed in the base ([control-profiles.md](../sdd-propose/references/control-profiles.md)).
 <!-- kit: incluye deviation -->
 The approval's detail and the files an amendment adds: [Deviation](../sdd-propose/references/control-profiles.md#deviation).

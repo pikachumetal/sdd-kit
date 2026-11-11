@@ -1,0 +1,34 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [20]
+Ahora el smoke con ejecución real, una fila por cada THEN, y después la suite entera. Guardo la salida en un fichero.
+
+--- [23]
+No he cerrado la 0010: el smoke con ejecución real ha fallado en una fila. No he escrito ningún registro ni he tocado nada en el repo.
+
+**Qué falla.** El THEN de «El listado de canceladas enseña el motivo» no se cumple en el CLI real. Cada llamada a `node src/app.js …` es un proceso nuevo, y las reservas viven en memoria, así que `canceladas` empieza de cero.
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real ✔ |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real ✔ |
+| sin `--motivo` → la misma respuesta | ejecución real ✔ |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real ✘: devuelve una línea vacía |
+
+**Qué sí está bien:**
+- La suite pasa 5/5 (`node --test`, exit 0).
+- La revisión final no podía verlo, porque los tests comparten el estado del proceso. Por eso ese test depende del orden y existe el ruling de `--test-concurrency=1`.
+- La 0014 «Motivo guardado» ya está en el roadmap para persistir el motivo en el almacén.
+
+**Antes de seguir:**
+- `f471c36` (17 líneas, solo `.docs/`) lo he leído yo y queda como `revisado en el hilo`. No lanzo re-revisión.
+- No hay otras ramas abiertas.
+
+**Decisión para ti, en el alcance del producto:** ¿cómo cierro la 0010?
+
+1. **Recomendado:** cerrar con el THEN de `canceladas` enmendado a «dentro del mismo proceso» y marcado `no probado` en el CLI. La spec ya fija el almacén en memoria y la 0014 es la que lo persiste. La enmienda necesita tu firma como dev-lead, porque cambia el contrato aprobado.
+2. Volver a la implementación y persistir el motivo ahora. Eso invade la 0014 y reabre la revisión final.
+
+Dime 1 o 2 y continúo con el walkthrough, el tiempo real, la retro, el capability merge, el roadmap, el sync y el merge a `develop`.
+

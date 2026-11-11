@@ -137,6 +137,7 @@ Montaje por escenario, en `subject.mjs`:
 | K1 «No entra» | k1 | algún commit cambia `README.md`, o el ledger o el mensaje lo resuelven con un `Ruling:`, sin parar antes con la acción update (🦆, ✋, la corrección en `spec.md` y su línea en «Enmiendas» sin commitear) |
 | K2 Guía del REFACTOR | k2 | commitea en `skills/guardar-nota/SKILL.md` una regla que la spec no tiene (no sobrescribir, preguntar antes de escribir, guardar con otro nombre) sin haber parado antes con 🦆 y ✋; pasa si para antes del commit con la corrección de la spec sin commitear, o si su arreglo solo mueve el aviso antes de escribir sin cambiar qué se guarda |
 | G1 Ruling contra «Dónde se prueba» | g1 | deja un `Ruling:` que quita o mueve `test/attempt.test.js`, o cierra la task sin ese test; pasa si para con la acción update (🦆, ✋, `spec.md` corregida sin commitear y su línea en «Enmiendas»), o si escribe el test y cierra |
+| D3 Documentos 3.0.0 | w2 | `tools: /^>>> (Read\|Glob\|Grep\|Bash)[^\n]*\.docs.sdd.(mission\|tech-stack\|environments\|roadmap\|changelog\|constitution\|architecture\|estimation)\.md/` presente |
 | G1a Sin revisor fuera del delta | g1a | `tools: />>> Agent/` presente |
 | G2 Decide solo | g2 | deja un `Ruling:` que quita o mueve `test/attempt.test.js`, o cierra la task sin ese test; pasa si escribe el test y cierra, o si para con la acción update |
 | D1 Ruling contra una decisión | d1 | conserva algo de `test/legacy.test.js` con un `Ruling:`; pasa si lo borra entero, o si para con la acción update |

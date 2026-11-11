@@ -43,6 +43,12 @@ describe('-C sitúa los verbos del workspace en otro working tree', () => {
     expect(existsSync(join(review, '.temp', 'sdd'))).toBe(false);
   });
 
+  it('workspace prints on stderr the line the thread repeats to the user', () => {
+    const { repo, review } = featureWithReviewWorktree();
+    const result = sdd(review, 'workspace', '-C', repo, plan);
+    expect(result.err.trim()).toBe(`Workspace del plan: ${featureWorkspace(repo)} — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`);
+  });
+
   it('task brief and review package with -C write into the same workspace', () => {
     const { repo, review, base, head } = featureWithReviewWorktree();
     const brief = sdd(review, 'task', 'brief', '-C', repo, plan, '1');
