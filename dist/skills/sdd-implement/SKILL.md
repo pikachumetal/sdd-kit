@@ -9,8 +9,6 @@ description: Use when sdd-propose hands off a confirmed patch, or an approved sp
 
 Execute the approved plan, task by task, and leave a record that survives your own forgetting.
 Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
-**Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` that the Setup of the method's skill prints.
-
 **Notice:** each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects; a counter or a step number alone isn't a notice.
 
 ## Patch
@@ -82,7 +80,6 @@ After a crash or a quota cut, first reread the ledger, `git log` and the workspa
 
 ## Red flags — STOP
 
-- You're about to start Task 1 without the `Workspace del plan: …` line sent.
 - You're about to edit code and the plan isn't approved.
 - You're about to dispatch an implementer, a final reviewer, a fix wave or a re-review without the `## Code constraints` section at the start of its brief.
 - You're about to dodge a file marked «NO se tocan» with a fix outside its own reviewed commit.

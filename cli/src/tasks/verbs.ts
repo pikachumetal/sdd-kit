@@ -5,7 +5,7 @@ import { isTaskId, writeBrief } from './brief.ts';
 import { finishTask } from './done.ts';
 import { writePackage } from './package.ts';
 import { DIRECTORY_OPTION, enterDirectory, requireRepo } from './repo.ts';
-import { listRulings } from './rulings.ts';
+import { listRulings, resumeTask } from './rulings.ts';
 import { existingWorkspace, workspaceFor } from './workspace.ts';
 
 function positional(args: VerbArgs, index: number, usage: string): string {
@@ -40,7 +40,8 @@ export const workspaceVerb: Verb = {
     const [plan] = exactly(args, 1, 'sdd workspace PLAN_FILE');
     const path = await workspaceFor(plan);
     io.out(path);
-    io.err(`Workspace del plan: ${path} — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`);
+    const resume = resumeTask(path, plan);
+    io.err(`Workspace del plan: ${path} — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia${resume ? ` · retomo en la Task ${resume}` : ''}`);
     return 0;
   },
 };

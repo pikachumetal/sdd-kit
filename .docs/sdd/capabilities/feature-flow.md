@@ -535,10 +535,10 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El workspace del plan se anuncia
 
-- GIVEN un plan sin workspace en `.temp/sdd/`
-- WHEN `sdd-implement-native` o `sdd-implement-subagent` lo crea
-- THEN dice al dev-lead `Workspace del plan: .temp/sdd/plan/ — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
-- AND con un ledger del mismo plan con `Task 1: complete …`, la línea acaba en `· retomo en la Task 2`
+- GIVEN un plan con `## Task 1` y `## Task 2`
+- WHEN `sdd-implement-native` o `sdd-implement-subagent` corre `sdd workspace <plan>`, al empezar o al retomar
+- THEN el comando escribe en stderr `Workspace del plan: <ruta absoluta del workspace> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
+- AND con `Task 1: complete …` en el ledger del plan, la línea acaba en `· retomo en la Task 2`; sin ninguna task completa, o con las dos, no lleva sufijo
 
 ### Tras una caída o un corte por cuota, la ejecución sigue desde el ledger
 

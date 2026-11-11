@@ -21,6 +21,7 @@ Validación: agente — este repo valida en campo (`validation.mode: field`); lo
 ## Capacidades
 
 - Modificadas: las que nombre el repaso de coherencia o un arreglo de un rojo, solo con texto que hoy contradice al kit; un requisito nuevo entra por enmienda
+- Modificadas: `feature-flow` — el anuncio del workspace lo imprime `sdd workspace`, con la task en la que se retoma (MODIFIED, enmienda del 2026-11-11)
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -111,6 +112,15 @@ La 3.0.0 rehízo el kit entero, y nadie ha leído todos sus documentos contra el
 
 Sin delta en la apertura: si un arreglo cambia un requisito, entra por enmienda.
 
+### Capacidad: `feature-flow`
+
+#### MODIFIED — El workspace del plan se anuncia (antes: "GIVEN un plan sin workspace", "WHEN … lo crea", "THEN dice al dev-lead")
+
+- GIVEN un plan con `## Task 1` y `## Task 2`
+- WHEN `sdd-implement-native` o `sdd-implement-subagent` corre `sdd workspace <plan>`, al empezar o al retomar
+- THEN el comando escribe en stderr `Workspace del plan: <ruta absoluta del workspace> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
+- AND con `Task 1: complete …` en el ledger del plan, la línea acaba en `· retomo en la Task 2`; sin ninguna task completa, o con las dos, no lleva sufijo
+
 ## Previsión de coste
 
 | Tanda | Sujetos (batería) | $ | Minutos |
@@ -143,6 +153,12 @@ Fuera de los sujetos: lectores de coherencia (5) y de la batería (15) en sonnet
      - el orden: los rojos de `develop` y `m2` con los moldes de hoy; `mold-salas` y `mold-reservas` con un solo editor; el resto, por molde; la comprobación de `molds.test.ts`; el RED, con filas que miran la ruta (`tools: /(Read|Glob)[^\n]*\.docs\/sdd\/(mission|tech-stack|environments|roadmap|estimation)\.md/` presente → falla; la carpeta nueva en `specs/` → falla); el renombrado y su test; `kit:build kit:skill-size kit:own kit:copies` (lo que se desvíe de una copia, anotado en `upstream.json`); la batería entera después;
      - el humo de `add-to-changelog` pasa a `sdd-archive:rc1` y `rc2`;
      - coste: +20 $; total previsto, ~440 $.
+- 2026-11-11, en `unattended` (dev-lead: «1, dale», tras el estudio de la fila W):
+  1. **El anuncio del workspace lo hace la CLI.** La 2.ª ronda de rojos (86d510ee) quitó de `sdd-implement-native` y `sdd-implement-subagent` la orden de copiar la línea al chat (0 de 6 la copiaban; 1 de 8 en la 0296) y con ella el `· retomo en la Task <N>`, que ya no decía nadie: el requisito «El workspace del plan se anuncia» quedaba sin cumplir y sin medir. `sdd workspace` añade `· retomo en la Task <id>` con la primera task del plan, en su orden y sin subtasks, que el ledger no tiene como `Task <id>: complete`; sin ninguna completa, o con todas (la receta de la revisión final vuelve a llamarlo), no lleva sufijo. Tests en `repo.slow.test.ts` (RED sin el cambio, GREEN con él). El requisito pasa a decir lo que hace el comando (delta `MODIFIED`). `sdd-implement` pierde las dos líneas que aún pedían al agente decir la línea (el párrafo «Your first message…» y la red flag «…without the `Workspace del plan: …` line sent»): baja el saldo de palabras.
+  2. **La fila W mira la llamada** (`tools: /^>>> Bash:[\s\S]*?(sdd\.js\|\$\{?\w+\}?)"? workspace /` ausente): mide el WHEN, que la skill corre el comando; el THEN lo cubre `repo.slow.test.ts`. La de d5dc6963 buscaba la línea en las llamadas, y sale en su resultado, que el corrector no lee (0 de 6 falso). Con la fila nueva, 3 de 3 en `h1` y `h2` de `g2-imp`, `g-imp` y `b-imp2`.
+  3. **Lo que queda**: la línea va en la salida de un comando, que la terminal pliega; si el agente encadena `sdd workspace` con otros comandos queda dentro de la salida plegada, y con `2>/dev/null` no sale (3 de 12 llamadas en `g-imp` y `g2-imp` la dejan fuera de las primeras líneas). Va al walkthrough.
+  4. **Deuda**: la fila de `debt.md` «En SDD, la sesión no anuncia `Workspace del plan` antes de despachar la Task 1» se cierra en el cierre de la 0152 con el motivo «requisito cambiado (MODIFIED): el anuncio pasa a `sdd workspace`; lo que queda, la salida plegada (3 de 12 en `g-imp` y `g2-imp`), en el walkthrough».
+  5. **Revisión opus de la enmienda** (1 Crítico, 4 Importantes, 3 Menores), aceptada entera: las dos líneas de `sdd-implement`, el THEN con la ruta absoluta y sin «al dev-lead», el GIVEN sin contradicción, el plan completo sin sufijo, la fila W sobre llamadas de varias líneas y `${VAR}`, la tabla de reglas de la batería y el motivo del cierre de la deuda.
 
 ## Aprobaciones
 

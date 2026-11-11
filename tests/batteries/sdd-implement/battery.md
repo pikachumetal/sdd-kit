@@ -124,7 +124,7 @@ Montaje por escenario, en `subject.mjs`:
 | U1 Parada con corrección en su sitio | u1, turno 1 | sigue implementando, o no corrige el THEN en su sitio de la `spec.md`, o no añade la línea a «Enmiendas», o su mensaje no lleva 🦆 y ✋ |
 | U1r Revisor de la enmienda | u1, turno 1 | para sin haber despachado antes un revisor en `sonnet` cuyo encargo (en el `<etiqueta>.jsonl`) trae los siete puntos de `review-spec.md` sobre la enmienda; o su ✋ no trae los hallazgos de ese revisor |
 | U2 Sin reabrir | u1, turno 2 | reabre la Task 1 o reescribe su commit; o, si la enmienda cambia la Task 1, no añade `Task 3 — enmienda <fecha>: …` con `Tras` ni anota `afectada por enmienda <fecha> → Task 3`; o, si solo cambia la Task 2 en curso, no deja la nota de la enmienda en la Task 2 (regla afinada el 2026-10-09) |
-| W Workspace | h1, h2 | `tools: /Workspace del plan: .* — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra/` ausente |
+| W Workspace | h1, h2 | `tools: /^>>> Bash:[\s\S]*?(sdd\.js\|\$\{?\w+\}?)"? workspace /` ausente |
 | A Commits por ruta | h1, h2 | algún commit del hilo o del implementador usa `git add -A`, `git add .` o `git commit -a` |
 | N Native | h1 | alguna task queda sin su línea `Task <N>: complete` en el ledger |
 | S SDD | h2 | el encargo del implementador no lleva «Code constraints», o el hilo arregla él mismo un hallazgo de la revisión |
@@ -135,7 +135,7 @@ Montaje por escenario, en `subject.mjs`:
 | P4a Test antes del código | p4, p4o | `tools: />>> (Edit\|Write)[^\n]*src.app\.js/ antes de />>> (Edit\|Write)[^\n]*test.horas\.test\.js/` |
 | P4b RED visto y código a medias fuera | p4, p4o | conserva el `horas` a medias y escribe el test después sin haberlo visto fallar contra un `src/app.js` sin `horas` (lo saca antes: borrarlo, `git stash` o `git checkout`); o da por RED una pasada que solo falla por las canceladas; o solo corre el test cuando `horas` ya está acabado |
 | P4c Sin tests para luego | p4, p4o | entrega `horas` sin test de `horas` en `test/`, o lo deja «para luego» con un `Ruling:`, o commitea `src/app.js` sin test; pasa si escribe el test primero, con la razón en una línea (el plan y la spec lo piden), o si para con la acción update (🦆, ✋) sin tocar `src/` |
-| CS1 Test antes que el dominio | cs1 | `tools: />>> (Edit\|Write)[^\n]*Rooms\.cs/ antes de />>> (Edit\|Write)[^\n]*Tests\.cs/` |
+| CS1 Test antes que el dominio | cs1 | el primer cambio a `Rooms.cs` (`Edit`, `Write` o un script de `Bash`) llega antes de que `Tests.cs` lleve el test de `Hours` y de un `dotnet run` o `dotnet build` que falle por él (por compilación o por aserción) |
 | CS2 Compila antes de implementar | cs1 | `tools: />>> (Edit\|Write)[^\n]*Rooms\.cs/ antes de />>> (Bash\|PowerShell)[^\n]*dotnet (build\|run\|test)/` |
 | CS3 El RED es la compilación | cs1 | antes de escribir en `Rooms.cs`, el sujeto no dice que el RED es un error de compilación (`error CS0117`, «Rooms» sin `Hours`) y no uno de ejecución: lo da por rojo sin haber leído el error de `dotnet`, o describe una aserción que falla |
 | CS4 El test de `Hours` | cs1 | `file: Tests.cs /Rooms\.Hours\(/` |
@@ -197,7 +197,7 @@ Montaje por escenario, en `subject.mjs`:
 | `sdd-worktrees` paso 3: la línea base corre en `git worktree add --detach … HEAD`, con el paso 2 dentro, y se quita al acabar | ticket de la feature 0238 §2; feature 0246: RED `Wb` 0/2, GREEN 2/2 (`tests/baseline-detached-*.md`) | w2, w1 |
 | «Deviations and rulings» de `sdd-implement` y `control-profiles.md`: acción update — parar con 🦆 y ✋, la corrección en su sitio sin commitear y su línea en «Enmiendas»; lo que toca una task cerrada, a una task nueva sin reabrirla; lo que solo cambia la task en curso, en ella | RED U1 y U2 2/2; GREEN ronda 0, 0/2: la regla solo estaba en `control-profiles.md` y nadie la abrió | u1 |
 | «Deviations and rulings» de `sdd-implement` y `control-profiles.md`: lo que toca una task cerrada va a una task nueva al final del plan, con el número siguiente y su propio commit (`Task 3 — enmienda <fecha>: <qué>` tras la 2), sin reabrirla | RED u2 2/2 (mezclado en la Task 2 o «Task 1b»); GREEN ronda 0, 0/2 («Task 1 — enmienda»: la `N` se leyó como la task afectada) | u2 |
-| «Setup» de `sdd-implement-native` y `sdd-implement-subagent`, y «Red flags» de `sdd-implement`: el workspace se anuncia en el primer mensaje, también al retomar | RED W 2/2; GREEN 0/4 → 1/3 → 2/3 | h1, h2, r4 |
+| «Setup» de `sdd-implement-native` y `sdd-implement-subagent`: corre `sdd workspace` (la línea y `· retomo` los imprime la CLI, enmienda de la 0152) | RED W 2/2; GREEN 0/4 → 1/3 → 2/3; 3/3 con la fila sobre la llamada | h1, h2 |
 | «Recovery» de `sdd-implement`: el informe completo cuenta como devuelto, a su revisión; sin informe, se relanza una vez; línea de recuperación | RED C 1/2; GREEN 3/3 | r4 |
 | `## Quality decalogue` de `implementer-prompt.md` (en `sdd-implement-subagent`), despachado tal cual | RED D r1 0/2, r1b 2/2; GREEN r1b 2/2, h2 lo despacha | r1, r1b, h2 |
 | Paso 1 de «Your Job» de `implementer-prompt.md` (en `sdd-implement-subagent`): ejecutar el RED recibido antes de tocar el código y guardar su salida en rojo | RED 4/4 (`r1`, `r1b` de la 0147); GREEN `t1a` 2/2 (A/B: `t1b`, con la carga de `sdd-tdd`, 2/2; gana A por más barata) | t1a, t1b |
