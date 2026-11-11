@@ -153,6 +153,75 @@ async function ownLiterals(registry: Registry, repoRoot: string, prepared: Sourc
   return [...problems, ...lines.flatMap((line) => found.get(line) ?? [])];
 }
 
+interface ReviewSection {
+  review: string;
+  source: string;
+  from: string;
+  to: string;
+  scope: string[];
+  named: string[];
+  unread: string[];
+}
+
+const REVIEW_DIRS = ['.docs/sdd/specs', '.docs/sdd/changes'];
+const SECTION_TITLE = /^## (.+) `([^`]+)` → `([^`]+)`$/;
+// Solo las secciones que abren con `git diff --stat`: las revisiones de la 0181 y la 0289, sin él, son historia y no se reescriben.
+const STAT_COMMAND = /^`git -C \S+ diff (?:-\S+ )*--stat (?:-\S+ )*\S+ -- ([^`]+)`/;
+
+const backticked = (line: string): string[] => [...line.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
+
+function parseSection(review: string, chunk: string): ReviewSection | null {
+  const [heading, ...body] = chunk.split(/\r?\n/);
+  const title = SECTION_TITLE.exec(heading);
+  const stat = STAT_COMMAND.exec(body.find((line) => line.trim() !== '') ?? '');
+  if (!title || !stat) return null;
+  const tokens = (start: string): string[] => body.filter((line) => line.startsWith(start)).flatMap(backticked);
+  return { review, source: title[1], from: title[2], to: title[3], scope: stat[1].trim().split(/\s+/), named: tokens('|'), unread: tokens('Sin leer') };
+}
+
+function reviewSections(repoRoot: string): ReviewSection[] {
+  const reviews = REVIEW_DIRS.flatMap((dir) => (existsSync(join(repoRoot, dir)) ? readdirSync(join(repoRoot, dir)).map((name) => `${dir}/${name}/upstream-review.md`) : []));
+  return reviews
+    .filter((review) => existsSync(join(repoRoot, review)))
+    .flatMap((review) => readFileSync(join(repoRoot, review), 'utf8').split(/\r?\n(?=## )/).flatMap((chunk) => parseSection(review, chunk) ?? []));
+}
+
+// Una fila solo cubre su fichero exacto; «Sin leer» admite una carpeta (`src/`), que declara sin leer todo lo que cuelga de ella.
+const covered = (section: ReviewSection, file: string): boolean =>
+  section.named.includes(file) || section.unread.some((token) => token === file || (token.endsWith('/') && file.startsWith(token)));
+
+async function checkSection(section: ReviewSection, clone: string): Promise<string[]> {
+  const range = `${section.from}..${section.to}`;
+  const at = `${section.review} · ${section.source} ${section.from} → ${section.to}`;
+  const diff = await git(clone, ['diff', '--name-only', range, '--', ...section.scope]);
+  if (diff.code !== 0) return [`${at}: git diff falló: ${firstLine(diff.stderr)}`];
+  const missing = diff.stdout.split(/\r?\n/).filter((file) => file !== '' && !covered(section, file));
+  if (missing.length === 0) return [];
+  return [`${at}: sin fila ni «Sin leer» para ${missing.join(', ')}; los lista git -C ${clone} diff --name-only ${range} -- ${section.scope.join(' ')}`];
+}
+
+// Una fuente entra en la comprobación con su primera sección --stat: desde ahí, la versión vista no pasa de la última revisada.
+function unreviewedBump(registry: Registry, source: SourceClone, sections: ReviewSection[]): string[] {
+  const prefix = registry.sources[source.name].tagPrefix;
+  const reviewed = sections.filter((section) => section.source === source.name);
+  const last = newestTag(reviewed.map((section) => section.to), prefix);
+  const seen = newestTag(kitRefs(registry).filter((ref) => ref.source === source.name).map((ref) => ref.version), prefix);
+  if (last === null || seen === null || seen === last || newestTag([seen, last], prefix) !== seen) return [];
+  const review = reviewed.find((section) => section.to === last)?.review;
+  return [`${source.name}: la versión vista sube a ${seen} sin revisión: la última sección --stat, en ${review}, llega a ${last}`];
+}
+
+async function reviewProblems(registry: Registry, repoRoot: string, ready: SourceClone[]): Promise<string[]> {
+  const sections = reviewSections(repoRoot);
+  const problems: string[] = [];
+  for (const section of sections) {
+    const source = ready.find((candidate) => candidate.name === section.source);
+    if (!(section.source in registry.sources)) problems.push(`${section.review}: la sección de ${section.source} no nombra una fuente de upstream.json`);
+    else if (source) problems.push(...(await checkSection(section, source.clone)));
+  }
+  return [...problems, ...ready.flatMap((source) => unreviewedBump(registry, source, sections))];
+}
+
 async function checkRegistry(registry: Registry, dir: string, repoRoot: string): Promise<string[]> {
   const clones = await findClones(dir);
   const refs = kitRefs(registry);
@@ -169,7 +238,7 @@ async function checkRegistry(registry: Registry, dir: string, repoRoot: string):
       for (const ref of own) problems.push(...(await checkRef(ref, prepared)));
     }
   }
-  return [...problems, ...(await ownLiterals(registry, repoRoot, ready))];
+  return [...problems, ...(await reviewProblems(registry, repoRoot, ready)), ...(await ownLiterals(registry, repoRoot, ready))];
 }
 
 async function main(argv: string[]): Promise<number> {
