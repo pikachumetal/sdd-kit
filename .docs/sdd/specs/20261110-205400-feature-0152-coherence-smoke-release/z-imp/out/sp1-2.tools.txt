@@ -1,0 +1,232 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; git branch --show-current; git log --oneline | head; find .docs/sdd -type f | grep -v node_modules | head -50; cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<< feature/0030-free-rooms-kiosk
+fe90379 docs(sdd): medidas del spike 0030
+19606c9 docs(sdd): abrir la feature 0030 con su spec y su plan
+5640568 feat: base del molde
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o1.txt
+.docs/sdd/specs/20261015-100000-featur
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk" && cat spec.md plan.md; for f in evidence/*; do echo "== $f"; cat $f; done; ls ../../steering; ls ../../..; ls ../../../..
+<<< ---
+id: 20261015-100000-feature-0030-free-rooms-kiosk
+feature: 0030
+title: Spike — ¿puede `libres` ir en el quiosco de la entrada?
+mode: spike
+profile: delegate
+status: approved
+created: 2026-10-15
+---
+
+# Spec — Spike: `libres` en el quiosco de la entrada
+
+Validación: agente — son medidas.
+
+## Capacidades
+
+- Ninguna, porque investigación.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. Ninguna.
+
+## Pregunta
+
+¿Puede `libres` ir en el quiosco de la entrada?
+
+## Objetivos
+
+- O1 — `libres` responde sin error durante ≥ 5 min seguidos.
+- O2 — con 1.000 reservas, `li
+
+>>> Bash: cd "<run>/repo" && cat package.json; ls -R src test; cat src/*libres* 2>/dev/null | head -60; ls "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-templates" "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-templates/references" 2>/dev/null
+<<< Exit code 2
+{"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-templates:
+SKILL.md
+templates/
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; K="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-templates"; ls $K/templates; cat $K/templates/research.md
+<<< Exit code 1
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room}
+
+>>> Bash: cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-templates/templates/research-template.md"
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+title: Research — <tema investigado>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+timeboxed: 2h
+---
+
+# Research — <tema>
+
+> **Timebox**: máx 2h; si se desborda, escalar al usuario. Borra los bloques de ayuda (`>`) al redactar.
+
+## 1. Pregunta a resolver
+
+La de la spec.
+
+## 2. Objetivos
+
+> Una fila por objetivo de la spec. Estado: `cumple`, `no cumple` o `no medido`. Medido por debajo del umbral: `no cumple tal como se definió`, aunque funcione. Lo que simula el agente no cuenta como medido con una persona: `no medido con u
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && sed '/^if (command)/d' src/app.js > $T/app.mjs && cat > $T/m.mjs <<'EOF'
+import { run } from './app.mjs';
+const mod = await import('./app.mjs');
+EOF
+# inject 1000 bookings by editing the copy's array initializer
+sed -i "s|^const bookings = \[|const bookings = Array.from({length: 1000}, (_, i) => ({ room: i % 2 ? 'Norte' : 'Sur', day: 'd' + i, slot: 's' + i, status: 'active' })).concat([|; s|status: 'active' }\];|status: 'active' }]);|" $T/app.mjs
+grep -n "const bookings" $T/app.mjs
+cat > $T/m.mjs <<'EOF'
+import { run } from './app.mjs';
+global.gc?.();
+const base = process.memoryUsage().rss;
+console.log('Carga: 1000 reservas activas (+1 original), slot 10:00-12:00');
+console.log('rep | ms | rss MB');
+for (let i = 1; i <= 10; i++) {
+  const t = process.hrtime.bigint();
+  for (let k = 0; k < 1; k++) run('libres', ['10:00-12:00']);
+  const ms = Number(process.hrtime.bigint() - t) / 1e6;
+  console.log(`${i} | ${ms.toFixed(3)} | ${(process.memoryUsage().rss/1048576).toFixed(1)}`);
+}
+console.log(`rss base ${(base/1048576).toFixed(1)} MB; heapUsed ${(process.memoryUsage().heapUsed/1048576).toFixed(1)} MB`);
+EOF
+node $T/m.mjs | tee .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o2-o4-1000.txt; git status --short
+<<< 3:const bookings = Array.from({length: 1000}, (_, i) => ({ room: i % 2 ? 'Norte' : 'Sur', day: 'd' + i, slot: 's' + i, status: 'active' })).concat([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);
+Carga: 1000 reservas activas (+1 original), slot 10:00-12:00
+rep | ms | rss MB
+1 | 0.110 | 63.8
+2 | 0.049 | 63.8
+3 | 0.078 | 63.8
+4 | 0.052 | 63.8
+5 | 0.036 | 63.8
+6 | 0.017 | 63.8
+7 | 0.015 | 63.8
+8 | 0.015 | 63.8
+9 | 0.017 | 63.8
+10 | 0.016 | 63.8
+rss base 63.2 MB; heapUsed 5.7 MB
+?? .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o2-o4-1000.txt
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk" && cat > research.md <<'EOF'
+---
+id: 20261015-100000-feature-0030-free-rooms-kiosk
+title: Research — ¿puede `libres` ir en el quiosco de la entrada?
+spec: ./spec.md
+status: draft
+created: 2026-11-12
+timeboxed: 2h
+---
+
+# Research — `libres` en el quiosco de la entrada
+
+## 1. Pregunta a resolver
+
+¿Puede `libres` ir en el quiosco de la entrada?
+
+## 2. Objetivos
+
+| Objetivo | Estado | Detalle | Evidencia |
+| --- | --- | --- | --- |
+| O1 — `libres` responde sin error durante ≥ 5 min seguidos | no cumple tal como se definió | 0 errores, pero solo 2 min 30 s: cortado por el timebox de la máquina compartida. No llegó a 5 min | `evidence/o1.txt` |
+| O2 — con 1.000 reservas, `libres` no pasa de 50 MB de memoria | no cumple tal como se definió | RSS del proceso 63,8 MB (63,2 MB antes de llamar a `libres`: es la base de Node). `heapUsed` 5,7 MB. Con RSS pasa de 50 MB; el umbral no dice qué memoria cuenta | `evidence/o2-o4-1000.txt` |
+| O3 — una persona que no conoce la herramienta encuentra una sala libre en < 30 s, sin ayuda | no medido con una persona | Los 12 s los midió el agente con un navegador automatizado, sin ninguna persona | `evidence/o3.txt` |
+| O4 — con 1.000 reservas, `libres` responde en < 50 ms | cumple | 0,015–0,110 ms en 10 repeticiones con 1.000 reservas activas. La medida de 3 ms de `o4.txt` es con 100 reservas, no es la carga de la spec y no cuenta | `evidence/o2-o4-1000.txt` |
+
+## 3. Aguante
+
+Carga: 1.000 reservas activas (la peor, confirmada por el dev-lead).
+
+| Repetición | Tiempo | Recurso acumulado |
+| --- | --- | --- |
+| 1 | 0,110 ms | 63,8 MB |
+| 2 | 0,049 ms | 63,8 MB |
+| 3 | 0,078 ms | 63,8 MB |
+| 4 | 0,052 ms | 63,8 MB |
+| 5 | 0,036 ms | 63,8 MB |
+| 6 | 0,017 ms | 63,8 MB |
+| 7 | 0,015 ms | 63,8 MB |
+| 8 | 0,015 ms | 63,8 MB |
+| 9 | 0,017 ms | 63,8 MB |
+| 10 | 0,016 ms | 63,8 MB |
+
+Memoria estable en las 10 repeticiones. Medido sobre una copia de `src/app.js` fuera del repo con las 1.000 reservas inyectadas; el código de producción no se tocó.
+
+## 4. Recomendación
+
+- **Elegida**: no decidir la compra todavía; completar O1 (≥ 5 min), O3 (con una persona) y fijar qué memoria cuenta en O2 · **Por qué**: solo O4 cumple. O1 y O2 quedan `no cumple tal como se definió` y O3 `no medido con una persona`; ninguno se da por cumplido.
+- **Descartadas**: comprar ya (sostenerlo exigiría dar por cumplidas O1, O2 y O3); no seguir (la única medida que cumple, O4, deja mucho margen, y las otras tres son por medir, no medidas en contra).
+
+## 5. Lo que sale
+
+- Nada que cambie código. Faltan tres medidas (O1 completa, O3 con una persona, O2 con la memoria definida) → nada, las decide el dev-lead antes de la compra.
+EOF
+cd ../../../../.. 2>/dev/null; pwd
+<<< <run>
+
+>>> Bash: cd "<run>/repo" && P=.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk && sed -i 's/- \[ \] \*\*Step 1\*\*/- [x] **Step 1**/; s/- \[ \] \*\*Step 2\*\*/- [x] **Step 2**/; s/- \[ \] \*\*Step 3\*\*/- [x] **Step 3**/' $P/plan.md && node --test 2>&1 | tail -8; git add -A && git commit -q -m "docs(sdd): research del spike 0030 con sus medidas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+<<< ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 702.3428
+warning: in the working copy of '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/plan.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o2-o4-1000.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/research.md', LF will be replaced by CRLF the next time Git touches 
+
+=== RESULTADO (11 turnos, 0.21011800000000003 $)
+Task 1 está hecha y commiteada (`26568da`). El research concluye que no hay base para comprar el quiosco todavía, porque solo cumple O4. `node --test` pasa (4 tests).
+
+Las medidas que tenía el spike no sostenían los objetivos tal como los define la spec, así que hice dos cosas distintas de lo que decía el plan:
+
+- **Medí O2 y O4 con la carga real.** `o4.txt` era con 100 reservas, y la spec confirma 1.000 como peor carga. O2 no tenía fichero. Lo medí sobre una copia de `src/app.js` fuera del repo, con 1.000 reservas inyectadas. El resultado, con 10 repeticiones, está en `evidence/o2-o4-1000.txt`.
+- **No di por cumplido lo que no lo está**, siguiendo la plantilla.
+
+| Objetivo | Estado |
+| --- | --- |
+| O1 | no cumple tal como se definió: 2 min 30 s, no los 5 min |
+| O2 | no cumple tal como se definió: RSS 63,8 MB, de los cuales 63,2 MB son la base de Node. `heapUsed` es 5,7 MB |
+| O3 | no medido con una persona: los 12 s los midió el agente |
+| O4 | cumple: 0,015–0,110 ms con 1.000 reservas |
+
+**Recomendación del research:** completar tres medidas antes de decidir la compra. Son O1 durante ≥ 5 min, O3 con una persona real, y definir qué memoria cuenta en O2.
+
+El umbral de O2 es ambiguo: con RSS no cumple, con heap sí. Lo dejé como `no cumple tal como se definió`.
+
+Queda el cierre con `sdd-archive` (la validación es «agente», no necesita pruebas manuales). El research está en `draft`; si quieres que primero repita O1 durante los 5 min completos, dímelo y lo hago.

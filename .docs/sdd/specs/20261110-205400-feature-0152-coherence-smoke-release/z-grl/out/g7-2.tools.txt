@@ -1,0 +1,239 @@
+
+>>> Skill: sdd-kit:sdd-config
+<<< Launching skill: sdd-kit:sdd-config
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd 2>&1; echo ---; cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/sdd-kit.local.json; echo ---; cat .gitignore
+<<< Exit code 1
+.:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+---
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+cat: .gitignore: No such file or directory
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (6 turnos, 0.1121479 $)
+❓ **¿A quién se aplica el perfil de control (`control.profile`)?**
+El proyecto todavía no tiene esa clave, y tampoco existe `sdd-kit.local.json`.
+1️⃣ **Para todo el equipo** (`sdd-kit.json`, en git): todas las personas trabajan con el mismo perfil. Un perfil personal posterior puede cambiarlo solo para ti.
+2️⃣ **Solo para ti** (`sdd-kit.local.json`, fuera de git): no cambia nada a los demás. Crearlo me obliga a añadir la línea al `.gitignore`, que tampoco existe.
+➡️ **Recomiendo 1️⃣**, porque el proyecto no tiene la clave y el equipo parte sin ningún perfil. A cambio, si alguien prefiere otro perfil tendrá que sobrescribirlo en su fichero local.
+
+¿Para el equipo o solo para ti?
+
+=== RESULTADO (1 turnos, 0.1226048 $)
+Anoto «no sé» y no escribo nada: `control.profile` se queda con su valor por defecto.
+
+Sigo con el merge. El repo usa `main` como rama estable y `develop` como rama de integración.
+
+❓ **Al cerrar una feature, ¿hago el merge en `develop` con `--no-ff` y dejo que borre el worktree una persona?**
+1️⃣ **Sí**: escribo `merge: { into: "develop", noFf: true, removeWorktree: false }`. La feature queda en un solo commit que se revierte de golpe. Borrar un worktree con cambios sin commitear es irreversible, así que lo decide una persona.
+2️⃣ **No**: no escribo nada y el cierre de cada feature te lo pregunta cada vez.
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` deja la feature revertible en un commit y el borrado del worktree no tiene vuelta atrás. A cambio, los worktrees quedan hasta que alguien los borre a mano.
+
+¿Quieres esa configuración de merge?
+
+>>> Bash: cd "<run>/repo" && node -e '
+const f=".docs/sdd/sdd-kit.json";const j=JSON.parse(require("fs").readFileSync(f,"utf8"));
+j.merge={into:"develop",noFf:true,removeWorktree:false};
+require("fs").writeFileSync(f,JSON.stringify(j,null,2)+"\n")' && cat .docs/sdd/sdd-kit.json
+<<< {
+  "version": "3.0.0",
+  "channel": "plugin",
+  "ids": {
+    "mode": "sequence"
+  },
+  "release": {
+    "hasRecipient": false
+  },
+  "merge": {
+    "into": "develop",
+    "noFf": true,
+    "removeWorktree": false
+  }
+}
+
+=== RESULTADO (2 turnos, 0.1393523 $)
+Ya está escrito. Como `merge` queda declarado, toca la pregunta del push.
+
+❓ **Después de hacer el merge en `develop`, ¿hago push de esa rama a su remoto sin preguntarte?**
+1️⃣ **Sí** (`merge.push: true`): `develop` es una rama compartida y un merge sin push no lo ve nadie más. La rama estable, los tags y cualquier otro push siguen siendo decisión de una persona.
+2️⃣ **No** (`merge.push: false`): el cierre no hace push y lo haces tú a mano.
+➡️ **Recomiendo 1️⃣**, porque el repo sigue la convención git-flow, con `main` estable y `develop` de integración. A cambio, un merge con un error llega al remoto antes de que lo revises.
+
+¿Hago push de `develop` tras el merge?
+
+>>> Bash: cd "<run>/repo" && node -e '
+const f=".docs/sdd/sdd-kit.json";const j=JSON.parse(require("fs").readFileSync(f,"utf8"));
+j.merge.push=true;j.validation={mode:"manual"};
+require("fs").writeFileSync(f,JSON.stringify(j,null,2)+"\n")' && cat .docs/sdd/sdd-kit.json
+<<< {
+  "version": "3.0.0",
+  "channel": "plugin",
+  "ids": {
+    "mode": "sequence"
+  },
+  "release": {
+    "hasRecipient": false
+  },
+  "merge": {
+    "into": "develop",
+    "noFf": true,
+    "removeWorktree": false,
+    "push": true
+  },
+  "validation": {
+    "mode": "manual"
+  }
+}
+
+=== RESULTADO (2 turnos, 0.1553252 $)
+Escrito `merge.push: true` y `validation.mode: "manual"`.
+
+Siguen los frenos por defecto: hasta 3 agentes en paralelo y un aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo.
+
+❓ **¿Te valen esos frenos por defecto?**
+1️⃣ **Sí**: escribo `control.maxParallelAgents: 3`, `silence.betweenStepsMinutes: 8` y `silence.longCommandMinutes: 20`.
+2️⃣ **Otros números**: dime cuáles.
+➡️ **Recomiendo 1️⃣**, porque son los valores con los que trabaja el kit y no hay nada en el proyecto que pida cambiarlos. A cambio, si una tarea larga se queda en silencio, el aviso tarda 8 o 20 minutos en llegar.
+
+>>> Bash: cd "<run>/repo" && node -e '
+const f=".docs/sdd/sdd-kit.json";const j=JSON.parse(require("fs").readFileSync(f,"utf8"));
+j.control={...(j.control||{}),maxParallelAgents:3,silence:{betweenStepsMinutes:8,longCommandMinutes:20}};
+require("fs").writeFileSync(f,JSON.stringify(j,null,2)+"\n")' && grep -A6 control .docs/sdd/sdd-kit.json
+<<<   "control": {
+    "maxParallelAgents": 3,
+    "silence": {
+      "betweenStepsMinutes": 8,
+      "longCommandMinutes": 20
+    }
+  }
+
+=== RESULTADO (2 turnos, 0.17273109999999997 $)
+Escritos los frenos en `sdd-kit.json`. Sin `control.profile`, el perfil por defecto se mantiene.
+
+Sigue el método de ejecución de los planes.
+
+❓ **¿Cómo se ejecutan los planes: `auto`, `native` o `subagent`?**
+1️⃣ **`auto`**: cada plan recomienda su método según su tamaño y la revisión que pida. El modo nativo es el más barato, y los subagentes se reservan para planes largos o con revisión por tarea.
+2️⃣ **`native`**: siempre en la sesión. Si hay una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3️⃣ **`subagent`**: siempre con subagentes, aunque el plan sea corto y cueste más.
+➡️ **Recomiendo 1️⃣**, porque el plan pesa cada caso y evita pagar subagentes en planes cortos. A cambio, el método cambia de un plan a otro y no es siempre el mismo.
+
+¿Para el equipo (`sdd-kit.json`) o solo para ti (`sdd-kit.local.json`)?
+
+=== RESULTADO (1 turnos, 0.18253599999999998 $)
+Anoto «no sé» y no escribo nada: `execution` se queda en `auto`.
+
+La siguiente pregunta es personal y se guardaría en `sdd-kit.local.json`.
+
+❓ **Cuando te toque validar una feature, ¿quieres que arranque el entorno antes de darte el guion de prueba?**
+1️⃣ **No** (`validation.startEnvironment: false`): el guion explica cómo arrancarlo y no dejo procesos abiertos.
+2️⃣ **Sí** (`validation.startEnvironment: true`): lo encuentras ya en marcha. Esto me obliga a crear `sdd-kit.local.json` y el `.gitignore` con esa línea.
+➡️ **Recomiendo 1️⃣**, porque es el valor por defecto y no obliga a crear ficheros nuevos. A cambio, tendrás que arrancar el entorno tú, siguiendo el guion.
+
+¿Quieres que arranque el entorno antes de validar?
+
+=== RESULTADO (1 turnos, 0.19189629999999996 $)
+Anoto «no sé» y no escribo nada: `validation.startEnvironment` queda en su valor por defecto, que es no arrancar el entorno. No creo `sdd-kit.local.json` ni `.gitignore`.
+
+Queda `review.minors`.
+
+❓ **Cuando la revisión final devuelve hallazgos Minor, ¿entran en la pasada de arreglos (`fix`) o van al registro como diferidos (`defer`)?**
+1️⃣ **`defer`**: van al registro de diferidos. Un Minor no cambia lo que recibe quien usa el producto, y cada arreglo alarga la pasada de arreglos.
+2️⃣ **`fix`**: se cierran en cada feature. El proyecto queda más limpio, y cada cierre dura más.
+➡️ **Recomiendo 1️⃣**, porque los Minor no cambian lo que obtiene quien usa el producto. A cambio, los hallazgos se acumulan en el registro hasta que alguien los triaje.
+
+¿`defer` o `fix`?
+
+>>> ToolSearch: {"query":"select:WebFetch","max_results":1}
+<<< 
+
+>>> WebFetch: {"url":"https://platform.claude.com/docs/en/about-claude/pricing","prompt":"List every current Claude Opus, Sonnet and Haiku model (not deprecated) with its API model id and prices per million tokens: base input, 5-minute cache write, 1-hour cache write, cache read (hit), and output. Give exact numbers in a table."}
+<<< <persisted-output>
+Output too large (54.2KB). Full output saved to: <home>\.claude\projects\D--code--worktrees-sdd-kit-feature-0152-coherence-smoke-release--temp-r52-z-grl-g7-2-repo\e4363c76-27bd-4b65-b645-a2df391b9912\tool-results\toolu_01XmiFisoWk1qAA4sJkYqa1H.txt
+
+Preview (first 2KB):
+---
+title: Pricing
+url: https://platform.claude.com/docs/en/about-claude/pricing
+description: Learn about Anthropic's pricing structure for models and features
+---
+
+This page provides detailed pricing information for Anthropic’s models and features. All prices are in USD.
+
+For the most current pricing informat
+
+>>> Bash: head -c 9000 "<home>/.claude/projects/D--code--worktrees-sdd-kit-feature-0152-coherence-smoke-release--temp-r52-z-grl-g7-2-repo/e4363c76-27bd-4b65-b645-a2df391b9912/tool-results/toolu_01XmiFisoWk1qAA4sJkYqa1H.txt" | sed 's/  */ /g' | sed -n '8,40p'
+<<< For the most current pricing information, see the [Claude pricing](https://claude.com/pricing) page.
+
+## Model pricing
+
+The following table shows pricing for all Claude models:
+
+| Model | Base input tokens | 5m cache writes | 1h cache writes | Cache hits and refreshes | Output tokens |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------- | :-------------- | :-------------- | :----------------------- | :--------------------- |
+| Claude Fable 5.2 | $8 / MTok
+
+=== RESULTADO (4 turnos, 0.23753 $)
+Leí la página de precios (https://platform.claude.com/docs/en/about-claude/pricing) el 2026-11-12. Estos son los modelos actuales de cada familia, en USD por millón de tokens:
+
+| Modelo (id de API) | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Haiku 5.5 tiene dos tramos de precio. La tabla usa el de prompts de hasta 100.000 tokens. Por encima, cuesta 0.50, 0.625, 1, 0.05 y 2.50.
+
+❓ **¿Escribo esta tabla de precios para que el cierre dé el coste de la sesión?**
+1️⃣ **Sí**: la escribo en `pricing.usdPerMillionTokens`, con `pricing.source` apuntando a esa página y `pricing.updated: 2026-11-12`.
+2️⃣ **No**: no escribo nada y el cierre dirá «sin precio».
+➡️ **Recomiendo 1️⃣**, porque sin tabla el cierre no puede decirte lo que costó la sesión. A cambio, los precios quedan fijos en `sdd-kit.json` y hay que releer la página para actualizarlos. Además, las sesiones de Haiku con prompts de más de 100.000 tokens se infravaloran.
+
+=== RESULTADO (1 turnos, 0.2495934 $)
+Anoto «no sé» y no escribo nada: `pricing` queda sin declarar y el cierre dirá «sin precio».
+
+Con eso no queda ninguna decisión abierta.
+
+**Escrito en `.docs/sdd/sdd-kit.json`:**
+- `merge`: `{ into: "develop", noFf: true, removeWorktree: false, push: true }`
+- `validation.mode`: `manual`
+- `control.maxParallelAgents`: 3
+- `control.silence.betweenStepsMinutes`: 8
+- `control.silence.longCommandMinutes`: 20
+
+**Respondidas con «no sé»** (no escribí nada y se aplican los defaults):
+- `control.profile`: se aplica el perfil por defecto del contrato.
+- `execution`: `auto`.
+- `validation.startEnvironment`: no arrancar el entorno. No creé `sdd-kit.local.json` ni `.gitignore`.
+- `review.minors`: `defer`.
+- `pricing`: sin tabla, el cierre dirá «sin precio».
+
+No hice ningún commit. Los cambios de `sdd-kit.json` están sin commitear en `develop`.
+
+Esto cubre la revisión de la configuración. Si querías además actualizar el proyecto a la versión cargada del kit, es otro paso, `sdd-upgrade`. ¿Lo lanzo?
+
+=== RESULTADO (8 turnos, 0.26829603 $)
+conversación con persona: 8 respuestas

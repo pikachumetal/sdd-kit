@@ -1,0 +1,59 @@
+--- [23]
+RED confirmado. Escribo `patch.md` antes del fix y luego aplico el arreglo.
+
+--- [29]
+Verde. Ahora despacho al revisor único del patch, como exige el flujo.
+
+--- [31]
+Espero el resultado del revisor antes de hacer el commit del fix.
+
+--- [34]
+**Resumen:** no hay hallazgos graves. Hay una incoherencia documental de severidad media y varios puntos menores. No he ejecutado los tests, he revisado el diff y el código.
+
+**(1) Causa raíz de §2.** Es cierta. `run('libres', …)` pasa `params[0]` a `freeRooms`, que solo compara la cadena con `b.slot`. Como ninguna reserva tiene `25:00-26:00`, devuelve `Norte, Sur`. La causa es determinista, como dice el patch.
+
+**(2) El fix.** Arregla la causa sin tocar nada más. El guard solo actúa con `cmd === 'libres'`, así que `reservar`, `cancelar`, `anular` y el resto no cambian. El diff solo añade la constante, la línea del guard y el test.
+
+**(3) El test.** Prueba el síntoma exacto del roadmap, `25:00-26:00`, con el mensaje esperado. No está ajustado al código, y fallaría sin el fix porque devolvería `Norte, Sur`. El caso 2 de §4 (`10:00-12:00` devuelve `Sur`) ya lo cubre el test existente.
+
+**(4) Casos límite de la regex**
+- `24:00-…` se rechaza, y es correcto con la definición del patch (horas 00–23).
+- `9:00-10:00` se rechaza porque exige dos dígitos. Es coherente con el formato `HH:MM`, pero conviene que el mensaje de error lo deje claro.
+- `libres` sin argumento devuelve «franja no válida…» por el `?? ''`, y aquí hay una incoherencia (primer hallazgo).
+- `12:00-10:00` y `10:00-10:00` se aceptan, y §3 ya lo declara como decisión.
+- `$` sin flag `m` no deja pasar un salto de línea final, y `\d` en JS es solo ASCII, así que no hay bypass por ahí.
+
+**Hallazgos**
+1. **Media: el código contradice la documentación.** §3 dice que no se valida «la franja ausente», pero el código sí la valida, porque `params[0] ?? ''` falla la regex. Hay que corregir el patch para decir que se rechaza, o cambiar el código para no rechazarla. Tampoco hay test de ese caso.
+2. **Baja: estado del patch.** El front-matter tiene `status: done`, pero §4 está en «pendiente» y `commit` y el esfuerzo real también. Es inconsistente hasta el cierre.
+3. **Baja: tests de borde.** Solo hay un test negativo. Convendría añadir uno para `24:00-…`, otro para formato `9:00-10:00` y otro para sin argumento, que fijan el contrato.
+4. **Baja: la fila de deuda.** El patch cita la fila «Sin validación del formato de franja horaria» de `debt.md`, que no aparece en el diff. Revisa si hay que marcarla como resuelta al archivar.
+
+--- [41]
+El arreglo está hecho y commiteado, pero **no he fusionado**. El cierre espera dos cosas tuyas.
+
+Ahora: parado en la validación del patch. Queda: tu validación, completar `patch.md` (hash, esfuerzo real), cerrar la fila de deuda y el roadmap, y `sdd merge --push`, ~10 min.
+
+🦆 `libres` ahora comprueba la franja antes de listar. `libres 25:00-26:00` responde `franja no válida: usa HH:MM-HH:MM`; `libres 10:00-12:00` sigue devolviendo `Sur`.
+
+**✋ Decisiones que he tomado yo, sin el dev-lead:**
+- «Válida» es `HH:MM-HH:MM` con horas 00–23 y minutos 00–59. La fila no lo definía.
+- `libres` sin argumento responde también «franja no válida…».
+- No valido que el inicio sea anterior al fin: `12:00-10:00` se acepta.
+- La 0012 ya existía en `origin/develop`, así que la tarea pasó a la **0013**, rama `feature/0013-slot-format`.
+
+**Qué prueba el agente:**
+- El test nuevo estaba en rojo antes del fix y en verde después.
+- Gate: `node --test && node scripts/lint.mjs` → 5/5 tests, lint sin hallazgos.
+- El revisor no encontró nada grave. Corregí §3 de `patch.md`, que decía que no se validaba la franja ausente y el código sí lo hace.
+
+**Cómo probarlo** (commit `e180ea0`):
+1. `node src/app.js libres 25:00-26:00` → debe imprimir `franja no válida: usa HH:MM-HH:MM`.
+2. `node src/app.js libres 10:00-12:00` → debe imprimir `Sur`.
+
+**Lo que necesito de ti:**
+1. **Validación.** El proyecto no declara `validation.mode: field`, así que valida una persona. Dime qué has probado y que funciona (o «Diferir: …» con su disparador), y sigo.
+2. **Política de merge.** `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y `sdd merge --check` falla por eso. Dime la rama destino (supongo `develop`) y si va con `--no-ff`. Con eso fusiono con `sdd merge --push`. El remoto `origin` existe.
+
+**No terminado.** Falta tu validación y la política de merge. No borres todavía el worktree `<run>\repo`.
+

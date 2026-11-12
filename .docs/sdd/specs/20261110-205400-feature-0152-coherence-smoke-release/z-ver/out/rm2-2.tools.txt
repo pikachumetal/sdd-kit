@@ -1,0 +1,157 @@
+
+>>> Read: <run>/review-final-1d6a789.diff
+<<< 1	# Review package: 113f88d..HEAD
+2	
+3	## Commits
+4	1d6a789 feat(bookings): anular sin aviso por correo
+5	b375ca5 docs(sdd): abrir la feature 0025
+6	
+7	## Files changed
+8	 src/app.js        | 6 +-----
+9	 test/void.test.js | 7 +++++++
+10	 2 files changed, 8 insertions(+), 5 deletions(-)
+11	
+12	## Diff
+13	diff --git a/src/app.js b/src/app.js
+14	index 301cfbe..444305a 100644
+15	--- a/src/app.js
+16	+++ b/src/app.js
+17	@@ -4,29 +4,25 @@ const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'act
+18	 export const outbox = [];
+19	 
+20	 function freeRooms(slot) {
+21	   return room
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd | head -50; cat .docs/sdd/specs/20261014-100000-feature-0025-void-no-mail/*.md; cat .docs/sdd/decisions/0003-bookings-in-memory.md; cat -n src/app.js; ls test; git log --oneline
+<<< .docs/sdd:
+capabilities/
+decisions/
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/capabilities:
+availability.md
+bookings.md
+reports.md
+
+.docs/sdd/decisions:
+0003-bookings-in-memory.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261014-100000-feature-0025-void-no-mail/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261014-100000-feature-0025-void-n
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/bookings.md; cat test/app.test.js test/cancel.test.js; grep -rn "outbox\|salida\|correo" src test .docs/sdd/steering; git show --stat 113f88d | head; import 2>/dev/null; grep -rn "node:fs\|sqlite\|import" src
+<<< # Capacidad — bookings
+
+## Propósito
+
+reservar, cancelar y anular salas, y lo que se avisa al hacerlo
+
+## Requisitos
+
+### Anular una reserva
+
+- GIVEN la reserva de Norte del lunes
+- WHEN `anular Norte lun`
+- THEN responde «anulada Norte lun» y la reserva deja de contar en `libres`
+
+### Avisar por correo
+
+- Se avisa por correo.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reser
+
+=== RESULTADO (4 turnos, 0.2596534 $)
+### Strengths
+
+- The change is small and stays inside the plan's file list (`src/app.js`, `test/void.test.js`) and the Task 1 scope.
+- `formatMail` is fully gone. The subject «Aviso de reservas» and the «(enviado por correo)» suffix no longer appear anywhere in `src/`.
+- The response the executor's decision promised is kept: `anular` still returns «anulada <sala> <día>» (`src/app.js:19`), and `test/void.test.js:5-7` pins it.
+- `anular-todas` was left alone (`src/app.js:22-26`), which matches the spec's «No entra».
+- ADR 0003 is met: `src/` does not import `node:fs` or any database package. The only import-like line in `src/app.js` is `process.argv`.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed requirement «Avisar por correo» still runs.**
+- **File:** `src/app.js:18`, which runs `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`.
+- **What's wrong:** The commit removed the email formatting but not the notice. Every `anular` still puts a message for `responsable` in `outbox`. `salida` then shows it (`src/app.js:29,36`). Input `anular Norte lun` followed by `salida` returns «responsable: anulada Norte lun».
+- **Why it matters:**
+  - The spec's delta says `REMOVED — Avisar por correo`, the Approach says «`anular` deja de preparar el aviso», and the Intent says «Se quita el aviso».
+  - The notice is still prepared and still delivered to the same person. The only change is that it no longer says «correo».
+- **How to fix:** Delete line 18. Nothing else writes to `outbox`, so `outbox`, `pending()` and `salida` become dead code for this feature. Leave them to the other axes, or remove them under a separate requirement.
+- **Gap:** `contradicts`
+- **Comes from:** the spec's `REMOVED — Avisar por correo`, plus the Approach.
+
+#### Important (Should Fix)
+
+**2. The dev-lead's decision is only half covered.**
+- **File:** `src/app.js:18`.
+- **What's wrong:** The decision says «El aviso por correo al anular desaparece: el responsable avisa en persona — «el correo sobra»». The code removes the email wording, but the notice to `responsable` is still produced. So the half that says the person in charge gives the notice in person is not covered.
+- **Why it matters:** This is the same defect as issue 1, seen against the dev-lead's decision.
+- **Gap:** `partial`
+- **Comes from:** the decision taken with the dev-lead.
+
+**3. The test does not check the behavior the feature removes.**
+- **File:** `test/void.test.js:5-7`.
+- **What's wrong:**
+  - The test is named «anular responde sin aviso», but it only checks the returned string. That string was the same before the change, so the test would pass against `113f88d` too.
+  - It never checks that `outbox` stays empty or that `run('salida', [])` returns `''` after `anular`. That is why issue 1 got through.
+- **Why it matters:** The «Dónde se prueba» line («Anular sin aviso: por el comando `anular`, como `test/void.test.js`») names a check that does not test the «sin aviso» part.
+- **How to fix:** After `run('anular', ['Norte','lun'])`, also assert that `run('salida', [])` returns `''`, or that `outbox.length` is `0`.
+- **Gap:** `missing`
+- **Comes from:** the THEN of «Anular sin aviso» in «Dónde se prueba».
+
+#### Minor (Nice to Have)
+
+- None.
+
+### Not verified
+
+- **Test results:** no verificado. I did not run the suite, as instructed, and the package does not include task reports with the test output.
+- **Main-thread suite run:** the main thread should run the whole suite and confirm the state of `test/app.test.js` and `test/cancel.test.js`. They call `reservar` and `cancelar`, and `run` has no branch for either command (see the declined list).
+
+### Recommendations
+
+- Remove line 18 and add the `salida`/`outbox` assertion in the same commit. The new assertion should fail against the current HEAD, which proves it checks the removal.
+- In the plan, make Task 1's **Verificación** name the «sin aviso» check explicitly, not just the test file.
+
+### Declined to judge
+
+- **`outbox`, `pending()` and the `salida` command still exist:** whether to remove them is an architecture/quality call that depends on issue 1's fix. The spec does not ask for it.
+- **`anular-todas` sends no notice:** the spec's «No entra» puts it out of scope, and it never sent one.
+- **`.docs/sdd/capabilities/bookings.md` still lists «Avisar por correo»:** updating the capability file happens when the feature is archived, not in this diff, and `.docs/` does not count for REMOVED checks.
+- **`test/app.test.js` and `test/cancel.test.js`:** they use `reservar` and `cancelar`, which `run` (`src/app.js:32-38`) does not handle, so the commands return «salas». This predates the branch and is outside this diff.
+- **`test/void.test.js` changes shared module state** (the `bookings` array), so test order could matter. That belongs to the quality axis.
+- **Ledger:** there is none, so there are no deferred minors to rule on.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The spec removes the notice sent when a booking is voided, but `voidBooking` still sends a notice to `responsable` through `outbox` and `salida`; the commit only dropped the email wording. The only test checks the response string, which didn't change, so it can't catch this.

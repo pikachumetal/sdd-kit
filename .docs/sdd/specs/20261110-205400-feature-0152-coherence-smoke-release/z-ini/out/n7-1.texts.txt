@@ -1,0 +1,36 @@
+--- [3]
+Voy a comprobar el estado de la init que se cortó.
+
+--- [12]
+Retomo la init donde se cortó. **Modo: con código.** Si es un template recién instanciado, dímelo y sigo sin código.
+
+**Estado**
+- Aprobados: `PRODUCT.md` y `constitution.md`.
+- Configuración ya guardada, que no vuelvo a preguntar: ids por secuencia, perfil `delegate`, ejecución `auto`, validación manual.
+- Siguiente documento: `.docs/sdd/steering/operations.md`. Me falta entrevistarte sobre cómo se prueba el proyecto.
+
+**Lo que he leído del código** (propuesta, no decisión tuya)
+
+| Campo | Propuesta |
+| --- | --- |
+| Arrancar | `npm run dev` (Vite, puerto 3000 según el `CLAUDE.md` previo, que no verifico: `vite` usa 5173 por defecto y no hay config que lo cambie) |
+| Suite `unit` | `npm test` (`vitest run`, incluye `src/**/*.test.ts`), nivel `unitario`, duración `pendiente` |
+| Suite `e2e` | `npm run e2e` (Playwright, `testDir: './e2e'`), pero la carpeta `e2e/` no existe: es una suite sin tests todavía, sin campos E2E, nivel `E2E` |
+| Lint | `npm run lint` (eslint), nunca en el gate |
+| CI de la base | `.github/workflows/ci.yml` (solo corre `npm test`). No hay remoto, así que su orden de lectura sería `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`, sin ejecutarla |
+| Sin filtro | `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*`, `tests/helpers/**` |
+| Temporales | `unit`: no declarado. `e2e`: `test-results/` (valor por defecto de Playwright), con propuesta de moverlo a `.temp/playwright` |
+
+**Primera pregunta:** el `CLAUDE.md` previo dice «puerto 3000». ¿Es cierto, es decir, el servidor de desarrollo se levanta en el 3000 en este proyecto? Recomiendo confirmarlo y dejar `Arrancar: npm run dev (puerto 3000)`. Para eso habría que fijar `server.port` en `vite`, porque hoy no está configurado. Si no, lo anoto como discrepancia y no lo escribo como regla.
+
+--- [14]
+Anotado: `Arrancar: npm run dev (puerto 3000)`. `vite.config` no fija `server.port`, así que hoy ese puerto no está garantizado por el código. No toco la configuración de la suite ni del servidor desde la init. Lo dejo en la lista de discrepancias del resumen final, y quizá como fila de `ROADMAP.md`.
+
+**Siguiente pregunta: los gates.** Hoy solo hay una suite con tests (`unit`) y `e2e` está vacía. Mi propuesta, que sale de los scripts:
+
+- **Lo afectado**: `npx vitest run --changed`, que corre solo los tests de lo que toca el cambio.
+- **Gate de cierre**: `ninguno por ahora`. Las suites `unitario` no van en el gate, el cierre las corre enteras con `npm test`. Cuando `e2e/` tenga tests, el gate pasa a ser `npm run e2e`, y como Playwright no filtra por cambios, correría entero.
+- **Gate de merge**: `npm test`, que es lo mismo que corre el CI.
+
+¿Las confirmas o quieres cambiar alguna? Si dices «sí», pasamos a «Acceso a la aplicación» y «Motor de producción».
+

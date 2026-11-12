@@ -1,0 +1,50 @@
+--- [3]
+Los ejes de la revisión final ya han vuelto, así que lo primero es el cierre de la revisión con `sdd-verify`.
+
+--- [17]
+Reproducido: en solitario sale `''`. Hago que cada test cargue el módulo con estado propio y monte su GIVEN.
+
+--- [26]
+Escribo la enmienda propuesta en `spec.md`, sin commit, y lanzo un revisor `sonnet` (`sdd-kit:effort-medium`) con los siete puntos.
+
+--- [34]
+Mientras revisa, anoto en el ledger y en `tasks.md`.
+
+--- [37]
+Espero al revisor de la enmienda.
+
+--- [38]
+1. Crítico · «Delta de comportamiento» (AND nuevo del recorte) · El AND de espacios no pasa a ser una enmienda válida: la spec está `approved` y la enmienda queda «sin aprobar», pero la Aprobaciones no la cubre. Si se implementa antes de aprobarla, el gate verifica comportamiento que Laura no ha firmado. · Aprobar la enmienda (nueva fila en Aprobaciones con rol y fecha) antes de implementar, o dejar el AND fuera del delta hasta entonces.
+2. Crítico · «Reglas de la capacidad» (ausente) · El delta introduce datos y límites nuevos (lista cerrada de motivos, normalización, mensajes de error) y la spec no declara las cinco reglas ni «no aplica»: dónde vive el dato, idioma de los nombres, límites, avisos y regla de conflicto. El recorte no define si se compara sin distinguir mayúsculas, ni qué pasa con espacios internos, tabuladores o un `--motivo ""` de solo espacios. · Añadir «Reglas de la capacidad» con las cinco reglas, y en «límites» fijar la normalización (solo trim de extremos, sensibilidad a mayúsculas, vacío tras trim = sin motivo).
+3. Importante · «Delta de comportamiento» (AND nuevo) · El escenario pasa sin comprobar el comportamiento: la salida «cancelada Norte lun (sala ocupada)» es idéntica a la de la reserva sin espacios. Una implementación que guarde el motivo con espacios y escriba el literal fijo, o que acepte cualquier cadena que contenga «sala ocupada», pasaría. · Añadir un THEN que verifique lo guardado, por ejemplo `canceladas` responde «Norte lun — sala ocupada» sin espacio sobrante. Añadir un caso negativo, por ejemplo `"sala  ocupada"` con doble espacio interno responde «motivo no válido…».
+4. Importante · «Delta de comportamiento» (AND nuevo) · El AND se apoya en un GIVEN que ya cubre la reserva de Norte lun, pero el WHEN es otro comando con otro dato. Mezclar dos comportamientos en un solo escenario hace que un fallo no se pueda localizar. · Pasarlo a un escenario propio con su GIVEN/WHEN/THEN, o dejarlo explícito como variante del mismo.
+5. Importante · «Decisiones que he tomado yo» · La numeración salta del 1 al 3 (falta la 2). El recorte de espacios y la lista cerrada de motivos son decisiones del agente. La normalización, que sale de un hallazgo del agente en la revisión final, no figura. La decisión 3, «sin review de spec», dice «dos señales» pero con la enmienda aparecen más (límites nuevos). · Reenumerar, añadir la decisión «el motivo se compara sin espacios de alrededor» marcándola como pendiente de validar, y revisar la decisión 3 por si cambia con la enmienda.
+6. Importante · «Delta de comportamiento» / «Scope» · «Cancelar pide un motivo» y las dos ADDED deberían ser MODIFIED, porque `cancelar` ya existe y cambia su respuesta («cancelada Norte lun» pasa a incluir el motivo). El delta lo declara ADDED y en «Capacidades» dice «Modificadas». Sin `capabilities/` no hay contraste posible, pero la contradicción interna es clara. · Declarar la primera como MODIFIED con su estado anterior, o justificar por qué es ADDED.
+7. Menor · «Delta de comportamiento» · «cancelar` sin `--motivo` responde «motivo no válido…» es un AND que cubre dos reglas distintas (motivo ausente y motivo fuera de lista) bajo la misma salida. · Aceptable, pero si se quiere distinguir ausente de inválido, separar los escenarios. El texto de error «motivo no válido» para el ausente puede confundir.
+8. Menor · «Enmiendas» · La línea cita «hallazgo Important del eje Código de la revisión final sobre f1e9997»: el hallazgo viene del código, no del dominio, y no se enlaza ni se resume. Un revisor posterior no puede comprobar el origen. · Resumir el hallazgo en la enmienda y poner en «Dónde se prueba» el test que lo cubrirá.
+9. Menor · «Intent»/«Terminology» · «Cancelación» se define como la que anula el propio cliente antes de 24 h; el delta no dice nada de ese límite de 24 h ni de quién cancela. · Declarar que el motivo aplica solo a cancelaciones del cliente o que la regla de 24 h se mantiene, para no chocar con la 0011.
+
+--- [43]
+He cerrado la revisión final hasta donde puedo sin ti. Me paro porque uno de los arreglos cambiaría el comportamiento que aprobó la spec.
+
+**Revisión final sobre `f1e9997`**: el eje de spec dice que está lista con un hallazgo menor, y el de código pide arreglos (uno importante y uno menor). El eje de arquitectura no se lanzó, como decía el plan, y el diff tampoco da motivos para lanzarlo.
+
+- **Hecho, sin commit:** el test de `canceladas` solo pasaba si antes había corrido el de `cancelar`. En solitario falló con `''`; ahora cada test carga el módulo desde cero y prepara su propia reserva. Pasa solo y la suite da 5/5. No lo he guardado en un commit para que entre en la misma pasada de arreglos que el recorte de espacios, si lo apruebas.
+- **No lo cambio:** el revisor de código proponía separar con ` - ` en vez de ` — ` porque en la consola de recepción salía `ÔÇö`. Pero la spec aprobada fija ` — ` en su resultado esperado y en su decisión 4. Ese revisor no lee la spec. Además, creo que Node escribe bien la raya en una consola de Windows y el problema solo aparecería al redirigir la salida a un fichero. No lo he probado. Queda anotado como decisión mía en el registro.
+
+🦆 El revisor de código dice que, si alguien escribe `--motivo "sala ocupada "` con un espacio al final, la app contesta «motivo no válido» y no le deja cancelar. Arreglarlo es fácil: quitar los espacios del principio y el final antes de comparar. Pero la spec dice que cualquier motivo fuera de la lista da error, y con el arreglo esa entrada pasaría a cancelar la reserva. Eso es comportamiento nuevo, así que tienes que decidirlo tú.
+
+✋ **Enmienda sin aprobar.** Está escrita en `spec.md` y sin commit:
+> AND un motivo de la lista con espacios alrededor, `--motivo "sala ocupada "`, se compara sin ellos: responde «cancelada Norte lun (sala ocupada)»
+
+Lo que encontró el revisor de la enmienda (sonnet), en lo que la afecta:
+- **La prueba no basta:** la respuesta es la misma con espacios que sin ellos. Propone comprobar también que `canceladas` muestre «Norte lun — sala ocupada» sin espacio sobrante, y añadir un caso que debe fallar: `"sala  ocupada"`, con dos espacios en medio, sigue dando «motivo no válido».
+- **Faltan límites:** no se dice si cuentan las mayúsculas ni qué pasa con un motivo que solo tiene espacios. Mi recomendación: quitar solo los espacios de los extremos, distinguir mayúsculas como ahora, y tratar un motivo vacío tras recortar como si faltara `--motivo`.
+- **Fuera de la enmienda:** también señala cosas de la spec ya aprobada. La numeración de las decisiones salta de la 1 a la 3. La capacidad pone «Modificadas», pero los dos requisitos están marcados como nuevos (ADDED). Y no se dice si el motivo vale también para las anulaciones del responsable (la feature 0011). No las toco salvo que me lo pidas.
+
+**Opciones:**
+1. **(Recomendada)** Apruebas la enmienda con esas dos pruebas y esos límites. La implemento como Task 3, junto con el arreglo del test en un solo commit, y la pasa a revisión una única re-revisión.
+2. La rechazas: el motivo tiene que ser exacto. Quito el AND de `spec.md`, guardo solo el arreglo del test, el hallazgo queda como decisión registrada y sale una única re-revisión.
+
+Desde el commit `f1e9997` hay sin guardar `test/cancel.test.js`, `spec.md` y la línea de `Revisión final:` de `tasks.md`.
+

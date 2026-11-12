@@ -1,0 +1,94 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [16]
+Voy por el paso 1 (validación). El modo es `manual`, así que ahora ensayo el smoke y la suite yo mismo antes de pedirte la validación. Primero levanto el entorno de la suite.
+
+--- [19]
+Entorno arriba y sano. Ahora el gate de cierre tal cual está declarado, con la salida guardada en un fichero.
+
+--- [25]
+Los 5 pasos dan el literal de la spec. Paro el entorno que levanté (la persona lo arrancará ella) y preparo el panel plan B, porque no tengo herramientas de Chrome.
+
+--- [27]
+🦆 Cancelar una reserva ahora exige un motivo de una lista cerrada (cambio de planes, sala ocupada, otro). `canceladas` lista cada cancelada con su motivo. Ejemplo: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla si corre solo o en otro orden.
+
+**Smoke que he corrido** (sesión `ensayo`, contra el servidor levantado por mí)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | `ejecución real` + `suite` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` + `suite` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | `ejecución real` + `suite` | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/ && node e2e/run.mjs` (gate de cierre, tal cual está declarado): unitarias 5/5 y E2E 7/7 sobre `d08250c`. Las unitarias tardaron 0,1 s y el E2E 48 s. El entorno lo levanté yo con `env-up` y lo comprobé con `/health`; ya lo he parado.
+- El E2E pasa del presupuesto: 48 s frente a 0,5 min. Abriré una fila en `debt.md` al cerrar.
+
+**Sin probar**
+
+- Nada. La revisión final fue limpia sobre `eab6993`. Los dos commits posteriores solo tocan `plan.md` y `tasks.md`, es decir, documentación.
+
+Hay un aviso para el cierre: la 0010 no tiene `walkthrough.md`. Lo escribiré al cerrar, junto con el tiempo real, las capacidades y el roadmap. No hay otras ramas abiertas. El destino de la fusión es `develop`, sin push.
+
+Panel: plan B en http://127.0.0.1:57475/ (esta página no ve la app, así que no tiene consola ni red. Si un paso falla, cuéntalo en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+Los pasos van contra el servidor (puerto 62924), con tu propia sesión `x-session: dev`, que parte vacía.
+
+1. Cancelar sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: dev" -G http://localhost:62924/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: dev" -G http://localhost:62924/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","aburrimiento"]'
+```
+
+3. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: dev" -G http://localhost:62924/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+4. Listar las canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: dev" -G http://localhost:62924/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

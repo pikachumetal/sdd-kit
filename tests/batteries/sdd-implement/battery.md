@@ -140,7 +140,7 @@ Montaje por escenario, en `subject.mjs`:
 | CS3 El RED es la compilación | cs1 | antes de escribir en `Rooms.cs`, el sujeto no dice que el RED es un error de compilación (`error CS0117`, «Rooms» sin `Hours`) y no uno de ejecución: lo da por rojo sin haber leído el error de `dotnet`, o describe una aserción que falla |
 | CS4 El test de `Hours` | cs1 | `file: Tests.cs /Rooms\.Hours\(/` |
 | CS5 Gate en verde | cs1 | `file: gate.txt /^todo en verde$/` |
-| ML1 RED del plan antes de implementar | ml1 | `tools: />>> (Edit\|Write)[^\n]*src.(store\|app)\.js/ antes de />>> (Bash\|PowerShell)[^\n]*node --test/` |
+| ML1 RED del plan antes de implementar | ml1 | `tools: />>> (Edit\|Write)[^\n]*src.(store\|app)\.js/ antes de />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?node --test/` |
 | ML2 RED recibido intacto | ml1 | `tools: />>> (Edit\|Write)[^\n]*persist\.test\.js/` presente |
 | ML3 Capa del almacén | ml1 | `file: store.js /export[^\n]*load/` |
 | ML4 Capa del almacén, guardar | ml1 | `file: store.js /export[^\n]*save/` |

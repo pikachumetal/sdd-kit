@@ -1,0 +1,53 @@
+--- [3]
+Ahora: leo la spec y la rúbrica de revisión para cerrar el paso 4. Queda: revisión de la spec y presentártela para aprobar, ~5 min.
+
+--- [12]
+Lanzado el revisor de la spec (uno, en Sonnet, porque es lite). Hasta que termine no tengo sus hallazgos y no puedo presentarte la spec, así que espero a su aviso.
+
+--- [17]
+1. Importante · Delta de comportamiento (ADDED) · Se declara `ADDED`, pero la Intent dice que hoy `libres` sin franja responde `Norte, Sur`. Cambiar esa respuesta modifica un comportamiento ya existente de `rooms`, así que es un `MODIFIED` sin declarar, y no existe `capabilities/` que lo contraste. · Marcarlo como `MODIFIED` e indicar el comportamiento anterior (`Norte, Sur` sin franja). En «Capacidades» poner `Modificadas` en vez de `Nuevas`, o justificar por qué es nueva.
+
+2. Importante · Delta, escenario · El GIVEN fija «Norte reservada el lunes de 10:00 a 12:00», pero el WHEN `libres` sin franja no tiene día. El `AND` `libres 10:00-12:00` responde `Sur` solo vale si el día está fijado. El escenario mezcla dos comportamientos. · Separar el `AND` en un escenario propio, que es la regresión de «no entra». Declarar en el GIVEN el día o la fecha con que se consulta, o decir que el catálogo no lo necesita.
+
+3. Importante · Delta, THEN · El mensaje `falta la franja: libres <franja>` contiene el literal `<franja>`. No queda claro si es texto fijo o un marcador, y un test por inspección visual lo pasaría en cualquier caso. · Decir que `<franja>` es texto literal, no sustituido. Fijar el test para que compare la cadena exacta, y también el código de salida o el canal (stdout o stderr).
+
+4. Importante · Decisiones tomadas por mí · «Con la forma de la guía» remite a una guía que ni está en el spec ni en steering, y no se puede comprobar. · Citar la guía y el pasaje, o describir la forma. Añadir las decisiones que faltan: la respuesta es un mensaje y no un error, el canal y el código de salida, y si el texto va con minúscula inicial.
+
+5. Importante · Reglas de la capacidad (ausente) · El delta introduce un mensaje nuevo, un nombre de ayuda y una condición de conflicto (franja ausente), pero no hay sección «Reglas de la capacidad». Faltan las cinco reglas por nombre: dónde viven los datos, idioma de los nombres, límites, avisos y regla de conflicto. · Añadir «Reglas de la capacidad» con las cinco reglas. Pueden ir como «no aplica» con motivo, salvo el idioma, que es castellano (constitución, punto 4). Citar ese punto.
+
+6. Menor · Escenarios · Faltan los casos vecinos del complemento (qué queda prohibido o no cubierto): franja vacía `""`, franja con formato inválido y `libres` con más de un argumento. «No entra» solo cubre `libres <franja>` válida. · Declarar qué hace `libres ''` y `libres x`. O ponerlos explícitamente en «No entra», con su comportamiento actual.
+
+7. Menor · Dónde se prueba · Solo hay un test, `run('libres', [])`. El `AND` (`libres 10:00-12:00` → `Sur`) no tiene fila de prueba, aunque el gate de cierre es `node --test` entero. · Añadir la fila del test de regresión de `libres 10:00-12:00` → `Sur` en `test/app.test.js`.
+
+8. Menor · Frontmatter y Decisiones · `profile: delegate` y la decisión del modo lite remiten a «cinco condiciones citadas», que no aparecen en el spec. Un revisor no puede comprobar que se cumplen. · Enumerar las cinco condiciones de lite, o remitir al lugar donde se verifican.
+
+9. Menor · Intent frente a Scope · La Intent habla de que «quien lo escribe sin franja reserva una sala ocupada». `libres` solo consulta, y el spec no toca la reserva. Además, `Norte, Sur` con el catálogo del GIVEN (Norte ocupada) es incorrecto solo en ese día y franja. · Reformular la Intent como «libres sin franja lista salas que pueden estar ocupadas», sin prometer nada sobre la reserva.
+
+--- [19]
+Ahora: integro los hallazgos en la spec. Queda: editar `spec.md` y presentártela para aprobar, ~5 min.
+
+--- [27]
+El script falló antes de escribir (mi corte se comía Intent, Scope y Delta), así que la spec sigue intacta. Lo rehago con cortes correctos.
+
+--- [30]
+**Ahora:** la spec lite de la 0019 está lista y con la review integrada. **Queda:** tu aprobación. No escribo el plan ni implemento hasta que la des.
+
+🦆 Hoy `libres` sin franja responde `Norte, Sur`, como si ambas salas estuvieran libres a cualquier hora. Con este cambio responde `falta la franja: libres <franja>`. `libres 10:00-12:00` sigue respondiendo `Sur`. Es una rama nueva en `run` (`src/app.js`) y dos tests en `test/app.test.js`, unos 30 minutos.
+
+**Lo que ha pasado desde la spec anterior**
+- **Coherencia:** hecha, antes de la review.
+- **Review:** un revisor en Sonnet, porque es lite. Dio 9 hallazgos, ninguno Crítico, así que no hay segunda ronda. Acepté 8 y rechacé 1.
+- **Rechazado:** que el delta debía ser `MODIFIED` en vez de `ADDED`. No existe `capabilities/rooms.md`, la spec crea la capacidad y no hay requisito previo que modificar. El comportamiento anterior queda descrito en la Intent.
+- **Aceptados:** el GIVEN ya no fija un día que el WHEN no usa, y el segundo escenario (`libres 10:00-12:00` → `Sur`) tiene su propia fila de prueba. También hay sección «Reglas de la capacidad», las cinco condiciones de lite enumeradas y la Intent sin prometer nada sobre reservar.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El mensaje es `falta la franja: libres <franja>`, en minúscula inicial como `sin reserva <sala> <día>`. `<franja>` va literal, no se sustituye. Quité la referencia a «la guía» porque no pude comprobarla.
+2. Es una respuesta, no un error: la devuelve `run`, sale por stdout y el código de salida no cambia.
+3. «Sin franja» significa argumento ausente. `libres ''` y una franja no reconocida quedan como hoy, y están en «No entra».
+
+Plan de la 0019: el agente (spec lite, un solo cambio en `run`). Spec en `.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot/spec.md`.
+
+¿Cómo seguimos?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué ajustar en la spec.
+

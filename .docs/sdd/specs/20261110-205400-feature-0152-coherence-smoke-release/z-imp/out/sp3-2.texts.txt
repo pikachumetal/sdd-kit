@@ -1,0 +1,79 @@
+--- [3]
+Ahora: reviso la spec y el plan de la 0032 en la rama para decidir el método. Queda: elegir método y arrancar la Task 1, ~2 min.
+
+--- [8]
+Es un spike con una sola task y `Ejecución: native`. Compruebo la base y invoco el método nativo.
+
+--- [12]
+Ahora: preparo el espacio de trabajo (`sdd-worktrees`) y el workspace del plan. Queda: la Task 1 (medición), ~5 min.
+
+--- [16]
+Uso el `sdd-worktrees`. Compruebo si ya estoy en un worktree enlazado y creo el workspace del plan.
+
+--- [26]
+Estoy en la Task 1 del spike: escribo el script que mide `libres` con 1.000 reservas activas en la misma franja y guarda la salida en bruto en la carpeta de la spec.
+
+--- [29]
+O1 no se cumple: de 0,11 a 0,30 ms por llamada, y el umbral es 0,05. En `freeRooms` hay un `sort` cuyo resultado se descarta. Compruebo si ese sort explica el tiempo, con una copia fuera de `src`.
+
+--- [32]
+Sin el sort el tiempo baja a ~0,0001–0,005 ms. Escribo `research.md` con la plantilla.
+
+--- [36]
+Task 1 completa. Ahora: la revisión final de la rama con `sdd-verify`. Queda: revisión, cierre y `sdd-archive`.
+
+--- [39]
+En un spike sale solo el eje Spec. Mi harness no tiene herramienta de subagentes (`Workflow` exige que lo pidas tú), así que hago la autorrevisión que indica el skill. Leo el brief del eje.
+
+--- [42]
+Autorrevisión del eje Spec contra el diff de la rama (`06be7dd..d581002`: solo docs, sin código de producción).
+
+--- [44]
+Review limpia. Borro el workspace del plan (git-ignorado, solo mío) y paso a `sdd-archive`.
+
+--- [48]
+Ahora: pre-checks del cierre (`merge --check`, estado del árbol, spec aprobada). Queda: validación por agente, registros y parada ante el merge, ~10 min.
+
+--- [57]
+`Retro: sin señales` (ninguna corrección repetida, búsqueda a ciegas ni documento desmentido). Miro `debt.md` para registrar el hallazgo del `sort` y dar fila al 0032 en el roadmap.
+
+--- [62]
+Ese script no aplicó los cambios. Los hago con `Edit`.
+
+--- [65]
+Walkthrough escrito. Falta la fila 0032 en Now del roadmap.
+
+--- [69]
+Comprobaciones en verde. Commit del cierre y sincronización con la base.
+
+--- [72]
+**No terminado.** Falta fusionar `feature/0032-free-rooms-fast` en `develop`: `sdd-kit.json` no tiene el bloque `merge` (`merge.into`, `merge.noFf`). Tanto `merge --check` como `merge --sync` se detuvieron por eso. Con el perfil `delegate` y sin ese bloque, el merge me lo tienes que confirmar tú.
+
+## Qué se ha hecho
+
+- **Task 1 (spike):** `libres` no aguanta 1.000 reservas con el umbral de 0,05 ms. Con 1.001 reservas activas en la misma franja, 10 repeticiones de 2.000 llamadas dieron **0,1122–0,2961 ms por llamada**. La memoria oscila entre 4,7 y 6,4 MB sin crecer de forma sostenida.
+- **Causa:** `freeRooms` hace `bookings.slice().sort(...)` y descarta el resultado. Una copia de diagnóstico sin ese `sort`, fuera de `src/`, mide ≤ 0,005 ms. Esa copia es solo diagnóstico: hay que volver a medir tras el arreglo antes de dar O1 por cumplido.
+- **Recomendación (en `research.md`):** quitar el `sort` y no montar caché todavía.
+- **Código:** no se ha tocado `src/` ni `test/`.
+- **Cierre:** `walkthrough.md`, una fila 0032 en Now del roadmap con ✅ y una fila nueva en «Por triar» de `debt.md` con el `sort`. El roadmap, la deuda y las capacidades pasan sus comprobaciones.
+- **Tests:** `node --test` da 4/4 en verde sobre el código actual. La rama solo toca `.docs/`, así que el gate no era obligatorio.
+- **Commits:** `d581002` (medición) y `5710bdb` (cierre).
+
+## Rulings que tomé
+
+1. Trabajé en el checkout actual, ya en la rama de la feature, sin worktree propio, y corrí la línea base en el mismo árbol. Si falla, el coste es nulo.
+2. No hay `tasks.md`, porque hay una sola task.
+3. Revisión final sin subagentes: mi harness no tiene esa herramienta, así que fue una **autorrevisión del eje Spec**, más débil que un revisor fresco. Decide tú si basta antes del merge.
+4. Dejé fuera de la revisión cómo se reparten las 1.001 reservas entre `Norte` y `Sur`. La spec no lo fija y el coste lo domina el `sort`. Si importara, el tiempo real sería mayor, no menor.
+
+**Deferred minors:** ninguno.
+
+## Qué necesito de ti
+
+- **Bloque `merge`:** dime si lo añado (por ejemplo `into: develop`, `noFf: true`) o si fusionas tú. Después hago el sync con la base y el merge.
+- **Fila 0032:** ROADMAP.md no tenía fila del 0032. La añadí en Now con su brief. Si la gestionabas aparte, dímelo.
+
+No hay `Retro:` con ticket del kit, así que no ofrezco `sdd-feedback`. Mi copia del ledger está en `/tmp/0032-ledger.md` (el workspace del plan está borrado).
+
+**No terminado.** Falta el merge de `feature/0032-free-rooms-fast` en `develop`. No borres todavía el checkout `<run>\repo`.
+

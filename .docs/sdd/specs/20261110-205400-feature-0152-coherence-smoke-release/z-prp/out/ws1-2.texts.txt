@@ -1,0 +1,99 @@
+--- [12]
+Ahora: confirmo que es un patch y busco la duración del gate para dar la estimación. Queda: pasar a `sdd-implement`, ~2 min.
+
+--- [22]
+Ahora: abro el patch (carpeta, estimación) y escribo el test en rojo. Queda: fix, reviewer, commit y cierre, ~10 min.
+
+--- [24]
+RED confirmado: falla porque devuelve `Norte, Sur`. Ahora escribo `patch.md` con la estimación y aplico el fix mínimo.
+
+--- [26]
+My shell escaping dropped the backslashes in the regex (`\d` became `d`). I'll fix the regex by editing the file directly.
+
+--- [30]
+Todo en verde (5/5 más lint) y el test RED sin tocar. Completo §4 y paso el patch al revisor.
+
+--- [34]
+La edición de §4 no se aplicó (mi script falló en silencio). La hago directamente.
+
+--- [40]
+Con el fix y el test hechos y verdes, el patch 0012 está esperando al revisor (Sonnet) antes del commit. No he commiteado nada ni he cerrado el patch.
+
+- **Fix:** en `src/app.js`, `libres` valida la franja con `HH:MM-HH:MM` (horas 00-23, minutos 00-59). Si no cumple, responde `franja no válida: usa HH:MM-HH:MM`.
+- **Test:** `libres 25:00-26:00` falló en rojo antes del fix (devolvía `Norte, Sur`). Ahora pasa.
+- **Gate:** `node --test && node scripts/lint.mjs` → 5/5 en verde, lint sin hallazgos. `libres 10:00-12:00` sigue devolviendo `Sur`.
+- **Artefacto:** `.docs/sdd/changes/20261112-162943-patch-0012-slot-format/patch.md`, con estimación 0,3 h e inicio a las 16:29 UTC. «Esfuerzo real» sigue pendiente.
+
+Dos cosas que decidí yo, porque la fila 0012 no trae requisitos (`Requisitos: —`, `Decisiones ya tomadas: —`) y los escribí en el patch como «sin el dev-lead»:
+- **Franja válida:** sale de generalizar tu ejemplo; confírmala en la validación.
+- **`libres` sin argumento:** también responde «franja no válida». Es consecuencia del fix, no algo que me pidieras.
+
+Siguiente: contestar los hallazgos del revisor en el patch, hacer el commit del fix y pasar a `sdd-archive`.
+
+--- [41]
+Hallazgos (revisión de solo lectura; ejecuté `node --test`: 5 de 5 pasan).
+
+1. **Severidad media. Decisión oculta: `libres` sin argumento cambia de comportamiento y patch.md dice que está fuera de alcance.**
+   - Evidencia en `src/app.js`: `SLOT.test(params[0] ?? '')`. Sin argumento, `''` no cumple la regex y devuelve «franja no válida…». Antes, `freeRooms(undefined)` devolvía `Norte, Sur`.
+   - patch.md §3 dice: «Fuera de alcance: fin anterior al inicio y `libres` sin argumento — sin el dev-lead».
+   - Fin anterior al inicio sí queda fuera: la regex lo acepta, por ejemplo `18:00-09:00`. El caso sin argumento no queda fuera: el código lo decide y lo trata como inválido.
+   - Es razonable, pero el patch debería moverlo de «fuera de alcance» a «Decisiones» y marcarlo para confirmar en la validación, o el fix debería dejarlo como estaba.
+   - Ningún test cubre ese caso.
+
+2. **Severidad baja. El fix recoge la solución fijada y es mínimo.**
+   - Para `25:00-26:00` la regex falla en las horas (`2[0-3]`) y devuelve exactamente «franja no válida: usa HH:MM-HH:MM», igual que la fila 0012 de ROADMAP.md.
+   - La regex es correcta: horas `[01]\d|2[0-3]`, minutos `[0-5]\d`, con anclas `^…$`.
+   - El cambio son una constante y una línea en `run`, sin tocar `freeRooms`. No hay hallazgo de corrección.
+   - Matiz menor: la línea de `run` queda larga, con el ternario en una sola línea. Es estético.
+
+3. **Severidad baja. El test cubre el caso literal y fallaría sin el fix, pero es escaso.**
+   - Sin el fix, `run('libres', ['25:00-26:00'])` da `Norte, Sur`, porque `freeRooms` no encuentra ninguna reserva con esa franja. El `assert.equal` fallaría, así que el RED es coherente. No ejecuté el test sin el fix para comprobarlo.
+   - Solo hay un ejemplo, con horas 25 y 26. No cubre minutos fuera de rango (`10:60-11:00`), formato roto (`abc`) ni el caso sin argumento de (1). Para un patch de esta talla es aceptable, pero el punto 1 queda sin red.
+
+4. **Severidad baja. patch.md es en general fiel, con carencias de estado.**
+   - Es fiel en la frase literal de la fila 0012, en el síntoma medido (`Norte, Sur`) y en los ficheros tocados.
+   - La tabla de verificación §4 solo tiene la fila RED («❌ antes»). No hay fila GREEN, y el test nuevo ya pasa.
+   - El frontmatter dice `status: done` mientras `commit: pendiente` y «Esfuerzo real: pendiente». Con la validación del dev-lead aún por hacer (§3 pide «Confirmar en la validación»), `done` es prematuro.
+   - La fila 0012 de ROADMAP.md sigue en ⏳, lo cual es coherente con que no se haya cerrado.
+   - El patch cita como cierre «gate (~1 s, `operations.md`)». No lo verifiqué.
+
+--- [43]
+Los hallazgos tienen una respuesta clara. Los aplico en `patch.md` y hago el commit.
+
+--- [45]
+Ahora: cierro el patch con `sdd-archive`. Queda: validación y merge.
+
+--- [51]
+🦆 Antes, `libres 25:00-26:00` listaba `Norte, Sur`, como si la franja fuera correcta. Ahora responde `franja no válida: usa HH:MM-HH:MM`. Una franja válida como `10:00-12:00` sigue funcionando y devuelve `Sur`.
+
+**✋ Me salí del plan en…** nada. Hay dos decisiones mías (sin el dev-lead), que tienes que validar:
+- Franja válida = `HH:MM-HH:MM`, horas 00-23 y minutos 00-59. La fila 0012 no traía requisitos y lo generalicé del ejemplo.
+- `libres` sin argumento también responde «franja no válida». Antes listaba `Norte, Sur`.
+
+Sigue sin validarse: una franja con fin anterior al inicio (`18:00-09:00`) se acepta como antes.
+
+**Smoke con ejecución real** (`node src/app.js …`):
+
+| Caso | Resultado |
+| --- | --- |
+| `libres 25:00-26:00` | `franja no válida: usa HH:MM-HH:MM` ✅ |
+| `libres 10:00-12:00` | `Sur` ✅ |
+| `libres 09:00-10:00` | `Norte, Sur` ✅ |
+| `libres` (sin argumento) | `franja no válida: usa HH:MM-HH:MM` ✅ |
+
+El gate (`node --test && node scripts/lint.mjs`) dio 5/5 y lint sin hallazgos.
+
+**Script para probarlo tú**, desde la raíz del repo:
+1. `node src/app.js libres 25:00-26:00` debe imprimir `franja no válida: usa HH:MM-HH:MM`.
+2. `node src/app.js libres 10:00-12:00` debe imprimir `Sur`.
+3. `node src/app.js libres` debe imprimir lo mismo que el paso 1. Dime si prefieres que liste las salas.
+
+**El cierre queda en espera.** El patch está commiteado en `feature/0012-slot-format` (`178dee2`), pero no lo he fusionado ni he tocado el roadmap. Hacen falta dos cosas tuyas:
+
+1. **Validación.** Dime qué probaste y que funciona («validado» o «sí» también vale). Si prefieres validar después, di cuándo y con qué disparador: «difiero a <disparador>».
+2. **Política de merge.** `sdd merge --check` falla porque `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Dime el destino (`develop` según la constitución) y si va con `--no-ff`, y los añado antes de fusionar.
+
+Otras ramas abiertas a la vez: ninguna.
+
+**No terminado.** Falta la validación y la política de merge. No borres todavía el worktree `<run>/repo`.
+

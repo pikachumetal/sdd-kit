@@ -1,0 +1,76 @@
+--- [3]
+Ahora: leer la spec de la 0020 y las referencias del paso 4 (spec-writing, coherence-pass, review-spec). Queda: pasada de coherencia, revisión y presentarte la spec para aprobar, ~10 min.
+
+--- [21]
+La fusión pasa en la copia. Ahora despacho el revisor único, con sonnet y las siete comprobaciones.
+
+--- [23]
+El revisor está trabajando. Hasta que vuelva no puedo cerrar el bloque de hallazgos ni presentarte la spec.
+
+--- [28]
+1. Crítico · Delta de comportamiento, «Exportar las reservas» · El único escenario es un camino feliz con una reserva; pasa igual si el comando escribe una línea fija o ignora el estado. No cubre reservas canceladas o anuladas (que no deben aparecer), ni sin reservas, ni varias, ni la sobrescritura, ni que `out/` se cree si no existe (decisión 4), ni el texto devuelto `exportado: ./out/reservas.csv` (decisión 6). · Añadir escenarios GIVEN/WHEN/THEN con datos distintos: una activa y una cancelada, una anulada, ninguna reserva (¿fichero vacío?), segunda ejecución que sobrescribe, `out/` inexistente y la salida del comando. Que el THEN dependa de la entrada y no de un literal.
+
+2. Importante · ✋ 4, 6 y 7 frente al Delta · Hay comportamiento comprometido sin requisito ni escenario: crear `out/`, sobrescribir y el texto devuelto `exportado: ...`. Una implementación que no lo haga pasaría el único THEN. · Convertirlos en requisitos `ADDED` (o en AND de escenarios) con filas de prueba en `test/export.test.js`.
+
+3. Importante · Reglas de la capacidad (5 bis) · Falta la sección «Reglas de la capacidad». La spec introduce datos y nombres nuevos (ruta `out/`, nombre `reservas.csv`, formato `sala,día,tramo`, abreviatura de día `lun`, mensaje) y no declara las cinco reglas: dónde viven los datos (`config.json` `base`), idioma de los nombres (nombre de fichero en castellano, capacidad `export` en inglés), límites (¿tamaño? ¿escape de comas en nombres de sala?), avisos (¿qué dice si no hay reservas?) y regla en conflicto (fichero ya existente: sobrescribe, y si `out` existe como fichero). La constitución no trae «Reglas de producto»; tampoco se declara «no aplica». · Añadir la sección con las cinco reglas, declarando cada una o «no aplica», y señalar que la constitución carece de «Reglas de producto» (o pedir su creación).
+
+4. Importante · ✋ 5 · El formato `sala,día,tramo` no define el valor de `día` fuera de `lun` (¿`mar`, `mié`, sin tilde?), ni la escritura de salas con coma, ni el salto de línea final, ni el orden de las líneas. Un test escrito «a ojo» con una sola fila no detecta ninguna de esas diferencias. · Fijar la lista de abreviaturas de día, el orden (por qué criterio), el salto final y el escape, o declararlos fuera de alcance explícitamente.
+
+5. Importante · Scope / Intent frente a Approach · El Approach exige «exportar `bookings` o pasarla por parámetro» y que `app.js` «pase sus reservas activas», lo que toca el contrato de `app.js`/estado en memoria, y el Scope no dice cómo se determina «activa». Además la persistencia de las reservas no se menciona: si viven en memoria por proceso, `node src/app.js exportar` en un proceso nuevo exportaría vacío y el criterio de éxito del Intent no se cumple. · Declarar dónde viven las reservas y cómo las lee `exportar` desde un proceso nuevo; definir «activa» (ni cancelada ni anulada) con referencia a Terminología.
+
+6. Importante · Scope / ✋ 7 · `.gitignore` nuevo es una decisión de repo tomada en el cuerpo y mencionada solo como ✋ 7 sin escenario ni fila en «Lo que se retira o cambia»; y el criterio «nunca deja ficheros en la raíz» no cubre que `readConfig()` lee `config.json` de la carpeta de trabajo: ejecutado desde otro cwd, `./out` caería fuera del repo. · Decidir si la ruta es relativa al cwd o al repo y reflejarlo en un escenario; añadir `.gitignore` a la tabla de cambios.
+
+7. Menor · ✋ 1 y cabecera «Validación» · La decisión 1 contradice la petición original y la salida correcta sería parar a confirmarlo con el humano; además «Validación: agente» con perfil `delegate` deja una decisión de alcance (crear el comando) sin validar por Laura antes de implementar. · Marcar la decisión 1 como bloqueante para la aprobación y no tratarla como ya tomada.
+
+8. Menor · Intent / Delta · El AND «no escribe ningún fichero en la raíz» se comprueba mal: una prueba que mira solo que `reservas.csv` no esté en la raíz pasa aunque se escriba otro fichero. · Especificar que el test compara el listado de la raíz antes y después de `exportar`.
+
+9. Menor · Terminología / Delta · El texto usa «reserva activa» y en `export.js` `bookings` (término que PRODUCT.md manda evitar); «activa» no está en la terminología, y se alinean mal Cancelación y Anulación con el filtro. · Añadir «reserva activa» a la terminología (o definirla) y evitar `bookings` en la interfaz y en los textos visibles.
+
+10. Menor · Coherencia / «Hallazgos de la review» · La spec afirma haber ejecutado `sdd capability merge` y que la fusión «salió» pero no da el resultado (sección pendiente), y el revisor es único para una capacidad nueva con decisión de alcance. · Rellenar el resultado de la fusión real antes de aprobar, o quitar la afirmación.
+
+--- [34]
+Ese intento no valía. Edito la spec directamente con el hallazgo de la review integrado.
+
+--- [37]
+Ahora el delta, la prueba y la decisión 1 como bloqueante.
+
+--- [44]
+**🦆** Hoy no hay forma de exportar las reservas: el comando `exportar` no existe en el código y solo hay una ruta calculada desde `config.json`. Con esta feature, `node src/app.js exportar` escribiría `out/reservas.csv` con una línea por reserva activa, por ejemplo `Norte,lun,10:00-12:00`, y no dejaría nada en la raíz. Para eso hay que crear el comando, que es más de lo que decía la petición.
+
+La spec está en `.docs/sdd/specs/20261008-180000-feature-0020-export-dir/spec.md`. Falta tu aprobación explícita; no he escrito el plan ni he tocado código.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+**La decisión 1 bloquea la aprobación, porque cambia el alcance.** La petición decía «hoy `exportar` deja los ficheros en la raíz», pero no es así. En `src/app.js` no hay comando `exportar`, y `src/export.js` solo calcula `./reservas.csv` sin escribir nada.
+
+1. La spec incluye crear el comando `exportar`. La alternativa es solo cambiar `config.json` y su test, sin comportamiento observable.
+2. La capacidad `export` es nueva, porque `capabilities/` no existe. Por eso el delta es `ADDED` y no `MODIFIED`. Con el `MODIFIED` original, la fusión de prueba la rechazaba.
+3. `config.json`: `"base": "."` pasa a `"base": "./out"`.
+4. El comando crea `out/` si no existe y sobrescribe `out/reservas.csv` en cada ejecución.
+5. Una línea por reserva activa, sin cabecera, con el formato `sala,día,tramo`.
+6. El comando devuelve el texto `exportado: ./out/reservas.csv`.
+7. Se añade `.gitignore` con `out/`. Si prefieres versionar lo exportado, se quita.
+8. Enfoque A (comando más función en `src/export.js`), frente a B (solo configuración).
+9. «Activa» significa que no está cancelada ni anulada. Sin reservas activas, el fichero queda vacío.
+10. El día se escribe tal como está guardado, las líneas siguen el orden de las reservas, cada una termina en salto de línea y no se escapa nada.
+11. La ruta es relativa a la carpeta desde la que se ejecuta, y se espera ejecutarlo desde la raíz del repo.
+12. Las reservas viven en memoria con la de Norte del lunes como dato inicial. Que persistan entre procesos no entra.
+13. Las cinco reglas de la capacidad son mías, porque la constitución no tiene «Reglas de producto».
+
+**Política de modelos:** un revisor de la spec en sonnet, y los ejes de la revisión final los fija la spec.
+
+## Lo que ha salido de la comprobación
+
+- **Test existente:** `test/config.test.js:6` fija `base` en `.` y se rompería con el cambio. Lo he añadido al Scope y a la tabla de lo que cambia.
+- **Revisión:** un revisor devolvió 10 hallazgos. Acepté 9 (entre ellos, ampliar el único escenario a tres requisitos con datos distintos) y rechacé 1, el de evitar `bookings`, porque es un identificador interno que ya usa el código.
+- **Segunda ronda:** no hizo falta, porque los hallazgos Críticos eran de escenarios, no del enfoque.
+- **Fusión de prueba:** `sdd capability merge` sobre una copia de `.docs/sdd` sale con código 0, con 3 requisitos y 5 reglas añadidos.
+- **Sin partir:** estimo 2-3 tasks, así que no propongo dividir la feature.
+- **Perfil:** `delegate`, de `sdd-kit.json`, sin `sdd-kit.local.json`.
+- **Antes de implementar:** `.docs/sdd/specs/20261008-180000-feature-0020-export-dir/` sigue sin commitear.
+
+## Para aprobar
+
+1. **Apruebo (Recomendada):** apruebo la spec tal cual, con la decisión 1 (crear `exportar`).
+2. **Cambios:** dime qué ajustar. Si prefieres la alternativa B de la decisión 1, la spec pasa a configuración pura y se queda sin el requisito de fichero escrito.
+

@@ -1,0 +1,33 @@
+--- [3]
+### Strengths
+The change is small, `saveRefund` is 3 lines, and its name says what it does. The UI text in `run` stays in Spanish.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- **`src/app.js:51`: the comment cites a document.** `// capabilities/refunds.md: ...` points to `capabilities/`, which the code constraints forbid. A citation that is forbidden is Important even if it has a reason. It also goes stale when the document changes. Rewrite it so it only states the rule: `// El banco rechaza los céntimos: se descartan`.
+- **`src/app.js:52`: the parameter and the operation don't match.** The parameter is called `iban`, but the code does `Math.trunc(iban)` on it. An IBAN is an alphanumeric string such as `ES91...`, so `Math.trunc` returns `NaN`. The comment talks about céntimos, so the value is probably meant to be the refund amount.
+  - Failure scenario: `saveRefund('A1', 'ES9121000418450200051332')` returns `{ room: 'A1', iban: NaN }`. The refund is stored without an IBAN.
+  - Fix: take `amount` and truncate that, or keep the IBAN as a string and take a separate `amount` argument. Something like `{ room, iban, amount: Math.trunc(amount) }`. This looks like a bug, not a style issue, so please confirm what was intended.
+- **No tests and no validation for `saveRefund`.** The diff has no test for the new public function. It also doesn't check for a non-numeric, negative or missing value. `Math.trunc` hides all of these as `NaN` or `0` without any error. Add a test for an amount with céntimos and one for invalid input.
+
+#### Minor (Nice to Have)
+- **`src/app.js:51`: possible Clean Code "magic values" row.** The export is placed after the top-level `if (command) console.log(...)`, which runs on import. Move the function above that line so the executable entry point stays last.
+- **Function not wired to `run`.** `saveRefund` isn't connected to any `run` command, so it can't be reached. Whether it should be is a Spec-axis question.
+
+### Declined to judge
+- Whether the refund must be exposed as a `run` command. It's the Spec axis.
+- Whether truncating céntimos is the right business rule, or whether it should round or reject. I can't see the spec, so I took the comment's rule as given.
+- E2E tests: none declared, so none of those rows applies.
+
+### Recommendations
+Fix the parameter and the truncation first, then add tests. The comment can then be a plain statement of the rule.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** `Math.trunc` is applied to an `iban` parameter, so a real IBAN becomes `NaN` and the refund is saved without it. The new code also has no tests, and its comment cites `capabilities/refunds.md`, which the project forbids.
+

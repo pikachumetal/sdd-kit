@@ -1,0 +1,36 @@
+--- [12]
+Retomo donde lo dejé: ya leí el contexto del proyecto y toca arrancar la feature.
+
+Ahora: clasificar el cambio y abrir la entrevista de la spec. Queda: unas pocas preguntas, la spec con tus decisiones para aprobar y, si la apruebas, el plan y la implementación. Hasta tu primera parada son unos ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido**
+- Hoy `src/app.js` solo tiene `libres`, `reservar` (con `--cada-semana`) y `cancelar`. Las reservas viven en memoria y no hay capacidades documentadas.
+- Quieres que, si intentas reservar una sala que ya está ocupada en esa franja, en vez de quedarte sin nada la herramienta te apunte en una lista de espera para esa sala.
+- Es un cambio de comportamiento visible, así que va como feature y no como patch. Parece pequeño: calculo unas 3 tasks o menos, así que no propongo partirlo.
+- Dependencias: el proyecto no usa ninguna, así que no hay nada que instalar.
+- Puede tocar la feature 0008 (avisos por correo), que está en curso y trata de avisos. Lo decidiremos cuando sepa para qué quieres la lista.
+
+Corrígeme si algo de esto no es lo que querías.
+
+¿Qué vas a hacer tú con esa lista de espera, es decir, qué quieres que pase cuando la sala que querías se libere?
+
+--- [14]
+Anotado: feature full, perfil delegate. El motivo queda claro: no quieres repetir `libres` a mano mientras Norte está ocupada.
+
+Antes de decidir nada tengo que decirte un hecho del código (`src/app.js`). Las reservas son un array fijo en memoria y `cancelar` solo devuelve un texto, no libera nada. Hoy no hay estado compartido entre una ejecución y otra. La spec tendrá que resolverlo, pero antes toca la decisión que más condiciona las demás.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+1️⃣ **Aviso en pantalla.** `esperar Norte 10:00-12:00` se queda en primer plano comprobando cada cierto tiempo. Cuando se libera imprime `Norte libre 10:00-12:00` y termina, y la reserva la haces tú. Es lo mínimo que te quita el `libres` a mano. Mientras esperas, la terminal queda ocupada.
+2️⃣ **Reserva automática.** El mismo comando, pero al liberarse reserva él: `Norte libre; reservada 10:00-12:00`. No tienes que estar atento, pero puede reservar algo que ya no quieres. Exige además decidir la cola cuando hay varias esperas.
+3️⃣ **Aviso por correo.** Te apuntas y el aviso llega al correo. Es lo que más te libera, pero depende de la feature 0008 (avisos por correo, en curso) y de guardar la lista de espera en disco.
+
+➡️ **Recomiendo 1️⃣**, porque es lo único que cubre tu motivo sin depender de 0008 ni reservar por ti. A cambio, tienes que dejar la terminal abierta, y la reserva sigue siendo manual.
+
+¿Cuál eliges?
+

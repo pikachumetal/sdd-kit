@@ -1,0 +1,93 @@
+--- [3]
+Ahora: leer el contexto del proyecto (docs SDD y `gate.json`). Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [15]
+Sigo con la spec de `gate.json`. Ahora reservo el id de la rama y leo el resto del brief de revisión.
+
+--- [22]
+Ahora: revisión de la spec con un revisor (rúbrica: sin señales, alcance pequeño). Queda: integrar hallazgos y presentártela, ~3 min, ~0,15 $.
+
+--- [24]
+Ya he escrito la spec y está en revisión. Espero el resultado del revisor antes de presentártela; todavía no puedo decir qué ha encontrado.
+
+--- [34]
+1. Crítico · Decisión 1 / Approach / Dónde se prueba · Da por hecho que `inputs: ["**/*"]` cubre cualquier ruta larga nueva, sin comprobarlo. Muchos globs no casan ficheros ni carpetas que empiezan por punto, y este repo guarda sus docs bajo `.docs/sdd/…`, justo donde una ruta de más de 140 caracteres es más probable. Tampoco se dice si la caché hashea el contenido de ficheros solo añadidos al índice (`git add`) ni si detecta altas y bajas de ficheros, no solo cambios de contenido. · Verificar con el motor del gate real que una ruta larga nueva bajo `.docs/` y otra bajo `docs/` invalidan la caché de `fast`. Si no la invalidan, listar `.*/**` y `**/*` en `inputs`, o añadir un input que cambie con la lista de ficheros (por ejemplo `.git/index`). Documentar el resultado en la spec.
+
+2. Crítico · Dónde se prueba · La prueba de la ruta de 141 caracteres es manual y puntual, y pone el fichero largo sin decir dónde. Un fichero bajo `src/` o con `inputs` estrechos también la pasaría, así que no distingue A de B, que es el fallo que dice temer el Intent. El único check automatizable («2 tests corridos») pasa igual con el hueco de caché. · Exigir que el fichero largo esté fuera de `src/` y de `test/` (uno en `docs/` y otro en `.docs/`). Pedir primero un `fast` en verde y con caché poblada, y después la repetición con el fichero largo: tiene que fallar, no saltarse. Registrar la salida en el walkthrough.
+
+3. Importante · Contexto / operations.md:16 · No hay ningún hook de pre-commit en `.git/hooks` (solo `*.sample`) ni script que lo cablee. «El pre-commit corre `fast`» es una afirmación de `operations.md` sin respaldo en el repo, y toda la promesa del Intent («el commit se para») depende de ella. · Comprobar dónde se invoca `fast` (hook, config del kit o gate externo). Si no existe, ponerlo en Scope o decir explícitamente que el cableado queda fuera. Mientras no esté probado, rebajar el Intent de «frena el commit» a «`fast` falla».
+
+4. Importante · Dónde se prueba · «Ver 2 tests corridos» supone que `app.test.js` define exactamente 1 test. No lo he comprobado y es frágil: el número cambia al añadir tests. · Cambiar el criterio a «la salida de `node --test` lista `ruta del repo` (el test de paths) y `app.test.js`, 0 fallos», o a «ambos ficheros aparecen en la ejecución».
+
+5. Importante · Decisiones tomadas con el dev-lead / Decisión 1 · El dev-lead dijo «tarda 1 s» y la spec mide ~0,3 s. Ahora `fast` se ejecuta con cualquier cambio, incluso uno de documentación, y la tarea `fast` pierde el sentido de «rápida por inputs estrechos». La spec lo trata como coste menor sin que el dev-lead lo haya aceptado. · Mover el coste de `fast` sin caché a las decisiones validadas, con la pregunta explícita al dev-lead. No presentarlo como resuelto.
+
+6. Importante · Decisión 2 / Scope · Eliminar `slow` cambia el contrato de `gate.json`: cualquier invocación externa por nombre (CI, scripts del kit, lo que haya en `.docs/sdd/` fuera de specs, el gate de merge o de cierre) fallaría con «tarea inexistente». El grep se hizo solo sobre ficheros del repo, sin `.github/`, scripts del kit o el harness. · Ampliar la comprobación a la configuración del kit y a CI. Dejar en la spec el resultado exacto del grep (pasa con 0 hits fuera de `gate.json`) y confirmar que ningún gate invoca `slow` por nombre.
+
+7. Menor · Decisión 4 / Scope · `test/cancel.test.js` queda fuera de `fast` y se justifica con «lo cubre el gate de cierre». Eso deja una suite que no pasa por el pre-commit y que un lector puede confundir con un olvido. Está en «No entra», pero no se dice si es deuda ni se apunta a ningún sitio. · Añadir una línea al roadmap o a la deuda (aunque sea «Por triar»), o justificar por qué no.
+
+8. Menor · «✋ Decisiones» / Aprobaciones · La política de revisión dice «un revisor de spec» y «Mínimo razonable: sin revisión». Las dos frases entran en tensión con la señal «ninguna» y con el hueco de caché que el propio texto llama crítico. Además `profile: delegate` y `approvers: TBD` quedan sin resolver. · Subir a revisión técnica obligatoria mientras la decisión 1 no esté verificada. Fijar el aprobador antes de pasar el estado de `draft`.
+
+9. Menor · Decisión 3 · Dice que sigue «el patrón de `operations.md`», pero ese patrón es `node --test <fichero>` para «lo afectado» y no para tareas de gate. La referencia es más retórica que técnica. · Cambiar la justificación a «un solo proceso `node --test` con dos ficheros, sin cambiar el formato de `command`».
+
+10. Menor · Dónde se prueba / Intent · El test lee `git ls-files`, que no lista ficheros sin seguir ni borrados aún no staged; el Intent habla de «commitear un fichero», pero `git ls-files` no ve uno que no esté en el índice. El texto ya dice `git add`, pero el Intent y el 🦆 no lo explican. · Añadir al Intent que solo vigila rutas ya seguidas o añadidas al índice. No dar a entender que cubre cualquier fichero del árbol.
+
+--- [43]
+Ahora: segunda ronda de revisión, porque acepté dos hallazgos Críticos. Queda: presentarte la spec, ~2 min.
+
+--- [45]
+La segunda revisión sigue en marcha y todavía no sé qué dice. Cuando termine, integro los hallazgos y te presento la spec para aprobar.
+
+--- [56]
+1. Importante · Decisión 1 y «Dónde se prueba» · El coste de caché se justifica con «~0,3 s medidos», pero `inputs: ["**/*"]` hace que `fast` corra con cualquier cambio, incluida la propia spec y los docs. Además, `fast` pasa a ser casi equivalente a no tener caché, y esto contradice la finalidad de la tarea. · Decir explícitamente que `fast` deja de ser una tarea acotada y pedir la validación del dev-lead. Valorar la alternativa D: `inputs` estrechos y una tarea `paths` con `**/*`, y justificar por qué se descarta, pues C se descartó solo por la literalidad del encargo.
+
+2. Importante · Decisión 6 y Task 1 · El test lee `git ls-files`, y la caché solo se invalida con cambios en el árbol de trabajo. Un fichero solo añadido al índice (`git add`) puede no cambiar el hash de `inputs` si el motor de caché mira el árbol. La prueba manual usa `git add` pero no dice cómo se distingue un «salto de caché» de un fallo real. · Añadir un criterio observable: la salida debe indicar «cache hit/skip» o «ejecutado», y registrarla en el walkthrough. Si el motor no expone esa información, decir que el hueco no es medible.
+
+3. Importante · «Dónde se prueba» · El motor de la caché no está en el repo y no hay hook ni CI, así que no se puede ejecutar «la tarea `fast`». La spec no dice con qué comando se corre ni cómo se hace la prueba. Con `node --test` directo, la caché no entra en juego y la prueba pasa sin demostrar nada. · Nombrar el comando exacto de la prueba. Si no existe un ejecutor del gate, reconocer que la prueba de caché es inverificable y degradarla a «sin medir» en el cierre.
+
+4. Importante · Decisión 7 y Intent · La spec afirma que el pre-commit corre `fast` según `operations.md:16`, pero no hay hook. El título («pasa a la tarea fast del gate») y la validación no logran el objetivo declarado: frenar el commit. El éxito se redefine a «`fast` falla», lo cual es más débil que lo pedido y está en «No entra» sin consultarlo. · Pedir confirmación al dev-lead de que cablear el pre-commit queda fuera, o abrir un ticket en deuda. Si no, el Intent oculta que el objetivo real no se cumple.
+
+5. Menor · Intent y test · `git ls-files` escapa con comillas y octales las rutas con caracteres no ASCII, de modo que la longitud medida puede ser mayor que la real y dar falsos fallos. El `split('\n')` añade además un elemento vacío al final (inofensivo). Con una ruta de 141 caracteres ASCII no se nota. · Probar con ASCII y anotar la limitación en el Intent. Si hace falta, `-z` queda fuera de alcance, porque el test no se toca.
+
+6. Menor · Decisiones 4 y 8 · `test/cancel.test.js` queda fuera de toda tarea y la decisión 8 dice que se apuntará a deuda «al cerrar», pero ese apunte no figura en el alcance ni en el plan. Es un trabajo oculto en `debt.md`, un fichero que la spec no declara como tocado. · Añadir «`debt.md`: una fila Por triar» a «Entra», o retirar la decisión 8.
+
+7. Menor · Tabla «Lo que se retira» · La tabla cita `git grep` fuera de `.docs/sdd/specs`, pero ahora los hits están en `gate.json` y `operations.md`. Esto contradice «sin más hits» y el destino «decisión 2» no está en las decisiones numeradas de forma coherente: la decisión 2 se cita como «decisión 3» en la revisión técnica de la cabecera. · Corregir las referencias cruzadas. La cabecera dice «decisión 2» para la caché y «decisión 3» para `slow`, pero en el cuerpo son la decisión 1 y la 2.
+
+8. Menor · Decisión 1 · La frase «el dev-lead aceptó el coste» aparece como cerrada en «Hallazgos» (el coste lo aceptó el dev-lead), pero en el cuerpo sigue como pregunta abierta («¿lo aceptas?») y en «Decisiones tomadas con el dev-lead» solo consta «tarda 1 s». Hay una contradicción sobre qué está aceptado. Además, el dev-lead dijo «1 s» y lo medido es 0,3 s. · Dejar la decisión 1 como pendiente de validar, o registrar la aceptación real. Corregir la cita para no atribuirle una aceptación que no consta.
+
+9. Menor · Front matter y Aprobaciones · `approvers` con `name: TBD` y la tabla vacía. El gate (`gate.json`) que se menciona para la «pregunta explícita» no existe como fichero de cambio en la carpeta. · Quitar la referencia a un gate inexistente o crearlo.
+
+--- [62]
+Ahora: presentarte la spec. Queda: tu aprobación; sin ella no escribo el plan.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+La he tratado como feature (no config) porque pediste spec en su carpeta: `.docs/sdd/changes/20261112-160415-feature-0015-paths-in-fast/spec.md`. La rama `feature/0015-paths-in-fast` ya existía y el id 0015 queda reservado (no hay remoto). No he commiteado nada.
+
+## 🦆 Qué cambia
+Hoy el pre-commit corre solo `fast`, que prueba `src/app.js`. El test que vigila que ninguna ruta del repo pase de 140 caracteres está en `slow` y no frena nada. Tras el cambio, `fast` corre también ese test: con un fichero de 141 caracteres de ruta añadido al índice, `fast` falla. En `gate.json`, `fast` ejecuta `node --test test/app.test.js test/paths.test.js` con `inputs: ["**/*"]`, y `slow` desaparece porque se queda vacía.
+
+## ✋ Decisiones que he tomado yo
+1. **`inputs` de `fast` = `["**/*"]`.** El test lee `git ls-files`, así que depende de las rutas de todo el repo. Con `src/**`, un fichero largo en `docs/` no invalidaría la caché y `fast` se saltaría. Coste: `fast` corre ante cualquier cambio. Medí 0,3 s para el test de rutas, no 1 s.
+2. **Elimino `slow`** (queda sin comando).
+3. Un solo proceso `node --test` con los dos ficheros.
+4. `test/cancel.test.js` no está en ninguna tarea. Lo dejo fuera de alcance; lo cubre el gate de cierre.
+5. **Enfoque A**, frente a B (`inputs` estrechos: hueco de caché), C (tarea `paths` aparte) y D (`fast` estrecho más `paths` con `**/*`).
+6. **Sin medir:** que `**/*` invalide la caché con rutas bajo `.docs/` (punto inicial) y con ficheros solo en el índice. Repo no trae ejecutor del gate; la Task 1 lo mide. Si falla, se añade `.*/**`.
+7. **Sin medir / fuera de alcance:** no hay hook de pre-commit en el repo, aunque `operations.md:16` dice que corre `fast`. Esta spec garantiza que `fast` falla con una ruta larga, no que el commit se pare.
+
+La revisión (2 rondas, un revisor sonnet cada una) está en `### Hallazgos de la review` de la spec. Aceptó 2 Críticos, que son los puntos 6 y 7 y la prueba con ficheros en `docs/` y `.docs/`.
+
+**Dos preguntas abiertas** (decisión 8):
+- ¿Aceptas que `fast` deje de ser una tarea acotada por inputs? La alternativa es D.
+- ¿Cablear el pre-commit queda fuera de esta feature?
+
+Validación: agente (es configuración de herramientas).
+
+**¿Apruebas la spec?**
+1. Apruebo (Recomendada)
+2. Cambios
+

@@ -1,0 +1,41 @@
+--- [12]
+Sigo con la propuesta: ya he leído el contexto del proyecto y es una feature. Invoco la entrevista antes de la primera pregunta.
+
+--- [14]
+Ahora: he leído el contexto y clasificado el cambio; empiezo la entrevista de la spec. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** quieres poder apuntarte a una lista de espera de una sala que está ocupada en una franja. Hoy `src/app.js` solo sabe listar las salas libres (`libres`), crear una reserva semanal y cancelar. No hay una orden `reservar` para una sola vez ni nada que avise cuando una sala se libera. El proyecto es de uso personal (solo tú), así que no hay colas entre varios usuarios. Calculo unas 3 tareas, por lo que no propongo dividirla. Corrígeme si algo de esto no es así.
+
+Primero necesito entender el motivo: cuando la sala que quieres está ocupada, ¿qué quieres que pase después de apuntarte a la lista de espera?
+
+--- [16]
+Entendido: lo que quieres es dejar de mirar `libres` a mano. Eso reorienta el diseño, así que lo siguiente que decido contigo es cómo te enteras de que la sala se ha liberado.
+
+Un dato que he visto en `src/app.js`: las reservas son un array en memoria (`bookings`) que se reinicia en cada ejecución. Cualquier lista de espera tendría que guardarse en un fichero para sobrevivir entre una orden y la siguiente. Eso entra en la feature con cualquiera de las opciones.
+
+❓ **¿Cómo te enteras de que Norte se ha liberado?**
+1️⃣ **Aviso al cancelar y estado consultable.**
+- `esperar Norte lun 10:00-12:00` responde `Norte ocupada; en espera (1.º)`.
+- Cuando se cancela esa reserva, la salida de `cancelar` dice `Norte libre en lun 10:00-12:00: avisada la espera (1.º)`.
+- Un comando `esperando` lista tus esperas y su posición.
+- Coste: tienes que estar mirando la salida de `cancelar` o ejecutar `esperando`, así que sigue habiendo que consultar, pero ya no `libres` a ojo.
+
+2️⃣ **Comando que se queda vigilando.**
+- `esperar Norte lun 10:00-12:00` no termina.
+- Imprime `Norte libre` en cuanto se libera y sale.
+- Coste: dejas una terminal abierta. Como el estado hoy es de un solo proceso, necesitaría un fichero compartido y sondearlo, lo que complica más que la opción 1.
+
+3️⃣ **Correo al liberarse.**
+- Te llega un correo `Norte libre en lun 10:00-12:00`.
+- Coste: depende de `src/correo.js`, que es la fila 0008 del roadmap y aún no está hecha. Habría que hacerla antes o meterla aquí.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que no depende de algo sin construir (la 0008) ni de un proceso que se quede vivo. A cambio, no te avisa sola: te lo dice cuando cancelas o cuando preguntas.
+
+¿Cuál eliges?
+

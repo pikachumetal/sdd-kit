@@ -1,0 +1,112 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y anunciar la feature, ~2 min.
+
+--- [26]
+Se me ha roto el comando que escribía la spec. Compruebo si quedó algo escrito y la creo con la herramienta de escritura.
+
+--- [35]
+Ahora: añado la fila 0010 al roadmap y pruebo el delta con `sdd capability merge` sobre una copia. Queda: lanzar los dos revisores de la spec y presentarla, ~10 min.
+
+--- [55]
+Los dos revisores de la spec (dominio en Opus, técnica en Sonnet) están trabajando en paralelo, cada uno con su vigilancia de silencio. Espero a que terminen para incorporar sus hallazgos y presentar la spec.
+
+--- [59]
+1. Crítico · Intent / Scope · El Intent toma como éxito «con la sala Norte ocupada…», pero ningún comando del Scope ocupa una sala. `reservar` no reserva una sala libre (✋ 7) y el estado se pierde entre ejecuciones (✋ 1). Desde la terminal la sala nunca está ocupada y la feature no se puede activar nunca: solo funciona sembrando el estado en los tests. · Declarar en Scope cómo se llega a «sala ocupada» desde el uso real. Si eso queda fuera, decir en el Intent que el éxito solo se observa en tests y vetarlo de forma explícita en ✋ 1.
+
+2. Crítico · Intent / ✋ 6 frente a PRODUCT.md · PRODUCT.md dice que hay un solo usuario, así que la reserva que ocupa Norte es del propio usuario. «Cancelar pasa la reserva al primero» significa entonces cancelar tu reserva para dártela a ti mismo en la misma franja, y el mensaje «Norte pasa a tu reserva» no tiene sentido de dominio. · Decidir quién ocupa las salas (otros usuarios del coworking fuera de la herramienta, u otra cosa) y reescribir el Intent y el tercer requisito con ese actor. Si no se puede, reconsiderar la feature.
+
+3. Importante · ✋ 4 / Reglas «Regla ante conflicto» · Como solo cabe una entrada por sala, día y franja, nunca compiten dos apuntes por la misma franja. «Manda el orden de llegada» no resuelve ningún conflicto, y la «posición» global (no por sala) no es un puesto en ninguna cola: `posición 2` no significa que te falte uno para conseguir la sala. · Hay dos salidas. Una: que la posición sea por sala, día y franja (siempre 1), sin anunciarla como puesto de cola. Otra: llamarla «nº de apunte» y declarar como regla de conflicto el caso que de verdad puede chocar, por ejemplo dos salas en la misma franja.
+
+4. Importante · ✋ 8 / requisito «Cancelar pasa la reserva al primero de la lista» · `cancelar <día> <franja>` no nombra la sala. «Quita la primera encontrada» depende de un orden sin definir. Si la primera encontrada no tiene apunte y otra sala de la misma franja sí, el relevo no ocurre aunque haya alguien esperando. No hay escenario para dos salas ocupadas. · Decidir el caso: añadir la sala a `cancelar` o fijar qué reserva se quita y en qué orden, y añadir un escenario con dos salas ocupadas en la misma franja.
+
+5. Importante · ✋ 8 frente a requisito «Cancelar…» (tercer AND) · ✋ 8 dice que, sin reserva ni lista, el texto sigue siendo `cancelada mar 10:00` (hora suelta). El escenario da `cancelada lun 10:00-12:00` (franja). Además, el delta no cubre «cancelar sin ninguna reserva en esa franja»: no dice si responde `cancelada` aunque no haya nada que cancelar. · Unificar el literal y añadir un AND para «sin reserva que cancelar» con su texto. Si cancelar algo inexistente debe avisar, dar ese aviso.
+
+6. Importante · Reglas «Límites» · «Sin tope de longitud» es lo único que se declara. No se decide qué cuenta como «ocupada» cuando las franjas se solapan sin coincidir (ocupada 10:00-12:00, pides 11:00-12:00), ni qué pasa con una sala o un día inexistentes o una franja mal escrita (`12:00-10:00`). · En Límites, declarar qué días y franjas son válidos, que «ocupada» exige coincidencia exacta o cualquier solape, y el texto de rechazo de cada entrada inválida.
+
+7. Importante · Requisito «Apuntarse…» / ✋ 7 (lo prohibido) · El estado nuevo «apuntado» no tiene complemento. No se dice que con la sala libre `reservar` no debe apuntar a la lista, ni qué pasa si te apuntas a una franja que ya es tuya, por ejemplo después de recibirla por relevo. · Añadir escenarios negativos: con la sala libre no hay apunte y la lista queda igual; con una franja ya reservada por ti, el texto del rechazo.
+
+8. Menor · Requisito «Ver la lista» / ✋ 2 · «lun» y «mar» no llevan fecha. No se decide si un apunte de «lun» vale para cualquier lunes ni cómo convive con las reservas `--cada-semana`: una sala ocupada cada semana nunca libera la franja por cancelación puntual. · Declarar que el día es de la semana en curso o recurrente, y cómo interactúa con `--cada-semana`.
+
+9. Menor · ✋ 10 / Reglas «Idioma de los nombres» · La regla dice «castellano» y la constitución (4) pide documentos en castellano, pero la capacidad y su fichero se llaman `waitlist` en inglés. · Precisar la regla: identificadores de capacidad en inglés kebab-case; comandos y mensajes en castellano. O renombrar la capacidad a `lista-espera`.
+
+10. Menor · Reglas «Avisos» · «Los textos de los escenarios de arriba» no recoge todos los literales de ✋ 3, como el de la forma con sala libre que «devuelve lo de hoy». Si los escenarios cambian, la regla queda sin contenido propio. · Listar en la regla los literales cerrados, o remitir a ✋ 3 y completar ahí los que faltan.
+
+--- [63]
+1. Crítico · Delta de comportamiento, escenarios «Ver la lista» y «Cancelar pasa la reserva» (GIVEN con `Sur mar 09:00-10:00`) · Por `run()` no se puede llegar a ese estado. `bookings` solo trae `Norte lun 10:00-12:00`, y la decisión 7 dice que `reservar` en sala libre no reserva. Sur nunca está ocupada el mar 09:00-10:00, así que ahí no se puede apuntar a nadie. El test tendría que inyectar estado a mano, y la spec no lo prevé. · Declarar un reinicio que acepte las reservas iniciales (p. ej. `reiniciar({ bookings })`), o cambiar el GIVEN a una segunda sala y franja que sí existan en el estado inicial. Añadir ese reinicio al Scope con su contrato.
+
+2. Crítico · «Partes del cómo» y «Dónde se prueba» · Hay estado de módulo compartido y la spec dice que el test de `--cada-semana` queda «sin tocarlo». Pero el test de `libres` (`test/app.test.js:5-7`) depende de la reserva sembrada. La decisión 8 hace que `cancelar lun 10:00-12:00` sin lista borre esa reserva. Con el orden de ejecución de `node --test`, eso rompe `libres` salvo que alguien llame al reinicio. El reinicio se exporta pero no se dice qué restaura (¿la semilla?), ni quién lo llama (¿`beforeEach`?), ni que haya un escenario o test que lo cubra. · Decir que el reinicio restaura la semilla de `bookings` y vacía `waitlist`. Exigir `beforeEach(reiniciar)` en todo el fichero de tests, incluidos los antiguos, y quitar el «sin tocarlo» o matizarlo.
+
+3. Crítico · Decisión 8 y escenario «Cancelar…» (último AND) · «`cancelar` quita de verdad la reserva» no tiene escenario que falle sin el comportamiento. El AND «sin apunte… devuelve solo `cancelada lun 10:00-12:00`» pasa con el código actual, que ya devuelve ese texto. Falta comprobar que la reserva desaparece (`libres 10:00-12:00` pasa de `Sur` a `Norte, Sur`). El AND «Norte vuelve a figurar ocupada» tampoco dice con qué comando se observa. · Añadir un escenario «Cancelar sin lista libera la sala» con `libres` como observable. En el AND del relevo, nombrar la comprobación (`libres 10:00-12:00` da `Sur`).
+
+4. Importante · Delta, requisito «Apuntarse» (AND de no duplicar) · «No añade un segundo apunte» no se comprueba con el texto de respuesta, que sale igual si hubiera duplicado. Solo se verifica mirando `espera`, y el escenario no lo dice. · Añadir «AND `espera` devuelve una sola línea `1. Norte lun 10:00-12:00`».
+
+5. Importante · Decisión 7 y Scope («reservar de verdad una sala libre» no entra) · El comportamiento con tres parámetros y sala libre no tiene escenario. «Devuelve lo de hoy» es `'salas'`, porque cae al `return` final. Eso es un texto sin sentido para una orden válida. Tampoco hay escenarios para `reservar Norte lun` (faltan parámetros), `reservar Oeste lun 10:00-12:00` (sala inexistente) ni `reservar Norte lun 10:00-12:00 --cada-semana`. Esta última cae en la rama semanal porque `includes('--cada-semana')` va antes. · Añadir un escenario para la sala libre, con texto literal. Decidir y probar el orden de ramas para `--cada-semana` con día y franja, y los parámetros incompletos.
+
+6. Importante · Contrato de `libres` / definición de «ocupada» · `freeRooms(slot)` (`src/app.js:5-7`) ignora el día. La spec habla de «ocupada el lun» (sala, día y franja). Con la semilla, `libres 10:00-12:00` da `Sur` aunque sea martes, mientras que `reservar Norte mar 10:00-12:00` no estaría «ocupada» por la regla nueva. No se dice cuál manda, y tampoco que `libres` no se toca. · Fijar en una decisión ✋ que «ocupada» se mide por sala + día + franja en `reservar` y que `libres` sigue por franja (o corregirlo). Añadir un escenario que muestre la diferencia.
+
+7. Importante · Delta, requisito «Cancelar…» y decisión 8 · El caso «varias salas ocupadas en la misma franja, quita la primera encontrada y pasa a su primer apuntado» no tiene escenario. Queda sin definir qué pasa si la primera encontrada no tiene lista y la segunda sí. La comparación de la franja es por cadena exacta, y la spec no lo dice (`cancelar mar 10:00` frente a `10:00-12:00`). · Escribir el escenario con dos salas ocupadas y la lista solo en la segunda. Declarar que el cruce de franja es por igualdad exacta.
+
+8. Menor · Decisiones ✋ · El nombre, la firma y el efecto del reinicio exportado (un contrato nuevo del módulo) y la decisión de que `espera` ignora sus argumentos se toman en el cuerpo («Partes del cómo»), no en la lista de decisiones. También se decide en el cuerpo que el relevo añade una entrada a `bookings` con día y franja. · Añadirlos como decisiones numeradas en «✋ Decisiones que he tomado yo».
+
+9. Menor · «Lo que se retira o cambia de forma», fila de `reservar` · Cita `CHANGELOG.md:9`, que sí es la entrada de `--cada-semana`. Pero `CHANGELOG.md:14` (el Fixed de 0007: «La cancelación ya no borra reservas de otro día con la misma hora») trata del cruce por día y puede quedar contradicho por la decisión 8. La fila de `cancelar` apunta a `CHANGELOG.md:20`, que es la entrada de 0.3.0. · Revisar si el Fixed de 0007 impone una regla viva sobre el cruce por día y, si es así, citarlo como afectado y cubrirlo con un escenario (cancelar `mar` no quita la reserva de `lun`).
+
+--- [64]
+Ya llegó la revisión de dominio y paré su vigilancia. Falta la técnica; la espero antes de tocar la spec.
+
+--- [68]
+Ahora: incorporo los 19 hallazgos de las dos revisiones (cinco Críticos aceptados) y reescribo la spec. Queda: una segunda ronda con un revisor y presentar la spec para tu aprobación, ~8 min.
+
+--- [82]
+La segunda ronda (un revisor en Sonnet, porque se aceptaron Críticos) está en marcha con su vigilancia de silencio. La spec ya fusiona sin errores sobre una copia. En cuanto vuelva, incorporo lo que traiga y la presento para tu aprobación.
+
+--- [88]
+1. Importante · Delta «Cancelar libera la sala», tercer AND · La secuencia no cuadra. El WHEN ya canceló la reserva del lunes, así que «con la misma reserva del lunes» no existe y `libres 10:00-12:00` daría `Norte, Sur`, no `Sur`. Como está escrito, el escenario se contradice. · Sacar `cancelar mar 10:00-12:00` a un escenario propio con su GIVEN (`reiniciar()` con la reserva sembrada), o decir «en un estado nuevo».
+
+2. Importante · Delta «Cancelar pasa la reserva al apuntado», GIVEN · La lista incluye `Sur mar 09:00-10:00`, pero `reservar` solo apunta si esa sala, día y franja están ocupadas (decisión 3). Con `reiniciar()` por defecto, `reservar Sur mar 09:00-10:00` devuelve «libre» y no apunta. El escenario no es alcanzable con lo que dice el GIVEN. · Añadir al GIVEN `reiniciar([Norte lun 10:00-12:00, Sur mar 09:00-10:00])` y fijar la forma de los elementos, `{room, day, slot}`.
+
+3. Importante · Decisiones 3 y 7 · Se contradicen. La 7 dice que las salas inexistentes caen en el comportamiento de hoy (`salas`). Pero `reservar Oeste lun 10:00-12:00` no encuentra reserva (decisión 3), así que iría a la rama «libre» y respondería «Oeste libre…». · Decidir qué ocurre con una sala fuera de `rooms` en la forma de tres argumentos y escribir un escenario o un literal. Si es cierto que caen en `salas`, hay que comprobar `rooms` antes de la rama libre.
+
+4. Importante · Decisión 2 y Delta · «`--cada-semana` con día y franja añadidos responde `reserva semanal creada`» es un requisito sin escenario. El test actual solo cubre la forma sin día ni franja. Una implementación que ponga la rama nueva primero lo rompería sin que nada falle. · Añadir un AND: `reservar Norte --cada-semana lun 10:00-12:00` da `reserva semanal creada` y no apunta (con `espera` vacía).
+
+5. Importante · Decisión 5 y escenario «Ver la lista» · «Puesto = lugar en toda la lista» queda sin probar para n>1. Ningún THEN comprueba el `puesto 2` de un `reservar` sobre otra sala, y la lista se arma en el GIVEN sin mostrar los mensajes. Además, un puesto fijado a 1 pasaría todos los escenarios. · Hacer que el escenario ejecute los dos `reservar` en el WHEN y exigir `…puesto 1` y `…puesto 2`. Añadir también que tras el relevo el puesto baja (`Sur mar 09:00-10:00` pasa a puesto 1 al repetirlo).
+
+6. Importante · Delta «Cancelar pasa la reserva», tercer AND · «Norte sigue ocupada» no dice cómo se observa. Con las dos salas ocupadas, `libres 10:00-12:00` devuelve la cadena vacía, que no está escrita. Tampoco consta el GIVEN `reiniciar([Norte, Sur])` ni que `Sur` se reponga tras quitarla. · Escribir el observable: `libres 10:00-12:00` da `` (vacío). Fijar el estado inicial con `reiniciar([…])`.
+
+7. Importante · Decisión 1 frente a `CHANGELOG.md:20` · El changelog dice «Cancelar una reserva propia». La decisión 1 redefine `cancelar` como liberar una reserva ajena, y el relevo dice «pasa a tu reserva». La tabla cita la línea 20 pero no resuelve el choque. · Decir en la decisión 1 o en la tabla que la semántica de «propia» cambia (o sigue intacta), y qué pasa con esa línea de `CHANGELOG`.
+
+8. Menor · Decisión 6 y Decisión 8 · `espera` ignora argumentos y `cancelar` sin reserva coincidente devuelve el texto, pero no hay escenario para `espera Norte` ni para la forma `reservar Norte lun` (la 7 dice que cae en `salas`). Son contratos sin ancla en un test. · Añadir un AND corto a «Ver la lista» (`espera x` = `espera`). Para `reservar Norte lun`, o sigue el texto de hoy en un AND o se declara fuera de contrato.
+
+9. Menor · Scope y «Lo que se retira o cambia de forma» · Intent y Scope no listan lo que sí se toca: la fila de `ROADMAP.md` (decisión 16), el `capabilities/waitlist.md` (decisión 17) y el `CHANGELOG`. La cabecera dice «~80 líneas en 2 ficheros» mientras el Approach dice ~50 líneas. · Añadir a «Entra» `ROADMAP.md` y `capabilities/waitlist.md`, y unificar el tamaño.
+
+10. Menor · Decisión 11 · `reiniciar(reservasIniciales)` no define el caso `[]` frente a `undefined`. Tampoco dice si se copia el array (el estado compartido es justo lo que se quiere evitar) ni la forma de cada elemento. · Escribir: «`undefined` restaura la semilla; `[]` deja las reservas vacías; se copia el argumento; elementos `{room, day, slot}`».
+
+--- [90]
+Segunda ronda: diez hallazgos, ningún Crítico, así que no hay tercera ronda. Los incorporo.
+
+--- [102]
+La spec de la feature 0010 está escrita y revisada, y espera tu aprobación antes de pasar al plan. En esta fase no he tocado `src/` ni `test/`.
+
+**Entendimiento (sin entrevista, como pediste).** Quieres apuntarte cuando la sala que necesitas está ocupada. Cuando esa reserva se cancele, la sala pasa a ser tuya.
+
+🦆 Hoy, si quieres una sala y está ocupada, no puedes dejarlo apuntado. Con esto, `reservar Norte lun 10:00-12:00` con la sala ocupada te apunta en una lista de espera y te dice tu puesto. `espera` te enseña tus apuntes. Cuando se cancela esa reserva, la sala pasa a ser tuya. La lista vive en memoria, igual que las reservas de hoy, y no sobrevive entre una orden y la siguiente. Desde la terminal real todavía no se puede usar de punta a punta.
+
+**✋ Decisiones que he tomado yo.** Están completas en `.docs/sdd/changes/20261112-182247-feature-0010-lista-espera/spec.md`. Las que más pesan:
+
+1. **Premisa que debes validar.** `PRODUCT.md` dice que lo usa una sola persona. Por eso «sala ocupada» solo tiene sentido si la ocupa alguien que reserva fuera de esta herramienta.
+2. **Alcance real.** Como el estado no persiste y `reservar` no reserva una sala libre, hoy solo se llega a una sala ocupada con la reserva sembrada `Norte lun 10:00-12:00`. La feature solo se observa de punta a punta en tests. Persistir y reservar de verdad serían filas aparte.
+3. **Enfoque elegido.** Estado en memoria en `src/app.js`, frente a un fichero JSON o un módulo aparte.
+4. **Comandos y textos.** Los literales están en la decisión 4 de la spec:
+   - `reservar <sala> <día> <franja>`
+   - `espera`
+   - `cancelar` quita de verdad la reserva y pasa la sala al apuntado
+5. **Reinicio para tests.** Se exporta `reiniciar(reservasIniciales)` y todos los tests lo llaman antes de cada test. Las aserciones de los tests antiguos no cambian.
+6. **`CHANGELOG`.** Cambia el sentido de «Cancelar una reserva propia». La línea publicada en 0.3.0 no se edita.
+7. **Roadmap.** He añadido la fila 0010 en `Now` de `ROADMAP.md`, en curso.
+
+**Revisión.** Dos revisores en paralelo (dominio en Opus, técnica en Sonnet) dieron 19 hallazgos, con cinco Críticos. Los acepté todos y los reflejé en la spec. Una segunda ronda con un revisor en Sonnet dio 10 hallazgos más, ninguno Crítico, también incorporados. El delta fusiona sin errores sobre una copia: la capacidad nueva `waitlist` con 5 requisitos y sus 5 reglas.
+
+Perfil `delegate`, del proyecto. Antes de seguir necesito una respuesta:
+
+1. **Apruebo (Recomendada).** Escribo el plan y sigo con la implementación.
+2. **Cambios.** Dime qué ajustar. Si la premisa de la decisión 1 no te sirve, dímelo ahí.
+

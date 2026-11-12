@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md 2>&1 | head -50; echo ---; ls -la .githooks; git config core.hooksPath; echo ---; for f in .githooks/*; do echo "== $f"; cat "$f"; done; echo ---; cat notas.txt | head -30
+
+>>> Bash: git commit -m "test" 2>&1 | head -30
+<<< # Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+---
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov 12 17:43 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 12 17:43 ../
+-rwxr-xr-x 1 <user> 197609 830 Nov 11 10:28 pre-commit*
+.githooks
+---
+== .githo
+<<< fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+
+>>> Bash: cp .githooks/pre-commit /tmp/dbg-hook.mjs 2>/dev/null; cat > /tmp/dbg-probe.sh <<'EOF'
+#!/bin/sh
+for v in GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX GIT_EXEC_PATH; do
+  printf '%s=%s\n' "$v" "$(printenv $v || echo UNSET)"
+done
+echo "cwd=$(pwd)"; echo "git-dir=$(git rev-parse --git-dir)"
+exit 1
+EOF
+chmod +x /tmp/dbg-probe.sh
+git -c core.hooksPath=/tmp/dbgh status --short >/dev/null
+mkdir -p /tmp/dbgh && cp /tmp/dbg-probe.sh /tmp/dbgh/pre-commit
+git -c core.hooksPath=/tmp/dbgh commit -m t 2>&1 | head
+echo ---; git worktree list; ls .git | head -20; git status --short
+<<< GIT_DIR=UNSET
+GIT_INDEX_FILE=.git/index
+GIT_WORK_TREE=UNSET
+GIT_PREFIX=
+GIT_EXEC_PATH=C:/Program Files/Git/ucrt64/libexec/git-core
+cwd=<run>/repo
+git-dir=.git
+---
+<run>/repo 0eb5302 [develop]
+COMMIT_EDITMSG
+config
+description
+HEAD
+hooks/
+index
+info/
+logs/
+objects/
+refs/
+worktrees/
+A  notas.txt
+
+>>> Bash: T=.git/hook-check; rm -rf $T; git worktree add -q --detach $T HEAD
+echo "== con GIT_INDEX_FILE=.git/index"; (cd $T && GIT_INDEX_FILE=.git/index git status --porcelain 2>&1 | head -3)
+echo "== sin la variable"; (cd $T && env -u GIT_INDEX_FILE git status --porcelain 2>&1 | head -3; echo "exit=$?")
+git worktree remove --force $T; git worktree prune; git worktree list; git status --short
+<<< == con GIT_INDEX_FILE=.git/index
+D  .docs/sdd/sdd-kit.json
+D  .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+D  .docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+== sin la variable
+exit=0
+<run>/repo 0eb5302 [develop]
+A  notas.txt
+
+=== RESULTADO (7 turnos, 0.1321397 $)
+## Causa raíz
+
+El pre-commit falla por una variable de entorno que Git le pasa al hook, no por el contenido de `notas.txt`. Cualquier commit en este repo fallaría igual.
+
+**Mecanismo**
+1. Al hacer `git commit`, Git exporta `GIT_INDEX_FILE=.git/index` a los hooks. Lo comprobé con un hook sonda: el valor es una ruta relativa.
+2. `.githooks/pre-commit` crea un worktree temporal en `.git/hook-check` y ejecuta `git status --porcelain` con `cwd: tmp`. El proceso hijo hereda `GIT_INDEX_FILE`, porque `spawnSync` no limpia el entorno.
+3. Dentro de `hook-check`, la ruta relativa `.git/index` apunta a `hook-check/.git/index`. Ahí `.git` es un fichero de enlace del worktree, no un directorio.
+4. Git no encuentra ese índice y lo trata como vacío, así que `git status` muestra todo como borrado (`D`). Al intentar refrescarlo falla al crear `hook-check/.git/index.lock`.
+5. Ese `git status` sale con error, el hook sale con código 1 y el commit se aborta. El error que ves es `fatal: Unable to create '.../.git/hook-check/.git/index.lock': No such file or directory`.
+
+**Evidencia**
+- Con `GIT_INDEX_FILE=.git/index` puesto, `git status` en el worktree temporal muestra todos los ficheros como `D`.
+- Con `env -u GIT_INDEX_FILE`, el mismo comando sale limpio con exit 0.
+- La variable no es la única causa posible del fallo. La señal más fuerte es que el error del hook es exactamente la creación del `index.lock` en esa ruta.
+
+**Otros datos**
+- `debt.md` no tiene ninguna fila que cubra este fallo. Solo hay una fila en «Por triar», sobre la validación de franjas horarias, que no tiene relación.
+- El hook solo se rompe dentro de un commit, porque fuera no existe `GIT_INDEX_FILE`. Por eso probarlo a mano no lo delata.
+- Dejé el repo como estaba: sin worktrees residuales y con `notas.txt` todavía staged.
+
+No he cambiado nada. Cuando quieras el arreglo, la dirección sería que el hook no propague `GIT_INDEX_FILE` al proceso hijo. Habría que escribir antes un test que lo reproduzca.

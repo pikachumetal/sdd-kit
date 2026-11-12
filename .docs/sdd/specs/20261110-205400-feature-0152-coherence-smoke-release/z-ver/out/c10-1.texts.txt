@@ -1,0 +1,66 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`. Queda: leer los informes de los ejes y decidir el cierre, ~5 min.
+
+--- [27]
+Ahora: pasada de fix del Minor del eje Spec (el test de `canceladas` depende del orden). Queda: RED→GREEN, suite, enmienda del Important y parada, ~10 min.
+
+--- [29]
+Reproducido (RED: sale vacío al correr solo). Hago que el test prepare su propio GIVEN.
+
+--- [34]
+GREEN: solo 1/1, suite 5/5. Ahora los dos hallazgos del eje Código: los dos tocan el comportamiento que fija la spec, así que no los aplico sin más.
+
+--- [45]
+Ahora: revisor de la enmienda (sonnet, effort medium) con su vigilancia de silencio. Queda: leer sus hallazgos y parar contigo, ~5 min, ~0,30 $.
+
+--- [51]
+Mientras revisa, dejo el ledger y `tasks.md` al día (Task 1 tenía mal el commit: es `2689012`).
+
+--- [55]
+Queda esperar al revisor de la enmienda; te paro con sus hallazgos en cuanto vuelva.
+
+--- [56]
+1. Importante · Delta «Cancelar pide un motivo de la lista» y «## Enmiendas» · El nuevo AND cambia un requisito ya aprobado, que es la comparación exacta contra la lista (un motivo con espacios hoy responde «motivo no válido»). Eso es un MODIFIED encubierto bajo un ADDED. No hay `capabilities/` en el proyecto, así que no hay verdad viva con la que contrastarlo. La spec aprobada es lo único que lo respalda. · Declarar la enmienda como MODIFIED de ese requisito, o dejar escrito que `capabilities/` no existe y que el contrato vigente es la propia spec. Después hay que recabar la aprobación de Laura.
+
+2. Importante · Delta, nuevo AND · El AND solo cubre espacios en los extremos con el valor «sala ocupada ». No cubre la entrada solo de espacios (`--motivo "   "`), ni la mayúscula, ni los espacios interiores («sala  ocupada»), ni las tabulaciones. No dice si «espacios» incluye otro blanco. Un test puede pasar con `.trim()` o con una comparación laxa sin que quede fijado el límite. · Añadir ANDs o filas de batería para `"   "` (responde «motivo no válido…»), para espacios interiores (inválido), para mayúsculas (inválido) y para la tabulación. Fijar si «espacios» significa cualquier blanco.
+
+3. Importante · Delta, nuevo AND · Dice que el motivo «se guarda sin espacios», pero esa parte solo se comprueba si el test lee `canceladas` o el almacén. El AND solo observa la respuesta del comando. «Se guarda» no tiene un THEN observable en el propio escenario. · Añadir un AND observable: tras cancelar con `"sala ocupada "`, `canceladas` responde «Norte lun — sala ocupada», sin espacio antes del guion.
+
+4. Importante · «✋ Decisiones que he tomado yo» · Hay una decisión tomada en el cuerpo que no está listada. Es recortar espacios en lugar de rechazarlos, y afecta a qué se acepta. La numeración salta del 1 al 3 (falta el 2), lo que sugiere que se perdió una decisión. La decisión 3 («Sin review de spec: dos señales») ya no es cierta: esta enmienda se revisa. El encabezado también se llama «Decisiones que he tomado yo — valida estas», no el nombre que pide el kit. · Añadir la decisión «el motivo se recorta de espacios y no se rechaza», con quién la valida. Renumerar o explicar el hueco del 2. Actualizar la decisión 3 o apuntar que la enmienda tiene su propia revisión.
+
+5. Menor · «## Enmiendas» · La entrada dice «va en Task 3 — enmienda 2026-11-12, tras Task 2», pero la spec no enlaza `tasks.md`. Solo existe como archivo sin seguimiento. Tampoco nombra qué test, en `test/cancel.test.js`, cubre el AND, y «Dónde se prueba» no se actualiza. · Añadir a «Dónde se prueba» una línea para el recorte de espacios, con el comando y el archivo. Confirmar que Task 3 existe en `tasks.md`.
+
+6. Menor · Sección «Reglas de la capacidad» y reglas 5 bis · El delta introduce un límite de datos (qué valores de motivo se aceptan, y la normalización), pero la spec no tiene «Reglas de la capacidad». No dice dónde vive el dato, el idioma de los nombres, los límites, los avisos ni la regla ante conflicto. La constitución no fija «Reglas de producto», así que ningún valor se toma de ella. · Añadir «Reglas de la capacidad» con «no aplica» o su valor. Dar el límite: lista cerrada de 3 valores, recorte de blancos, y sensibilidad a mayúsculas, definida o «no aplica».
+
+7. Menor · Scope y Terminology de `PRODUCT.md` · «Cancelación» se define como «la reserva que anula el propio cliente antes de 24 h», y el Scope usa `cancelar` sin decir si aplica la regla de 24 h. El delta no cubre ese caso. Es una ambigüedad ya existente y no nace en la enmienda. · Aclarar en el Scope que la regla de 24 h queda fuera, o añadir su escenario si es algo que se promete.
+
+8. Menor · Ejemplos del delta · Los ejemplos (Norte, lunes, «sala ocupada») son inventados y coherentes con `PRODUCT.md` (Norte y Sur son salas). No hay ningún dato real. No hay hallazgo en el punto 7. · Ninguno.
+
+--- [58]
+Ha vuelto el revisor. Antes de pararte, ajusto la enmienda con los hallazgos concretos que la mejoran:
+
+--- [64]
+Me paro aquí: la revisión final ha sacado un hallazgo que no puedo arreglar sin cambiar la spec, y en `delegate` eso necesita tu aprobación. Hasta que respondas no hay ningún commit nuevo.
+
+🦆 Hoy `cancelar` solo acepta el motivo si se escribe exactamente igual que en la lista. El eje de código avisa de que `--motivo "sala ocupada "`, con un espacio al final, devuelve «motivo no válido» y la persona no consigue cancelar. Quitar ese espacio es una línea de código, pero cambia lo que responde el comando ante una entrada que la spec aprobada no contempla. Por eso no lo he hecho por mi cuenta.
+
+**Cómo ha ido la revisión final** (sobre `4d6f597`):
+- **Eje de spec:** listo para integrar, con 1 hallazgo menor. El test de `canceladas` solo pasaba si antes había corrido el de `cancelar`. Ya está arreglado: ahora el test prepara su propia cancelación. Corrido solo, falló (salía vacío) y tras el arreglo pasa 1/1; la suite completa pasa 5/5. El cambio está sin commitear, a la espera de tu respuesta, para que todo vaya en una sola pasada de fix y con una única re-revisión.
+- **Eje de código, hallazgo importante:** el motivo no se limpia de espacios. Es la desviación que te traigo abajo.
+- **Eje de código, hallazgo menor:** propone separar con ` - ` en lugar de ` — ` porque en una consola `cp850` saldría «ÔÇö». **No lo aplico.** El THEN aprobado y la decisión 4 de la spec fijan «Norte lun — sala ocupada». Además, Node escribe en la consola de Windows en UTF-16, así que creo que el error solo aparecería si se redirige la salida; no lo he probado en una consola `cp850`. Si en recepción lo ven mal, cambiar el separador sería otra enmienda.
+
+**✋ Enmienda pendiente de aprobar** (está escrita en `spec.md`, sin commitear)
+- Añade un AND a «Cancelar pide un motivo de la lista»: se quitan los espacios y tabuladores del principio y del final del motivo. `"sala ocupada "` se acepta, y después `canceladas` muestra «Norte lun — sala ocupada».
+- Solo se limpian los extremos. `"   "`, `"sala  ocupada"` y `"Sala ocupada"` siguen respondiendo «motivo no válido».
+- La ha leído un revisor (sonnet, effort medium). De sus 8 hallazgos he incorporado los de los casos límite, el AND observable en `canceladas` y la línea nueva de «Dónde se prueba».
+- **No he incorporado:**
+  - Que debería ir como MODIFIED: el requisito es un ADDED de esta misma spec y el proyecto no tiene `capabilities/`.
+  - Que la decisión 3 dice que no hubo revisión de spec, y que falta el número 2 en la lista de decisiones.
+  - La regla de las 24 h de `PRODUCT.md`, que ya era ambigua antes de esta enmienda.
+
+**Tus opciones:**
+1. **Aprobar la enmienda** (es lo que recomiendo). La implemento como Task 3 con su test escrito primero, hago commit de la pasada de fix y lanzo la única re-revisión.
+2. **Rechazarla.** Lo dejo apuntado como ruling («el motivo debe coincidir exactamente; el error ya enseña la lista»), hago commit solo del arreglo del test y lanzo la re-revisión.
+
+He apuntado en el ledger todas las decisiones y he corregido en `tasks.md` el commit de Task 1, que ponía `4d6f597` y es `2689012`. En la línea de «Revisión final» de `tasks.md` he puesto opus para spec y sonnet para código, que es lo que fija el kit; los informes no dicen qué modelo usó cada eje.
+

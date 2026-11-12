@@ -1,0 +1,160 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: export|exporta
+
+>>> Glob: .docs/sdd/**/*.md
+<<< Found 15 files
+.docs\sdd\steering\debt.md
+ROADMAP.md
+.docs\sdd\steering\architecture.md
+PRODUCT.md
+src\export\index.js
+src\export\writer.js
+test\export.test.js
+src\cli.js
+src\export\filter.js
+src\export\ics.js
+src\bookings\repository.js
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+README.md
+.docs\sdd\steering\constitution.md
+<<< .docs\sdd\steering\constitution.md
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\steering\architecture.md
+.docs\sdd\steering\debt.md
+
+>>> Read: <run>\repo\src\export\index.js
+<<< 1	import { loadBookings } from '../bookings/repository.js';
+2	import { bookingsBySlot } from './filter.js';
+3	import { toIcs } from './ics.js';
+4	import { writeExport } from './writer.js';
+5	
+6	export function exportMonth(month) {
+7	  return writeExport(month, toIcs(bookingsBySlot(loadBookings(), month)));
+8	}
+9	
+
+>>> Read: <run>\repo\src\export\filter.js
+<<< 1	export function bookingsBySlot(bookings, month) {
+2	  return bookings
+3	    .filter((booking) => booking.day.startsWith(month) && booking.status !== 'cancelled')
+4	    .sort((a, b) => `${a.day} ${a.slot}`.localeCompare(`${b.day} ${b.slot}`));
+5	}
+6	
+
+>>> Read: <run>\repo\src\export\ics.js
+<<< 1	const COWORKING_OFFSET = '+02:00';
+2	
+3	function toUtcStamp(day, time) {
+4	  const utc = new Date(`${day}T${time}:00${COWORKING_OFFSET}`).toISOString();
+5	  return utc.replace(/[-:]/g, '').slice(0, 15);
+6	}
+7	
+8	function toEvent(booking) {
+9	  const [start, end] = booking.slot.split('-');
+10	  return [
+11	    'BEGIN:VEVENT',
+12	    `SUMMARY:Sala ${booking.room}`,
+13	    `DTSTART:${toUtcStamp(booking.day, start)}`,
+14	    `DTEND:${toUtcStamp(booking.day, end)}`,
+15	    'END:VEVENT',
+16	  ].join('\r\n');
+17	}
+18	
+19	export function toIcs(bookings) {
+20	  return ['BEGIN:VCALENDAR', 'VERSION:2.0
+
+>>> Read: <run>\repo\src\export\writer.js
+<<< 1	import { mkdirSync, writeFileSync } from 'node:fs';
+2	
+3	export function writeExport(month, ics) {
+4	  mkdirSync('exports', { recursive: true });
+5	  const path = `exports/${month}.ics`;
+6	  writeFileSync(path, ics);
+7	  return path;
+8	}
+9	
+
+>>> Read: <run>\repo\.docs\sdd\steering\architecture.md
+<<< 1	# Architecture — exportes
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Entrada: `src/cli.js`; exportación en `src/export/`; datos en `data/bookings.json`.
+6	- Tests: `node --test` (carpeta `test/`).
+7	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+8	
+
+>>> Grep: export
+<<< 1:import { exportMonth } from './export/index.js';
+2-
+3-const [command, ...args] = process.argv.slice(2);
+4-
+5:if (command === 'exportar') {
+6-  const month = args[args.indexOf('--mes') + 1];
+7:  console.log(exportMonth(month));
+8-}
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+<<< 1	---
+2	id: 20261005-090000-feature-0013-export-by-room
+3	feature: 0013
+4	title: Exportar solo las reservas de una sala
+5	mode: lite
+6	status: draft
+7	created: 2026-10-05
+8	---
+9	
+10	# Spec — Exportar solo las reservas de una sala
+11	
+12	## Decisiones que he tomado yo — valida estas
+13	
+14	1. El parámetro de sala es opcional: sin él, la exportación sigue sacando las dos salas.
+15	2. El fichero lleva la sala en el nombre para no pisar la exportación del mes completo.
+16	
+17	## Intent
+18	
+19	Hoy `exportar --mes` vuelca todas las bookings del mes al `.ics`. Quien solo usa la sala Norte importa ta
+
+>>> Grep: export
+<<< 1:# Deuda técnica — exportes
+
+=== RESULTADO (13 turnos, 0.125382 $)
+La exportación convierte las reservas de un mes en un fichero de calendario `.ics`. Lo que sigue sale del código, salvo donde digo que es una inferencia mía.
+
+## Flujo
+
+Se lanza con `exportar --mes <AAAA-MM>`, por ejemplo `exportar --mes 2026-03`.
+
+1. **`src/cli.js`**: lee el valor que sigue a `--mes` y llama a `exportMonth(month)`. Después imprime la ruta del fichero generado.
+2. **`src/export/index.js`**: encadena cuatro pasos, `loadBookings()` → `bookingsBySlot()` → `toIcs()` → `writeExport()`.
+3. **`loadBookings`** (`src/bookings/repository.js`): carga las reservas de `data/bookings.json`. No he abierto este fichero, solo veo la llamada.
+4. **`src/export/filter.js`** (`bookingsBySlot`):
+   - se queda con las reservas cuyo `day` empieza por el mes pedido;
+   - descarta las que tienen `status === 'cancelled'`;
+   - las ordena por `día + franja`.
+5. **`src/export/ics.js`** (`toIcs`):
+   - genera un `VCALENDAR` 2.0 con un `VEVENT` por reserva y saltos de línea `\r\n`;
+   - el título es `Sala <room>`;
+   - la franja `slot` tiene formato `HH:MM-HH:MM`;
+   - `DTSTART` y `DTEND` se pasan de la hora local del coworking (`+02:00`, fijo en el código) a UTC.
+6. **`src/export/writer.js`** (`writeExport`): crea la carpeta `exports/` si no existe y escribe `exports/<mes>.ics`. Devuelve la ruta.
+
+## Cosas a tener en cuenta
+
+- **Inferencia mía:** el desfase `+02:00` está fijo. Si coincide con el horario de verano, las reservas de invierno saldrían una hora desplazadas. No lo he probado.
+- Los eventos no llevan `UID` ni `DTSTAMP`. Tampoco lo he comprobado contra el estándar ni contra ningún cliente de calendario.
+- `cli.js` no valida `--mes`. Si falta, `args.indexOf('--mes') + 1` vale 0 y se toma el primer argumento como mes.
+- Cada exportación sobrescribe el fichero del mismo mes.
+
+## Qué dicen los documentos
+
+- `architecture.md` solo dice que la exportación vive en `src/export/` y que no hay dependencias externas.
+- Hay un spec en borrador, `feature-0013-export-by-room`, que propone un flag `--sala` y un fichero `exports/2026-03-norte.ics`. **El código actual no lo tiene implementado.**
+- También existe el spec `feature-0012-ics-export`, que no he abierto.
+
+¿Quieres que profundice en algo, como el desfase horario, el spec 0012 o los tests de `test/export.test.js`? Si alguno de esos puntos te parece un problema que quieras arreglar, dímelo y lo paso al roadmap.

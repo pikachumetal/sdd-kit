@@ -1,0 +1,68 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`. Queda: leer los informes, aplicar el cierre y llegar al siguiente stop, ~5 min.
+
+--- [10]
+Los informes están dentro del repo, en `.temp/sdd/plan/`.
+
+--- [30]
+Sigo con la revisión final de la 0010. La revisión de spec salió limpia y la de código trae un hallazgo Important que cambia la spec. He dejado la enmienda escrita en `spec.md` y un revisor de spec la está leyendo ahora. En cuanto vuelva, paro con 🦆 y ✋.
+
+--- [32]
+1. Crítico · Enmiendas / Aprobaciones / frontmatter · La enmienda dice «propuesta, sin aprobar», pero el AND ya está en el cuerpo del Delta (línea 60) y el frontmatter y la tabla siguen en `approved` y «aprobada» (Laura, 2026-10-08). El implementador la tomará como aprobada, y la aprobación de Laura no cubre este cambio. · Reabre la spec a `draft` o marca la enmienda como pendiente fuera del Delta, y recoge la re-aprobación del dev-lead antes de implementar.
+
+2. Crítico · Delta, listado de canceladas (AND de `--desde`) · El AND cuelga del WHEN `canceladas` (sin `--desde`), así que no tiene un WHEN propio. Tampoco dice si existe alguna cancelación. Un test sin `--desde` y sin canceladas «no lista nada» y pasa sin el comportamiento. · Escribe un escenario aparte con GIVEN una cancelación existente (Norte lun, «sala ocupada»), WHEN `canceladas --desde` y THEN la salida es exactamente «indica un día: lun, mar, mié, jue, vie» sin la línea «Norte lun — …».
+
+3. Importante · Scope / Delta · El Scope promete «`--desde <día>` para listar desde ese día», pero ningún escenario cubre `--desde` con un día válido. El caso `--desde` con un día fuera de la lista (sáb, dom, «xyz», cadena vacía) queda sin cubrir, y es el hueco que la enmienda deja abierto. · Añade un escenario para `--desde mar` (qué incluye y qué excluye) y otro para un día inválido, con su mensaje. Si el mensaje es el mismo, dilo; si no, declara que queda fuera.
+
+4. Importante · Delta (ADDED de «Cancelar pide un motivo») · «Sin `--motivo` responde error» cambia el comportamiento vigente, porque hoy `cancelar <sala> <día>` funciona sin motivo (carril patch 0007). Es un MODIFIED sin declarar y rompe a quien cancelaba sin motivo. Lo mismo vale para el listado, que ahora cambia de salida. · Pasa estos requisitos a MODIFIED con el texto anterior, o justifica por qué son ADDED, y declara el cambio de contrato.
+
+5. Importante · Capacidades · La spec dice «Modificadas: `bookings`», pero no existe `.docs/sdd/capabilities/` y no hay una verdad viva contra la que comprobar contradicciones. El Delta no tiene con qué contrastar el MODIFIED. · Confirma si `bookings` existe. Si no, decláralo como capacidad nueva (ADDED) o crea su base antes de modificarla.
+
+6. Importante · «Decisiones que he tomado yo» · La numeración salta de 1 a 3, así que falta la decisión 2. Además, la decisión de que `--desde` sin día avise en vez de listar todo no está registrada, y tampoco que `--desde` sin día sea un error y no un listado vacío con aviso. · Añade la decisión (fallo frente a listado completo, mensaje, días permitidos) y renumera.
+
+7. Importante · Delta (5 bis: nombres, límites, avisos) · El mensaje fija los días «lun…vie» y no dice nada de la tilde de «mié» (¿se acepta `mie`?), de mayúsculas, de sáb/dom ni de si el aviso va a stdout o stderr con código de salida distinto de 0. El gate no puede comprobar un aviso cuyo canal no está definido. · Especifica el canal, el código de salida y la normalización de la entrada (tildes y mayúsculas).
+
+8. Menor · Enmiendas · La entrada cita `src/app.js:20-23` y «hallazgo Important del eje Código». Es una referencia a código dentro de la spec, que se desfasa, y no explica el valor de negocio. · Quita la referencia a líneas y deja el motivo: «`--desde` vacío listaba todo sin avisar».
+
+9. Menor · Intent / Delta · El Intent solo habla del motivo, no del filtro por día. La enmienda añade alcance (validar `--desde`) que el Intent no menciona. Además, «otro» no admite texto libre, y el Delta no lo dice. · Añade al Intent la frase del listado filtrable y aclara que «otro» no lleva texto.
+
+10. Menor · PRODUCT.md (Terminology) · «Cancelación» se define como la que anula el propio cliente antes de 24 h, pero la spec no menciona esa regla y el mensaje usa «cancelada» sin distinguirla de «anulada» (0011). · Aclara en el Scope que `cancelar` no valida las 24 h, o enlaza con la regla vigente.
+
+--- [34]
+🦆 La revisión final de la 0010 deja un solo hallazgo que hay que arreglar, y arreglarlo cambia la spec. Por eso paro aquí sin tocar el código.
+
+- **Qué falla:** `canceladas --desde` sin día no avisa. Lista todas las canceladas, como si no hubiera filtro, y quien olvidó el día cree que ve el listado filtrado. Está en `src/app.js:20-23`, donde `parseSince` nunca marca `missing`.
+- **Por qué paro:** la spec aprobada no dice qué debe pasar en ese caso. Corregirlo añade un comportamiento nuevo, la respuesta «indica un día: lun, mar, mié, jue, vie» y que no liste nada. Eso es una enmienda de spec, y la aprobación de Laura no la cubre.
+
+**Estado de la revisión**
+- **Eje Spec:** limpio. Solo trae un menor que dejo diferido: el test `canceladas` solo pasa si antes corrió el de `cancelar`, porque depende del orden (`test/cancel.test.js:13`).
+- **Eje Código:** el Important de arriba.
+- **Arquitectura:** no sale, según el plan.
+- **Tests:** `node --test` da 5/5 en verde sobre `8227844`. No he corrido nada tras la enmienda, porque no hay código nuevo.
+
+**Sin commitear**
+- La enmienda propuesta, escrita en su sitio en `spec.md`: un AND nuevo en el listado y su línea en «Enmiendas», marcada «sin aprobar».
+- En `tasks.md`, la línea `Revisión final:`.
+
+El revisor de la enmienda (sonnet) devolvió 10 hallazgos. Estos son los que importan:
+- **Crítico, estado de la spec:** el AND ya está en el cuerpo del Delta, pero el frontmatter sigue en `approved` y la tabla en «aprobada». Mientras no se re-apruebe, no debe implementarse.
+- **Crítico, escenario sin WHEN:** el AND cuelga del WHEN `canceladas`, así que no tiene el suyo. Un test podría pasar sin el comportamiento. Pide un escenario aparte: GIVEN una cancelación existente, WHEN `canceladas --desde`, THEN exactamente el aviso y sin listado.
+- **Importante, hueco de `--desde`:** ningún escenario cubre `--desde mar`, ni un día inválido como `sáb`. Hoy un día inválido hace que `indexOf` dé -1 y se liste todo, el mismo fallo en otra forma.
+- **Importante, decisión sin registrar:** la decisión de que `--desde` sin día avise no está en «Decisiones que he tomado yo». Esa lista salta además de la 1 a la 3.
+- **Importante, canal del aviso:** el aviso no define si va por stdout o stderr, ni el código de salida, ni la normalización de `mie` y las mayúsculas.
+- **Dudosos:** los hallazgos 4 y 5 dicen que «sin `--motivo`» sería un MODIFIED sin declarar y que `capabilities/` no existe. No los he verificado. El 4 se refiere a un patch 0007 que no he visto, así que no lo acepto sin comprobarlo.
+
+✋ **Necesito tu decisión:**
+1. ¿Apruebas la enmienda? Recomiendo hacerlo con estos cambios:
+   - un escenario propio para `--desde` sin día;
+   - otro para un día fuera de la lista, con el mismo aviso;
+   - registrar la decisión en «Decisiones»;
+   - decir en la spec que el aviso va por stdout, como el resto de respuestas.
+2. Con la spec re-aprobada, hago la pasada de fix: un test en RED, el arreglo y la suite entera. Después va la única re-revisión (`opus`, `effort-high`) y el cierre.
+3. El menor del orden de los tests queda en el ledger como `minor (deferred)`, salvo que prefieras arreglarlo ya, porque no hay `review.minors: fix`.
+
+--- [35]
+Es solo el aviso de que ha terminado el vigilante de silencio del revisor de la enmienda, que ya había devuelto su informe. No cambia nada, y tampoco es una aprobación tuya.
+
+La 0010 sigue parada en el ✋ anterior, a la espera de tu decisión sobre la enmienda de spec: la enmienda está escrita en `spec.md` sin commitear y marcada «sin aprobar». No toco el código hasta que la apruebes, y sigo desde ahí con la pasada de fix.
+

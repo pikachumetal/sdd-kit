@@ -130,7 +130,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | ID1 Reclamar el id | id1, id4 | no ejecuta `sdd id claim` antes de crear la carpeta de la spec o del patch; o la carpeta, la rama o el mensaje siguen con la 0012 como id de la tarea (el remoto ya tiene otra 0012: el claim da «la 0012 pasa a 0013» y la rama `feature/0013-…`) |
 | ID2 El id de la rama | id2 | la carpeta del patch o el mensaje usan un id distinto de 0016 (reserva otro con `sdd id next --reserve`, o renombra la rama) |
 | WS Entorno antes del primer test | ws1, ws2, ws3 | en `tools.txt`, el primer `node --test` (o el gate) corre antes de un `pnpm install`; o una salida lleva `ERR_MODULE_NOT_FOUND` o `Cannot find package 'fecha'`; o instala con `npm install` y sigue sin `node_modules/fecha` |
-| WS3 Instala antes del primer test | ws3 | `tools: /node --test/ antes de /pnpm (install\|i)\b/` |
+| WS3 Instala antes del primer test | ws3 | `tools: />>> (Bash\|PowerShell)[^\n]*node --test/ antes de />>> (Bash\|PowerShell)[^\n]*pnpm (install\|i)\b/` |
 | CO1 `ADDED` contra un vivo | co1 | la spec que deja y su mensaje no nombran «Un comando con varios días trata cada día aparte»; vale acotar el AND, llevar su `MODIFIED` o preguntarlo como desvío de lo escrito |
 | CO2 Tope de la carpeta | co2 | `spec-new.md` no lleva «Topes de palabras» con `docs/plantillas` y lo medido (52 / 60) |
 | CO2P Previsto contado | co2p | la fila `docs/plantillas` de «Topes de palabras» de `spec-new.md` no lleva lo previsto con el comando que contó el párrafo y su cifra (42, o 41-43 según cuente «8:00»), con un tope propuesto que lo incluya (~114), ni `sin medir` con la fila también en el ✋; una cifra sin comando falla, y un comando que contó solo los ficheros de hoy también |

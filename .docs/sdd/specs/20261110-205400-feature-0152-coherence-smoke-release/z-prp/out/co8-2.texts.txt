@@ -1,0 +1,89 @@
+--- [3]
+Ahora: leo la spec de la 0021 y las referencias del paso 4 (escritura, pasada de coherencia, revisión). Queda: pasada de coherencia, revisión y presentarte la spec para aprobar, ~10 min.
+
+--- [18]
+Sigo con la pasada de coherencia: la delta de la spec no se aplica porque `rooms` no existe aún en `capabilities/`. Miro la plantilla para declararla bien.
+
+--- [31]
+Reescribí la spec con la pasada de coherencia hecha y lancé un revisor (sonnet). Espero sus hallazgos para incorporarlos antes de presentártela. Todavía no tienes nada que aprobar.
+
+--- [36]
+1. Crítico · Delta de comportamiento, escenario `libres 9:00-10:00` · El escenario fija `Norte, Sur` para una franja con reserva de Norte 10:00-12:00, y la franja no es válida por formato. El resultado solo describe un hueco de formato no validado, y ese hueco es la fila de deuda. Además `9:00-10:00` no solapa con la reserva de las 10:00, así que `Norte, Sur` es correcto por solape, no por la regla de formato. Pasaría igual sin ningún cambio y con cualquier comparación. · Quitarlo del requisito (que se quede en Scope/deuda), o reformular el escenario para que pruebe el «no se toca» con un caso que sí fallaría si la implementación validara por texto, como `9:00-10:00` con reserva en 9:30.
+
+2. Importante · Delta, ADDED «Ver las salas libres» · Dice crear la capacidad con un único requisito, pero el requisito mezcla tres comportamientos (franja válida, franja inválida, formato no tocado). La decisión 5 dice que recoge «excluir la sala reservada», pero ningún escenario cubre una franja con solape parcial (por ejemplo `11:00-13:00`) ni el fin exacto en 12:00. Los bordes de la exclusión quedan sin prueba. · Añadir escenarios de borde (`11:00-13:00` → `Sur`, `12:00-13:00` → `Norte, Sur`) o dejar de declarar que el requisito recoge el comportamiento previo.
+
+3. Importante · Delta, escenarios 2 y 3 · Ambos usan un GIVEN con reserva de Norte que no interviene: el mensaje de error no depende de la reserva. El escenario pasaría igual sin ella. · Quitar el GIVEN de reserva en los escenarios de franja no válida, o declarar que no depende de ninguna reserva.
+
+4. Importante · ✋ decisión 7 y Delta · El comando «`sdd capability merge`» se prueba en una copia, y el resultado cita «rooms.md: añadido». Aun así `rooms` se declara «Nueva» siendo una capacidad que describe comportamiento ya existente (`libres` con franja válida). Es un ADDED que recoge comportamiento previo como si fuera nuevo, sin que la spec diga si la frase «Ver las salas libres» recoge ambos. La decisión 5 lo reconoce, pero la sección «Capacidades» solo dice «qué responde `libres` para una franja». · Declarar explícitamente en Capacidades que `rooms` nace con comportamiento ya existente y con uno nuevo.
+
+5. Importante · Approach / Scope · La comprobación se hace comparando texto con `^\d\d:\d\d-\d\d:\d\d$`, pero no se limita el rango: `99:99-99:98` casa con el patrón y se rechaza como «no válida: el final va después del inicio», mientras que `99:98-99:99` pasa y responde salas. Se valida el orden de algo que no es una hora. Pasa de largo el límite de los valores (nuevo dato de entrada), y no hay regla declarada. · Declarar «no aplica» o la regla de rangos de hora en la decisión 4 y en Scope, o aceptar explícitamente que `HH:MM` fuera de rango queda como deuda.
+
+6. Importante · ✋ Decisiones · Faltan declaradas varias decisiones tomadas en el cuerpo: que la comparación es textual (en Approach, no en ✋), que el mensaje es un texto fijo sin la franja, y que una franja con forma válida y sin reservas nunca llega a `freeRooms`. Tampoco se declara que el mensaje nuevo es un texto de interfaz (nombres, mensajes y límites: ¿error en stderr o stdout, código de salida?). · Añadir a ✋ la comparación textual y el canal/código de salida del mensaje, o declararlo «no aplica».
+
+7. Importante · Lo que se retira o cambia de forma / contratos · El mensaje es una respuesta nueva de `libres`, y el contrato de la salida (tests existentes, `test/app.test.js:5`, y consumidores como conserjería) no se enumera: no se dice si hay otros llamadores de `run('libres', …)` ni si algún script analiza la salida. Tampoco se dice si `libres` con franja inválida hoy devolvía un código de salida distinto de 0. · Añadir una fila sobre el contrato de salida (stdout/exit code) y quién consume `libres`.
+
+8. Menor · Intent / Éxito · «Ninguna franja con el final igual o anterior al inicio devuelve salas» es más amplio que lo implementado: `9:00-8:00` (sin cero inicial) sigue devolviendo salas por la decisión 4. El criterio de éxito se contradice con el Scope. · Acotar el éxito a «ninguna franja con forma `HH:MM-HH:MM` …».
+
+9. Menor · ✋ cabecera de Review · El texto de la lente dice «sonnet, siete puntos», y la política de modelos repite parte de esto: contenido de proceso mezclado con decisiones del producto. La numeración 1-7 incluye hechos medidos (1, 7) que no son decisiones. · Mover las mediciones a Approach o Scope y dejar en ✋ solo decisiones (2, 3, 4, 5, 6).
+
+10. Menor · Ejemplo / Sección 🦆 y decisión 1 · El caso lo reportó «conserjería», un equipo real del cliente en el texto. Además la constitución exige castellano y PRODUCT.md dice que el uso es de una sola persona, sin más usuarios, con lo que «conserjería» y «Laura» como aprobadora contradicen «no hay más usuarios ni más desarrolladores». · Sustituir por un origen inventado o neutro («quien reportó el caso») y revisar si Laura debe aparecer como aprobadora.
+
+--- [42]
+Ya incorporé los hallazgos de la primera review. Un Crítico aceptado obliga a una segunda ronda, que está en marcha. Cuando termine la incorporo y te presento la spec para aprobar.
+
+--- [48]
+1. Importante · Capacidades / Delta (`rooms`) · El nombre de la capacidad `rooms` está en inglés y PRODUCT.md marca «room» como término a evitar (Sala). Choca con la terminología y con la regla 4 de la constitución (castellano). Además, «Términos resueltos: ninguno» lo deja sin declarar. · Renombrar a `salas` (o declararlo como término resuelto y justificar la excepción en la ✋).
+
+2. Importante · Delta, escenario 1 (`libres 10:00-12:00` → `Sur`) · Pasa sin el cambio, así que no prueba nada nuevo. La spec lo admite al decir que la capacidad nace con comportamiento previo. En un delta ADDED, un escenario que no falla antes no demuestra el requisito nuevo. · Marcar el escenario como «comportamiento previo, no regresión» o añadir un escenario que falle hoy y cubra la frontera: `libres 10:00-10:01` no es no válida y debe seguir la ruta normal.
+
+3. Importante · Delta / Dónde se prueba · Falta el escenario del límite de la comparación de texto: una franja válida con forma correcta y final mayor que el inicio, como `09:00-10:00`. Una implementación con `>=` en lugar de `>` pasaría los tres escenarios actuales. Tampoco hay escenario para el cruce de medianoche (`23:00-01:00`), que la spec rechaza sin decirlo. · Añadir un GIVEN/WHEN/THEN de franja válida distinta de la reservada, y declarar en la ✋ que `23:00-01:00` se rechaza por diseño.
+
+4. Importante · Delta, requisito «Ver las salas libres» · La spec afirma que el requisito recoge «franja igual a la reservada excluye la sala». Ese comportamiento está en el escenario 1 solo por su resultado (`Sur`), sin enunciar la regla en el texto del requisito. Los escenarios de franja no válida mezclan dos reglas distintas bajo un solo requisito. · Separar en dos requisitos (excluir salas reservadas / rechazar franja no válida), o escribir el texto del requisito con ambas reglas.
+
+5. Menor · ✋ decisión 6 / Intent · Código de salida 0 en una franja no válida. Es una decisión de contrato (los scripts no detectan el error) y está tratada como un detalle. El rechazo sale como respuesta normal, indistinguible de un resultado válido. · Declararlo como decisión explícita con su razón, o decidir un código de salida distinto de cero.
+
+6. Menor · Cabecera / Aprobaciones · `status: draft` y el aprobador figura como `pendiente`, pero la spec dice «Validación: dev-lead». Hay un conflicto sobre quién aprueba (Laura frente al dev-lead). PRODUCT.md dice que no hay más usuarios ni desarrolladores, así que «conserjería» y «Laura» no tienen respaldo en el producto. · Alinear el aprobador con la validación y reconciliar «conserjería» con PRODUCT.md (que no menciona ese rol).
+
+7. Menor · Approach / decisión 6 · Los números de línea (`src/app.js:28`, `:35`, `test/app.test.js:5`, `CHANGELOG.md:10`) son frágiles. La primera tarea de la implementación los desplaza. · Citar la función o el símbolo en lugar de la línea.
+
+8. Menor · Capacidades (5 bis) · No se declaran las reglas transversales (datos, permisos, concurrencia, etc.) ni se marcan como n/a. Aquí serían n/a (sin estado ni dependencias, solo salida de texto), pero la spec no lo dice. · Añadir una línea «reglas transversales: n/a — comprobación de entrada, sin datos ni dependencias nuevas».
+
+--- [53]
+Ahora: presento la spec para aprobar. Queda: tu aprobación, y después el plan y `sdd-implement`.
+
+## Spec 0021 — Franja no válida en libres
+
+🦆 Hoy `libres 10:00-10:00` responde «Norte, Sur» como si una franja de cero minutos tuviera salas libres. `libres 12:00-10:00`, con la franja al revés, hace lo mismo. Con este cambio las dos responden «franja no válida: el final va después del inicio». `libres 10:00-12:00` sigue respondiendo «Sur». Una franja que no tiene la forma `HH:MM-HH:MM` no se toca: sigue como hoy.
+
+Fichero: `.docs/sdd/specs/20261008-190000-feature-0021-slot-check/spec.md`. Lane: feature, modo full, perfil `delegate`. Valida el dev-lead.
+
+### ✋ Decisiones que he tomado yo — valida estas
+1. El caso que reportó conserjería, `libres 10:00-10:00`, lo medí hoy: devuelve `Norte, Sur`. Tiene su propio escenario.
+2. El texto es «franja no válida: el final va después del inicio». Es fijo y no repite la franja.
+3. Una franja vacía (`10:00-10:00`) también se rechaza.
+4. Una franja sin la forma `HH:MM-HH:MM` (por ejemplo `9:00-10:00` o sin guion) queda como hoy. Comparada como texto, `9:00` frente a `10:00` rechazaría una franja buena. El rango de las horas tampoco se comprueba: es la fila de deuda de formato.
+5. Nace la capacidad `rooms`, con dos requisitos: «Ver las salas libres» y «Rechazar la franja no válida». El slug va en inglés por la regla de la plantilla de capacidades.
+6. Enfoque: validar en `run('libres', …)`, no dentro de `freeRooms`, que sigue devolviendo solo salas. El mensaje sale por stdout con código de salida 0, como las demás respuestas. `git grep` no encuentra más consumidores que el test y la llamada final de `src/app.js`.
+7. `23:00-01:00` se rechaza por diseño, porque una reserva no cruza días.
+8. Probé el delta en una copia de `.docs/sdd` con `sdd capability merge`, y se añaden los dos requisitos. El repo no cambia.
+
+Los escenarios del delta:
+- `libres 10:00-12:00` → `Sur` (comportamiento previo).
+- `libres 09:00-10:00` → `Norte, Sur` (atrapa un `>=` mal puesto).
+- `libres 12:00-10:00` y `libres 10:00-10:00` → el mensaje de franja no válida.
+
+### Review
+Hubo dos rondas, con un revisor en sonnet cada una. La segunda fue por un Crítico aceptado en la primera: el escenario `9:00-10:00` pasaba sin el cambio, así que salió del delta y quedó como test.
+
+Rechacé tres hallazgos, todos con su motivo en la spec:
+- Los bordes de solape parcial. Hoy la comparación es de igualdad y no es de esta feature.
+- El nombre `rooms` en inglés, por la regla de la plantilla.
+- «Conserjería» y Laura como aprobadora. Conserjería es un rol, no un cliente con nombre. Una de las revisiones señaló que PRODUCT.md dice que solo hay un usuario; dime si prefieres otro nombre en «Aprobaciones».
+
+### Aprobación
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 1–2 tasks). No la recomiendo: con tan pocas tasks, reconstruir la caché cuesta más de lo que ahorra.
+
+La spec queda en espera hasta que elijas.
+

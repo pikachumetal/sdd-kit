@@ -1,0 +1,72 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs SDD) para clasificar. Queda: anuncio, enfoques y la spec para tu aprobación, ~5 min.
+
+--- [14]
+Ahora: clasifico y te presento lo que he entendido y los enfoques. Queda: tu elección de enfoque, la spec para aprobar y el plan, ~10 min.
+
+Carril: feature, modo full · Perfil: pair, de esta petición (el proyecto tiene `delegate` en sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+No parto la feature: son 5 tasks, todas en la misma superficie (el CLI, `src/app.js`), sin migración. La he reservado como **0012**, en la rama `feature/0012-informes`.
+
+## Lo que he entendido
+
+Un comando nuevo, `informes`, que enseña cuatro vistas en una tabla de texto:
+
+1. Ocupación por sala.
+2. Ocupación por día de la semana.
+3. Franjas más reservadas.
+4. Salas que nadie ha reservado.
+
+Con `--sala <nombre>` las cuatro se filtran a esa sala. Sin reservas, cada vista dice «sin reservas». El plan sale en 5 tasks: una por vista y otra para `--sala`.
+
+Dos hechos del código que condicionan el cómo:
+
+- `bookings` es un array en memoria con `room`, `day`, `slot` y `status`. Hoy solo hay una reserva, Norte en lun 10:00-12:00, y Sur no tiene ninguna.
+- No decidí nada sobre qué cuenta como reserva: asumo que solo las `active`. Las canceladas y anuladas no ocupan. Lo dejaré en ✋ de la spec.
+
+## Enfoques
+
+Los tres modos de montarlo sobre `src/app.js`:
+
+1. **Una función por vista, más un renderizador de tablas compartido (recomendada).** Cada vista (`ocupacionPorSala`, `ocupacionPorDia`, `franjasTop`, `salasSinReservas`) recibe las reservas ya filtradas por `--sala` y devuelve filas. Un único `tabla(filas)` pinta el texto. Cada task añade una función y su test. `--sala` filtra una sola vez, antes de las vistas.
+2. **Una única función `informes` que recorre las reservas una vez y calcula las cuatro vistas.** Es más corto, pero las tasks no quedan independientes: la primera ya tendría que calcularlo todo.
+3. **Un fichero nuevo `src/informes.js` con las vistas.** Queda más ordenado, pero rompe con la arquitectura actual, que es «un solo fichero de entrada», y el cambio no lo justifica.
+
+**Recomiendo 1.** Encaja con tus 5 tasks, porque cada vista se prueba y se entrega sola, y cumple la arquitectura de un solo fichero. A cambio, `app.js` crece unas 60-80 líneas.
+
+¿Con qué enfoque seguimos: 1, 2 o 3?
+
+--- [16]
+Voy con el enfoque 1. Como la feature son 5 tasks, te presento el diseño por secciones, una por mensaje. Esta es la primera.
+
+## Sección 1: el comando y la vista «ocupación por sala»
+
+`informes` imprime las cuatro vistas una tras otra. Cada una lleva un título y una tabla de texto. La primera cuenta las reservas activas de cada sala:
+
+```text
+$ node src/app.js informes
+Ocupación por sala
+Sala   Reservas
+Norte  1
+Sur    0
+```
+
+Con `--sala Norte` la tabla solo enseña la fila de Norte. Si no hay ninguna reserva activa en todo el sistema, o ninguna en la sala filtrada, la vista no pinta tabla y dice:
+
+```text
+Ocupación por sala
+sin reservas
+```
+
+Esto es lo que he decidido yo, y irá a ✋ en la spec:
+
+- «Ocupación» es el número de reservas, no un porcentaje: el proyecto no define cuántas franjas tiene una sala.
+- Solo cuentan las reservas activas. Las canceladas y las anuladas no ocupan.
+- Salen todas las salas, también las de 0 reservas.
+
+Por dentro: una función `ocupacionPorSala(reservas)` y un `tabla(filas)` compartido por las demás vistas.
+
+¿Va bien así esta sección?
+

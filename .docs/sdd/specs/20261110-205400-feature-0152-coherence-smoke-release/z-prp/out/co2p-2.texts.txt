@@ -1,0 +1,64 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [21]
+Estoy escribiendo la spec: el texto del párrafo cabe, pero `test/words.test.js` topa `docs/plantillas` en 60 palabras (hoy 52, con el párrafo 94), así que lo llevo a ✋ como decisión a validar.
+
+--- [29]
+La spec está escrita, pero todavía no te la presento: falta la revisión de un revisor que está corriendo. Cuando termine, incorporo sus hallazgos y te la paso para aprobar.
+
+**Carril:** feature, modo full. **Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+
+**Aviso que ya puedes ver:** `test/words.test.js` topa `docs/plantillas` en 60 palabras (hoy 52). El párrafo suma 42, así que quedaría en 94 y el gate `node --test` fallaría. En la spec propongo subir el tope a 114 y dejar intactos tu texto y `recibo.md`. Es una decisión mía que tendrás que validar.
+
+**Dónde está la spec:** `.docs/sdd/changes/20261112-163056-feature-0014-notice-room/spec.md`.
+
+Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».
+
+--- [34]
+1. Importante · Criterios de aceptación y Dónde se prueba · El test de decisión 5 solo comprueba que el fichero «termina con» el párrafo y que la primera línea es la de siempre. No comprueba la línea en blanco intermedia ni el salto de línea final, que sí exige el primer criterio. Con el párrafo pegado a la primera línea, o sin salto final, el test pasa sin cumplir el criterio. · Hacer que `aviso.test.js` compare el contenido completo con `línea1 + "\n\n" + párrafo + "\n"`, o que verifique por separado la línea en blanco y el salto final.
+2. Importante · 🦆 (párrafo inicial) · Dice que hoy `aviso.md` es «`Aviso de sala: Norte el lun.`». El fichero real contiene `Aviso de sala: {sala} el {dia}.`, que es lo que el resto del spec y el test dan por línea 1. El 🦆 es lo que lee el dev-lead al validar. · Corregir el 🦆 a `Aviso de sala: {sala} el {dia}.`.
+3. Menor · Lo que se retira o cambia de forma · Cita `test/words.test.js:5` y `:8` como título y `assert.ok`, pero el `assert.ok(words.length <= 60)` está en la línea 7. La línea 8 es `});`. · Corregir a `:5` y `:7`.
+4. Menor · Criterios de aceptación (2.º) · Dice «son 94», pero `words.test.js` solo afirma `<= 114`. Ningún test fija 94, así que el escenario pasa con cualquier total ≤114, incluido un párrafo recortado. · Reformular a «no supera 114» y dejar que la exactitud la dé `aviso.test.js`, o añadir un assert del total.
+5. Menor · Scope y ✋ · El cambio de tope implica renombrar el título del test («cabe en su tope de 60 palabras»). La tabla lo menciona, pero el Scope y la decisión 1 solo hablan de subir el número. · Añadir al Scope y a ✋ que se actualiza también el título a 114.
+6. Menor · Dónde se prueba · Dice que el test del tope «fallaría con 94 > 60», pero hoy `words.test.js` con 114 pasa (52 ≤ 114). Ese cambio no tiene RED propio, solo lo tiene `aviso.test.js`. · Aclarar que el RED del tope aparece solo si se añade el párrafo antes de subir el tope, y fijar ese orden en el plan.
+7. Menor · Intent y ✋ 4 · Exige igualdad «letra por letra» con tildes (`Conserjería`, `extensión`) y salto `\n`. En Windows, con `core.autocrlf`, `readFileSync` puede dar `\r\n` y romper la comparación literal. El spec no dice nada. · Fijar que el test compare normalizando `\r\n`, o declarar `.gitattributes`/LF para `docs/plantillas`.
+8. Menor · Intent · El éxito se mide con `node --test && node scripts/lint.mjs`, pero la constitución (regla 2) solo define como gate `node --test`. No se dice qué comprueba `lint.mjs` sobre `docs/plantillas`, y no lo he verificado. · Alinear con la constitución, o confirmar en el spec que el lint no objeta al párrafo.
+9. Menor · ✋ (decisión 4) y Dónde se prueba · El párrafo es contenido literal para quien use la sala, pero `PRODUCT.md` dice que la herramienta la usa solo su autor y no menciona avisos a terceros. Las extensiones 5500 y 5599 y el horario son datos operativos que nadie ha validado como reales. · Marcar en ✋ que extensiones y horario son datos aportados por el dev-lead y no se verifican, o confirmar que son ficticios.
+10. Menor · Topes de palabras · La nota «2 % < 20, mínimo» sugiere una regla kit de margen que el spec no cita. El margen de 20 es arbitrario frente a 94 y sube el tope un 90 % sobre el actual. · Citar la regla exacta o justificar un margen menor, por ejemplo 100.
+
+Los recuentos están verificados con el mismo `split(/\s+/).filter(Boolean)` de `words.test.js`: `aviso.md` 6, `recibo.md` 46, total 52, párrafo 42, total final 94, tope 114. Los números son correctos.
+
+--- [37]
+Ahora: presento la spec para que la apruebes. Queda: tu respuesta; con ella escribo el plan e implemento, ~10 min.
+
+## 🦆 Qué cambia
+
+Quien reciba el aviso de una sala verá, bajo `Aviso de sala: {sala} el {dia}.`, el párrafo de conserjería que decidiste. Es un cambio de texto, un test que fija ese párrafo y un ajuste del tope de palabras que el párrafo rompe.
+
+Spec: `.docs/sdd/changes/20261112-163056-feature-0014-notice-room/spec.md`. Es carril feature, modo full, perfil `delegate`, sin capacidades. La validación la hace el agente: es un documento de texto literal que un test compara.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Tope de palabras.**
+   - `test/words.test.js` limita `docs/plantillas` a 60 palabras en total. Hoy hay 52 (`aviso.md` 6, `recibo.md` 46) y el párrafo suma 42, así que quedaría en 94 y `node --test` fallaría.
+   - Propongo subir el tope a **114**: 94 más el margen mínimo de 20 que fija la regla de topes. Un tope de 100 también valdría; dime si lo prefieres.
+2. **Enfoque.**
+   - A: subir el tope.
+   - B: recortar `recibo.md` hasta 12 palabras; borra una plantilla que no pediste.
+   - C: poner el párrafo en otro fichero; no es lo que dijiste.
+   - Elegido: A.
+3. El párrafo va tras **una línea en blanco** y el fichero acaba en salto de línea.
+4. El párrafo va **literal**: tildes, `8:00`, `20:00`, `5500` y `5599`, sin marcadores `{…}`.
+5. **Test nuevo** `test/aviso.test.js`: compara el fichero entero con la línea de siempre, línea en blanco, el párrafo y salto final, normalizando `\r\n`.
+6. La validación es del agente, no del dev-lead.
+7. El id 0014 es el de la rama y no tiene fila en `ROADMAP.md`. No la creo; dime si quieres que la añada.
+8. Las extensiones y el horario los aportaste tú: no los verifico.
+
+**Review:** un revisor (sonnet) encontró 10 hallazgos, ninguno Crítico, así que no hay segunda ronda. Acepté 9 y rechacé 1. El rechazado preguntaba si `lint.mjs` objeta al párrafo; no, porque solo revisa tabuladores en `src/app.js`. El detalle está en la spec, en «Hallazgos de la review».
+
+**Cómo se prueba.** Primero el párrafo y su test, que falla hoy porque el fichero acaba en `{dia}.`. Después el tope, que falla con 94 > 60 hasta que se sube.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

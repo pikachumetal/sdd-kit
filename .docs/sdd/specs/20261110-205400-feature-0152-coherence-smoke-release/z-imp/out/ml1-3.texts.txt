@@ -1,0 +1,61 @@
+--- [3]
+Ahora: reviso la rama, la spec, el plan y el RED de la Task 1. Queda: elegir el método, implementar la Task 1 y commitearla, ~10 min.
+
+--- [11]
+Ahora: base check, copia del RED, tasks.md y verificar el RED. Queda: implementar store.js y cancelar, commit, ~8 min.
+
+--- [14]
+RED correcto: falla por la funcionalidad que falta. Implemento.
+
+--- [17]
+La edición con script no aplicó; la hago con Edit.
+
+--- [22]
+Todo en verde y el test es idéntico a la copia del RED. Escribo `tasks.md` y commiteo la Task 1.
+
+--- [26]
+Ahora: Task 1 cerrada. Queda: la revisión final de la rama con `sdd-verify`, ~5 min.
+
+--- [29]
+No tengo herramienta de subagentes en este harness, así que hago la revisión final yo mismo, por ejes. Leo las referencias que fijan el cierre.
+
+--- [32]
+Hago el repaso por ejes sobre el diff real de la rama, y apunto el resultado en el ledger y en `tasks.md`.
+
+--- [35]
+La suite completa ahora da 2 fallos y apareció `data/bookings.json` en el repo, algo que no esperaba. Investigo.
+
+--- [40]
+RED correcto: falla porque `run` escribe en disco. Ahora muevo la carga y el guardado al arranque de la CLI.
+
+--- [43]
+La sustitución del bloque `cancelar` no aplicó, y `run` sigue guardando. Lo quito con Edit.
+
+--- [45]
+Limpio el `data/` residual y corro la suite completa dos veces seguidas, para comprobar que ya no depende del estado.
+
+--- [48]
+7/7 en verde dos veces seguidas y sin dejar `data/`. Commiteo el fix y apunto el ledger y `tasks.md`.
+
+--- [50]
+La Task 1 de la 0036 está implementada y commiteada, con la suite completa en verde (7/7, dos pasadas seguidas). No he cerrado la feature: falta `sdd-archive` y la revisión final no la hizo un revisor independiente.
+
+- **Qué hace.** `src/store.js` guarda y recarga las reservas en `data/bookings.json`. La CLI las carga al arrancar y las guarda tras `cancelar`. Los dos tests del RED que escribiste pasan sin cambios.
+- **Commits.** `841f485` es la implementación, `222fa45` el fix y `d55e16f` el registro de la revisión en `tasks.md`.
+- **Revisión final.** No tengo herramienta de subagentes en este harness. Repasé los tres ejes yo mismo sobre el diff, así que es una autorrevisión del autor, más débil que revisores nuevos. Decide tú si basta antes de fusionar.
+
+**Un fallo que me salió después de «completar» la task.** Mi primera versión guardaba dentro de `run`. `cancel.test.js` llama a `run('cancelar')` dentro del proceso, y eso escribía `data/bookings.json` en el repo. La siguiente ejecución de la suite fallaba en `app.test.js` y `cancel.test.js` (2 fallos). Lo detecté en la revisión final, no en el `task done`, que solo corría `persist.test.js`. Lo arreglé moviendo la carga y el guardado al arranque de la CLI, con un test que reproduce el fallo (RED→GREEN). Esa carpeta residual la borré yo.
+
+**Rulings**
+1. **Carga y guardado fuera de `run`.** El plan decía «`cancelar` llama a `save`». Lo moví al arranque de la CLI para que los tests existentes no toquen el disco. La spec («carga al arrancar y guarda al cancelar») sigue cumplida. Si se prefiere guardar dentro de `run`, `cancel.test.js` y `app.test.js` necesitarían un directorio temporal.
+2. **Tercer test en `test/persist.test.js`.** Añadí una prueba que reproduce el fallo, sin tocar las dos del RED. Toca un fichero de tu RED, aunque solo añadiendo.
+3. **Eje Arquitectura sin revisor.** El plan no trae línea `Eje Arquitectura`. Hay una señal (módulo nuevo `store.js`, sin dependencias nuevas) y lo revisé en el hilo.
+
+**Deferred minors**
+- `cancelar` sin reserva activa también reescribe `data/bookings.json`.
+- Un `data/bookings.json` corrupto tumba la CLI con un `SyntaxError` sin mensaje.
+
+Dejé el workspace `.temp/sdd/plan` sin borrar para que lo use `sdd-archive`.
+
+¿Sigo con `sdd-archive` para la validación y el cierre?
+
