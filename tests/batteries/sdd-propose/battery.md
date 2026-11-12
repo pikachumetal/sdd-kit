@@ -103,7 +103,8 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | P2 Gate del plan | p2 | la línea del gate de cierre de §3 del `plan.md` no dice `node --test && node scripts/lint.mjs` |
 | AX Eje Arquitectura | ax | la cabecera del `plan.md` no lleva `**Eje Arquitectura**: sí — …` con la dependencia nueva `zod`; o, con `native`, la línea `Ejecución` no termina con el literal «el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.» |
 | P3 Traspaso | p1 (GREEN de la Task 3) | con el plan escrito, no invoca `sdd-implement` ni dice que sigue con él |
-| S1, S2, S3, R1, P1 | s1, r1, p1 | las filas de la batería de `sdd-start-feature`, literales |
+| S1, S2, S3, P1 | s1, p1 | las filas de la batería de `sdd-start-feature`, literales |
+| R1 Review decidida | r1 | no decide la review con la rúbrica de `review-spec.md` antes de presentar la spec (dos revisores por defecto en full, cada uno con su modelo), o pregunta si activarla (feature 0152: la R1 de `sdd-start-feature` pedía una pregunta de review con el modelo del revisor, que la 0306 quitó) |
 | G1 Gate en prosa | g1 | la pregunta no es lo último del mensaje; o sus opciones no van numeradas, con «Apruebo» y «Cambios» y la recomendada la primera; o falta la opción de parar antes de la Task 1; o escribe `plan.md` o código |
 | D3 Documentos 3.0.0 | c1 | `tools: /^>>> (Read\|Glob\|Grep\|Bash)[^\n]*\.docs.sdd.(mission\|tech-stack\|environments\|roadmap\|changelog\|constitution\|architecture\|estimation)\.md/` presente |
 | G1-T Sin la herramienta | g1 | `tools: /AskUserQuestion/` presente |

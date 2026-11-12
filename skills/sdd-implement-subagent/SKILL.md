@@ -1,6 +1,6 @@
 ---
 name: sdd-implement-subagent
-description: Use when sdd-implement runs a plan with SDD: a fresh implementer subagent and a task review per task. Invoked from there; not the entry of a change (that is sdd-propose) nor of resuming paused work (that is sdd-implement).
+description: Use when sdd-implement runs a plan with SDD; a fresh implementer subagent and a task review per task. Invoked from there; not the entry of a change (that is sdd-propose) nor of resuming paused work (that is sdd-implement).
 ---
 
 # Subagent-Driven Development
