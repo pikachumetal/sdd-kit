@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch --show-current; ls node_modules 2>/dev/null | head -3
+
+>>> Read: D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references/patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+develop
+
+>>> Bash: cat package.json; ls src test scripts; cat .docs/sdd/steering/estimation.md | head -30; ls .docs/sdd/specs; cat ROADMAP.md | head -30
+
+>>> Read: D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references/modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+<<< {"type": "module", "engines": {"node": ">=20"}}
+scripts:
+lint.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+# Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la caus
+
+>>> Bash: cat src/app.js; head -20 .docs/sdd/steering/architecture.md; ls .docs/sdd/specs/*
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (8 turnos, 0.1541978 $)
+Ahora: clasificar el cambio. Queda: que me confirmes el carril, y después la rama, la spec y su aprobación, ~10 min.
+
+🦆 Quieres dos cosas nuevas en la CLI de salas. La primera es un comando `reservas <sala>` que lista las reservas activas de esa sala, o responde `sin reservas <sala>` si no hay ninguna. La segunda es que `libres` sin franja responda `indica una franja`. Ahora mismo `libres` sin franja devuelve las dos salas. No toca el esquema de datos, y todo cabe en `src/app.js`.
+
+**No lo abro como patch.** Aunque dejas cada texto cerrado, son dos comportamientos nuevos y hacen falta dos tests o más. Un patch es lo que reproduce un solo test que hoy falla. Es el caso que `patch-lane.md` trae de ejemplo.
+
+Cumple el predicado de lite, que comprobé condición por condición:
+- **El flujo ya existe y se puede leer:** `libres` y el listado de `bookings` están en `src/app.js`.
+- **No cambia contratos públicos:** `reservas` es un comando nuevo y aditivo. `libres` con franja no cambia.
+- **No cambia el esquema de datos:** `bookings` queda igual.
+- **Cabe en un solo módulo:** solo `src/app.js` y sus tests.
+- **Estimación de medio día o menos:** unas 0,5 h, más el gate de cierre. No hay medida previa del gate en el proyecto, así que no cito una.
+
+Son 2 o 3 tasks, así que no propongo dividirlo. El perfil es `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo lo llevo?
+1. **Lite (recomendada):** spec corta con la estimación dentro, sin `plan.md`, con su gate de aprobación y su walkthrough.
+2. **Feature, modo full:** spec y plan completos.
+3. **Patch:** solo si renuncias a uno de los dos comportamientos, para que quede un único test. Por ejemplo, solo `libres` sin franja.
+
+Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».

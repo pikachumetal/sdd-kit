@@ -1,0 +1,357 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-verify\references\closing-the-review.md
+<<< 1	# Closing the review
+2	
+3	**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ship
+
+>>> Glob: **/review-*.md
+<<< .temp\sdd\plan\review-code.md
+.temp\sdd\plan\review-spec.md
+
+>>> Read: <run>\repo\.temp\sdd\plan\review-spec.md
+<<< 1	## Spec
+2	
+3	### Strengths
+4	- Both THEN of the 0010 have their test in `test/cancel.test.js`.
+5	
+6	### Issues
+7	
+8	#### Critical (Must Fix)
+9	None.
+10	
+11	#### Important (Should Fix)
+12	None.
+13	
+14	#### Minor (Nice to Have)
+15	1. Minor · partial · `src/app.js:35-37` · `cancelledList` has no limit: with a long history, `canceladas` prints every cancellation ever made. Fix: cap it, for instance at the last 10 · THEN «El listado de canceladas enseña el motivo».
+16	
+17	### Not verified
+18	ninguna
+19	
+20	### Assessment
+21	**Ready to merge?** Yes
+22	
+
+>>> Read: <run>\repo\.temp\sdd\plan\review-code.md
+<<< 1	## Code
+2	
+3	### Strengths
+4	- `cancelBooking` validates the reason before touching the booking.
+5	
+6	### Issues
+7	
+8	#### Critical (Must Fix)
+9	None.
+10	
+11	#### Important (Should Fix)
+12	1. **`src/app.js:14-17`: `reasonOf` keeps the spaces around the reason.** `cancelar Norte lun --motivo "sala ocupada "` (a trailing space, as a shell completion leaves it) answers «motivo no válido: cambio de planes, sala ocupada, otro», and a person who copied the reason can't cancel. Fix: trim the reason before checking it against the list.
+13	
+14	#### Minor (Nice to Have)
+15	None.
+16	
+17	### Assessment
+
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline -5 && cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md && ls .docs/sdd/specs/*/ && cat .docs/sdd/sdd-kit.json
+<<< ?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+e3b3c53 feat(bookings): listado de canceladas con su motivo
+df11ca5 feat(bookings): cancelar con un motivo de la lista
+4b1c65d docs(sdd): abrir la feature 0010 con su spec y su plan
+0b17ae5 feat: base del molde
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | e3b3c53 | |
+| 2 | Listado de canceladas | done | e3b3c53 | |
+
+.docs/sdd/spec
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md && ls test && cat package.json && node --test 2>&1 | tail -15; ls .temp/sdd/plan; cat .temp/sdd/plan/ledger.md 2>/dev/null | tail -20
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/progress.md; cat test/cancel.test.js; git diff --stat
+<<< # SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 4b1c65d..df11ca5, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits df11ca5..e3b3c53, tests: node --test test/cancel.test.js → 3/3 pass)
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar con un motivo de la lista', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');
+});
+
+test('cancelar con un motivo
+
+>>> Bash: cd "<run>/repo" && cat >> .temp/sdd/plan/progress.md <<'EOF'
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (sin módulo, dependencia, contrato ni datos nuevos) → no sale
+Final: Spec opus+high Ready · Código sonnet+high With fixes, sobre e3b3c53
+Final: Ruling: hallazgo Minor de Spec (listado sin tope) — re-graduado por efecto: sigue Minor, pero entra en la pasada con review.minors: fix; el número lo fija la decisión 4 del spec (20 últimas + «… y N más»), no el «10» sugerido por el revisor — el spec ya lo decidió con el dev-lead; el código no lo cumplía — coste si me equivoco: listado de más/menos líneas
+Final: Ruling: «las 20 últimas» se toma en el orden del array de reservas (no se guarda la hora de cancelación) — coste si me equivoco: con más de 20, el corte puede no ser el de cancelación más reciente
+EOF
+python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace('const bookings = [','export const bookings = [');
+fs.writeFileSync('src/app.js',s)"
+EOF
+grep -n "bookings = " src/app.js
+cat > test/final-review.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run, bookings } from '../src/app.js';
+
+test('cancelar recorta los espacios del motivo', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada ']), 'cancelada Norte lun (sala ocupada)');
+});
+
+test('canceladas enseña las 20 últimas y cuenta las demás', () => {
+  for (let i = 1; i <= 24; i++) bookings.push({ room: 'Sur', day: `d${i}`, slot: '10:00-12:00', status: 'cancelled', reason: 'otro' });
+  const lines = run('canceladas', []).split('\n');
+  assert.equal(lines.length, 21);
+  assert.equal(lines[0], 'Sur d6 — otro');
+  assert.equal(lines[19], 'Sur d24 — otro');
+  assert.equal(lines[20], '… y 5 más');
+});
+EOF
+node --test 2>&1 | grep -E "^(✖|ℹ (pass|fail))|not ok"
+<<< 4:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+✖ test\final-review.test.js (64.3393ms)
+ℹ pass 5
+ℹ fail 1
+✖ failing tests:
+✖ test\final-review.test.js (64.3393ms)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\test\final-review.test.js
+<<< The file <run>\repo\test\final-review.test.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/final-review.test.js 2>&1 | grep -E "^(✔|✖)|ℹ (pass|fail)"
+<<< ✖ cancelar recorta los espacios del motivo (1.2925ms)
+✖ canceladas enseña las 20 últimas y cuenta las demás (0.3796ms)
+ℹ pass 0
+ℹ fail 2
+✖ failing tests:
+✖ cancelar recorta los espacios del motivo (1.2925ms)
+✖ canceladas enseña las 20 últimas y cuenta las demás (0.3796ms)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | grep -E "^(✔|✖)|ℹ (tests|pass|fail)"
+<<< ✔ libres excluye la sala reservada en la franja (0.6841ms)
+✔ reservar --cada-semana crea la reserva semanal (0.127ms)
+✔ cancelar con un motivo de la lista (0.7809ms)
+✔ cancelar con un motivo fuera de la lista (0.1272ms)
+✔ canceladas enseña sala, día y motivo (1.7994ms)
+✔ cancelar recorta los espacios del motivo (0.6789ms)
+✔ canceladas enseña las 20 últimas y cuenta las demás (0.2056ms)
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && T=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md && sed -i 's/| 1 | Cancelar con motivo | done | e3b3c53 |/| 1 | Cancelar con motivo | done | df11ca5 |/' $T && git add src test $T && git commit -q -m "fix(bookings): recortar el motivo y limitar canceladas a las 20 últimas
+
+Pasada de fix de la revisión final de la 0010: el motivo con espacios al
+final ya no se rechaza y canceladas sigue la decisión 4 del spec.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && SHA=$(git rev-parse --short HEAD) && echo $SHA && echo "Final: fixed reasonOf conserva espacios (Código, Important) — 'cancelar recorta los espacios del motivo' RED→GREEN, suite 7/7
+Final: fixed cancelledList sin tope (Spec, Minor, minors: fix) — 'canceladas enseña las 20 últimas y cuenta las demás' RED→GREEN, suite 7/7 (commit $SHA)" >> .temp/sdd/plan/progress.md && cat >> $T <<EOF
+
+Revisión final: Spec opus+high, Ready · Código sonnet+high, With fixes · Arquitectura no (plan), sobre e3b3c53
+Pasada de fix: $SHA, 2 hallazgos RED→GREEN
+EOF
+git status --short; cat skills 2>/dev/null; sed -n 1,60p "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-verify/references/encargo-revision.md"
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/final-review.test.js', LF will be replaced by CRLF the next time Git touches it
+35c72d5
+ M .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+# Review brief — mandatory header
+
+The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task rev
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills" && sed -n 60,120p sdd-verify/references/encargo-revision.md; echo ======; cat sdd-implement-subagent/re-review-prompt.md; grep -n "Restricciones globales" -A25 "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md" | head -50
+<<< Read the review package `<path of the package the recipe prints>` in 400-line chunks with `offset` and `limit`: it has the commits, the summary, the deleted files by name and the diff of the rest of the branch, without the spec's folder. Don't redo the diff with git. Don't run the suite, the build or the lint: the task reports bring the test evidence, and the main thread runs the whole suite. If you think a heavy verification is missing, recommend it in your report.
+```
+
+With the header and without this section, 2 of 2 final reviewers redid the diff and ran the suite and the lint (`tests/propo
+
+>>> Bash: cd "<run>/repo" && SHA=35c72d5 && REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-0010-$SHA" && git worktree add -q --detach "$REVIEW_DIR" $SHA && OUT="$PWD/.temp/sdd/plan/review-rereview-$SHA.diff" && { echo "# Review package: e3b3c53..$SHA"; echo "## Commits"; git log --oneline e3b3c53..$SHA; echo "## Files changed"; git diff --stat e3b3c53 $SHA; echo "## Diff"; git diff -U10 e3b3c53 $SHA; } > "$OUT" && wc -l "$OUT" && echo "$REVIEW_DIR" && echo "$OUT"
+<<< 106 <run>/repo/.temp/sdd/plan/review-rereview-35c72d5.diff
+<run>/review-0010-35c72d5
+<run>/repo/.temp/sdd/plan/review-rereview-35c72d5.diff
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-revisión final 0010
+    ## Code constraints
+    ## How to review
+    ## Findings under verification
+    ## What to check
+    ## Output format
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a92349348ec21ce04 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" watch subagent --description "Re-revisión final 0010"
+<<< Command running in background with ID: b1mmp3oze. Output is being written to: D:\code\git\sdd-kit\.temp\claude\931d54c36586e0c3\c2b72ba5-6abd-4c8c-beb9-4089969ed378\tasks\b1mmp3oze.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Read: <run>/repo/.temp/sdd/plan/review-rereview-35c72d5.diff
+<<< 1	# Review package: e3b3c53..35c72d5
+2	## Commits
+3	35c72d5 fix(bookings): recortar el motivo y limitar canceladas a las 20 últimas
+4	## Files changed
+5	 .../20261008-100000-feature-0010-cancel-reason/tasks.md  | 12 ++++++++++++
+6	 src/app.js                                               |  9 ++++++---
+7	 test/final-review.test.js                                | 16 ++++++++++++++++
+8	 3 files changed, 34 insertions(+), 3 deletions(-)
+9	## Diff
+10	diff --git a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md b/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.
+
+>>> Glob: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/*
+<<< <run>\review-0010-35c72d5\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md
+<run>\review-0010-35c72d5\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md
+<run>\review-0010-35c72d5\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\tasks.md
+
+>>> Glob: {test/**,package.json}
+<<< <run>\review-0010-35c72d5\package.json
+<run>\review-0010-35c72d5\test\app.test.js
+<run>\review-0010-35c72d5\test\cancel.test.js
+<run>\review-0010-35c72d5\test\final-review.test.js
+
+>>> Read: <run>/review-0010-35c72d5/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Motivo al cancelar
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-08
+14	---
+15	
+16	# Spec — Motivo al cancelar
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+21	
+22	## Decisiones que he tomado yo — valida estas
+23	
+24	1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con 
+
+>>> Read: <run>/review-0010-35c72d5/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar con un motivo de la lista', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');
+7	});
+8	
+9	test('cancelar con un motivo fuera de la lista', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar', '--motivo', 'me aburro']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+11	});
+12	
+13	test('canceladas enseña sala, día y motivo', () => {
+14	  assert.equal(run('canceladas', [
+
+>>> Read: <run>/review-0010-35c72d5/package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Grep: export const bookings|trim\(\)|slice\(-20\)|y \$\{
+<<< 4:export const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+16:  return index === -1 ? undefined : params[index + 1]?.trim();
+37:  const lines = cancelled.slice(-20).map((b) => `${b.room} ${b.day} — ${b.reason}`);
+38:  if (cancelled.length > 20) lines.push(`… y ${cancelled.length - 20} más`);
+
+>>> Bash: cd "<run>/repo" && T=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md && cat >> .temp/sdd/plan/progress.md <<'EOF'
+Final: Ruling: re-revisión — «últimas» = orden del array, sin hora de cancelación guardada; sin enmienda en el spec — queda para el dev-lead (✋); coste si me equivoco: con >20 el corte puede no ser el más reciente
+Final: Ruling: re-revisión — los dos tests nuevos dependen del orden (el «5» cuenta la cancelación del primero) — cada fichero de test corre en su proceso y el fichero se ejecuta entero; coste si me equivoco: fallo si se corre el segundo solo con --test-name-pattern
+Final: Ruling: re-revisión — `bookings` exportado solo para el test y tests en `final-review.test.js` y no en `cancel.test.js` — no hay otra forma de sembrar reservas con la CLI actual; coste si me equivoco: estado interno expuesto, nombre de fichero poco descriptivo
+EOF
+echo "Re-revisión: e3b3c53..35c72d5, sdd-kit:effort-high + opus, sin Critical ni Important (4 Minor adjudicados)" >> $T
+git add $T && git commit -q -m "docs(sdd): registro de la revisión final de la 0010
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git worktree remove "../review-0010-35c72d5" 2>&1 | tail -1; git worktree list; git status --short; git log --oneline -3
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+<run>/repo 52513df [feature/0010-cancel-reason]
+52513df docs(sdd): registro de la revisión final de la 0010
+35c72d5 fix(bookings): recortar el motivo y limitar canceladas a las 20 últimas
+e3b3c53 feat(bookings): listado de canceladas con su motivo
+
+=== RESULTADO (24 turnos, 0.6061253 $)
+La re-revisión está en marcha en segundo plano. Mientras tanto, nada más que hacer sin pisar sus ficheros: espero su notificación para cerrar la revisión y presentar la validación.
+
+Estado hasta ahora:
+- **Revisión final**: Spec «Ready» (1 Minor), Código «With fixes» (1 Important), sin eje de Arquitectura. Todo está en el ledger.
+- **Pasada de fix** (`35c72d5`): `reasonOf` recorta el motivo y `canceladas` muestra las 20 últimas con «… y N más», como fija la decisión 4 del spec. En lugar del tope de 10 que sugería el revisor, apliqué el 20 del spec. Los dos tests nuevos pasaron de RED a GREEN y la suite quedó en 7/7.
+- **Ruling**: «las 20 últimas» se toma en el orden del array de reservas, porque no se guarda la hora de cancelación. Si no te vale, hace falta guardarla.
+- **Corrección de registro**: en `tasks.md` la Task 1 apuntaba a `e3b3c53` y ahora apunta a `df11ca5`.
+
+=== RESULTADO (2 turnos, 0.6061253 $)
+La revisión final de la 0010 está cerrada. La re-revisión no deja Critical ni Important abiertos, y la suite pasa 7/7 tras el fix. `tasks.md` y el ledger están al día en `52513df`.
+
+| Eje | Veredicto | Resultado |
+| --- | --- | --- |
+| Spec | Ready | 1 Minor: `canceladas` no tenía tope. |
+| Código | With fixes | 1 Important: `reasonOf` conservaba los espacios del motivo. |
+| Arquitectura | no sale | Sin módulo, dependencia, contrato ni datos nuevos. |
+
+**Pasada de fix (`35c72d5`)**
+- `reasonOf` recorta el motivo, así que `--motivo "sala ocupada "` ya cancela.
+- `canceladas` muestra las 20 últimas y añade «… y N más». Seguí la decisión 4 del spec en vez del tope de 10 que sugería el revisor.
+- Los dos tests nuevos pasaron de RED a GREEN.
+
+La re-revisión (opus, alto esfuerzo) dio ambos hallazgos por resueltos. Dejó 4 Minor, que adjudiqué como `Final: Ruling` sin tocar el código. Los tres primeros son ✋ para ti:
+1. **«Últimas»:** el corte usa el orden del array de reservas, porque no se guarda la hora de cancelación. Con más de 20 puede no ser el más reciente. Hay que guardar la hora de cancelación o enmendar el spec; si no, queda como está.
+2. **Tests acoplados:** los dos tests nuevos dependen del orden, porque el «5» cuenta la cancelación del primero.
+3. **Export y fichero de test:** `bookings` está exportado solo para el test, y los tests están en `test/final-review.test.js` en vez de `cancel.test.js`. Con la CLI actual no hay otra forma de crear reservas en un test.
+4. **`tasks.md` desactualizado:** se actualiza en el commit `52513df`. El commit `35c72d5` lo dejó sin su línea de fix y con la Task 1 apuntando a `e3b3c53` en vez de `df11ca5`.
+
+El commit de docs (`52513df`) no pasó por revisión; lo revisé yo en el hilo.
+
+El siguiente paso es `sdd-archive`, para la validación, el walkthrough y el cierre. ¿Lo lanzo?
+
+=== RESULTADO (1 turnos, 0.6201954 $)
+Es solo el aviso de que terminó el vigilante de silencio de la re-revisión, que ya había devuelto su informe. No cambia nada del estado.
+
+Sigo esperando tu respuesta: ¿lanzo `sdd-archive` para la validación, el walkthrough y el cierre? Antes de eso, dime si quieres decidir ya alguno de los puntos ✋, sobre todo el de «últimas», que necesita guardar la hora de cancelación o enmendar el spec.

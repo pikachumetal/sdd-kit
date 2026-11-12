@@ -1,0 +1,287 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd .docs/sdd/changes/* 2>/dev/null; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+.docs/sdd:
+changes/
+sdd-kit.json
+steering/
+
+.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs:
+plan.md
+spec.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/changes/*0035*; cat $D/spec.md; echo =====; cat $D/plan.md; ls; ls .docs/sdd/steering
+<<< ---
+id: 20261015-150000-feature-0035-room-hours-cs
+feature: 0035
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-15
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-15
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace `Rooms.Hours`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: `Rooms.Hours(string room)` en `Rooms.cs`.
+- No ent
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && git rev-parse --git-dir --git-common-dir --show-superproject-working-tree; git branch --show-current; git remote -v; cat Rooms.cs Tests.cs Program.cs; cat .docs/sdd/steering/operations.md | head -60; cat ROADMAP.md .gitignore; git branch -a
+<<< .git
+.git
+feature/0035-room-hours-cs
+public record Booking(string Room, string Day, string Slot, string Status);
+
+public static class Rooms
+{
+    public static readonly string[] All = ["Norte", "Sur"];
+
+    public static readonly List<Booking> Bookings =
+    [
+        new("Norte", "lun", "10:00-12:00", "active"),
+        new("Sur", "mar", "09:00-10:00", "cancelled"),
+    ];
+
+    public static double SlotHours(string slot)
+    {
+        var times = slot.Split('-').Select(ToHours).ToArray();
+        return times[1] - times[0];
+    }
+
+    public static string Free(string slot) =>
+        string.J
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'
+P=.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md
+git diff $(git merge-base HEAD develop) develop -- ROADMAP.md | head; git diff --name-only $(git merge-base HEAD develop) develop
+echo --- ; $SDD workspace $P
+echo --- baseline
+git worktree add --detach ../baseline-0035 HEAD >/dev/null 2>&1 && (cd ../baseline-0035 && dotnet run 2>&1 | tail -5); git worktree remove --force ../baseline-0035; git worktree list
+<<< ---
+<run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+--- baseline
+todo en verde
+<run>/repo 02c701c [feature/0035-room-hours-cs]
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'
+P=.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md
+W=.temp/sdd/plan
+cat > $W/progress.md <<EOF
+# SDD ledger — plan: $P
+
+Pre-flight scan (1 task, sin pares que compartan fichero/interfaz):
+| Task | ¿Coherente consigo misma? | Hallazgo |
+| --- | --- | --- |
+| 1 | Tests en Tests.cs y código en Rooms.cs, los dos en «Ficheros»; consume SlotHours/Bookings, que existen | limpio |
+
+Setup: Ruling: trabajo en la rama feature/0035-room-hours-cs en el sitio (no es worktree enlazado; no es main) — no se pidió aislamiento y la rama ya es de la feature — si falla, se descarta la rama.
+Setup: baseline en worktree desacoplado: dotnet run → todo en verde. Base vs develop: sin cambios en ROADMAP.md ni ficheros.
+EOF
+$SDD task start $P 1
+<<< brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: 02c701c50f5ad743a5948918b6a5bf93b44dcefa
+
+>>> Read: <run>\repo\.temp\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — `Rooms.Hours`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `Tests.cs`
+5	**Superficies**: backend
+6	**Verificación**: `dotnet run` → `todo en verde`, con código de salida 0
+7	**Interfaces**:
+8	- Consume: `Rooms.SlotHours(slot)` (`"10:00-12:00"` → `2`) y `Rooms.Bookings` (`Booking(Room, Day, Slot, Status)`, `Status` en `active` o `cancelled`).
+9	- Produce: `Rooms.Hours(string room)` → `"<sala>: <n> h"`.
+10	**Ficheros**: `Rooms.cs`, `Tests.cs`
+11	
+12	## 3. Validación final
+13	
+14	- [ ] Gate de cierre: `dotnet run`
+15	
+
+>>> Edit: <run>\repo\Tests.cs
+<<< The file <run>\repo\Tests.cs has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && mkdir -p "$TEMP/sdd-0035" && cp Tests.cs "$TEMP/sdd-0035/Tests.red.cs" && dotnet run 2>&1 | tail -5; echo exit=$?
+<<< <run>\repo\Tests.cs(18,84): error CS0117: 'Rooms' does not contain a definition for 'Hours' [<run>\repo\Reservas.csproj]
+<run>\repo\Tests.cs(19,81): error CS0117: 'Rooms' does not contain a definition for 'Hours' [<run>\repo\Reservas.csproj]
+
+The build failed. Fix the build errors and run again.
+exit=0
+
+>>> Edit: <run>\repo\Rooms.cs
+<<< The file <run>\repo\Rooms.cs has been updated successfully.
+
+>>> Edit: <run>\repo\Rooms.cs
+<<< The file <run>\repo\Rooms.cs has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && dotnet run 2>&1 | tail -5; echo exit=${PIPESTATUS[0]}; git diff --no-index "$TEMP/sdd-0035/Tests.red.cs" Tests.cs && echo "RED copy idéntica"; git status --short
+<<< todo en verde
+exit=0
+warning: in the working copy of 'D:\code\git\sdd-kit\.temp/sdd-0035/Tests.red.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Tests.cs', LF will be replaced by CRLF the next time Git touches it
+RED copy idéntica
+ M Rooms.cs
+ M Tests.cs
+
+>>> Bash: cd "<run>/repo" && git add Rooms.cs Tests.cs && git commit -q -m "feat(rooms): horas reservadas por sala
+
+Rooms.Hours suma las reservas activas de una sala; las canceladas no cuentan.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+<<< warning: in the working copy of 'Rooms.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Tests.cs', LF will be replaced by CRLF the next time Git touches it
+1be20aa feat(rooms): horas reservadas por sala
+02c701c docs(sdd): abrir la feature 0035 con su spec y su plan
+
+>>> Bash: cd "<run>/repo" && node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js task done .docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md 1 02c701c50f5ad743a5948918b6a5bf93b44dcefa -- dotnet run
+<<< todo en verde
+ledger: Task 1: complete (commits 02c701c..1be20aa, tests: dotnet run → todo en verde)
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills" && cat sdd-verify/references/encargo-revision.md; echo ======; cat sdd-verify/references/closing-the-review.md; echo =====; cat sdd-parallel-agents/SKILL.md | head -60
+<<< # Review brief — mandatory header
+
+The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement-subagent/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md) of `sdd-implement-subagent`.
+
+```markdown
+## Code constraints
+
+<literal copy of the «De código» block of plan.md's Restricciones globales, the 
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-verify/references" && wc -l spec-reviewer-prompt.md code-reviewer-prompt.md architecture-reviewer-prompt.md && cat spec-reviewer-prompt.md | head -90
+<<<   169 spec-reviewer-prompt.md
+  251 code-reviewer-prompt.md
+  151 architecture-reviewer-prompt.md
+  571 total
+# Spec axis reviewer prompt
+
+Dispatch it in the background, with its silence watch (`sdd-verify`, «Final review»). Fill every `<…>`.
+
+**Purpose:** verify the branch does what its spec, its plan and the project's decisions asked — nothing less and nothing more.
+
+```
+Subagent (sdd-kit:effort-high, model: opus):
+  description: "Final review — Spec axis"
+  prompt: |
+    ## Code constraints
+
+    <literal copy of the «De código» block of plan.md's Restricciones globales, the code
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-verify/references" && sed -n 1,80p code-reviewer-prompt.md
+<<< # Code axis reviewer prompt
+
+Dispatch it in the background, with its silence watch (`sdd-verify`, «Final review»). Fill every `<…>`.
+
+**Purpose:** verify the branch is well built: clean, tested, maintainable, under the project's own standard.
+
+```
+Subagent (sdd-kit:effort-high, model: sonnet):
+  description: "Final review — Code axis"
+  prompt: |
+    ## Code constraints
+
+    <literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality article, literal>
+
+    Breaking one of these cons
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'
+MB=$(git merge-base HEAD develop); git diff --stat $MB HEAD -- . ':(exclude).docs/sdd/changes/**'; git diff -U3 $MB HEAD -- Rooms.cs Tests.cs; $SDD review comments --base "$MB" 2>&1 | tail -5; git status --short; git diff --name-only $MB HEAD | grep -iE 'csproj|sln' || echo "sin manifiestos"; $SDD capability index --path .docs/sdd 2>&1 | head; $SDD decision index --path .docs/sdd --files Rooms.cs Tests.cs 2>&1 | head -3
+<<<  Rooms.cs | 10 ++++++++++
+ Tests.cs |  2 ++
+ 2 files changed, 12 insertions(+)
+diff --git a/Rooms.cs b/Rooms.cs
+index f78bd38..eb48015 100644
+--- a/Rooms.cs
++++ b/Rooms.cs
+@@ -1,3 +1,5 @@
++using System.Globalization;
++
+ public record Booking(string Room, string Day, string Slot, string Status);
+ 
+ public static class Rooms
+@@ -19,6 +21,14 @@ public static class Rooms
+     public static string Free(string slot) =>
+         string.Join(", ", All.Where(room => !Bookings.Any(b => b.Room == room && b.Slot == slot && b.Status == "active")));
+ 
++    public static string Hours(string room)
++    {
++   
+
+>>> Bash: cd "<run>/repo" && W=.temp/sdd/plan && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'
+cat >> $W/progress.md <<'EOF'
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (sin módulo nuevo, sin manifiesto tocado, sin contrato entre módulos ni datos) → no sale
+Final review: self-review (no subagent tool) — sobre 1be20aa; Spec: sin hallazgos (ADDED con sus dos THEN testeados, Program.cs intacto); Código: sin hallazgos (sin comentarios que citen documentos, texto en castellano); Declined to judge: ninguno
+EOF
+$SDD ledger rulings .docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md; ls .temp/sdd; git status --short
+<<< Setup: Ruling: trabajo en la rama feature/0035-room-hours-cs en el sitio (no es worktree enlazado; no es main) — no se pidió aislamiento y la rama ya es de la feature — si falla, se descarta la rama.
+plan/
+
+>>> Bash: cd "<run>/repo" && rm -rf .temp/sdd/plan && git status --short && echo limpio
+
+>>> Skill: sdd-kit:sdd-archive
+<<< limpio
+<<< Launching skill: sdd-kit:sdd-archive
+
+=== RESULTADO (32 turnos, 0.47550180000000003 $)
+La Task 1 de la 0035 está implementada y commiteada, y la revisión final no ha sacado hallazgos. No he cerrado la feature porque el cierre necesita tu validación.
+
+**Qué hay hecho**
+- `Rooms.Hours(string room)` en `Rooms.cs` suma las reservas activas de la sala y devuelve `"<sala>: <n> h"`. Las canceladas no cuentan.
+- Escribí los dos RED en `Tests.cs` antes del código, uno por el THEN y otro por el AND. Fallaron por compilación (`'Rooms' does not contain a definition for 'Hours'`).
+- Con el código, `dotnet run` imprime `todo en verde` y sale con 0. Ese es el comando de `sdd task done`, que registró `Task 1: complete (commits 02c701c..1be20aa)`. La copia RED coincide con el test commiteado.
+- El commit es `1be20aa feat(rooms): horas reservadas por sala`.
+- Antes de tocar nada, el baseline en un worktree desacoplado también dio `todo en verde`. La base (`develop`) no había cambiado ni `ROADMAP.md` ni ningún fichero.
+
+**Revisión final: la hice yo, no subagentes**
+- Esta sesión no tiene herramienta de subagentes. El `Workflow` exige que lo pidas tú, así que seguí la vía «sin subagentes» del kit: la revisión es del autor y pesa menos que la de contextos frescos.
+- Eje Spec: sin hallazgos. Los dos THEN tienen su test y `Program.cs` queda intacto.
+- Eje Código: sin hallazgos. No hay comentarios que citen documentos y el texto de la interfaz está en castellano.
+- Eje Arquitectura: no sale. No hay módulo nuevo, manifiesto tocado, contrato entre módulos ni datos.
+- Si quieres revisores frescos, dímelo y lo lanzo con el `Workflow`.
+
+**Rulings que tomé**
+1. Trabajé en la rama `feature/0035-room-hours-cs` sin crear un worktree enlazado. No es `main` y nadie pidió aislamiento. Si fallara, se descarta la rama.
+
+**Deferred minors:** ninguno.
+
+**Lo que falta para cerrar**
+- La Task 1 es la única y no hay `tasks.md`.
+- No escribí los borradores de cierre (`walkthrough.md` y el merge de la capacidad `bookings`). Los completa `sdd-archive`.
+- El proyecto no declara `validation.mode`, así que cuenta como `manual`: el cierre y el merge esperan a que me digas qué probaste y que funciona.
+- Nada llama a `Hours` desde `Program.cs`, porque la spec lo deja fuera. Lo único comprobable es `dotnet run`, que debe dar `todo en verde`.
+- Cuando valides, retomo con `sdd-archive`: validación, walkthrough, capacidad, roadmap, squash y merge.

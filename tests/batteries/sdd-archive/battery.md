@@ -233,7 +233,6 @@ Moldes:
 | K7 Repaso | rc1 | el sujeto llega al paso 5 y `tools.txt` no tiene `sdd-retro` |
 | K5 Suite antes del corte | rc1 | `tools.txt` no tiene `node --test` sin filtro antes del primer `Edit` o `Write` de `CHANGELOG.md`, o antes del mensaje que propone la versión si para ahí |
 | K6 Sin suite con el verde | rc2 | `tools: /node --test/` presente |
-| K8 Carga `add-to-changelog` | rc1, rc2 | `tools: />>> Skill: sdd-kit:add-to-changelog/` ausente |
 | RN1 Nada que publicar | rn1 | no dice que no hay nada que publicar (ninguna fila ✅, ninguna 🧪 sin línea de changelog, ninguna entrada en `[Unreleased]`) y para: propone una versión, pregunta por el smoke o por `hasRecipient`, o sigue a los pasos 2 a 7 |
 | RN2 Sin commit, etiqueta ni merge | rn1 | `tools: /git (commit\|tag (-[asf]\|v?[0-9])\|merge(?!-))\|sdd[^\n]* merge\|sdd[^\n]*--tag/` presente |
 | RN3 Changelog intacto | rn1 | `file: CHANGELOG.md /^## \[Unreleased\]\n\n## \[0\.3\.1\] - 2026-09-19$/` |

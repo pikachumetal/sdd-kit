@@ -1,0 +1,98 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [26]
+La re-revisión está en marcha y todavía no tengo su veredicto. El pre-check 6 pide no escribir ningún registro hasta que vuelva y se cierre, así que paro aquí.
+
+De momento:
+- **Pre-checks 0.1 y 0.2:** el árbol está limpio y `merge --check` sale bien. La fusión iría a `develop`.
+- **Ramas abiertas a la vez:** `feature/0011-others` (`<run>/0011-others`). La que fusione segunda integra la base y repite sus gates.
+- **Spec:** está aprobada, firmada por Laura.
+- **Re-revisión:** `HEAD` (967214a) avanzó sobre lo último revisado (183f62d) con un commit de 17 líneas que solo añade `tasks.md`. Por eso lanzo la única re-revisión del rango, con `sdd-kit:effort-high` y opus, en un worktree aparte.
+
+Cuando vuelva, seguiré con la validación en modo `field`, que haré yo. Después vendrán el walkthrough, las capabilities, la fusión de la base y el merge a `develop`.
+
+--- [32]
+### Finding Verdicts
+No findings were open. The final review on 183f62d was clean (Spec opus+high, Código sonnet+high, Arquitectura not raised), so there is nothing to mark addressed or unaddressed. The only check left was whether the new `tasks.md` matches the code and the git history. It does not, as listed below.
+
+### New Breakage in the Fix Diff (Critical/Important/Minor with file:line, or "None")
+
+- **Important — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: Task 1 points to the wrong commit.** The row "Cancelar con motivo | done | 183f62d" does not match `git log`. Task 1 was done in `0b5782b feat(bookings): cancelar con un motivo de la lista`. That commit adds `reasons`, `reasonOf`, the new `cancelBooking(room, day, reason)` and the two cancel-reason tests. 183f62d only adds `cancelledList` / `canceladas` and its test, which is Task 2. The brief's "both tasks cite 183f62d" describes what the file says, but the history does not support it. As written, the record hides the commit for Task 1. Fix: Task 1 → `0b5782b`.
+
+- **Important — `tasks.md:17`: the Ruling describes a gate change that does not exist.** It says the gate runs `node --test --test-concurrency=1`. No tracked file contains `concurrency` except this line.
+  - The closing gate in `constitution.md:4` is `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`.
+  - The commands in `gate.json` are plain `node --test test/app.test.js test/cancel.test.js` and `node --test test/rooms.test.js`.
+  - `plan.md` §3 says `node --test`.
+
+  The stated reason does not hold either. `node --test` runs each test file in its own process, so test files cannot race over one shared in-memory store, and `--test-concurrency=1` would not change how tests inside one file run. The Ruling also calls itself a "workaround hasta aislar el almacén por test", but nothing in `.docs/sdd/steering/debt.md` records that debt. Fix: either remove the Ruling, or make the gate change and record the debt. As it stands, it describes a change that does not exist, made for a reason that does not apply.
+
+- **Minor — `tasks.md:13`:** "Arquitectura no (plan)" says the plan decided this, but `plan.md` never mentions an architecture review. Its only related line is "Review Focus: ninguna: comprobado". The claim that Arquitectura was not raised agrees with the brief. Only the "(plan)" source can't be checked.
+
+Nothing else in the diff breaks anything. It adds one Markdown file with valid front matter, its `id` matches the spec/plan folder, the text is in Spanish, and no code or tests changed (`git diff --stat 183f62d 967214a` shows only `tasks.md`).
+
+### Out-of-Scope Observations
+- `test/cancel.test.js`, test "canceladas enseña sala, día y motivo" (from 183f62d, already reviewed): it only passes because the first test in the same file has already cancelled `Norte lun` in the module-level `bookings` array. This is a test-order dependency inside one file, not a race between files. It may be the real issue the Ruling was trying to describe, but `--test-concurrency=1` would not fix it. Not part of this commit.
+
+### Verdict
+**Fix round:** Findings remain open:
+1. `tasks.md:10`: Task 1 cites 183f62d. It should cite 0b5782b. (Important)
+2. `tasks.md:17`: The Ruling describes `--test-concurrency=1` in the gate. The gate in `gate.json` and `constitution.md:4` has no such flag, the stated race cannot happen between `node --test` files, and the workaround's debt is not in `debt.md`. (Important)
+3. `tasks.md:13`: "Arquitectura no (plan)" says the plan decided this, but the plan does not mention it. (Minor)
+
+--- [34]
+La re-revisión dejó dos hallazgos Important abiertos, ambos en `tasks.md`. Antes de tocar nada compruebo que son ciertos.
+
+--- [39]
+Los dos hallazgos son ciertos. Los corrijo en `tasks.md` y apunto la dependencia de orden entre tests como deuda.
+
+--- [42]
+Re-revisión cerrada. Sigo con el paso 1 (validación en modo `field`, la hago yo) y leo las referencias.
+
+--- [45]
+Hay otra rama abierta (0011), así que la suite se ejecuta una sola vez en la fusión de sincronización del paso 6. Aquí hago el smoke, una fila por cada THEN, con ejecución real.
+
+--- [48]
+El estado vive en memoria dentro de cada proceso. Por eso encadeno `cancelar` y `canceladas` en un solo proceso para ver el flujo real.
+
+--- [51]
+Los cuatro THEN dan `ejecución real`. Ahora miro las referencias de registros y una walkthrough existente como formato.
+
+--- [64]
+Sigo con capacidades, ADR y roadmap.
+
+--- [67]
+Todo en verde. Junto el commit de `tasks.md` y el cierre en uno solo, desde el de la última task.
+
+--- [70]
+La base se integró (`57f573d`). Ejecuto el gate de cierre sobre la fusión de sincronización, guardando la salida completa.
+
+--- [77]
+La 0010 está fusionada en `develop` (`58f8660`) y el árbol de trabajo está limpio. El cierre completo pasó por el flujo del kit.
+
+- **Abiertas a la vez:** `feature/0011-others` (`<run>/0011-others`). Por eso la suite corrió una sola vez, sobre la fusión de sincronización (`57f573d`).
+- **Re-revisión:** `HEAD` había avanzado un commit de solo docs sobre lo revisado. La re-revisión (opus) encontró dos Important en `tasks.md`.
+  - La task 1 citaba `183f62d`; el commit correcto es `0b5782b`.
+  - Había un ruling sobre `--test-concurrency=1` en el gate que no existía en ningún fichero. Lo comprobé y lo retiré; `sdd ledger rulings` da «Sin rulings».
+- **Minor sin tocar:** «Arquitectura no (plan)» no está respaldado por el plan.
+- **Validación en campo (la hice yo):** 4/4 THEN con ejecución real. Cubren `cancelar` con motivo, con motivo fuera de la lista, sin `--motivo`, y `canceladas` en un solo proceso, porque el almacén vive en memoria.
+- **Gate:** `` Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test: corrió 5/5 · rooms:test: saltada (solo la toca la base) `` sobre `57f573d`.
+- **Registros:**
+  - `walkthrough.md`.
+  - `tasks.md` corregido.
+  - Capacidad nueva `bookings`, fusionada con `sdd capability merge` (`capability check` en verde).
+  - Fila 0010 en ✅ (`roadmap check` válido).
+  - Fila nueva en «Por triar» de `debt.md`.
+  - Un solo commit de cierre.
+- **Sin cambios:** no hay `estimation.md` ni ADR candidatas, así que ni el tiempo real ni las ADR entran. No toqué `CHANGELOG.md`, como pide el kit.
+
+**Decisiones sin el dev-lead:** ninguna.
+
+**Pendiente de decidir:**
+- **Test sin cubrir:** el caso «sin `--motivo`» está en la spec y lo verifiqué a mano, pero `test/cancel.test.js` no lo prueba. Está anotado en 4.3 del walkthrough.
+- **Deuda anotada:** los tests de `test/cancel.test.js` dependen del orden: `canceladas` solo pasa porque el test anterior ya canceló Norte lun.
+
+**Ticket del kit:** la retro dejó una línea `Retro: … → ticket del kit`. `tasks.md` salió con un commit mal citado y un ruling inexistente, y nada de `sdd-implement` lo contrasta con `git log` ni con el gate. ¿Quieres que lo abra con `sdd-feedback`?
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (58f8660) · push: no hecho: `merge.push` está en `false` y no hay remoto · el worktree es el checkout principal del repo, no hay nada que borrar.
+

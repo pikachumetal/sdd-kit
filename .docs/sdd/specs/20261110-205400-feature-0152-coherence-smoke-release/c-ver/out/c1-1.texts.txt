@@ -1,0 +1,51 @@
+--- [3]
+Ahora: leo el estado de la feature 0010 (spec, tasks, ledger y los informes de revisión). Queda: decidir qué hacer con los hallazgos de la revisión final, ~3 min.
+
+--- [15]
+Hay un revisor de la enmienda en marcha. Espero su informe antes de presentar el ✋.
+
+--- [20]
+1. Importante · «Delta de comportamiento», tercer AND · Falta el límite del recorte. El texto («los espacios… no cuentan») no dice si `--motivo "   "` (solo espacios) o `--motivo ""` responden «motivo no válido» como el motivo ausente. La implementación puede decidirlo de cualquier manera. · Añade un AND: «un motivo solo de espacios responde «motivo no válido: …»». Si no se quiere, declara que queda fuera.
+2. Importante · tercer AND · El recorte puede aplicarse solo para comparar o también para guardar y mostrar. El AND solo prueba la salida de `cancelar`. `canceladas` podría enseñar «sala ocupada » con el espacio y la batería seguiría en verde. · Añade el caso al GIVEN/WHEN/THEN de `canceladas`, o un AND que diga que se guarda el motivo recortado.
+3. Importante · tercer AND · La batería pasa sin el comportamiento. Con un solo caso (un espacio al final), un `trim()` solo por la derecha lo cumple. El texto promete «principio o final». · Pide un caso con espacios al principio y otro al final. Por ejemplo `--motivo " sala ocupada"` y `--motivo "sala ocupada "`.
+4. Importante · tercer AND, «los espacios» · No define qué cuenta como espacio. No dice si se recortan tabuladores, saltos de línea o espacios Unicode. Tampoco dice nada de los espacios interiores («sala  ocupada») ni de las mayúsculas, que siguen comparándose tal cual. · Di «espacio, tabulador y saltos de línea» o «lo que recorta el lenguaje». Aclara que los interiores y las mayúsculas no se tocan.
+5. Importante · «Decisiones que he tomado yo» · Normalizar la entrada es una decisión de diseño y no aparece. Además la lista está numerada 1 y 3, y falta la 2. Sugiere que se borró algo, o que falta una decisión. · Añade la decisión del recorte, o la numeración correlativa. Explica por qué se recorta y no se rechaza.
+6. Importante · «Enmiendas», línea del 2026-11-12 · La spec es `approved` por Laura, y la enmienda dice «sin aprobar» pero el AND ya está en el cuerpo, que figura aprobado. La tabla «Aprobaciones» sigue en «aprobada» y la implementación puede tomarlo como aprobado. · Marca el AND como pendiente, o pasa el `status` a un estado de revisión hasta que el dev-lead apruebe la enmienda. No dejes la aprobación vigente sobre texto nuevo.
+7. Menor · «Delta de comportamiento», cabecera `ADDED` · El recorte modifica el contrato de un requisito ya aprobado. Se hace con un AND dentro de un ADDED, sin marcar MODIFIED, y sin saber si `bookings` tiene capacidad viva. No existe `capabilities/` en `.docs/sdd/`. · Declara la enmienda como cambio al requisito. Aclara que la verdad viva de `bookings` aún no existe y se crea al archivar.
+8. Menor · «Enmiendas» · La referencia a `review-code.md` y `src/app.js:14-17` apunta a un fichero de código y a un artefacto que no existen en la spec. No se puede verificar y la spec queda atada a líneas que cambian. · Cita el hallazgo en prosa (qué fallaba) y quita la línea de código.
+9. Menor · «Dónde se prueba» · No cubre el recorte. Dice «Motivo: por el comando `cancelar`», pero no dice si el recorte lo prueba el mismo test ni si va en `test/cancel.test.js`. · Añade una línea para el recorte, o confirma que entra en «Motivo».
+10. Menor · «Intent» y «Scope» · Siguen sin mencionar el recorte. Scope dice «Entra: `cancelar … --motivo`», pero no la normalización de la entrada. · Añade «normalizar espacios del motivo» a «Entra», y di que `canceladas` no cambia.
+
+--- [21]
+🦆 La revisión final encontró un fallo real. `cancelar Norte lun --motivo "sala ocupada "`, con un espacio al final, responde «motivo no válido». Arreglarlo es recortar el motivo antes de compararlo con la lista. Eso cambia la salida para un caso que la spec no recoge, así que es una desviación de la spec aprobada y no un ruling. Perfil `delegate`: paro y no toco código.
+
+✋ **Enmienda sin aprobar** (en `spec.md`, sin commit):
+- **Delta, tercer AND de «Cancelar pide un motivo»:** «los espacios al principio o al final del motivo no cuentan: `--motivo "sala ocupada "` responde «cancelada Norte lun (sala ocupada)»».
+- **«Enmiendas»:** línea del 2026-11-12, marcada `sin aprobar`.
+
+**Hallazgos del revisor de la enmienda** (sonnet, los 7 puntos):
+- **Importantes, sobre el texto del AND:**
+  - No dice qué pasa con un motivo solo de espacios o vacío. Recomiendo «motivo no válido», igual que sin `--motivo`.
+  - No dice si se guarda recortado. Recomiendo que sí, para que `canceladas` no enseñe «sala ocupada ». Sin eso la batería no lo vería.
+  - Un `trim()` solo por la derecha lo cumpliría con un único caso, y el texto promete «principio o final». Harían falta un caso con espacio inicial y otro con espacio final.
+  - «Espacios» no está definido (tabuladores, saltos de línea). Recomiendo decir «lo que recorta `String.prototype.trim`» y que los espacios interiores y las mayúsculas no se tocan.
+- **Importantes, sobre el procedimiento:**
+  - El recorte no aparece en «Decisiones que he tomado yo». Esa lista salta del 1 al 3.
+  - La spec sigue `approved` por Laura con texto nuevo dentro. Mientras no apruebes la enmienda, ese AND no está aprobado.
+- **Menores:**
+  - Es un cambio a un requisito ya aprobado. Hay que declararlo así, aunque no exista `capabilities/`.
+  - La enmienda cita `review-code.md` y `src/app.js:14-17`, que son referencias frágiles.
+  - «Dónde se prueba» no recoge el recorte.
+  - «Intent» y «Scope» no lo mencionan.
+
+**Qué necesito de ti:**
+1. ¿Apruebas el recorte con los cierres que recomiendo? Los cierres son: vacío o solo espacios → «motivo no válido», se guarda recortado, casos de espacio inicial y final, y `trim()` como definición. Si prefieres no aceptar espacios, lo dejo como límite conocido en el ✋ del cierre y no toco el código.
+2. Si apruebas, haré lo siguiente:
+   - **Spec:** incorporar esos cierres.
+   - **Task 3:** `Task 3 — enmienda 2026-11-12: recortar el motivo`, con los tests en RED primero y su commit.
+   - **`tasks.md`:** lo incluyo (sigue sin commit) y marco la Task 1 como `afectada por enmienda → Task 3`.
+
+Mientras tanto, dejo anotado esto, sin tocarlo:
+- **Menor de `review-spec.md`:** el test de `canceladas` depende de que antes se ejecute el de `cancelar`. No bloquea.
+- **`tasks.md`:** corregí el commit de la Task 1 a `09335ba`. Estaba puesto `af5397e`.
+

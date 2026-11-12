@@ -1,0 +1,48 @@
+--- [3]
+Empiezo por la Fase 1: leo la deuda del proyecto, el hook y el estado del repo.
+
+--- [5]
+La deuda no cubre este fallo. Ahora leo el hook y el fichero.
+
+--- [8]
+Mi `sh` fue un error mío: el hook es de Node, no de shell. Lo ejecuto como lo haría git y miro el entorno que git le pasa.
+
+--- [11]
+Ejecutado a mano pasa (exit 0), así que el fallo depende del entorno que git da a un hook durante `git commit`. Compruebo qué variables de git expone y lo simulo sin crear commit.
+
+--- [14]
+Ese comando era demasiado enrevesado. Lo simplifico: solo simulo las variables que git exporta a los hooks, sin escribir ficheros.
+
+--- [18]
+Reproducido con `GIT_INDEX_FILE`. Compruebo que no queden restos de mi prueba.
+
+--- [20]
+El pre-commit falla porque `git commit` le pasa `GIT_INDEX_FILE` y el hook se lo hereda a un worktree temporal. Reproduje el fallo simulando esa variable. No ejecuté un `git commit` real, así que no he visto el error exacto dentro del commit.
+
+## Causa raíz
+
+El hook `.githooks/pre-commit` crea un worktree temporal en `.git/hook-check` y ejecuta `git status --porcelain` dentro de él. `git status` falla por culpa de `GIT_INDEX_FILE`.
+
+1. Al lanzar un hook de commit, git exporta `GIT_INDEX_FILE=.git/index`, una ruta relativa.
+2. El hook usa `spawnSync` sin pasar `env`, así que sus hijos heredan esa variable.
+3. `git status` corre con `cwd: tmp`, y ahí `.git` es un fichero, no un directorio. Git intenta usar el índice en `<tmp>/.git/index` y no puede.
+4. Falla con `Unable to create '.../.git/hook-check/.git/index.lock': No such file or directory`. El hook lo recoge como «el worktree temporal no responde» y sale con 1.
+
+## Evidencia
+
+| Ejecución | Resultado |
+| --- | --- |
+| `node .githooks/pre-commit` a mano | exit 0 |
+| `GIT_INDEX_FILE=.git/index node .githooks/pre-commit` | exit 1, con el error de `index.lock` de arriba |
+| `GIT_DIR=.git node .githooks/pre-commit` | exit 0 |
+
+Por eso a mano pasa y solo falla dentro de `git commit`. Tampoco tiene que ver con `notas.txt`: el hook solo comprueba `HEAD` y nunca mira lo que stageas.
+
+## Otros puntos
+
+- **Deuda:** `.docs/sdd/steering/debt.md` no tiene ninguna fila que cubra este fallo.
+- **Mi error:** probé primero con `sh .githooks/pre-commit`. El hook es de Node, así que eso fallaba por mi culpa y no cuenta como evidencia.
+- **Estado del repo:** tras las pruebas no quedan restos. `git worktree list` solo muestra el principal, no hay `.git/hook-check` y `notas.txt` sigue staged.
+
+No he tocado nada. Cuando quieras el arreglo, la ruta natural es un patch con un test que reproduzca el fallo antes de cambiar el hook.
+

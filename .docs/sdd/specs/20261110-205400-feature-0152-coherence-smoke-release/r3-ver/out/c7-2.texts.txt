@@ -1,0 +1,68 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, porque los ejes ya volvieron. Queda: leer los informes y llegar al siguiente stop, ~5 min.
+
+--- [15]
+Ahora: arreglo el Important del eje Code con TDD (test en rojo, luego el arreglo). Queda: suite completa, líneas del ledger y `tasks.md`, ~5 min.
+
+--- [28]
+Sigo con el cierre de la revisión final. El arreglo del Important ya está en verde, con 6 tests de 6. Ahora escribo el ledger y `tasks.md`, y hago el commit de la pasada de fix.
+
+--- [35]
+Ahora: despacho la re-revisión única del fix (`7699226`), que toca código y no se puede revisar en el hilo. Queda: leer el encargo y el prompt de re-revisión y lanzarla, ~10 min.
+
+--- [47]
+La revisión final de la 0010 llegó con un Important, y ya está arreglado. La re-revisión del arreglo está lanzada y todavía no ha vuelto, así que no hay veredicto sobre él.
+
+**Qué dijeron los ejes**
+- **Spec:** limpio. Solo un Minor: el test de `canceladas` depende de que antes haya corrido el de `cancelar`. Va al ledger como `minor (deferred)`, porque el proyecto no tiene `review.minors: fix`.
+- **Code:** un Important. `canceladas --desde`, sin el día, listaba todas las canceladas en vez de avisar.
+- **Arquitectura:** no sale. No hay señales en el diff y el plan decía `no`.
+
+**El arreglo**
+- Añadí el test `canceladas --desde sin día avisa y no lista nada`. Falló antes del cambio: devolvía `Norte lun — sala ocupada`.
+- Con el arreglo, `parseSince` marca `missing` y `canceladas` responde «indica un día: lun, mar, mié, jue, vie».
+- La suite pasa 6 de 6 (`node --test test/`).
+- El commit del arreglo es `7699226`. `07f84b4` es otro commit, de solo documentación, que anota la pasada de fix en `tasks.md`.
+- El ledger y `tasks.md` tienen las líneas `Revisión final:` y `Pasada de fix:`.
+
+**Pendiente**
+- La re-revisión es una sola, con `sdd-kit:effort-high` + `opus`, sobre `2d5fe84..7699226`. Corre en un worktree separado, con su vigilancia de silencio activa.
+- Cuando vuelva, escribo su línea `Re-revisión:` en `tasks.md`, quito el worktree y sigo con la validación.
+- No dejé la línea `Re-revisión:` en `tasks.md`. El ledger tiene solo un aviso de que se despachó.
+
+--- [55]
+### Finding Verdicts
+- **[Code, Important] `parseSince` never sets `missing`, so `canceladas --desde` with no day lists everything and gives no warning** — **ADDRESSED.**
+  - `src/app.js:22-23` now returns `missing: index !== -1 && (since === undefined || since.startsWith('--'))`. `parseSince(['--desde'])` therefore gives `{ since: undefined, missing: true }`. A following flag, as in `['--desde', '--x']`, also counts as missing.
+  - `src/app.js:54-57` checks `missing` before calling `cancelledList`. When it is set, the command returns `` `indica un día: ${days.join(', ')}` ``, which with `days` at `src/app.js:4` is «indica un día: lun, mar, mié, jue, vie». Nothing is listed. This matches the expected fix word for word, and the text is in Spanish.
+  - `test/cancel.test.js` has a new test, «canceladas --desde sin día avisa y no lista nada», that asserts exactly that string. Before the fix, the earlier tests leave Norte lun cancelled, so this test would have returned 'Norte lun — sala ocupada'. That matches the RED value the thread reported.
+  - Without `--desde`, `index === -1`, so `missing` is false and the behaviour is unchanged. The test «canceladas enseña sala, día y motivo» still gets 'Norte lun — sala ocupada'.
+  - I didn't run the suite, so the 6/6 claim is not verified by execution. Reading the code raised no doubt that called for running the focused test.
+
+### New Breakage in the Fix Diff
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:13`: the line «Pasada de fix: d28d4c5, 1 hallazgo RED→GREEN» names a commit that is not on the branch. `d28d4c5` has the same subject and the same parent (`2d5fe84`) as `7699226`, but no ref reaches it. It looks like the hash from before an amend. The fix as it stands on the branch is `7699226`, so this record does not point to it. The code is not affected.
+
+### Out-of-Scope Observations
+- **Minor**, `src/app.js:43`: this code is untouched and the behaviour was there before the fix. If the day is not valid (`canceladas --desde sab`), `days.indexOf` returns -1 and every cancellation is listed with no warning. An empty argument (`--desde ''`) leaves `missing` false, `since` counts as false, and everything is listed too.
+- **Minor**, `spec.md`: the new behaviour (warn when `--desde` has no day) is not written as a scenario in the spec's delta, and «Enmiendas» still says «(ninguna)». The `--desde` option only appears in Scope, line 33, with no scenario.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. One new Minor is open: the fix-pass record in `tasks.md:13` points to the commit `d28d4c5`, which is not on the branch, instead of `7699226`.
+
+--- [58]
+La re-revisión volvió limpia: el Important está resuelto y no hay Critical ni Important nuevos. No la verificó ejecutando la suite. El `6/6` es el de mi corrida anterior.
+
+- **Nuevo Minor de la re-revisión:** `tasks.md` apuntaba a `d28d4c5`, un sha anterior a un amend, en vez de a `7699226`. Ya lo había corregido en `07f84b4`. La re-revisión miraba `7699226`, que es anterior a esa corrección.
+- **Cierre del paso:** `tasks.md` tiene la línea `Re-revisión: 2d5fe84..7699226, sdd-kit:effort-high + opus, sin hallazgos abiertos`. Quité el worktree de revisión. Lo registré en el commit `a78df7d`, que solo toca documentación.
+
+Quedan dos observaciones de la re-revisión fuera del arreglo. Las dejé como `Ruling:` en el ledger, y irán al ✋ de la validación:
+- **Día inválido:** `canceladas --desde sab`, con un día que no existe, lista todo sin avisar. Es código anterior al arreglo.
+- **Sin escenario en la spec:** el aviso de `--desde` sin día no está escrito como escenario en `spec.md`. Tú decides si lo escribes.
+
+Sigo con el cierre: borradores del walkthrough y del merge de capabilities, y después la validación con `sdd-archive`.
+
+--- [59]
+El vigilante de silencio de la re-revisión terminó. Es solo el aviso de fin del proceso en segundo plano, y no cambia nada de lo anterior.
+
+Sigo con el cierre. Falta preparar los borradores del walkthrough y del merge de capabilities, y después la validación con `sdd-archive`.
+

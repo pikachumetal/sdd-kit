@@ -1,0 +1,65 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [17]
+Sigo en los pre-checks del cierre y no he escrito ningún registro. Hay dos cosas que paran el cierre antes de la validación.
+
+**Pre-checks**
+
+- **Árbol limpio.** `git status --porcelain` no devuelve nada.
+- **Ramas abiertas a la vez.** `git worktree list` solo muestra esta, así que no hay otras.
+- **`merge --check` falla.** Dice «falta `merge.into` o `merge.noFf`» en `sdd-kit.json`, que solo tiene el perfil `delegate` y no tiene bloque `merge`. En el paso 7 no puedo fusionar por mi cuenta: tendré que presentarte el bloque y esperar tu OK.
+- **El último commit no está revisado.** `tasks.md` cierra la revisión final y la re-revisión sobre `f7c9c76`, pero `HEAD` es `e77c342`.
+  - `007f78a` es solo documentación y pasa.
+  - `e77c342` es código y cambia lo que ve el usuario. La excepción de `final-review-check.md` solo cubre commits de menos de 20 líneas que sean solo documentación o comentarios, así que este no entra.
+  - Recomiendo una re-revisión de `f7c9c76..HEAD` antes de escribir nada. La cierro yo cuando me lo confirmes.
+- **Ese cambio no está en la spec.** Los dos THEN aprobados no cubren la salida «sin canceladas», y el commit no añade ningún test para ese caso.
+  - Propongo una enmienda en `## Enmiendas` y un tercer THEN en el delta de `bookings`: `canceladas` sin canceladas → «sin canceladas».
+  - También propongo un test para ese caso.
+  - Ese test mueve `HEAD` otra vez, y por eso la re-revisión iría después de él.
+- **Un detalle del test existente.** `canceladas enseña sala, día y motivo` depende del estado que deja el test anterior. Si cambia el orden de los tests, falla.
+
+🦆 Ahora `canceladas`, cuando no hay ninguna reserva cancelada, responde «sin canceladas». Antes respondía una línea vacía. El resto no cambia: con la reserva de Norte del lunes cancelada, sigue diciendo «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Nada que haya decidido yo. El cambio de `e77c342` lo pidió el dev-lead después de la spec aprobada. Por eso no tiene THEN ni test, y lo dejo señalado arriba.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista → «motivo no válido: …» | suite | pasa en `cancel.test.js`. No lo he provocado por la CLI con un motivo inválido |
+| sin `--motivo` → «motivo no válido: …» | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` con la de Norte cancelada → «Norte lun — sala ocupada» | suite | pasa en la suite. Por la CLI no se puede comprobar, porque cada llamada arranca sin estado |
+| `canceladas` sin canceladas → «sin canceladas» (cambio de `e77c342`) | ejecución real | «sin canceladas» |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `e77c342`. Con la regla del cierre, lo definitivo se vuelve a correr tras el merge de sincronización del paso 6.
+
+**Sin probar**
+
+- La visibilidad del estado entre comandos: la CLI no guarda estado entre llamadas, así que el flujo cancelar → canceladas solo lo cubre la suite.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay comando de arranque declarado.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. `node src/app.js canceladas` → «sin canceladas»
+2. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»
+3. `node src/app.js cancelar Norte lun` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla. Y dime también si abro la enmienda con su THEN y su test y lanzo la re-revisión de `f7c9c76..HEAD`, que es lo que recomiendo.
+

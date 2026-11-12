@@ -1,0 +1,176 @@
+
+>>> Read: <run>/review-final-b87ea8d.diff
+<<< 1	# Review package: beed492..HEAD
+2	
+3	## Commits
+4	b87ea8d test(bookings): cubrir anular
+5	c506e7f docs(sdd): abrir la feature 0025
+6	
+7	## Files changed
+8	 test/void.test.js | 7 +++++++
+9	 1 file changed, 7 insertions(+)
+10	
+11	## Diff
+12	diff --git a/test/void.test.js b/test/void.test.js
+13	new file mode 100644
+14	index 0000000..ded7476
+15	--- /dev/null
+16	+++ b/test/void.test.js
+17	@@ -0,0 +1,7 @@
+18	+import { test } from 'node:test';
+19	+import assert from 'node:assert/strict';
+20	+import { run } from '../src/app.js';
+21	+
+22	+test('anular responde sin aviso', () => {
+23	+  assert.equal(r
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail/spec.md
+<<< 1	---
+2	id: 20261014-100000-feature-0025-void-no-mail
+3	feature: 0025
+4	title: Quitar el aviso por correo al anular
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-14
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-14
+14	---
+15	
+16	# Spec — Quitar el aviso por correo al anular
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — anular deja de avisar por correo.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. `anular` sigue respondiendo «anulada <sala> <día>».
+25	
+26	### Decisiones t
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail/plan.md
+<<< 1	---
+2	id: 20261014-100000-feature-0025-void-no-mail
+3	feature: 0025
+4	title: Plan de implementación — Quitar el aviso por correo al anular
+5	spec: ./spec.md
+6	status: draft
+7	created: 2026-10-14
+8	---
+9	
+10	# Plan de implementación — Quitar el aviso por correo al anular
+11	
+12	**Ejecución**: native, porque es una task.
+13	
+14	**Eje Arquitectura**: no — solo cambia el comando `anular`
+15	
+16	## Restricciones globales
+17	
+18	### De código
+19	
+20	- Texto de la interfaz en castellano.
+21	- Sin comentarios que repitan el código ni que citen documentos.
+22	
+23	## Review Focus
+24	
+25	- ninguna: com
+
+>>> Bash: cd "<run>/repo" && git ls-files && cat -n src/*.js && git show --stat HEAD~1 | head -20
+<<< .docs/sdd/capabilities/availability.md
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/capabilities/reports.md
+.docs/sdd/decisions/0003-bookings-in-memory.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail/plan.md
+.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail/s
+
+>>> Bash: cd "<run>/repo" && cat -n .docs/sdd/capabilities/bookings.md test/cancel.test.js test/app.test.js
+<<<      1	# Capacidad — bookings
+     2	
+     3	## Propósito
+     4	
+     5	reservar, cancelar y anular salas, y lo que se avisa al hacerlo
+     6	
+     7	## Requisitos
+     8	
+     9	### Anular una reserva
+    10	
+    11	- GIVEN la reserva de Norte del lunes
+    12	- WHEN `anular Norte lun`
+    13	- THEN responde «anulada Norte lun» y la reserva deja de contar en `libres`
+    14	
+    15	### Avisar por correo
+    16	
+    17	- Se avisa por correo.
+    18	import { test } from 'node:test';
+    19	import assert from 'node:assert/strict';
+    20	import { run } from '../src/app.js';
+
+=== RESULTADO (6 turnos, 0.2523712 $)
+### Strengths
+
+- The spec is small and clear. Its delta has one `REMOVED` requirement («Avisar por correo»), and the plan correctly limits the work to `src/app.js` plus `test/void.test.js`.
+- The new test `test/void.test.js:5-7` exercises the real `run('anular', …)` entry point, not a mock. It pins the reply text that decision ✋1 asks to keep («anulada <sala> <día>»).
+- The scope exclusion is respected: `anular-todas` (`src/app.js:22-26`) is untouched, and it never sent a notice.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed behaviour still runs: `anular` still queues the email notice.**
+- File:line: `src/app.js:18`, `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` });`
+- What's wrong: the branch never touches `src/app.js`; the only code change is the new test file. `voidBooking` still pushes the notice to `outbox`, and `salida` (`src/app.js:28-30`, `:36`) still shows it as «responsable: anulada Norte lun».
+- Why it matters: the feature exists to remove this behaviour. The branch ships as «done» while users get exactly the behaviour the dev-lead decided to drop.
+- How to fix: delete line 18 in `voidBooking`. Then decide whether `outbox`, `pending` and `salida` still have any producer. If nothing else writes to `outbox`, removing them is part of the same `REMOVED` (that call belongs to the executor and the dev-lead).
+- Gap: `contradicts`.
+- Source: the delta's `REMOVED — Avisar por correo`, and the dev-lead's decision «El aviso por correo al anular desaparece».
+
+#### Important (Should Fix)
+
+**2. The test named in «Dónde se prueba» doesn't check that the notice is gone.**
+- File:line: `test/void.test.js:5-7`
+- What's wrong: the test is called «anular responde sin aviso», but it only asserts the reply text. That text is the same with or without the notice, which is why the test passes against the unchanged code above. It never looks at `outbox` (which is exported) or at `run('salida', [])`.
+- Why it matters: «Anular sin aviso» has no verification that pins it. The test is green while the behaviour it names is still there, so it would also miss a regression.
+- How to fix: after `anular`, assert that `outbox` didn't grow (for example `assert.equal(outbox.length, 0)`) or that `run('salida', [])` returns `''`. The test must be RED against the current `src/app.js:18` before the fix.
+- Gap: `partial`.
+- Source: the spec's «Dónde se prueba» («Anular sin aviso … `test/void.test.js`») and the dev-lead's decision.
+
+**3. The dev-lead's decision is only half covered.**
+- Decisión del dev-lead cubierta a medias: «El aviso por correo al anular desaparece». The diff adds no rule that removes the notice; it only keeps the reply text.
+- Gap: `missing`. It's the same root cause as Issue 1, listed so the executor can rule on it.
+
+#### Minor (Nice to Have)
+
+- `.docs/sdd/capabilities/bookings.md:15-17` still lists «Avisar por correo». This normally gets folded in at archive time; just confirm that `sdd-archive` removes it.
+
+### Declined to judge
+
+- `test/cancel.test.js` calls `run('cancelar', …)`, but `run` has no `cancelar` branch (`src/app.js:32-38`), so those tests expect output the code doesn't produce. This was there before the branch and isn't in this spec, so I left it to the main thread's full-suite run and the debt triage.
+- `test/app.test.js` expects `reservar --cada-semana` to return «reserva semanal creada», but `run` has no `reservar` branch. Same reason as above.
+- Whether `anular` on a missing booking («sin reserva …», `src/app.js:16`) should have its own test. The spec doesn't cover that path and the branch doesn't change it.
+
+### Not verified
+
+- The test evidence from the task reports: no verificado — the package doesn't include them. Reading the code, `test/void.test.js` should pass, but passing says nothing about the notice (Issue 2).
+- ADRs: none apply; `0003-bookings-in-memory` isn't on the brief's list.
+
+### Recommendations
+
+- Rewrite the test first so it's RED (assert on `outbox` or `salida`), then delete `src/app.js:18`, then run `node --test test/void.test.js`.
+- The main thread should run the whole suite. Going by the code, I expect `cancel.test.js` and part of `app.test.js` to fail, but nothing I set aside has been run.
+- Check that the code constraints still hold after the fix: interface text in Spanish, and no comments that repeat the code.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The branch doesn't implement the spec's only requirement: `src/app.js:18` still queues the email notice that the `REMOVED` delta and the dev-lead's decision say must go. The test that should catch this doesn't check for it.

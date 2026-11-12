@@ -1,0 +1,62 @@
+--- [13]
+Las tasks están cerradas y leo los informes de la revisión final para actuar sobre lo que encontraron.
+
+--- [22]
+Ahora: pasada de fix única (trim del motivo + test de canceladas independiente del orden), por TDD. Queda: el separador ` — `, que cambia un THEN de la spec, y la parada ✋, ~10 min.
+
+--- [26]
+El trim falla como se esperaba. Compruebo que el test viejo de canceladas, solo, sí fallaba (el RED del hallazgo de orden):
+
+--- [29]
+RED confirmado: el test viejo, solo, devolvía `''`. El nuevo pasa solo. Ahora el trim:
+
+--- [33]
+Suite 6/6 en verde. Apunto la revisión en `tasks.md` y el ledger, y hago el commit de la pasada de fix.
+
+--- [45]
+Despacho el revisor de la enmienda con su vigilancia de silencio.
+
+--- [53]
+Pasada de fix hecha (commit `2946323`, suite 6/6). El revisor de la enmienda del separador sigue trabajando; cuando vuelva, paro contigo con 🦆 y ✋.
+
+--- [54]
+1. Crítico · Enmienda / decisión 4 / Delta «El listado de canceladas enseña el motivo» · El separador ` - ` cambia el THEN de un requisito `ADDED` ya aprobado e implementado (commit e51f16b) y el Delta lo sigue marcando `ADDED`. Se trata de un cambio de comportamiento sobre algo ya entregado. Además, el spec sigue en `status: approved` con la aprobación de Laura del 2026-10-08, que no cubre la enmienda, y la propia enmienda dice «Pendiente de aprobación». · Pasar el spec a un estado pendiente de reaprobación, o dejar la enmienda sin aplicar hasta que Laura la apruebe y registrarla en Aprobaciones. Dejar claro que el requisito ya existe y que la enmienda lo reescribe, no que se añade.
+
+2. Importante · Delta de comportamiento (ambos requisitos) · Los escenarios no ejercitan el borde que justifica la enmienda. El THEN «Norte lun - sala ocupada» se cumple igual con un guion ASCII pegado a otro texto o con un separador mal escapado. Nada comprueba que la salida sea ASCII puro, que es el motivo real de la enmienda (cp850). · Añadir un AND verificable, por ejemplo que la salida de `canceladas` solo contiene caracteres ASCII, y una fila de test que lo compruebe byte a byte.
+
+3. Importante · Delta, «Cancelar pide un motivo» · Los mensajes «cancelada Norte lun (sala ocupada)» y «motivo no válido: …» incluyen «—»? No: son ASCII. Pero «cancelada … (motivo)» contiene tildes en «válido», «día» y «sala ocupada», que `cp850` sí soporta. El spec no declara la codificación de salida, así que la premisa de la enmienda (cp850 rompe «—») queda sin respaldo. · Declarar en el spec, como regla de producto o de la capacidad, la codificación de la consola y qué caracteres están permitidos en la salida. Esa regla no consta en la constitución.
+
+4. Importante · Delta, «Cancelar pide un motivo» · Faltan escenarios propios para cada AND. «Motivo fuera de la lista» y «sin `--motivo`» van como AND colgando del caso feliz, cuando son comportamientos distintos con GIVEN/WHEN/THEN propios. Los dos pasarían si el agente respondiera siempre el mismo literal. · Separarlos en escenarios con su WHEN concreto, por ejemplo `cancelar Norte lun --motivo "vacaciones"` y `cancelar Norte lun`. Añadir también `otro` y `cambio de planes` como válidos.
+
+5. Importante · Delta, «Cancelar pide un motivo» · Los casos de contorno de cancelar no están cubiertos: sala o día inexistentes, reserva ya cancelada y motivo en distinta capitalización o con espacios (el commit 2946323 menciona «motivo sin espacios»). Hay reglas de conflicto sin declarar. · Declarar la regla sobre conflicto («no aplica» o su valor) y la normalización del motivo. Añadir un escenario para cancelar dos veces.
+
+6. Importante · Delta / PRODUCT.md · Choque terminológico. PRODUCT.md define Cancelación como la reserva que anula el propio cliente antes de 24 h, y Anulación como la del responsable. El spec no dice si `cancelar` aplica o comprueba la regla de las 24 h, ni qué ocurre con una cancelación fuera de plazo. · Declarar si la regla de 24 h entra en esta feature o es «no aplica». Si no entra, decirlo en Scope como «No entra».
+
+7. Importante · Scope / Delta · El Scope menciona `canceladas` como comando nuevo, pero la sección «Capacidades» dice «Modificadas: `bookings`». No existe `capabilities/`, así que la verdad viva de `bookings` no se puede contrastar. El delta no puede declarar que modifica un requisito existente sin verlo. · Crear o referenciar la capacidad `bookings` con sus requisitos vigentes, o declarar que se crea. Aclarar si el comando `canceladas` es `ADDED` sobre una capacidad existente.
+
+8. Menor · Decisiones que he tomado yo · La numeración salta del 1 al 3, sin decisión 2. Las decisiones 3 y 4 incluyen justificaciones que no son decisiones del agente. La decisión 3 «Sin review de spec» es de proceso. Además, hay decisiones del cuerpo que no figuran: el orden de `canceladas`, el formato «(motivo)» de la respuesta, y el hecho de que el motivo sea obligatorio. · Renumerar. Añadir como decisiones el motivo obligatorio, el orden del listado y el formato de las respuestas.
+
+9. Menor · Decisiones, punto 3 · «Dos señales (MODIFIED, datos)» justifica saltarse la review, pero la capacidad modificada y los datos nuevos (motivo almacenado) apuntan precisamente a lo contrario. El motivo es un dato nuevo y debería pasar por las cinco reglas: dónde vive, idioma, límites, avisos y conflicto. Ninguna está declarada. · Declarar las cinco reglas por nombre. Dónde vive: con la reserva cancelada. Idioma: castellano, según la constitución, regla 4. Límites: lista cerrada. Avisos y conflicto: «no aplica» o su valor.
+
+10. Menor · Dónde se prueba · Se cita `test/cancel.test.js` para ambas pruebas. El spec no dice que el listado deba ordenarse de forma estable, aunque el commit 2946323 corrige un test «independiente del orden». Es una decisión implícita sobre el orden del listado. · Declarar el orden de `canceladas` o decir expresamente que no está garantizado.
+
+--- [57]
+🦆 La revisión final de la 0010 encontró tres cosas. Dos ya están arregladas. Una espacio al final del motivo (`"sala ocupada "`) hacía que se rechazara un motivo válido; ahora se recorta. Y el test de `canceladas` solo pasaba si antes había corrido el de `cancelar`; ahora cada test arranca con la aplicación desde cero. Ambos fallaban antes del cambio y pasan después. La suite completa da 6/6 (commit `2946323`). La tercera no la puedo arreglar sin tu permiso. En la consola de recepción (`cp850`), la raya ` — ` de `canceladas` se ve como `Norte lun ÔÇö sala ocupada`. Cambiarla a ` - ` contradice lo que aprobó Laura en la spec.
+
+✋ **Me salí del plan en…**
+
+- **Desviación pendiente: el separador de `canceladas`.** Escribí la enmienda en `spec.md` y no la he guardado en un commit. El THEN pasa a ser «Norte lun - sala ocupada», la decisión 4 cambia igual y hay una línea nueva en «Enmiendas» con fecha 2026-11-11. **Mi recomendación es aprobarla.** Si la apruebas, la aplico en una Task 3 nueva («enmienda 2026-11-11: separador ASCII») y la Task 2 queda como `afectada por enmienda`. Si no, la desecho y el hallazgo pasa a `Final: Ruling:`: el código se queda con ` — ` porque es lo que aprobó Laura.
+- **Lo que dice el revisor de la enmienda** (sonnet, 1 Crítico, 6 Importantes y 3 Menores). Te dejo solo lo que afecta a esta decisión:
+  - Crítico: la aprobación del 2026-10-08 no cubre la enmienda. Es cierto, y es justo lo que te pido ahora. No lo cambio a `MODIFIED`: el requisito todavía no se ha entregado, la feature no se ha fusionado, así que sigue siendo `ADDED`.
+  - Importante: el THEN no comprueba que la salida sea ASCII, que es el motivo de la enmienda. **Lo acepto**. Si apruebas, añado `AND la salida de canceladas solo tiene caracteres ASCII`, con su test.
+  - Hay otros cinco Importantes que van contra la spec ya aprobada y no contra la enmienda. Proponen escenarios propios para cada AND, contornos de `cancelar` (cancelar dos veces, por ejemplo), la regla de las 24 h de `PRODUCT.md`, las cinco reglas del dato «motivo» y la falta de `capabilities/`. **Recomiendo no meterlos aquí**: amplían el alcance. Si quieres alguno, que entre como fila del roadmap.
+  - El Menor sobre el orden del listado es una mala lectura: el arreglo afectaba al orden en que corren los tests, no al orden de la salida.
+- **Revisión final:** apuntada en `tasks.md` sobre `e51f16b`, junto con la línea de la pasada de fix. La re-revisión única saldrá después de la Task 3, o directamente si rechazas la enmienda, y cubrirá también `2946323`.
+
+¿Apruebas la enmienda del separador ` - ` con el AND de solo ASCII?
+
+--- [59]
+Sigo esperando tu respuesta sobre la enmienda del separador. La vigilancia de silencio del revisor acaba de cerrarse; el revisor ya había terminado antes y su informe está en mi mensaje anterior.
+
+Mientras no respondas, el cambio en `spec.md` se queda sin commit. Si la apruebas, cambio ` — ` por ` - ` en una Task 3 nueva, con un test que compruebe que la salida de `canceladas` solo lleva caracteres ASCII. Si la rechazas, deshago el cambio en `spec.md` y el código se queda con ` — `, como aprobó Laura. En los dos casos, después sale la única re-revisión, que cubre también el commit de fix `2946323`.
+

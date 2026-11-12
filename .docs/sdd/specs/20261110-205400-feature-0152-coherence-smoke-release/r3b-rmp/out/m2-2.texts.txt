@@ -1,0 +1,67 @@
+--- [2]
+Son tres funcionalidades a la vez (informe de ocupación, exportación a Excel y aviso semanal), así que según el kit esto entra por `sdd-roadmap`. Lo cargo.
+
+--- [14]
+Estoy escribiendo las tres filas en el ROADMAP, que cuelgan de la propuesta 0010, y después lo valido.
+
+--- [24]
+Hecho: el módulo de informes queda planificado en el roadmap y confirmado en `develop` (commit `96ad08f`). No he arrancado ninguna feature ni escrito código. `sdd roadmap check` pasa.
+
+Ten en cuenta que `PRODUCT.md` describe una herramienta personal con un solo usuario. La petición habla de «cliente» y de «responsables», que hoy no existen en el proyecto. He seguido adelante con tus decisiones delegadas y las he dejado por escrito en la propuesta, para que las puedas enmendar.
+
+**Propuesta 0010** (`.docs/sdd/changes/20261112-105408-proposal-0010-informes/proposal.md`), con las reglas y un ejemplo con datos cada una. Ocho reglas de negocio:
+- **Horario útil:** de 08:00 a 20:00, de lunes a viernes.
+- **Ocupación:** horas reservadas dentro del horario útil entre horas útiles, y las reservas semanales cuentan en cada semana.
+- **Periodo:** la semana natural por defecto, o el que se indique con `--desde` y `--hasta`.
+- **Excel:** un CSV que Excel abre directamente (separador `;`, UTF-8 con BOM, decimal con coma). El proyecto no admite dependencias externas, así que no hay `.xlsx` real.
+- **Responsables:** cada sala tiene sus responsables y su correo en un `responsables.json`.
+- **Aviso:** se envía los lunes con el informe de la semana anterior, solo de las salas de cada responsable. No se reenvía si ya se envió esa semana.
+- **Programación:** la hace el cron del servidor (`informe --enviar-semanal`). La app no lleva planificador.
+
+**Filas nuevas en Next:**
+
+| Id | Feature | Tras | Tamaño |
+| --- | --- | --- | --- |
+| 0011 | Informe de ocupación por sala | — | M |
+| 0012 | Exportar el informe a Excel (CSV) | 0011 | S |
+| 0013 | Aviso semanal a los responsables | 0011, 0012, 0008 | M |
+
+La 0013 va después de la 0008 (avisos por correo) porque reutiliza su envío de correo. También va después de la 0012 porque las dos tocan `src/informe.js`.
+
+**Prompt de la primera fila:**
+
+### *✨ 0011 — Informe de ocupación por sala*
+***Nombre:*** `feature/0011-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+```
+Arranca la 0011 con sdd-propose, carril feature: un informe de ocupación por sala y periodo.
+
+Alcance:
+- src/informe.js (cálculo) y el comando `informe` en src/app.js, con `--desde` y `--hasta`
+
+Fuera de alcance:
+- exportar a CSV: 0012
+- aviso semanal por correo: 0013
+
+Decisiones ya tomadas:
+- horario útil de 08:00 a 20:00 de lunes a viernes, porque la ocupación se mide sobre horas útiles
+- una reserva fuera del horario útil se recorta a él, porque solo cuenta lo que cae dentro
+- la reserva semanal cuenta en cada semana en que se repite, porque si no el informe infravalora las salas
+- periodo por defecto: la semana natural (lunes a domingo)
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261112-105408-proposal-0010-informes/proposal.md, §Reglas de negocio
+
+Nada que saldar.
+
+Está hecho cuando `informe --desde 2026-11-09 --hasta 2026-11-13` da 5 días y 60 h útiles por sala, y la sala Norte con una reserva lun 10:00-12:00 sale con 3,3 %.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Para publicar tuve que usar un worktree temporal, porque `roadmap publish` no admite que los ficheros ya estén modificados en `develop`. Ya lo borré, junto con su rama.
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

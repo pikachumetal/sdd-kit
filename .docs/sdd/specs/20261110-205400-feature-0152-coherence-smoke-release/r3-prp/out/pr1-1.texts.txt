@@ -1,0 +1,51 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs) y después miro el código solo lo justo para clasificar.
+
+--- [12]
+Ahora: clasifico el cambio. Queda: tu respuesta a la pregunta del carril, y luego abro el patch y lo arreglo.
+
+🦆 **Qué pasa, en llano:** `cancelar` busca la reserva por sala y estado activo, pero **nunca mira el día** (`findBooking` en `src/app.js` recibe `day` y no lo usa). Por eso `cancelar Norte mar` encuentra la reserva del lunes, la cancela y contesta con el día que tú escribiste. Lo he reproducido. `anular` usa la misma búsqueda, así que tiene el mismo fallo y se arregla con el mismo cambio. Es parecido al patch 0007, que arregló la comparación por hora, pero este es otro fallo.
+
+**Carril: patch (fallo determinista).** La causa raíz es una y está confirmada. La solución, comparar también el día, está fijada. El test que hoy falla es: `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar la del lunes activa.
+
+**Estimación:** 0,3 h, más el gate de cierre (`node --test && node scripts/lint.mjs`, ~1 s; no hay una medida anterior en el proyecto).
+
+**Pregunta (1 sola):** ¿Abro el patch con este alcance?
+
+1. **Sí, patch (recomendada).** Hace tres cosas: añade el test de regresión de `cancelar`, hace que `findBooking` compare también el día y deja un test de que `anular` respeta el día.
+2. **Solo `cancelar`.** Dejo `anular` como está, aunque tiene el mismo fallo. No lo recomiendo, porque comparten la función.
+3. **Cambiar el perfil o el carril.** Hoy el perfil es `delegate`, del proyecto (`sdd-kit.json`).
+
+--- [20]
+Ahora: abro la rama y la carpeta del patch (id reservado). Queda: test en RED, fix, revisor y commit, ~10 min.
+
+--- [28]
+RED confirmado: ambos tests fallan por el fallo real (`cancelada Norte mar`, y la del lunes desaparece de `libres`). Escribo `patch.md` con la causa antes del fix.
+
+--- [31]
+Verde: 6/6 y lint limpio. Compruebo que el test no cambió desde el RED y lanzo el revisor único del patch.
+
+--- [37]
+Aplico los hallazgos 1–4: test del camino positivo, `anular` en su propio fichero, comentario corregido y resultados rellenos. Compruebo el RED de nuevo contra el código sin fix.
+
+--- [41]
+Arreglado y commiteado como `f55215a` en `feature/0012-cancel-day`. No he cerrado el patch: `sdd-archive` (validación, hash en `patch.md`, merge) queda pendiente.
+
+**Causa:** `findBooking` en `src/app.js` recibía el día pero solo comparaba sala y estado activo. `cancelar Norte mar` cogía la primera reserva activa de Norte, que era la del lunes. `anular` usa la misma función, así que tenía el mismo fallo.
+
+**Fix:** una línea, `b.day === day` en `findBooking`.
+
+**Verificación:**
+- `node --test && node scripts/lint.mjs` pasa con 8 tests y sin hallazgos de lint.
+- Sin el fix, los 4 tests nuevos fallan.
+- Los tests nuevos están en `test/day.test.js` y `test/day-anular.test.js`. Cubren cancelar y anular un día sin reserva, y también cancelar y anular el lunes.
+
+**Revisor (sonnet):** confirmó causa y fix. Sus cuatro hallazgos (todos de gravedad baja) estaban en los tests y en `patch.md`, y están arreglados.
+
+**Antes de cerrar:**
+- **Mismo commit:** `patch.md`, en `.docs/sdd/changes/20261111-193442-patch-0012-cancel-day/`, va en el commit del fix. Su campo `commit` y el esfuerzo real se rellenan al cerrar.
+- **Fila del roadmap:** el patch usa el id 0012, pero no hay fila en `ROADMAP.md`. No la he añadido.
+- **Remoto:** el repo no tiene remoto, así que `sdd id claim` solo validó el contador local.
+
+¿Sigo con `sdd-archive`?
+

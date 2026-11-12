@@ -1,0 +1,79 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-propose\references\patch-lane.md
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd "<run>/repo" && cat src/app.js package.json; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/estimation.md; cat .docs/sdd/specs/*patch-0007*/patch.md; cat test/cancel.test.js; cat ROADMAP.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status = 'cancelled';
+ 
+
+>>> Bash: cd "<run>/repo" && grep -rniE "gate|abierto|open|post-release|min" .docs/sdd/specs/*/walkthrough.md .docs/sdd/specs/*/patch.md | head -20; grep -n "cancel\|void\|anul" -i .docs/sdd/steering/debt.md CHANGELOG.md | head
+<<< CHANGELOG.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](.docs/sdd/specs/20260918-090000-patch-0007-cancel/)
+CHANGELOG.md:20:- Cancelar una reserva propia.
+
+=== RESULTADO (7 turnos, 0.15074189999999998 $)
+**Carril: patch**, como pides. Mi investigación lo confirma.
+
+🦆 **Qué pasa:** `findBooking` en `src/app.js:11` recibe el `day` pero nunca lo compara. Solo mira sala y estado activo. Al cancelar "Norte mar" encuentra la reserva activa de Norte del lunes, la marca como cancelada y responde "cancelada Norte mar". El test de `sin reserva` no lo detecta porque usa Sur, que no tiene ninguna reserva.
+
+**Causa raíz:** es determinista y no hay que interpretar nada. El arreglo es añadir `b.day === day` en `findBooking`. `anular` usa la misma función y tiene el mismo fallo, así que se arregla a la vez.
+
+**Test que falla hoy y pasa con el arreglo:** `cancelar Norte mar` devuelve `sin reserva Norte mar` y la reserva del lunes sigue activa. Es un solo test, por eso es patch. Añadiría otro para `anular` en la misma línea.
+
+**Antecedente:** el patch 0007 (CHANGELOG, 2026-09-18) dice haber arreglado un fallo parecido: la comparación solo por hora. Pero el código actual no compara el día, así que ese arreglo no cubría esto o se perdió. Lo anoto en `patch.md`.
+
+**Estimación:** 0,5 h (lo real del patch 0007). El gate de cierre no tiene ninguna medida en el proyecto, así que no te doy una cifra inventada. Perfil actual: `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Lo abro como patch?
+
+1. **Sí, abre el patch (Recomendada):** creo la rama y la carpeta `patch-`, escribo el test rojo, arreglo `findBooking` y verifico.
+2. **Sí, y cambia el perfil a `pair` para este patch:** igual que la 1, pero parando donde el perfil `pair` lo marca.
+3. **No:** lo dejo sin abrir.

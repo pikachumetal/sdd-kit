@@ -1,0 +1,40 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [32]
+Ahora la base: paro mi servidor, levanto el de la base y repito el fichero solo.
+
+--- [35]
+Mi shell acabó dentro del worktree de la base. Vuelvo al de la feature, quito el worktree temporal y compruebo que no he escrito nada.
+
+--- [40]
+**No he cerrado la 0010: el cierre se para en la suite, que está en rojo por culpa de la rama.** No he escrito ningún registro ni commit, y el árbol sigue limpio en `24d198b`.
+
+**Comprobaciones previas**
+- `sdd merge --check` da `destino: listo` (`develop`).
+- No hay otras ramas abiertas a la vez.
+- La spec está aprobada por Laura.
+- La revisión final fue sobre `fc8c958`. Lo único posterior es `24d198b`, que es el propio `tasks.md` (17 líneas de documentación). Lo he leído yo y no hace falta otra re-revisión.
+
+**El rojo**
+- Corrí el gate de cierre tal como lo declara `operations.md`: `node --test test/ && node e2e/run.mjs`. La suite unitaria pasa (5/5) y el e2e da 6 de 7.
+- Falla `e2e/cancel.e2e.mjs › la cancelada sale en canceladas con su motivo` con `TimeoutError ... waiting for the text "Norte lun — otro" of canceladas`.
+- La causa es que `server.mjs` retrasa 8 s la respuesta de `canceladas`, y `e2e/config.json` corta cada paso a los 5 s (`expectTimeout`). Ese retraso viene de la base (`490cf50`, «la lista de canceladas tarda en pintarse»).
+- Contraste: el fichero `cancel.e2e.mjs` solo, en la rama, falla igual (1 de 5). En un worktree desvinculado de `develop` pasa 3/3, pero allí el test nuevo no existe. Es un rojo de la rama.
+- El servidor que levanté está parado y el worktree temporal quitado.
+
+**Decisión pendiente (mía no es)**
+1. **Mi recomendación:** subir `expectTimeout` a 10 s en `e2e/config.json`. Es lo más pequeño y deja intacto el test que pide la spec, pero cambia un timeout que `operations.md` declara «por defecto». Además tocaría código tras la revisión final, así que habría que re-revisarlo una vez.
+2. Quitar ese caso del e2e. La spec lo cubre con `test/cancel.test.js`, y `canceladas` no es un «flujo core» en `operations.md`. Se pierde la cobertura de extremo a extremo.
+3. Arreglar el retraso de 8 s del servidor. Es la causa real, pero es un problema de la base y fuera del alcance de la 0010; sería otra fila de roadmap.
+
+Dime cuál prefieres y retomo el cierre desde la validación. Con esa opción 1 o 2 aplicada, sigo con el resto del checklist.
+
+**Para el cierre, ya identificado**
+- **Orden entre tests:** el test unitario `canceladas` depende del estado que deja el de `cancelar`.
+- **Workaround sin fila de deuda:** el ruling de `--test-concurrency=1` está en `tasks.md`, pero `debt.md` no tiene ninguna fila para él. Abriré una.
+- **Presupuesto del e2e:** la pasada tardó 53 s frente a los 0,5 min declarados, así que abriré otra fila de deuda por exceder el presupuesto.
+- **`tasks.md`:** la Task 1 cita `fc8c958`, pero su commit real es `82a4529`. Lo corregiré.
+
+**No terminado.** Falta resolver el rojo del e2e y completar el cierre (validación, walkthrough, capacidad `bookings`, roadmap, squash y merge). No hay worktree que borrar todavía.
+

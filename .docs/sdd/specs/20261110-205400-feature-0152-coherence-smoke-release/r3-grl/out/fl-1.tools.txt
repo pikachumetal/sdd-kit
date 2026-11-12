@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md; ls -R src test; cat package.json; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; ls node_modules 2>&1 | head -1; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -40
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references" && cat spec-writing.md; grep -n -i "default\|por defecto\|Aviso" control-profiles.md | head -30
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview 
+
+=== RESULTADO (7 turnos, 0.1618869 $)
+Ahora: te cuento cómo leo la feature y revisa el flujo contigo antes de escribir la spec. Queda: tu respuesta a una pregunta, la spec para aprobar, y luego plan e implementación sin más paradas; unos 10 min hasta la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido.** Cada reserva tiene un estado: `pendiente`, `confirmada` o `cancelada`.
+
+| Desde | Puede ir a |
+| --- | --- |
+| pendiente | confirmada, cancelada |
+| confirmada | cancelada |
+| cancelada | pendiente |
+
+Cualquier otro salto se rechaza. Por ejemplo, confirmar una cancelada, o volver de confirmada a pendiente. Preveo unas 3 tareas, todas en `src/app.js`, así que no propongo partirla.
+
+**¿Está bien el flujo?** Las transiciones son coherentes, y no veo que falte ninguna. Veo un hueco que sí hay que decidir: **reabrir una cancelada**.
+
+Hoy `libres` mira las reservas por sala y franja. Si una reserva cancelada deja libre la sala, otra persona puede reservarla después. Entonces, al volver la cancelada a pendiente, habría dos reservas en la misma sala y franja.
+
+Dos cosas más las decido yo y las dejo en la spec para que las valides:
+- Las reservas pendientes y las confirmadas ocupan la sala. Las canceladas no.
+- `cancelar` pasa a ser la transición a cancelada. Hasta ahora borraba la reserva, y conserva el respeto al día del patch 0007.
+
+**Pregunta:** ¿qué pasa si reabres una cancelada y su sala y franja ya las ocupa otra reserva?
+
+1. **Se rechaza la reapertura (recomendada).** La reserva sigue cancelada y el mensaje dice qué reserva ocupa el hueco. Nunca hay dos reservas activas en el mismo hueco.
+2. **Se permite y quedan solapadas.** Es más simple, pero `libres` y las confirmaciones dejan de ser fiables.
+3. **Se reabre y se avisa del choque.** Queda pendiente con una advertencia, y alguien tiene que resolverlo después.
+
+Con la 1, la spec incluye un escenario de reapertura bloqueada.

@@ -1,0 +1,139 @@
+--- [3]
+Empiezo por los pre-checks del paso 0: estado del árbol, `merge --check` y worktrees.
+
+--- [6]
+El árbol está limpio y `merge --check` da «destino: listo». No hay otras ramas abiertas. Pero no existe `.docs/sdd/changes/`, así que busco dónde está la carpeta de la 0010.
+
+--- [12]
+`HEAD` se ha movido desde el último sha revisado (`25ae8cc`). Los commits `5d4008f` y `b83da0a` son solo documentación, pero `16ee049` toca `src/app.js` con 96 líneas. Miro qué cambió de verdad.
+
+--- [18]
+Hay que revisar `25ae8cc..HEAD`: es un cambio acotado de una línea, y el resto es solo documentación y fin de línea. Leo el encargo de revisión y las reglas de cierre antes de despachar nada.
+
+--- [24]
+Preparo el paquete de la re-revisión y su worktree detached en `HEAD`.
+
+--- [30]
+La re-revisión de `25ae8cc..b83da0a` está en marcha en segundo plano, con `opus` y `effort-high`. Hasta que vuelva y la cierre no escribo ningún registro del cierre, como exige el paso 0.6.
+
+Qué he comprobado hasta ahora:
+- **Pre-checks:** el árbol está limpio, `merge --check` da «destino: listo» (`develop`, en un worktree temporal) y no hay otras ramas `feature/*` o `patch/*` abiertas.
+- **Spec:** está aprobada (`status: approved`, firmada por Laura).
+- **Revisión final:** `tasks.md` la da por limpia, pero solo sobre `25ae8cc`. Después vinieron tres commits: dos de documentación y `16ee049`.
+- **`16ee049`:** es código, así que el hilo no puede aceptarlo sin revisión. Añade `?.trim()` en `reasonOf` y convirtió además `src/app.js` entero de CRLF a LF, por eso `git` cuenta 96 líneas. Le he pedido al revisor que confirme si esa conversión fue un efecto colateral no intencionado.
+
+Cuando vuelva el informe haré esto, en este orden:
+1. Anotaré la línea `Re-revisión:` en `tasks.md`.
+2. Pasaré el resto del cierre: validación en campo con la suite completa (`node --test`), walkthrough, delta de `bookings`, roadmap, historial y `sdd merge` hacia `develop`.
+
+Si la re-revisión devuelve un Critical o un Important, lo arreglo yo, con un test que falle primero y luego la suite entera, antes de seguir.
+
+--- [39]
+### Finding Verdicts
+- No había hallazgos abiertos. He revisado los tres commits del rango 25ae8cc..b83da0a.
+- `5d4008f` (docs: tasks.md): **no rompe nada, pero tiene dos fallos menores** (ver abajo). No contradice el comportamiento de la spec.
+- `16ee049` (fix: el motivo sin espacios alrededor): **hace lo que dice y el delta de la spec se mantiene. Faltan el test y hay una conversión de fin de línea no intencionada.** El único cambio real está en `src/app.js:16`: `params[index + 1]?.trim()`. He seguido a mano cada caso contra `cancelBooking` (`src/app.js:19-20`):
+  - `--motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)». Correcto.
+  - Motivo fuera de la lista (`me aburro`) → «motivo no válido: cambio de planes, sala ocupada, otro». Correcto.
+  - Sin `--motivo` → `indexOf` da -1 → `undefined` → `includes(undefined)` es false → el mismo mensaje. Correcto.
+  - `--motivo` como último argumento → `params[index+1]` es `undefined` → `?.` da `undefined` y no lanza TypeError → el mismo mensaje. Correcto.
+  - Valor de solo espacios (`"   "`) → `""` → no está en la lista → el mismo mensaje. Correcto.
+  - Valor vacío `""` → `""` → el mismo mensaje. Correcto.
+  - `"  sala ocupada  "` → se acepta y se guarda recortado como «sala ocupada». En `canceladas` sale «Norte lun — sala ocupada». Es lo que promete el commit.
+- `b83da0a` (docs: borrador del walkthrough): **correcto**. `walkthrough.md:5-6` no contradice ni la spec ni el código. Llama al cambio «arreglo de la validación», cuando en realidad normaliza el valor antes de validarlo. Es un matiz, no un error.
+
+### New Breakage in the Fix Diff
+- **Important**: `16ee049` cambia código sin ningún test (`test/cancel.test.js` y `test/app.test.js` no se tocan en el rango; lo comprobé con `git log 25ae8cc..b83da0a -- test/`). Esto incumple el artículo 2 de la constitución: tests antes que código.
+  - Efecto para el usuario hoy: ninguno, porque el comportamiento es correcto.
+  - Efecto a futuro: nadie vigila ni el recorte (`"  sala ocupada  "` aceptado) ni la protección `?.` de `--motivo` como último argumento. Si alguien lo cambia por `.trim()`, `cancelar Norte lun --motivo` lanzaría TypeError en vez de dar el mensaje de la spec, y la suite seguiría en verde.
+  - Para el test que falta: el almacén solo tiene una reserva (Norte lun, `src/app.js:4`) y el test 1 de `cancel.test.js` ya la cancela. Un caso «con espacios → cancelada» necesita otra reserva activa, o comprobarse antes del test 1. Los casos de rechazo (solo espacios, `--motivo` al final) sí se pueden escribir sin tocar el estado.
+- **Minor**: `16ee049` convierte todo `src/app.js` de CRLF a LF, y no parece intencionado. Esto explica las 48 líneas cambiadas y las 48 borradas.
+  - Comprobación: `git diff -w --ignore-cr-at-eol` y la comparación tras quitar `\r` dejan una sola línea distinta (`src/app.js:16`).
+  - Tamaño: el fichero pasa de 1846 a 1806 bytes. Cuadra exactamente con 48 CR quitados más los 8 caracteres de `?.trim()`.
+  - No cambia ningún otro carácter: no hay BOM en ninguna versión, la última línea sigue terminando en salto de línea y el número de líneas es el mismo (48).
+  - `git ls-files --eol` pasa de `i/crlf` (blob 10d99e4) a `i/lf` (blob 7e98f78).
+  - `app.js` estaba en CRLF desde el commit base `1e89065`, y el mensaje del commit no menciona el cambio. Lo más probable es que sea un efecto del editor o de la configuración local (`core.autocrlf=true` global, sin `.gitattributes` ni `.editorconfig`).
+  - Convención del repo: no hay ninguna fijada y el índice está mezclado. En CRLF: `test/app.test.js`, `test/cancel.test.js`, `package.json`, `README.md`, `.gitignore`, `constitution.md`, `plan.md` de la 0010 y las specs antiguas. En LF: `spec.md`, `tasks.md` y `walkthrough.md` de la 0010, `architecture.md`, `debt.md`, `CHANGELOG.md`, `PRODUCT.md`, `ROADMAP.md` y `sdd-kit.json`.
+  - El único fichero de código en LF es ahora `src/app.js`, que se aparta del resto de `.js` y de `package.json`. No afecta al funcionamiento, pero ensucia el diff y el `git blame` del fichero entero.
+- **Minor**: `tasks.md:10` atribuye la Task 1 al commit `25ae8cc`. La Task 1 se hizo en `8710bd6` («cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). `25ae8cc` es la Task 2.
+- **Minor**: la Ruling de `tasks.md:17` cambia el gate a `node --test --test-concurrency=1` por una «carrera sobre el almacén compartido en memoria». No contradice el artículo 2, porque sigue siendo la suite entera. Pero se aparta del gate escrito en la constitución y en `plan.md` («Gate de cierre: `node --test`»), y la razón no se sostiene: `node --test` ejecuta cada fichero en su propio proceso y, dentro de un fichero, los tests van en serie. Lo que sí existe es un orden obligatorio dentro de `cancel.test.js` (el test 3 depende del 1), y eso no lo resuelve la concurrencia. Lo leí en el código; no ejecuté la suite.
+
+### Out-of-Scope Observations
+- El escenario de la spec «sin `--motivo` responde lo mismo» no tiene test en `test/cancel.test.js` desde `8710bd6`, que queda fuera del rango. Es el mismo hueco que dejaría cubierto el test que falta para `16ee049`.
+- El recorte amplía lo que se acepta como entrada (`"  sala ocupada  "`) sin que lo diga el delta de la spec, y `Enmiendas` sigue en «(ninguna)». No contradice ningún escenario. Solo queda recogido en el walkthrough.
+- `tasks.md:13` registra la revisión final «sobre 25ae8cc». Después llegó código nuevo (`16ee049`), así que hay que actualizar ese registro con esta re-revisión.
+- `spec.md`: la lista «Decisiones que he tomado yo» salta del 1 al 3. Ya estaba así antes del rango.
+
+### Verdict
+**Re-review:** quedan hallazgos abiertos:
+- **Important**: `16ee049` no tiene test (artículo 2 de la constitución). Faltan los casos de recorte, solo espacios y `--motivo` como último argumento en `test/cancel.test.js`.
+- **Minor**: conversión CRLF→LF no intencionada de todo `src/app.js` en `16ee049`.
+- **Minor**: commit equivocado de la Task 1 en `tasks.md:10`.
+- **Minor**: la Ruling de `tasks.md:17` se basa en una carrera que no existe y se aparta del gate escrito.
+
+--- [41]
+La re-revisión deja un Important abierto: `16ee049` cambia código sin test. Eso incumple el artículo 2 de la constitución. Lo arreglo yo, con un test que falle primero y luego la suite entera. Los tres Minor van al registro como diferidos, porque `review.minors` no está en `fix`. Antes de seguir quito el worktree de revisión y leo el código y los tests.
+
+--- [46]
+Verifico el ciclo RED→GREEN. Primero quito el `?.trim()` y veo cómo falla, después lo restauro y corro la suite entera.
+
+--- [49]
+El `grep` no encontró nada porque el reporter de `node --test` tiene otro formato. Repito el ciclo viendo la salida resumida.
+
+--- [55]
+La suite entera da 9/9 en verde con `node --test` a secas, y el código de salida es 0. Commiteo el test en la rama; el sha lo necesito para anotar la pasada de fix en `tasks.md`.
+
+--- [58]
+Anoto la pasada de fix y la re-revisión en `tasks.md`, con los Minor diferidos en el registro.
+
+--- [73]
+El `ROADMAP.md` ya trae una fila 0014, «Motivo guardado», y la 0010 sigue en ⏳. Antes de escribir el walkthrough leo la plantilla, `learnings.md` y la receta de merge.
+
+--- [77]
+Ya tengo lo que necesito de las referencias. Sigo con el paso 3: fusiono el delta de capacidad con la CLI, no a mano, y paso `decision check`.
+
+--- [85]
+Ahora la retro del cierre, como manda el paso 3. Deja su línea `Retro:` en el §5 del walkthrough.
+
+--- [96]
+Mi filtro descartaba todas las líneas, porque el id de la carpeta está en cada ruta. Lo repito sin ese filtro.
+
+--- [99]
+Son cuatro citas, todas en `tasks.md`. Las reescribo sin el sha, con la forma que pide la receta, y hago el squash.
+
+--- [105]
+El historial queda en un solo commit de cierre, `ffefd0e`, encima de `25ae8cc`. Paso 6: la fusión de sincronización con la base, en su propia llamada.
+
+--- [113]
+Fusionado: `13d5f21` en `develop`, con `--no-ff`. Compruebo si esta rama vive en un worktree enlazado o en el checkout principal, porque de eso depende la última línea del mensaje.
+
+--- [115]
+La 0010 está cerrada y fusionada en `develop` (`13d5f21`, con `--no-ff`). Antes de cerrar hubo que arreglar una cosa que la revisión final no había visto, y quedan tres deudas por triar.
+
+🦆 Cancelar ahora exige un motivo de la lista: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- **Revisión fuera de plan.** La revisión final era de antes de `16ee049`, que tocaba código (`?.trim()` en `reasonOf`) sin test. Lancé una re-revisión de `25ae8cc..HEAD` con `opus` y `effort-high`.
+- **El Important lo arreglé yo.** El recorte no tenía test. Añadí `test/cancel-reason.test.js` y comprobé el RED→GREEN en las dos direcciones: sin el recorte falla el caso de los espacios, y con `.trim()` sin `?.` falla el de `--motivo` sin valor.
+- **Sin revisar.** Ese commit de test no pasó por ninguna revisión; solo añade un fichero de tests.
+- **Corrección en `tasks.md`.** La Task 1 estaba atribuida a `25ae8cc` y era de `8710bd6`.
+
+**Decisiones sin el dev-lead** (están en el walkthrough):
+- **Gate de la Task 2.** Usa `--test-concurrency=1` por una carrera que no se ha reproducido. Hoy `node --test` a secas da 9/9.
+- **Recorte del motivo.** `"  sala ocupada  "` se acepta, y el delta de la spec no lo dice. No consta que lo decidiera el dev-lead.
+
+**Pendiente:**
+- **Sin «Validado» humano.** Con `validation.mode: field` validé yo (suite 9/9, exit 0, smoke por la CLI real), pero nadie del equipo ha dicho qué probó.
+- **`canceladas` por la CLI.** En una ejecución nueva sale vacío, porque el almacén vive en memoria. Solo lo probé con `cancelar` y `canceladas` en un mismo proceso. La intención de la spec («cancelar deja rastro») no se cumple de punta a punta por la CLI.
+- **Deudas en «Por triar»:**
+  - la persistencia de `canceladas` entre ejecuciones;
+  - la falta de convención de fin de línea (`16ee049` convirtió `src/app.js` entero de CRLF a LF sin querer, y quedó así en la fusión);
+  - el workaround `--test-concurrency=1` sin carrera demostrada.
+- **Minors diferidos** (los tres, además, en `tasks.md`): la conversión CRLF→LF, la Ruling de la Task 2 y el recorte que la spec no menciona.
+- **Capacidad nueva.** `bookings` no existía y se creó en `.docs/sdd/capabilities/bookings.md` con los dos requisitos del delta.
+- **Gate:** `` Gate: `node --test` → 9/9 `` sobre `ffefd0e`. `--sync` dio «base al día» y no hubo conflictos.
+
+¿Quieres el ticket de mejora del kit (`sdd-feedback`) de esta sesión? Lo único que le achacaría es que `final-review-check.md` no dice qué hacer con un commit de código posterior a la revisión final que no es de los «dejados pasar». Lo resolví lanzando la re-revisión.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`13d5f21`) · push: no hecho: `merge.push` no lo autoriza
+

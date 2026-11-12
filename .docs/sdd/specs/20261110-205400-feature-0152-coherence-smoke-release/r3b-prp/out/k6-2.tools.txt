@@ -1,0 +1,61 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, say so and ask what to run: never invent a command (`tests/sdd-propose-0160-red.md`, k1).
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line 
+
+>>> Grep: rooms:test
+<<< gate.json-1-{"tasks": {
+gate.json-2-  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+gate.json:3:  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+gate.json-4-}}
+
+=== RESULTADO (5 turnos, 0.1142807 $)
+Ahora: clasifico el cambio y te pregunto antes de tocar nada. Queda: tu confirmación, y luego editar `gate.json`, pasar el gate de cierre y hacer un commit, ~3 min.
+
+🦆 Esto toca solo `gate.json`: la tarea `rooms:test` pasaría a tener `src/shared/**` entre sus `inputs`, de modo que el gate la vuelva a ejecutar cuando cambie algo en `src/shared/`. No cambia nada de lo que ve o puede hacer quien usa el producto. Antes de guardarlo correría el `Build` de `operations.md`, si lo declara, y el gate de cierre. Si ese gate sale verde, haría un único commit con su línea `Gate:`.
+
+Lo clasifico como **config**. Perfil actual: el del proyecto (`sdd-kit.json`). Sin spec, plan, carpeta ni id.
+
+¿Lo hago así?
+
+1. **Sí, hazlo como config (Recomendada):** edito `gate.json`, paso el gate y hago el commit en `develop`.
+2. **No, tratadlo como patch o feature:** si quieres spec, plan o seguimiento en el roadmap.
+
+>>> Edit: <run>\repo\gate.json
+<<< The file <run>\repo\gate.json has been updated successfully.
+
+>>> Grep: Build|Gate de cierre|gate
+<<< .docs\sdd\sdd-kit.json:1:{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs\sdd\steering\constitution.md:4:2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+.docs\sdd\steering\operations.md:11:- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+.docs\sdd\steering\operations.md:12:- **Gate de merge**: `node --test && node scripts/lint.mjs`
+
+>>> Bash: cd "<run>/repo" && node scripts/gate.mjs run bookings:test rooms:test 2>&1 | tail -30
+<<< ▪ bookings:test (4 passed, 0 failed)
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 2 completed, 0 skipped
+
+>>> Bash: cd "<run>/repo" && git add gate.json && git commit -q -F - <<'EOF'
+chore: añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run bookings:test rooms:test` → bookings:test: corrió 4/4 · rooms:test: corrió 1/1 (sin filtro --affected: se editó la definición de rooms:test)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git branch --show-current
+<<< 7ed9c44 chore: añade src/shared/** a los inputs de rooms:test
+574b3d8 feat: base del molde
+develop
+
+=== RESULTADO (5 turnos, 0.1498566 $)
+Listo. `rooms:test` en `gate.json` ahora tiene `src/shared/**` entre sus `inputs`.
+
+- **Gate:** pasé `node scripts/gate.mjs run bookings:test rooms:test`, el gate de cierre de `operations.md`. Lo corrí sin `--affected` porque edité la definición de `rooms:test`. `bookings:test` pasó 4 de 4 y `rooms:test` 1 de 1.
+- **Commit:** `7ed9c44` en `develop`, con la línea `Gate:` en el cuerpo. No hice merge, porque `develop` no es una rama `feature/*`.

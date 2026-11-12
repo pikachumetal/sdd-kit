@@ -1,0 +1,92 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs SDD) y luego miro el código que toca el fallo para confirmar el carril. Queda: una pregunta tuya sobre el patch.
+
+--- [20]
+Ahora: reservo el id 0012, creo la rama del patch y lo reclamo antes de abrir la carpeta. Queda: pasar a implementar el fix, sin más paradas.
+
+--- [22]
+Id 0012 confirmado. Paso a `sdd-implement` con el patch ya clasificado.
+
+--- [26]
+Ahora: reproduzco el fallo en la base actual antes de abrir la carpeta. Queda: debugging, test en rojo, fix, revisor y cierre, ~10 min.
+
+--- [34]
+Causa confirmada y fallo reproducido (`cancelada Norte mar`). Escribo `patch.md` (causa antes del fix), el test en rojo y lo veo fallar.
+
+--- [37]
+El segundo test falla por estado compartido (el primero ya canceló la del lunes), no por el fallo. Lo separo en su propio fichero para que cada uno corra con estado limpio.
+
+--- [39]
+RED por la causa correcta en los dos. Aplico el fix mínimo.
+
+--- [42]
+Verde: 6/6 y lint limpio. Falta el revisor único del patch (Sonnet) antes del commit.
+
+--- [44]
+Lanzado el revisor del patch. Espero su informe antes de hacer el commit del fix.
+
+--- [48]
+Hay dos hallazgos de severidad baja y una nota informativa.
+
+Los puntos 1, 2 y 4 salen bien y el punto 3 sale bien con una salvedad. `node --test` pasa: 6 de 6.
+
+**Punto 1, causa raíz: cierta.** En el original, `findBooking(room, day)` no usaba `day`. Comparaba solo `room` y `status === 'active'`, así que devolvía la primera reserva activa de la sala. `cancelBooking` y `voidBooking` responden con el `day` pedido, y de ahí sale «cancelada Norte mar». Las referencias a `src/app.js:9-11` son correctas.
+
+**Punto 2, fix: mínimo y correcto.** Añade `b.day === day` al `find` y no toca nada más. `cancelar` y `anular` pasan por la misma función, así que quedan los dos arreglados. El resto de la lógica no cambia.
+
+**Punto 3, tests: prueban el fallo real, con una salvedad.**
+- Antes del fix, `cancelar Norte mar` devolvía «cancelada Norte mar», por lo que ambos tests fallaban. Ahora pasan.
+- La segunda aserción de cada test comprueba que la reserva del lunes seguía viva.
+- Con `node --test` cada fichero corre en su propio proceso, así que no comparten estado.
+
+**Punto 4, otros sitios con el mismo defecto: no hay ninguno.** El único otro `find` sobre `bookings` es `freeRooms`, que no usa `findBooking`.
+
+**Hallazgos**
+1. **Baja, estado compartido.** `bbookings` es estado de módulo mutable y los tests lo consumen: cancelar o anular `Norte lun` es destructivo.
+   - Con `node --test --test-isolation=none`, que ejecuta todo en un mismo proceso, fallan 2 tests. Fallan «cancelar una reserva activa», porque otro fichero ya canceló `Norte lun`, y «anular otro día…», por la misma causa.
+   - No falla en la ejecución normal. Aun así, `cancel.test.js` (preexistente) y los dos nuevos dependen de que cada fichero tenga su propio proceso.
+2. **Baja, documentación en `patch.md`.** El frontmatter dice `status: done`, pero §4 deja el caso 1 en «pendiente» aunque los tests ya pasan. Además §4 no lista `anular` como caso, pese a que §3 dice que el fix lo cubre y existe `test/void-day.test.js`. `commit` y «Esfuerzo real» siguen en «pendiente».
+
+**Informativo, no es un defecto de este patch.** `freeRooms` (`libres`) recibe solo la franja y compara `slot`, no `day`, aunque cada reserva tiene `day`. Una reserva del lunes excluye la sala para cualquier día. Es lo mismo que describe el patch 0007 y está fuera del alcance de `cancelar` y `anular`. Conviene anotarlo en `debt.md` si no está. `reservar` tampoco crea reservas reales, pero eso es ajeno al patch.
+
+Archivos revisados:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\cancel-day.test.js`
+- `<run>\repo\test\void-day.test.js`
+- `<run>\repo\test\cancel.test.js`
+- `<run>\repo\.docs\sdd\changes\*patch-0012*\patch.md`
+
+--- [50]
+Reviso los hallazgos: el 2 lo corrijo en `patch.md`; el 1 lo rechazo (es el patrón previo del proyecto y el runner por defecto aísla cada fichero). Registro todo en §4 y hago el commit.
+
+--- [52]
+Commit del fix hecho. Ahora cierro con `sdd-archive`, que pide tu validación.
+
+--- [55]
+Ahora: pre-chequeos del cierre y preparo el mensaje de validación. Queda: tu validación (es lo único que me falta de ti), ~1 min.
+
+--- [59]
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva de Norte del lunes aunque el martes no tuviera ninguna. Ahora dice `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda corregido.
+
+**✋ Me salí del plan en…** nada.
+
+**Qué hay hecho** (patch 0012, rama `feature/0012`, commit `4d066db`)
+- **Causa:** `findBooking` en `src/app.js` recibía el día pero no lo comparaba, y devolvía la primera reserva activa de la sala. Se arregló comparando también el día.
+- **Tests:** 2 nuevos, uno para `cancelar` y otro para `anular`. Los dos fallaban antes del fix. Ahora pasan.
+- **Gate:** `node --test && node scripts/lint.mjs` da 6/6 y el lint sin hallazgos.
+- **Revisor:** confirmó causa, fix y alcance. No encontró otro uso de `findBooking` con el defecto.
+
+**Cómo probarlo** (cada ejecución es un proceso nuevo, con la reserva de Norte del lunes de partida)
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `node src/app.js cancelar Norte lun` → debe decir `cancelada Norte lun`.
+3. `node src/app.js anular Norte mar` → debe decir `sin reserva Norte mar`.
+4. `node src/app.js anular Norte lun` → debe decir `anulada Norte lun`.
+
+Las cuatro salidas coinciden cuando las ejecuté yo.
+
+**Dos cosas más:**
+- **Fusión:** `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, así que no puedo fusionar sin que me digas el destino. Supongo `develop` con `--no-ff`; confírmalo o corrígelo cuando valides.
+- **Deuda posible:** `libres` compara solo la franja horaria y no el día, así que una reserva del lunes hace que la sala salga ocupada también el martes. No es este fallo y no lo he tocado. ¿La apunto en la deuda?
+
+**¿Lo has probado y funciona?** Dime qué probaste y cierro el patch: registro tu validación, fusiono y dejo el roadmap al día. Si prefieres diferirlo, dime cuándo lo pruebas y quién lo hace, y queda como validación diferida.
+

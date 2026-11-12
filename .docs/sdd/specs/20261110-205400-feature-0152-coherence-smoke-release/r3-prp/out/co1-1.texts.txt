@@ -1,0 +1,82 @@
+--- [3]
+Ahora: leo la spec escrita y las referencias del paso 4. Queda: pasada de coherencia, revisión y presentarte la spec para aprobar.
+
+--- [16]
+Sin dependencias en `package.json`, así que no hay nada que instalar. Reescribo la spec.
+
+--- [18]
+Ahora el delta sobre una copia, fuera del repo, y el check del bloque «Capacidades».
+
+--- [21]
+El merge sobre la copia pasa y el repo no cambia. El `check` solo se queja de que los requisitos aún no están en `capabilities/`, lo esperable antes de archivar. Lanzo el revisor único.
+
+--- [23]
+Revisor lanzado. Espero su resultado antes de plegar los hallazgos y presentarte la spec; todavía no la presento.
+
+--- [29]
+1. Importante · Delta de comportamiento (ADDED) · Los dos escenarios no tienen requisito "ADDED" que cubra la forma de varios días con `cancelar`, pero «Cancelar varios días con alguno sin reserva» repite lo que ya exige el requisito vivo «Un comando con varios días trata cada día aparte»; es un ADDED redundante que en la práctica solo prueba el vivo · Declarar que el segundo escenario es la instancia concreta del requisito vivo (o fundirlo en el primero), y no presentarlo como comportamiento nuevo.
+
+2. Importante · Capacidades vs. Delta · La cabecera dice «Modificadas: `bookings`», pero el delta solo contiene `ADDED` y la propia spec afirma que no hay `MODIFIED`. Además «Cancelar una reserva propia» dice `cancelar Norte lun` con un único día, y el nuevo requisito redefine la forma del comando sin citarlo · Cambiar a «Ampliadas con ADDED» y declarar en Scope que «Cancelar una reserva propia» y «Cancelar sin reserva» (un día) no cambian. Si la gramática cambia, hacer un `MODIFIED` explícito.
+
+3. Importante · Delta, escenario 1 · El THEN pasa con una implementación que cancela solo el primer día y devuelve las dos frases a mano. No fija el orden, ni el separador (salto de línea, que sí aparece en Approach) ni que el estado final de la reserva sea cancelado · Añadir al THEN el orden de las líneas, el salto de línea como separador y una comprobación del estado (`reservas Norte` no devuelve `lun` ni `mie`).
+
+4. Importante · Delta · Faltan escenarios para las decisiones 4 (día repetido `lun lun`) y 6 (sin días), que son comportamiento observable y quedan sin test ni escenario. El «día repetido» da `sin reserva Norte lun` en la segunda línea, y eso solo se garantiza con un escenario · Añadir un escenario ADDED para el día repetido. Para «sin días», escribir qué responde hoy (la spec dice «no cambia» sin precisarlo) o sacarlo de las decisiones.
+
+5. Importante · «Decisiones que he tomado yo» · Hay decisiones tomadas fuera de la lista: separador por espacios, nombre/forma del comando (`cancelar <sala> <día> <día>…`) y la elección de los días sin validar (un día inválido como `xyz` se trata como «sin reserva»). La nº 1 está además redactada como historial («la corregida por la pasada de coherencia») y no como decisión · Listar el tratamiento de días no válidos como decisión explícita y reescribir la nº 1 como decisión actual, sin la historia de versiones.
+
+6. Importante · Decisión 2 y Reglas de la capacidad · «Sin límite» se apoya en «Límites: no aplica» de la capacidad, pero un requisito que admite N días y devuelve N líneas introduce un dato nuevo (la cantidad de días). Declarar «sin límite» como si fuera la regla viva es una elección tuya, no una derivación · Presentarlo como decisión del dev-lead para validar y confirmar que «Límites: no aplica» sigue siendo cierto con esta entrada.
+
+7. Menor · Cabecera de «Decisiones que he tomado yo» · El bloque de la review mezcla `Review de spec propuesta`, la política de modelos y las decisiones, y «Hallazgos de la review» queda como «(pendiente)» en una spec con `status: draft`; la aprobación depende de que este bloque se rellene · Separar la política de revisión de las decisiones y rellenar o quitar «Hallazgos» antes de pedir la aprobación.
+
+8. Menor · Scope / «Lo que se retira o cambia» · La fila «0013 → solo su fila de `ROADMAP.md`» cita un fichero que no es de los leídos y un comando `git grep` como comprobación sin salida esperada; «Respuesta con un día: igual que hoy» se apoya en un test existente cuyo contenido no se cita. Nada garantiza que el test pase por el comportamiento y no por casualidad · Indicar la salida esperada del `git grep` y el nombre exacto del test (o añadir un escenario de un día en el delta).
+
+9. Menor · Scope, «No entra» · Dice que `anular` sigue con un solo día y que el requisito vivo «no se aplica» a `anular`/`reservar` hasta que acepten varios días; pero `anular` no figura en `bookings.md`, ni en la Terminología hay un requisito para el responsable de sala. Se menciona un comando fuera de la capacidad viva · Quitar la mención a `anular` o aclarar dónde vive su requisito.
+
+10. Menor · Dónde se prueba · Solo se citan los dos `run(...)` del delta; no hay prueba del orden ni del día repetido, y el gate (`node --test` entero) no se menciona · Listar un test por escenario del delta y declarar el gate de la constitución.
+
+--- [31]
+El revisor no ha marcado ningún Crítico, así que no hay segunda ronda. Acepto los diez hallazgos y los pliego en la spec.
+
+--- [36]
+Ahora: presentarte la spec para aprobar. Queda: tu aprobación; después el plan y la implementación (sin más paradas en `delegate`, salvo la validación).
+
+## 🦆 En llano
+
+Hoy, para cancelar una semana hay que escribir `cancelar` cinco veces. Con esta feature escribes `cancelar Norte lun mie vie` y el comando responde una línea por día, por ejemplo:
+
+```
+cancelada Norte lun
+sin reserva Norte mar
+cancelada Norte mie
+```
+
+Cada día se atiende por separado: si uno no tiene reserva, los demás se cancelan igualmente y ese día lo dice.
+
+## Spec: `20261008-120000-feature-0013-cancel-many-days/spec.md`
+
+**Carril:** feature, modo full, perfil delegate (de `sdd-kit.json`). Rama `feature/0013-cancel-many-days`. Un solo requisito de `bookings` se amplía y ninguno se modifica. Se toca la rama `cancelar` de `src/app.js` y `test/cancel.test.js`.
+
+### ✋ Decisiones que he tomado yo — valida estas
+
+1. **Cada día va aparte.** Esta decisión corrige mi primera versión de la spec. Esa versión decía «si un día falla, no cancela ninguno», y eso contradecía el requisito vivo «Un comando con varios días trata cada día aparte». La pasada de coherencia lo detectó. Si de verdad quieres todo-o-nada, es otra spec, porque habría que modificar ese requisito para todos los comandos.
+2. **Los días van separados por espacios y sin límite.** Esta elección es mía: valídala.
+3. **Una línea por día, en el orden escrito**, con las frases de hoy.
+4. **Un día repetido** (`lun lun`) cuenta como dos. La segunda línea dice `sin reserva Norte lun`.
+5. **Un día no reconocido** (`xyz`) se trata como «sin reserva», como hoy.
+6. **Enfoque A**: recorrer los días con la lógica actual de `cancelBooking`. Descarto B (todo-o-nada) y C (un comando `cancelar-semana`).
+
+### Review y comprobaciones
+
+- **Review:** un revisor (Sonnet) dio 10 hallazgos, ninguno Crítico, y acepté los 10. Quedan plegados en la spec, sin segunda ronda. Entre ellos: escenario del día repetido, THEN más estrictos, y quitar la mención a `anular`.
+- **Delta probado sobre una copia** de `.docs/sdd`: `sdd capability merge` añade los dos requisitos y no toca `capabilities/` del repo. `sdd capability check` falla ahora solo porque los requisitos aún no están en `capabilities/`. Se arregla al archivar.
+- **Coherencia:** `0013` solo aparece en su fila de `ROADMAP.md` (`git grep`). No se retira nada.
+- **Pendiente de ti, o de la validación:** `Laura` figura como aprobadora, sin fecha.
+- **Sin `§Frontend`:** la feature no cambia lo que se ve en una pantalla.
+
+### ¿Apruebas?
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué cambiar. La decisión 1 y la 2 son las más probables.
+
+La spec queda en espera hasta tu respuesta.
+
