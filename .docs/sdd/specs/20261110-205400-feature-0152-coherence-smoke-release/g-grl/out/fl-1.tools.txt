@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50; git branch --show-current; ls node_modules 2>&1 | head -2
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+develop
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cat PRODUCT.md ROADMAP.md package.json; cat .docs/sdd/steering/*.md; find src test -type f | head -30; ls .docs/sdd/specs
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cat src/app.js; head -40 test/app.test.js; S="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills/sdd-propose/references"; cat "$S/control-profiles.md" | head -60; cat "$S/nombrado.md" | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js"; node "$SDD" id next --reserve --project-root "$PWD"
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< 0010
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js"; git checkout -b feature/0010-estados-reserva && node "$SDD" id claim --project-root "$PWD"; git branch --show-current
+<<< Switched to a new branch 'feature/0010-estados-reserva'
+sin remoto: la 0010 vale (contador local)
+feature/0010-estados-reserva
+
+=== RESULTADO (10 turnos, 0.17426579999999997 $)
+Ahora: aclarar el diseño del flujo de estados de la reserva. Queda: una o dos preguntas de diseño, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido.** Cada reserva tiene un estado: `pendiente`, `confirmada` o `cancelada`.
+
+- Desde `pendiente` se puede pasar a `confirmada` o a `cancelada`.
+- Desde `confirmada` solo se puede pasar a `cancelada`.
+- Desde `cancelada` solo se puede volver a `pendiente`.
+
+He mirado `src/app.js`. Hoy las reservas no tienen estado, y `cancelar` solo devuelve un texto sin tocar nada. La feature lleva la id 0010, en la rama `feature/0010-estados-reserva`. Prevé unas 2 o 3 tasks, así que no propongo dividirla.
+
+Sobre tu duda: el flujo es coherente, no tiene estados sin salida ni ciclos que se queden atrapados. El único punto delicado es `cancelada → pendiente`, porque la sala pudo reservarse por otra persona mientras tanto. Eso decide cómo se comporta el sistema, y es lo primero que hay que fijar.
+
+❓ **¿Qué pasa al reactivar una reserva cancelada cuya franja ya está ocupada?**
+Hoy `libres` solo mira las reservas existentes. Si una cancelada sigue contando como ocupada, la sala nunca queda libre. Si no cuenta, otra reserva puede ocupar la franja.
+
+1️⃣ **Se rechaza la reactivación.** `reactivar Norte lun 10:00-12:00` → `No se puede: Norte está ocupada lun 10:00-12:00`. La reserva sigue `cancelada`. Es simple y nunca hay dos reservas vivas en la misma sala y franja. A cambio, hay que reservar de nuevo.
+2️⃣ **Se reactiva igualmente y quedan dos reservas vivas.** Dos personas tienen la misma sala. Es lo más sencillo de programar, pero deja el conflicto sin resolver.
+3️⃣ **La cancelada sigue bloqueando la franja.** Reactivar siempre funciona, pero cancelar no libera la sala y `libres` no cambia.
+
+➡️ **Recomiendo 1️⃣**, porque mantiene la regla de que una sala y franja solo tiene una reserva viva, y eso es lo que `libres` ya da por hecho. A cambio, quien cancela y se arrepente tendrá que volver a reservar si alguien se le adelantó.

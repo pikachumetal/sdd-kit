@@ -1,0 +1,86 @@
+--- [3]
+Ahora: localizo el patch y leo su flujo. Queda: retomar la tarea pendiente, ~2 min.
+
+--- [12]
+Ahora: el patch está en el paso 4 (arreglo mínimo, sin código aún). Cargo `sdd-tdd` y escribo el RED. Queda: fix, verificación, revisor, commit, ~10 min.
+
+--- [17]
+RED confirmado: falla por la razón esperada (devuelve `cancelada mar 10:00-12:00` en vez de `no existe`). Ahora el fix mínimo.
+
+--- [23]
+Ahora: GREEN (4/4). Relleno §4 del `patch.md` y despacho el revisor único del patch. Queda: responder hallazgos, commit y `sdd-archive`, ~5 min.
+
+--- [27]
+Retomé el patch 0021 en el paso 4 y el fix y su test ya están hechos. Falta el revisor y el commit.
+
+- **Dónde estaba:** `patch.md` tenía la causa raíz y el fix escritos, pero el código sin tocar y §4 en «Pendiente».
+- **RED:** el test nuevo `cancelar una reserva que no existe responde no existe` falló con `actual: 'cancelada mar 10:00-12:00'`.
+- **Fix:** `cancelar` en `src/app.js` responde `no existe` si no hay reserva de ese día y franja. Es un fichero, 5 líneas, muy por debajo del umbral de 10 ficheros / 300 líneas.
+- **Test existente:** `cancelar respeta el día` ahora usa `lun 10:00-12:00`, como decía §3.
+- **GREEN:** `node --test test/` pasa 4 de 4. Los comandos y la salida están en §4 de `patch.md`.
+- **Revisor:** lo he lanzado en segundo plano (`sdd-kit:effort-medium`, sonnet) y aún no ha vuelto. Cuando termine, respondo cada hallazgo en §4, hago el commit del fix con el código, el test y `patch.md`, y cierro con `sdd-archive`.
+
+No hay commit todavía.
+
+--- [32]
+Sin cambios en el árbol de trabajo tras mis comprobaciones. Con el fix, `node --test test/` da 4 de 4 en verde. Ejecuté los tests con el diff aplicado y comprobé a mano el comportamiento del código antiguo.
+
+**Hallazgos**
+
+1. **Menor, causa raíz imprecisa.** El patch dice que `run` en `src/app.js:12` devuelve `cancelada` sin mirar `bookings`. Es cierto, pero la línea citada es la de `libres`/`reservar`. El `cancelar` original estaba en la línea 12 del fichero antiguo, así que la referencia solo vale para el código previo al fix. Conviene citar la línea de `cancelar` o la función sin número.
+
+2. **Menor, el test modificado no es RED.** `cancelar respeta el día` pasa a usar `lun 10:00-12:00`, que existe en `bookings`. Con el código antiguo también devolvía `cancelada lun 10:00-12:00`, así que habría pasado sin el fix. Sirve como guarda del camino positivo, pero no prueba el fix. El patch debería decir que solo el test nuevo es RED.
+   - El test original usaba `mar 10:00`, un caso que no existe y con franja mal formada. Por eso el cambio es necesario: con el fix, ese test habría fallado.
+
+3. **Menor, el nombre del test ya no coincide.** `cancelar respeta el día` solo comprueba un caso positivo. La parte de «respeta el día» la cubre en la práctica el test nuevo: mismo `10:00-12:00` pero en `mar`, que da `no existe`. Mejor renombrarlo, por ejemplo «cancelar una reserva existente la cancela».
+
+4. **Informativo, fuera del síntoma.** El fix no elimina la reserva de `bookings`, así que cancelar dos veces la misma reserva responde `cancelada` las dos veces. Tampoco compara la sala. Es coherente con el alcance mínimo del patch, pero podría anotarse como deuda o en el patch.
+
+5. **Menor, redacción de la sección 4.** «Sin otros usos que borrar: no hay eliminación de símbolos» no aplica, porque el diff no elimina ningún símbolo. Es ruido. El conteo «1 fichero, 5 líneas» es correcto: `src/app.js` tiene +5 y -1.
+
+**Resumen de los tres puntos pedidos**
+
+- **(1) Causa raíz:** correcta. El handler devolvía una cadena fija sin consultar `bookings`.
+- **(2) Fix:** mínimo y suficiente. Comprueba día y franja contra `bookings` y responde `no existe` si no hay coincidencia.
+- **(3) Tests:** el test nuevo prueba comportamiento real y falla sin el fix, con `actual: 'cancelada mar 10:00-12:00'` y `expected: 'no existe'`, como dice el patch. El modificado no falla sin el fix (hallazgo 2).
+
+Ningún hallazgo es bloqueante.
+
+--- [34]
+Ahora: respondo los 5 hallazgos en §4 y hago el commit del fix. Queda: `sdd-archive`.
+
+--- [39]
+Ahora: cierro el patch con `sdd-archive`.
+
+--- [42]
+Ahora: pre-checks del cierre (estado, `merge --check`, worktrees). Queda: validación, que decide el usuario, ~3 min.
+
+--- [48]
+El patch 0021 está implementado y commiteado (`124d66d`), pero **no lo he cerrado**. El paso de validación lo tienes que hacer tú: pedirme que cierre no cuenta como validar.
+
+🦆 Antes, `cancelar mar 10:00-12:00` respondía «cancelada» aunque no hubiera reserva ese día. Ahora responde «no existe». Cancelar `lun 10:00-12:00`, que sí existe, sigue respondiendo «cancelada lun 10:00-12:00».
+
+**✋ Me salí del plan en…** nada.
+
+**Lo que he comprobado yo**
+- `node --test test/` pasa 4 de 4 (evidencia `suite`).
+- Ejecución real de la CLI:
+  - `node src/app.js cancelar mar 10:00-12:00` → `no existe`
+  - `node src/app.js cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00`
+  - `node src/app.js cancelar lun 10:00` → `no existe`. Una franja mal formada tampoco se encuentra.
+- El texto `no existe` lo decidiste tú (dev-lead, en `patch.md` §3).
+
+**Script para validarlo**
+1. En la raíz del repo, ejecuta `node src/app.js cancelar mar 10:00-12:00`. Esperado: `no existe`.
+2. Ejecuta `node src/app.js cancelar lun 10:00-12:00`. Esperado: `cancelada lun 10:00-12:00`.
+
+Dime qué has probado y si funciona (basta «validado», idealmente con lo que probaste). Si prefieres diferir, dime con qué disparador y quién se encarga.
+
+**Pendientes antes de fusionar**
+- **Política de merge incompleta:** `sdd merge --check` dice que a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Tras tu validación te propondré el bloque (destino y si va con `--no-ff`) y esperaré tu confirmación antes de fusionar.
+- **Deuda anotada:** el revisor señaló que cancelar la misma reserva dos veces responde «cancelada» las dos, porque no se borra la reserva ni se compara la sala. Lo rechacé como fuera del alcance del patch (consta en §4). Si quieres, lo apunto como deuda.
+
+Reserva `0021` y worktree: no hay otras ramas abiertas a la vez.
+
+**No terminado.** Falta tu validación, el cierre de registros y el merge. No borres todavía el worktree `<run>/repo`.
+

@@ -1,0 +1,39 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [5]
+Limpio, destino listo, sin otras ramas abiertas. Busco la carpeta de la 0010.
+
+--- [17]
+No he cerrado la 0010: el smoke real encuentra un THEN que no se cumple. No he escrito ningún registro y el árbol sigue limpio.
+
+**Lo que pasa los pre-checks.**
+- El árbol está limpio y `sdd merge --check` da «destino: listo» (`develop`).
+- No hay otras ramas abiertas.
+- La revisión final fue sobre `62329c2` y desde entonces solo cambió `tasks.md`, así que no hace falta otra.
+- La suite pasa: 5/5.
+
+**El fallo.** El THEN de «El listado de canceladas enseña el motivo» no se cumple desde la CLI. Lo ejecuté tal cual:
+
+```
+$ node src/app.js cancelar Norte lun --motivo "sala ocupada"
+cancelada Norte lun (sala ocupada)
+$ node src/app.js canceladas
+(vacío)
+```
+
+Las reservas viven en memoria dentro de cada proceso, así que `canceladas` en una invocación nueva nunca ve lo cancelado en la anterior. Solo responde «Norte lun — sala ocupada» si `cancelar` y `canceladas` corren en el mismo proceso.
+
+El test de `canceladas` pasa porque reutiliza el estado que dejó el test de `cancelar`, que es el ruling de la Task 2. Ese ruling esconde justo esto. La revisión final tampoco lo vio.
+
+Los otros tres THEN de `cancelar` (motivo válido, motivo fuera de la lista y sin `--motivo`) sí los verifiqué con ejecución real y cumplen.
+
+**Decisión para ti (Laura, como dev-lead).** Es de alcance, así que la tomas tú:
+
+1. **Cerrar la 0010 enmendando la spec.** Añado una enmienda: el listado funciona dentro de una misma sesión y la persistencia es de la 0014 «Motivo guardado», que ya está en el roadmap. Pongo el THEN como no cumplido desde la CLI, abro una fila de deuda y el ruling pasa a esa deuda. **Es mi recomendación**, porque la 0014 ya existe para esto.
+2. **Arreglarlo dentro de la 0010.** Persistir las reservas en un fichero haría que `canceladas` funcione de verdad. Es más trabajo y solapa con la 0014, que habría que cerrar o reducir.
+
+Dime 1 o 2 y sigo con el cierre. La validación y el resto del cierre van en el turno siguiente.
+
+**No terminado.** Falta resolver esa decisión y ejecutar los pasos de cierre. No borres todavía el worktree `<run>/repo`.
+

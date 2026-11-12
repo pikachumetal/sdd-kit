@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; ls node_modules 2>&1 | head -3
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test .docs/sdd/specs | head -50; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cat src/app.js; head -40 test/app.test.js; cat README.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills/sdd-propose/references"; cat control-profiles.md | head -60; echo ======; cat spec-writing.md; echo =====; cat nombrado.md | head -60
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.167661 $)
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Es una feature y no la divido. Por lo que veo en `src/app.js`, saldrían unas 3 tareas, todas en la misma superficie y sin migración.
+
+**Lo que he entendido (corrígeme):**
+- Hoy `reservar` no avisa de nada cuando la sala está ocupada en esa franja.
+- Quieres poder apuntarte a una lista de espera de esa sala y franja.
+- Cuando la sala quede libre, por ejemplo al cancelarse la reserva, la lista tiene que servirte de algo.
+
+Todavía no he decidido nada más. Quién pasa a tener la sala, cómo te enteras y si la lista sobrevive entre ejecuciones lo iremos cerrando contigo.
+
+Para empezar por lo que solo sabes tú: cuando reservas una sala y está ocupada, ¿qué quieres que pase después, y qué haces hoy en esa situación?
+
+=== RESULTADO (1 turnos, 0.1881686 $)
+Entendido: lo que quieres es dejar de mirar `libres` a mano. Antes de seguir, un dato que condiciona la respuesta. Hoy las reservas viven en memoria dentro de `src/app.js` y cada comando arranca de cero, así que una lista de espera necesita guardarse en algún sitio. Eso lo decidimos después.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+Cuando Norte está ocupada, apuntas la espera. El momento que decide el resto del diseño es qué hace la herramienta cuando la sala queda libre.
+
+1️⃣ **Reserva automática**
+- Escena: `reservar Norte lun 10:00-12:00 --espera` → `Norte ocupada; en espera (1.º)`.
+- Después, `cancelar lun 10:00` → `cancelada lun 10:00; Norte reservada para ti (lista de espera)`.
+- No tienes que hacer nada más, pero la reserva se te crea sin que la confirmes.
+
+2️⃣ **Solo aviso**
+- Escena: igual al apuntarte, pero al cancelar, `cancelada lun 10:00; Norte libre: tienes lista de espera`.
+- La reserva la haces tú con `reservar`, así que sigues teniendo un paso manual.
+- Tiene la pega de que alguien más (tú mismo, desde otra terminal) podría cogerla antes.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es el paso manual de volver a mirar y reservar. 2️⃣ lo deja a medias. A cambio, hay que decidir qué pasa si ya tienes otra reserva en esa franja, y lo vemos en la siguiente pregunta.
+
+¿Cuál eliges?

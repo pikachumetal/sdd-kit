@@ -1,0 +1,42 @@
+--- [2]
+Es una investigación que deja mediciones, así que entra por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y darte el anuncio del spike, sin parar, ~2 min.
+
+--- [14]
+Ahora: reservo el id y creo la rama del spike. Queda: spec con revisión y parada de aprobación.
+
+--- [25]
+Sigo con la spike `0012`: ya tengo rama e id, ahora escribo `spec.md` con la forma corta de spike.
+
+--- [29]
+Todavía no he medido nada: de momento solo tengo escrita la spec del spike `0012`, que está esperando tu aprobación. No hay código de producción ni plan. La spec está en `.docs/sdd/changes/20261112-120557-feature-0012-libres-1000-reservas/spec.md`, en la rama `feature/0012-libres-1000-reservas`.
+
+## Qué mediría
+
+🦆 Hoy `node src/app.js libres 10:00-12:00` responde al instante porque solo hay una reserva. Mediría cuánto tarda con 1, 10, 100, 1.000 y 10.000 reservas, sin tocar `src/app.js`. Por dentro, `libres` recorre todas las reservas una vez por sala, así que el tiempo debería crecer en línea recta. La tabla lo confirmará o lo desmentirá.
+
+Al revisar el código vi dos cosas que condicionan la medida:
+- **No se pueden crear 1.000 reservas reales.** `bookings` no se exporta y `reservar` solo devuelve un texto, no guarda nada. Por eso el arnés generaría una copia temporal de `app.js` con las reservas sintéticas y mediría esa copia.
+- **Las reservas viven en memoria y se pierden entre ejecuciones.** El arranque de Node pesa en el tiempo total del comando, así que mediría dos cosas: la función `libres` en proceso y el comando completo.
+
+## ✋ Decisiones que he tomado yo: valida estas
+
+1. **Umbral de «aguanta».** Con 1.000 reservas, `libres` en proceso debe tardar ≤ 5 ms (p95), y el comando completo ≤ 200 ms (p95). Nadie dio umbral, lo he puesto yo.
+2. **Cargas.** 1, 10, 100, 1.000 y 10.000 reservas. El 10.000 no lo pediste, va para ver el margen sobre las 1.000.
+3. **Escenarios por carga.** Ninguna reserva coincide con la franja (peor caso, recorrido completo), coincidencia en la primera y coincidencia en la última. Los datos son sintéticos: todas activas, en Norte y Sur, con días y franjas variados.
+4. **Método.** 20 iteraciones de calentamiento y 500 medidas para la función en proceso, y 30 ejecuciones del comando completo. Reporto p50, p95 y máximo en ms, con Node 22 en esta máquina.
+5. **Dónde va el arnés.** En `bench/`, dentro de la carpeta del cambio, no en `src/` ni en `scripts/`.
+6. **Dónde queda la evidencia.** En `evidencia.md` de esa carpeta, con el comando exacto que regenera la tabla.
+7. **Si no aguanta.** No lo optimizo aquí. Apunto una fila nueva en el roadmap con la medida y una propuesta.
+
+## Decisión que necesito de ti
+
+Perfil `delegate`, así que la spec espera tu aprobación explícita.
+
+1. **Apruebo (Recomendada).**
+2. **Cambios.** Dime qué umbral, qué cargas o qué método quieres distinto.
+
+Si te vas a ausentar, también vale «apruebo la spec por delegación, nos vemos en la validación».
+

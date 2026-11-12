@@ -1,0 +1,124 @@
+--- [3]
+Ahora: reviso la spec, el plan y la configuración de la rama para preparar la Task 1. Queda: elegir método e invocarlo, ~2 min.
+
+--- [8]
+Ahora: spec aprobada y plan en método Native, así que invoco `sdd-implement-native`. Queda: la Task 1 (única), ~10 min.
+
+--- [11]
+Ahora: invoco `sdd-worktrees` para comprobar el espacio de trabajo. Queda: setup, la Task 1 y la revisión final, ~10 min.
+
+--- [13]
+Estoy usando la skill sdd-worktrees para preparar un espacio aislado.
+
+--- [22]
+Ahora: compruebo la base (`develop`), creo el ledger y `tasks.md`. Queda: RED, código y commit de la Task 1.
+
+--- [28]
+RED correcto: falla porque falta el módulo. Ahora escribo el código mínimo.
+
+--- [32]
+La edición de `app.js` no se aplicó. La hago con Edit.
+
+--- [36]
+Commit hecho. Ahora cierro la task con `sdd task done`.
+
+--- [39]
+Task 1 completa (`076e955..4f7df10`, `node --test` 14/14). Era la última task. Ahora: invoco `sdd-verify` para la revisión final de la rama. Queda: revisión, cierre y `sdd-archive`.
+
+--- [45]
+Ahora: autorrevisión por ejes (Spec, Código y Arquitectura, porque hay un módulo nuevo) sobre el diff `076e955..4f7df10`. Queda: ledger, cierre y `sdd-archive`.
+
+--- [50]
+RED confirmado (`NaN €`). Ahora el arreglo mínimo y la suite completa.
+
+--- [55]
+La rama queda limpia. Ahora: borro el workspace del plan y la copia RED, y paso a `sdd-archive`.
+
+--- [59]
+Ahora: pre-checks del cierre y lectura de las referencias de validación. Queda: parar en la validación si el modo es `manual`.
+
+--- [64]
+Ahora: ensayo los pasos del guion tal como los ejecutará quien valide.
+
+--- [66]
+🦆 El cálculo del precio vive ahora en `src/price.js` (`priceFor`) y `run('precio', …)` lo usa. Lo que responde `precio` no cambia: `precio Sur dom 1` sigue dando `23 €`.
+
+**Estado del cierre: parado en la validación, sin escribir ningún registro.** Esta rama no declara `validation.mode`, así que cuenta como `manual` y valida una persona. Lo implementado es la Task 1, la única, y quedó en dos commits. El primero, `4f7df10`, saca el cálculo a `src/price.js`. El segundo, `7c95c39`, corrige el defecto que encontré en la revisión final.
+
+**✋ Me salí del plan en…**
+
+- **Test nuevo:** añadí `test/price-module.test.js` como RED del hilo. `test/price.test.js` pasa solo por `run`, no puede fallar por compilación, y la spec dice que no cambia. Si me equivoco, sobra un fichero que duplica casos.
+- **Tarifas duplicadas:** `price.js` lleva su propia tabla (Norte 20, Sur 15) y `app.js` conserva `rooms` para `libres`. Quedan dos listas de salas hasta la 0015.
+- **Arreglo de la revisión:** `priceFor('constructor', …)` devolvía `NaN €` porque usaba `in`. Antes devolvía `sala desconocida: constructor`. Lo arreglé con un test RED→GREEN (`Object.hasOwn`).
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Norte entre semana | ejecución real | `40 €` |
+| Sur entre semana | ejecución real | `45 €` |
+| Fin de semana con recargo | ejecución real | `60 €` |
+| Redondeo al euro | ejecución real | `23 €` |
+| Sala desconocida | ejecución real | `sala desconocida: Este` |
+
+**Suites:** `node --test` pasa 15/15 sobre `7c95c39`.
+
+**Sin revisar y bloqueos que tienes que ver**
+
+- **Revisión final sin subagentes:** no hay herramienta de subagentes en esta sesión, así que la hice yo por ejes (Spec, Código, Arquitectura) y lo dejé en el ledger como `self-review`. Es más débil que revisores independientes. Decide tú si basta.
+- **Commit sin revisar:** `sin revisar: 7c95c39 — arreglo de priceFor (clave heredada)`. Cambia código y no pude lanzar la re-revisión única.
+- **Merge bloqueado:** `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Hay que definirlos o decidir el destino antes de fusionar.
+- **Sin `tasks.md`:** con una sola task no lo escribí. Las líneas `Revisión final:` y `Pasada de fix:` irán en el walkthrough.
+
+**Guion**
+
+Rama `feature/0013-price-module` · worktree `<run>/repo`
+
+Es una CLI sin entorno que arrancar ni nada que parar. Todos los pasos son de una sola línea, en un único terminal:
+
+```
+cd <run>/repo
+```
+
+1. Norte entre semana → debe salir `40 €`
+
+```
+node src/app.js precio Norte lun 2
+```
+
+2. Sur entre semana → debe salir `45 €`
+
+```
+node src/app.js precio Sur mar 3
+```
+
+3. Fin de semana con recargo → debe salir `60 €`
+
+```
+node src/app.js precio Norte sáb 2
+```
+
+4. Redondeo al euro → debe salir `23 €`
+
+```
+node src/app.js precio Sur dom 1
+```
+
+5. Sala desconocida → debe salir `sala desconocida: Este`
+
+```
+node src/app.js precio Este lun 1
+```
+
+6. Nombre de propiedad heredada (el defecto que arreglé) → debe salir `sala desconocida: constructor`
+
+```
+node src/app.js precio constructor lun 1
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+**No terminado.** Falta la validación, el `merge.into`/`merge.noFf` y el merge. No borres todavía el worktree `<run>/repo`.
+

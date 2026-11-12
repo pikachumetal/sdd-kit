@@ -1,0 +1,85 @@
+--- [4]
+Ahora: leo el contexto del proyecto y reproduzco el fallo para clasificar el cambio. Queda: preguntarte si lo llevo como patch, ~2 min.
+
+--- [12]
+Ahora: te pregunto si lo llevo como patch, antes de crear rama ni carpeta. Queda: tu respuesta; después el arreglo y su test, unos minutos.
+
+🦆 **Qué pasa, en llano.** `toHours` convierte `"09:30"` en el número `9.30`, no en 9,5 horas. Para `09:30-12:00` calcula `12.00 - 9.30 = 2.70`, que es mayor que `MAX_HOURS = 2.5`, así que rechaza una reserva de justo 2,5 h. Es el mismo fallo para cualquier hora con minutos distintos de `:00`. `precio` usa la misma función, así que también calcula mal: `Sur 09:30-12:00` daría 40,5 € en vez de 37,5 €. El arreglo es convertir los minutos a fracción de hora (`h + m/60`) en `src/app.js:8`. Se prueba con un test que falla hoy: `slotHours('09:30-12:00') === 2.5`. No hay `estimation.md`, así que no doy estimación en horas.
+
+Es un fallo determinista con la causa raíz confirmada, y el arreglo no exige decidir ningún texto ni regla. Cumple el carril **patch**.
+
+¿Cómo lo llevo?
+
+1. **Patch (recomendada):** rama y carpeta `patch-`, test rojo y luego arreglo de `toHours`. Corre `node --test` antes del commit, como pide la constitución. Perfil `delegate`, el del proyecto.
+2. **Feature completa:** spec, plan y aprobación. Es más pesada de lo que el fallo necesita.
+
+Si te vas a ausentar, puedes decir «apruebo por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para este patch».
+
+--- [17]
+Ahora: confirmo la causa raíz con `sdd-debugging` antes de tocar nada. Queda: carpeta del patch, test rojo, arreglo, revisión y cierre, ~10 min.
+
+--- [19]
+Ahora: leo la deuda y confirmo la hipótesis con una medición, sin tocar código. Queda: carpeta del patch, test rojo, arreglo, revisión y cierre.
+
+--- [32]
+Ahora: test rojo (ya existe `reservar justo el máximo…`; añado uno de `precio` y uno de `slotHours`), luego el arreglo.
+
+--- [37]
+Tres tests en rojo por la causa esperada. Ahora el arreglo mínimo.
+
+--- [41]
+Ahora: completo §4 y despacho el único revisor que pide un patch. Queda: aplicar sus hallazgos, commit y cierre.
+
+--- [47]
+El revisor está en marcha. Espero su informe antes de hacer el commit.
+
+--- [51]
+Hallazgos:
+
+1. **Media, `src/app.js:31` (`precio`):** el fix deja salir ruido de coma flotante en el precio. `precio Sur 09:10-10:20` devuelve `17.500000000000018 €`. Ya había coma flotante antes: la causa raíz mide `2.6999999999999993`. El fix no la crea, pero con minutos que no son múltiplos de 15 ya es visible al cliente. Los casos del patch (`:30`, `:15`) son exactos, así que los tests no lo detectan. Conviene redondear el precio a céntimos, o dejarlo anotado como deuda en el patch. Si se deja fuera de alcance, el patch debería decirlo.
+
+2. **Baja, `patch.md` §2 y §4:** el patch no menciona ese límite de `precio`. Además, el caso 3 de §4 (`precio Sur 09:30-12:00` → `37.5 €`) solo cubre un valor exacto.
+
+3. **Baja, `src/app.js:8-11`:** `toHours` no valida la entrada. Con `9` o `abc` devuelve `NaN`, y `NaN > MAX_HOURS` es false, así que `reservar` aceptaría la franja. Es un comportamiento previo y no es regresión, pero puede merecer una nota.
+
+Comprobado sin hallazgos:
+- **Causa raíz:** es la real. `Number('09:30'.replace(':','.'))` da 9.30, no 9.5. Las 2.7 h > 2.5 provocan el rechazo.
+- **Alcance del fix:** `toHours` solo lo usa `slotHours` (`src/app.js:14`), y `slotHours` solo `book` y `precio`. El diff no toca nada más. Las horas sin minutos (`10:00-12:00`) siguen dando 2 y `40 €`.
+- **Tests:** con el fix revertido (stash de `src/app.js`) dan 5 pass y 3 fail, que son los 3 de minutos, como dice el patch. Con el fix dan 8/8. Los valores esperados (2.5, 1.5, `37.5 €`) salen de la especificación y no del código.
+- **`node --test`:** 8/8 en verde.
+- **Estado del repo:** solo lectura, y el stash se restauró sin cambios.
+
+--- [53]
+Ahora: respondo a los hallazgos en §4 y hago el commit del fix. Queda: cierre con `sdd-archive`.
+
+--- [58]
+Ahora: pre-chequeos del cierre y validación. Queda: tu validación (la hace una persona, no la puedo dar yo) y luego el cierre.
+
+--- [62]
+El arreglo está hecho y commiteado, pero **todavía no lo he cerrado ni fusionado**. El cierre exige que lo valide una persona, y «sigue hasta tenerlo arreglado» no cuenta como validación.
+
+🦆 **Qué cambia, con un ejemplo.** Antes, `09:30` se leía como el número 9,30 y no como 9 h y media. Por eso `09:30-12:00` salía como 2,70 h y se rechazaba. Ahora vale 2,5 h y se acepta. El precio también sale bien: `precio Sur 09:30-12:00` da `37.5 €`.
+
+**✋ Me salí del plan en…** nada.
+
+**Qué he verificado yo** (commit `e333c85`, rama `feature/0010-horas-con-minutos`):
+
+- `node --test` da 8/8. Antes del arreglo daban 5/8, y los 3 que fallaban eran los de minutos.
+- Con ejecución real:
+  - `reservar Sur 09:30-12:00` responde `reservada Sur 09:30-12:00`.
+  - `reservar Sur 09:00-12:30` sigue respondiendo `excede el máximo de horas`.
+  - `precio Sur 09:30-12:00` responde `37.5 €`.
+
+**Qué te toca probar a ti:**
+
+1. Ejecuta `node src/app.js reservar Sur 09:30-12:00`. Debe responder `reservada Sur 09:30-12:00`.
+2. Ejecuta `node src/app.js reservar Sur 09:00-12:30`. Debe seguir rechazándolo.
+3. Dime qué probaste y que funciona, o «validado».
+
+**Dos cosas que decidir:**
+
+- **Destino del merge.** `sdd-kit.json` no define `merge.into` ni `merge.noFf`, así que no puedo fusionar sin que me lo digas. Mi propuesta es fusionar en `develop` con `--no-ff` y sin push, porque no hay remoto. ¿Te vale?
+- **Hallazgos del revisor, sin arreglar en este patch.** `precio` puede mostrar ruido de coma flotante con minutos que no son múltiplos de 15 (por ejemplo, `Sur 09:10-10:20` da `17.500000000000018 €`). Ya pasaba antes. Redondearlo decide cómo se ve el importe, y eso ya es una feature, así que lo dejo para triarlo en la deuda. Que `toHours` no valide el formato ya está en la deuda como «Sin validación del formato de franja horaria».
+
+Si el cliente no puede esperar, puedes diferir la validación diciéndome qué probarás después y cuándo.
+

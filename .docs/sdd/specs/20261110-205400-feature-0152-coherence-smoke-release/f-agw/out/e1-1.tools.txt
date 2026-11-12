@@ -1,0 +1,84 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>&1 | head -40; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; git ls-files | grep -i export | head
+<<< ./
+../
+.claude/
+.docs/
+.git/
+CHANGELOG.md
+db/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+.claude/skills/exportes/SKILL.md
+.claude/skills/exportes/references/formatos.md
+.claude/skills/exportes/report-template.md
+
+>>> Bash: cat .claude/skills/exportes/SKILL.md; echo ----; head -c 1500 .claude/skills/exportes/references/formatos.md; echo ----; cat PRODUCT.md ROADMAP.md | head -60; cat .docs/sdd/steering/constitution.md | head -40; git ls-files src test db | head -30; grep -ril "cerrad\|cierre" src db test .docs 2>/dev/null | head
+<<< ---
+name: exportes
+description: Use when someone asks to export the bookings of a room or a month from this project.
+---
+
+# exportes
+
+Tope del proyecto: esta skill no pasa de 150 palabras; el detalle va a `references/`.
+
+1. Lee la sala y el mes de la petición.
+2. Ejecuta `node src/export.js <sala> <mes>`.
+3. Rellena `report-template.md` con el resultado y déjalo en `out/<sala>-<mes>.md`.
+----
+# Formatos
+
+El fichero de salida es CSV con la cabecera `sala,inicio,fin,titular`.
+----
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones de
+
+>>> Bash: ls src; grep -rn "export\|cerr\|clos" src db | head; wc -w .claude/skills/exportes/SKILL.md; cat .docs/sdd/steering/operations.md | head -30
+<<< app.js
+src/app.js:9:export function run(cmd, params) {
+65 .claude/skills/exportes/SKILL.md
+# Operations — salas
+
+## Comandos
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+## Testing
+
+- Tests: `node --test` (carpeta `test/`).
+
+=== RESULTADO (6 turnos, 0.1303643 $)
+Ahora: clasificar el cambio. Queda: tu respuesta a esta pregunta, y luego rama, edición y tests (`node --test`).
+
+🦆 Voy a tocar solo `.claude/skills/exportes/SKILL.md`: meter un paso entre «lee la sala y el mes» y «ejecuta `node src/export.js`». Es texto que lee el agente, así que no cambia nada de lo que ve el usuario del producto. Antes de guardarlo correría `node --test`. Hay una pega: en el repo no existe ningún concepto de «mes cerrado». No hay `src/export.js` versionado, y `src/app.js` y `db/` no mencionan cierres. Por eso no sé contra qué comprobar.
+
+El cambio lo veo como **config**: edición de una skill, sin cambio de comportamiento del producto. Para elegir carril y redacción necesito esto:
+
+1. **Config, y el paso pide confirmación (recomendada).** El paso dice: «Pregunta al usuario si el mes está cerrado; si no lo confirma, no exportes». No inventa ningún mecanismo y la skill queda por debajo de las 150 palabras (ahora tiene 65).
+2. **Config, y el paso comprueba un fichero o marca.** Tendrías que decirme cuál, por ejemplo `db/cerrados/<mes>`. Ese fichero hoy no existe, así que alguien tendría que crearlo y mantenerlo.
+3. **Feature.** La comprobación vive en `src/export.js` o en la base de datos: hay que crear el concepto de mes cerrado con spec, plan y tests. Es más grande y toca el producto.
+
+¿Cuál prefieres? Si es la 2, dime cómo se marca un mes como cerrado.

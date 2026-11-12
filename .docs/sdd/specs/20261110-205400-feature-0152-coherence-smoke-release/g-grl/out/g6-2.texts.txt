@@ -1,0 +1,51 @@
+--- [4]
+Voy a leer el contexto SDD del proyecto antes de clasificar el cambio.
+
+--- [18]
+Ahora: dejo preparada la feature de la lista de espera (rama `feature/0010-lista-espera`, id 0010 reservado) y te hago la primera pregunta del diseño. Queda: la entrevista, la spec con su aprobación y, después, plan e implementación, ~25 min, ~1 $ (subagentes de revisión incluidos).
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija ninguno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** `salas` es tu CLI para reservar salas del coworking. Hoy `libres <franja>` lista las salas sin reserva en esa franja, y `reservar <sala>` solo contesta con un texto fijo. Quieres que, cuando la sala que pides esté ocupada, puedas apuntarte a una lista de espera para esa sala y franja. Lo que no sé aún, y te iré preguntando de uno en uno, es qué debe pasar cuando la sala se libere (cancelación), cómo te enteras y dónde se guarda la lista. Corrígeme si algo de esto no es así.
+
+Primero, lo que solo sabes tú: ¿qué te pasa hoy cuando la sala que quieres está ocupada y qué harás con la lista de espera?
+
+--- [20]
+Entendido: tu problema es tener que volver a mirar `libres` cada rato. Lo que más condiciona el resto del diseño es qué debe pasar cuando la sala se libera.
+
+Un dato del código que pesa en esto: `bookings` vive en memoria y cada comando arranca de cero. Hoy `cancelar` solo imprime un texto y no libera nada, así que la lista de espera necesitará guardarse en algún sitio. Eso lo decidimos después.
+
+❓ **¿Qué pasa cuando alguien cancela una reserva de una sala con lista de espera?**
+1️⃣ **Reserva automática para el primero de la lista.**
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`.
+   - Al cancelar esa franja, la reserva pasa a ser tuya y no tienes que hacer nada más.
+   - Coste: reservas sin confirmar que lo quieres todavía.
+2️⃣ **Solo aviso.**
+   - Al cancelar sale `Norte lun 10:00-12:00 liberada; avisado el 1.º de la espera`.
+   - Tú reservas a mano.
+   - Coste: otro paso, y otra persona puede adelantarte.
+3️⃣ **Sin aviso: consultas la posición.**
+   - `espera Norte lun 10:00-12:00` → `1.º en la lista`.
+   - Coste: sigues mirando a mano, que es justo lo que quieres evitar.
+
+➡️ **Recomiendo 1️⃣**, porque tu queja es no tener que volver a mirar, y solo esta opción lo elimina del todo. A cambio, la reserva se hace sin que la confirmes en ese momento.
+
+¿Cuál eliges?
+
+--- [22]
+Voy con un caso concreto, sin opciones.
+
+Hoy: Norte está reservada el lunes de 10:00 a 12:00 por otra persona y tú quieres esa franja. Ejecutas `reservar Norte lun 10:00-12:00` y la sala está ocupada. Lo único que puedes hacer es ejecutar `libres 10:00-12:00` cada rato, a ver si alguien ha cancelado.
+
+Con la lista de espera, ese mismo comando te apuntaría en una cola de esa sala y esa franja, y te diría algo como `Norte ocupada; en espera (1.º)`. La duda es qué ocurre el día que la otra persona cancela, y hay tres maneras de resolverlo:
+
+- **Que se te reserve sola.** En el momento de la cancelación, Norte pasa a estar reservada a tu nombre. Tú no haces nada y, la próxima vez que mires, ya la tienes.
+- **Que solo te avisen.** Al cancelar aparece un mensaje diciendo que Norte quedó libre. La reserva no se hace sola: tienes que ejecutar `reservar` otra vez, y si alguien lo hace antes que tú, la pierdes.
+- **Que no pase nada visible.** La cola existe, pero para saber si te toca tienes que ejecutar un comando de consulta. Seguirías mirando a mano, solo que en otro sitio.
+
+La diferencia práctica es cuánto trabajo te queda tras apuntarte: ninguno en la primera, uno en la segunda y seguir vigilando en la tercera.
+

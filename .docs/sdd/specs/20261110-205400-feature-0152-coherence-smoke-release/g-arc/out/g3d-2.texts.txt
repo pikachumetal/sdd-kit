@@ -1,0 +1,99 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [16]
+Estoy en el paso 1 del cierre (validación). Como `validation.mode` es `manual`, tengo que ensayar el guion yo antes de pedírtelo. Ahora corro la suite y el entorno para ensayarlo.
+
+--- [19]
+`env-up` falla siempre: el commit `ccd1e8c` le quitó la semilla y ahora solo imprime un error. Pruebo a levantar `server.mjs` directamente, para ensayar el guion contra el servidor.
+
+--- [22]
+Ensayo hecho. Falta el panel de validación (plan B, porque no hay herramientas de Chrome). Lo lanzo.
+
+--- [24]
+El cierre de la 0010 se ha parado en el paso 1 y no he escrito ningún registro. El proyecto tiene `validation.mode: manual`, y «ciérrala» es la orden de cerrar, no una validación. Necesito que pruebes tú la feature, y el guion está al final.
+
+**Pre-checks**
+- No había cambios sin commitear.
+- `sdd merge --check` sale limpio: la fusión va a `develop`.
+- No hay otras ramas abiertas.
+- La spec está `approved`, firmada por Laura.
+- La revisión final cubre hasta `ea31628`. `HEAD` es `5670135`, que solo toca `tasks.md`, así que no hace falta re-revisión.
+- La carpeta de la feature no tiene `walkthrough.md`, y `sdd-implement` no dejó ningún borrador. Lo escribiré yo en el cierre.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround que queda como deuda en `debt.md`. Si es un error, el test falla al correr solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo válido | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | ejecución real (vía servidor) | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `5670135`.
+- `node e2e/run.mjs`: saltada. El «Entorno de la suite» depende de `env-up`, que no arranca.
+
+**Sin probar**
+
+- La suite e2e, por lo que acabo de decir.
+- **`env:up` está roto.** `node scripts/env-up.mjs` solo imprime «falta data/seed.json» y sale con 1. El commit `ccd1e8c` le quitó la semilla y dejó ese stub.
+  - Para ensayar levanté `node server.mjs` directamente, con el mismo puerto que usa `env-up`.
+  - Lo apunto como deuda en `debt.md`. Dime si prefieres que lo arregle en esta feature.
+- `canceladas` desde la CLI suelta (`node src/app.js canceladas`) sale vacío. Cada proceso empieza sin reservas canceladas, así que la lista solo se ve a través del servidor. El guion lo hace por ahí.
+
+Panel: plan B en http://127.0.0.1:62444/ (no hay herramientas de Chrome, así que la página no ve la app: si algo falla, cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 55661. La sesión `persona` empieza con la reserva de Norte del lunes activa. La que usé yo en el ensayo se llama `validacion` y no la toques.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -G -H "x-session: persona" http://localhost:55661/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"x\"]"
+```
+
+2. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -G -H "x-session: persona" http://localhost:55661/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+3. Motivo válido → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -G -H "x-session: persona" http://localhost:55661/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+4. Listado → `Norte lun — sala ocupada`
+
+```
+curl -G -H "x-session: persona" http://localhost:55661/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

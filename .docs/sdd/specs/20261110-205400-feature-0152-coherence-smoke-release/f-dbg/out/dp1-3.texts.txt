@@ -1,0 +1,84 @@
+--- [11]
+🦆 **Causa raíz:** en `src/app.js:8`, `toHours` convierte `"09:30"` en `9.30`, es decir, trata los minutos como decimales. `09:30-12:00` da `12.00 - 9.30 = 2.70` y no `2.5`, que supera `MAX_HOURS = 2.5`. Solo pasa cuando hay minutos distintos de `:00`. Con tramos en hora en punto sale bien, y por eso los tests actuales no lo cazan del todo. Tocaría solo `toHours`, que pasaría a calcular `horas + minutos/60`. No hay que decidir texto, sitio ni regla.
+
+Es un fallo determinista con la solución fijada, así que lo clasifico como **patch**. Una prueba que hoy falla (`reservar Sur 09:30-12:00` debe devolver `reservada Sur 09:30-12:00`) pasa a verde con el arreglo. Ya hay un test así en `test/reservar.test.js:5`. Falla hoy, y yo lo confirmaría ejecutándolo antes de tocar nada.
+
+Efecto colateral: `precio` usa la misma función, así que hoy también calcula mal con minutos. `precio Sur 09:30-12:00` da 40,5 € y deberían ser 37,5 €. El mismo arreglo lo corrige. No hay `estimation.md`, así que no doy estimación en horas.
+
+¿Abro el patch?
+
+1. **Sí, patch (recomendada):** creo la rama y la carpeta `patch-`, confirmo el test en rojo, corrijo `toHours`, lo dejo en verde y cierro.
+2. **No, hazlo como feature** (spec y plan completos). No lo recomiendo: el arreglo es de una línea y no hay nada que diseñar.
+
+--- [16]
+Rama creada con el id 0010. Paso a `sdd-implement`.
+
+--- [28]
+Estoy comprobando que el test nuevo de `precio` falla antes del arreglo. Después corrijo `toHours`.
+
+--- [37]
+El arreglo ya está hecho y los tests pasan (7 de 7). Falta que termine la revisión del patch y cerrar con el commit. Estoy esperando al revisor y no he confirmado nada de su resultado.
+
+- **Causa:** `toHours` leía `09:30` como `9.30` en lugar de `9.5`, así que la franja daba 2,7 h y no 2,5.
+- **Arreglo:** `toHours` en `src/app.js` ahora calcula `horas + minutos/60`.
+- **Comprobado:**
+  - `reservar Sur 09:30-12:00` devuelve `reservada Sur 09:30-12:00`.
+  - `reservar Sur 09:00-12:30` sigue rechazándose por pasar de 2,5 h.
+- **`precio`:** también estaba mal (daba 40,5 € y son 37,5 €). El mismo arreglo lo corrige, y he añadido un test para ello.
+- **Rama:** `feature/0010-fix-horas-minutos`.
+
+Sin commit todavía: la constitución exige la revisión del patch antes de commitear.
+
+--- [41]
+**Sin hallazgos bloqueantes.** Solo hay dos observaciones menores de severidad baja.
+
+**Comprobaciones**
+
+1. **Causa raíz (patch.md §2): correcta.**
+   - `src/app.js:8` original hacía `Number(time.replace(':', '.'))`, así que `"09:30"` pasaba a `9.30`.
+   - `12.00 - 9.30` da 2,7, mayor que `MAX_HOURS = 2.5` (`src/limits.js`).
+   - Con `:00` no falla.
+   - Dejé el código original con `git stash` y `node --test test` falla en `reservar justo el máximo`, como dice el patch.
+   - Restauré los cambios después y el `git status` queda igual que al empezar.
+
+2. **Fix de `toHours` (`src/app.js:8-11`): correcto y mínimo.**
+   - Solo cambia esa función, y `slotHours`, `book` y `precio` la reutilizan sin tocarlos.
+   - Los minutos `:00` siguen dando horas enteras.
+   - Probé por CLI franjas de 2,5 h con minutos que no se representan bien en coma flotante: `09:10-11:40`, `09:20-11:50`, `09:40-12:10`, `09:50-12:20` y `10:10-12:40`. Todas se aceptan y dan `37.5 €`, sin errores de redondeo.
+   - `09:00-12:30` sigue rechazada, y su precio es `52.5 €`.
+
+3. **Tests (`test/reservar.test.js`): cubren el síntoma y `precio`, y no están ajustados al código.**
+   - La línea 5 ya existía y es el síntoma original: `09:30-12:00` se acepta.
+   - La línea 10 es el contraste: el máximo superado se rechaza.
+   - La nueva, en las líneas 13-15, cubre `precio` con minutos y espera `37.5 €`. Es el valor real (2,5 h × 15 €), no el que daba el código roto.
+   - `node --test test` da 7 pass y 0 fail.
+
+**Observaciones menores**
+
+- **Bajo, `patch.md` §4 (tabla de verificación):** las filas 1 y 2 repiten el mismo texto de resultado, con el CLI y los dos conteos de tests. Sería más claro poner en cada fila solo su evidencia. Además, el «antes: fail 2» no lo pude reproducir tal cual, porque con el stash el test nuevo también desaparece y solo vi fail 1. Es coherente con el código original, pero no es reproducible con un simple stash.
+- **Bajo, `test/reservar.test.js`:** no hay un test que fije el borde de coma flotante, como `09:10-11:40`. Hoy funciona, pero el patch lo da por supuesto. Es opcional, y el fix no lo necesita.
+
+Los cambios sin commit son `src/app.js`, `test/reservar.test.js` y `.docs/sdd/changes/`. No edité nada.
+
+--- [50]
+El fix está commiteado (`7749445`, rama `feature/0010-fix-horas-minutos`). El cierre se detiene aquí porque falta tu validación y porque hay un bloqueo de configuración en el merge. No he fusionado nada.
+
+🦆 El cliente reservaba `09:30-12:00` y se le rechazaba por pasar de 2,5 h. Era un error de cálculo con los minutos y ya está corregido. `precio` arrastraba el mismo error y también.
+
+**Validación pendiente (la haces tú)**
+
+El proyecto no declara `validation.mode: field`. Antes de cerrar necesito que me digas qué has probado y que funciona. Estas son las pruebas:
+
+1. `node src/app.js reservar Sur 09:30-12:00` debe responder `reservada Sur 09:30-12:00`.
+2. `node src/app.js reservar Sur 09:00-12:30` debe seguir respondiendo `excede el máximo de horas`.
+3. `node src/app.js precio Sur 09:30-12:00` debe responder `37.5 €`. Antes daba `40.5 €`.
+4. `node --test test` debe dar 7 de 7. Yo ya lo he comprobado.
+
+Si prefieres no probarlo ahora, puedes diferir la validación, pero tiene que llevar un disparador concreto.
+
+**Bloqueo del merge**
+
+`sdd merge --check` falla con «falta `merge.into` o `merge.noFf`» en `.docs/sdd/sdd-kit.json`. Ese fichero solo tiene `release` e `ids`. Necesito que me digas en qué rama se fusiona. Lo normal sería `develop`, con `--no-ff` o sin él. Con tu respuesta añado el bloque y sigo.
+
+**Falta al cerrar:** `ROADMAP.md` no tiene fila para el 0010, así que la añadiré en Now, y también la hash del commit en `patch.md`.
+
