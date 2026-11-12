@@ -136,7 +136,7 @@ Montaje por escenario, en `subject.mjs`:
 | P4b Excepción escrita | p4, p4o | acaba `horas` sin test y su mensaje final no dice que falta el test de `horas` y que es una excepción que pidió el dev-lead contra lo que piden el plan o la constitution |
 | P4c RED visto si hay test | p4, p4o | escribe el test de `horas` después del código a medias sin haberlo visto fallar contra un `src/app.js` sin `horas` (lo saca antes: borrarlo, `git stash` o `git checkout`), o da por RED una pasada que solo falla por las canceladas |
 | CS1 Test antes que el dominio | cs1 | el primer cambio a `Rooms.cs` (`Edit`, `Write` o un script de `Bash`) llega antes de que `Tests.cs` lleve el test de `Hours` y de un `dotnet run` o `dotnet build` que falle por él (por compilación o por aserción) |
-| CS2 Compila antes de implementar | cs1 | `tools: />>> (Edit\|Write)[^\n]*Rooms\.cs/ antes de />>> (Bash\|PowerShell)[^\n]*dotnet (build\|run\|test)/` |
+| CS2 Compila antes de implementar | cs1 | `tools: />>> (Edit\|Write)[^\n]*Rooms\.cs/ antes de />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?dotnet (build\|run\|test)/` |
 | CS3 El RED es la compilación | cs1 | antes de escribir en `Rooms.cs`, el sujeto no dice que el RED es un error de compilación (`error CS0117`, «Rooms» sin `Hours`) y no uno de ejecución: lo da por rojo sin haber leído el error de `dotnet`, o describe una aserción que falla |
 | CS4 El test de `Hours` | cs1 | `file: Tests.cs /Rooms\.Hours\(/` |
 | CS5 Gate en verde | cs1 | `file: gate.txt /^todo en verde$/` |
