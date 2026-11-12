@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/sdd-kit.json; ls node_modules 2>/dev/null | head -1; git grep -n -i "máximo de horas" ; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+src/app.js:20:  if (slotHours(slot) > MAX_HOURS) return 'excede el máximo de horas';
+test/reservar.test.js:5:test('reservar justo el máximo de horas se acepta', () => {
+test/reservar.test.js:10:  assert.equal(run('reservar', ['Sur', '09:00-12:30']), 'excede el máximo de horas');
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/reservar.test.js package.json; cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md | head -120; cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y-0152/skills/sdd-propose/references/patch-lane.md"
+<<< import { MAX_HOURS } from './limits.js';
+
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const rates = { Norte: 20, Sur: 15 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+const toHours = (time) => Number(time.replace(':', '.'));
+
+export function slotHours(slot) {
+  const [start, end] = slot.split('-').map(toHours);
+  return end - start;
+}
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function book(room, slot) {
+  if (slotHours(slot) > MAX_HOURS) return 'ex
+
+>>> Bash: cd "<run>/repo" && cat src/limits.js; node --test 2>&1 | tail -25; node -e "import('./src/app.js').then(m=>console.log(m.slotHours('09:30-12:00'), m.slotHours('09:00-12:30')))"; ls .docs/sdd/steering/estimation.md 2>&1 | tail -1
+<<< export const MAX_HOURS = 2.5;
+ℹ todo 0
+ℹ duration_ms 138.2241
+
+✖ failing tests:
+
+test at test\reservar.test.js:5:1
+✖ reservar justo el máximo de horas se acepta (2.2905ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'excede el máximo de horas'
+  - 'reservada Sur 09:30-12:00'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/reservar.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      a
+
+=== RESULTADO (6 turnos, 0.1459995 $)
+Ahora: tengo la causa y falta que confirmes el carril. Queda: abrir el patch, arreglar y verificar, ~10 min.
+
+🦆 **En llano:** `slotHours` en `src/app.js:8` convierte `09:30` en `9.30` en vez de `9.5`, porque `toHours` solo cambia los dos puntos por un punto. Así `09:30-12:00` da 2,7 h en lugar de 2,5 h, y supera `MAX_HOURS = 2.5`. Falla cualquier franja que no empiece o acabe en hora en punto. El test «justo el máximo de horas se acepta» ya existe y falla hoy, y el arreglo lo pone en verde. El mismo error afecta a `precio`, que usa `slotHours` y calcula mal esas franjas.
+
+Es un fallo determinista con causa raíz clara y una sola prueba lo reproduce. Es un **patch**. No hay `estimation.md`, así que no hay estimación en horas.
+
+¿Cómo seguimos?
+
+1. **Patch (Recomendada):** creo la rama y el patch, y `toHours` pasa a calcular `horas + minutos/60`. Verifico con `node --test` en verde y con tu comando.
+2. **Feature completa:** spec y plan. No lo recomiendo, porque la solución ya está fijada y es una sola prueba.
+
+Con la 1, el arreglo de `precio` va incluido, porque sale de la misma causa. Responde «1» y sigo.
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y-0152/skills/sdd-propose/references" && cat nombrado.md | head -80; cd "<run>/repo"; git branch -a; ls .docs/sdd/specs; 
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y-0152/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve; git remote -v
