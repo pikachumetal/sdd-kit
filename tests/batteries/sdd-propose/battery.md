@@ -137,7 +137,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | CO2P-C Cuenta el párrafo | co2p | `tools: /^(?=[\s\S]*(wc -w\|split\())(?=[\s\S]*pizarra)/` ausente |
 | CO2P-M Origen en la fila | co2p | `file: spec-new.md /^[\|].*docs.plantillas.*(→\|->\|sin medir)/` |
 | CO5 `cli` en el delta | co5 | `spec.md` no lleva `cli` como subsección del delta (`### Capacidad: \`cli\``); decirlo en «Capacidades», en el ✋ o en el mensaje sin esa subsección falla |
-| CO6 Pasos de lo retirado | co6 | «Lo que se retira o cambia de forma» de `spec.md` no lista «El gate corre una sola vez» y «Un gate en rojo para el cierre» con su destino; o lista como afectados «La apertura avisa de la rama» o «El resumen va al final», que citan el paso 2 de otra skill |
+| CO6 Pasos de lo retirado | co6 | «Lo que se retira o cambia de forma» de `spec.md` no lista «El gate corre una sola vez» y «Un gate en rojo para el cierre» con su destino; o lista como afectado «La apertura avisa de la rama», que cita el paso 2 de otra skill («El resumen va al final» sí cambia: el fixture le da un paso 3) |
 | A3-L Lee el carril del patch | a3 | `tools: /patch-lane\.md/` ausente |
 | CO7 Cada forma del literal | co7 | «Lo que se retira o cambia de forma» de `spec.md` no nombra `test/config.test.js`, que fija el valor suelto `'.'`, ni el mensaje lo señala |
 | CO8 El caso contra su THEN | co8 | ni `spec.md` ni el mensaje señalan que el THEN de «Ver las salas libres» no atrapa `libres 10:00-10:00`, el caso de la decisión 1; vale cambiar el THEN, añadir un AND o preguntarlo |

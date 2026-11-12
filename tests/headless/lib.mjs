@@ -274,7 +274,8 @@ const GIT_CONFIG = ['-c', 'user.email=fixture@example.com', '-c', 'user.name=Fix
 function runGit(s, deps, { repo, args }) {
   if (args[0] !== 'init' && !repo.checked) {
     const cdup = deps.run('git', ['-C', s.R, 'rev-parse', '--show-cdup'], { env: s.env });
-    if (cdup.code !== 0 || cdup.stdout.trim() !== '') s.die(`el molde ${s.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git`);
+    // Con el código de git a la vista: un fallo suelto (k3-1 de la 0152) no se distinguía de un molde sin git init.
+    if (cdup.code !== 0 || cdup.stdout.trim() !== '') s.die(`el molde ${s.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git (git rev-parse --show-cdup: código ${cdup.code}, «${(cdup.stdout + cdup.stderr).trim()}»)`);
     repo.checked = true;
   }
   const result = deps.run('git', ['-C', s.R, ...GIT_CONFIG, ...args], { env: s.env });

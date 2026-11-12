@@ -251,7 +251,7 @@ describe('Molde y guardado (lib.mjs)', () => {
     const { subject, errs, calls } = start({}, kitFs(), { run: ({ args }) => (args.includes('--show-cdup') ? { stdout: '../\n' } : undefined) });
 
     expect(dies(() => subject.commit('feat: base'))).toBe('exit 1');
-    expect(errs).toEqual([`[a-1] el molde ${subject.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git`]);
+    expect(errs).toEqual([`[a-1] el molde ${subject.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git (git rev-parse --show-cdup: código 0, «../»)`]);
     expect(calls.some(({ args }) => args.includes('add'))).toBe(false);
   });
 

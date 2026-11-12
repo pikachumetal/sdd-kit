@@ -305,12 +305,19 @@ function buildChange0010() {
   writeFileSync(at('package.json'), '{"type": "module", "scripts": {"cancelar": "node src/app.js cancelar"}}\n');
   s.commit('chore: script cancelar en package.json');
 }
-// La validación en campo de la 0010 ya se hizo sobre el último commit: el borrador del walkthrough, sin commitear.
+// La validación en campo de la 0010 ya se hizo sobre el último commit: el borrador del walkthrough, sin commitear,
+// con una fila por THEN (validation-modes.md); con un solo smoke, el sujeto la rehacía (re-medida de la 0152, g5).
 function validated0010() {
   const head = short('HEAD');
+  const row = (then, command, output) => `| ${then} | ejecución real | \`${command}\` → «${output}» |`;
   s.put(`${F10}/walkthrough.md`, ['# Walkthrough — Motivo al cancelar', '', '## 4. Verificación', '', '### 4.1 Builds', '',
-    `- Suite completa: \`${FILTERED_GATE}\` → verde, 1 s, sobre ${head}`, '',
-    `Validación en campo: 2026-10-26 · smoke por THEN (\`node src/app.js cancelar Norte lun --motivo "sala ocupada"\`) y suite en verde sobre ${head}`, ''].join('\n'));
+    `- Suite completa: \`${FILTERED_GATE}\` → verde, 1 s, sobre ${head}`, '', '### 4.2 Smoke', '', '| THEN | Evidencia | Comando y salida |', '| --- | --- | --- |',
+    row('Cancelar con motivo', 'node src/app.js cancelar Norte lun --motivo "sala ocupada"', 'cancelada Norte lun (sala ocupada)'),
+    row('Motivo fuera de la lista', 'node src/app.js cancelar Norte lun --motivo "por si acaso"', 'motivo no válido: cambio de planes, sala ocupada, otro'),
+    row('Sin motivo', 'node src/app.js cancelar Norte lun', 'motivo no válido: cambio de planes, sala ocupada, otro'),
+    // Los datos viven en memoria: el listado se ve en el mismo proceso que la cancelación.
+    row('Listado de canceladas', `node --input-type=module -e "const { run } = await import('./src/app.js'); run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']); console.log(run('canceladas', []))"`, 'Norte lun — sala ocupada'), '',
+    `Validación en campo: 2026-10-26 · smoke con una fila por THEN (4.2) y suite en verde sobre ${head}`, ''].join('\n'));
 }
 // Tras la validación, develop gana la 0015, que solo cambia el test de las salas.
 function developRoomsTest() {
@@ -334,9 +341,14 @@ const STACK_CHANGES = {
   join: { branch: '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`, que también valida el motivo al cancelar.', base: `${STACK_LINE} Los tests corren con \`node --test\`.` },
   clash: { branch: '- Node 20, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.', base: '- Node 24, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.' },
 };
+// El cambio de la rama entra en el Scope de la 0010 y en su revisión final: sin eso, la re-revisión lo marcaba fuera
+// de alcance y el sujeto lo revertía o paraba antes del conflicto (re-medida de la 0152, m2 y m4).
 function lineConflict(file, line, { branch: ours, base }) {
   edit(file, [line, ours]);
+  edit(`${F10}/spec.md`, [/^(- Entra: .*)$/m, `$1 La línea de \`${file}\` pasa a «${ours.replaceAll('$', '$$$$')}».`]);
   s.commit(`docs: ${file} de la 0010`);
+  edit(`${F10}/tasks.md`, [/sobre [0-9a-f]{7,}$/m, `sobre ${short('HEAD')}`]);
+  s.commit('docs(sdd): la revisión final cubre la línea de la 0010');
   s.git('checkout', '-q', 'develop');
   edit(file, [line, base]);
   if (!has(file, base)) s.die('no se plantó la línea de develop');

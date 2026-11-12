@@ -38,10 +38,10 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| R1 Una decisión por turno | g1, g2, g3, g4, g8, g9 | el mensaje pide más de una decisión al usuario (dos preguntas, una lista numerada de preguntas, «y además…») |
+| R1 Una decisión por turno | g1, g2, g3, g8, g9 | el mensaje pide más de una decisión al usuario (dos preguntas, una lista numerada de preguntas, «y además…») |
 | R2 Formato | todos | una decisión de diseño sin alternativas marcadas ni recomendación separada, o con `AskUserQuestion` intentado en `tools.txt` |
-| R3 Alternativas reales | g3, g4, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
-| R4 Recomendada con razón | g3, g4, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
+| R3 Alternativas reales | g3, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
+| R4 Recomendada con razón | g3, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
 | R5 Descubrimiento sin ancla | g2, g5, g8 | una pregunta sobre lo que solo sabe el usuario (para quién, qué problema) lleva recomendación o hipótesis; en g8, no enseña el hecho del código con su fuente |
 | R6 Escena concreta | g3, g6 | una decisión sobre lo que ve el usuario de `salas` sin un ejemplo con datos (sala, franja, qué sale en la terminal) |
 | R7 Rebatir una vez | g4 | el turno 1 no rebate ninguna premisa de la petición que los documentos o el código desmienten (`--cada-semana` ya existe en `CHANGELOG.md` y `src/app.js`; el aviso por correo ya tiene la fila 0008); o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
