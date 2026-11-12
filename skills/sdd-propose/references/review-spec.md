@@ -50,7 +50,7 @@ Review de spec propuesta: dos revisores — señales: contrato público (el webh
 
 ## 3. Dispatch the reviewers
 
-Subagent `subagent_type: sdd-kit:effort-medium`, with the model of §2, one per lens, each with its silence watch ([control-profiles.md](control-profiles.md#silence-watch)). With two reviewers, load `sdd-parallel-agents` with `Skill` and dispatch them with it, in the same response. The brief's points **are split by how many reviewers you dispatch**:
+Subagent `subagent_type: sdd-kit:effort-medium`, with the model of §2, one per lens, each with its silence watch ([control-profiles.md](control-profiles.md#silence-watch)). With two reviewers, load `sdd-parallel-agents` with `Skill` and dispatch them with it: both `Agent` calls in one response, nothing between them. The brief's points **are split by how many reviewers you dispatch**:
 
 - **One reviewer**: its lens gets the **seven points**.
 - **Two reviewers**: **domain** gets 1, 3, 5, 5 bis and 7; **technical** gets 2, 4 and 6, and also reads `architecture.md`. Each brief closes with the frontier: «if a finding belongs to a point not on your list, don't report it: the other reviewer looks at it».
