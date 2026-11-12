@@ -27,7 +27,7 @@ Stop with the red report and ask whether to merge anyway.
 
 A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …` or `base: en verde: el rojo lo trae la rama`), and the same rule follows.
 
-**The red report**, in one block: the command, its exit code, the log's path, its last 20 lines, the base's verdict (the `base:` line) and the destination's state, read with `git rev-parse --short <merge.into>`: «`<merge.into>` sin tocar en `<hash>`».
+**The red report**, in one block: the command, its exit code (`código <n>`), the log's path, its last 20 lines, the base's verdict (the `base:` line) and the destination's state, read with `git rev-parse --short <merge.into>`: «`<merge.into>` sin tocar en `<hash>`».
 
 ## The base's CI
 

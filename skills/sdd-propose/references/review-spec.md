@@ -22,7 +22,7 @@ The rubric decides how many reviewers, not whether there is a review, and you do
 - **Full: two reviewers**, one lens each (domain and technical), in parallel.
 - **Small Scope → one reviewer with the seven points**: estimate how many lines what the Scope lists changes, text and code together; with fewer than ~50, and a delta that touches no public contract and carries no `MODIFIED`, one reviewer. The signals say what to look at; the size, what looking costs: four signals asked for two reviewers for a few paragraphs (ticket 0040 §1b). «It's only one line» doesn't lower a public contract or a `MODIFIED` to one reviewer: two lines in `db/002-site.sql` and `src/api.js` that change a contract still get two.
 - **Lite: one reviewer with the seven points**, `model: sonnet`.
-- **Two reviewers, restricted parallelism and a delegated spec → one reviewer with the seven points**, without asking: if the level is two reviewers, the dev-lead chose or said at the start «apruebo la spec por delegación» and the user's instructions ask to confirm before parallelizing, don't dispatch two reviewers or stop to confirm it. «Toma tú las decisiones» without that option isn't a delegated spec. One reviewer isn't parallelizing, and the second lens goes in the line of the reasonable minimum. With the rule only in the instructions, 2 of 2 subjects with the spec delegated stopped to ask permission for the two reviewers (`tests/spec-review-weight-red.md`, p).
+- **Two reviewers, restricted parallelism and a delegated spec → one reviewer with the seven points**, without asking: if the level is two reviewers, the dev-lead chose or said at the start «apruebo la spec por delegación» and the user's instructions ask to confirm before parallelizing, don't dispatch two reviewers or stop to confirm it. «Toma tú las decisiones» without that option isn't a delegated spec. One reviewer isn't parallelizing, and the second lens goes in the line of the reasonable minimum. With the rule only in the instructions, 2 of 2 subjects with the spec delegated stopped to ask permission for the two reviewers.
 - **Two reviewers, restricted parallelism and a spec not delegated → one question**, before dispatching them, with the two reviewers, each one's model and its cost: it's a money stop the user's own instructions ask for.
 - **A level the dev-lead names** in the request or the launch prompt («sin review», «un revisor») is applied, and their literal phrase goes to «Decisiones tomadas con el dev-lead». In `unattended`, never fewer reviewers than the rubric gives.
 
@@ -55,7 +55,7 @@ Subagent `subagent_type: sdd-kit:effort-medium`, with the model of §2, one per 
 - **One reviewer**: its lens gets the **seven points**.
 - **Two reviewers**: **domain** gets 1, 3, 5, 5 bis and 7; **technical** gets 2, 4 and 6, and also reads `architecture.md`. Each brief closes with the frontier: «if a finding belongs to a point not on your list, don't report it: the other reviewer looks at it».
 
-Without the split, 8 of 19 findings —42 %— came duplicated (`tests/spec-review-lenses-red.md`).
+Without the split, 8 of 19 findings —42 %— came duplicated.
 
 Brief, with the points it gets:
 

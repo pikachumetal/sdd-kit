@@ -17,7 +17,7 @@ End each turn with exactly one decision: one question mark in the message. «Thr
 
 ## Look it up before asking
 
-If a decision depends on a fact that changes with versions or time (a tool's behavior in the project's version, its docs, a license), look it up first: the repo, the session's documentation MCP within the user's limits, then the web. Cite the source. If it needs a web search, use a subagent and keep asking what doesn't depend on it. «I remember it, haven't checked» or trying another version than the project's means you skipped this. «Unverified» only when the session has neither the MCP nor the web.
+If a decision depends on a fact that changes with versions or time (a tool's behavior in the project's version, its docs, a license), look it up first: the repo, the session's documentation MCP within the user's limits, then `WebSearch` or `WebFetch`. Cite the source. If it needs a web search, use a subagent and keep asking what doesn't depend on it. «I remember it, haven't checked» or trying another version than the project's means you skipped this. «Unverified» only when the session has neither the MCP nor the web.
 
 ## Shape of a question
 
@@ -36,7 +36,9 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 
 - The decision sets the count: one defensible path: say it, confirm it; 🔀 marks a mix defensible alone. A habitual mix is filler, like one you say «I don't think you want».
 - «They're the defaults» or «it's simpler» is not a reason. With no reason to prefer one, say «tie, it depends on X» and ask X.
-- A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`. Tell limits by their effect, not their cause. For how a screen looks or feels, show it instead of asking: if the screen exists, on the running app with what `§Frontend` declares (the live detector, or a screenshot of the current screen next to the variant); if it doesn't, or without `§Frontend`, an Artifact with the options. A decision about a flow or a sequence of steps (states, a process), or about a structure easier to see than read (a timeline, a map), shows it before asking: a diagram skill if the session has one (`archify` preferred), else an Artifact; without either, an ASCII or Mermaid block, saying why it isn't drawn. Without the app or the Artifact tool, describe each option's scene in text and say why you can't show it. «I haven't started the app» is not a reason: start it as `§Frontend` says, and stop what you started.
+- A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`. Tell limits by their effect, not their cause.
+- For how a screen looks or feels, show it instead of asking: if the screen exists, on the running app with what `§Frontend` declares (the live detector, or a screenshot of the current screen next to the variant); if it doesn't, or without `§Frontend`, an Artifact with the options. Without the app or the Artifact tool, describe each option's scene in text and say why you can't show it. «I haven't started the app» is not a reason: start it as `§Frontend` says, and stop what you started.
+- **A flow** (states, a process) or a structure easier to see than read (a timeline, a map) is drawn before asking, never a list or a table: a diagram skill if the session has one (`archify` preferred), else an Artifact; without either, an ASCII or Mermaid block, saying why it isn't drawn.
 - Icons mark only this question's alternatives; name earlier ones. If the user answers with an icon this question doesn't have, ask which one they meant.
 - An operational decision (options clear in one line: approve, continue) goes in numbered prose, recommended first, ending the turn.
 

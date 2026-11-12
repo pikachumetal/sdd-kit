@@ -133,7 +133,7 @@ Sin delta en la apertura: si un arreglo cambia un requisito, entra por enmienda.
 | Re-ejecución tras cambios de `dist/` y sujetos sin evidencia | sin medir: hasta 40 sujetos | 22,00 | ~70 |
 | Una tanda de REFACTOR | 0: las frases son la forma mínima | 0 | 0 |
 | RED de la enmienda (moldes 3.0.0) | 8 sujetos | 5,00 | ~20 |
-| Suma | 1300 sujetos | 332,93 | ~1.120 |
+| Suma | 2000 sujetos | 332,93 | ~1.120 |
 
 Fuera de los sujetos: lectores de coherencia (5) y de la batería (15) en sonnet, ~35 $; revisión final, ~15 $. Total previsto, ~360 $. La parada cuenta los sujetos (el techo del lanzador, 690) y, aparte, el gasto total: si pasa de 360 $, se para y se pregunta.
 
@@ -162,6 +162,7 @@ Fuera de los sujetos: lectores de coherencia (5) y de la batería (15) en sonnet
   5. **Revisión opus de la enmienda** (1 Crítico, 4 Importantes, 3 Menores), aceptada entera: las dos líneas de `sdd-implement`, el THEN con la ruta absoluta y sin «al dev-lead», el GIVEN sin contradicción, el plan completo sin sufijo, la fila W sobre llamadas de varias líneas y `${VAR}`, la tabla de reglas de la batería y el motivo del cierre de la deuda.
 - 2026-11-12, en `unattended` (dev-lead: «1, adelante»): la re-medida de los arreglos (`f-0152.sh`, sin deuda: «no deudas...») alcanzó el techo de 740 sujetos a mitad de `sdd-propose`, con 352,86 $ gastados. La Suma pasa a **870 sujetos** para los ~124 que faltan (7 de `sdd-propose` y nueve baterías sin lanzar, ~36 $ según `plan`); el techo de coste se queda en 440 $.
 - 2026-11-12, en `unattended` (dev-lead: «2», arreglarlo todo ahora): la re-medida con la n de cada batería deja ~24 rojos de comportamiento (`sdd-archive` 7, `sdd-grilling` 8, `sdd-propose` 6, `sdd-verify` `c1`, `sdd-implement` `k3`, `sdd-retro` `r6`) y 11 de fila o molde, con 387,16 $ y 866 sujetos. Todo se arregla en la 0152, sin alargar ninguna skill: filas y moldes; reglas movidas al paso donde se decide; n = 2 de los rojos hasta que pasen; después, la batería entera de cada skill tocada. El techo de coste pasa de 440 $ a **640 $** y la Suma a **1.300 sujetos**.
+- 2026-11-12, en `unattended` (dev-lead: «no quiero salir con una v3 coja... si crees que necesitas todas, todas»): tras el GREEN de los arreglos, las **15 baterías enteras** con su n sobre el kit final (614 sujetos, 288 $ según `plan`), no solo las de las skills tocadas, porque las que corrieron con N = 1 escondían rojos; después, una ronda de arreglos. El techo de coste pasa a **800 $** y la Suma a **2000 sujetos**; sin más paradas hasta el merge salvo pasar de 800 $.
 
 ## Aprobaciones
 
