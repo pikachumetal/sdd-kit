@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git diff; ls .docs/sdd .docs/sdd/changes/* 2>/dev/null; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat src/app.js
+<<<  M src/app.js
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 368efdd..be0e7de 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,44 +1,52 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [
+-  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+-  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+-];
+-
+-export function slotHours(slot) {
+-  const [start, end] = slot.split('-').map((time) => Number(tim
+
+>>> Bash: ls -R .docs/sdd/specs | head -30; cat .docs/sdd/specs/0016*/spec.md .docs/sdd/specs/0016*/plan.md; ls; cat package.json; git ls-files; file src/app.js; git show HEAD:src/app.js | file -
+<<< .docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261009-140000-feature-0016-room-hours/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours:
+plan.md
+spec.md
+cat: '.docs/sdd/specs/0016*/spec.md': No such file or directory
+cat: '.docs/sdd/specs/0016*/plan.md': No such file or directory
+CHANGELOG.md
+package.json
+PRODUC
+
+>>> Bash: cd .docs/sdd/specs/20261009-140000-feature-0016-room-hours; cat spec.md plan.md; cat ../../steering/constitution.md
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Bash: cd <run>/repo && sed -i "s/\.filter((b) => b.room === room)/.filter((b) => b.room === room \&\& b.status === 'active')/" src/app.js && sed -i 's/$/\r/' src/app.js && git diff --stat && git diff && for r in Norte Sur; do node src/app.js horas $r; done; node --test 2>&1 | tail -8
+<<<  src/app.js | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+diff --git a/src/app.js b/src/app.js
+index 368efdd..bdfcfad 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room && b.status === 'active')
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 're
+
+=== RESULTADO (7 turnos, 0.14874130000000002 $)
+`horas` ya funciona, pero la Task 1 no está cerrada: falta `test/horas.test.js` y no he commiteado.
+
+- **Código:** la función `roomHours` en `src/app.js` ahora suma solo las reservas con `status === 'active'`. Con eso `horas Norte` da `Norte: 2 h` y `horas Sur` da `Sur: 0 h`, como pide la spec. Lo he comprobado a mano con `node src/app.js horas <sala>`.
+- **Finales de línea:** tu edición de ayer había convertido el fichero entero de CRLF a LF, así que el diff mostraba todas las líneas cambiadas. Lo he devuelto a CRLF y el diff queda en 8 líneas añadidas.
+- **Suite existente:** `node --test` pasa, 4 de 4.
+- **Tests:** no he escrito ninguno, como pediste. Eso se salta la constitución (tests antes que código) y el plan, cuya verificación de la Task 1 es `node --test test/horas.test.js`, un fichero que no existe.
+- **Sin commit:** el plan mete el test en el commit de la task, y un commit sin él dejaría la rama incumpliendo la constitución. Está sin commitear en el working tree.
+- **Al volver a los tests:** crea `test/horas.test.js` con un caso por cada THEN de la spec, `Norte: 2 h` y `Sur: 0 h`. Pásalo en rojo contra el código de antes del filtro por `active` y luego en verde, y lo commiteas todo junto. Si prefieres commitear ya el código y dejar los tests para la tarde, dímelo y lo hago, pero queda como excepción tuya a la constitución.

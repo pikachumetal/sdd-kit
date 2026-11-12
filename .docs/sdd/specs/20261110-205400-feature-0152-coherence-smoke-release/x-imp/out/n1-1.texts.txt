@@ -1,0 +1,139 @@
+--- [6]
+Ahora: preparar el espacio y lanzar la ejecución Native del plan aprobado (2 tasks). Queda: Task 1, Task 2 y la revisión final, ~20 min.
+
+--- [9]
+Uso sdd-worktrees para preparar el espacio aislado.
+
+--- [12]
+Repo normal en la rama `feature/0010-cancel-reason` (no `main`); con el dev-lead fuera, trabajo en el sitio en esa rama (lo apunto como ruling). Ahora la línea base en un worktree desacoplado.
+
+--- [14]
+Línea base en verde (4/4). Workspace, ledger y TDD:
+
+--- [17]
+Ledger, base check y pre-flight:
+
+--- [20]
+Base sin cambios. Cargo sdd-tdd.
+
+--- [26]
+Pre-flight y ledger; luego los RED de Task 1.
+
+--- [32]
+RED de Task 1 (un test por THEN/AND):
+
+--- [36]
+RED por la razón esperada. GREEN:
+
+--- [40]
+Verde. Commit de Task 1 con `tasks.md`:
+
+--- [43]
+Task 1 cerrada. Ahora: Task 2 (listado de canceladas). Queda: Task 2 y la revisión final, ~12 min.
+
+--- [46]
+Base sin cambios. RED de Task 2:
+
+--- [54]
+Las dos tasks hechas. Ahora: revisión final de toda la rama. Queda: revisión, cierre y validación, ~15 min, ~1-2 $.
+
+--- [57]
+No tengo herramienta de subagentes en esta sesión, así que la revisión final será una auto-revisión por ejes (más débil; lo dejaré dicho). Leo los briefs de los ejes.
+
+--- [62]
+Monto el paquete y hago la auto-revisión por ejes.
+
+--- [65]
+El diff del test se ve como reescritura completa: compruebo los finales de línea.
+
+--- [68]
+Auto-revisión hecha. Registro el resultado en el ledger:
+
+--- [70]
+Sin Critical ni Important: no hay pasada de fix ni re-revisión. Finish: rulings a `tasks.md`.
+
+--- [74]
+Commit de docs de 15 líneas, revisado en el hilo. Borro el workspace del plan y paso al cierre (validación).
+
+--- [78]
+Pre-checks del cierre:
+
+--- [84]
+Corro el gate de cierre y ensayo el smoke por la CLI real, como lo hará el dev-lead.
+
+--- [92]
+Lo dejo parado en la validación: las dos tasks están hechas y en verde, pero el kit no cierra la feature (walkthrough, roadmap, squash ni merge) hasta que valides tú. En `sdd-kit.json` no hay `validation.mode`, así que la validación es manual. Además, el bloque `merge` está incompleto (le faltan `merge.into` y `merge.noFf`), así que el merge te lo presentaré para que lo confirmes.
+
+Commits en `feature/0010-cancel-reason`: `afe9113` (Task 1), `95e4fa0` (Task 2) y `77af7b0` (docs: `tasks.md` con estado y rulings).
+
+**La revisión final la hice yo mismo.** Esta sesión no tiene herramienta de subagentes, así que no hubo revisores con contexto fresco y vale menos que la del kit. Por los ejes Spec y Código no salió nada Critical ni Important. El eje Arquitectura no salió: el diff no toca ningún módulo, dependencia, contrato entre módulos ni dato guardado. Antes del merge decides si te basta.
+
+🦆 Ahora cancelar exige un motivo de la lista: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Si el motivo no está en la lista, o falta, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando nuevo `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+Lo primero que tienes que mirar: **`canceladas` sale vacío por la CLI real.** Cada comando arranca un proceso nuevo y las reservas viven solo en memoria. Ya pasaba con `cancelar` antes de esta rama, y guardar el motivo en el almacén es la 0014. Ese THEN solo lo cubre el test. Si esperabas verlo por la CLI ya, habría que adelantar la 0014.
+
+El resto de decisiones que tomé sin ti:
+- Trabajé directamente en la rama `feature/0010-cancel-reason`, sin crear un worktree. No es `main`; si no lo querías así, se arregla con un cherry-pick.
+- Cambié el test viejo «cancelar una reserva activa» (sin motivo) por el THEN con motivo, porque la spec cambia esa respuesta. «cancelar sin reserva lo dice» ahora pasa `--motivo otro`.
+- El motivo se comprueba antes de buscar la reserva. La spec no fija el orden.
+- Con varias canceladas, `canceladas` pone una por línea; sin ninguna, responde vacío. La spec solo fija el caso de una.
+- Un motivo de dos palabras sin comillas (`--motivo sala ocupada`) responde «motivo no válido». La spec fija el motivo como un único argumento.
+- `--motivo` en otra posición (`cancelar --motivo otro Norte lun`) responde «sin reserva», porque la spec fija el orden de los argumentos.
+- No saqué el eje Arquitectura: el plan no tenía la línea y el diff no toca ninguna señal.
+
+Pendiente menor, sin arreglar: `test/cancel.test.js` ha pasado de CRLF a LF, y el diff lo enseña como si el fichero se hubiera reescrito entero.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | suite | por la CLI real sale vacío (ver ✋) |
+
+**Suites**
+
+- `Gate: \`node --test\` → 7/7`, sobre `77af7b0`, en menos de 1 s.
+
+**Sin probar**
+
+- `canceladas` por la CLI real: no se puede hasta que exista el almacén (la 0014).
+
+Panel: plan B en http://127.0.0.1:54274/
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay comando de arranque declarado: es una CLI.
+
+Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+2. Cancelar con un motivo que no está en la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+3. Cancelar sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+```
+node src/app.js cancelar Norte lun
+```
+4. El listado de canceladas, por la suite → 5 pass, incluido «canceladas enseña la reserva cancelada con su motivo»
+```
+node --test test/cancel.test.js
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

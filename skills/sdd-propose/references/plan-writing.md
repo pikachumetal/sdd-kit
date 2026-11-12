@@ -2,7 +2,7 @@
 
 Inspired by superpowers `writing-plans` (MIT).
 
-Write `plan.md` for an engineer who hasn't seen this codebase or this spec. Assume they write idiomatic code once they know the exact interface and the exact test, and that they make a reasonable choice wherever the plan leaves one open. What they can't know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. That is the plan. Trace it from `plan-template.md` of `sdd-templates`: the template fixes the form of each field (header, «Restricciones globales», Review Focus, the task's blocks, what a step contains); this file is the process. DRY, YAGNI, TDD.
+Open with the phase notice. Write `plan.md` for an engineer who hasn't seen this codebase or this spec. Assume they write idiomatic code once they know the exact interface and the exact test, and that they make a reasonable choice wherever the plan leaves one open. What they can't know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. That is the plan. Trace it from `plan-template.md` of `sdd-templates`: the template fixes the form of each field (header, «Restricciones globales», Review Focus, the task's blocks, what a step contains); this file is the process. DRY, YAGNI, TDD.
 
 ## File structure first
 

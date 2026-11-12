@@ -1,6 +1,6 @@
 # Spec review — the complexity rubric and the adversarial reviewer
 
-Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate; the message that dispatches it opens with the phase notice. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
 
 ## 1. Count the signals (observable in the spec)
 

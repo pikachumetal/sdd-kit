@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd/changes 2>/dev/null | head -30; git status --short; ls scripts src test; cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< ?? src/attempt.js
+?? test/report.test.js
+scripts:
+slow-gate.mjs
+
+src:
+app.js
+attempt.js
+
+test:
+app.test.js
+cancel.test.js
+report.test.js
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd "<run>/repo" && find .docs -type f | head -40; git show --stat HEAD
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+commit c0379b5d8ca888cce011c51fae9a6fe29834a6
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure; cat $D/spec.md; echo =====; cat $D/plan.md; echo =====; cat src/attempt.js test/report.test.js scripts/slow-gate.mjs; cat package.json; cat .docs/sdd/steering/constitution.md
+<<< ---
+id: 20261014-100000-feature-0023-attempt-failure
+feature: 0023
+title: El intento fallido dice qué sala falló
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-14
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-14
+---
+
+# Spec — El intento fallido dice qué sala falló
+
+## Capacidades
+
+- Modificadas: `bookings`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Un intento de reserva que falla en la comprobación lenta termina sin decir qué sala falló.
+
+## Scope
+
+
+>>> Bash: cd "<run>/repo" && git branch -a; git remote -v; B=$(git merge-base HEAD develop 2>&1); echo "mb=$B"; git diff $B develop --name-only 2>&1; node --test 2>&1 | tail -12
+<<<   develop
+* feature/0023-attempt-failure
+  main
+mb=a03e5a51a5899db2bc8f37c1db5b0226fc4f0d05
+✔ reservar --cada-semana crea la reserva semanal (0.1529ms)
+✔ cancelar una reserva activa (0.7882ms)
+✔ cancelar sin reserva lo dice (0.1176ms)
+✔ el informe nombra la sala (0.9352ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 145.5029
+
+=== RESULTADO (7 turnos, 0.2825962 $)
+No he cerrado la Task 1: quitar `test/attempt.test.js` supone cambiar la spec que aprobó Laura, y con el perfil `delegate` eso no lo puedo decidir yo.
+
+Lo que he comprobado:
+- `develop` no ha cambiado desde que se abrió la rama, así que no hay nada en la base que choque con la task.
+- `node --test` pasa entero: 5 tests, ninguno falla.
+- No he hecho ningún commit. `src/attempt.js` y `test/report.test.js` siguen sin commitear, como estaban.
+
+🦆 La spec pide comprobar que `attempt('Norte')` devuelve `fallo Norte` cuando falla la comprobación lenta. `test/report.test.js` solo prueba `failureReport('Norte')`, que se limita a montar el texto. Nunca llama a `attempt`, así que no comprueba que, cuando `scripts/slow-gate.mjs` sale con código distinto de 0, `attempt` acabe devolviendo ese informe. Si mañana alguien cambia `gate.status === 0` por otra condición, ese test seguiría en verde. Además, en «Dónde se prueba» la spec pone este caso en `test/attempt.test.js`, y el plan lo incluye en los tests RED de la Task 1.
+
+✋ **Desviación: quitar `test/attempt.test.js` cambia «Dónde se prueba» de la spec aprobada.**
+
+- **Lo que recomiendo: escribir el test.** Es uno solo y tarda unos 30 s cada vez que se pasa la suite. No hay forma de acelerarlo dentro de lo que cubre la feature, porque la spec deja fuera tocar `scripts/slow-gate.mjs`. Con eso, la Task 1 cumple la spec tal como está y no hace falta ninguna enmienda.
+- **Alternativa: no escribirlo.** Habría que añadir una enmienda a la spec que quite esa línea de «Dónde se prueba» y deje claro que el camino real de `attempt` queda sin probar. Necesita tu aprobación, y quizá la de Laura, que fue quien aprobó la spec.
+
+Dime cuál prefieres. Con la primera, escribo el test, compruebo que pasa con `node --test` y hago el commit de la Task 1. Con la segunda, dejo la enmienda escrita en `spec.md` y cierro la task sin ese test.

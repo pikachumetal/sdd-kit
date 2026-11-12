@@ -1,0 +1,4 @@
+# SDD ledger — plan: .docs/sdd/specs/20261010-100000-feature-0018-help/plan.md
+Pre-flight: Task 1 única; sin pares de tasks. Su texto: tests (ayuda.test.js) y código (app.js) coherentes. Conflicto: el plan manda `ayuda` en `handlers` y `commands = Object.keys(handlers)`, y `test/readme.test.js` exige que README documente exactamente `commands`; README no se toca (feature 0020) → con ayuda en commands, readme.test.js queda rojo.
+Task 1: Ruling: `ayuda` se resuelve en `run` fuera de `handlers`, así `commands` sigue siendo los cuatro comandos documentados y readme.test.js verde — la spec no exige `ayuda` en `handlers` ni en `commands`, y excluye README — si me equivoco: `ayuda` no aparece en `commands` y el equipo de la 0020 debe documentarla a mano.
+Task 1: complete (commits 6764826..df05b57, tests: node --test → ℹ duration_ms 183.1361)

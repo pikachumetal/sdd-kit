@@ -1,6 +1,6 @@
 ## Coherence pass
 
-In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+Its message opens with the phase notice. In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
 
 **Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —the literal and the function or step that applies it— and list in the Scope each file that implements it, or say in its line why it stays out: a requirement can have more than one entry, and reading only the file the Scope already names doesn't find it.
 

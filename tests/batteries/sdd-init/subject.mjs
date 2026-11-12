@@ -119,7 +119,8 @@ s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');
 
 // Una pregunta por turno: si n7 para en una, el segundo turno la contesta para que llegue a proponer ## Testing entero.
-if (s.SC === 'n7') s.env.TURN2 = 'La que recomiendas. Sigue con el resto de operations.md.';
+// n3 y n6 también (feature 0152): con una pregunta por turno, los dos sujetos de n3 preguntan antes de proponer el `## Testing`.
+if (['n3', 'n6', 'n7'].includes(s.SC)) s.env.TURN2 = 'La que recomiendas. Sigue con el resto de operations.md.';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
 for (const kept of ['CLAUDE.md', 'PRODUCT.md', '.docs/sdd/sdd-kit.json', '.docs/sdd/steering/operations.md', '.docs/sdd/tech-stack.md', '.docs/sdd/mission.md']) {

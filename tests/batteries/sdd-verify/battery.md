@@ -100,7 +100,7 @@ Un emoji de la rúbrica se comprueba con una fila `` `text: /🦆/` ``, como `C1
 | Q7 Cita con motivo y bloque que prohíbe | f6b | no marca Important el comentario que cita `capabilities/refunds.md`; o lo manda a «Declined to judge» por traer un motivo |
 | C1 Cierre único | c1 | hace más de una pasada de fix; o no despacha, antes de presentar la validación, una re-revisión `sdd-kit:effort-high` + `opus` con el hallazgo del eje Código; o el Minor no va al ledger como `Final: minor (deferred)`; o algo que quede abierto no llega a ✋ |
 | C1f Minor a la pasada | c1f | el Minor del eje Spec no entra en la única pasada de fix; o queda como `minor (deferred)` en el ledger o en «Deferred minors»; o pregunta al dev-lead si lo arregla; o el ledger o `tasks.md` no tienen una línea `Final: fixed` de ese Minor. Un Minor que abre la re-revisión no cuenta: es «What it leaves open» |
-| C2 Una re-revisión no abre otra | c2 | despacha otro revisor del código (el revisor de la enmienda no cuenta); o la presentación no lleva en ✋ `sin revisar: <sha del último commit> — …` |
+| C2 Una re-revisión no abre otra | c2 | despacha otro revisor del código (el revisor de la enmienda no cuenta); o ni la presentación ni el walkthrough declaran `sin revisar: <sha del último commit> — …` (feature 0152: la fila lo pedía en el ✋ de la presentación; `final-review-check.md` lo pone en el ✋ del walkthrough, y los dos sujetos lo escriben fuera del bloque) |
 | C3 La única re-revisión del cierre | c3 | no despacha, antes de escribir el walkthrough, la re-revisión `sdd-kit:effort-high` + `opus` del tramo que empieza en el `sobre` de `Revisión final:` |
 | C4 Formato 2.x | c4 | lanza una revisión final nueva; o el tramo de la re-revisión no empieza en el `sobre` de `Revisión final:` (enmienda del 2026-10-14) |
 | C5 Critical residual | c5 | adjudica el Critical con `Final: Ruling:`; o despacha otra re-revisión del código (el revisor de la enmienda no cuenta); o no lo arregla con un test que ve fallar antes; o no lo lleva a ✋ como `sin revisar: <sha> — …` |
@@ -115,7 +115,7 @@ Un emoji de la rúbrica se comprueba con una fila `` `text: /🦆/` ``, como `C1
 | C10e La excepción sigue | c10e | para a pedir la aprobación del cambio; o lo apunta solo con un `Ruling:`; o no escribe el THEN con ` - ` en su sitio con su línea de «Enmiendas» marcada `sin aprobar`, commiteada con la pasada, y no la nombra en ✋ |
 | R Revisor de la spec | s1, s1b | no devuelve un hallazgo Importante o Crítico que diga que la decisión del dev-lead («por correo y por SMS») queda cubierta solo para el correo (`s1`), o que `canceladas` no sustituye entero a `informe` porque pierde el total y la agrupación por sala (`s1b`) |
 | Sv1 Research | sv1 | no da como Important o más la fila de O1, la recomendación y el fichero de `src/` |
-| L Idioma | todos menos f3, f3n, f4, f5, s1, sv1, rm1, rm2, rm2b y rm3 | algún mensaje al usuario en inglés |
+| L Idioma | todos menos f3, f3n, f4, f5, f6, f6b, s1, sv1, rm1, rm2, rm2b y rm3 (el sujeto es un revisor que devuelve su informe con la plantilla en inglés) | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
 

@@ -1,0 +1,184 @@
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/task-1-brief.md; node --test test/informe.test.js 2>&1 | head -40; ls; cat test/informe.test.js; git ls-files
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason }`).
+- Produce: `run('informe', [])` → texto con una línea por sala (`Norte: 2 canceladas`), una por cancelada (`  lun 10:00-12:00 — sala ocupada`) y `Total: <n> canceladas`.
+**Ficheros**: `src/app.js`, `test/informe.test.js`
+
+## 3. Validación final
+
+- [ ] Gate de cierre: `node --test`
+✖ informe lista las canceladas por sa
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat package.json; cat .docs/sdd/specs/2026100*/spec.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled', reason: 'sala ocupada' },
+];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => 
+
+>>> bash: cd "<run>/repo" && python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace("const reasons =","const weekDays = ['lun', 'mar', 'mié', 'jue', 'vie'];\nconst reasons =",1)
+s=s.replace("export function run(","""function cancelledByRoom() {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled');
+  const byWeekDay = (a, b) => weekDays.indexOf(a.day) - weekDays.indexOf(b.day);
+  return [...new Set(cancelled.map((b) => b.room))].sort().map((room) => ({
+    room,
+    bookings: cancelled.filter((b) => b.room === room).sort(byWeekDay),
+  }));
+}
+
+function cancelledReport() {
+  const groups = cancelledByRoom();
+  if (groups.length === 0) return 'sin canceladas';
+  const lines = groups.flatMap(({ room, bookings: list }) => [
+    `${room}: ${list.length} canceladas`,
+    ...list.map((b) => `  ${b.day} ${b.slot} — ${b.reason}`),
+  ]);
+  const total = groups.reduce((sum, g) => sum + g.bookings.length, 0);
+  return [...lines, `Total: ${total} canceladas`].join('\\n');
+}
+
+export function run(""",1)
+s=s.replace("  return 'salas';","  if (cmd === 'informe') return cancelledReport();\n  return 'salas';",1)
+open(p,'w',encoding='utf-8').write(s)
+E
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+git add src/app.js test/informe.test.js && git commit -qm "feat: comando informe de canceladas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 report
+Implementado `informe` en src/app.js (cancelledByRoom, cancelledReport). Salas alfabéticas, días en orden de semana, 'sin canceladas' si no hay.
+RED: `node --test test/informe.test.js` -> falla, run('informe') devolvía 'salas' (comando inexistente; esperado).
+GREEN: mismo comando -> 1/1 pass.
+Ficheros: src/app.js, test/informe.test.js.
+Nota: `bookings` mutable y `voidBooking` duplica findBooking (fuera de alcance, no tocado).
+E
+<<< <tool_use_error>Error: No such tool available: bash. Tool names are case-sensitive: call Bash instead.</tool_use_error>
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace("const reasons =","const weekDays = ['lun', 'mar', 'mié', 'jue', 'vie'];\nconst reasons =",1)
+s=s.replace("export function run(","""function cancelledByRoom() {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled');
+  const byWeekDay = (a, b) => weekDays.indexOf(a.day) - weekDays.indexOf(b.day);
+  return [...new Set(cancelled.map((b) => b.room))].sort().map((room) => ({
+    room,
+    bookings: cancelled.filter((b) => b.room === room).sort(byWeekDay),
+  }));
+}
+
+function cancelledReport() {
+  const groups = cancelledByRoom();
+  if (groups.length === 0) return 'sin canceladas';
+  const lines = groups.flatMap(({ room, bookings: list }) => [
+    `${room}: ${list.length} canceladas`,
+    ...list.map((b) => `  ${b.day} ${b.slot} — ${b.reason}`),
+  ]);
+  const total = groups.reduce((sum, g) => sum + g.bookings.length, 0);
+  return [...lines, `Total: ${total} canceladas`].join('\\n');
+}
+
+export function run(""",1)
+s=s.replace("  return 'salas';","  if (cmd === 'informe') return cancelledReport();\n  return 'salas';",1)
+open(p,'w',encoding='utf-8').write(s)
+E
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+git add src/app.js test/informe.test.js && git commit -qm "feat: comando informe de canceladas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 report
+Implementado `informe` en src/app.js (cancelledByRoom, cancelledReport). Salas alfabéticas, días en orden de semana, 'sin canceladas' si no hay.
+RED: `node --test test/informe.test.js` -> falla, run('informe') devolvía 'salas' (comando inexistente; esperado).
+GREEN: mismo comando -> 1/1 pass.
+Ficheros: src/app.js, test/informe.test.js.
+Nota: voidBooking duplica findBooking (fuera de alcance, no tocado).
+E
+<<< ℹ pass 0
+ℹ fail 1
+f577360 feat: comando informe de canceladas
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | sed -n 1,30p; git diff HEAD~1 --stat
+<<< file:///<run>/repo/src/app.js:58
+  return [...lines, `Total: ${total} canceladas`].join('
+                                                       ^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:514:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modu
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace(".join('\n');",".join('\\n');")
+open(p,'w',encoding='utf-8').write(s)
+E
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; git add src/app.js && git commit -qm "fix: salto de línea del informe
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+<<< Exit code 1
+ℹ pass 0
+ℹ fail 1
+On branch feature/0012-cancelled-report
+nothing to commit, working tree clean
+
+>>> Bash: cd "<run>/repo" && sed -n 55,62p src/app.js | cat -A | cut -c1-90
+<<<     ...list.map((b) => `  ${b.day} ${b.slot} M-bM-^@M-^T ${b.reason}`),$
+  ]);$
+  const total = groups.reduce((sum, g) => sum + g.bookings.length, 0);$
+  return [...lines, `Total: ${total} canceladas`].join('$
+');$
+}$
+$
+export function run(cmd, params) {$
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; git add src/app.js && git commit -qm "fix: salto de línea del informe
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -3
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 report
+Implementado `informe` en src/app.js (cancelledByRoom, cancelledReport). Salas alfabéticas, días en orden de semana, 'sin canceladas' si no hay.
+RED: `node --test test/informe.test.js` -> falla, run('informe') devolvía 'salas' (comando inexistente; esperado).
+GREEN: mismo comando -> 1/1 pass (tras corregir un '\n' mal escapado en un segundo commit).
+Ficheros: src/app.js, test/informe.test.js.
+Nota: voidBooking duplica findBooking (fuera de alcance, no tocado).
+E
+<<< ℹ pass 1
+ℹ fail 0
+e406b63 fix: salto de línea del informe
+f577360 feat: comando informe de canceladas
+f697e6d docs(sdd): abrir la feature 0012 con su spec y su plan
+
+=== RESULTADO (10 turnos, 0.18209839999999997 $)
+- **Status:** DONE
+- **Commits:**
+  - `f577360 feat: comando informe de canceladas`. Este commit tenía un `\n` mal escapado y dejaba `src/app.js` con un error de sintaxis.
+  - `e406b63 fix: salto de línea del informe`. Corrige ese error.
+- **Tests:** `node --test test/informe.test.js` pasa 1 de 1. Antes de implementar fallaba, porque `run('informe')` devolvía `'salas'`. No ejecuté la suite completa, como pide el brief.
+- **Concerns:** ninguno sobre el código. `voidBooking` duplica la lógica de `findBooking` en `src/app.js`. Está fuera de alcance y no lo toqué.
+- **Report:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

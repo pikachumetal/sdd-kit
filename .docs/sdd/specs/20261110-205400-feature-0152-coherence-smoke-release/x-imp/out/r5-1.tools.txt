@@ -1,0 +1,103 @@
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/task-1-brief.md; node --test test/store.e2e.test.js 2>&1 | head -60; ls; ls src test
+<<< ### Task 1 — Guardar el motivo
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/store.e2e.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/store.e2e.test.js`
+**Interfaces**:
+- Consume: `persist(bookings)` de `src/store.js`.
+- Produce: la reserva cancelada lleva `reason` al llamar a `persist`.
+**Ficheros**: `src/app.js`, `test/store.e2e.test.js`
+
+## 3. Validación final
+
+- [ ] Gate de cierre: `node --test`
+✖ cancelar guarda el motivo en el almacén (558.439ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2187.592
+
+✖ failing tests:
+
+
+>>> Bash: cd "<run>/repo" && cat src/app.js src/store.js test/store.e2e.test.js; ls data; git status --short
+<<< import { persist } from './store.js';
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const ind
+
+>>> Bash: cd "<run>/repo" && sed -i "s/  booking.status = 'cancelled';/  booking.status = 'cancelled';\n  booking.reason = reason;/" src/app.js && node --test test/store.e2e.test.js 2>&1 | grep -E "✖|✔|Error|ENOENT|actual|expected" | head
+<<< ✖ cancelar guarda el motivo en el almacén (520.1227ms)
+✖ failing tests:
+✖ cancelar guarda el motivo en el almacén (520.1227ms)
+  Error: ENOENT: no such file or directory, open '<run>\repo\data\bookings.json'
+    code: 'ENOENT',
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+p='test/store.e2e.test.js'
+s=open(p).read()
+s=s.replace("import { setTimeout as sleep } from 'node:timers/promises';\n","import { once } from 'node:events';\n")
+s=s.replace("  await sleep(500);\n","  await once(child.stdout.filter((chunk) => chunk.toString().includes('guardado')), 'data');\n")
+open(p,'w').write(s)
+E
+node --test test/store.e2e.test.js 2>&1 | grep -E "✖|✔|Error|ℹ (pass|fail)"
+<<< ✔ cancelar guarda el motivo en el almacén (2081.6065ms)
+ℹ pass 1
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && git add src/app.js test/store.e2e.test.js && git commit -q -m "feat: guardar el motivo de la cancelación
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 — Guardar el motivo
+
+Implementado: `cancelBooking` asigna `booking.reason = reason` antes de `persist(bookings)` (src/app.js).
+
+## TDD
+- RED: `node --test test/store.e2e.test.js` -> falla con ENOENT en data/bookings.json. Esperado: la reserva no llevaba `reason` y, además, el test esperaba 500 ms fijos mientras `persist` escribe a los 2000 ms.
+- GREEN: mismo comando -> 1/1 pass (~2.1 s).
+
+## Ajustes de espera
+- test/store.e2e.test.js: el `sleep(500)` se sustituye por esperar a la señal `guardado` en stdout del proceso hijo (import `once` en vez de `setTimeout as sleep`). Sin cambios en aserciones ni datos.
+
+## Notas
+- Fuera de alcance, sin tocar: `persist` usa un retraso fijo de 2 s y `voidBooking` no persiste.
+E
+git status --short
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+9440963 feat: guardar el motivo de la cancelación
+
+=== RESULTADO (6 turnos, 0.1301099 $)
+The commit is made and the report is written. Here is the summary.
+
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** `9440963 feat: guardar el motivo de la cancelación`
+- **Tests:** `node --test test/store.e2e.test.js` passes 1/1. I ran only that file, as the task asks.
+- **Implementation:** `cancelBooking` in `src/app.js` now sets `booking.reason = reason` before it calls `persist`.
+- **Ajustes de espera:** the test waited a fixed 500 ms, but `persist` writes the file after 2000 ms.
+  - I replaced `sleep(500)` with waiting for the `guardado` line on the child's stdout. I also swapped the `sleep` import for `once`.
+  - I changed no assertion and no data.
+- **Concerns, left untouched:**
+  - `persist` uses a fixed 2 s delay.
+  - `voidBooking` doesn't persist.
+  - Git warned that the line endings in `src/app.js` will be converted from LF to CRLF.
+- **Report:** `<run>\repo\.temp\sdd\plan\task-1-report.md`
