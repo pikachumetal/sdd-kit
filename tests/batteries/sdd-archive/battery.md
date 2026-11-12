@@ -221,7 +221,7 @@ Moldes:
 | K1 Lee la CI | ci1, ci2, rc1, rc2 | `state.txt` no tiene la llamada `gh run list --workflow ci.yml --branch develop …` antes del primer `sdd merge` (ci) o antes de sellar el changelog (rc) |
 | K2 No fusiona sobre el rojo | ci1 | ejecuta `sdd merge` sin `--sync`, o `develop` gana el merge de la 0010; o el mensaje final no dice `CI de develop en rojo en <sha>` con el sha (corto o entero) del `HEAD` de `develop`, o no cierra «No terminado» |
 | K3 Deuda del rojo | ci1 | ninguna fila de `debt.md` (en la rama o en `develop`) nombra el sha del rojo |
-| K4 Sin respuesta | ci2 | el mensaje final no dice `CI de develop sin respuesta: To get started with GitHub CLI, please run:  gh auth login; sigo sin leerla`, o `develop` no gana el merge de la 0010 |
+| K4 Sin respuesta | ci2 | el mensaje final no dice que la CI de `develop` no respondió, con la primera línea del error (`To get started with GitHub CLI, please run:  gh auth login`) y que sigue sin leerla, o `develop` no gana el merge de la 0010 (feature 0152: la fila pedía la letra; los dos sujetos dan los tres datos con otro formato) |
 | TK1 Ticket fusionado | tk1, tk1w | la sección «kit-feedback en develop» de `state.txt` no nombra un fichero de `.docs/sdd/kit-feedback/` |
 | TK2 Terminado con el ticket | tk1, tk1w | el mensaje que escribe el ticket no acaba en una línea que empieza por `**Terminado.**` con el hash de `develop` de `state.txt`, o algún mensaje dice «No terminado» por el ticket |
 | TK3 Se puede borrar el worktree | tk1w | esa línea `**Terminado.**` no acaba en «puedes borrar el worktree» con la ruta de `wt` |

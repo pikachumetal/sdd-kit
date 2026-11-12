@@ -54,7 +54,9 @@ function addTableRow(path, section, row) {
 const manualValidation = () => (MARKER = MARKER.replace('"mode": "field"', '"mode": "manual"'));
 
 // La 0010 implementada en Native y revisada: spec y plan aprobados, dos tasks, tasks.md con la revisión final limpia.
+// Las reservas viven en la memoria del proceso: sin decirlo, un smoke que llama a `canceladas` aparte la ve vacía y para (m1, m4 y a3n de la 0152).
 const approved0010 = () => readLf(join(IMPL, 'fixtures', 'spec-0010.md'))
+  .replace('`canceladas` lista las reservas con estado cancelada.', '`canceladas` lista las reservas con estado cancelada. Las reservas viven en la memoria del proceso hasta la 0014: `canceladas` enseña lo cancelado en el mismo proceso.')
   .replaceAll(' y quién canceló', '')
   .replaceAll(' cancelada por Ana con', ' cancelada con')
   .replaceAll(' — sala ocupada — Ana»', ' — sala ocupada»')
