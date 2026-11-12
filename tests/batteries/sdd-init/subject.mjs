@@ -62,9 +62,19 @@ function claudeOld() {
   doc('Architecture', 'Una SPA con Vite.', '.docs/sdd/architecture.md');
   s.put('.docs/sdd/roadmap.md', '# Roadmap — Reservas\n\n## Próximo\n');
 }
+// Un template recién instanciado, en la forma del kit que se prueba: con la 3.0.0, uno 2.x tiene que migrar antes de nada (ADR 0034).
 function moldTemplate() {
   s.put('package.json', '{\n  "name": "nuevo-proyecto",\n  "scripts": { "dev": "ng serve", "test": "ng test" }\n}\n');
   s.put('src/login.ts', 'export function login(user: string): boolean {\n  return user.length > 0;\n}\n');
+  if (fresh) {
+    doc('Product', '<!-- sdd-template: pending -->', 'PRODUCT.md');
+    s.put('ROADMAP.md', '# Roadmap\n\n<!-- sdd-template: pending -->\n');
+    doc('Constitution', '## Convenciones\n\n- Commits convencionales.\n\n## Reglas de producto\n\n<!-- sdd-template: pending -->', '.docs/sdd/steering/constitution.md');
+    doc('Operations', '## Stack\n\n- Angular 20 y .NET 10.\n\n## Testing\n\n- **Suites**: `ng test`\n\n## Entornos\n\n- **Runner**: `pnpm env:setup`', '.docs/sdd/steering/operations.md');
+    doc('Architecture', 'Frontend Angular, backend .NET, login con cookie.', '.docs/sdd/steering/architecture.md');
+    s.put('.docs/sdd/sdd-kit.json', '{"version": "3.0.0", "channel": "plugin", "updated": "2026-11-01"}\n');
+    return;
+  }
   doc('Mission', '<!-- sdd-template: pending -->', '.docs/sdd/mission.md');
   s.put('.docs/sdd/roadmap.md', '# Roadmap\n\n<!-- sdd-template: pending -->\n');
   doc('Constitution', '## Convenciones\n\n- Commits convencionales.\n\n## Reglas de producto\n\n<!-- sdd-template: pending -->', '.docs/sdd/constitution.md');

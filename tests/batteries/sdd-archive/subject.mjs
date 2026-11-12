@@ -82,6 +82,7 @@ function done0010() {
   cp(join(IMPL, 'fixtures', 'app-task1.js'), 'src/app.js');
   cp(join(IMPL, 'fixtures', 'cancel-task1.test.js'), 'test/cancel.test.js');
   s.commit('feat(bookings): cancelar con un motivo de la lista');
+  const T1 = short('HEAD');
   cp(join(IMPL, 'fixtures', 'app-done.js'), 'src/app.js');
   cp(join(IMPL, 'fixtures', 'cancel-done.test.js'), 'test/cancel.test.js');
   if (existsSync(at('e2e/run.mjs'))) cp(join(E2E, 'e2e', 'cancel-0010.e2e.mjs'), 'e2e/cancel.e2e.mjs');
@@ -89,9 +90,9 @@ function done0010() {
   const A = short('HEAD');
   s.put(`${F10}/tasks.md`, [
     '---', 'id: 20261008-100000-feature-0010-cancel-reason', 'title: Tasks — Motivo al cancelar', '---', '', '# Tasks — Motivo al cancelar (registro vivo)', '',
-    '| # | Task | Status | Commit | Notas |', '| --- | --- | --- | --- | --- |', `| 1 | Cancelar con motivo | done | ${A} | |`, `| 2 | Listado de canceladas | done | ${A} | |`, '',
+    '| # | Task | Status | Commit | Notas |', '| --- | --- | --- | --- | --- |', `| 1 | Cancelar con motivo | done | ${T1} | |`, `| 2 | Listado de canceladas | done | ${A} | |`, '',
     `Revisión final: Spec opus+high, limpia · Código sonnet+high, limpia · Arquitectura no (plan), sobre ${A}`, '', '## Rulings', '',
-    '- Task 2: Ruling: `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén compartido en memoria — workaround hasta aislar el almacén por test — coste si es erróneo: la suite tarda el doble', '',
+    '- Task 2: Ruling: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya — workaround hasta que cada test prepare sus datos — coste si es erróneo: el test falla si corre solo o en otro orden', '',
   ].join('\n'));
   s.commit('docs(sdd): tasks.md con la revisión final');
 }
@@ -510,7 +511,7 @@ const molds = {
     developAdvances();
     otherWorktree();
     writeFileSync(at('notes.md'), 'apuntes de la 0010\n');
-    s.env.TURN2 = 'notes.md era un apunte mío: bórralo y sigue con el cierre.';
+    s.env.TURN2 = 'notes.md era un apunte mío: discard. Sigue con el cierre.';
   },
   'reservas-capbase': () => {
     moldReservas();

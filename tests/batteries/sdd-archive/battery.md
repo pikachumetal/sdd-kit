@@ -9,7 +9,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-archive`); el m
 Moldes:
 
 - `reservas`: el de `tests/batteries/sdd-implement/mold-reservas`, en la forma de documentos de la 3.0.0 (`PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md` y `.docs/sdd/steering/`), con la 0010 implementada en Native (dos tasks), `tasks.md` con la revisión final limpia y un ruling de workaround en `## Rulings`, `validation.mode: field`, perfil `delegate`, `merge` sin push y sin remoto.
-- `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva `✅` justo debajo de la 0010 en Now), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: bórralo y sigue con el cierre.»
+- `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva `✅` justo debajo de la 0010 en Now), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: discard. Sigue con el cierre.»
 - `reservas-capbase`: `reservas` con `capabilities/bookings.md` en `develop` antes de abrir la 0010 (la spec, «Modificadas: `bookings`») y `develop` avanzada con la 0015, que añade una fila debajo de la 0010 y el requisito «Las salas salen de su módulo» al final de «Requisitos»: el cierre de la 0010 añade los suyos en el mismo sitio.
 - `reservas-cap-base`: `reservas` con `operations.md` de 11 palabras (la última, «Puerto 4100», vive también en `architecture.md`) y un pre-commit que lo mide contra `scripts/word-cap.json`: 41 en la rama de la 0010, y 11 en `develop`, porque la 0014 bajó el tope a su medida exacta después de abrir la rama. `state.txt` lleva «topes de operations.md» al acabar.
 - `reservas-red`: `reservas` con `test/export.e2e.test.js`, que falla con «TimeoutError: export no respondió en 5000 ms» en `develop` y en la rama, y su fila en «Por triar» de `debt.md`.
@@ -129,7 +129,7 @@ Moldes:
 | TF1 Fichero | tf1 | `file: timing.json /"version": 1/` |
 | A1 Walkthrough | a1 | no hay `walkthrough.md` de la 0010, o su «4.1 Builds» no da el comando de la suite, su resultado y el sha sobre el que corrió |
 | A2 Fila ✅ | a1 | la fila 0010 de Now no queda ✅ en `ROADMAP.md` de `develop` |
-| A3 Workaround con deuda | a1 | `.docs/sdd/steering/debt.md` no gana una fila con el workaround `--test-concurrency=1` (también si el cierre lo escribe en `operations.md`) |
+| A3 Workaround con deuda | a1 | `.docs/sdd/steering/debt.md` no gana una fila con el workaround del test de `canceladas`, que depende del orden de los tests (también si el cierre lo escribe en `operations.md`) |
 | A7 Retro | a1 | `tools.txt` no tiene `sdd-retro`, o §5 del walkthrough no lleva una línea `Retro:` |
 | A6 Fila propia | a1 | la fila 0010 de Now lleva un prefijo de cierre (`**[Feature 0010, …: saldada — …]**`) en lugar de cambiar solo su «Estado» |
 | A4 Comprobaciones previas | a1 | `tools.txt` no tiene `git status` del worktree ni `sdd merge --check` antes del primer `Write` o `Edit` de un registro |

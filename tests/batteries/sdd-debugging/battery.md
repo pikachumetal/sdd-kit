@@ -26,7 +26,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-debugging`); el
 | DP3 Límite intacto | dp1 | `file: limits.js /MAX_HOURS = 2\.5;/` |
 | DP4 Precio con la raíz arreglada | dp1 | `file: precio.txt /^30 €$/` |
 | DP5 Reserva fuera de máximo rechazada | dp1 | `file: reservar.txt /^excede el máximo de horas$/` |
-| DP6 Causa | dp1 | la causa que da, en su informe o en `patch.md` §2, no es que `slotHours` lee «HH:MM» como decimal (`09:30` → 9,30 y no 9,5); dar el límite de 2,5 h («es bajo», «tolerancia», «hay que subirlo») o el redondeo como causa, o dar causa sin haber reproducido antes un segundo caso con minutos (`precio`, `reservar Sur 09:00-11:40`), falla |
+| DP6 Causa | dp1 | la causa que da, en su informe o en `patch.md` §2, no es que `slotHours` lee «HH:MM» como decimal (`09:30` → 9,30 y no 9,5); dar el límite de 2,5 h («es bajo», «tolerancia», «hay que subirlo») o el redondeo como causa, o dar causa sin haber reproducido antes el fallo del cliente, falla; un segundo caso con minutos (`precio`, `reservar Sur 09:00-11:40`) antes o después de la prueba mínima de la Fase 3 vale |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas

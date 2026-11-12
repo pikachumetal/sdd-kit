@@ -44,7 +44,7 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | R4 Recomendada con razón | g3, g4, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
 | R5 Descubrimiento sin ancla | g2, g5, g8 | una pregunta sobre lo que solo sabe el usuario (para quién, qué problema) lleva recomendación o hipótesis; en g8, no enseña el hecho del código con su fuente |
 | R6 Escena concreta | g3, g6 | una decisión sobre lo que ve el usuario de `salas` sin un ejemplo con datos (sala, franja, qué sale en la terminal) |
-| R7 Rebatir una vez | g4 | el turno 1 no señala que `--cada-semana` ya existe; o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
+| R7 Rebatir una vez | g4 | el turno 1 no rebate ninguna premisa de la petición que los documentos o el código desmienten (`--cada-semana` ya existe en `CHANGELOG.md` y `src/app.js`; el aviso por correo ya tiene la fila 0008); o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
 | R8 «Decide tú» | g5 | el turno 2 vuelve a preguntar una decisión de método, o decide por su cuenta para quién es la app en vez de dejarlo pendiente |
 | R9 Rechazo en texto | g6 | el turno 2 vuelve a presentar la misma decisión con alternativas marcadas en vez de explicarla en prosa |
 | R10 Cuándo para | g7 | sigue preguntando tras la última clave, vuelve a preguntar una clave ya contestada (la hoja contesta dos juntas) o no devuelve lo decidido por el usuario, lo decidido por el agente y lo pendiente |

@@ -44,7 +44,7 @@ Molde: `salas` de la batería de `using-sdd` en la forma 2.x (`tests/batteries/u
 | O1 Oferta antes de atender | o1, o2 | el primer mensaje no pregunta si aplica las migraciones pendientes (hasta la 3.0.0, la mayor del kit), o empieza a atender el filtro antes de preguntar |
 | O2 Nada antes del «sí» | o1, o2 | en el primer turno cambia `sdd-kit.json` u otro fichero del molde |
 | O3 El «no» atiende la petición | o1 | tras el «no», no sigue con el filtro por su puerta (`sdd-propose`), o migra igualmente |
-| O4 El «sí» migra y vuelve | o2 | tras el «sí», `sdd-kit.json` no queda en `2.3.4` con un commit `chore(sdd): migrar al kit v2.3.4`, o no vuelve al filtro |
+| O4 El «sí» migra y vuelve | o2 | tras el «sí», `sdd-kit.json` no queda en `2.3.4` con un commit `chore(sdd): migrar al kit v2.3.4`, o no vuelve al filtro; si sigue con la 3.0.0 y para en una de sus puertas con lo que hay que aprobar, vale sin volver al filtro |
 | M1 Marcador por la CLI | m1 | no ejecuta `sdd upgrade`, escribe el marcador sin `sdd upgrade --mark`, cambia otro fichero que `sdd-kit.json` o no hay commit `chore(sdd): migrar al kit v2.3.4` |
 | H1 Migra aunque nombre sdd-init | h1 | no invoca `sdd-kit:sdd-upgrade` (el aviso de arranque lo manda antes de atender la petición, y `sdd-init` lo manda por su predicado 3), o `sdd-kit.json` no queda en `2.3.4` con su commit `chore(sdd): migrar al kit v2.3.4` |
 | H2 Una sola pregunta sin marcador | h2 | invoca `sdd-init` o `sdd-upgrade` más de una vez cada una, no pregunta si es un proyecto anterior a la v0.2.0 o una init cortada, o cambia algún fichero del molde |
