@@ -13,13 +13,13 @@ Smoke, suite, that same message without its script, then `Validación por el age
 
 ## With `manual`
 
-The script is composed and rehearsed as [dev-validation.md](dev-validation.md) says. `Patch only:` what there is, is the smoke of `patch.md` §4; in a visual adjustment, each screenshot's path, which is what the user looks at to validate, and the detector's output or its warning, with a line proposing `## Frontend` if `operations.md` lacks it.
+First thing with `manual`: read [dev-validation.md](dev-validation.md), which composes and rehearses the script and gives the `Panel:` line. `Patch only:` what there is, is the smoke of `patch.md` §4; in a visual adjustment, each screenshot's path, which is what the user looks at to validate, and the detector's output or its warning, with a line proposing `## Frontend` if `operations.md` lacks it.
 
 A deferred validation has its three conditions at once: present with the work in front of them, their words that they'll try it later, a trigger with an owner; in `unattended` the trigger is always the release smoke. A missing or vague trigger: don't ask again; make the nearest use concrete, with whoever defers as owner, and say it in the final message ([deferred validation](../../sdd-propose/references/control-profiles.md)). Accepting the message's `Diferir:` line is the phrase and the trigger: don't ask again.
 
 ## The smoke, in every mode
 
-One row per THEN (spike: per objective), its evidence `suite`, `ejecución real` or `no probado`. A THEN seen in an interface (screen, HTTP response, CLI output, a file the change produces) counts as verified only with `ejecución real`, and a failure THEN (an error, a rejection) is provoked with the input that fails: «the test covers it» is `suite` (`tests/closing-verification-red.md`). A THEN with `Se valida en:`: prepare that environment (the worktree with the base up to date), and the script uses it.
+One row per THEN (spike: per objective), its evidence `suite`, `ejecución real` or `no probado`. A THEN seen in an interface (screen, HTTP response, CLI output, a file the change produces) counts as verified only with `ejecución real`, and a failure THEN (an error, a rejection) is provoked with the input that fails: «the test covers it» is `suite`. A THEN with `Se valida en:`: prepare that environment (the worktree with the base up to date), and the script uses it.
 With «Verificación visual», the message carries what §5 of `frontend-verification.md` of `sdd-implement` lists, or «composición no medida» or «no probado» with its reason.
 
 ## The record

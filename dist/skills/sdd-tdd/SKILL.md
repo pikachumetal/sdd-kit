@@ -8,7 +8,7 @@ description: Use when sdd-implement or an implementer brief reaches code to writ
 ## Overview
 
 Write the test first. Watch it fail. Write minimal code to pass.
-Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—, also while the reference you follow is in English.
 Forked from `test-driven-development` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.

@@ -9,7 +9,7 @@ argument-hint: "[what the project is, or «sigue con la init»]"
 ## Overview
 
 Leave a project ready for the SDD flow: its anchor documents, a short `CLAUDE.md` with pointers, and the kit's configuration.
-Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—, also while the reference you follow is in English.
 Its content comes from an **interview with the user** and, when there is code, from **the code as it is today, not the ideal** — never from your guesses. Minimal documentation today; it grows with each task, so development doesn't stop.
 
 **Never run Claude Code's `/init`**: it writes the monolithic `CLAUDE.md` this skill replaces.

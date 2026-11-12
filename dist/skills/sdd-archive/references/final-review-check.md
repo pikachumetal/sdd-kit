@@ -6,6 +6,6 @@
 2. Compare `HEAD` with the last reviewed commit.
 The last reviewed commit is the second sha of the `Re-revisión:` line; without one, the `sobre` of `Revisión final:`; and if the line says «juntada en el cierre», the closing commit.
 If `HEAD` didn't move, don't launch another review.
-3. If it moved with a commit the thread doesn't review —the one «Every commit of yours» of `sdd-implement` lets through: under 20 lines, only documentation or comments—:
+3. If it moved with a commit of 20 lines or more, or one that changes more than documentation or comments (the others you review in the thread: «Every commit of yours» of `sdd-implement`):
    - without `Re-revisión:` in `tasks.md`, dispatch the single re-review of `<last reviewed>..HEAD` as «Closing the review» of `sdd-verify` says ([encargo-revision.md](../../sdd-verify/references/encargo-revision.md)), with its silence watch, record `Re-revisión: <sha>..<sha>, sdd-kit:effort-high + opus, <verdict>`, and write nothing until it's back and closed;
    - with `Re-revisión:` already there, don't dispatch another: the walkthrough carries `sin revisar: <sha> — <qué cambia>` in ✋.

@@ -13,7 +13,7 @@ Grill relentlessly until nothing is left silently assumed: every assumption beco
 
 ## One decision per turn
 
-End each turn with exactly one decision. «Three things, together in one question» is three; a question after ➡️ or «also tell me…» is a second one. If the user asks for everything at once, do so this session. Skip what the request says or delegates, or the project shows.
+End each turn with exactly one decision: one question mark in the message. «Three things, together in one question» is three; a question after ➡️ or «also tell me…» is a second one. If the user asks for everything at once, do so this session. Skip what the request says or delegates, or the project shows.
 
 ## Look it up before asking
 
@@ -42,13 +42,13 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 
 ## Discovery
 
-What only the user knows (who uses it, what problem it solves) is asked open: no recommendation, hypothesis or example menu. A fact you found (`roles.ts` has `clinic_admin`): show it with its source and ask to confirm. A user's word under _Evitar_ in «Terminology» of `PRODUCT.md`, or fitting two of its terms: name them and ask which they mean.
+What only the user knows (who uses it, what problem it solves) is asked open: no recommendation, hypothesis or example menu («por ejemplo…»). A fact you found (`roles.ts` has `clinic_admin`): show it with its source and ask to confirm. A user's word under _Evitar_ in «Terminology» of `PRODUCT.md`, or fitting two of its terms: name them and ask which they mean, before the why.
 
 ## Answers
 
 - **Challenge once.** If an answer contradicts a fact or you see something better, say so once, with argument and alternative. If the user keeps it, accept it.
 - **«Decide for me»**: decide method and technical questions with your reason; keep asking only what is the user's (scope, level, money). Discovery stays **pending**: proposing «small clinics with paper agendas» for approval is inventing it.
-- **Rejected to clarify** («no, wait, explain»): explain in prose. Their answer closes it; don't re-present it with options.
+- **Rejected to clarify** («no, wait, explain»): explain in prose, with one case and its data, no options or recommendation; their answer closes it.
 - **No user present**: follow the caller's no-user rule; else don't ask, decide method, leave the rest pending.
 
 ## Ending

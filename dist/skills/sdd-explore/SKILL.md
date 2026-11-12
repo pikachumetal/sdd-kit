@@ -9,7 +9,7 @@ argument-hint: "<pregunta>"
 ## Overview
 
 The **anti-lane**: ask, understand or think **with the project's context loaded**, without producing artifacts. No spec, plan, branch or closing. Its value is twofold: **answers anchored in the anchor documents**, not in assumptions, and **the discipline of not over-triggering** the process for what was only a question.
-Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—, also while the reference you follow is in English.
 
 Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: exploring the code (semble, Grep, Read) is allowed from the start, as far as the question needs.
 
@@ -19,11 +19,11 @@ Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: explorin
 2. **Pick the mode:**
    - **Understand / explain** («¿por qué…?», «¿dónde tocaría…?», «¿esto cómo va?») → read and answer. **No interrogation**: grilling a one-off question annoys as much as over-triggering.
    - **Probe / test feasibility** («¿se puede…?», «pruébalo rápido», output = an answer) → explore and try what you need, but everything you build is **throwaway and labeled so**; the output is a recommendation in the conversation. Nothing persists: no spec folder, no branch, no kept code.
-   - **Think / structure / stress-test a direction** («¿cómo enfocarías X?», «pensémoslo bien») → `sdd-grilling` (invoke it with `Skill`; no artifacts, not tied to SDD). **NEVER superpowers' `brainstorming`**: it is the engine that builds features and ends in spec → plan → implementation; applied to a question, it turns it into what it wasn't.
+   - **Think / structure / stress-test a direction** («¿cómo enfocarías X?», «pensemos cómo…») → first thing: invoke `sdd-grilling` with `Skill` (no artifacts, not tied to SDD). **NEVER superpowers' `brainstorming`**: it is the engine that builds features and ends in spec → plan → implementation; applied to a question, it turns it into what it wasn't.
 3. **Zero artifacts by default** — no spec folder, no branch, no code touched, no editing `roadmap` or docs «on the way». The answer lives in the conversation.
 4. **Optional durable output (with approval)** — if the question uncovers an outdated anchor document or produces a decision worth recording, **propose it** and wait for the user's OK; only then write it, in the document it belongs to. Updating a doc **is not** «taking the chance to leave it done».
 5. **When it becomes work, it goes to the roadmap** — once the conversation ends in work («si se puede, lo quiero», «arréglalo», «quiero la tabla de medidas»), say so, name the lane you see and hand it over; the roadmap sizes and splits it:
-   - **Feature, patch or spike** → invoke `sdd-roadmap` with `Skill` and hand it what was said: what, why, each decision taken with its literal, and the lane you see. The roadmap writes the row or rows, reserves the id and closes with the launch prompt. You don't write the row, reserve an id or invoke `sdd-propose`: work without a row is work nobody can track (`tests/sdd-explore-0161-red.md`, e3).
+   - **Feature, patch or spike** → invoke `sdd-roadmap` with `Skill` and hand it what was said: what, why, each decision taken with its literal, and the lane you see. The roadmap writes the row or rows, reserves the id and closes with the launch prompt. You don't write the row, reserve an id or invoke `sdd-propose`: work without a row is work nobody can track.
    - **Config** (dependencies, CI, settings, a typo outside visible text: no row) → give its launch prompt yourself, traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md): no id, branch `feature/<slug>`, `Carril: config`.
 End with «si prefieres hacerlo en esta sesión, di "arráncalo"», in the user's language; with «arráncalo», invoke `sdd-propose` with the prompt you gave, and without it, start nothing (`tests/sdd-explore-0161-red.md`, m2).
    - Planning without doing («apúntalo, no lo hagas») → `sdd-roadmap`. A failure to fix is a patch: the first bullet.

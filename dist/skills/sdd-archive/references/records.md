@@ -16,7 +16,7 @@ With `.docs/sdd/steering/estimation.md`, step 2 of `sdd-archive`: a deviation be
 
 - The change's row stays in Now with `✅` (or `🧪 validación diferida a <disparador>`) in «Estado», and doesn't move section: what's done stays in Now until the release is cut, which moves it to the changelog. A change without a row gains one in Now, with its brief: without it, the cut doesn't see it.
 - In «Lista» of `.docs/sdd/steering/debt.md`, the rows whose «Destino» is the closed id go; a row settled only in part stays, with «Ítem» rewritten to what's left. Debt the work uncovered goes to «Por triar», with its origin and date.
-- If `patch.md` re-measures a debt row the patch doesn't settle, and the result contradicts what the row claims (its evidence, its count, its proposal), rewrite those cells with the new measurement, its date and a link to `patch.md`: the row can no longer claim what the measurement denies (2/2 left it intact, `tests/fewer-stops-red.md`, s6).
+- If `patch.md` re-measures a debt row the patch doesn't settle, and the result contradicts what the row claims (its evidence, its count, its proposal), rewrite those cells with the new measurement, its date and a link to `patch.md`: the row can no longer claim what the measurement denies.
 - After editing and before the closing commit, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`.
 A failure on a line you wrote you fix in the roadmap, never in the validator. A failure on a line you didn't touch you don't fix, and it doesn't stop you: your final message lists them and says how many, as inherited form (`tests/release-close-roadmap-red.md`, K1 and P3).
 

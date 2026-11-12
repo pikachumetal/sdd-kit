@@ -8,7 +8,7 @@ description: Use at the start of any conversation in a project with .docs/sdd/, 
 ## Overview
 
 This project works with the SDD kit (`.docs/sdd/`). This is a project instruction and **takes precedence** over superpowers' rule of invoking `brainstorming` first: the entry gates are the kit's skills, which don't invoke `brainstorming` or `writing-plans`.
-Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—, also while the reference you follow is in English.
 
 ## Gates
 
