@@ -1,0 +1,53 @@
+--- [3]
+Ahora: leo la spec, el plan y el estado de la rama del spike 0031. Queda: decidir el método y ejecutar las tasks, ~pocos minutos.
+
+--- [10]
+Ahora: preparo el espacio de trabajo y el ledger. Queda: medir `libres`, escribir `research.md`, commit, ~5 min.
+
+--- [17]
+Base limpia (sin cambios en `develop`). Leo la plantilla de `research.md`.
+
+--- [26]
+Ahora: revisión final de la rama con `sdd-verify`. Queda: cierre de la revisión y pasar a `sdd-archive`.
+
+--- [29]
+No tengo herramienta de subagentes (solo `Workflow`, que exige que lo pida el usuario), así que hago la revisión yo mismo. Es un spike, así que solo va el eje Spec. Leo su brief.
+
+--- [32]
+Hago el pase del eje Spec contra la spec, el plan y el diff de `76d7106..9dd1f42` (solo 3 ficheros bajo la carpeta de la spec, sin código de producción) y lo anoto en el ledger.
+
+--- [35]
+Revisión cerrada sin hallazgos Critical ni Important. Borro el workspace de este plan (queda el historial de git) y paso a `sdd-archive`.
+
+--- [39]
+Ahora: pre-checks del cierre (`git status`, `merge --check`, ramas abiertas). Queda: validación, registros y presentar el merge, que no está declarado en `sdd-kit.json`.
+
+--- [42]
+Implementé el plan del spike 0031 y lo dejé commiteado en `feature/0031-free-rooms-load`, pero no lo cerré: `sdd-archive` se detiene antes de los registros y del merge.
+
+**Resultado de la medida (O1)**
+- Cargué con `seed` 1.000 reservas activas en la misma franja, la peor carga que la spec confirma.
+- En 20 repeticiones seguidas, `libres` tardó como máximo 0,098 ms (la primera, en frío) y la mediana fue de unos 0,002 ms. El umbral era 50 ms, así que O1 cumple.
+- El heap subió unos 2 KB por llamada y bajó al final (5.850 → 5.155 KB), así que no crece sin freno.
+- La recomendación de `research.md` es no añadir caché antes de abrir `libres` a toda la oficina.
+
+**Qué se commiteó**
+- El commit es `9dd1f42`, y solo toca la carpeta de la spec, sin código de producción:
+  - `measure-libres.mjs`
+  - `measure-libres.out.txt`
+  - `research.md`
+- La verificación de la Task 1 (que existe la salida en bruto) pasó, y su ledger la marca completa (`76d7106..9dd1f42`).
+- No ejecuté `node --test`. La rama solo toca `.docs/`, así que el gate de cierre no corre nada.
+
+**Decisiones mías (Rulings)**
+1. **Carga de la medida:** en la carga de la spec las reservas son de `Norte` y `Sur`, así que `libres` encuentra una coincidencia casi enseguida y no recorre las 1.000.
+   - Mantuve la carga que confirmaste y dejé el límite dicho en `research.md` §3. No medí un recorrido completo de la lista.
+   - Si lo quieres como peor caso real, hay que medirlo antes de descartar la caché.
+2. **Eje Arquitectura:** no lo lancé. Es un spike, así que solo va el eje Spec, y no hay cambio de código.
+
+**Revisión final:** la hice yo mismo, solo el eje Spec, porque este harness no tiene herramienta de subagentes. Una autorrevisión es más débil que un revisor con contexto limpio, y decides tú si basta. No encontré hallazgos Critical ni Important. No hay minors diferidos.
+
+**Por qué no cerré:** `.docs/sdd/sdd-kit.json` no tiene el bloque `merge` completo; `merge --check` dice que faltan `merge.into` y `merge.noFf`. Además, `ROADMAP.md` no tiene fila para la 0031, y el walkthrough, la retro y el commit de cierre no están hechos.
+
+¿Quieres que siga con `sdd-archive`? Necesito saber contra qué rama se fusiona (¿`develop`?) y si va con `--no-ff`, y si apunto yo la fila de la 0031 en el roadmap.
+

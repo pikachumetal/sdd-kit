@@ -15,13 +15,13 @@ Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / 
 ## When the document is a skill
 
 <!-- kit: 0312 -->
-First thing, read [references/skill-mechanics.md](references/skill-mechanics.md) to write it, and [references/skill-testing.md](references/skill-testing.md) to test it. A new skill lives in `.claude/skills/<name>/` of the project (in the kit's repo, `skills/<name>/`). It isn't done until a scenario that tests it is run or written next to it; in the kit's own repo, by the Art. I of its constitution, with RED and GREEN.
+First thing, read [references/skill-mechanics.md](references/skill-mechanics.md) to write it, and [references/skill-testing.md](references/skill-testing.md) to test it. A new skill lives in `.claude/skills/<name>/` (in the kit's repo, `skills/<name>/`). It isn't done until a scenario that tests it is run or written next to it (in the kit's repo, RED and GREEN by its Art. I). A clean baseline at n = 2 is repeated before a rule comes out.
 
 <!-- kit: 0312 -->
-**A step that hands over to another skill** says: «First thing in this step: invoke `<skill>` with `Skill`; do nothing else from here.» A plain line pointing at the skill was followed 0 of 4 times; this form, 4 of 4.
+**A step that hands over to another skill** says: «First thing in this step: invoke `<skill>` with `Skill`; do nothing else from here.» A plain pointer was followed 0 of 4 times; this form, 4 of 4.
 
 <!-- kit: 0312 -->
-**A forecast of a test campaign** has one line per batch, each with its subjects and dollars: RED; GREEN; one REFACTOR round, n = 2 per new rule that fixes a literal or goes to `references/`; and one line for controls, the final review's fix pass and a model change, about 20 % of the subjects. With RED and GREEN alone, a campaign forecast at 32 subjects spent 59.
+**A forecast of a test campaign** has one line per batch, each with its subjects and dollars: RED; GREEN; one REFACTOR round, n = 2 per new rule that fixes a literal or goes to `references/`; and one line for controls, the final review's fix pass and a model change, about 20 % of the subjects. Forecast with RED and GREEN alone, 32 subjects became 59.
 
 ## Context pointers
 

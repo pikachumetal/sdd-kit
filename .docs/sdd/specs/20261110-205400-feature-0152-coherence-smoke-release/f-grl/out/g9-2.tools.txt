@@ -1,0 +1,70 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cat package.json 2>/dev/null; node -v; ls; ls .docs/sdd 2>/dev/null
+<<< {"type": "module"}
+v26.10.0
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: ls src test; head -30 PRODUCT.md; grep -ril "cobertura\|coverage" . --include=*.md --include=*.json 2>/dev/null | head
+<<< src:
+app.js
+
+test:
+app.test.js
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+>>> Bash: node --help | grep -i -A1 "coverage"; cat src/app.js | wc -l; node --test --experimental-test-coverage 2>&1 | tail -15
+<<<   --experimental-test-coverage
+                              enable code coverage in the test runner
+  --experimental-test-module-mocks
+--
+  --test-coverage-branches=...
+                              the branch coverage minimum threshold
+  --test-coverage-exclude=... exclude files from coverage report that
+                              match this glob pattern
+  --test-coverage-functions=...
+                              the function coverage minimum threshold
+  --test-coverage-include=... include files in coverage report that
+                              match this glob pattern
+  --test-cover
+
+=== RESULTADO (6 turnos, 0.1044097 $)
+**Para este proyecto, lo que trae Node te vale. No metería c8.**
+
+Lo he probado en tu repo, sin tocar nada, con `node --test --experimental-test-coverage`. Ya da el informe: `app.js` sale con 93,75 % de líneas, 83,33 % de ramas y 100 % de funciones. La línea 13 es la que no cubre ningún test.
+
+**Por qué basta**
+- Tu proyecto es una CLI personal de 16 líneas en `src/`, sin dependencias y con `"type": "module"`. Añadir c8 sería la primera dependencia para dar la misma información.
+- Con Node 26 tienes todo lo que haría falta:
+  - umbrales: `--test-coverage-lines`, `--test-coverage-branches` y `--test-coverage-functions`;
+  - filtros: `--test-coverage-include` y `--test-coverage-exclude`;
+  - `--test-coverage-include-all`, que cuenta como 0 % los archivos que ningún test carga.
+- Por dentro Node usa V8 coverage, el mismo motor que c8. Los números son equivalentes.
+
+**Cuándo sí compensaría c8**
+- Si necesitas informes en formato `lcov` o HTML, por ejemplo para subirlos a Codecov o a un CI con badge.
+- Si necesitas unir la cobertura de varios procesos o de varias ejecuciones.
+- Si tuvieras que soportar versiones de Node antiguas donde el soporte nativo falla. No es tu caso.
+
+**Lo que decidiría tú**
+- **Umbral:** sin más usuarios ni desarrolladores, yo no pondría un porcentaje mínimo que rompa el build. Pondría `--test-coverage-include-all` y miraría el informe a ojo. Un umbral alto en 16 líneas solo empuja a escribir tests por el número.
+- **Ramas:** la métrica útil aquí son las ramas, que hoy están en 83 %, más que las líneas.
+
+**Lo que dicen los documentos y lo que infiero:** ni `PRODUCT.md` ni `steering/` mencionan cobertura, así que no hay ninguna decisión previa que contradiga esto. El resto es mi recomendación.
+
+Si quieres dejarlo hecho, serían un script en `package.json` y, si lo ves, una línea en `steering/`. Es un cambio de configuración, sin fila de roadmap. Dime y te preparo el prompt de arranque. Si prefieres hacerlo en esta sesión, di «arráncalo».

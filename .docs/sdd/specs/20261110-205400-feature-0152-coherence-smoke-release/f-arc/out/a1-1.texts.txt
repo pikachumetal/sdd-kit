@@ -1,0 +1,77 @@
+--- [3]
+Empiezo el cierre de la 0010 con los pre-checks del paso 0.
+
+--- [24]
+La 0010 está a medio cerrar: los pre-checks pasan, pero la re-revisión de `HEAD` sigue en marcha y todavía no he escrito ningún registro.
+
+- **Árbol limpio y destino listo:** `git status` no muestra cambios y `sdd merge --check` deja `develop` listo para el merge.
+- **Ninguna otra rama abierta:** no hay más ramas `feature/*` ni `patch/*` en `git worktree list`.
+- **Spec aprobada:** está en `status: approved` y firmada por Laura el 2026-10-08.
+- **Re-revisión pendiente:** la revisión final miró `548931e`, pero `HEAD` es `f204f1c`. Ese commit solo añade `tasks.md`, con 17 líneas de documentación, y no hay línea `Re-revisión:`. El paso 0.6 del cierre exige entonces una única re-revisión del rango. La lancé con opus y effort-high en un worktree desacoplado, y hay un watch de silencio activo.
+
+Cuando vuelva, registraré `Re-revisión: 548931e..f204f1c, sdd-kit:effort-high + opus, <veredicto>` en `tasks.md` y seguiré con la validación. En `validation.mode: field` la hago yo, sin preguntarte. Después vienen el walkthrough, las capacidades, el roadmap, el squash del cierre, la sincronización con la base y el merge a `develop`.
+
+Un detalle para el walkthrough: el `Ruling` de la Task 2 es un workaround, porque el test de `canceladas` depende del primer test. Lo anotaré como decisión tomada sin el dev-lead y le abriré fila en `debt.md`.
+
+--- [31]
+### Finding Verdicts
+No findings to rule on: the earlier final review on 548931e came back clean.
+
+### New Breakage in the Fix Diff
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`: the Task 2 Ruling calls itself a temporary workaround ("hasta que cada test prepare sus datos") and states its cost (the test fails if it runs alone or in another order). But no debt entry tracks it: `.docs/sdd/steering/debt.md` only lists the time-slot item, and its «Lista» table is empty. The ruling gives no owner and no point at which it gets fixed, so it is likely to stay. Fix: add a row to debt.md («Por triar» or «Lista») and point to it from the ruling.
+
+  Does the Ruling hide a spec deviation? No.
+  - **«Delta de comportamiento»:** the behaviour is met. `cancelledList()` in `src/app.js:35-37` produces «Norte lun — sala ocupada» once that booking is cancelled.
+  - **«Dónde se prueba»:** the listing is tested through the output of `canceladas` in `test/cancel.test.js:13-15`, as required.
+
+  What the ruling does give up is that the test doesn't set up the scenario's own GIVEN (the Norte Monday booking cancelled with «sala ocupada»). That state comes from the first test (`test/cancel.test.js:5-7`) through the module-level `bookings` array. The ruling states this openly; it isn't a hidden deviation. I checked the "fails when run alone" claim by reading the code, not by running it. With a fresh module, nothing is cancelled, so `canceladas` returns `''`.
+
+The rest of `tasks.md` matches the git history:
+- Task 1 → `ac1da6b` and Task 2 → `548931e` are the right commits for each task.
+- "sobre 548931e" matches the fix base.
+- The review line (Spec opus+high, Código sonnet+high, Arquitectura no) matches the brief.
+- The text is in Spanish, as the project requires.
+
+### Out-of-Scope Observations
+- `test/cancel.test.js`: the spec's third condition for cancelling ("sin `--motivo` responde lo mismo: «motivo no válido: …»") has no test. The code covers it (`reasonOf` returns `undefined`, which isn't in `reasons`), but the clean review on 548931e didn't notice the missing test. The spec's «Dónde se prueba» says the reason is tested through the `cancelar` command in this file, so this condition should have a test there.
+- `test/cancel.test.js:13-15`: the order dependence itself sits in code from 548931e, which the earlier review passed. The closing check (`node --test`, constitution item 2) passes only because the tests run in file order.
+- `spec.md`, «Decisiones que he tomado yo»: the numbered list jumps from 1 to 3.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. One Minor: the ruling's workaround isn't recorded in `debt.md`.
+
+--- [33]
+La re-revisión volvió sin Critical ni Important. Deja un Minor: el workaround de la Task 2 no tiene fila en `debt.md`. Esa fila ya la tenía prevista. Paro el watch y quito el worktree de revisión.
+
+--- [40]
+Worktree de revisión eliminado. Sigo con el paso 1. Con `validation.mode: field` el smoke lo hago yo: una fila por THEN, con ejecución real, y la suite entera guardada en un fichero.
+
+--- [55]
+`capability check`, `decision check` y `roadmap check` pasan, y el diff del roadmap toca solo la fila de la 0010. Ahora la retro del cierre.
+
+--- [61]
+Paso 5: el cierre se junta en un commit desde el de la última task. Antes miro las guardas: sin merges en el rango, sin publicar, y ningún sha del rango citado en los registros.
+
+--- [68]
+🦆 Cancelar una reserva ahora pide un motivo de la lista (cambio de planes, sala ocupada, otro). `canceladas` lista cada cancelación con su motivo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y luego `canceladas` muestra «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Corrido solo, falla, y la suite entera pasa solo por el orden del fichero. Lo dejé en `debt.md`, «Por triar».
+
+**Deferred minors**
+
+- Falta el test de `cancelar` sin `--motivo`. El código y el smoke lo cubren, pero la suite no. Es la otra fila nueva de `debt.md`.
+
+**Lo pendiente**
+
+- `Gate:` `node --test` → 5/5 en 131 ms sobre `eb289b4`. Ese commit de cierre solo añade documentación al código que ya pasó.
+- La revisión final miró `548931e`. La re-revisión de `HEAD` (opus, effort-high) salió sin Critical ni Important.
+- La base ya estaba al día, así que no hubo merge de sincronización ni conflictos.
+- `.docs/sdd/capabilities/bookings.md` es nuevo, creado al fusionar la capacidad de la spec. El proyecto no tiene `estimation.md`, así que no hay tiempo real ni `estimation-log`.
+- La fila 0010 del roadmap queda en ✅, con la validación en campo registrada en el walkthrough.
+
+**Ticket del kit.** Hay una retro apuntada: `Retro: documento o skill desmentido → ticket del kit`. `final-review-check.md` manda re-revisar el commit de documentación de menos de 20 líneas, y `sdd-verify` dice que no se despache si solo hay commits revisados en el hilo. Cada uno contradice al otro. Esa ambigüedad me costó un despacho de opus sobre 17 líneas de `tasks.md`. Si quieres el ticket, lo preparo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`ed6af8e`) · push: no hecho: `merge.push` no lo autoriza
+

@@ -1,0 +1,106 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, roadmap, fila 0012). Queda: clasificar y preguntar por el carril patch, ~2 min.
+
+--- [14]
+Ahora: cierro la variante «petición cerrada»: reservo el id, escribo el test en rojo y la corrección. Queda: revisor, commit y cierre, ~12 min.
+
+--- [18]
+La 0012 ya la tiene otra feature en `origin/develop`, así que el patch pasa a la **0013** y la rama a `feature/0013-slot-format`. Sigo con el test en rojo.
+
+--- [23]
+Funciona, pero `freeRooms` devuelve a veces texto y a veces lista. Lo simplifico moviendo la validación a `run`.
+
+--- [25]
+Se perdieron las barras invertidas del escapado y `10:00-12:00` quedó rechazada; el test lo ha cazado. Lo corrijo con Edit.
+
+--- [31]
+Ahora: dejo que un revisor sonnet mire la causa, el fix y el test antes del commit. Queda: aplicar sus hallazgos, commit y cierre con `sdd-archive`, ~8 min.
+
+--- [34]
+El revisor está en marcha y espero su resultado antes de hacer el commit del fix. Hasta que llegue no puedo dar el patch por revisado.
+
+Estado hasta ahora:
+- **Id:** el patch pasó de 0012 a **0013**, porque `origin/develop` ya reservó la 0012 para «Informe de ocupación». La rama es `feature/0013-slot-format`. La fila de mi roadmap sigue numerada 0012, así que habrá que renumerarla al cerrar.
+- **Test en rojo:** `libres 25:00-26:00` devolvía `Norte, Sur`, y el test nuevo falló por eso.
+- **Fix:** `run()` valida la franja con `HH:MM-HH:MM` (horas 00-23, minutos 00-59). Si no cumple, responde «franja no válida: usa HH:MM-HH:MM».
+- **Verde:** `node --test` da 5/5 y `libres 10:00-12:00` sigue devolviendo `Sur`. `libres` sin franja y `libres 9-10` también devuelven el aviso.
+- **Queda:** aplicar los hallazgos del revisor, hacer el commit del fix, cerrar con `sdd-archive` y fusionar con `sdd merge --push`.
+
+--- [35]
+Hallazgos:
+
+1. **Baja (patch.md, trazabilidad)**: el patch dice «`libres` sin franja también es no válida» y lo presenta como decisión propia. Es coherente con el literal y con el fix (`params[0] ?? ''` hace fallar el regex), pero ningún test cubre ese caso. Conviene un test mínimo, por ejemplo `run('libres', [])`.
+
+2. **Baja (cobertura)**: el test solo cubre `25:00-26:00` (horas fuera de rango). Los minutos inválidos (`10:60-...`) y el formato roto (`abc`) no se prueban. El regex los maneja bien. Tampoco hay un caso de franja válida, aunque el test existente de `libres` con `10:00-12:00` ya lo cubre.
+
+3. **Informativa (patch.md)**: el campo `commit: pendiente` y `status: done` conviven. Es consistente solo si el commit se hace después, así que conviene rellenar el hash al cerrar.
+
+Comprobaciones:
+- **(1) Solución fijada**: correcta. El texto de la respuesta coincide literalmente con la petición.
+- **(2) Fix mínimo y correcto**: sí. El regex acepta horas 00-23 y minutos 00-59, está anclado con `^...$`, y el caso sin argumento queda cubierto por `?? ''`. La validación va antes de `freeRooms`, y los demás comandos no se tocan. Se deja fuera de alcance, y así consta en el patch, que el fin sea anterior al inicio y el `24:00`.
+- **(3) El test cubre el síntoma**: sí. Sin el fix, `run('libres', ['25:00-26:00'])` devolvía `Norte, Sur`, así que el `assert.equal` habría fallado. El patch registra además la ejecución RED.
+
+No he ejecutado `node --test`. Me baso en el diff y en lo que registra el patch.
+
+Sin hallazgos bloqueantes.
+
+--- [37]
+El revisor no ve nada bloqueante. Aplico el 1 y el 2, que son baratos: un test para la franja ausente y otro para minutos y formato rotos. El 3 lo cierro al poner el hash.
+
+--- [39]
+Ahora: cierro con `sdd-archive` (validación, roadmap y fusión). Queda: `sdd merge --push`, ~5 min.
+
+--- [42]
+Ahora: pre-checks de solo lectura y mensaje de validación. Queda: tu validación, y después registro, base integrada y `sdd merge --push`.
+
+--- [51]
+El panel responde. El cierre se queda aquí, parado, por dos motivos.
+
+🦆 `libres` ya no lista las salas cuando la franja no es una hora real: `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM», y `libres 10:00-12:00` sigue devolviendo `Sur`.
+
+**✋ Me salí del plan en…**
+
+- Nada. Hubo una decisión mía, sin el dev-lead: «sin franja» y «minutos imposibles» (`10:60`) también son no válidas. Sale de leer literalmente «usa HH:MM-HH:MM». Quedan fuera, porque nadie lo fijó, «fin antes que inicio» y `24:00`.
+
+**Smoke que he corrido** (patch 0013, rama `feature/0013-slot-format`, commit del fix `a09d62b`)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` → aviso | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue igual | ejecución real | `Sur` |
+| `libres 10:60-11:00` → aviso | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres` sin franja, `abc` → aviso | suite | `node --test` 6/6 |
+
+**Suites:** `node --test`: 6/6 sobre `a09d62b`. El gate de cierre completo corre después de la fusión de sincronización.
+
+**Sin probar:** nada.
+
+**Dos cosas que no puedo resolver yo**
+
+1. **Validación.** `sdd-kit.json` no fija `validation.mode`, así que cuenta como `manual`, y `patch.md` dice `Validación: dev-lead`. Hasta que me digas qué probaste y que funciona, no empiezo el cierre. Con `delegate` y sin ti, el cambio espera.
+2. **Fusión.** `sdd merge --check` falla: «falta `merge.into` o `merge.noFf` en `sdd-kit.json`». Sin ese bloque no fusiono, ni con `--push`. Propongo añadir `"merge": {"into": "develop", "noFf": true}` (`develop` es la rama de integración que fija la constitución). Para que `--push` no se ignore (hoy sale «sin merge.push»), añadiría también `"push": true`. Dime si lo apruebo así o cambias algo.
+
+Otros puntos:
+- La fila del roadmap sigue numerada 0012 y la renumero a 0013 al cerrar.
+- `.temp/` no está en ningún `.gitignore` y el proyecto no tiene `.gitignore`. Propongo crearlo con `.temp/` para que el panel no ensucie el árbol.
+
+Panel: plan B en http://127.0.0.1:65078/
+
+**Guion**
+
+Rama `feature/0013-slot-format` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Terminal:
+
+```
+cd <run>\repo
+```
+
+1. El síntoma de la fila: `node src/app.js libres 25:00-26:00` → `franja no válida: usa HH:MM-HH:MM`
+2. `node src/app.js libres 10:00-12:00` → `Sur`
+3. `node src/app.js libres 10:60-11:00` → `franja no válida: usa HH:MM-HH:MM`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla, y si apruebo el bloque `merge` y el `.gitignore`.
+

@@ -1,0 +1,122 @@
+--- [2]
+Esto es un fallo: cancelar una reserva que no existe borra otra. Lo enfoco con `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto del proyecto (docs, no código). Queda: clasificar el cambio y hacerte la pregunta de carril, ~2 min.
+
+--- [16]
+Ahora: miro el código que toca la cancelación y el patch 0007, que parece el mismo fallo. Queda: la pregunta de carril, ~2 min.
+
+--- [23]
+Reproducido: `cancelar Norte mar` responde «cancelada Norte mar», y después la reserva del lunes ya no existe (`cancelar Norte lun` da «sin reserva Norte lun»).
+
+🦆 Ahora mismo, si cancelas una sala un día en que no la tienes reservada, el programa cancela la reserva de esa sala de otro día y te dice que ha cancelado el día que pediste. Al buscar la reserva, solo mira la sala y no el día. La idea es que busque por sala y día, y que si ese día no hay reserva conteste «sin reserva Norte mar» sin tocar nada. Lo mismo le pasa a la anulación del responsable de sala, porque usa la misma búsqueda.
+
+**Causa raíz:** `findBooking` en `src/app.js:10` recibe `day` pero lo ignora. El patch 0007 («La cancelación borraba reservas de otro día con la misma hora») figura como hecho en el roadmap, pero ese código no compara el día. Su `patch.md` dice «verificado», aunque `test/cancel.test.js` no tiene ningún test que cubra el caso.
+
+**Carril: patch.** Es un fallo determinista y la causa raíz fija la solución. Lo reproduce un solo test: `cancelar Norte mar` con solo el lunes reservado debe dar «sin reserva Norte mar» y dejar el lunes activo. El mismo arreglo cubre `anular`. Perfil: delegate, del proyecto (`sdd-kit.json`). No hay dependencias que instalar (Node sin paquetes).
+
+**Estimación:** 0,4 h, más 0,02 h del gate de cierre (`node --test && node scripts/lint.mjs`, ~1 s según Operations; no hay un cierre medido en el proyecto).
+
+¿Lo abro como patch?
+
+1. **Sí, patch (Recomendada):** creo la rama y el `patch.md`, escribo el test rojo, arreglo `findBooking` y reviso `anular` con otro test.
+2. **Patch, y lo dejas corriendo hasta el cierre:** igual que la 1, pero si te vas a ausentar apruebo por delegación y paro solo en la validación.
+3. **Feature completa:** spec y plan, por si prefieres tratar también la discrepancia con el 0007.
+
+--- [25]
+Ahora: creo la rama y reservo el id del patch. Queda: abrir el `patch.md` y pasar a implementar, ~2 min.
+
+--- [30]
+Ahora: paso a implementar. Queda: test rojo, arreglo, verificación y cierre.
+
+--- [34]
+Ahora: cargo el método de test y la plantilla del patch. Queda: `patch.md`, test rojo, arreglo y verificación, ~15 min.
+
+--- [41]
+Línea base en verde (4/4). La deuda técnica no cubre este fallo. Escribo `patch.md` con la causa raíz y la estimación antes de tocar código.
+
+--- [44]
+Ahora: los tests en rojo. Van en dos ficheros porque el estado de reservas es del módulo y cada fichero corre en su propio proceso.
+
+--- [48]
+Los dos tests fallan por la causa esperada (`cancelada Norte mar` y `anulada Norte mar` en vez de `sin reserva Norte mar`). Ahora aplico el arreglo mínimo.
+
+--- [52]
+Todo en verde: 6/6 y el lint sin hallazgos. Completo el §4 de `patch.md` y lo mando a un revisor, como pide el flujo del patch.
+
+--- [60]
+Reviso el estado del repositorio, porque el revisor admite haber hecho un `git stash` y un `pop`. También miro el tiempo real de la sesión.
+
+--- [66]
+Ahora: cierro el patch con `sdd-archive`. Queda: validación contigo y merge.
+
+--- [69]
+Ahora: comprobaciones previas del cierre. Queda: pedirte la validación, porque la haces tú.
+
+--- [76]
+Ensayo cada paso del guion tal como lo escribirías tú. El panel de plan B también va a arrancar antes de presentarlo.
+
+--- [79]
+🦆 Si cancelas o anulas una sala un día en que no la tienes reservada, ahora el programa responde «sin reserva Norte mar» y no toca nada. Antes respondía «cancelada Norte mar» y quitaba la reserva del lunes. Arreglé la búsqueda de la reserva para que mire la sala y el día, no solo la sala. Lo mismo vale para `anular`.
+
+**✋ Me salí del plan en…**
+
+- Nada. Una corrección: puse la carpeta del patch en `.docs/sdd/changes/` como pide el kit, aunque el proyecto guarda las anteriores en `.docs/sdd/specs/`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día | ejecución real | `sin reserva Norte mar` |
+| La reserva del lunes sigue activa tras ese intento | suite | `cancelar Norte lun` da `cancelada Norte lun` en el mismo proceso |
+| `cancelar Norte lun` con reserva | ejecución real | `cancelada Norte lun` |
+| `anular Norte mar` sin reserva ese día | ejecución real | `sin reserva Norte mar` |
+| La reserva del lunes sigue activa tras `anular Norte mar` | suite | `anular Norte lun` da `anulada Norte lun` en el mismo proceso |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 sobre `d768c49`, unos 0,2 s; lint «sin hallazgos».
+
+**Sin probar**
+
+- Que la reserva del lunes sobrevive al intento del martes no se puede ver desde la terminal: las reservas viven en memoria y cada comando arranca de cero con `Norte lun` reservada. Eso solo lo prueban los dos tests nuevos.
+
+Panel: plan B en http://127.0.0.1:64167/ (no veo tu app desde ahí. Si algo falla, cuéntalo en el comentario del paso. No hay `.gitignore` en el proyecto, así que no he escrito nada en `.temp/`.)
+
+**Guion**
+
+Rama `feature/0012-cancel-day` · worktree `<run>/repo`
+
+Es una CLI: no hay entorno que arrancar ni parar. Cada comando es un proceso nuevo que empieza con solo `Norte lun` reservada.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Tu caso del reporte, cancelar la sala un día sin reserva → `sin reserva Norte mar` (antes: `cancelada Norte mar`)
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Cancelar el día que sí está reservado → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Anular un día sin reserva → `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+Cuando valides te preguntaré una cosa más: `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y `sdd merge --check` se queda parado por eso. Ahí tendrás que decirme a qué rama fusiono y si con `--no-ff`.
+

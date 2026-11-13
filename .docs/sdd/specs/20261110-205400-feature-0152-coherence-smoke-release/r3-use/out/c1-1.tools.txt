@@ -1,0 +1,89 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls .docs/sdd 2>&1; ls .docs/sdd/capabilities 2>&1; git ls-files | head -80
+
+>>> Grep: cancel|anula
+<<< Found 5 files
+ROADMAP.md
+CHANGELOG.md
+test\app.test.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+src\app.js
+<<< sdd-kit.json
+specs/
+steering/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|anula
+<<< CHANGELOG.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](.docs/sdd/specs/20260918-090000-patch-0007-cancel/)
+CHANGELOG.md:20:- Cancelar una reserva propia.
+ROADMAP.md:8:| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/app.js`</details> | ✅ | — | S |
+test\app.test.js:13:test('cancelar respeta el día', () => 
+
+=== RESULTADO (8 turnos, 0.10529069999999999 $)
+Cancelar reservas está montado de forma mínima. De hecho, en el código casi no hace nada.
+
+**Lo que hace el código** (`src/app.js:12`)
+- Es el comando `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`.
+- **No toca el array `bookings`.** No busca ninguna reserva ni borra nada. La reserva sigue ahí después de "cancelar".
+- Tampoco valida nada: no mira si la reserva existe, ni si es del usuario, ni qué sala es.
+
+**Lo que dice la documentación**
+- `CHANGELOG.md:14` anota el patch 0007: "La cancelación ya no borra reservas de otro día con la misma hora".
+- `patch.md` del 0007 dice: "Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado".
+- `CHANGELOG.md:20` lista "Cancelar una reserva propia" como funcionalidad.
+- El test (`test/app.test.js:13`) solo comprueba que el texto de salida sea `cancelada mar 10:00`.
+
+**Lo que infiero**
+- La documentación describe un comportamiento que el código actual no tiene. El patch habla de una comparación por día y hora, pero en `src/app.js` no hay ninguna comparación en `cancelar`.
+- El test "cancelar respeta el día" solo mira el texto devuelto, así que no habría detectado el bug que dice cubrir.
+- Puede que el repo sea un esqueleto o una maqueta (el último commit es "base del molde salas"). También puede que el fix no se haya llegado a aplicar. No lo he comprobado en el historial de git.
+
+Si quieres, miro el historial de git para ver si el fix del 0007 existió alguna vez. Si lo que quieres es que cancelar funcione de verdad, eso ya es trabajo. Lo pasaría al roadmap como patch, porque el 0007 consta como cerrado. No he tocado nada.

@@ -1,0 +1,83 @@
+
+>>> Bash: cd <run>/repo && cat .temp/sdd/plan/task-1-brief.md; node --test test/informe.test.js 2>&1 | head -40; ls; ls src test
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason }`).
+- Produce: `run('informe', [])` → texto con una línea por sala (`Norte: 2 canceladas`), una por cancelada (`  lun 10:00-12:00 — sala ocupada`) y `Total: <n> canceladas`.
+**Ficheros**: `src/app.js`, `test/informe.test.js`
+
+## 3. Validación final
+
+- [ ] Gate de cierre: `node --test`
+✖ informe lista las canceladas por sa
+
+>>> Bash: cd <run>/repo && cat src/app.js test/informe.test.js; cat package.json
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled', reason: 'sala ocupada' },
+];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => 
+
+>>> Bash: cd <run>/repo && python3 - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace('export function run(',\`function cancelledReport() {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled');
+  const lines = rooms.flatMap((room) => {
+    const ofRoom = cancelled.filter((b) => b.room === room);
+    return [
+      \\\`\\\${room}: \\\${ofRoom.length} canceladas\\\`,
+      ...ofRoom.map((b) => \\\`  \\\${b.day} \\\${b.slot} — \\\${b.reason}\\\`),
+    ];
+  });
+  return [...lines, \\\`Total: \\\${cancelled.length} canceladas\\\`].join('\\\\n');
+}
+
+export function run(\`);
+s=s.replace(\"  return 'salas';\",\"  if (cmd === 'informe') return cancelledReport();\n  return 'salas';\");
+fs.writeFileSync('src/app.js',s)"
+E
+git diff; node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 0
+ℹ fail 1
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)" && cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 — informe
+Implementado `cancelledReport()` y rama `informe` en `run` (src/app.js).
+RED: `node --test test/informe.test.js` → 1 fail (devolvía 'salas'; comando inexistente, esperado).
+GREEN: mismo comando → pass 1, fail 0.
+Ficheros: src/app.js, test/informe.test.js.
+Nota: se listan todas las salas, también con 0 canceladas (el spec no lo define).
+E
+git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de reservas canceladas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< ℹ pass 1
+ℹ fail 0
+ae360ce feat: comando informe de reservas canceladas
+
+=== RESULTADO (7 turnos, 0.1319234 $)
+Ya está implementado y commiteado. Solo me queda dar el informe final.
+
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** `ae360ce` feat: comando informe de reservas canceladas
+- **Tests:** `node --test test/informe.test.js` pasa 1/1. Antes de implementar fallaba 1/1, porque `run('informe')` devolvía `'salas'`.
+- **Concern:** el spec no dice si una sala sin canceladas aparece en el informe. Listo todas las salas, así que saldría `Sur: 0 canceladas`. El test no cubre ese caso.
+- **Informe:** `.temp/sdd/plan/task-1-report.md`. Está sin commitear, porque solo añadí `src/app.js` y `test/informe.test.js` al commit.

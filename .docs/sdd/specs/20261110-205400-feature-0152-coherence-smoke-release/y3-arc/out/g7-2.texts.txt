@@ -1,0 +1,94 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [28]
+Cierre de la 0010 en curso. Lo que sé hasta ahora:
+
+- **Pre-checks 0–3:** el árbol está limpio, `merge --check` dice «listo» (`develop` irá en un worktree temporal) y no hay otras ramas abiertas.
+- **Pre-check 6 (revisión final):** la revisión limpia fue sobre `90db8e1`, pero `HEAD` es `095f7c3`. El commit nuevo toca `package.json`, así que la regla exige una única re-revisión de `90db8e1..095f7c3`. Ya la he lanzado en segundo plano, con `opus` y su vigilancia de silencio.
+- **Sin escribir nada todavía:** hasta que vuelva la re-revisión no toco ningún registro.
+
+Cuando vuelva sigo con los pasos del cierre en este orden: validación en campo (`validation.mode: field`, la hago yo con humo y suite), walkthrough, capacidad `bookings`, retro, roadmap, commit de cierre, sync y merge a `develop`.
+
+Dos cosas que ya veo y que arreglaré en el cierre:
+
+- No existe el borrador de `walkthrough.md` de la 0010; lo escribo yo.
+- La carpeta `capabilities/` tampoco existe. La spec declara `bookings` como «Nueva», así que la crea `capability merge`.
+
+--- [34]
+## New Breakage in the Fix Diff
+
+None.
+
+**package.json:1, the `cancelar` script.** `"cancelar": "node src/app.js cancelar"` works with the CLI entry in src/app.js. Line 1 sets `command = argv[2]` to `cancelar` and puts the rest in `args`. Line 42 sends `cancelar` to `cancelBooking(params[0], params[1], reasonOf(params))`. `reasonOf` (lines 14-17) reads the token after `--motivo`. So `npm run cancelar -- Norte lun --motivo "sala ocupada"` runs `node src/app.js cancelar Norte lun --motivo "sala ocupada"`. That prints «cancelada Norte lun (sala ocupada)», as the spec's `cancelar <sala> <día> --motivo <motivo>` requires. The module still has `"type": "module"`, so the ESM imports in the tests are unaffected.
+
+One usage note, not a defect. The usual npm rule applies: if you leave out the `--` separator, npm reads `--motivo` as its own config flag and does not pass it on. The command then answers «motivo no válido: …». That is the spec's message for a missing `--motivo`, so the result is controlled, not a crash. No project document describes how to call the script, so nothing contradicts this.
+
+**tasks.md (new file).** It matches what is in the repository:
+- Task 1 → f480c2c "feat(bookings): cancelar con un motivo de la lista". It changes src/app.js and test/cancel.test.js, the files listed in the plan.
+- Task 2 → 90db8e1 "feat(bookings): listado de canceladas con su motivo". It changes the same two files.
+- The final-review line says "sobre 90db8e1", with Spec and Code clean and Architecture not in the plan. That matches the brief and the plan, which has no Architecture axis.
+- The Task 2 ruling describes the code accurately. In test/cancel.test.js:13-15, the `canceladas` test depends on the cancellation made in the first test (lines 5-7), because the bookings live in the module's memory. It is recorded as a workaround, with its cost stated.
+- The interface text stays in Spanish.
+
+## Out-of-Scope Observations
+
+- test/cancel.test.js has no test for the spec's "sin `--motivo`" scenario. The code does handle it: `reasonOf` returns `undefined`, which is not in the list, so the command answers «motivo no válido: …». This is in code that the final review already covered.
+- The order-dependent test from the ruling is real debt (test/cancel.test.js:13). It fails if run alone or in another order. It is recorded until each test prepares its own data.
+- src/app.js:28-33 and 44 contain `anular`/`voidBooking`, which the spec leaves out (0011). This existed before the diff. Check whether it belongs to 0011 or came into this branch.
+
+## Verdict
+
+All clear: the two commits after 90db8e1 introduce no new Critical or Important breakage.
+
+--- [36]
+La re-revisión vuelve limpia. Paro la vigilancia, quito el worktree de revisión y leo las referencias de validación y suite.
+
+--- [42]
+Ahora el humo, una fila por THEN, con ejecución real, y la suite completa. Guardo la salida en el scratchpad.
+
+--- [50]
+Humo 5/5 con ejecución real; suite completa 6/6 y gate sin filtro verde, sobre `095f7c3`. Invoco la retro del cierre.
+
+--- [55]
+Escribo el walkthrough, la línea de re-revisión en `tasks.md` y las filas de deuda.
+
+--- [58]
+Corrijo el recuento del gate (`bookings:test` son 5 tests: 2 de `app.test.js` y 3 de `cancel.test.js`). Después fusiono la capacidad.
+
+--- [60]
+Ahora el roadmap (solo la celda «Estado» de la 0010; en campo, `✅`) y su comprobación.
+
+--- [65]
+Base al día. Miro la receta del merge para la sintaxis y el CI de la base.
+
+--- [68]
+Sin remoto ni «CI de la base» declarada, así que no hay nada que leer. `merge.push` es `false`. Fusiono con el script.
+
+--- [71]
+🦆 Cancelar ahora exige un motivo de la lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Con un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…** Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si está mal, el test falla cuando corre solo o en otro orden. Está en `debt.md` como fila nueva.
+
+Hay una cosa que debes saber de la validación. Con `validation.mode: field` la he hecho yo y queda registrada como `Validación en campo`. No has dicho qué probaste, así que no consta un «Validado» tuyo.
+
+- **Re-revisión:** la revisión final era sobre `90db8e1`, pero `HEAD` ya era `095f7c3` (el script de `package.json`). Lancé la única re-revisión que pide la regla, con opus, y salió limpia.
+- **Humo:** 4 THEN con ejecución real. «Sin `--motivo`» no tiene test en la suite y quedó en la deuda. Por la memoria del proceso, `canceladas` solo se comprueba en un único proceso.
+- **Suite completa:** 6/6 en verde.
+- **Gate:** `` Gate: `node --test test/app.test.js` · `gate.json` → bookings:test: corrió 5/5 (sin filtro: cambia el build) · rooms:test: corrió 1/1 (sin filtro: cambia el build) ``, sobre `095f7c3`. Después solo se añadió documentación, y `--verified-at` lleva `dc94504`.
+- **Base:** `develop` ya estaba integrada en la rama, así que no hubo merge de sincronización ni conflictos.
+- **Registros:**
+  - Escribí `walkthrough.md`, porque no existía el borrador.
+  - Anoté la línea `Re-revisión:` en `tasks.md`.
+  - Creé `capabilities/bookings.md` con `capability merge`. Es una capacidad nueva, y `capability check` y `decision check` pasan.
+  - Marqué la 0010 como ✅ en el roadmap.
+  - Añadí dos filas a `debt.md`: el test dependiente del orden y el THEN sin test.
+  - La retro salió `Retro: sin señales`.
+- **Sin estimación:** el proyecto no tiene `estimation.md`, así que no hay tiempo real que registrar.
+- **Sin CI ni push:** no hay remoto ni «CI de la base» declarada, y `merge.push` es `false`.
+- **Observación fuera de alcance:** el revisor señaló `voidBooking` y `anular` en `src/app.js`, que son de la 0011. Ya estaban en el commit base del molde (`1928970`), no los metió esta rama.
+
+Si quieres el ticket de mejora del kit sobre esta sesión, dímelo y lanzo `sdd-feedback`. La retro no dejó ninguna línea «ticket del kit».
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`5ab1d09`) · push: no hecho: `merge.push` es `false` y no hay remoto
+

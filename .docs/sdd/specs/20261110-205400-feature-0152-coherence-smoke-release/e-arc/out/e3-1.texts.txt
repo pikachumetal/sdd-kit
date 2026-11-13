@@ -1,0 +1,37 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [30]
+El e2e sale rojo con «otra aplicación: no es el entorno de la suite». Miro el principio de la salida, la config y quién ocupa el puerto antes de sacar conclusiones.
+
+--- [33]
+Los 5 tests unitarios pasan. El e2e falla porque algo responde en el puerto 52369 y no es el entorno de esta suite. Miro `server.mjs` y quién escucha, sin matar nada.
+
+--- [36]
+**Terminado: no.** El cierre está parado en el paso 1 (validación y suite). No he escrito ningún registro ni hecho commit, y el worktree sigue limpio.
+
+**Qué me ha parado**
+- **Suite unitaria:** pasa, 5 de 5 en `35f9202`.
+- **E2E rojo:** `node e2e/run.mjs` falla los 7 tests (42 s) con «otra aplicación: no es el entorno de la suite».
+- **Causa:** el puerto 52369 lo ocupa un proceso que no es el servidor de este proyecto. `GET /` responde esa frase con un 404, y el `/health` de este proyecto responde `ok`.
+- **No he tocado el proceso:** no sé de quién es y no voy a matarlo sin que lo digas.
+- **Salida completa:** `scratchpad/kit-e-0152/gate-0010.txt`.
+
+**Tu revisión final no estaba del todo limpia.** `HEAD` se movió con `35f9202`, un commit solo de documentación, y el cierre exige re-revisarlo. La re-revisión (opus, `93ba8a0..35f9202`) encontró dos cosas, y las dos las he comprobado yo:
+1. **Commit mal citado.** `tasks.md` pone `93ba8a0` en las dos tasks, pero la Task 1 es `c405e17`. Lo corrijo en el cierre.
+2. **Ruling mal diagnosticado.**
+   - **Qué dice:** `--test-concurrency=1` en el gate, como apaño por «la carrera sobre el almacén compartido».
+   - **Qué pasa de verdad:** `test/cancel.test.js` ejecuta sus tests en orden y el de `canceladas` depende del estado que deja el de `cancelar`. Es lo que `operations.md` llama «depende de otro», y esa opción no lo arregla.
+   - **Qué hago:** no cambio el gate, que sigue siendo el de `operations.md`. Anoto el Ruling con su diagnóstico real y abro una fila en `debt.md`, que hoy está vacía.
+
+**Lo que decido yo**
+- Ya hay dos cosas que se han salido del plan sin el dev-lead: el Ruling del gate y el commit mal citado. Las pondré en «✋ Me salí del plan en…» del mensaje de validación.
+- La spec declara la capacidad `bookings` como nueva y no existe `capabilities/`. Lo creo con `capability merge` en el cierre.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas, ni remoto. No hay `estimation.md`, así que no hay tiempo real que calcular.
+
+**Qué necesito de ti:** ¿qué hay en el puerto 52369?
+- **Mi recomendación:** me dices cuál es y, si es tuyo y se puede parar, lo paro y repito el gate completo.
+- **Otra opción:** me autorizas a correr el e2e en otro puerto con una copia temporal de `e2e/config.json`, sin tocar el fichero del proyecto. Eso no sustituye la suite de verdad, y lo dejaría anotado.
+
+Con la suite en verde sigo con el smoke de cada THEN (ejecución real), los registros, la fusión en `develop` con `sdd merge` y el mensaje final con el 🦆.
+

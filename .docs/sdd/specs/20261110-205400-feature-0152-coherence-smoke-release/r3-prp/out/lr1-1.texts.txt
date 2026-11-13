@@ -1,0 +1,90 @@
+--- [3]
+Ahora: reviso la spec que ya escribiste y aplico la rúbrica de revisión antes de presentártela. Queda: presentártela para aprobar, ~3 min.
+
+--- [17]
+Lancé el revisor (uno, Sonnet, por ser lite). Espero su resultado para integrarlo en la spec antes de presentártela.
+
+--- [21]
+1. Crítico · Delta de comportamiento (ADDED) · `libres` sin franja cambia el comportamiento observable de hoy (`Norte, Sur`). Es un requisito que ya existe en el código aunque no haya `capabilities/`. Declararlo como ADDED oculta que la salida de hoy se sustituye. · Marcar el requisito como MODIFIED, con la línea «antes: responde `Norte, Sur`», o declarar de forma explícita que la primera capacidad nace con este cambio y que el comportamiento previo queda reemplazado. Además, `libres <franja>` sin cambios es comportamiento vivo que la spec no recoge como requisito.
+
+2. Crítico · Delta de comportamiento (escenario) · El AND `libres 10:00-12:00` → `Sur` depende de que Norte esté reservada el lunes. El GIVEN no dice qué día se consulta, y `libres <franja>` aparece sin día. Además, el GIVEN apunta a «el catálogo de `src/app.js`» sin fijar el dato, así que el agente puede dar el valor «a ojo». · Poner en el GIVEN el dato fijo (reserva, día, hora) con el que corre el test, o decir que el test lo construye. Dejar claro de dónde sale el día de `libres <franja>`.
+
+3. Importante · Delta de comportamiento (THEN) · El THEN `falta la franja: libres <franja>` es un literal que escribe el agente, y `<franja>` puede leerse como placeholder o como texto literal. Un test que compruebe solo ese texto no distingue que se ha quitado la lista de salas. · Fijar en el THEN que la respuesta es exactamente ese texto con los `<>` literales, y que no contiene `Norte` ni `Sur`.
+
+4. Importante · Scope / Intent · El Intent habla de «quien lo escribe sin franja reserva una sala ocupada». El Scope solo cambia el mensaje de `libres`. No dice si `reservar` sin franja sigue igual ni si hay otros comandos sin franja afectados. Promete un efecto (evitar reservas erróneas) que ningún escenario verifica. · Recortar el Intent al cambio real, o listar en «No entra» los comandos de reserva y otros que reciben franja.
+
+5. Importante · Decisiones («✋») · Quedan decisiones en el cuerpo que no están en la lista: que el mensaje sea un error informativo y no un listado o una cadena vacía; que el código de salida o el tipo de respuesta no cambie (no se dice si es un error o una respuesta normal); que una franja vacía o inválida (`libres ''`, `libres 25:00`) quede fuera. · Añadir la decisión «respuesta normal, no error» y la decisión sobre la franja malformada, o ponerlas en «No entra».
+
+6. Importante · Delta de comportamiento (conflicto/límites) · Regla 5 bis. No hay declaración de dónde viven los datos (el catálogo de salas y las reservas), el idioma de los nombres (`rooms`, `Norte`, `Sur`), los límites ni la regla de conflicto (¿qué pasa con una franja solapada parcial?). Nada aparece como «no aplica». · Declarar cada una de las cinco reglas, o escribir «no aplica» con una razón en una línea.
+
+7. Importante · Escenarios · Un solo escenario cubre dos requisitos distintos, el mensaje y el comportamiento intacto de `libres <franja>`, mezclados con AND. Si falla el AND no se sabe qué comportamiento se ha roto. Además no hay escenario para el caso con todas las salas libres. · Separar en dos escenarios: uno para sin franja y otro para «`libres <franja>` sin cambios». Añadir uno con una franja en la que ambas salas estén libres.
+
+8. Menor · Dónde se prueba · Solo lista el test del mensaje. El AND de `libres 10:00-12:00` → `Sur` no tiene prueba declarada. El gate (`node --test` entero) puede pasar sin comprobarlo. · Añadir `run('libres', ['10:00-12:00'])` a «Dónde se prueba».
+
+9. Menor · Cabecera / Review de spec · La spec está en `draft` con aprobación pendiente de Laura. La sección «Review de spec propuesta» menciona un revisor «sonnet» que no ha corrido. Podría leerse como una review hecha. · Aclarar «propuesta, sin ejecutar» o quitarla hasta que haya review.
+
+10. Menor · Contratos / PRODUCT.md · PRODUCT.md no existe en `steering/`. No se puede contrastar el cambio con el producto. El texto de la respuesta es un contrato visible para quien use `libres`, y la spec no dice que cambia. · Añadir PRODUCT.md o declarar «sin PRODUCT.md». Anotar en la spec que el contrato de salida del comando cambia.
+
+--- [23]
+Aplico los hallazgos a la spec. Acepto 2 Críticos... en realidad 1: el 1 lo rechazo con motivo. Como acepto el Crítico 2, toca la segunda ronda con un revisor nuevo.
+
+--- [26]
+La spec 0019 está corregida con la primera review. Falta la segunda ronda: la lanzó un revisor nuevo porque acepté un hallazgo Crítico, y espero su resultado. Cuando llegue, lo integro y te presento la spec para aprobar. Todavía no está lista para el gate.
+
+--- [30]
+1. Crítico · Delta de comportamiento · El escenario «libres con franja sigue igual» tiene GIVEN con reserva activa de Norte el lunes 10:00-12:00, pero la spec dice que `libres` no recibe día. Por eso `Sur` depende de un dato que `run` no puede cruzar con el día. Si el catálogo no filtra por día, el THEN pasa con cualquier implementación que ignore la reserva. · Fijar en el GIVEN cómo cruza `libres` franja y reserva, por ejemplo «sin día, cualquier reserva activa en esa franja ocupa la sala». Añadir un escenario con otra franja (`14:00-15:00` responde `Norte, Sur`) para que el THEN no pase sin el cruce.
+
+2. Importante · Delta de comportamiento · El escenario 2 es comportamiento de hoy que no cambia, pero está como ADDED de `rooms`. Esto contradice «Rechazado: escenario con todas las salas libres es comportamiento de hoy». Los dos tratamientos son incoherentes. · Decidir un criterio único. Si se queda como requisito de `rooms`, debe describir el contrato completo de `libres <franja>`, no solo un caso. Si no, quitarlo del delta y dejarlo solo en «Dónde se prueba» como regresión.
+
+3. Importante · Delta de comportamiento · La capacidad `rooms` nace solo con `libres`, pero su nombre cubre todas las reservas y salas. El requisito no declara el contrato de `libres` (formato de salida, separador, orden), que es el único comportamiento vivo de la capacidad. · Acotar el nombre de la capacidad o añadir un requisito base. Debe decir que la salida lista las salas libres separadas por `, ` en orden de catálogo.
+
+4. Importante · Decisiones ✋ · El hallazgo «Rechazado — ADDED debería ser MODIFIED» deja como tal el comportamiento de hoy, pero el Intent no lo documenta como requisito vivo. Una capacidad nueva con un solo requisito parcial puede dejar sin cobertura el comportamiento previo de `libres <franja>`. · Reflejar en el delta los requisitos que ya viven, o declarar en el Scope que `rooms` se completa en cambios posteriores.
+
+5. Menor · Decisiones ✋ · La decisión 2 usa `<franja>` literal con los `<>`, que puede confundirse con un marcador de plantilla en el test o en la documentación. · Añadir un test que compare el literal exacto, con los `<>`. Evitar que lo interpreten como placeholder.
+
+6. Menor · Decisiones ✋ · La decisión 5 mezcla cinco reglas en una línea y dice «no aplica» para varias sin justificar cada una. Lo de «`libres` ni lee día» contradice el GIVEN, que menciona un día (lunes) en la reserva. · Separar la decisión 5 en una línea por regla. Aclarar que la reserva tiene día pero `libres` no lo consulta.
+
+7. Menor · Cabecera · El bloque de review tiene dos filas («Único» y «Mínimo razonable») con redacción confusa, y no queda claro cuál se ejecutó, aunque se dice «ejecutado». · Dejar solo la fila del revisor ejecutado, con su modelo y resultado.
+
+8. Menor · Aprobaciones · Hay un aprobador (Laura) con `approved_at: null`, pero en el perfil `delegate` la spec no dice quién aprueba el cambio ni cuándo. · Confirmar si Laura es la aprobadora real. Si es un nombre de ejemplo de una persona real, sustituirlo por un rol (dev-lead).
+
+--- [35]
+Ahora: presentarte la spec para aprobar. Queda: tu aprobación; después, el plan y la implementación en `sdd-implement`.
+
+## 🦆 En corto
+
+Hoy, si escribes `libres` sin decir franja, la herramienta contesta `Norte, Sur`, como si las dos salas estuvieran libres a cualquier hora. Con este cambio contestará `falta la franja: libres <franja>`. Si escribes `libres 10:00-12:00`, sigue respondiendo `Sur`, igual que hoy.
+
+**Spec:** `.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot/spec.md`. Es modo lite, perfil `delegate`, con un cambio de unas 10 líneas en `src/app.js` y `test/app.test.js`.
+
+La revisión de la spec ya está hecha, con dos rondas:
+- **Primera ronda:** un revisor Sonnet con los siete puntos dio 10 hallazgos. Acepté 8 y rechacé 2: ADDED en vez de MODIFIED, y PRODUCT.md que sí existe en la raíz.
+- **Segunda ronda:** hizo falta otra porque acepté un hallazgo Crítico. Dio 8 hallazgos: acepté 3 y rechacé 3, con el motivo escrito en la spec. Los dos restantes eran Menores que no cambian la spec: la redacción del bloque de review ya la dejé como pedía, y el que cuestionaba el test del literal `<>` figura entre los 3 rechazados.
+
+Cada hallazgo, aceptado o rechazado, está en «Hallazgos de la review».
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Capacidad nueva `rooms`.** No existe `capabilities/`, así que esta spec crea la primera. Se completa en cambios posteriores.
+2. **El texto del mensaje** es `falta la franja: libres <franja>`, literal, en castellano. Lo elegí yo, nadie lo fijó.
+3. **Es una respuesta normal, no un error.** Solo cambia el texto.
+4. **Una franja mal formada** (`libres 25:00`) no entra. Ya está en la deuda técnica.
+5. **Reglas de la capacidad.**
+   - Los nombres van en castellano.
+   - El aviso es el propio mensaje.
+   - `libres` no recibe día: una reserva activa en esa franja ocupa la sala.
+   - Datos, límites y conflicto: no aplica.
+
+**Decidido con el dev-lead:** modo lite — «sí, lite».
+
+**Sin cambios:** `libres <franja>`, `reservar` y el resto de comandos. Queda como regresión en `test/app.test.js`.
+
+## Aprobación
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a `sdd-implement`.
+2. **Cambios:** dime qué ajustar.
+
+Con un solo task previsto, no ofrezco parar antes de la Task 1 para bajar de modelo.
+

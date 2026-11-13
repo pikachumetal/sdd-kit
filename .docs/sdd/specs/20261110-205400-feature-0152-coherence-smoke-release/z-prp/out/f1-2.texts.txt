@@ -1,0 +1,56 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, escribir la spec (aprobada por delegación), el plan y el commit de la Task 1, ~10 min.
+
+--- [38]
+Estoy esperando al revisor de la spec, que sigue en segundo plano. Cuando llegue su resultado incorporo los hallazgos a la spec y escribo el plan. Después hago el commit de apertura, implemento la Task 1 y paro tras su commit, como pediste.
+
+--- [40]
+1. Crítico · Delta de comportamiento (escenarios 1, 2 y 4) y «Dónde se prueba» · Los escenarios no se pueden montar con `run()`. `bookings` no se exporta y no hay comando que cree reservas (`reservar` solo devuelve un literal). Solo existe la reserva Norte lun. Sur mar, Norte mié, «una reserva anulada» y una reserva activa que «sigue activa» tras un aviso son imposibles de preparar. Además, el escenario 1 consume Norte lun, y la regla de «sala/día distintos por test» no tiene reservas que repartir · Declarar cómo se siembran los datos (exportar un helper de prueba o un `reset`/`seed`, o ampliar `reservar`) e incluirlo en Scope y en las tasks. Reescribir los GIVEN con reservas que existan.
+
+2. Crítico · «Dónde se prueba» y escenario 4 · El estado es un módulo global compartido entre tests. «Sin ninguna cancelada responde `sin canceladas`» depende del orden de ejecución, y «dos líneas exactas» se rompe en cuanto otro test cancele algo. La salvedad «o por inclusión» debilita el escenario hasta que pasa sin el comportamiento (el orden y la exclusión de anuladas) · Exigir aislamiento real (reinicio de estado por test) y aserciones exactas. Si no, el escenario «sin canceladas» no es verificable.
+
+3. Importante · Intent frente a decisión 8 y Scope · El Intent promete «que se pueda consultar» y define el éxito como «`canceladas` lo muestra». Desde la terminal, cada ejecución empieza de cero, así que `canceladas` siempre sale vacío. El éxito solo se cumple en tests. Ese incumplimiento se declara en el cuerpo, pero no se lleva al Intent ni a «Decisiones con el dev-lead» · Reformular el Intent y el éxito (válido solo dentro del proceso), o subir la persistencia a decisión explícita validada por el dev-lead, o mover `canceladas` fuera de alcance.
+
+4. Importante · Contratos (§Approach, decisión 10) · `cancelBooking` es un export público y su firma cambia (`room, day, reason`). La spec solo cita los dos tests. No hay `git grep` de `cancelBooking` ni de otros consumidores. El propio bloque de review admite que lo deja sin mirar. Se añade además un export nuevo, `cancelledBookings`, y un campo `reason` en la reserva · Hacer y registrar el grep de `cancelBooking` y declarar el cambio de firma y el campo nuevo como contrato tocado.
+
+5. Importante · Cabecera (`status: approved`) y bloque de review · La spec figura aprobada por delegación antes de pasar la review de dominio propuesta, y el bloque afirma «Mínimo razonable: sin review» · Poner la spec en `draft` hasta que pase la review, o dejar explícito que la aprobación no cubre sus hallazgos.
+
+6. Importante · Delta y Decisiones · Hay decisiones tomadas sin listar: la comparación del motivo (sensible a mayúsculas, `Otro` o `OTRO` no válidos), qué pasa con un cuarto argumento sobrante, `canceladas` con argumentos, el orden por «cancelación» (hace falta un orden o marca de tiempo) y el nombre del campo `reason`. Ninguna tiene escenario · Añadirlas a «✋ Decisiones» y cubrir al menos mayúsculas y argumento sobrante con escenarios.
+
+7. Importante · Delta, escenario 3 y «Cancelación» de PRODUCT.md · El escenario 3 («sigue avisando») pasa con el código actual, porque el argumento extra se ignora. No prueba nada nuevo, y en el delta aparece como ADDED. PRODUCT.md define Cancelación como «antes de 24 h» y la spec no dice si esa regla existe o no. Al crear la capacidad desde cero, se omite sin declararlo · Marcar el escenario 3 como comportamiento preservado. Declarar que la regla de 24 h no se implementa y que queda fuera, o añadirla.
+
+8. Menor · Escenario 2 · El «AND» sobre el orden de validación mezcla dos comportamientos (avisar sin reserva y no decir `sin reserva`) bajo un GIVEN que dice «reserva activa» · Separarlo en su propio escenario, con GIVEN «sin reserva».
+
+9. Menor · Reglas de la capacidad · «Dónde viven los datos» describe el campo `reason`, pero no dice que se pierde al terminar el proceso (la decisión 8 sí). «Regla ante conflicto: no aplica» no se justifica · Añadir la volatilidad a «Dónde viven los datos» y una frase de por qué no aplica la regla ante conflicto.
+
+10. Menor · Decisión 12 y «Lo que se retira o cambia de forma» · Afirma comprobaciones (`ROADMAP.md:7`, `CHANGELOG.md:20`, «operations.md») que la spec no enseña. La entrada de CHANGELOG está en Scope pero no hay fila de qué texto lleva · Citar el resultado literal del grep o quitar la afirmación.
+
+--- [42]
+Revisor terminado: dos Críticos (no hay forma de sembrar reservas en los tests; estado global compartido) y varios Importantes. Los incorporo a la spec.
+
+--- [45]
+Un Crítico aceptado exige una segunda ronda: un revisor relee la spec corregida.
+
+--- [61]
+Nada se escribió; uso Write para los dos ficheros.
+
+--- [76]
+RED confirmado (falla por el export que falta). Implemento `src/app.js`.
+
+--- [80]
+Paro aquí, como pediste: el commit de la Task 1 está hecho y la Task 2 no se ha empezado.
+
+La Task 1 es el commit `ab0bf99`, `feat(0010): cancelar exige un motivo de la lista`, en la rama `feature/0010-motivo-cancelar`.
+
+- **Qué cambia:** `salas cancelar Norte lun sala-ocupada` responde `cancelada Norte lun · sala ocupada`. Los motivos válidos son `cambio-de-planes`, `sala-ocupada` y `otro`. Sin motivo, o con uno que no está en la lista, responde `motivo no válido: usa cambio-de-planes, sala-ocupada u otro` y no cancela nada.
+- **Pruebas:** vi fallar los tests nuevos antes de escribir el código. Ahora `node --test` pasa entero (9 tests, 0 fallos) y `scripts/lint.mjs` no da hallazgos. `sdd task done` registró la Task 1 en el ledger.
+- **Commit de apertura:** `d9f3443` lleva la spec, el plan y `tasks.md`. La spec está aprobada por delegación con tu frase, y los hallazgos de las dos rondas de review están incorporados.
+
+Decisiones mías que conviene que veas (están todas en la sección ✋ de la spec):
+- **Motivo obligatorio:** `cancelar <sala> <día>` sin motivo ya no cancela, avisa. Es un cambio de comportamiento respecto a hoy.
+- **`resetBookings(list)` exportada:** es una función de siembra solo para los tests, porque las reservas son un array global con una sola reserva y no hay comando que cree otras.
+- **`canceladas` sale vacío desde la terminal:** como las reservas viven en memoria, el comando que llega en la Task 2 solo verá lo cancelado en el mismo proceso. Se prueba por `run()`; no he añadido persistencia.
+- **Carpeta de la feature:** la creé en `.docs/sdd/changes/`, como manda el kit. Las specs anteriores del proyecto están en `.docs/sdd/specs/`.
+
+Para seguir con la Task 2 (el comando `canceladas` y la entrada del CHANGELOG), dime «sigue». Después vienen la revisión final y el cierre.
+

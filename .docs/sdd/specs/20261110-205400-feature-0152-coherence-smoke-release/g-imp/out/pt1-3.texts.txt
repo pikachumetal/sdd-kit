@@ -1,0 +1,69 @@
+--- [8]
+**Causa raíz, confirmada en el código:** `findBooking` en `src/app.js:10` recibe `day` pero no lo usa. Busca la primera reserva activa de esa sala y nada más. Con `cancelar Norte mar` encuentra la de `Norte lun`, la cancela y contesta con el día que escribiste.
+
+🦆 **En llano:** el programa mira "¿hay una reserva activa en Norte?" y se salta el "¿el martes?". Por eso, si pides otro día, te cancela la que haya. El arreglo es hacer que la búsqueda compare también el día. Entonces `cancelar Norte mar` contestará `sin reserva Norte mar` y la del lunes seguirá activa. Hoy hay un test que falla por esto: `cancelar Norte mar` con solo la del lunes activa. Con el arreglo pasa a verde.
+
+Es un fallo determinista, la causa lo fija y no hay que decidir ningún texto ni regla. Por eso lo abro como **patch**, como pediste. No hay `estimation.md`, así que no hay estimación en horas.
+
+`anular` usa la misma `findBooking`, así que tiene el mismo fallo. Arreglar la causa lo arregla también, y el patch lo dejaría anotado.
+
+¿Lo abro así?
+
+1. **Sí, abro el patch (recomendada).** Creo la rama y la carpeta `patch-`, escribo el test rojo `cancelar Norte mar → sin reserva Norte mar` y arreglo `findBooking`. También añado un test para `anular`. El perfil es `delegate`, del proyecto.
+2. **Solo `cancelar`.** Arreglo la causa igual, pero dejo fuera el test de `anular`. Esto es menos honesto, porque el arreglo lo cambia de todos modos.
+3. **Cambios.** Dime qué ajustar.
+
+--- [21]
+Voy a reservar la 0015, crear la rama y la carpeta del patch, y escribir el test rojo.
+
+--- [23]
+Id 0015 vale y no hay remoto. Ahora el test rojo, antes de tocar el código.
+
+--- [28]
+Ahora falla por la razón correcta: `cancelada Norte mar` y `anulada Norte mar`. Arreglo la causa, una sola línea.
+
+--- [32]
+6 de 6 en verde. Escribo `patch.md` y lo mando al revisor antes del commit.
+
+--- [36]
+El arreglo y sus tests están listos, pero todavía no hay commit. Está pendiente la revisión de un subagente, que el flujo del patch exige antes de commitear. Cuando llegue su resultado, respondo a sus hallazgos en §4 de `patch.md` y hago el commit del fix.
+
+**Estado ahora mismo**
+- **Causa raíz:** `findBooking` en `src/app.js` recibía `day` pero no lo comparaba. Por eso `cancelar Norte mar` cancelaba la reserva activa de Norte del lunes y contestaba con el martes.
+- **Fix:** una línea, `b.day === day` en `findBooking`. Como `anular` usa la misma función, también queda arreglado.
+- **Tests:**
+  - **Rojos:** los dos tests nuevos de `test/cancel-day.test.js` fallaban antes del fix con `cancelada Norte mar` y `anulada Norte mar`. Mi primer intento falló por la razón equivocada: el estado de las reservas es del módulo y un test anterior ya cancelaba el lunes. Por eso cada test importa ahora una copia nueva del módulo.
+  - **Verdes:** `node --test` pasa 6 de 6 con el fix.
+- **Patch:** rama `feature/0015-cancelar-dia`, id 0015 reservado, y `patch.md` en `.docs/sdd/changes/20261111-094538-patch-0015-cancelar-dia/`.
+- **Pendiente:** hay que cerrar con `sdd-archive` después del commit. En `patch.md`, `commit:` y «Revisor:» están como pendiente hasta entonces.
+
+--- [39]
+Sin hallazgos de gravedad alta o media. Solo hay una observación menor.
+
+**Comprobaciones**
+
+1. **Causa raíz (§2):** confirmada en `src/app.js:9-11`. En `HEAD`, `findBooking` recibía `day` y no lo comparaba, así que devolvía la primera reserva activa de la sala. `cancelBooking` (`src/app.js:13-18`) y `voidBooking` (`src/app.js:20-25`) usan esa misma función, y contestan con el `day` pedido. Eso explica el mensaje «cancelada Norte mar» mientras se cancela la del lunes. No es solo la hipótesis de quien reporta.
+2. **Fix mínimo:** el diff de `src/app.js` es una sola línea, `&& b.day === day` en `src/app.js:10`. Arregla `cancelar` y `anular` a la vez, sin refactor.
+3. **Tests (`test/cancel-day.test.js`):**
+   - Los ejecuté contra el `app.js` de `HEAD` en un directorio temporal, sin tocar el repo. Los dos fallan por la razón correcta: `actual 'cancelada Norte mar'` frente a `expected 'sin reserva Norte mar'`, y lo mismo con `anulada`.
+   - No dependen del orden ni del estado compartido. Cada test importa una copia nueva del módulo con `?tag` distinto (`test/cancel-day.test.js:5`). Además, `command` queda `undefined` bajo `node --test`, así que el `console.log` final no se dispara.
+4. **`node --test`:** pasa entero, 6/6, sin fallos.
+5. **§3 y §4 de `patch.md`:** dicen la verdad. El cambio descrito coincide con el diff, el 6/6 es real y el rojo antes del fix coincide con lo que reproduje.
+
+**Observación (leve, no bloquea)**
+
+- `.docs/sdd/changes/20261111-094538-patch-0015-cancelar-dia/patch.md`, cabecera (`status: done` con `commit: pendiente`) y la línea final «Revisor: pendiente»: el estado `done` se adelanta a un commit y a una revisión que aún no existen. Conviene actualizar esos dos campos al hacer el commit y cerrar la revisión.
+
+--- [41]
+El revisor no ha encontrado nada que arreglar. Su única observación es que `patch.md` ponía `done` antes de existir el commit. Respondo en §4 y hago el commit del fix.
+
+--- [43]
+El fix está commiteado en `feature/0015-cancelar-dia` (commit `5666d4d`). Después del commit, `node --test` pasa 6 de 6 y el árbol está limpio.
+
+- **Causa:** `findBooking` en `src/app.js` recibía el día pero no lo comparaba. Devolvía la primera reserva activa de la sala, así que `cancelar Norte mar` cancelaba la del lunes.
+- **Fix:** una línea, `b.day === day`. `anular` usa la misma función y tenía el mismo fallo, así que también queda arreglado.
+- **Tests:** `test/cancel-day.test.js` tiene un test para `cancelar` y otro para `anular`. Los dos fallaban antes del fix con `cancelada Norte mar` y `anulada Norte mar`.
+- **Revisión:** el revisor (sonnet, effort medium) no encontró nada de gravedad alta o media. Su única observación fue que `patch.md` decía `done` antes de existir el commit. La acepté y dejé `status: in-progress`.
+
+Falta cerrar el patch con `sdd-archive`, que es donde se rellena `commit:` y el patch pasa a `done`. Eso te pedirá validación, y no lo he lanzado porque pediste parar en el commit del fix. Dime si lo cierro.
+

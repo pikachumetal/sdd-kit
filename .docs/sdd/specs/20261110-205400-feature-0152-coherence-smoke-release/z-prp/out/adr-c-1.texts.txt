@@ -1,0 +1,93 @@
+--- [3]
+Ahora: leo el contexto SDD (producto, roadmap, steering, capabilities). Queda: clasificar y escribir la spec, ~5 min.
+
+--- [16]
+Ahora: reservo el id y creo la rama (modo `sequence`, sin fila de roadmap). Queda: spec, repaso de coherencia, revisión, ~10 min.
+
+--- [28]
+Ahora: el delta fusiona limpio en una copia y los 4 tests actuales pasan. Falta anotarlo en ✋ y lanzar el revisor de la spec (uno, sonnet). Queda: revisión y presentarte la spec, ~5 min.
+
+--- [38]
+El revisor de la spec está en marcha (uno, sonnet) y tiene su vigilancia de silencio activa. Espero su resultado para incorporar los hallazgos y presentarte la spec.
+
+--- [40]
+1. Crítico · Intent vs decisión 4 y delta · El Intent define como fracaso que «una planta mal tecleada parezca una sala ocupada sin ninguna pista», y la decisión 4 y el escenario `--planta 9` hacen justo eso (salida vacía, sin pista) · Reescribir el Intent para que no declare fracaso lo que la spec acepta. Si de verdad es un fracaso, cambiar la decisión 4 (aviso o validación) y mover «validar que la planta exista» fuera de «No entra».
+
+2. Importante · Delta, ADDED «Libres lista…» y decisión 10 · El delta fija como comportamiento vivo que `libres` solo mira la franja y no el día. Eso es un defecto que la propia spec reconoce («no es de esta feature»). Ninguno de los dos escenarios nombra el día de la reserva (la reserva real es de `lun`), así que el escenario esconde la regla en vez de declararla · Añadir un escenario o una nota que diga que el día se ignora (reserva en `lun`, `libres` igual la cuenta). O marcar el ADDED como comportamiento vigente a revisar, con la fila de deuda decidida en la decisión 10.
+
+3. Importante · Delta, «Libres filtra por planta» · Faltan escenarios para casos que la spec decide o deja abiertos. `--planta 02` (decisión 2, comparación como texto exacto) no tiene escenario, y un `libres --planta 2` sin franja no tiene ninguno · Añadir `--planta 02` → vacío. Añadir `libres --planta 2` sin franja con la salida que se decida. Hoy `params[0]` queda `undefined` y no coincide con ninguna reserva, así que saldrían todas las salas de la planta 2.
+
+4. Importante · Decisión 3 y Approach («la franja es el primer argumento restante») · `libres --planta 14:00-16:00` toma la franja como valor de la planta. Esto da salida vacía en silencio, sin aviso, porque el aviso solo salta si `--planta` es el último argumento. Es el mismo problema que el punto 1 y no tiene escenario · Decidir qué pasa cuando el valor no es un número de planta (aviso o vacío) y cubrirlo con un escenario. Dejar dicho en ✋ que el valor es siempre el argumento siguiente.
+
+5. Importante · Reglas de la capacidad (Límites, Regla ante conflicto) · «Límites: no aplica» y «Regla ante conflicto: no aplica» chocan con lo decidido: el valor de planta se compara como texto exacto, sin ceros a la izquierda ni nombres, y no se dice qué pasa con `--planta` repetido o con valores contradictorios · Rellenar Límites con el formato aceptado de planta (`1`, `2`, texto exacto). Rellenar Regla ante conflicto con el caso `--planta` repetido, o justificar el «no aplica».
+
+6. Importante · Scope vs «Términos y ADR» · «Planta» va a `PRODUCT.md` «al cierre», pero el Scope (Entra) no lista ese cambio de documento. Además `PRODUCT.md` ya marca «Evitar: room» para Sala, mientras el código y el Approach usan `rooms` y `floor` aunque el término nuevo dice «Evitar: floor» · Añadir la actualización de `PRODUCT.md` al «Entra». Aclarar que `floor` y `rooms` son identificadores internos, o renombrar a `planta`.
+
+7. Importante · Decisiones ✋ · Hay decisiones en el cuerpo que no están en ✋. El aviso sale como salida normal del comando, sin código de error. La planta se guarda como cadena (`floor: '1'`), y eso solo está implícito en la decisión 2. La línea de `CHANGELOG.md` entra en el Scope sin que exista fila de roadmap ni release prevista · Añadir a ✋ una decisión sobre «aviso como salida normal, sin código de error». Añadir otra sobre la planta como cadena. Justificar la línea de `CHANGELOG.md` o quitarla del Scope.
+
+8. Menor · Cabecera («Validación: dev-lead») y «Decisiones tomadas con el dev-lead» · `PRODUCT.md` dice que el único usuario y desarrollador es el autor y que no hay más gente. El rol «dev-lead» y el «quien reserva» del Intent no existen en el producto, y el producto habla de «equipos de una oficina» y «coworking» a la vez · Alinear el rol de validación con quien consta en `PRODUCT.md`. Citar la fuente de las tres decisiones en vez de un dev-lead sin respaldo.
+
+9. Menor · Delta, ADDED «Libres lista…» · El requisito se marca ADDED pero describe el comportamiento que `libres` ya tiene. Su primer escenario pasa hoy sin tocar código, así que no prueba nada de esta feature. Solo el requisito del filtro es un cambio real · Marcar explícitamente el primer ADDED como línea base. Señalar en el Intent y en «Dónde se prueba» que `test/app.test.js:5` ya lo cubre.
+
+10. Menor · «Lo que se retira o cambia de forma» y contratos · El contrato de la línea de comandos cambia: hay una opción nueva, un aviso nuevo y un `run` que ahora interpreta opciones. También cambia la forma de los datos de `rooms`. Nada de esto figura como contrato tocado: la tabla solo lista código · Añadir una fila para el contrato de `libres` (argumentos y aviso) y otra para la forma de `rooms`. Indicar que `run` sigue exportado con la misma firma.
+
+--- [47]
+Ahora: segunda ronda de revisión (un Crítico aceptado la exige). Espero su resultado antes de presentarte la spec.
+
+--- [57]
+1. Importante · Approach / decisión 3 vs decisión 12 · La regla de la franja contradice el caso de `--planta` repetido. La decisión 3 dice que la franja es «el primer argumento que no es la opción ni su valor». La 12 dice que la segunda `--planta` «queda entre los argumentos sobrantes». Con `libres --planta 1 --planta 2 14:00-16:00` el primer sobrante es `--planta`. Por la 12 la franja sería `--planta` y no habría filtro por reservas. Por la 3 sería `14:00-16:00`. El escenario `14:00-16:00 --planta 1 --planta 2` no distingue las dos lecturas. · Fijar una sola regla, por ejemplo «se quita solo la primera `--planta` con su valor y la franja es el primer sobrante, aunque sea `--planta`». Añadir un escenario con el segundo `--planta` antes de la franja, o declarar ese caso fuera de contrato.
+
+2. Importante · Delta, «ADDED — Libres lista las salas libres de una franja» · Marca como ADDED un comportamiento que ya existe, y el propio blockquote dice que «solo el requisito siguiente es cambio». `capability merge` lo tratará como cambio nuevo y el repaso de coherencia lo da por «añadido». Hoy solo `test/app.test.js:5` cubre el primer escenario; el de `14:00-16:00` (`Norte, Sur`) no tiene test que lo respalde, y la fila de la tabla dice que no se toca ese fichero. · Dejar claro cómo se versiona la línea base, porque la capacidad no existe todavía. Si no hay otra forma, mantener ADDED y quitar «solo el siguiente es cambio». Añadir el test del escenario `Norte, Sur` al fichero nuevo, o admitir que ese escenario no tiene test.
+
+3. Importante · Delta, escenarios / Approach · No hay escenario para `--planta` como único argumento (`libres --planta`). El Approach dice «si es el último argumento» y la decisión 3 dice «el valor es siempre el siguiente». El valor de `--planta --planta 2` es `--planta`, no un valor ausente, y eso no está probado. Tampoco hay escenario con un valor vacío (`--planta ''`). · Añadir el escenario `libres --planta` → aviso. Decidir en ✋ si el aviso también salta cuando el «valor» empieza por `--`, o dejarlo fuera de contrato y decirlo.
+
+4. Importante · Intent / decisión 3 · «`libres <franja>` no cambia ni un carácter» no se cumple para argumentos que hoy ya existen. Hoy `libres --planta 2` toma `--planta` como franja y devuelve `Norte, Sur`. Con la feature devuelve `Sur`. También cambia cualquier invocación con `--planta` en otra posición. · Matizar el Intent: «sin la opción `--planta` en los argumentos». Es el cambio de contrato esperado, así que anotarlo en la fila de contrato de la tabla.
+
+5. Menor · Delta, escenario `libres --planta 14:00-16:00` · Pasa por una vía distinta de la que parece. La franja queda `undefined`, no hay reservas que filtrar y salen todas las salas, y es el filtro de planta el que deja la salida vacía. Es coherente con las decisiones 3 y 4, pero el escenario no dice que no hay franja. · Añadir un AND que lo explicite («sin franja, no filtra por reservas»), para que quien implemente no lo «arregle» y detecte la franja.
+
+6. Menor · ✋ / Scope · Hay decisiones de alcance que están en el cuerpo y no en ✋. «No entra: mostrar la planta en la salida» y «el CHANGELOG lo escribe la release» solo aparecen en Scope. La decisión 10 solo cubre el día. · Añadir una línea a ✋ con estas dos exclusiones, o enlazarlas desde la 10.
+
+7. Menor · Decisión 6 / Intent · El orden de la salida no está fijado. Los escenarios suponen `Norte, Sur` (orden de `rooms`), y el Approach lo recoge solo de pasada («nombres unidos por `, `»). Ningún escenario con una sola sala cubre el caso en el que el filtro cambie el orden. · Sin impacto práctico hoy. Añadir una regla de la capacidad: «orden de `rooms`».
+
+8. Menor · Línea 43 (repaso de coherencia) · Afirma «cinco reglas» y `node --test` 4/4. He comprobado el 4/4 y las cinco reglas. Pero `git grep rooms` «solo da los dos sitios» solo vale si se excluye `.docs`, y la spec no dice cómo se ejecutó. · Anotar el comando exacto, con la exclusión de `.docs`.
+
+9. Menor · Validación (línea 18) · «dev-lead» no figura en `PRODUCT.md`, que habla de un único usuario-desarrollador. La review ya rechazó este hallazgo, pero el rol sigue sin definirse en el repo. · Aceptable. No bloquea el gate.
+
+--- [61]
+Ahora: spec lista en el gate de aprobación. Queda: tu respuesta; el plan y la implementación no empiezan hasta que apruebes.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`). Rama `feature/0012-libres-planta` (id 0012, sin fila de roadmap). Spec en `.docs/sdd/changes/20261112-155752-feature-0012-libres-planta/spec.md`, sin commitear. Prevé 2 tasks, así que no propongo partirla.
+
+## Spec — Filtrar `libres` por planta
+
+🦆 Hoy `salas libres 10:00-12:00` enseña todas las salas libres de la franja. Con esto, `salas libres 10:00-12:00 --planta 2` enseña solo las de la planta 2 (con las salas de ejemplo, `Sur`). Sin `--planta` todo sigue igual y salen todas las libres. Por dentro, cada sala pasa a llevar su planta y `libres` lee la opción antes de filtrar. Ojo: hoy las salas no tienen planta, y la de `Norte` (1) y la de `Sur` (2) las he puesto yo.
+
+**Delta**: capacidad nueva `room-availability`, con dos requisitos. El primero es el `libres` de hoy como línea base. El segundo es «Libres filtra por planta», con 9 escenarios con datos. El delta fusiona limpio en una copia y los 4 tests actuales pasan.
+
+### ✋ Decisiones que he tomado yo — valida estas
+
+1. **`Norte` = planta 1, `Sur` = planta 2.** Son datos inventados por mí. Corrígelos si no son los reales.
+2. La planta es el número tal como se teclea y se compara como texto exacto: `--planta 02` no encuentra la planta 2.
+3. `--planta <n>` va en cualquier posición de los argumentos. El valor es siempre el argumento que le sigue.
+4. **Una planta sin salas libres o inexistente da salida vacía**, sin pista de que la planta no existe. Si prefieres un aviso («no hay planta 9»), se valida contra las plantas de `rooms` y entra en el Scope.
+5. `--planta` sin valor da `falta la planta: usa --planta <número>`. El texto es mío.
+6. «Sin `--planta` lista todas las salas» lo leo como todas las libres de la franja, que es lo que hace hoy.
+7. Capacidad nueva `room-availability`. Hoy no hay ninguna en `capabilities/`.
+8. Enfoque A: la planta es un atributo de cada sala y el filtro va en `freeRooms`. Descarto B (mapa de plantas aparte) y C (parser de opciones genérico).
+9. «Planta» entra en la terminología de `PRODUCT.md` al cerrar.
+10. `libres` sigue ignorando el día de la reserva. No es de esta feature. Dime si quieres una fila de deuda.
+11. El aviso sale como salida normal, sin código de error. La planta se guarda como texto.
+12. `--planta` repetido: vale la primera. El caso raro de repetirla delante de la franja queda fuera de contrato.
+13. Fuera: mostrar la planta en la salida y cambiar el orden de la salida. El `CHANGELOG.md` lo escribe el corte de la release.
+14. `floor` y `rooms` son identificadores del código, en inglés como `bookings`.
+
+**Review**: un revisor (sonnet), más una segunda ronda porque un Crítico fue aceptado. Ronda 1: 1 Crítico (el Intent contradecía la decisión 4) y 6 Importantes, todo aceptado menos un hallazgo sobre el rol «dev-lead». Ronda 2: 4 Importantes y 4 Menores, aceptados menos uno repetido de la ronda 1. Sin Críticos en la ronda 2, así que no hay tercera. El detalle está en «Hallazgos de la review» de la spec.
+
+**Decisiones tomadas contigo**: `--planta` como nombre, sin `--planta` lista todas, perfil delegate. Van con tus frases literales.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. Cambios: dime cuáles (por ejemplo, las plantas reales de las salas o validar la planta).
+3. Apruebo; escribe el plan y para antes de la Task 1 para que baje la sesión a gama media. No aplica: prevé solo 2 tasks y reconstruir la caché no compensa.
+

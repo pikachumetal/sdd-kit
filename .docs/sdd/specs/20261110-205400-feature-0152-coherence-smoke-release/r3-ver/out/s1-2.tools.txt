@@ -1,0 +1,81 @@
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261013-100000-feature-0022-cancel-notice\spec.md
+<<< 1	---
+2	id: 20261013-100000-feature-0022-cancel-notice
+3	feature: 0022
+4	title: Aviso de cancelación
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-13
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Aviso de cancelación
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — cancelar avisa al responsable de sala.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. El texto del aviso es «cancelada <sala> <día> (<motivo>)».
+25	
+26	### Decisiones tomadas con el dev-lead
+27	
+2
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\bookings.md
+<<< 1	# Capacidad — bookings
+2	
+3	## Propósito
+4	
+5	reservar, cancelar y anular salas, y lo que se avisa al hacerlo
+6	
+7	## Requisitos
+8	
+9	### Las anulaciones se avisan por correo
+10	
+11	- GIVEN la reserva de Norte del lunes
+12	- WHEN `anular Norte lun`
+13	- THEN responde «anulada Norte lun» y manda el correo «anulada Norte lun» al responsable de sala
+
+=== RESULTADO (5 turnos, 0.1112977 $)
+1. Crítico · Delta / Decisiones con el dev-lead · El dev-lead decidió correo y SMS, pero el delta solo tiene el escenario del correo. Ni el Scope ni el Approach ni la batería mencionan el SMS. El título del ADDED («por correo») contradice la decisión. · Añadir un requisito ADDED con GIVEN/WHEN/THEN para el SMS (el caso de Sur). Listarlo en Scope y Approach. Si el SMS no entra, quitarlo de la decisión y dejar constancia.
+2. Crítico · Falta la sección «Reglas de la capacidad» (5 bis) · Entran datos y condiciones nuevos y no se declara ninguna de las cinco reglas: dónde viven los datos (dirección y teléfono del responsable, la cola de salida), idioma de los nombres (el flag `--motivo`), límites (longitud del motivo, 160 caracteres del SMS), avisos (fallo de envío, responsable sin teléfono o correo) y regla de conflicto (reserva ya cancelada o anulada). La constitución no tiene «Reglas de producto», así que no hay valor del que heredar. · Declarar cada regla con su valor o poner «no aplica» con motivo. Si hacen falta valores nuevos, llevarlos a la constitución o a la capacidad.
+3. Importante · Delta, requisitos y condición de cancelación · La terminología define cancelación como la que hace el cliente antes de 24 h. El delta no dice qué pasa con una cancelación pasada de plazo ni quién puede ejecutar `cancelar`. No hay escenario negativo ni complemento (qué no puede hacer el cliente, qué no ve el responsable). · Añadir escenarios de rechazo (fuera de plazo, quien no es el titular) y decir si en esos casos hay aviso.
+4. Importante · Delta, THEN · El escenario pasa con cualquier salida que contenga el texto. «Sale hacia el responsable de Norte» no dice dónde se observa (cola de salida, fichero, stdout) ni cómo se identifica al destinatario. Tampoco se dice qué responde `cancelar` al usuario, a diferencia de `anular`. · Concretar el artefacto observable: contenido exacto de la cola, destinatario y respuesta del comando. Que `test/cancel.test.js` compruebe esos valores y no solo la presencia del texto.
+5. Importante · Capacidades vs Delta · La cabecera dice «Modificadas: bookings» pero el delta solo usa ADDED. La capacidad solo recoge «Las anulaciones se avisan por correo» y no hay requisito de cancelación al que referirse. Si `cancelar` ya tenía comportamiento, falta un MODIFIED declarado. · Aclarar si el comportamiento de `cancelar` ya existía (entonces MODIFIED con el requisito afectado) o es nuevo (entonces ADDED, y la cabecera lo refleja).
+6. Importante · Decisiones / Approach · La decisión 1 fija el texto, pero no qué pasa sin `--motivo`, con motivo vacío, ni con un motivo que lleve paréntesis. El «cola de salida de la app» del Approach es una decisión de mecanismo que no está en «✋ Decisiones que he tomado yo». · Añadir a las decisiones el comportamiento sin motivo y el uso de la cola de salida. Si hay una decisión del dev-lead sobre el texto del SMS, anotarla.
+7. Importante · Contratos y dependencias · Se toca sin declarar un contrato nuevo: el flag `--motivo` del CLI. El SMS añade un proveedor y un dato personal (teléfono del responsable). Nada de eso aparece en la spec. · Declarar el flag, el proveedor o puerto de SMS y dónde se guarda el teléfono. Si no entra, decirlo en el Scope.
+8. Menor · Scope · «No entra: el aviso al anular» induce a error. La capacidad ya avisa por correo en las anulaciones, así que no es algo que falte. · Reformular: «No cambia: el aviso de anulación, que ya existe».
+9. Menor · Front matter / aprobaciones · Aparece una persona con nombre (Laura) en artefactos que se publican. PRODUCT.md dice «no hay más usuarios ni más desarrolladores», lo que choca con un dev-lead aprobador y con «el de Sur». · Usar solo el rol, o inventar el nombre. Reconciliar con PRODUCT.md (¿hay responsables de sala distintos del autor?) o corregir el perfil.
+10. Menor · Dónde se prueba · Solo hay una referencia genérica a `test/cancel.test.js`, sin batería que cubra los dos canales ni los casos negativos. Para el gate (`node --test` entero) no se sabe cuántas filas debe tener. · Listar las filas de la batería: correo Norte, SMS Sur, sin motivo, fuera de plazo, canal no disponible.

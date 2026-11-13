@@ -1,0 +1,39 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [21]
+El e2e falla en la prueba 3 (`canceladas` agota los 5 s). Antes de abrir el código miro la deuda y sigo la receta de «A red suite».
+
+--- [29]
+**No terminado: no he cerrado la 0010 porque el gate de cierre está en rojo.** No he escrito ni commiteado nada y el árbol sigue limpio.
+
+**Pre-checks**
+- `merge --check` está bien: `develop` irá en un worktree temporal.
+- No hay otras ramas abiertas a la vez.
+- La spec está aprobada y la revisión final es previa a `HEAD`. El único commit posterior es de `.docs/`, así que no pide re-revisión.
+
+**Gate de cierre**
+- **Unitarios:** `node --test test/` pasa, 5/5.
+- **E2E:** `node e2e/run.mjs` falla, 6 de 7. Falla `cancel.e2e.mjs › la cancelada sale en canceladas con su motivo`, con `TimeoutError … waiting for the text "Norte lun — otro" of canceladas`.
+- **Contraste:**
+  - **Rama:** el fichero suelto falla igual (`cancel.e2e.mjs`, 4 de 5).
+  - **`develop`:** pasa 3/3, pero esa prueba solo existe en la rama.
+  - **Orden:** las corrí en serie y no a la vez, porque comparten el puerto 55256.
+- **Causa:** `server.mjs` ya retrasa `canceladas` 8 s en `develop` (commit `edd7f52`, «tarda en pintarse»), y `e2e/config.json` espera como máximo 5 s (`expectTimeout`). La rama añadió una prueba que lee ese comando, así que falla siempre; no es un flaky.
+- **Salidas guardadas** en el scratchpad: `e2e.out`, `e2e-branch-file.out`, `e2e-base-file.out`.
+
+**Otros dos hallazgos**
+- **Test unitario dependiente del orden:** `canceladas enseña sala, día y motivo` falla si corre solo, porque usa la cancelación del test anterior. Es el workaround del ruling de la Task 2. El cierre tendrá que abrir su fila en `debt.md`, porque `operations.md` dice que un test que depende de otro es un defecto.
+- **Presupuesto E2E:** `operations.md` declara `0,5 min` y la suite ya tarda unos 53 s, así que está excedido.
+
+**Decisión que necesito de ti:** cómo se arregla el rojo. Opciones:
+1. Subir `expectTimeout` a unos 10 s en `e2e/config.json`. Es lo más pequeño y es lo que recomiendo, porque la lista lenta es un comportamiento ya fijado en la base. Afecta a todo el e2e.
+2. Acelerar la respuesta de `canceladas` en `server.mjs`.
+3. Quitar el paso `canceladas` de la prueba 3 y dejar el listado cubierto solo por el unitario.
+
+La opción 1 o la 2 pide un fix con test primero y puede reabrir la revisión final.
+
+**Siguiente:** cuando me digas una opción, la aplico y retomo el cierre con la validación en campo, el walkthrough y los registros.
+
+**No terminado.** Falta el gate de cierre en verde y todos los registros del cierre. No borres todavía el worktree `<run>\repo`.
+

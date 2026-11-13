@@ -18,17 +18,18 @@ El fichero único `Claude.md` del flujo original se convierte en varios document
 
 | Contenido (antes en `Claude.md`) | Documento |
 | --- | --- |
-| Descripción del proyecto y objetivos | `.docs/sdd/mission.md` |
-| Decisiones técnicas y convenciones no negociables | `.docs/sdd/constitution.md` |
-| Tecnologías utilizadas, con versiones | `.docs/sdd/tech-stack.md` |
-| Arquitectura, estructura de carpetas y modelo de datos | `.docs/sdd/architecture.md` |
+| Descripción del proyecto y objetivos | `PRODUCT.md`, en la raíz |
+| Decisiones técnicas y convenciones no negociables | `.docs/sdd/steering/constitution.md` |
+| Cómo se construye, se arranca y se prueba (las versiones están en los manifests) | `.docs/sdd/steering/operations.md` |
+| Arquitectura, estructura de carpetas y modelo de datos | `.docs/sdd/steering/architecture.md` |
 | Comportamiento del producto, una capacidad por fichero | `.docs/sdd/capabilities/` |
-| Estado y prioridades del proyecto | `.docs/sdd/roadmap.md` |
+| Estado y prioridades del proyecto (Now, Next y Later) | `ROADMAP.md`, en la raíz |
+| Deuda técnica, con su triaje | `.docs/sdd/steering/debt.md` |
 | Punteros a los anteriores y reglas críticas | `CLAUDE.md` (corto) |
 
 Esta separación es la recomendación oficial de Anthropic: el `CLAUDE.md` tiene que ser corto y por capas, porque uno inflado hace que Claude ignore las instrucciones que contiene.
 
-Hay documentos que solo aparecen si el proyecto los necesita, y se activan por la presencia de su propio fichero, sin configuración: `estimation.md` enciende el registro de estimaciones, `changelog.md` el changelog técnico y `environments.md` el contrato de entorno por worktree. La entrevista del init pregunta por cada uno.
+Hay documentos que solo aparecen si el proyecto los necesita, y se activan por la presencia de su propio fichero o sección, sin configuración: `steering/estimation.md` enciende el registro de estimaciones, `CHANGELOG.md`, en la raíz, el changelog técnico y la sección `## Entornos` de `operations.md` el contrato de entorno por worktree. La entrevista del init pregunta por cada uno.
 
 La entrevista incluye además **cinco reglas de producto** que, si no se preguntan, el agente decide al azar en cada tarea: dónde viven los datos, en qué idioma van los nombres, qué límites hay, qué se avisa al usuario y qué manda cuando dos vías dan el mismo dato. Quedan escritas en la constitution y cada capacidad puede matizarlas.
 
@@ -44,7 +45,7 @@ El comportamiento observable vive solo ahí. Los documentos de anclaje enlazan a
 
 - Divide el proyecto en módulos funcionales con sus dependencias explícitas. Así puedes repartirlos entre varios desarrolladores sin que se pisen.
 - Las tareas tienen que ser pequeñas, de una jornada o menos. En las demasiado grandes los últimos pasos pierden calidad, sobre todo cuando hay que ir corrigiendo. Si una tarea crece mientras se trabaja, se divide.
-- Estima cada módulo con una banda optimista y pesimista, y regístralo en el `roadmap.md`.
+- Da a cada fila de `ROADMAP.md` un tamaño, `S`, `M` o `L` (hasta 3 tasks, 4 o 5, más de 5), y reparte lo grande en features. Las horas no van a la fila: van al `plan.md` de cada feature, cuando se escribe.
 
 El resultado de esta fase es el plan de implementación, igual que en el flujo original.
 
@@ -52,12 +53,12 @@ El resultado de esta fase es el plan de implementación, igual que en el flujo o
 
 Instala el kit SDD desde el primer día:
 
-- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `using-sdd`, la puerta de entrada que decide por qué carril entra cada petición; `sdd-init` para arrancar; `sdd-propose`, `sdd-implement` (con sus copias `sdd-implement-native` y `sdd-implement-subagent`) y `sdd-archive` para el ciclo completo y para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `sdd-config` para la configuración del equipo y las preferencias de cada uno; `sdd-feedback` para el ticket de mejora del kit; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
+- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `using-sdd`, la puerta de entrada que decide por qué carril entra cada petición; `sdd-init` para arrancar; `sdd-propose`, `sdd-implement` (con sus copias `sdd-implement-native` y `sdd-implement-subagent`) y `sdd-archive` para el ciclo completo y para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap, dar el prompt de arranque de una fila, triar la deuda y preparar una release; `sdd-end-release` para cortarla; `sdd-explore` para preguntar sin producir artefactos; `sdd-upgrade` para poner el proyecto al día con el kit; `sdd-config` para la configuración del equipo y las preferencias de cada uno; `sdd-feedback` para el ticket de mejora del kit; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
 - **Skills técnicas**, según el stack elegido: por ejemplo `sql-migration`, `translation-migration`, `backend-command` y `backend-query` para CQRS, `backend-feature` para casos de uso, o `frontend-feature`.
 
 Las skills encapsulan las convenciones del proyecto, así que nadie tiene que recordarlas ni interpretarlas: basta con seguir el flujo.
 
-Las plantillas viven en el kit y no se copian al proyecto. Cuando el kit se actualiza, `sdd-init` aplica las migraciones pendientes leyendo la versión que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json`.
+Las plantillas viven en el kit y no se copian al proyecto. Cuando el kit se actualiza, `sdd-upgrade` («actualízame al kit») aplica las migraciones pendientes leyendo la versión que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json`. La 3.0.0 no da soporte a un proyecto 2.x sin migrar.
 
 ## 2. Fase 2: implementación, ciclo por tarea
 
@@ -65,14 +66,14 @@ Antes de empezar, inicializa el repositorio Git y haz commits frecuentes, como e
 
 Cada feature sigue el mismo ciclo, guiado por las skills. Cuánto para el agente a esperarte lo decide el perfil de control del proyecto: `pair`, `delegate` (el de defecto) o `unattended`. Qué te pregunta en cada parada y qué contestar lo cuenta la [guía de uso](usage-guide.md#4-qué-te-pregunta-el-agente-y-qué-contestar).
 
-1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta. Una pregunta va a `sdd-consult`, un bug determinista o un ajuste solo de presentación al carril patch, lo que se apunta sin hacerlo todavía a `sdd-roadmap`, y un cambio con comportamiento a `sdd-propose`. La primera pregunta de `sdd-propose` confirma el carril, el modo (lite si el cambio es acotado) y el perfil.
-2. **Especificación**: sesión de brainstorming con Claude cuyo resultado es `spec.md`, qué hay que hacer y por qué, con el delta de comportamiento por capacidad. Empieza por las decisiones que el agente ha tomado sin ti, que es lo único que necesitas leer para aprobarla. Según la complejidad, propone una revisión adversarial de la spec y tú decides si la activas.
+1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta. Una pregunta va a `sdd-explore`, lo que se apunta sin hacerlo todavía a `sdd-roadmap`, y cualquier cambio, también una errata, a `sdd-propose`: no hay edición directa. `sdd-propose` lo clasifica en uno de cinco carriles: spike, config, patch, lite o feature. Feature y spike anuncian carril, modo y perfil y siguen; patch, lite y config te preguntan el carril antes de abrir nada.
+2. **Especificación**: una entrevista con Claude (`sdd-grilling`, una pregunta por turno) cuyo resultado es `spec.md`, qué hay que hacer y por qué, con el delta de comportamiento por capacidad. Empieza por las decisiones que el agente ha tomado sin ti, que es lo único que necesitas leer para aprobarla. Una rúbrica según las señales de la spec decide cuántos revisores independientes la revisan y con qué modelo, sin preguntarte.
 3. **Plan** en `plan.md`: cómo se va a hacer, con la estimación de esfuerzo, el método de ejecución y las restricciones globales que viajarán en cada encargo. Solo en `pair` para a que lo apruebes; en `delegate` el agente comprueba que cada escenario de la spec tiene su task y sigue.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos que conviene seguir por separado.
-5. **Implementación**: por defecto, en la propia sesión (Native), con una revisión final de rama con el modelo más capaz; con subagentes, un agente fresco por tarea y revisión entre tareas, para los planes largos o cuando se quiere revisión por tarea. Lo recomienda cada plan. **Antes de escribir el código de cada tarea se escriben los tests que codifican los escenarios de la spec**, uno por THEN y en rojo, y van en el commit de esa tarea. Con subagentes los escribe el hilo principal antes de despachar: son el contrato del implementador, que los hace pasar y no los redacta.
+5. **Implementación**: por defecto, en la propia sesión (Native), con una revisión final de rama por ejes (Spec con opus, Código con sonnet y Arquitectura con opus si el plan la marca); con subagentes, un agente fresco por tarea y revisión entre tareas, para los planes largos o cuando se quiere revisión por tarea. Lo recomienda cada plan. **Antes de escribir el código de cada tarea se escriben los tests que codifican los escenarios de la spec**, uno por THEN y en rojo, y van en el commit de esa tarea. Con subagentes los escribe el hilo principal antes de despachar: son el contrato del implementador, que los hace pasar y no los redacta.
 6. **Verificación**, que se detalla en el punto 2.2.
 7. **Validación**: antes de cerrar, el agente presenta qué hay, el smoke que ha ejecutado y un guion de pruebas, y espera a que digas qué has probado tú y que funciona. Pedir el cierre no es validar. Si no puedes probarlo ahora, puedes diferirlo con un disparador concreto y quién lo prueba ([guía de uso](usage-guide.md#validar-de-verdad)).
-8. **Cierre** con `walkthrough.md`, donde queda lo que se hizo y el tiempo real invertido, y `sdd-archive`, que fusiona el delta en `capabilities/`, vuelca los aprendizajes a los documentos vivos, actualiza changelog, roadmap y registro de estimaciones, y fusiona en la rama de integración según la política del proyecto.
+8. **Cierre** con `walkthrough.md`, donde queda lo que se hizo y el tiempo real invertido, y `sdd-archive`, que fusiona el delta en `capabilities/`, vuelca los aprendizajes a los documentos vivos, hace la retro, escribe las ADR candidatas, pone al día la fila de Now en `ROADMAP.md` y el registro de estimaciones, y fusiona en la rama de integración según la política del proyecto. El cierre no toca `CHANGELOG.md`: lo sella `sdd-end-release`.
 
 Para cambios acotados existe el **modo lite**, que no es un carril aparte: spec corta y sin plan, conservando el gate de aprobación, el smoke y el walkthrough.
 
@@ -81,12 +82,19 @@ Estructura recomendada:
 ```text
 /
 ├── CLAUDE.md
+├── PRODUCT.md
+├── ROADMAP.md
+├── CHANGELOG.md
 ├── .docs/
 │   └── sdd/
-│       ├── mission.md, constitution.md, tech-stack.md,
-│       │   architecture.md, roadmap.md, changelog.md
+│       ├── sdd-kit.json
+│       ├── steering/
+│       │   ├── constitution.md, operations.md, architecture.md,
+│       │   │   debt.md, estimation.md
 │       ├── capabilities/
-│       └── specs/
+│       ├── decisions/
+│       ├── releases/
+│       └── changes/
 │           └── <fecha>-feature-<id>-<nombre>/
 │               ├── spec.md
 │               ├── plan.md
@@ -94,40 +102,42 @@ Estructura recomendada:
 │               └── walkthrough.md
 ```
 
+Los cambios nuevos nacen en `changes/`. La carpeta `specs/` solo existe en los proyectos que vienen de la 2.x: sus carpetas se siguen leyendo, y el kit no las mueve.
+
 ### 2.1. Gestión del contexto
 
 **Una tarea, un contexto.** Cada tarea empieza con una conversación nueva. No agrupes tareas en la misma conversación ni esperes a agotar el contexto. Empezar de cero no cuesta nada, porque `sdd-propose` carga la documentación de anclaje que hace falta.
 
 ### 2.2. Verificación
 
-Tres niveles, del mínimo obligatorio al recomendado:
+Tres capas, las dos primeras obligatorias:
 
+- **Tests antes que el código** (`sdd-tdd`). En cada task se escriben primero los tests que codifican los escenarios de la spec y se ve cómo fallan; sin un test en rojo antes, no hay código de producción. Si algo parece una excepción, el agente para y te lo pregunta: no la decide solo. Solo la config y el spike tienen su propio carril sin este ciclo. En un proyecto nuevo introducirlo cuesta muy poco, y es la red de seguridad de todas las tareas siguientes.
 - **Smoke manual** documentado en el `walkthrough.md`. Es la verificación mínima de cada tarea y siempre deja evidencia escrita.
-- **Playwright** para validar los flujos de usuario de extremo a extremo. El frontend es donde los agentes cometen más errores, y la validación automatizada en navegador los detecta antes de la entrega. Una tarea que cambia lo que se ve lleva además su verificación visual: el agente la mira en un navegador real y te enseña las medidas y las capturas antes de darla por hecha.
-- **TDD** durante la implementación, escribiendo el test antes del código. En un proyecto nuevo introducirlo cuesta muy poco, y es la red de seguridad de todas las tareas siguientes.
+- **Playwright** para validar los flujos de usuario de extremo a extremo. El frontend es donde los agentes cometen más errores, y la validación automatizada en navegador los detecta antes de la entrega. Una tarea que cambia lo que se ve lleva además su verificación visual: el agente la mira en un navegador real, con el detector que declara `## Frontend` de `operations.md`, y te enseña las medidas y las capturas antes de darla por hecha.
 
 Las incidencias detectadas se corrigen antes de presentar al cliente, igual que en el flujo original.
 
 ### 2.3. Carril rápido: patch
 
-Para un cambio pequeño con la solución ya fijada no hace falta el ciclo completo: un fallo determinista (la fija la causa raíz), un ajuste o una retirada solo de presentación (la fija la petición) o una petición cerrada (la fija el ticket o el dev-lead). Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. `sdd-implement` genera un único `patch.md` con síntoma, causa raíz y verificación, y las decisiones con su autor. Mantiene la trazabilidad sin añadir burocracia. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos): el `patch.md` lleva la intención en una frase y la verificación es una captura.
+Para un cambio pequeño con la solución ya fijada no hace falta el ciclo completo: un fallo determinista (la fija la causa raíz), un ajuste o una retirada solo de presentación (la fija la petición) o una petición cerrada (la fija el ticket o el dev-lead). Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. Antes de abrir nada, el agente te pregunta si va como patch, con su estimación y el test que falla hoy. `sdd-implement` genera un único `patch.md` con síntoma, causa raíz y verificación, y las decisiones con su autor. Mantiene la trazabilidad sin añadir burocracia. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos): el `patch.md` lleva la intención en una frase y la verificación es una captura.
 
 ```text
 /
 ├── .docs/
 │   └── sdd/
-│       └── specs/
+│       └── changes/
 │           └── <fecha>-patch-<id>-<nombre>/
 │               └── patch.md
 ```
 
 ### 2.4. Carril de consulta
 
-No todo lo que le pides a Claude es trabajo. Para preguntar, entender o pensar en voz alta con el contexto cargado está `sdd-consult`, que responde sin crear carpetas ni ramas. Tiene tres modos: entender, que lee y responde; sondear, para probar algo desechable cuya salida es una respuesta y no código que se conserve; y pensar, un interrogatorio para estructurar una dirección. Cuando la consulta se convierte en trabajo, avisa y pasa al carril que toque.
+No todo lo que le pides a Claude es trabajo. Para preguntar, entender o pensar en voz alta con el contexto cargado está `sdd-explore`, que responde sin crear carpetas ni ramas. Tiene tres modos: entender, que lee y responde; sondear, para probar algo desechable cuya salida es una respuesta y no código que se conserve; y pensar, un interrogatorio (`sdd-grilling`) para estructurar una dirección. Cuando la consulta se convierte en trabajo, avisa y lo pasa a `sdd-roadmap`, que escribe la fila, reserva el id y te da el prompt de arranque; una config, que no lleva fila, recibe su prompt directamente.
 
 ### 2.5. Cuándo no usar el ciclo completo
 
-Si el cambio se puede describir en una frase, se hace directamente. La propia guía de Anthropic lo dice: la planificación tiene que ser proporcional a la incertidumbre y al tamaño del cambio, no un trámite universal.
+Si el cambio se puede describir en una frase, va por un carril ligero (patch, config o lite) y no escribe spec ni plan. No hay edición directa fuera del kit: lo ligero es la ceremonia, no saltarse el carril. La propia guía de Anthropic lo dice: la planificación tiene que ser proporcional a la incertidumbre y al tamaño del cambio, no un trámite universal.
 
 ## 3. Fase 3: presentar al cliente
 
@@ -144,13 +154,13 @@ Durante la reunión se recoge toda la información posible: notas, capturas, dec
 
 ### 3.3. Carril de release
 
-Cuando el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente: convierte las notas de la reunión y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan. `sdd-end-release` corta la versión con lo que ya está cerrado: congela el alcance y la versión, que confirmas tú; te pide el smoke de lo que quedó con la validación diferida a esa release; pasa lo hecho de Now al changelog y lo sella; caduca la deuda en espera; destila las notas de release para quien las va a recibir, escritas por beneficio y nunca copiadas del changelog; y prepara el merge a la rama estable y el tag, que confirmas tú. También deja el repaso de la deuda por causa, sin preguntar, y te nombra sus propuestas. La parte de la retro con los números del registro de estimaciones es opcional: se hace si la pides.
+Cuando el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente: convierte las notas de la reunión y la deuda en un scope ordenado con su recomendación y sus bloqueos, retitula Now con la versión (`## Now — <versión> · en preparación`) y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan. `sdd-end-release` corta la versión con lo que ya está cerrado. Antes de nada comprueba su puerta de entrada: el proyecto en la forma 3.0.0, el trabajo cerrado con su evidencia y la suite en verde sobre el sha que se corta. Luego congela el alcance y la versión, que confirmas tú; te pide el smoke de lo que quedó con la validación diferida a esa release; pasa lo hecho de Now a `CHANGELOG.md` y lo sella; caduca la deuda en espera; destila las notas de release para quien las va a recibir, escritas por beneficio y nunca copiadas del changelog; y prepara el merge a la rama estable y el tag, que confirmas tú. También deja el repaso de la deuda por causa, sin preguntar, y te nombra sus propuestas. La parte de la retro con los números del registro de estimaciones es opcional: se hace si la pides.
 
 Trabajar por releases es opcional. Si el proyecto no lo necesita, las tareas se cierran una a una y ya está.
 
 ## 4. Trazabilidad y estimación
 
-Cada `plan.md` incluye una estimación y cada `walkthrough.md` registra el tiempo real. Un script agrega los datos y calcula el factor de calibración del equipo, la razón entre real y estimado. Con ese histórico las estimaciones se defienden con datos delante del cliente, y mejoran con cada tarea cerrada.
+Cada `plan.md` incluye una estimación y cada `walkthrough.md` registra el tiempo real. Un script agrega los datos en `steering/estimation-log.md` y calcula el factor de calibración del equipo, la razón entre real y estimado. Con ese histórico las estimaciones se defienden con datos delante del cliente, y mejoran con cada tarea cerrada.
 
 Resultados del primer proyecto del equipo con el flujo completo: 25 tareas registradas, factor de calibración mediano de 1,0, es decir que las estimaciones se cumplen, y un sobrecoste del proceso de alrededor del 9% sobre el tiempo de implementación.
 
@@ -168,7 +178,7 @@ Si el cliente tiene diseños o el equipo de UX aporta prototipos, usa **Claude D
 
 ## 7. Principio general
 
-Mantén los requisitos, la arquitectura y el plan de implementación actualizados durante todo el proyecto. Los documentos de `.docs/sdd/` son la fuente de verdad y el contexto base de cualquier interacción con Claude. Los aprendizajes de cada tarea vuelven a los documentos y a las skills antes de seguir, de modo que el proyecto va mejorando su propio proceso.
+Mantén los requisitos, la arquitectura y el plan de implementación actualizados durante todo el proyecto. Los documentos de anclaje (`PRODUCT.md`, `ROADMAP.md` y `.docs/sdd/`) son la fuente de verdad y el contexto base de cualquier interacción con Claude. Los aprendizajes de cada tarea vuelven a los documentos y a las skills antes de seguir, de modo que el proyecto va mejorando su propio proceso.
 
 ## Objetivo final
 
@@ -176,7 +186,7 @@ Reducir el tiempo que va de una idea a una funcionalidad validada por el cliente
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.3.4, octubre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.0, noviembre de 2026.*
 
 ## Referencias
 

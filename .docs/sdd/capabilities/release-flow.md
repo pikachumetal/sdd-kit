@@ -64,7 +64,7 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 
 ### El bump usa el tooling del proyecto
 
-- GIVEN un `tech-stack.md` que declara el comando que cambia la versión (p. ej. un script de Node)
+- GIVEN un `steering/operations.md` que declara el comando que cambia la versión (p. ej. un script de Node)
 - WHEN se llega al bump
 - THEN se ejecuta ese comando con la versión confirmada y no se editan los ficheros a mano
 
@@ -131,7 +131,7 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - GIVEN un cierre en el que el usuario aporta la transcripción o las notas de una demo o reunión
 - WHEN se ejecuta `sdd-end-release`
 - THEN no escribe acta ni triaje (`feedback.md`) y dice que ese feedback es entrada de `sdd-roadmap`
-- AND el cierre sigue con sus cinco pasos, sin esperar a que se procese
+- AND el cierre sigue con sus siete pasos, sin esperar a que se procese
 
 ### El corte exige la suite completa en verde sobre su sha, o el último verde de la CI en ese sha
 

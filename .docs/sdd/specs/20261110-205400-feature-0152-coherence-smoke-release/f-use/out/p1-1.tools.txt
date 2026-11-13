@@ -1,0 +1,183 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.local.json 2>&1; cat .docs/sdd/sdd-kit.json 2>&1 | head -40; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+
+>>> Glob: {PRODUCT.md,ROADMAP.md,.docs/**/*.md}
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+Sin capacidades
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+PRODUCT.md
+.docs\sdd\steering\operations.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\constitution.md
+ROADMAP.md
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\steering\operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+8	## Testing
+9	
+10	- Tests: `node --test` (carpeta `test/`).
+11	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Grep: cancel
+<<< CHANGELOG.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](.docs/sdd/specs/20260918-090000-patch-0007-cancel/)
+CHANGELOG.md:20:- Cancelar una reserva propia.
+ROADMAP.md:8:| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/app.js`</details> | ✅ | — | S |
+test\app.test.js:13:test('cancelar respeta el día', () => 
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Read: D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-propose/references/patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Read: D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-propose/references/modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+=== RESULTADO (15 turnos, 0.170781 $)
+Ahora: tengo el contexto y he leído el código para clasificar. Queda: que elijas el carril (una respuesta tuya), y luego lo abro, ~1 min.
+
+🦆 **Qué pasa hoy:** `cancelar` no mira si la reserva existe. `src/app.js:12` devuelve `cancelada <día> <hora>` para cualquier argumento, y ni siquiera borra nada de `bookings`. El test actual solo comprueba ese eco. La causa del fallo es segura, pero arreglarlo obliga a decidir tres cosas que nadie ha fijado:
+
+- **El texto de error:** por ejemplo `no existe la reserva mar 10:00`.
+- **La regla de coincidencia:** las reservas guardan `slot: '10:00-12:00'` y `cancelar` recibe `10:00`.
+- **Si cancelar debe quitar la reserva de verdad.**
+
+Por eso no lo abro como patch: si fijo yo el texto y la regla, es diseñar la solución (`patch-lane.md`).
+
+**¿Por qué carril lo llevo?**
+
+1. **Lite (recomendada).** Cumple las cuatro condiciones:
+   - El flujo ya existe y se lee en `src/app.js`.
+   - No cambia contratos públicos: es un comando de CLI cuyo formato de salida para el caso inexistente se define aquí.
+   - No toca esquema de datos: `bookings` es un array en memoria.
+   - Cabe en un solo módulo, `src/app.js`.
+   - No hay `estimation.md`, así que esa condición no aplica.
+
+   Haría una spec corta con las tres decisiones de arriba para que las valides, sin `plan.md`. Perfil actual: `pair`, que es el valor por defecto porque no hay `sdd-kit.local.json`. Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+2. **Feature, modo full.** Lo mismo con spec y plan completos. Es más ceremonia de la que parece necesitar un único módulo.
+3. **Patch.** Solo si me das tú el texto exacto del error y la regla de coincidencia. Entonces la solución queda fijada y es un test rojo → verde.
+
+Dime 1, 2 o 3. No he creado rama ni carpeta todavía.

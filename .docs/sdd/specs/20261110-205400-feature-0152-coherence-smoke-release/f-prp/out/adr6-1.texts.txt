@@ -1,0 +1,71 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, escribir la spec y presentártela para aprobar.
+
+--- [16]
+Ahora: reservo el id y creo la rama antes de la carpeta. Queda: escribir la spec, repasar coherencia, revisión y presentártela (~15 min).
+
+--- [27]
+Ahora: la fusión del delta en una copia salió bien; la anoto y lanzo el revisor de la spec (uno, sonnet). Queda: integrar hallazgos y presentártela.
+
+--- [35]
+El revisor de la spec sigue en marcha. Todavía no tengo sus hallazgos, y el gate no puede presentarse sin ellos. Espero a que termine.
+
+--- [36]
+1. Importante · Reglas de la capacidad / Delta · El requisito «Fichero ilegible» solo cubre JSON roto. La decisión 7 también declara ilegible un JSON «de forma inesperada», y la regla «solo se acepta `version` 1» no tiene escenario. Un código que solo atrape `JSON.parse` pasa el gate. · Añadir un escenario GIVEN un fichero con JSON válido pero `version` 2 o sin `bookings`, WHEN `libres`, THEN el mismo aviso, código 1 y el fichero intacto.
+
+2. Importante · Delta, escenarios 1, 2 y 5 · Con fichero ilegible solo se ejecuta `libres`. Nada comprueba que `cancelar` o `anular` sobre un fichero roto no lo pisen, que es donde está el riesgo de perder datos. · Añadir un escenario con `cancelar Norte lun` sobre `{roto`: aviso, código 1 y contenido intacto. Si el código comprueba la lectura solo en `libres`, no se detectaría.
+
+3. Importante · Delta «Consultar no crea fichero» · «No se crea ningún fichero de reservas» se cumple aunque el código cree la carpeta `~/.salas/` o un temporal huérfano. El Intent habla de «basura en la carpeta». · Cambiar el THEN a «no se crea el fichero ni la carpeta ni ningún temporal en la ruta de datos». Añadir el mismo THEN para un comando sin efecto.
+
+4. Importante · Decisión 6 y regla ante conflicto · La escritura atómica (temporal y renombrado) es una promesa de la decisión 6 y del Scope. No hay escenario que falle sin ella, y «Dónde se prueba» la remite a un test de la función de guardar, que el plan decide. Hoy es una palabra que el agente escribe. · Añadir un requisito o escenario observable, por ejemplo «tras guardar no queda ningún fichero temporal junto al destino y el contenido es JSON válido con `version` 1». Si no, quitar «atómica» del Scope.
+
+5. Importante · Delta «Un comando sin efecto» y decisión 4 · Se declara que `cancelar Norte lun` sin reserva no reescribe el fichero, pero «el fichero queda idéntico» no distingue una reescritura con el mismo contenido. Un `mtime` cambiado también cumpliría el THEN. · Exigir que se conserve el `mtime`, o aceptar explícitamente la reescritura idéntica y quitar «no reescribe» del nombre del requisito.
+
+6. Importante · Decisión 5 y Delta · Con el fichero ya creado, la regla «sin fichero arranca con la reserva inicial» y el modelo del fichero chocan. Si el fichero guarda `bookings: []` tras anular, ¿la inicial vuelve a aparecer? Tampoco se dice si el fichero guarda solo la inicial con `status` cancelled o también las demás. · Declarar en el delta que el fichero, una vez creado, es la única fuente de verdad. Añadir un escenario en el que el fichero con la lista vacía no reintroduce Norte.
+
+7. Menor · Delta y Reglas · El estado `status` y su vocabulario (`active`, y el resto) no están definidos. La decisión 8 solo ejemplifica `active`. Eso es dato nuevo del modelo sin declarar. · Listar los valores de `status` válidos (por ejemplo `active`, `cancelled`, `annulled`) en las reglas, o dejar claro si cancelar y anular se distinguen en el fichero.
+
+8. Menor · Reglas de la capacidad / Idioma · Claves en inglés (`room`, `day`, `slot`) frente a PRODUCT.md, que marca «Evitar: booking» y «Evitar: room» en el vocabulario del producto. El slug `bookings` también lo usa, aunque sea código. No hay contradicción con la constitución (punto 4 es solo texto de interfaz y documentos), pero choca con la terminología. · Anotar en «Términos» que `bookings` y `room` son nombres de código y no de interfaz, o usar los términos del producto (`reservas`, `sala`).
+
+9. Menor · Intent / Constitución / architecture.md · architecture.md dice «Node 22», pero la decisión 2 afirma que `package.json` admite Node 20. Contradicción entre documentos. La spec elige la Opción A por esa razón, así que si la arquitectura manda, SQLite dejaría de estar descartado por esa causa. · Verificar la versión mínima real y alinear architecture.md o la justificación de la alternativa C. Si no, citar la fuente exacta.
+
+10. Menor · Decisión 10 y «Lo que se retira o cambia» · La spec modifica de hecho una decisión de arquitectura (de «sin base de datos» a fichero, ADR 0004) y declara `Modificadas: ninguna` en capacidades. `architecture.md` no menciona persistencia, pero la sección de estructura dice «sin dependencias externas», que sí se mantiene. El requisito de la capacidad nueva no lo contradice. Sin embargo, el cambio de `operations.md` no aparece como tarea de los documentos en el reparto, solo se menciona en Scope. · Incluir `operations.md` explícitamente en la decisión 11 (tasks) y en «Dónde se prueba», o decir que no tiene verificación.
+
+--- [38]
+Esto es la notificación del revisor, no una respuesta tuya: la spec sigue sin aprobar. No hay ningún Crítico, así que no hay segunda ronda. Integro los hallazgos.
+
+--- [44]
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+La spec está escrita y revisada, pero **no está aprobada**. Está en `.docs/sdd/changes/20261112-120750-feature-0012-persistent-bookings/spec.md`, en la rama `feature/0012-persistent-bookings` (id 0012). No hay commit todavía.
+
+## 🦆 Qué cambia
+
+Hoy, si cancelas la reserva de Norte el lunes y cierras la terminal, al reabrirla la reserva ha vuelto. Con el cambio, `salas` guarda el estado en `~/.salas/reservas.json` tras cada cambio y lo lee al arrancar. Tras `cancelar Norte lun` y reabrir, `libres 10:00-12:00` responde `Norte, Sur` y volver a cancelar dice `sin reserva Norte lun`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **`reservar` hoy no guarda nada.** Solo devuelve el texto `reserva semanal creada`, y la única reserva es una inicial fija (Norte lun 10:00-12:00). Por eso lo que sobrevive son las cancelaciones y anulaciones de esa reserva. Si lo que querías es crear y conservar reservas nuevas, hace falta otra fila de roadmap. Recomiendo añadirla. **Valida esta primero.**
+2. **Enfoque:** JSON en la carpeta personal, frente a un fichero junto al directorio de trabajo (en otra carpeta volvería a empezar de cero) y frente a SQLite (`node:sqlite` pide Node ≥ 22.5 y `package.json` admite 20).
+3. **Cuándo se guarda:** solo tras `cancelar` o `anular` con éxito. `libres` no crea ni la carpeta ni el fichero. Sin fichero, arranca con la reserva inicial.
+4. **Dos terminales a la vez:** sin candado, escritura atómica y gana la última. Dos cambios simultáneos pueden pisarse.
+5. **Fichero ilegible:** `fichero de reservas ilegible: <ruta>` por stderr, código 1 y el fichero no se toca.
+6. **ADR 0007** que sustituye a la 0004 (la escribe el cierre). La Confirmación de la 0004, «`src/` no importa `node:fs`», deja de cumplirse a propósito. También se reescribe la línea «Motor de producción» de `operations.md`.
+7. **Nueva capacidad `bookings`** y unas 3 tasks, así que no propongo partirla.
+8. **Contradicción en tus documentos:** `architecture.md` dice «Node 22» y `package.json` dice `>=20`. Descarté SQLite apoyándome en `package.json`. Dime cuál manda.
+
+La revisión la hizo un revisor (sonnet) y no encontró ningún Crítico, así que no hubo segunda ronda. De sus 10 hallazgos acepté 8 y rechacé 2 (el detalle está en la spec):
+- Rechacé comprobar el `mtime` del fichero, porque el test sería frágil.
+- Rechacé renombrar las claves del fichero a `reserva`/`sala`, porque son nombres de código ya existentes.
+
+Probé el delta en una copia de `.docs/sdd` y se fusiona sin rechazos.
+
+## Aprobación
+
+1. **Apruebo (Recomendada).** Escribo el plan y paso a implementar (`delegate` no se detiene en el plan).
+2. **Cambios.** Dime qué ajustar, por ejemplo la decisión 1 o la 8.
+
+Elegir un alcance sin más («solo valida la 1») no aprueba la spec.
+

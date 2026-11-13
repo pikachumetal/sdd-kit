@@ -10,7 +10,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 - GIVEN el plugin instalado y Node 22.18.0 o posterior en el `PATH`, sin pnpm, moon ni proto
 - WHEN se ejecuta `node "<raíz del plugin>/cli/bin/sdd.js" --help`
-- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish|causes`, `id next|claim`, `merge`, `estimation log`, `init`, `upgrade`, `session tokens`, `watch subagent|command`, `hook session-start|session-end`, `task start|done|brief`, `review package`, `workspace`, `ledger rulings`, `validation serve`) con una línea de ayuda, y sale con 0
+- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish|causes`, `id next|claim`, `merge`, `estimation log`, `init`, `upgrade`, `session tokens`, `watch subagent|command`, `hook session-start|session-end`, `task start|done|brief`, `review package|comments`, `workspace`, `ledger rulings`, `validation serve`, `lock run`) con una línea de ayuda, y sale con 0
 - AND `cli/package.json` no tiene `dependencies`, y el plugin no necesita `pnpm install` para ejecutar ningún verbo
 
 ### Node demasiado viejo se dice antes de ejecutar nada
@@ -342,6 +342,14 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - WHEN se ejecuta `node sdd.js task done <plan> <n> <base> -- npx vitest run <filtros>` sin `--test-timeout`, y algún filtro está en la ruta de un `*.slow.test.ts` (o no hay filtros)
 - THEN escribe en stderr `Task <n> NOT recorded: vitest corre <ficheros> sin --test-timeout: añade --test-timeout 120000`, sale con 1 y no ejecuta el comando
 - AND con `--test-timeout <ms>`, o sin ningún lento entre los filtros, lo lanza como hasta ahora
+
+### Un cerrojo cuyo PID reutilizó otro programa se rompe
+
+- GIVEN el cerrojo de suites de `feature/0210` (D:\code\sdd-kit-0210, PID 37368) desde 2026-11-12 00:10:00, y el PID 37368 vivo en la misma máquina, pero arrancado a las 08:46 por otro programa
+- WHEN otro worktree del mismo clon lanza `sdd lock run` y lleva más de 3 s esperando
+- THEN escribe «Cerrojo huérfano: lo tenía feature/0210 (D:\code\sdd-kit-0210, PID 37368) desde 2026-11-12 00:10:00.», borra el cerrojo y lo coge
+- AND con el PID arrancado antes de coger el cerrojo, espera como con cualquier dueño vivo
+- AND sin poder leer la hora de arranque del PID (sin PowerShell en Windows, sin `ps` fuera de él, sin permiso o sin respuesta en 5 s), espera como con cualquier dueño vivo
 
 ## Reglas de la capacidad
 

@@ -1,6 +1,6 @@
 // Sujeto de la batería de sdd-roadmap: algo que apuntar en el roadmap, o el prompt de arranque de una fila.
 // Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
-import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { subjectCell, moldFrom } from '../../headless/battery.mjs';
@@ -11,32 +11,30 @@ const s = initSubject(process.argv.slice(2), 'sdd-roadmap');
 const cell = subjectCell(HERE, s);
 const ASK = cell('Petición');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}';
-const P10 = '.docs/sdd/specs/20261001-090000-proposal-0010-reports';
 const P10_3 = '.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md';
-const ROADMAP = join(s.R, '.docs', 'sdd', 'roadmap.md');
-const CHANGELOG = join(s.R, '.docs', 'sdd', 'changelog.md');
+const ROADMAP = join(s.R, 'ROADMAP.md');
+const ROADMAP_2X = join(s.R, '.docs', 'sdd', 'roadmap.md');
+const CHANGELOG_2X = join(s.R, '.docs', 'sdd', 'changelog.md');
 const PATCH_0007 = '.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md';
 
-s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
+// El molde salas ya es 3.0.0; los moldes que miden la forma 2.x parten de mold-salas-2x.
+const MOLDS_2X = ['salas-qa'];
+s.copy(join(HERE, '..', 'using-sdd', MOLDS_2X.includes(cell('Molde')) ? 'mold-salas-2x' : 'mold-salas'));
 s.putKitMarker(MARKER);
-// La capa 3.0.0 sustituye al roadmap 2.x por ROADMAP.md y debt.md; la propuesta cuelga de changes/.
+// La capa salas-3 pisa ROADMAP.md, debt.md y CHANGELOG.md con más filas, y trae el informe de QA y exportar; la propuesta cuelga de changes/.
 function layer3() {
-  if (!existsSync(ROADMAP)) s.die('el molde salas cambió: no hay roadmap.md que retirar');
-  rmSync(ROADMAP);
-  if (!existsSync(CHANGELOG)) s.die('el molde salas cambió: no hay changelog.md 2.x que retirar');
-  rmSync(CHANGELOG);
   s.copy(join(HERE, 'mold-salas-3'));
   s.put(P10_3, readFileSync(join(HERE, 'proposal-0010.md'), 'utf8'));
 }
 
-// La capa del informe de QA, con las versiones del changelog antes de la 0.3.0 del molde.
+// 2.x: la capa del informe de QA, con las versiones del changelog antes de la 0.3.0 del molde.
 function layerQa() {
-  const changelog = readLf(CHANGELOG);
-  if (!changelog.includes('## [0.3.0]')) s.die('el changelog del molde salas cambió: no hay dónde poner las versiones');
+  const changelog = readLf(CHANGELOG_2X);
+  if (!changelog.includes('## [0.3.0]')) s.die('el changelog del molde salas-2x cambió: no hay dónde poner las versiones');
   s.copy(join(HERE, 'mold-salas-qa'));
   const source = readLf(join(HERE, 'mold-salas-3', 'CHANGELOG.md'));
   const versions = source.slice(source.search(/^## \[1\.4\.1\]/m)).replace(/\n$/, '');
-  writeFileSync(CHANGELOG, changelog.replace(/^## \[0\.3\.0\]/m, `${versions}\n\n## [0.3.0]`));
+  writeFileSync(CHANGELOG_2X, changelog.replace(/^## \[0\.3\.0\]/m, `${versions}\n\n## [0.3.0]`));
 }
 
 const QA_REPORT = join(s.R, 'docs', 'qa', '2026-10-12-informe.md');
@@ -95,11 +93,14 @@ function layer3Fix() {
 }
 
 function salas0013() {
-  const row = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
+  const header = '## Next\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n';
   const roadmap = readLf(ROADMAP);
-  if (!roadmap.split('\n').includes(row)) s.die('el roadmap del molde salas cambió: no hay dónde poner la fila 0013');
-  writeFileSync(ROADMAP, roadmap.replace(`${row}\n`, `${row}\n| 0013 | Aviso semanal a los responsables — \`proposal: 0010\`, tras 0012 | ⏳ |\n`));
-  s.put(`${P10}/proposal.md`, readFileSync(join(HERE, 'proposal-0010.md'), 'utf8'));
+  if (!roadmap.includes(header)) s.die('el roadmap del molde salas cambió: no hay dónde poner la fila 0013');
+  const row = (id, title, oneLiner, requisitos, decisions, tras) => `| ${id} | — | **${title}**<br>*${oneLiner}*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** ${requisitos}<br>**Decisiones ya tomadas:** ${decisions}<br>**Salda:** nada<br>**Toca:** \`src/app.js\`</details> | ⏳ | ${tras} | M |\n`;
+  const rows = row('0012', 'Exportar a Excel', 'Una hoja por sala con una fila por reserva', `\`${P10_3}\`, §Reglas de negocio`, 'una hoja por sala', '—')
+    + row('0013', 'Aviso semanal a los responsables', 'Cada lunes, las reservas de su planta', `\`${P10_3}\`, §Reglas de negocio y §Enmiendas`, 'el aviso sale los lunes a las 8:00', '0012');
+  writeFileSync(ROADMAP, roadmap.replace(header, `${header}${rows}`));
+  s.put(P10_3, readFileSync(join(HERE, 'proposal-0010.md'), 'utf8'));
 }
 
 // El reparto de la propuesta 0010 con las dos piezas más que trae la familia a medias.
@@ -113,28 +114,11 @@ function layer3Family() {
   writeFileSync(proposal, text.replace(row, `${row}\n| 4 | 0014 | Ranking de salas | 0012 |\n| 5 | 0015 | Informe trimestral | 0014 |`));
 }
 
-// 2.x: la familia solo ha empezado por una pieza en curso, y su madre sigue ⏳.
-function salasFamily2x() {
-  const row = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
-  const roadmap = readLf(ROADMAP);
-  if (!roadmap.split('\n').includes(row)) s.die('el roadmap del molde salas cambió: no hay dónde poner la familia');
-  const rows = [
-    '| 0020 | Filtrar salas por aforo: `libres --aforo 8` lista solo las que caben | ⏳ |',
-    '| 0021 | Recordatorio al cancelar: avisa a quien estaba en espera | ⏳ |',
-    '| 0030 | Cobro a externos — partida en 0031, 0032 y 0033 | ⏳ |',
-    '| 0031 | Cobro: tarifa por sala — `parent: 0030` | ⏳ |',
-    '| 0032 | Cobro: factura mensual — `parent: 0030`, tras 0031 | ⏳ |',
-    '| 0033 | Cobro: recibo por correo — `parent: 0030` | ⏳ |',
-  ];
-  writeFileSync(ROADMAP, roadmap.replace(row, rows.join('\n')));
-}
-
-const OPEN_BRANCH = { 'salas-3-family': 'feature/0014-room-ranking', 'salas-family-2x': 'feature/0031-room-tariff', 'salas-3-nofamily': 'feature/0019-favorite-rooms' };
+const OPEN_BRANCH = { 'salas-3-family': 'feature/0014-room-ranking', 'salas-3-nofamily': 'feature/0019-favorite-rooms' };
 
 const molds = {
   salas: () => {},
   'salas-3-family': layer3Family,
-  'salas-family-2x': salasFamily2x,
   'salas-3-nofamily': () => {
     layer3();
     s.copy(join(HERE, 'mold-salas-3-nofamily'));
@@ -166,14 +150,6 @@ const molds = {
     layer3();
     s.copy(join(HERE, 'mold-salas-3-cause'));
   },
-  // 2.x: una fila que espera su 2.º ticket, sin causa, y el ticket que la completa con otras palabras.
-  'salas-cause-2x': () => {
-    s.copy(join(HERE, 'mold-salas-cause-2x'));
-    const row = '| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |';
-    const roadmap = readLf(ROADMAP);
-    if (!roadmap.includes(row)) s.die('el roadmap del molde salas cambió: no hay dónde poner la fila de deuda');
-    writeFileSync(ROADMAP, roadmap.replace(row, `${row}\n| Las salidas de \`DRY_RUN=1\` no aparecen en \`out/\` ([ticket](../../docs/tickets/2026-10-05-salidas.md)) | Medio | **Esperar 2.º ticket** — falta 2.º caso |`));
-  },
   // salas-3-plain con un fichero que solo reexporta: el arreglo vive en src/lib/notify.js.
   'salas-3-reexport': () => {
     layer3();
@@ -192,10 +168,6 @@ const molds = {
   },
   'salas-qa': layerQa,
   'salas-3-fix': layer3Fix,
-  'salas-qa-fix': () => {
-    layerQa();
-    withProposedFix();
-  },
   'salas-0013': salas0013,
 };
 const mold = moldFrom(cell, s, molds);
@@ -209,9 +181,9 @@ if (s.SC === 'rl1') s.env.TURN2 = 'Dame el prompt de esa fila.';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
 const keepIfPresent = (path, name) => existsSync(path) && s.keep(path, name);
-keepIfPresent(ROADMAP, 'roadmap.md');
+keepIfPresent(ROADMAP_2X, 'roadmap.md');
 keepIfPresent(join(s.R, PATCH_0007), 'patch-0007.md');
-keepIfPresent(join(s.R, 'ROADMAP.md'), 'roadmap-3.md');
+keepIfPresent(ROADMAP, 'roadmap-3.md');
 keepIfPresent(join(s.R, '.docs', 'sdd', 'steering', 'debt.md'), 'debt.md');
 // La propuesta que escribe el sujeto, para leer su forma.
 for (const base of ['specs', 'changes']) {

@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, expect, it } from 'vitest';
@@ -8,9 +8,15 @@ import { withLock } from '../../src/git/lock.ts';
 const root = mkdtempSync(join(tmpdir(), 'with-lock-'));
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-it('espera a un dueño que aún no ha escrito el cerrojo, sin romperlo', async () => {
+function lockFile(content: string): string {
+  mkdirSync(root, { recursive: true });
   const lockPath = join(root, '.lock');
-  writeFileSync(lockPath, '');
+  writeFileSync(lockPath, content);
+  return lockPath;
+}
+
+it('espera a un dueño que aún no ha escrito el cerrojo, sin romperlo', async () => {
+  const lockPath = lockFile('');
   let releasedByOwner = false;
   setTimeout(() => {
     releasedByOwner = true;

@@ -1,0 +1,121 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git diff; ls .docs/sdd/changes/*0016* 2>/dev/null; cat src/app.js
+
+>>> Bash: cat .docs/sdd/changes/*0016*/spec.md .docs/sdd/changes/*0016*/plan.md 2>/dev/null; cat .docs/sdd/sdd-kit.json; ls .docs/sdd/changes
+<<< Exit code 2
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+ls: cannot access '.docs/sdd/changes': No such file or directory
+<<<  M src/app.js
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 368efdd..be0e7de 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,44 +1,52 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [
+-  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+-  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+-];
+-
+-export function slotHours(slot) {
+-  const [start, end] = slot.split('-').map((time) => Number(tim
+
+>>> Bash: git ls-files | head -50; git show --stat HEAD | head -30
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.gitignore
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+
+>>> Bash: cd .docs/sdd/specs/20261009-140000-feature-0016-room-hours; cat spec.md plan.md; cd ../../steering; cat constitution.md
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Bash: cd <run>/repo && git config core.autocrlf; git ls-files --eol src/app.js test/cancel.test.js
+<<< true
+i/crlf  w/lf    attr/                 	src/app.js
+i/crlf  w/crlf  attr/                 	test/cancel.test.js
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd <run>/repo && sed -i 's/\r$//; s/$/\r/' src/app.js && git diff --stat && git diff && node src/app.js horas Norte && node src/app.js horas Sur && node --test 2>&1 | tail -8
+<<<  src/app.js | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+diff --git a/src/app.js b/src/app.js
+index 368efdd..bdfcfad 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room && b.status === 'active')
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 're
+
+=== RESULTADO (10 turnos, 0.1618009 $)
+`horas` está terminado en `src/app.js`, pero sin commitear y sin los tests que exige la Task 1.
+
+- **Código:** `horas` ahora cuenta solo las reservas con `status === 'active'`. Eso era lo que faltaba de las canceladas.
+- **Comprobación a mano:** `horas Norte` responde `Norte: 2 h` y `horas Sur` responde `Sur: 0 h`, como pide la spec. Los 4 tests que ya había siguen en verde.
+- **Saltos de línea:** tu copia de trabajo tenía LF y el repo guarda CRLF, así que el diff mostraba el fichero entero como cambiado. Lo he devuelto a CRLF. Ahora el diff son solo 8 líneas añadidas.
+
+**Lo que queda abierto (para ti):**
+- **Tests:** no he escrito `test/horas.test.js`, como pediste. La constitución (regla 2) y el plan piden los tests RED antes del código, así que esto no cumple el flujo. Lo he hecho por tu decisión, con el cliente esperando.
+- **Task 1 no cerrada:** su «Verificación» es `node --test test/horas.test.js`, que no existe. La dejo sin marcar como hecha hasta que pongas los tests.
+- **Commit:** no he commiteado, porque no me lo has pedido. Cuando quieras lo commiteo como `feat: comando horas por sala`. Si prefieres esperar a tus tests, irán juntos en el mismo commit.
+- **Pasos del flujo no hechos:** no he cargado `sdd-implement-native`, así que no he escrito `tasks.md`, ni el ledger, ni la línea `Workspace del plan:`. Tampoco he lanzado la revisión final.

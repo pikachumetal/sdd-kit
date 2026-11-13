@@ -1,0 +1,122 @@
+--- [3]
+Ahora: leer el contexto SDD del proyecto (docs, config). Queda: clasificar, escribir la spec y presentártela, ~5 min.
+
+--- [24]
+Ahora: repaso de coherencia (delta sobre una copia). Queda: dos revisores de la spec (~0,3 $) y presentártela.
+
+--- [35]
+Los dos revisores de la spec (dominio y técnica, en sonnet) están en marcha. Hasta que terminen no sé qué han encontrado. Cuando vuelvan, incorporo los hallazgos y te presento la spec.
+
+--- [40]
+1. Menor · Delta «Libres sin planta lista todas las salas» · El título dice «lista todas las salas» pero el GIVEN/THEN solo prueba una franja con `Norte` reservada y la otra libre. El requisito es coherente con PRODUCT.md (Sala, planta no choca), pero ni el título ni el THEN dejan claro que sin `--planta` se ignora la planta. · Reformular el título o el THEN como «sin `--planta` no se filtra por planta», o añadir un caso que muestre que la planta no afecta a la lista.
+
+2. Importante · Reglas de la capacidad / Delta (planta) · El término «Planta» está resuelto en la spec («número entero mayor que 0. Evitar: piso, nivel»), pero PRODUCT.md no lo incluye en Terminology. La constitución y el producto no lo cubren, y la spec no declara que haya que añadirlo. · Añadir «Planta» a la Terminology de PRODUCT.md, o declarar en «Términos y ADR» que el término se añade al cerrar.
+
+3. Importante · Reglas de la capacidad, «Límites» · Los límites no incluyen el comportamiento ante un número muy grande (`--planta 99999999999999999999`) ni ante `+2`, `02` o ` 2`. «Dígitos, mayor que 0» deja `02` como válido sin decir qué sale. · Fijar la forma canónica: «solo dígitos sin signo; `02` equivale a 2», o rechazarlo con el texto de aviso. Añadir un caso al Delta.
+
+4. Importante · Delta «Planta sin salas libres» y decisión 4 · El título dice «Planta sin salas libres» y el GIVEN solo cubre una planta inexistente (3). El caso «planta existente con salas todas reservadas» se prueba en «Libres filtra por planta» (cuarto AND). El requisito no cubre limpiamente su propio título. La decisión 4 declara que no se distingue entre «no existe» y «no hay libres», pero el Delta no lo deja como regla. · Añadir un caso al requisito con la planta 1 y `Norte` reservada, y mover esa regla de no distinguir a «Reglas de la capacidad».
+
+5. Importante · Reglas de la capacidad, «Regla ante conflicto» · Marcada «no aplica», pero hay un conflicto posible: `--planta` repetida o con lista, y `--planta` sin valor junto a una franja que parece valor (`--planta 14:00-16:00`). La decisión 3 dice que no se admite repetirla pero ningún requisito dice qué sale. · Declarar el conflicto (p. ej. la repetición da «planta no válida…») y cubrirlo con un ejemplo en el Delta. Si de verdad no aplica, justificarlo.
+
+6. Importante · Delta «Planta no válida» / Reglas «Avisos» · «`--planta` sin valor» está en un AND con `abc`, pero no se aclara qué pasa cuando la opción es lo último o cuando va antes de la franja (`libres --planta 14:00-16:00`). Es un caso de valor ambiguo. · Añadir ejemplos propios para «sin valor al final» y «sin valor antes de la franja».
+
+7. Menor · Decisión 9 / Capacidades · La spec dice que `.docs/sdd/changes/` es donde manda el kit, pero las features viejas están en `.docs/sdd/specs/`. Es una incoherencia de estructura declarada, no de dominio. · Dejar constancia en «Términos y ADR» o en operations de qué carpeta es la viva.
+
+8. Menor · Decisión 8 / Reglas «Idioma de los nombres» · La regla dice «castellano, como manda la constitución» (punto 4), pero `room-availability` está en inglés kebab-case por ser nombre de fichero. La regla puede leerse como contradictoria con el nombre de la capacidad. · Matizar: «textos y opciones en castellano; el identificador de capacidad es un nombre de fichero en inglés kebab-case». Citar la fuente de la excepción.
+
+9. Menor · Intent / Scope · El Intent promete que sin la opción «nada cambie», pero el Scope no recoge que el formato de salida quede igual, que solo está en la decisión 6. Tampoco recoge documentar el comportamiento actual en la capacidad nueva (decisión 8). · Añadir ambos puntos a «Entra» en el Scope.
+
+10. Menor · Delta (ejemplos) · Todos los ejemplos usan `Norte` y `Sur`, que son los nombres reales de PRODUCT.md. Las plantas 1 y 2 son datos inventados (decisión 1). Ningún ejemplo prueba una sala sin planta ni dos salas en la misma planta, así que el filtro nunca devuelve más de una sala. · Añadir un fixture inventado con dos salas en la misma planta para probar que el filtro devuelve varias, con `, ` como separador.
+
+--- [42]
+El revisor de dominio ya ha vuelto con 10 hallazgos. Espero al técnico y los incorporo juntos a la spec antes de presentártela.
+
+--- [43]
+1. Crítico · Delta «Planta no válida» · El escenario solo ejecuta `--planta abc`. Los otros tres casos (`--planta` sin valor, `1.5`, `0`) están en un AND de una línea que dice «lo mismo». Un implementador puede cubrir solo `abc` y el test sigue en verde. «Sin valor» es el caso que más se presta a error: `libres 14:00-16:00 --planta` y `libres --planta 14:00-16:00` pueden tratar la franja como valor de la planta, y no hay escenario que lo fije. · Un escenario con un GIVEN/WHEN/THEN por entrada: `--planta` al final, `--planta` seguido de la franja, `1.5`, `0`, `-1` y `+2`. Cada uno con su salida exacta.
+
+2. Crítico · Decisión 2 y Approach (último párrafo) · «La opción se extrae antes de leer la franja» no dice cómo se extrae. `libres --planta 14:00-16:00` tiene dos lecturas: valor `14:00-16:00` (planta no válida) o `--planta` sin valor con la franja a continuación. La spec no elige y tampoco cubre `libres --planta` a secas, sin franja. · Fijar la regla: el token siguiente a `--planta` siempre es su valor, sea cual sea. Añadir los escenarios de `--planta` sin franja y de `--planta` con la franja como valor.
+
+3. Importante · Delta, Decisión 3 · «No admite repetir la opción» no tiene escenario. `--planta 1 --planta 2` puede dar la última, la primera o el error, y la spec no dice qué sale. La regla «Límites» solo dice «una sola planta por llamada». Lo mismo con `--planta 1,2`. · Escenario con `--planta 1 --planta 2` y con `--planta 1,2`, con la salida elegida. Lo más simple es `planta no válida`.
+
+4. Importante · Decisión 2 · `--planta=2` queda fuera («no `--planta=2`») pero sin salida definida. Puede caer como argumento extra, ser ignorado o dar el listado sin filtrar, y esa última es la peor porque se parece a un éxito. · Escenario `--planta=2` con salida exacta (`planta no válida…` o el error de franja de hoy) y decirlo en las reglas.
+
+5. Importante · Delta «Libres filtra por planta» · Con `Norte` en planta 1 y `Sur` en planta 2, `--planta 2` da `Sur` y `--planta 1` da `Norte`. Un `freeRooms` que ignorara la planta y devolviera siempre las dos daría `Norte, Sur` y fallaría; pero uno que filtre mal el tipo (`"2"` frente a `2`) lo detectaría igual. Sí pasa sin comportamiento si el parseo devuelve una cadena y se compara con `==`. · Añadir un caso que distinga `2` de `02`, o decir si `02` es válido («dígitos, mayor que 0» lo admite). Escenario `--planta 02`.
+
+6. Importante · Decisión 5 frente a Decisión 4 · Sale el texto de planta no válida y «no se lista nada», pero no se dice si además sale un código de salida distinto de 0, ni si va a stdout o stderr. El test por `run('libres', [...])` mide el valor devuelto; la salida real de la terminal puede ser distinta. La validación dice «lo que usa una persona desde la terminal». · Fijar canal y código de salida, o declarar que `run` devuelve el texto y es lo único que se contrata.
+
+7. Importante · Delta, orden de validación · No hay escenario para `--planta` válida con franja inválida, ni para `--planta abc` con franja inválida. Dos implementadores darán errores distintos según validen primero la planta o la franja. · Escenario `libres 25:00 --planta abc` con el error que gana.
+
+8. Importante · «Decisiones que he tomado yo», punto 8 y regla «Dónde viven los datos» · Se declara que se documenta también el comportamiento de hoy, pero «Libres sin planta» está como ADDED y la regla «Regla ante conflicto: no aplica» no se justifica. Además falta decir si el escenario sin planta cubre una franja ya existente y qué hace hoy con una franja inválida. · Anotar en las decisiones qué comportamiento actual no se documenta, y el formato de la salida con salas vacías, que está implícito en las decisiones 4 y 6.
+
+9. Menor · Sección «Lo que se retira o cambia de forma» · Esta tabla afirma que `rooms` tiene un único consumidor por `git grep`, pero el grep del punto 11 excluye otros ficheros (`bin/`, `README`). Si `rooms` se exporta o se usa en tests, el cambio de forma rompe a otros. Tampoco aparece `run` ni la signatura de `libres` como contrato público tocado. · Listar `run('libres', args)` como contrato que cambia y comprobar si `rooms` se exporta.
+
+10. Menor · «Dónde se prueba» · Solo cita `node --test test/app.test.js`, pero la constitución fija como gate `node --test` entero. · Poner el comando del gate completo.
+
+--- [45]
+Ahora: incorporo los 20 hallazgos a la spec. El técnico dio dos Críticos aceptados, así que toca una segunda ronda con un revisor (~0,1 $) antes de presentártela.
+
+--- [50]
+He incorporado los hallazgos de la primera ronda a la spec. Ahora corre la segunda ronda, con un revisor, sobre la spec corregida. En cuanto vuelva, la cierro y te la presento.
+
+--- [54]
+1. Importante · Decisiones 11, 6 y 7 contra los escenarios «Libres filtra por planta» y «Planta no válida» · La decisión 11 dice que no se documenta la franja ausente o inválida porque «no quiero fijarlo». Pero los escenarios `libres 25:00 --planta 2` da `Sur`, `libres --planta 2` sin franja y `25:00 --planta abc` sí lo fijan como contrato, y el Scope dice «no entra validar la franja». Además, el agente puede acabar documentando en la capacidad lo que la decisión 11 excluye. · Decide una de dos: o quitas esos tres THEN y las decisiones 6 y 7, o declaras que la no validación de franja queda fijada solo cuando va con `--planta`. En ese caso, corrige la decisión 11 y el Scope.
+
+2. Importante · Decisión 5, «Planta no válida» y «Avisos» · El texto «usa un número entero» sale también para `0`, `-1` y `+2`, que son enteros. El mensaje contradice la regla que lo dispara. Además, rechazar la planta baja (0) y los sótanos (negativos) es una regla de dominio inventada. Solo la decisión 1 avisa de que los datos de plantas son inventados, y esta no. · Cambia el mensaje a «usa un número entero mayor que 0», o añade a la decisión 5 que `0` y los negativos se rechazan por suposición tuya y pide validación.
+
+3. Importante · Approach frente a decisión 5 y los escenarios · El Approach rechaza «cualquier argumento que empiece por `--planta`» (`--planta2`, `--plantaX`). La decisión 5 y los escenarios solo cubren `--planta=2`. Tampoco se define `00` o `000`, que son solo dígitos pero no son mayores que 0. · Añade a la decisión 5 un escenario o una frase para `--planta2` y para `00`, o acota la regla del Approach a `--planta=`.
+
+4. Importante · Approach, decisión 2 y decisión 6 · Dice «el primer argumento restante es la franja», pero no dice qué pasa con argumentos sobrantes (`libres 14:00-16:00 10:00-12:00`) ni con opciones desconocidas (`--foo`). Es una decisión de comportamiento que no está en «✋ Decisiones» y no tiene escenario. · Decide si se ignoran o se rechazan, anótalo como decisión y añade un escenario.
+
+5. Importante · Dónde se prueba y decisión 15 · El gate es `node --test && node scripts/lint.mjs`, pero la constitución fija como gate solo «`node --test` entero en verde». `scripts/lint.mjs` no aparece en `architecture.md`. Es una dependencia o paso de cierre sin declarar. · Alinea con la constitución, o declara en la spec que `scripts/lint.mjs` existe y es parte del gate, y actualiza `architecture.md` o la constitución.
+
+6. Importante · «Libres sin planta», decisión 11 y «Planta sin salas libres» · Dice que documenta el comportamiento de hoy, pero «libre» solo se prueba con una reserva de franja idéntica. No hay escenario para solape parcial, reserva cancelada o anulada que libera la sala, ni para el día (la Terminology define la reserva con día y `libres` no lo recibe). La capacidad nacería sin la regla central de «libre». · Añade escenarios de reserva cancelada o anulada y de solape, o declara en la decisión 11 que `libre` queda fuera de lo que se documenta.
+
+7. Menor · «Planta sin valor o repetida» y Hallazgos · El hallazgo dice «con cada posición», pero solo se prueba `--planta` al final. Faltan `libres --planta` solo y `--planta 1 --planta` con la repetición incompleta. · Añade esos dos AND, o corrige el hallazgo.
+
+8. Menor · Política de modelos (decisiones) · La línea declara que la aprobación de la spec equivale a la confirmación de paralelizar. Eso consiente en nombre del usuario y es una decisión de proceso metida dentro de la lista de «valida estas». Además, «Mínimo razonable: solo técnica» deja sin revisar el dominio, justo donde están las decisiones inventadas. · Pide la confirmación de paralelizar aparte, y no la des por implícita en la aprobación.
+
+9. Menor · Términos y ADR contra decisión 12 · La definición de **Planta** usa «piso» («el piso del edificio»), que es el término que `PRODUCT.md` manda evitar. · Redáctala sin «piso», por ejemplo «nivel numerado del edificio», y comprueba que «nivel» tampoco esté en _Evitar_.
+
+10. Menor · Hallazgos, «Rechazado» de dominio · Con una sola sala por planta, ningún escenario prueba el filtro con varias salas ni el separador `, ` bajo filtro. Una implementación que devuelva solo la primera sala de la planta pasaría todos los THEN. · Añade un fixture de test con dos salas en la misma planta, sin tocar los datos del producto, o acepta el riesgo de forma explícita en las decisiones.
+
+--- [56]
+Segunda ronda sin Críticos, así que no hay tercera. Incorporo los hallazgos y te presento la spec.
+
+--- [59]
+Aplico las ediciones de la segunda ronda.
+
+--- [69]
+La spec de `libres --planta` está escrita y pasó dos rondas de revisión. Está sin aprobar, así que no he escrito el plan ni he tocado código.
+
+Está en `.docs/sdd/changes/20261111-195723-feature-0012-libres-por-planta/spec.md`, en la rama `feature/0012-libres-por-planta` (id 0012). Va en modo full con perfil delegate, que viene de `sdd-kit.json`. No la he commiteado.
+
+🦆 Hoy `salas libres 14:00-16:00` enseña todas las salas libres de la franja, estén en la planta que estén. Con esta feature, `salas libres 14:00-16:00 --planta 2` enseña solo las libres de la planta 2 (`Sur`). Sin `--planta` todo sigue igual y lista todas las salas. Una planta mal escrita (`--planta abc`) da `planta no válida: usa un número entero mayor que 0` en vez de una lista engañosa.
+
+**✋ Decisiones que he tomado yo, para que las valides** (la spec tiene 15 en total y esta es la selección importante):
+1. **Plantas inventadas:** `Norte` está en la planta 1 y `Sur` en la 2. Nadie me dio esos datos, así que corrígelos con los reales.
+2. **Planta 0 y negativos:** los rechazo como no válidos. Es una suposición mía; si tus plantas empiezan en 0, dímelo.
+3. **Cómo se lee la opción:**
+   - El argumento que sigue a `--planta` es siempre su valor, incluso si parece una franja.
+   - Puede ir antes o después de la franja.
+   - `--planta=2`, `--planta2`, repetirla, o dejarla sin valor, dan «planta no válida».
+   - `02` vale 2.
+4. **Planta sin salas libres o que no existe:** sale la línea vacía, como hoy cuando no queda ninguna libre. No distingo entre «no hay libres» y «no existe esa planta».
+5. **Franja y argumentos sobrantes:**
+   - La planta se valida antes que la franja.
+   - La franja sigue sin validarse, como hoy.
+   - Los argumentos sobrantes se ignoran.
+6. **Capacidad nueva `room-availability`:** el proyecto no tiene `capabilities/`. La creo con esta feature y fijo solo el comportamiento de `libres` con franja. Qué cuenta como «libre» (solapes, reservas canceladas o anuladas, el día) queda fuera.
+7. **Riesgo aceptado:** con una sola sala por planta, ningún test prueba el filtro con varias salas en la misma planta. Prefiero no inventar salas.
+8. **Enfoque:** cada sala pasa a ser `{ name, floor }`. Descarté un mapa de plantas aparte, porque obliga a mantener dos sitios, y sacar la planta del nombre, porque ninguna sala la lleva.
+
+**Revisión:**
+- **Primera ronda:** dos revisores en sonnet, dominio y técnico. Aceptaron los dos Críticos del técnico: faltaban escenarios por entrada no válida y `--planta 14:00-16:00` era ambiguo.
+- **Segunda ronda:** un revisor, sin Críticos.
+- **Rechazados con motivo:** un fixture con dos salas en la misma planta, el cambio del gate de cierre y la línea de política de modelos. Todo está en «Hallazgos de la review».
+- **Coste:** no he medido lo que costaron los tres subagentes. Mi estimación a ojo es del orden de 0,4 $.
+- **Coherencia:** `git grep` solo encontró `src/app.js`, `test/app.test.js` y `CHANGELOG.md:10`, que no cambia. El delta se fusiona sin rechazos sobre una copia de `.docs/sdd`.
+
+Esta decisión es tuya:
+1. **Apruebo (Recomendada):** escribo el plan e implemento.
+2. **Cambios:** dime qué ajusto, por ejemplo las plantas reales o si la planta 0 es válida.
+

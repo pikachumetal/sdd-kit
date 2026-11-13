@@ -1,0 +1,25 @@
+--- [2]
+Esto es un fix, así que según las reglas del proyecto entra por `sdd-propose`. Lo invoco primero.
+
+--- [5]
+Leo el contexto del proyecto y compruebo si hay dependencias instaladas.
+
+--- [15]
+Ahora: clasifico el cambio y te pido confirmar el carril. Queda: tu respuesta, y luego rama, test en rojo, fix y gate, ~30 min.
+
+**No es el orden del array.** Buscar desde el final no lo arregla. La causa está en `findBooking` (`src/app.js:9-11`): recibe `day` y nunca lo compara. Solo filtra por sala y estado `active`. Hoy la única reserva activa es Norte lunes, así que cancelar Norte martes encuentra esa aunque la busques desde el final. Con más reservas de Norte en otros días, invertir el orden solo cambiaría cuál se cancela por error.
+
+`voidBooking` (anular) usa la misma función, así que tiene el mismo fallo.
+
+🦆 Un cambio de una línea en `findBooking`, añadir `b.day === day`, arregla cancelar y anular. Antes escribo un test que hoy falla: con Norte lunes activa, `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar la del lunes intacta. Ese texto ya existe, así que no decido nada visible. Luego corro `node --test && node scripts/lint.mjs`. No hay dependencias que instalar.
+
+**Carril: patch (fallo determinista, causa raíz confirmada).**
+**Estimación:** 0,5 h, como el patch 0007, que fue casi idéntico y costó 0,5 h reales. No hay un gate de cierre medido en el proyecto, así que no puedo darte su duración.
+**Perfil actual:** `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo seguimos?
+
+1. **Patch con la causa real (Recomendada):** rama, test en rojo, fix en `findBooking`, gate y cierre.
+2. **Hacerlo como pides (buscar desde el final):** no lo recomiendo. No arregla el fallo y dejaría la producción igual de rota.
+3. **Otro perfil para este cambio:** dime cuál (`pair` o `unattended`).
+

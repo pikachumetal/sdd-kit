@@ -1,1 +1,1 @@
-Search its first error lines (the test file, the error's name) in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap) and quote the row that names it, or open one in «Por triar» (in 2.x, «Deuda técnica») with the evidence.
+Search its first error lines (the test file, the error's name) in the project's debt (`.docs/sdd/steering/debt.md`) and quote the row that names it, or open one in «Por triar» with the evidence.

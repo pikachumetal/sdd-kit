@@ -4,7 +4,7 @@ La inicialización de un proyecto con el kit. Nace en la feature 0156, que funde
 
 Los escenarios de conducta piden la skill por su nombre: mientras las dos viejas siguen en el kit, el router las elegiría (ticket de la feature 0149 §4); el enrutado lo mide el tramo `sdd-init` de la batería de `using-sdd`. En el RED, con el kit sin `sdd-init`, `subject.mjs` pide la vieja que toca (`sdd-init-brownfield` con código o con documentos, `sdd-init-greenfield` sin código o con template) y monta el molde en la forma que esa skill lee; la puerta sale roja por el nombre y se puntúa la conducta.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-init`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado y en un solo turno: `AskUserQuestion` está bloqueado, así que una pregunta acaba el turno.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-init`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado y en un solo turno: `AskUserQuestion` está bloqueado, así que una pregunta acaba el turno.
 
 Moldes:
 
@@ -14,7 +14,7 @@ Moldes:
 - `code-e2e-progress`: `code-progress` con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`) y `e2e/` con `booking.spec.ts` y `cancel.spec.ts`.
 - `code-gate-progress`: `code-progress` con el script `lint` (`eslint .`) en `package.json`, `package-lock.json`, `vitest.config.ts`, `playwright.config.ts` (sin `outputDir`), `tests/helpers/rooms.ts` y `src/app.test.ts`, que lo importa.
 - `code-claude`: `code` con todos los documentos aprobados salvo `CLAUDE.md`. Con `sdd-init`, en `init.approved`; en el RED, los documentos 2.x en `.docs/sdd/`.
-- `template`: un proyecto instanciado de un template 2.x: `package.json`, `src/login.ts`, `.docs/sdd/tech-stack.md`, `architecture.md` y `environments.md` completos, `mission.md`, `roadmap.md` y una sección de `constitution.md` con `<!-- sdd-template: pending -->`, y `sdd-kit.json` con `"version": "1.1.0"`.
+- `template`: un proyecto instanciado de un template 3.0.0: `package.json`, `src/login.ts`, `steering/operations.md` y `steering/architecture.md` completos, `PRODUCT.md`, `ROADMAP.md` y una sección de `steering/constitution.md` con `<!-- sdd-template: pending -->`, y `sdd-kit.json` con `"version": "3.0.0"`. Con un kit sin `sdd-init` (RED), el template 2.x de antes, con `"version": "1.1.0"`. Hasta la 0152 era siempre 2.x: con la 3.0.0 un proyecto 2.x migra antes de nada (ADR 0034), y el aviso de arranque ofrecía migrar antes de la init.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
 

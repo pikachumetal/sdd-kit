@@ -1,0 +1,93 @@
+--- [3]
+Ahora: reviso la spec, el plan y la configuración de la feature 0031. Queda: elegir el método y arrancar las tasks, ~2 min.
+
+--- [8]
+Ahora: el plan dice `native`, así que sigo con `sdd-implement-native`. Queda: una task (medir y escribir `research.md`), ~10 min.
+
+--- [14]
+Uso `sdd-worktrees` para montar el espacio aislado. Compruebo si ya estoy en uno.
+
+--- [17]
+Es un checkout normal en `feature/0031-free-rooms-load`, no en `main`. Trabajo en el sitio, sin crear otro worktree. Ahora corro el baseline del gate (`node --test`) en un worktree desacoplado.
+
+--- [20]
+Baseline en verde (4/4). Ahora creo el ledger, hago el base check y arranco la Task 1.
+
+--- [24]
+Base check limpio: `develop` no avanzó respecto al merge-base. Para `research.md` necesito su plantilla, así que invoco `sdd-templates`.
+
+--- [28]
+Plantilla leída. Ahora escribo el script de medida en la carpeta de la spec, con dos cargas: la literal (1.000 reservas en la franja) y la peor para el escaneo. Guardo la salida en bruto.
+
+--- [31]
+La salida empieza con una línea `salas` espuria. `app.js` lee `process.argv` al importarse y toma mi `A`/`B` como comando. Paso el escenario por variable de entorno y repito la medida.
+
+--- [35]
+`head -5` cerró la tubería y cortó la salida guardada. La repito sin `head`.
+
+--- [38]
+Todas las medidas quedan lejos de 50 ms (máximo 0,110 ms) y el heap no crece. Escribo `research.md` calcado de la plantilla.
+
+--- [41]
+Commit de la Task 1 con las rutas explícitas y la atribución de la sesión.
+
+--- [43]
+Commit hecho (`58fa384`). Ahora cierro la task con su «Verificación»: que la salida en bruto exista en la carpeta de la spec.
+
+--- [46]
+Task 1 completa. Ahora: revisión final de la rama con `sdd-verify`. Queda: revisión, cierre y `sdd-archive`.
+
+--- [49]
+Es un spike, así que solo sale el eje Spec. Leo el encargo y el prompt de ese eje.
+
+--- [55]
+Hago la revisión del eje Spec contra la spec y el plan, y compruebo que `src/` no cambió y que el gate sigue en verde.
+
+--- [61]
+Ese cambio en disco es el mío. Registro la revisión en el ledger y cierro el Finish de Native.
+
+--- [64]
+La revisión quedó limpia, así que borro el workspace de este plan (ya tengo los rulings) y paso a `sdd-archive`.
+
+--- [71]
+`merge --check` falla porque `sdd-kit.json` no trae el bloque `merge` (`into`/`noFf`). Eso afecta solo al paso del merge y no impide los registros. Leo las referencias de los registros.
+
+--- [74]
+Sin `estimation.md` ni `operations.md`, así que no hay bloque de tiempo ni estimation-log. La fila 0031 no existe en `ROADMAP.md` y hay que añadirla. Compruebo los validadores y el estado de deuda.
+
+--- [77]
+Los validadores pasan. Añado la fila 0031 a Now y redacto el walkthrough con la validación del agente.
+
+--- [86]
+Paso de historial: el cierre se junta en un único commit desde la base de la feature. Antes quito de los registros los shas que se van a reescribir.
+
+--- [91]
+La Task 1 del spike 0031 está implementada y el cierre está hecho, pero el merge no se ha ejecutado. `sdd-kit.json` no trae `merge.into` ni `merge.noFf`, y `sdd merge --check` y `--sync` fallan por eso. Con el bloque incompleto el kit pide presentar el merge y esperar tu confirmación.
+
+**Resultado:** `libres` con 1.000 reservas activas en la misma franja tarda como máximo 0,110 ms (la primera llamada, en frío), frente al umbral de 50 ms de O1. En caliente tarda entre 0,005 y 0,032 ms. En 15 repeticiones seguidas el tiempo no crece y el heap se queda en torno a 4,3 MB. Recomendación en `research.md`: no poner caché antes de abrir `libres` a toda la oficina.
+
+Medí dos variantes de la carga:
+- **A:** las 1.000 reservas repartidas entre `Norte` y `Sur`.
+- **B:** las 1.000 de salas inexistentes, la peor para el escaneo de `libres`.
+
+La medida es de `run('libres')` en proceso. No incluye el arranque de Node, porque `seed` no se puede invocar desde la línea de comandos. Lo dejé escrito en `research.md`.
+
+**Qué hay en la rama:** un único commit de cierre, `f8c77ff`, desde `9480e22`. Contiene:
+- `measure.mjs` y `measure-output.txt` (la salida en bruto);
+- `research.md` y `walkthrough.md`;
+- la fila 0031 en `ROADMAP.md`, que no la tenía, con `✅`.
+
+`src/` y `test/` no cambian. `node --test` da 4/4 en verde, igual que en el baseline. Los validadores de roadmap, capacidades y decisiones pasan.
+
+**Decisiones que tomé sin ti** (también en el walkthrough §3):
+- **Revisión final:** la hice yo mismo, solo el eje Spec (el único que sale en un spike), porque mi harness no expone herramienta de subagentes. Un revisor con contexto fresco habría sido más independiente; decide si te basta antes del merge.
+- **Latencia de extremo a extremo:** no la medí. Si esperabas el tiempo de `node src/app.js libres` con el arranque de Node, falta esa medida. Si la quieres, `seed` tendría que poder invocarse desde la CLI.
+- **Sin worktree aparte:** trabajé en el checkout de `feature/0031-free-rooms-load`, que no es `main`.
+- **Dos variantes de carga:** la spec no dice a qué salas van las 1.000 reservas. Las dos cumplen O1.
+
+**Pendiente:** para fusionar necesito el bloque `merge` en `.docs/sdd/sdd-kit.json`. Propongo `{"into": "develop", "noFf": true}`. Con tu confirmación lo añado y fusiono con `sdd merge`. Como la rama está en el checkout principal del repo, no hay worktree que borrar.
+
+¿Quieres que abra el ticket de mejora del kit con `sdd-feedback`? La retro salió sin señales, así que no hay nada concreto que reportar.
+
+**No terminado.** Falta el merge de `feature/0031-free-rooms-load` en `develop`, a la espera de que confirmes el bloque `merge`.
+

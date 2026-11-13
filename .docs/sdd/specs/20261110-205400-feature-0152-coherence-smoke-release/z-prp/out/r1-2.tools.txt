@@ -1,0 +1,182 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Glob: .docs/sdd/specs/20261008-110000-feature-0011-void-others/**
+<<< .docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\review-spec.md
+<<< 1	# Spec review — the complexity rubric and the adversarial reviewer
+2	
+3	Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+4	
+5	## 1. Count the signals (observable in the spec)
+6	
+7	| Signal | Holds if… |
+8	| --- | --- |
+9	| New capability | «✋ Decisiones que he tomado yo» declares a new capability in `capabilities/` |
+10	| Public contract | the delta touches an API, a file format or an interface 
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\coherence-pass.md
+<<< 1	## Coherence pass
+2	
+3	In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+4	
+5	**Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —the literal and the function or step that 
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `room-managers` — quién es responsable de cada sala.
+21	- Modificadas: `bookings` — anular una reserva de otra persona exige ser responsable de la sala.
+22	
+23	## Decisiones que he tomado yo — valida estas
+24	
+25	1. Capacidad 
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2; cat ROADMAP.md 2>/dev/null | head -40
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/specs/20261008-110000-feature-0011-void-others/spec.md"; echo "exit=$?"; echo ---; git grep -niE "anular|cancel|managers|--como|responsable" -- . ':!.docs/sdd/specs' ':!.docs/sdd/changes' | head -40; echo ---; cat .docs/sdd/steering/constitution.md; wc -l src/app.js
+<<< spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»
+exit=1
+---
+CHANGELOG.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](.docs/sdd/specs/20260918-090000-patch-0007-cancel/)
+CHANGELOG.md:20:- Cancelar una reserva propia.
+PRODUCT.md:13:- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+PRODUCT.md:14:- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+ROADMAP.md:7:| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se eli
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md; git grep -n "capabilit" -- .docs/sdd/steering .docs/sdd/sdd-kit.json | head; grep -n "Capacidad\|MODIFIED\|ADDED" .docs/sdd/specs/*/spec.md | head
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-propose/references" && grep -n -B2 -A6 "Política de modelos" control-profiles.md | head -50; cd "<run>/repo"; cat .docs/sdd/sdd-kit.json; ls .docs/sdd
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+sdd-kit.json
+specs/
+steering/
+
+>>> Grep: Política de modelos
+<<< No matches found
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/specs/20261008-110000-feature-0011-void-others/spec.md"; echo "exit=$?"
+<<< spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»
+exit=1
+
+>>> Grep: Nuevas
+<<< No matches found
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152" && grep -rn "no la declara" --include=*.js --include=*.mjs --include=*.md . 2>/dev/null | head -5
+<<< (Bash completed with no output)
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152" && grep -rIln "capabilities/" cli | head; grep -rIn "Nuev" cli | head -8; grep -rn "Nuevas" skills/sdd-templates 2>/dev/null | head -5
+<<< cli/src/capabilities/check.ts
+cli/src/capabilities/merge.ts
+cli/src/capabilities/verbs.ts
+cli/src/cli/verbs.ts
+cli/src/comments/citations.ts
+cli/src/merge/registries.ts
+cli/src/capabilities/check.ts:244:  const patchCreates = isPatch(name, lines) && declared.some((item) => item.kind === 'Nuevas');
+cli/src/capabilities/check.ts:248:    ...(patchCreates ? ['un patch no crea capacidades: quita «Nuevas»'] : []),
+cli/src/capabilities/merge.ts:92:  const declared = run.declared.find((item) => item.kind === 'Nuevas' && equalsIgnoringCase(item.name, name));
+cli/src/capabilities/merge.ts:94:    run.err
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152" && sed -n 60,110p cli/src/capabilities/sections.ts
+<<< export function readCapability(path: string): Capability {
+  const lines = readLines(path);
+  const fileName = basename(path);
+  return { name: basename(path, extname(path)), fileName, lines, purpose: purposeOf(lines) };
+}
+
+export function requirementsOf(lines: string[]): Requirement[] {
+  const found: Requirement[] = [];
+  for (const line of lines) {
+    const match = /^### (.+)$/.exec(line);
+    if (match) found.push({ title: match[1].trim(), lines: [] });
+    else found.at(-1)?.lines.push(line);
+  }
+  return found;
+}
+
+export function declaredCapabilities(block: string[]): Declared[] {
+  ret
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (16 turnos, 0.29502870000000003 $)
+

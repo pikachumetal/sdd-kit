@@ -1,0 +1,47 @@
+--- [31]
+RED correcto: falla por la causa descrita (cancela la de lunes). Ahora el fix mínimo.
+
+--- [36]
+Ahora: el fix está en verde (5 tests + lint) y espera la revisión del reviewer. Queda: anotar la verificación en `patch.md`, hacer el commit y cerrar con `sdd-archive`, ~10 min. Espero el resultado del reviewer antes de seguir.
+
+--- [40]
+Hallazgos:
+
+1. **Causa raíz correcta.** `findBooking` recibía `day` y no lo usaba. La única reserva es `Norte lun`, así que `findBooking('Norte','mar')` la devolvía. `cancelBooking` y `voidBooking` solo llaman a esa función, y `findBooking` es el único sitio que busca reservas.
+
+2. **Fix mínimo y suficiente.** Es un cambio de una línea, `b.day === day` en el predicado, y cubre `cancelar` y `anular` a la vez. Los mensajes existentes no cambian.
+
+3. **El test falla sin el fix, pero de forma incompleta.**
+   - Sin el fix, el primer `assert` falla porque devuelve `cancelada Norte mar`, así que el test sí detecta la regresión.
+   - Esa misma caída impide que se llegue al `assert` de `anular`. La mitad de `voidBooking` solo se comprueba una vez arreglado `findBooking`. Como comparten la función, no es grave. Separarlo en dos tests daría una señal independiente para cada comando.
+
+4. **El test no comprueba lo que dice su título.** «No toca la reserva de lunes» solo se verifica de forma indirecta: el test `cancelar una reserva activa` (`lun`), que va después, espera `cancelada Norte lun`. Eso depende del orden de los tests y del estado compartido del módulo. Un `assert` explícito dentro del test, por ejemplo `run('cancelar', ['Norte','lun'])` al final, haría la comprobación autónoma. Cuidado: ese `assert` consumiría la reserva y rompería el test siguiente, así que habría que ajustar también ese otro.
+
+5. **Falta cerrar `patch.md`.** La sección 4 (Verificación) sigue en «(pendiente)». No he ejecutado los tests, así que no hay evidencia de que pasen con el fix.
+
+6. **Fuera de alcance, solo de pasada.** `freeRooms` filtra por `slot` y no por `day`. No tiene relación con este bug y no hay que tocarlo aquí.
+
+--- [60]
+El fix está hecho y verificado, pero el cierre se para aquí: falta tu validación y falta decidir la configuración del merge.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva del lunes aunque no tuvieras nada el martes. Ahora responde `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…** nada.
+
+**Lo que he comprobado yo** (`ejecución real` y suite):
+- `node src/app.js cancelar Norte mar` → `sin reserva Norte mar`.
+- `node src/app.js cancelar Norte lun` → `cancelada Norte lun`.
+- `node src/app.js anular Norte mar` → `sin reserva Norte mar`.
+- `node --test && node scripts/lint.mjs` → 6 pasan, 0 fallan, sin hallazgos de lint.
+- Sin el fix, 2 tests fallan, así que el test de regresión detecta el error.
+
+**Cómo probarlo tú** (cada comando arranca con la reserva de ejemplo `Norte lun`, porque las reservas viven en memoria):
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `node src/app.js cancelar Norte lun` → debe decir `cancelada Norte lun`.
+
+**Dos cosas para seguir:**
+1. ¿Lo has probado y funciona? Dime qué probaste. Si prefieres, difiere la validación con su disparador.
+2. `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Dime a qué rama fusiono (recomiendo `develop`) y si con `--no-ff`. Con eso completo el bloque `merge`.
+
+El fix está commiteado en `feature/0012-cancel-day` (`476ab27`). `patch.md` está completo; solo le falta el hash del commit, la hora real y el cierre.
+

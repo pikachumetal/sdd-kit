@@ -1,0 +1,43 @@
+--- [18]
+Ahora: abrir la feature 0010 (rama `feature/0010-lista-espera` creada). Queda: entender el porqué, decidir el enfoque y escribir la spec hasta el punto de aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto; sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:** quieres que `salas` te deje reservar una sala aunque esté ocupada en esa franja, y que te apunte en una lista de espera de esa sala. Hoy `reservar` no comprueba si la sala está ocupada. La única información de ocupación es `libres <franja>`, y las reservas viven en memoria.
+
+Antes de decidir nada del cómo, necesito saber para qué lo quieres:
+
+❓ **¿Qué situación te ha llevado a pedir la lista de espera? Cuéntame el último caso en que la sala que querías estaba ocupada y qué hiciste.**
+
+--- [20]
+Entendido: la meta es que no tengas que volver a mirar `libres` a mano. Eso cambia lo que la lista de espera tiene que hacer cuando Norte se libera.
+
+Un hecho del proyecto que condiciona la respuesta: `src/app.js` guarda las reservas en memoria y cada comando arranca de cero. Hoy nada sobrevive entre una ejecución y la siguiente, y no hay ningún proceso que se quede vigilando.
+
+❓ **Cuando Norte se libere, ¿qué quieres que pase con tu puesto en la lista?**
+
+1️⃣ **Reserva automática.** Al cancelarse la reserva de Norte, la primera persona de la lista se queda con ella. Escena: `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Luego, tras `cancelar lun 10:00`, `libres 10:00-12:00` muestra `Sur` (Norte ya es tuya). Es lo que más te ahorra, pero reserva sin que lo confirmes.
+
+2️⃣ **Aviso, sin reservar.** Al cancelarse, el primero de la lista recibe un aviso y reserva él. Escena: `cancelar lun 10:00` → `Norte libre; avisado el 1.º de la lista`. Necesita un canal de aviso. La 0008 (correo) está planificada pero no existe, así que esta opción dependería de ella.
+
+3️⃣ **Solo consulta.** Un comando `espera` te muestra tu puesto y si Norte ya está libre. Escena: `espera` → `Norte lun 10:00-12:00: 1.º, aún ocupada`. Sigues teniendo que ejecutarlo tú, así que es poco más que mirar `libres`.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es tener que volver a mirar a mano y esta es la única opción que lo resuelve sin depender de la 0008. A cambio, reserva sin preguntarte y hay que decidir cómo cancelas un puesto que ya no quieres.
+
+--- [22]
+Voy con un caso concreto, sin opciones.
+
+Hoy la sala Norte está reservada el lunes de 10:00 a 12:00. Tú la quieres a esa hora. Ahora tienes que ejecutar `libres 10:00-12:00` una y otra vez hasta que Norte aparezca en la lista. Lo que quiero saber es qué debería hacer `salas` cuando alguien cancele esa reserva. Hay tres posibilidades:
+
+- **Que reserve por ti.** Apuntas tu puesto una sola vez. Cuando alguien cancele el lunes 10:00, la reserva de Norte pasa a ser tuya en ese momento. Cuando vuelvas a mirar, ya la tienes y no has hecho nada más. Lo malo es que reserva sin preguntarte. Si ya no la querías, tendrías que acordarte de cancelarla.
+- **Que te avise.** Cuando alguien cancele, `salas` te avisa de que Norte ya está libre, pero reservarla sigue siendo cosa tuya. Si otra persona se adelanta, te quedas sin ella. Necesita una forma de avisarte, y la única planificada son los correos de la 0008, que todavía no existen.
+- **Que solo te lo cuente cuando preguntes.** Apuntas tu puesto y, cuando ejecutes un comando nuevo, te dice si Norte ya está libre. Sigues teniendo que acordarte de preguntar, así que ahorra poco frente a `libres`.
+
+Un dato que afecta a todo esto: `salas` no se queda funcionando entre comandos. Cada vez que lo ejecutas, arranca y termina, y las reservas viven solo en memoria. Por eso «cuando alguien cancele» solo se puede notar en el momento en que se ejecuta `cancelar`.
+
+Con esto delante, ¿qué esperas que pase cuando Norte se libere?
+

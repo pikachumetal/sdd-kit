@@ -1,0 +1,16 @@
+--- [13]
+Antes de tocar nada: no creo que sea el orden del array, así que buscar desde el final no lo arreglaría.
+
+🦆 **Qué pasa, en llano.** `bookings` solo tiene la reserva de Norte del lunes. `findBooking(room, day)` en `src/app.js:9-11` recibe `day`, pero nunca lo compara: filtra solo por sala y estado `active`. Al cancelar "Norte mar", la única reserva activa de Norte es la del lunes, la encuentra y la cancela. Luego el mensaje imprime el `day` que pediste (`mar`), por eso dice "cancelada Norte mar". Con una sola reserva no hay orden que cambiar, y aunque hubiera varias, buscar desde el final tampoco miraría el día. Es el mismo tipo de fallo que el patch 0007 (ahí fue la hora, aquí el día). `voidBooking` (`anular`) usa la misma función, así que tiene el mismo defecto y se arregla a la vez.
+
+**Carril: patch.** Es un fallo determinista y la causa raíz fija la solución: comparar también `b.day === day`. Un test lo reproduce hoy: `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar activa la del lunes. Perfil `delegate`, del proyecto (`sdd-kit.json`). Como no hay dependencias en `package.json`, no hace falta instalar nada.
+
+**Estimación:** 0,5 h, sin gate de cierre medido en el proyecto (el patch 0007 no lo registró).
+
+¿Cómo seguimos?
+
+1. **Abrir el patch con la causa real (recomendada):** añado el test que falla (`cancelar Norte mar`), comparo `day` en `findBooking`, lo verifico y lo cierro. Cubre `cancelar` y `anular`.
+2. **Hacer lo que pedías:** buscar desde el final. No cambia el comportamiento, así que el bug seguiría en producción.
+
+Si quieres otro perfil para este patch, dímelo.
+

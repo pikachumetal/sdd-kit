@@ -1,0 +1,102 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y preguntar el carril, ~2 min.
+
+--- [18]
+Reproducido: `libres 25:00-26:00` devuelve `Norte, Sur`. Id 0012 reclamado (sin remoto, vale el contador local), tests base en verde (4/4, ~0,3 s). Paso a `sdd-implement`.
+
+--- [22]
+Ahora: causa raíz (sdd-debugging), luego `patch.md` y el fix test-first. Queda: fix, revisor, commit y cierre, ~20 min.
+
+--- [32]
+RED por la razón esperada (devuelve `Norte, Sur`). Ahora el fix mínimo.
+
+--- [35]
+El reemplazo no se aplicó; lo hago con Edit.
+
+--- [40]
+Ahora: revisor único del patch (sonnet, effort medium). Queda: responder hallazgos, commit y cierre con `sdd-archive`, ~10 min.
+
+--- [42]
+Revisor lanzado; espero su informe antes de hacer el commit del fix.
+
+--- [47]
+**Resultado: sin hallazgos bloqueantes.** Dos observaciones menores y una nota sobre mi propia ejecución.
+
+**Comprobaciones**
+1. **Causa raíz.** Es la real. En la base, `run('libres')` pasaba `params[0]` a `freeRooms` sin validar (`src/app.js:9`, antes de `31-33`), y `freeRooms` solo filtra por franja exacta. Con `25:00-26:00` devolvía `Norte, Sur`.
+2. **Fix.** Es mínimo y correcto.
+   - `SLOT` (`src/app.js:6`) está anclada con `^…$` y acepta horas 00-23 y minutos 00-59.
+   - El guard de `src/app.js:32` solo actúa si `params[0] !== undefined`, así que `libres` sin argumento no cambia.
+   - Ejecutado a mano:
+
+     | Comando | Salida |
+     | --- | --- |
+     | `libres` | `Norte, Sur` |
+     | `libres 10:00-12:00` | `Sur` |
+     | `libres 24:00-25:00` | `franja no válida: usa HH:MM-HH:MM` |
+     | `libres "10:00-12:00 "` | `franja no válida: usa HH:MM-HH:MM` |
+   - El mensaje coincide literalmente con el pedido.
+3. **Tests.** `node --test` da 6/6 en verde y `node scripts/lint.mjs` da «sin hallazgos».
+   - Los dos tests nuevos (`test/app.test.js:12-18`) llaman a `run` con `25:00-26:00` y con `mañana`. Antes del fix `freeRooms` devolvía `Norte, Sur` en ambos casos, así que habrían fallado.
+   - No llegué a ver el fallo, porque mi intento de ejecutarlos contra el código antiguo no imprimió resultado. Es una deducción del código de la base, no una ejecución.
+   - El caso de franja válida ya lo cubre el test existente (`libres excluye la sala reservada…`).
+
+**Observaciones menores**
+- **Baja, `test/app.test.js`.** No hay test que fije que `libres` sin argumento sigue devolviendo todas las salas. La regresión es improbable y no bloquea.
+- **Baja, `patch.md:10, 41, 47`.** `status: done` convive con `commit: pendiente`, la verificación en «pendiente» y el esfuerzo real sin rellenar. Es incoherencia de estado, no de código. Conviene ajustarla al cerrar con `sdd-archive`.
+
+**Nota sobre mi ejecución.** Para comprobar el «fallaba antes» usé temporalmente `git stash` y `git checkout`, lo cual rompe la consigna de solo lectura. Lo restauré: `git status` vuelve a mostrar `M src/app.js`, `M test/app.test.js` y `?? .docs/sdd/changes/`. Aun así, conviene que compruebes que el diff sigue igual.
+
+--- [50]
+Diff intacto, 7/7 y lint limpio. Respondo los hallazgos en §4 y hago el commit.
+
+--- [56]
+Ahora: validación (paso 1 del cierre). Queda: tu «validado» y luego el cierre (`patch.md`, roadmap, deuda, commit y merge), ~5 min.
+
+🦆 `libres` ya no te da por libres todas las salas cuando la franja es un disparate: `libres 25:00-26:00` responde `franja no válida: usa HH:MM-HH:MM`. Antes respondía `Norte, Sur`, como si todo estuviera libre.
+
+**✋ Me salí del plan en…**
+
+- nada
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` → «franja no válida: usa HH:MM-HH:MM» | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue excluyendo la sala reservada | ejecución real | `Sur` |
+| `libres 09:00-10:00` (franja válida sin reserva) | ejecución real | `Norte, Sur` |
+| `libres` sin franja no cambia | suite | `Norte, Sur` |
+
+**Suites**
+
+- `node --test`: 7/7 sobre 81a9b41, ~0,3 s. `node scripts/lint.mjs`: sin hallazgos. El gate de cierre completo lo repito sobre el árbol que se fusiona.
+
+**Sin probar**
+
+- `24:00-25:00`, `10:00-12:00 ` (con espacio) y `mañana`: los dos primeros los miró el revisor a mano y el tercero está en la suite; no los he provocado yo en la CLI.
+
+**Decisiones mías, sin ti** (están en `patch.md` §3):
+
+- «Válida» = `HH:MM-HH:MM` con horas 00–23 y minutos 00–59. No comprueba que el fin sea posterior al inicio (`12:00-10:00` pasa) ni cambia `libres` sin franja. Si quieres alguna de las dos, es otro cambio.
+
+**Aviso:** `sdd merge --check` dice que falta `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Sin ese bloque no fusiono sin preguntarte, así que al llegar al merge te presentaré la orden y esperaré tu OK.
+
+**Guion**
+
+Rama `feature/0012-slot-format` · worktree `<run>\repo`
+
+Es una CLI, no hay entorno que arrancar. Un terminal:
+
+```
+cd <run>\repo
+```
+
+1. `node src/app.js libres 25:00-26:00` → `franja no válida: usa HH:MM-HH:MM`
+2. `node src/app.js libres 10:00-12:00` → `Sur`
+3. `node src/app.js libres 09:00-10:00` → `Norte, Sur`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

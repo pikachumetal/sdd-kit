@@ -1,0 +1,499 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -2
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+docs/plantillas/aviso.md
+docs/plantillas/recibo.md
+package.json
+scripts/
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && for f in PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md docs/plantillas/*.md package.json scripts/lint.mjs test/words.test.js; do echo "=== $f"; cat "$f"; done; git branch -a; ls -la .docs/sdd
+<<< === PRODUCT.md
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js | head -60; echo ===; git grep -n "plantillas\|aviso" -- . ':!.docs/sdd/specs' | head -20; echo ===; for f in docs/plantillas/*; do echo $f $(wc -w < $f); done; echo "Conserjería: extensión 5500, de lunes a viernes de 8:00 a 20:00. Fuera de ese horario llama a seguridad, extensión 5599. Antes de salir, recoge las sillas, borra la pizarra, apaga el proyector y cierra las ventanas para quien reserve la sala después." | wc -w; cat CHANGELOG.md | head -20; git log --oneline develop | head -3; sed -n 1,40p .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references" && cat spec-writing.md nombrado.md coherence-pass.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview 
+
+>>> Bash: cd "<run>/repo" && git remote -v; git status -sb | head -3; SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js"; node "$SDD" id claim --help 2>&1 | head -20; node --test 2>&1 | tail -8
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills" && cat sdd-propose/references/review-spec.md; sed -n 1,60p sdd-propose/references/control-profiles.md; ls sdd-templates sdd-templates/references 2>/dev/null | head -30
+<<< ## feature/0014-notice-room
+uso: sdd id claim [--project-root <valor>] [--id <valor>] [--into <valor>] [--lock-timeout <valor>]
+Reclama el id de la tarea contra la integración del remoto (ids.mode=sequence)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104.5595
+<<< # Spec review — the complexity rubric and the adversarial reviewer
+
+Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+
+## 1. Count the signals (observable in the spec)
+
+| Signal | Holds if… |
+| --- | --- |
+| New capability | «✋ Decisiones que he tomado yo» declares a new capability in `capabilities/` |
+| Public contract | the delta touches an API, a file format or an interface another modu
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js"; node "$SDD" id claim --project-root "$PWD" 2>&1; echo "exit $?"; git branch --show-current; date -u +%Y%m%d-%H%M%S; cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-templates/templates/spec-template.md"
+<<< sin remoto: la 0014 vale (contador local)
+exit 0
+feature/0014-notice-room
+20261111-192300
+---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (changes/<ts>-proposal-<id>-<slug>/)
+title: <título corto descriptivo>
+mode: full            # full | lite | spike — lo lee sdd-archive; 
+
+>>> Bash: cd "<run>/repo" && git grep -nE "\b60\b|sesenta" -- . ':!.docs/sdd/specs'; echo ---; git grep -niE "0014|conserjer|5500|5599|aviso" -- . ':!.docs/sdd/specs'; echo ---; git grep -nE "aviso|plantillas|60" -- .docs/sdd/specs | head; git config user.name; date -u +%Y%m%d-%H%M%S; date -u +%F
+<<< test/words.test.js:5:test('docs/plantillas cabe en su tope de 60 palabras', () => {
+test/words.test.js:7:  assert.ok(words.length <= 60);
+---
+ROADMAP.md:9:| 0008 | — | **Avisos por correo antes de la reserva**<br>*—*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+docs/plantillas/aviso.md:1:Aviso de sala: {sala} el {dia}.
+---
+Fixture
+20261111-192314
+2026-11-11
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261111-192314-feature-0014-notice-room && mkdir -p $D && cat > $D/spec.md <<'EOF'
+---
+id: 20261111-192314-feature-0014-notice-room
+feature: 0014
+title: Aviso de sala con conserjería y normas de salida
+mode: full
+profile: delegate
+status: draft
+created: 2026-11-11
+author: Fixture
+approvers:
+  - name: TBD
+    approved_at: null
+---
+
+# Spec — Aviso de sala con conserjería y normas de salida
+
+🦆 La plantilla `docs/plantillas/aviso.md` pasa de una línea («Aviso de sala: Norte el lun.») a llevar debajo un párrafo fijo: la extensión de conserjería (5500, L-V de 8:00 a 20:00), la de seguridad fuera de horario (5599) y las cuatro cosas que hay que dejar hechas al salir (sillas, pizarra, proyector, ventanas). Para que quepa hay que subir el tope de 60 palabras de `docs/plantillas`, que hoy está en 52 y con el párrafo quedaría en 94.
+
+Validación: agente — es un documento de texto y un test; lo que se ve es el literal del párrafo, que el test compara carácter a carácter.
+
+## Capacidades
+
+- Ninguna, porque docs.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+Review de spec propuesta: un revisor con los siete puntos — señales: ninguna (sin capacidad, contrato, MODIFIED, datos ni dependencia; área leída entera en esta sesión) · tamaño: ~50 líneas en 2 ficheros
+- Único (sonnet): si el tope nuevo de `test/words.test.js` y la fila de «Topes de palabras» cuadran con 52 + 42 palabras medidas, y si el THEN literal del párrafo coincide carácter a carácter con el pedido (señal: tope de palabras)
+- Mínimo razonable: el mismo revisor — sin él quedaría sin mirar que el conteo del test (`split(/\s+/)`) y el mío coinciden
+
+1. **El choque con el tope.** `test/words.test.js` limita `docs/plantillas` a 60 palabras (hoy 52: `aviso.md` 6 + `recibo.md` 46). Con el párrafo, 94, y el gate de cierre (`node --test`) fallaría. Propongo **subir el tope a 114** (94 + 20 de margen, el mínimo del método) y renombrar el test a «tope de 114 palabras». Alternativa descartada: recortar `recibo.md` (46 «palabra» de relleno) a ≤ 18 palabras: toca un fichero que nadie pidió y deja el tope de 60 casi sin margen. **Esta es la decisión que más te pido que mires**: el tope parece una restricción deliberada y no sé por qué es 60.
+2. El párrafo va **tal cual lo dijiste**, sin cambiar una coma, separado de la línea de aviso por **una línea en blanco**, y `aviso.md` acaba en salto de línea (la línea en blanco y el salto final no cuentan palabras).
+3. La línea `Aviso de sala: {sala} el {dia}.` **no cambia**: el párrafo se añade debajo.
+4. Se prueba con **un test nuevo** en `test/words.test.js` que lee `docs/plantillas/aviso.md` y comprueba que termina con el párrafo literal (no hay otro test de plantillas donde ponerlo).
+5. **Sin capacidad ni delta**: es un documento. `sdd capability merge` sobre copia: no aplica (sin delta).
+6. **No hay fila `0014` en `ROADMAP.md`**: la rama `feature/0014-notice-room` ya traía el id y `sdd id claim` lo confirma (sin remoto: contador local). No añado la fila; dime si la quieres.
+7. Enfoque: A, frente a B y C (ver Approach).
+- Política de modelos: revisor de la spec: uno, sonnet · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · otros despachos en paralelo: ninguno · en paralelo hasta `control.maxParallelAgents`.
+
+### Decisiones tomadas con el dev-lead
+
+- Texto del párrafo y sitio (al final de `docs/plantillas/aviso.md`) — «docs/plantillas/aviso.md añade al final este párrafo: «Conserjería: extensión 5500, de lunes a viernes de 8:00 a 20:00. Fuera de ese horario llama a seguridad, extensión 5599. Antes de salir, recoge las sillas, borra la pizarra, apaga el proyector y cierra las ventanas para quien reserve la sala después.»»
+
+## Intent
+
+Hoy el aviso de sala solo dice qué sala y qué día. Quien reserva no sabe a quién llamar ni qué dejar hecho al salir. Éxito: `aviso.md` termina con el párrafo de conserjería exacto y `node --test && node scripts/lint.mjs` sigue en verde. Fracaso aunque «funcione»: que el párrafo salga con una palabra cambiada, o que el gate quede en rojo por el tope de palabras.
+
+## Scope
+
+- Entra: añadir el párrafo al final de `docs/plantillas/aviso.md`; subir el tope de `test/words.test.js` a 114; un test del literal.
+- No entra: tocar `recibo.md`; sustituir `{sala}` y `{dia}` (ningún código lee hoy estas plantillas); añadir fila al roadmap; cambiar `src/app.js`.
+
+## Lo que se retira o cambia de forma
+
+| Qué | Dónde aparece | Destino |
+| --- | --- | --- |
+| Tope de 60 palabras de `docs/plantillas` | `test/words.test.js:5` (título) y `:7` (`<= 60`) | Scope y decisión 1: pasa a 114 |
+| Última línea de `aviso.md` (la línea `Aviso de sala: …` deja de ser la única) | `docs/plantillas/aviso.md:1` | Scope y decisión 3: no cambia; se añade debajo |
+
+- Filas que implementa: nada: comprobado con `git grep -niE "0014|conserjer|5500|5599" -- . ':!.docs/sdd/specs'` (sin resultados; `0008` «Avisos por correo» es otra cosa, no lee `aviso.md`).
+
+## Approach
+
+- A — Añadir el párrafo y subir el tope del test a 114: dos ficheros, el texto queda como se pidió, el margen de 20 palabras evita volver a tocar el test por una errata.
+- B — Añadir el párrafo y recortar `recibo.md` hasta que quepa en 60: no cambia el test, pero edita un documento no pedido y deja el tope casi sin margen.
+- C — Quitar el tope: el test deja de proteger nada.
+- Elegido: A — es lo único que cumple lo decidido (texto literal) sin tocar nada más; si el tope es una restricción que quieres mantener, B es la alternativa y lo dices en el gate.
+
+El párrafo se añade con una línea en blanco de separación.
+
+## Dónde se prueba
+
+- Párrafo presente y literal: `test/words.test.js`, nuevo test, como el de palabras actual (lee ficheros de `docs/plantillas`).
+- Tope: el test existente de palabras, con el valor nuevo.
+- Gate: `node --test && node scripts/lint.mjs`.
+
+## Términos y ADR
+
+- Términos resueltos: ninguno
+- ADR candidatas: ninguna
+
+## Topes de palabras
+
+| Fichero | Medido / tope | Margen | Tope propuesto |
+| --- | --- | --- | --- |
+| `docs/plantillas` (`aviso.md` + `recibo.md`) | 52 / 60 (`node -e` con el `split(/\s+/)` del test → 52) | 8 | 52 + 42 + 20 = **114** (el párrafo mide 42 con `wc -w`) |
+
+## Enmiendas
+
+## Aprobaciones
+
+| Nombre | Fecha | Estado |
+| --- | --- | --- |
+| | | pendiente |
+EOF
+node -e "const fs=require('fs');const w=fs.readdirSync('docs/plantillas').flatMap(n=>fs.readFileSync('docs/plantillas/'+n,'utf8').split(/\s+/).filter(Boolean));console.log(w.length)"; git status --short
+<<< 52
+?? .docs/sdd/specs/20261111-192314-feature-0014-notice-room/
+
+>>> Bash: cd "<run>/repo" && sed -i 's/a ≤ 18 palabras/a ≤ 12 palabras (60 − 6 − 42)/' .docs/sdd/specs/*0014*/spec.md && grep -n "≤ 12" .docs/sdd/specs/*0014*/spec.md | cut -c1-80
+<<< 31:1. **El choque con el tope.** `test/words.test.js` limita `docs/plantillas` a
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión adversarial de spec
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a5f76660cdfe0baaa (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261111-192314-feature-0014-notice-room/spec.md
+<<< 1	---
+2	id: 20261111-192314-feature-0014-notice-room
+3	feature: 0014
+4	title: Aviso de sala con conserjería y normas de salida
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-11
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Aviso de sala con conserjería y normas de salida
+16	
+17	🦆 La plantilla `docs/plantillas/aviso.md` pasa de una línea («Aviso de sala: Norte el lun.») a llevar debajo un párrafo fijo: la extensión de conserjería (5500, L-V de 8:00 a 20:00), la de seguridad fuera de horario (5599) y las cuatro cosas que ha
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>/repo/test/words.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { readdirSync, readFileSync } from 'node:fs';
+4	
+5	test('docs/plantillas cabe en su tope de 60 palabras', () => {
+6	  const words = readdirSync('docs/plantillas').flatMap((name) => readFileSync(`docs/plantillas/${name}`, 'utf8').split(/\s+/).filter(Boolean));
+7	  assert.ok(words.length <= 60);
+8	});
+9	
+
+>>> Glob: docs/plantillas/*
+<<< docs\plantillas\aviso.md
+docs\plantillas\recibo.md
+
+>>> Bash: cd <run>/repo; for f in docs/plantillas/*; do echo "== $f"; cat -A "$f"; node -e "console.log(require('fs').readFileSync('$f','utf8').split(/\s+/).filter(Boolean).length)"; done; node -e "
+const p='Conserjería: extensión 5500, de lunes a viernes de 8:00 a 20:00. Fuera de ese horario llama a seguridad, extensión 5599. Antes de salir, recoge las sillas, borra la pizarra, apaga el proyector y cierra las ventanas para quien reserve la sala después.';console.log(p.split(/\s+/).filter(Boolean).length)"
+<<< == docs/plantillas/aviso.md
+Aviso de sala: {sala} el {dia}.$
+6
+== docs/plantillas/recibo.md
+palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra $
+46
+42
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261111-192314-feature-0014-notice-room/spec.md
+<<< 14	
+15	# Spec — Aviso de sala con conserjería y normas de salida
+16	
+17	🦆 La plantilla `docs/plantillas/aviso.md` pasa de una línea («Aviso de sala: Norte el lun.») a llevar debajo un párrafo fijo: la extensión de conserjería (5500, L-V de 8:00 a 20:00), la de seguridad fuera de horario (5599) y las cuatro cosas que hay que dejar hechas al salir (sillas, pizarra, proyector, ventanas). Para que quepa hay que subir el tope de 60 palabras de `docs/plantillas`, que hoy está en 52 y con el párrafo quedaría en 94.
+18	
+19	Validación: agente — es un documento de texto y un test; lo que se ve es el li
+
+>>> Bash: cd "<run>/repo" && node - <<'EOF'
+const fs=require('fs');
+const p=fs.readdirSync('.docs/sdd/specs').filter(d=>d.includes('0014'))[0];
+const f=`.docs/sdd/specs/${p}/spec.md`;
+let s=fs.readFileSync(f,'utf8');
+const rep=(a,b)=>{ if(!s.includes(a)) throw new Error('falta: '+a.slice(0,50)); s=s.replace(a,b); };
+rep('pasa de una línea («Aviso de sala: Norte el lun.») a llevar','pasa de una línea (`Aviso de sala: {sala} el {dia}.`) a llevar');
+rep('(94 + 20 de margen, el mínimo del método)','(94 + 20 de margen: el mínimo que fija el método de topes del kit, criterio mío y no del proyecto)');
+rep('4. Se prueba con **un test nuevo** en `test/words.test.js` que lee `docs/plantillas/aviso.md` y comprueba que termina con el párrafo literal (no hay otro test de plantillas donde ponerlo).',
+'4. Se prueba con **un fichero de test nuevo, `test/aviso.test.js`** (el literal de una plantilla no es un tope de palabras, y `words.test.js` se queda solo con el tope, que sí hay que editar: título y valor). La aserción es la igualdad exacta del fichero: `\'Aviso de sala: {sala} el {dia}.\\n\\n\' + párrafo + \'\\n\'`, que cubre a la vez la línea 1 intacta, la línea en blanco y el salto final.');
+rep('6. **No hay fila `0014` en `ROADMAP.md`**: la rama `feature/0014-notice-room` ya traía el id y `sdd id claim` lo confirma (sin remoto: contador local). No añado la fila; dime si la quieres.',
+'6. **No hay fila `0014` en `ROADMAP.md`**: la rama `feature/0014-notice-room` ya traía el id y `sdd id claim` lo confirma (sin remoto: contador local). Decido **no añadir la fila** (la feature no la necesita para cerrarse); si la quieres, se añade en el cierre.');
+rep('`node --test && node scripts/lint.mjs` sigue en verde','el gate de cierre de `operations.md` (`node --test && node scripts/lint.mjs`; la constitución pide `node --test` entero) sigue en verde');
+rep('un test del literal.','un test del literal en `test/aviso.test.js`.');
+rep(/\| Última línea de `aviso.md`[^\n]*\n/.exec(s)[0],'');
+rep('- Párrafo presente y literal: `test/words.test.js`, nuevo test, como el de palabras actual (lee ficheros de `docs/plantillas`).',
+`- Párrafo presente y literal: \`test/aviso.test.js\` (nuevo), igualdad exacta del fichero, leyendo \`docs/plantillas/aviso.md\` como lo hace el test de palabras.`);
+rep('- Gate: `node --test && node scripts/lint.mjs`.',`- Gate: \`node --test && node scripts/lint.mjs\`.
+
+Escenarios (no son delta de capacidad: es un documento):
+
+- GIVEN \`aviso.md\` con \`Aviso de sala: {sala} el {dia}.\` · WHEN se añade el párrafo · THEN el fichero es exactamente \`Aviso de sala: {sala} el {dia}.\` + línea en blanco + \`Conserjería: extensión 5500, de lunes a viernes de 8:00 a 20:00. Fuera de ese horario llama a seguridad, extensión 5599. Antes de salir, recoge las sillas, borra la pizarra, apaga el proyector y cierra las ventanas para quien reserve la sala después.\` + salto de línea.
+- GIVEN \`aviso.md\` con el párrafo (42 palabras) y \`recibo.md\` (46) · WHEN corre \`node --test\` con el tope en 114 · THEN el total es 94 ≤ 114 y todo pasa; con el tope en 60 fallaría.`);
+rep('### Decisiones tomadas con el dev-lead',`### Hallazgos de la review
+
+- **Aceptado** — Crítico: sin escenarios GIVEN/WHEN/THEN → añadidos en «Dónde se prueba».
+- **Aceptado** — aserción exacta del test → decisión 4 (igualdad del fichero entero).
+- **Rechazado** — el gate cita \`scripts/lint.mjs\` y la constitución solo \`node --test\` → \`operations.md\` fija el gate de cierre con ambos; Intent ya lo dice.
+- **Aceptado** — 🦆 con el literal real de \`aviso.md\` → corregido.
+- **Rechazado** — «dev-lead» sin otras personas en el proyecto → es el rol del kit y es quien da las decisiones (el propio usuario).
+- **Aceptado** — origen del margen de 20 → dicho en la decisión 1 como criterio del método, no del proyecto; el origen del 60 sigue abierto para el gate.
+- **Aceptado** — dónde va el test → decisión 4: \`test/aviso.test.js\` nuevo.
+- **Aceptado** — fila «no cambia» → quitada de la tabla de retiros.
+- **Rechazado** — mover la política de revisión fuera de ✋ → la plantilla exige que el bloque la abra.
+- **Aceptado** — fila del roadmap como pregunta abierta → cerrada en la decisión 6.
+
+### Decisiones tomadas con el dev-lead`);
+fs.writeFileSync(f,s);
+EOF
+grep -c "" .docs/sdd/specs/*0014*/spec.md
+<<< 114
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Segunda ronda de revisión de spec
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a1fb65745cad4fe38 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261111-192314-feature-0014-notice-room/spec.md
+<<< 1	---
+2	id: 20261111-192314-feature-0014-notice-room
+3	feature: 0014
+4	title: Aviso de sala con conserjería y normas de salida
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-11
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Aviso de sala con conserjería y normas de salida
+16	
+17	🦆 La plantilla `docs/plantillas/aviso.md` pasa de una línea (`Aviso de sala: {sala} el {dia}.`) a llevar debajo un párrafo fijo: la extensión de conserjería (5500, L-V de 8:00 a 20:00), la de seguridad fuera de horario (5599) y las cuatro cosas que
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/steering/operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- **Arrancar**: `node src/app.js <comando> <argumentos>`
+6	
+7	## Testing
+8	
+9	- **Suites**: `unit` · `node --test` · ~1 s
+10	- **Lo afectado**: `node --test <fichero de test>`
+11	- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+12	- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13	- **Acceso a la aplicación**: `sin login`
+14	- **Motor de producción**: sin base de datos; las reservas viven en memoria
+15	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>/repo/test/words.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { readdirSync, readFileSync } from 'node:fs';
+4	
+5	test('docs/plantillas cabe en su tope de 60 palabras', () => {
+6	  const words = readdirSync('docs/plantillas').flatMap((name) => readFileSync(`docs/plantillas/${name}`, 'utf8').split(/\s+/).filter(Boolean));
+7	  assert.ok(words.length <= 60);
+8	});
+9	
+
+>>> Glob: docs/plantillas/*
+<<< docs\plantillas\aviso.md
+docs\plantillas\recibo.md
+
+>>> Bash: cd "<run>/repo" && for f in docs/plantillas/*; do echo $f; node -e "const s=require('fs').readFileSync('$f','utf8');console.log(s.split(/\s+/).filter(Boolean).length, JSON.stringify(s))"; done; node -e "const p='Conserjería: extensión 5500, de lunes a viernes de 8:00 a 20:00. Fuera de ese horario llama a seguridad, extensión 5599. Antes de salir, recoge las sillas, borra la pizarra, apaga el proyector y cierra las ventanas para quien reserve la sala después.';console.log(p.split(/\s+/).length)"; ls scripts 2>&1 | head
+<<< docs/plantillas/aviso.md
+6 "Aviso de sala: {sala} el {dia}.\n"
+docs/plantillas/recibo.md
+46 "palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra palabra \n"
+42
+lint.mjs
+
+>>> Bash: cd "<run>/repo" && node - <<'EOF'
+const fs=require('fs');
+const p=fs.readdirSync('.docs/sdd/specs').filter(d=>d.includes('0014'))[0];
+const f=`.docs/sdd/specs/${p}/spec.md`;
+let s=fs.readFileSync(f,'utf8');
+const rep=(a,b)=>{ if(!s.includes(a)) throw new Error('falta: '+a.slice(0,50)); s=s.replace(a,b); };
+rep('~50 líneas en 2 ficheros','~60 líneas en 3 ficheros');
+rep('dos ficheros, el texto queda','tres ficheros (`aviso.md`, `words.test.js`, `aviso.test.js` nuevo), el texto queda');
+rep('La aserción es la igualdad exacta del fichero: `\'Aviso de sala: {sala} el {dia}.\\n\\n\' + párrafo + \'\\n\'`, que cubre',
+ 'La aserción es la igualdad exacta del fichero, con `PARRAFO` definido una sola vez en el test: `\'Aviso de sala: {sala} el {dia}.\\n\\n\' + PARRAFO + \'\\n\'`, tras normalizar `\\r\\n` a `\\n` al leerlo (en Windows `core.autocrlf` puede dejar CRLF; no cambia el conteo de palabras). Cubre');
+rep('Decido **no añadir la fila** (la feature no la necesita para cerrarse); si la quieres, se añade en el cierre.','Decido **no añadir la fila**: cerrado, no queda tarea de cierre.');
+rep('- GIVEN `aviso.md` con el párrafo (42 palabras) y `recibo.md` (46) · WHEN corre `node --test` con el tope en 114 · THEN el total es 94 ≤ 114 y todo pasa; con el tope en 60 fallaría.',
+ '- GIVEN `aviso.md` con el párrafo (42 palabras) y `recibo.md` (46) · WHEN corre `node --test` con el tope en 114 · THEN el total es 94 ≤ 114 y pasa. Este escenario no prueba el párrafo (lo prueba el 1): es la verificación del RED, que antes de editar el valor el test de palabras con el párrafo añadido falle con 94 > 60.\n- Lint: `scripts/lint.mjs` solo cuenta tabuladores en `src/app.js`; no mira `docs/` ni `test/`, y el spec no lo toca. Línea base: `node --test` pasa 5/5 hoy.');
+rep('52 + 42 + 20 = **114** (el párrafo mide 42 con `wc -w`)','52 + 42 + 20 = **114** (el párrafo mide 42 con `wc -w`; el 20 es criterio mío, el mínimo del método de topes del kit)');
+rep('### Decisiones tomadas con el dev-lead',`Segunda ronda (sin Críticos; sin tercera): aceptados los 7 — tres ficheros en vez de dos, CRLF normalizado, escenario 2 como verificación del RED, margen marcado como criterio mío, lint leído (solo tabuladores en \`src/app.js\`), expresión del test con \`PARRAFO\`, fila de roadmap cerrada.
+
+### Decisiones tomadas con el dev-lead`);
+fs.writeFileSync(f,s);
+EOF
+git status --short
+<<< ?? .docs/sdd/specs/20261111-192314-feature-0014-notice-room/
+
+=== RESULTADO (15 turnos, 0.6814084 $)
+Ahora: espero la revisión de la spec (un revisor, sonnet). Queda: integrar sus hallazgos y presentártela para aprobar, ~2 min, ~0,3 $.
+
+=== RESULTADO (4 turnos, 0.6814084 $)
+Ahora: espero la segunda ronda de revisión (un revisor, sonnet, la última). Queda: integrar lo que salga y presentarte la spec para aprobar, ~1 min.
+
+=== RESULTADO (2 turnos, 0.6814084 $)
+La spec está escrita y pasó dos rondas de revisión, pero **no está aprobada**: se queda en espera hasta que me contestes. Hay un choque con el tope de 60 palabras que tienes que mirar.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+No la traté como patch: el párrafo no cabe en el tope de palabras del test, así que hay que decidir una regla y la solución no estaba fijada.
+
+**Spec:** `.docs/sdd/specs/20261111-192314-feature-0014-notice-room/spec.md`, en la rama `feature/0014-notice-room`. El id 0014 está confirmado, sin remoto. Aún no hay plan ni código.
+
+🦆 Hoy `docs/plantillas/aviso.md` tiene una sola línea: `Aviso de sala: {sala} el {dia}.`. Debajo llevará tu párrafo, tal cual lo dijiste y separado por una línea en blanco. Las plantillas suman hoy 52 palabras, con el párrafo serían 94, y `test/words.test.js` las limita a 60. Sin tocar ese tope, `node --test` falla.
+
+### ✋ Decisiones que he tomado yo — valida estas
+
+1. **Subir el tope de 60 a 114.** Es 94 más 20 de margen, y el 20 es mi criterio, no del proyecto. Descarté recortar `recibo.md` (46 palabras de relleno) a 12 o menos, porque toca un fichero que nadie pidió. No sé por qué el tope es 60, así que si lo quieres mantener, dilo y cambio al recorte.
+2. **Tests.**
+   - Un `test/aviso.test.js` nuevo compara el fichero entero con la línea original, una línea en blanco, el párrafo y un salto final. Normaliza CRLF, porque estás en Windows.
+   - `words.test.js` solo cambia el título y el valor del tope.
+3. **Sin fila 0014 en `ROADMAP.md`.** No la añado.
+4. **Sin capacidad ni delta.** Es un documento.
+
+La revisión de la spec la hizo un revisor sonnet y, por un Crítico aceptado, hubo una segunda ronda. Los hallazgos y lo que hice con cada uno están en la spec. Rechacé tres:
+- El gate que cita `scripts/lint.mjs`: `operations.md` lo fija así.
+- «dev-lead» sin más personas en el proyecto: es el rol del kit y lo dijiste tú.
+- Mover la política de revisión fuera del apartado ✋: la plantilla exige que lo abra.
+
+¿Cómo seguimos?
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué, por ejemplo recortar `recibo.md` en vez de subir el tope.

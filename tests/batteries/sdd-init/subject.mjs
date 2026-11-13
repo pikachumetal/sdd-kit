@@ -62,9 +62,19 @@ function claudeOld() {
   doc('Architecture', 'Una SPA con Vite.', '.docs/sdd/architecture.md');
   s.put('.docs/sdd/roadmap.md', '# Roadmap — Reservas\n\n## Próximo\n');
 }
+// Un template recién instanciado, en la forma del kit que se prueba: con la 3.0.0, uno 2.x tiene que migrar antes de nada.
 function moldTemplate() {
   s.put('package.json', '{\n  "name": "nuevo-proyecto",\n  "scripts": { "dev": "ng serve", "test": "ng test" }\n}\n');
   s.put('src/login.ts', 'export function login(user: string): boolean {\n  return user.length > 0;\n}\n');
+  if (fresh) {
+    doc('Product', '<!-- sdd-template: pending -->', 'PRODUCT.md');
+    s.put('ROADMAP.md', '# Roadmap\n\n<!-- sdd-template: pending -->\n');
+    doc('Constitution', '## Convenciones\n\n- Commits convencionales.\n\n## Reglas de producto\n\n<!-- sdd-template: pending -->', '.docs/sdd/steering/constitution.md');
+    doc('Operations', '## Stack\n\n- Angular 20 y .NET 10.\n\n## Testing\n\n- **Suites**: `ng test`\n\n## Entornos\n\n- **Runner**: `pnpm env:setup`', '.docs/sdd/steering/operations.md');
+    doc('Architecture', 'Frontend Angular, backend .NET, login con cookie.', '.docs/sdd/steering/architecture.md');
+    s.put('.docs/sdd/sdd-kit.json', '{"version": "3.0.0", "channel": "plugin", "updated": "2026-11-01"}\n');
+    return;
+  }
   doc('Mission', '<!-- sdd-template: pending -->', '.docs/sdd/mission.md');
   s.put('.docs/sdd/roadmap.md', '# Roadmap\n\n<!-- sdd-template: pending -->\n');
   doc('Constitution', '## Convenciones\n\n- Commits convencionales.\n\n## Reglas de producto\n\n<!-- sdd-template: pending -->', '.docs/sdd/constitution.md');
@@ -109,7 +119,8 @@ s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');
 
 // Una pregunta por turno: si n7 para en una, el segundo turno la contesta para que llegue a proponer ## Testing entero.
-if (s.SC === 'n7') s.env.TURN2 = 'La que recomiendas. Sigue con el resto de operations.md.';
+// n3 y n6 también: con una pregunta por turno, los dos sujetos de n3 preguntan antes de proponer el `## Testing`.
+if (['n3', 'n6', 'n7'].includes(s.SC)) s.env.TURN2 = 'La que recomiendas. Sigue con el resto de operations.md.';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
 for (const kept of ['CLAUDE.md', 'PRODUCT.md', '.docs/sdd/sdd-kit.json', '.docs/sdd/steering/operations.md', '.docs/sdd/tech-stack.md', '.docs/sdd/mission.md']) {

@@ -1,0 +1,126 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls -R .docs/sdd/specs/20261012-100000-feature-0021-keep-note | head -50 && cat .docs/sdd/specs/20261012-100000-feature-0021-keep-note/green/h1.txt && git diff
+<<<  M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261012-100000-feature-0021-keep-note/green/
+.docs/sdd/specs/20261012-100000-feature-0021-keep-note:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261012-100000-feature-0021-keep-note/green:
+h1.txt
+# Humo h1 — guardar-nota (Task 1 de la 0021)
+
+Petición al sujeto: «guarda la nota "Reunión lunes": "mover la reunión al martes"».
+Estado previo: `notas/reunion-lunes.md` ya existía, con el acta de la reunión del lunes.
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-lunes.md — «mover la reunión al martes»
+2. Texto al usuario: «ya exis
+
+>>> Bash: cd "<run>/repo" && cd .docs/sdd/specs/20261012-100000-feature-0021-keep-note && cat spec.md plan.md; ls ..; cat ../../../../skills/guardar-nota/SKILL.md
+<<< ---
+id: 20261012-100000-feature-0021-keep-note
+feature: 0021
+title: No perder la nota que ya existe
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-12
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-12
+---
+
+# Spec — No perder la nota que ya existe
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` avisa de una nota que ya existe.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+### Decisiones tomadas con el dev-lead
+
+- Una nota que ya existe no se sobrescribe sin que
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='skills/guardar-nota/SKILL.md'
+s=open(p,encoding='utf-8').read()
+old=s[s.index('2. Write'):]
+new='''2. Check whether `notas/<slug of the title>.md` already exists, before writing anything.
+3. If it exists, do not write: warn «ya existe una nota "<title>"» and ask whether to overwrite it. Write only after the user confirms.
+4. Otherwise, write `notas/<slug of the title>.md` with the body.
+5. Tell the user the path you wrote.
+'''
+open(p,'w',encoding='utf-8').write(s.replace(old,new))
+p='.docs/sdd/specs/20261012-100000-feature-0021-keep-note/spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace('''- THEN el agente le avisa «ya existe una nota "Reunión lunes"»
+''','''- THEN el agente le avisa «ya existe una nota "Reunión lunes"»
+- AND la nota existente no se sobrescribe hasta que el usuario lo confirma
+''')
+s=s.replace('## Enmiendas\n','## Enmiendas\n\n- 2026-11-12 (sin aprobar) — Task 1, humo `h1`: el aviso llegaba tras el Write y pisaba la nota. Se añade el AND «no se sobrescribe hasta que el usuario lo confirma», que aplica literalmente la decisión del dev-lead «lo que ya está escrito no se pisa sin preguntar».\n',1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+git diff --stat; cat skills/guardar-nota/SKILL.md; ls; which claude
+<<<  .docs/sdd/specs/20261012-100000-feature-0021-keep-note/spec.md | 3 +++
+ skills/guardar-nota/SKILL.md                                   | 6 ++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+---
+name: guardar-nota
+description: Use when the user asks to save a note in notas/.
+---
+
+# guardar-nota
+
+1. Ask for the title and the body if the request lacks them.
+2. Check whether `notas/<slug of the title>.md` already exists, before writing anything.
+3. If it exists, do not write: warn «ya existe una nota "<title>"» and ask whether to overwrite it. Write only after the user confirms.
+4
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd "<run>/repo" && git diff && git add skills/guardar-nota/SKILL.md .docs/sdd/specs/20261012-100000-feature-0021-keep-note && git commit -q -F - <<'EOF'
+fix(guardar-nota): comprobar la nota existente antes de escribir (Task 1, REFACTOR)
+
+El humo h1 falló: el aviso llegaba tras el Write y pisaba la nota.
+Ahora la skill comprueba antes de escribir, avisa y espera confirmación.
+Enmienda sin aprobar en la spec (AND: no se sobrescribe sin confirmar),
+que aplica la decisión del dev-lead «no se pisa sin preguntar».
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short
+<<< diff --git a/.docs/sdd/specs/20261012-100000-feature-0021-keep-note/spec.md b/.docs/sdd/specs/20261012-100000-feature-0021-keep-note/spec.md
+index e709578..9bb8ce7 100644
+--- a/.docs/sdd/specs/20261012-100000-feature-0021-keep-note/spec.md
++++ b/.docs/sdd/specs/20261012-100000-feature-0021-keep-note/spec.md
+@@ -48,9 +48,12 @@ Quien guarda una nota con un título repetido pisa la que ya había sin enterars
+ - GIVEN `notas/reunion-lunes.md` ya existe
+ - WHEN el usuario pide guardar otra nota «Reunión lunes»
+ - THEN el agente le avisa «ya existe una nota "Reunión lunes"»
++- AND la nota existente
+
+=== RESULTADO (9 turnos, 0.2532826 $)
+La ronda de REFACTOR está hecha y commiteada (`423efbc`), pero **la Task 1 sigue abierta**: no he podido repetir el humo `h1`, y sin eso no puedo declararla cerrada.
+
+**Qué falló en `h1`.** La skill escribía la nota y avisaba después, así que el aviso llegaba tarde y la nota existente quedaba pisada.
+
+**Qué he cambiado en `skills/guardar-nota/SKILL.md`.** Ahora comprueba si la nota existe antes de escribir. Si existe, no escribe: avisa con «ya existe una nota "<title>"» y pide confirmación para sobrescribir. Solo escribe si el usuario confirma.
+
+**Enmienda de spec sin aprobar.** He añadido a `spec.md` el AND «la nota existente no se sobrescribe hasta que el usuario lo confirma». Aplica literalmente la decisión de Laura, «lo que ya está escrito no se pisa sin preguntar». La he marcado `sin aprobar` en «Enmiendas».
+
+✋ Enmienda sin aprobar: AND «la nota existente no se sobrescribe hasta que el usuario lo confirma» (Laura debe revisarla).
+
+**Lo que falta para cerrar:**
+- **Humo `h1` sin repetir.** El `claude` del PATH es un stub «no-claude», así que no hay sujeto headless con el que lanzarlo. Con un sujeto real, repítelo contra `notas/reunion-lunes.md` ya escrita. Debe avisar sin escribir, y el acta original debe quedar intacta.
+- **Revisión.** No tengo herramienta de subagentes, así que el commit solo lleva mi autorrevisión del diff. Por ser instrucciones de agente, una revisión independiente sigue pendiente.

@@ -1,6 +1,6 @@
 ---
 name: sdd-implement-native
-description: Use when sdd-implement runs a plan in Native: this session implements every task itself, with the ledger and one final review. Invoked from there; not the entry of a change (that is sdd-propose) nor of resuming paused work (that is sdd-implement).
+description: Use when sdd-implement runs a plan in Native; this session implements every task itself, with the ledger and one final review. Invoked from there; not the entry of a change (that is sdd-propose) nor of resuming paused work (that is sdd-implement).
 ---
 
 # Executing Plans
@@ -129,7 +129,7 @@ digraph process {
 ## Setup
 
 <!-- kit: 0296 · sustituye: «use…existing one.» -->
-Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `.docs/sdd/environments.md` exists, and runs the baseline in a detached worktree.
+Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `§Entornos` exists, and runs the baseline in a detached worktree.
 <!-- kit: fin -->
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
@@ -147,7 +147,7 @@ The workspace and ledger are shared with `sdd-implement-subagent`
 and the new one resumes from the same ledger.
 
 <!-- kit: 31783aa5 · sustituye: «at skill start, run `../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` by its absolute path, from the working tree you're executing in — it prints the plan's git-ignored directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`),» -->
-- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; your next message, right under its phase notice and also when you resume, opens with `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`), where `<ruta>` is the plan's git-ignored directory it prints, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`). The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
+- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it also prints, for the user, the `Workspace del plan:` line; the path it prints is the plan's git-ignored directory, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
 <!-- kit: fin -->
 - Check for this plan's ledger at `<workspace>/progress.md`. If its first
   line names your plan file, tasks with a `Task <N>: complete` line are
@@ -257,7 +257,7 @@ the claim. If any item is missing, the task is not complete: finish it.
 ### 4. Complete the task
 
 <!-- kit: 4597d47e -->
-Close, in this order: compare the RED copy with the committed test, as `sdd-implement`, «Before each task», says; commit the task; check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`).
+Close, in this order: compare the RED copy with the committed test, as `sdd-implement`, «Before each task», says; commit the task, staging by path (never `git add -A`, `git add .` or `commit -a`); check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`).
 
 <!-- kit: e7ddf254 · sustituye: «Run this skill's `scripts/task-done PLAN_FILE N BASE -- <test command>` by its absolute path, from the working tree you're executing in, with the test command the brief names for the whole task.» -->
 Then, in its own call, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task done <plan> <n> <base> -- <command…>` with the command of the task's «Verificación». It runs the

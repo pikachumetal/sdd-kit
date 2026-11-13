@@ -1,0 +1,114 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [20]
+Levanté el entorno y ahora compruebo que responde. Después paso el gate de cierre y la tanda de tres repeticiones, las dos antes de darte el guion.
+
+--- [26]
+El gate E2E se cortó tras el cuarto test: salió con código 1, sin error ni resumen. Esa pasada no cuenta. Levanto el entorno otra vez, lo compruebo y repito.
+
+--- [31]
+Pasó el gate (7/7 en 48,2 s). Ahora la tanda de tres repeticiones, que corre antes de darte el guion para no tocar el servidor mientras pruebas. Levanto el entorno otra vez y lo compruebo.
+
+--- [36]
+Tanda verde: 11/11 en 84 s. Paro el servidor que levanté (por su puerto), y ensayo el guion tal como lo vas a teclear.
+
+--- [45]
+Pasé la tanda y el gate de cierre, y el servidor del panel está arriba. Falta tu validación: el cierre no sigue sin ella.
+
+🦆 Al cancelar una reserva hay que dar un motivo de la lista (`cambio de planes`, `sala ocupada`, `otro`). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y el test falla si corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | `ejecución real` | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | `ejecución real` | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre e244615, 0,2 s.
+- `node e2e/run.mjs` (gate de cierre): 7/7 sobre e244615, 48,2 s. La primera pasada salió con código 1 tras el cuarto test, sin error ni resumen. No la conté: levanté el entorno otra vez y repetí, y la segunda pasó. No sé qué cortó la primera.
+- **Tu tanda de tres repeticiones**: pasó 11/11 sobre e244615, en 84 s.
+
+```text
+# Tanda: 3 tests cambiados de e2e/cancel.e2e.mjs ×3 + los 2 demás de ese fichero ×1 = 11 ejecuciones · ~1,3 min (6,9 s × 11 ÷ 1)
+```
+
+  - **Motivo** (3 tests): `cancela una reserva con su motivo`, `rechaza un motivo fuera de la lista` y `la cancelada sale en canceladas con su motivo` pasaron las tres veces cada uno. Estos son los que cambió la rama respecto a `develop`.
+  - **Anular** (2 tests): `anula una reserva` y `anular sin reserva avisa` pasaron una vez.
+  - **No repetí `free.e2e.mjs`**: la rama no lo toca.
+  - **Por qué antes del guion**: la corrí antes porque el servidor no admite una tanda mientras pruebas. Ya está parado.
+  - **Sin cambios en el gate**: no usé `E2E_TRACE=light` ni ningún atajo; las pasadas son con la traza completa.
+
+**Sin probar**
+
+- Nada de la spec queda sin probar. El guion usa la CLI, no el servidor del E2E. El estado de la app vive solo dentro de un proceso, así que el paso 4 se hace con un comando de una línea, que cancela y lista en el mismo proceso.
+
+**Pendiente antes de poder cerrar**
+
+- **Revisión final**: la `Revisión final` de `tasks.md` está sobre 7fab25e y `HEAD` es e244615. Ese commit añade 17 líneas de `tasks.md`, solo documentación. Cuando valides, despacharé la re-revisión de `7fab25e..HEAD` y no escribiré nada del cierre hasta que vuelva.
+- **Deuda**: el E2E tarda 48,2 s y el «Presupuesto E2E» es 0,5 min. Abriré una fila en `debt.md`.
+- **Falta el `walkthrough.md` de la 0010**: no existe en el repo. Lo escribo en el cierre.
+
+Panel: plan B en http://127.0.0.1:64633/
+No ve la app, así que no recoge consola, red ni captura de un fallo. Si algo falla, cuéntalo en el comentario del paso.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+La CLI no tiene entorno que arrancar: el «Arrancar» de `operations.md` es el servidor del E2E, que aquí no se usa.
+
+Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Cancelar sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso → primero `cancelada Norte lun (sala ocupada)` y luego `Norte lun — sala ocupada`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [47]
+Esta notificación es del sistema, no es tu respuesta. No cuenta como validación. Compruebo solo si el panel sigue arriba.
+
+--- [49]
+El panel sigue arriba en http://127.0.0.1:64633/. El cierre sigue parado en la validación, y no he escrito ningún registro del cierre.
+
+Hasta que respondas no toco el entorno ni lanzo nada más. Dime:
+
+- **«validado»**, con lo que probaste, y sigo con la re-revisión de `7fab25e..HEAD`, el `walkthrough.md`, la fila de deuda del presupuesto E2E, el roadmap y el merge a `develop`.
+- **Qué paso falla**, y vuelvo al arreglo.
+- **`Diferir: lo pruebo en <uso concreto>, a cargo de <quien valida>`**, si no puedes ahora.
+

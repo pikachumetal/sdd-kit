@@ -25,13 +25,14 @@ const molds = {
   },
   'salas-csv': () => {
     molds.salas();
-    const roadmap = join(s.R, '.docs', 'sdd', 'roadmap.md');
-    const row1 = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
-    const row2 = '| 2 | Exportar a CSV las reservas de una sala, para que el responsable las cuadre los lunes en su hoja de cálculo; separador punto y coma (su Excel está en castellano) y por la salida estándar, que él redirige a su fichero (responsable de salas, 2026-11-01: «así me sirve») | ⏳ |';
+    const roadmap = join(s.R, 'ROADMAP.md');
+    // La fila «2» de la 2.x es la 0002 (una id de la secuencia: «arranca la 2 del roadmap»); va tras la de avisos por correo, la última de Now.
+    const row2 = '| 0002 | — | **Exportar a CSV las reservas de una sala**<br>*para que el responsable las cuadre los lunes en su hoja de cálculo; separador punto y coma (su Excel está en castellano) y por la salida estándar, que él redirige a su fichero (responsable de salas, 2026-11-01: «así me sirve»)*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |';
     const text = readFileSync(roadmap, 'utf8');
     const eol = text.includes('\r\n') ? '\r\n' : '\n';
-    if (!text.includes(row1 + eol)) throw new Error(`salas-csv: falta la fila 1 en ${roadmap}`);
-    writeFileSync(roadmap, text.replace(row1 + eol, row1 + eol + row2 + eol));
+    const avisos = text.split(eol).find((line) => /^\| 0008 \|.*Avisos por correo antes de la reserva/.test(line));
+    if (!avisos) throw new Error(`salas-csv: falta la fila de avisos por correo en ${roadmap}`);
+    writeFileSync(roadmap, text.replace(avisos + eol, avisos + eol + row2 + eol));
   },
   'salas-sin-docs': () => {
     s.copy(SALAS);
@@ -42,7 +43,7 @@ const molds = {
     s.putKitMarker(SALAS_MARKER);
     s.copy(join(HERE, 'mold-web', 'public'), 'public');
     s.copy(join(HERE, 'mold-web', 'src'), 'src');
-    appendFileSync(join(s.R, '.docs', 'sdd', 'tech-stack.md'), readFileSync(join(HERE, 'mold-web', 'tech-stack-frontend.md')));
+    appendFileSync(join(s.R, '.docs', 'sdd', 'steering', 'operations.md'), `\n${readFileSync(join(HERE, 'mold-web', 'operations-frontend.md'))}`);
   },
   vacio: () => s.put('README.md', '# citas\n'),
 };

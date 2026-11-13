@@ -56,6 +56,13 @@ async function processesNaming(folder: string): Promise<number[]> {
   return all.filter(({ pid, commandLine }) => pid !== process.pid && commandLine.includes(folder)).map(({ pid }) => pid);
 }
 
+it('la lista de procesos trae el padre y el arranque de cada uno, para seguir a los nietos de un sujeto', { timeout: 30_000 }, async () => {
+  const all: { pid: number; ppid: number; created: string }[] = await realDeps().processes();
+  const self = all.find(({ pid }) => pid === process.pid);
+  expect(self?.ppid).toBe(process.ppid);
+  expect(self?.created).toMatch(/^\d+$/);
+});
+
 // Lanzan procesos de node de verdad: con la máquina cargada pasan de los 5 s por omisión.
 it('sale con 3 y nombra la etiqueta de un sujeto que no deja nada', { timeout: 30_000 }, () => {
   const result = runCampaign({ ...campaignEnv('process.exit(0);\n'), SCENARIOS: 'a' });

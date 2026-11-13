@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0030
 date: 2026-10-01
 rutas:
   - .claude-plugin/plugin.json

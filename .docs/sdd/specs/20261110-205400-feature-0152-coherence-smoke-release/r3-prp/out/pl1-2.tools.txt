@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -2
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+ls: cannot access 'node_modules': No such file
+
+>>> Bash: cd D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references && cat modo-lite.md; cd - >/dev/null; cat .docs/sdd/sdd-kit.json PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/estimation.md; git ls-files src test
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enable
+
+>>> Bash: cat src/app.js; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; grep -n -i "gate" .docs/sdd/specs/*/walkthrough.md | head; cat .docs/sdd/steering/debt.md | head -20; git branch
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (7 turnos, 0.16044139999999998 $)
+Ahora: clasificado el cambio; falta que confirmes el carril. Queda: tu respuesta y después la spec corta, ~5 min.
+
+🦆 Tocaría solo `src/app.js` y sus tests. Añade un comando nuevo, `reservas <sala>`, que lista las reservas activas (`lun 10:00-12:00`, o `sin reservas <sala>`). Además cambia `libres`, que hoy sin franja no responde nada útil, para que conteste `indica una franja`. Antes de guardar corro `node --test` entero.
+
+**No lo abro como patch.** Tu solución cierra todos los literales, pero son tres comportamientos nuevos: listar, `sin reservas <sala>` y `libres` sin franja. Cada uno necesita su propio test, y un patch es lo que reproduce un único test. Es el mismo caso que `patch-lane.md` pone como ejemplo de lo que no es patch, aunque venga todo literal.
+
+Sí cumple el predicado de **lite**, condición por condición:
+- **El flujo ya existe y se puede leer.** `run` y `bookings` ya están en `src/app.js`, y `libres` ya existe. El comando `reservas` es nuevo, pero entra por el mismo despachador.
+- **No cambia contratos públicos.** Los comandos existentes siguen igual. Lo único que cambia es la respuesta de `libres` sin franja, y hoy no tiene ninguna útil.
+- **No cambia el esquema de datos.** Solo lee `bookings`.
+- **Cabe en un único módulo.** Todo va en `src/app.js` y en `test/`.
+- **La estimación es ≤ medio día.** Calculo unas 0,5 h, más el gate de cierre. El proyecto no tiene ninguno medido (los walkthroughs no lo registran), así que lo mediré la primera vez.
+
+El perfil actual es `delegate`, el del proyecto (`sdd-kit.json`). Las tres tareas internas no justifican dividirlo.
+
+¿Cómo seguimos?
+
+1. **Lite (recomendada).** Spec corta con su estimación y su revisión, sin `plan.md`. Aprobar la spec sigue siendo una parada.
+2. **Full.** Spec y plan completos, por si prefieres más ceremonia.
+3. **Lite con aprobación delegada.** Dices «apruebo la spec por delegación, nos vemos en la validación» y no paro en la spec.
+4. **Otro perfil.** Dices «perfil `<otro>` para esta feature».
+
+Si prefieres que lo trate como patch, dímelo. Tendría que ser un único comportamiento, por ejemplo solo `libres` sin franja, y el resto iría en otra fila del roadmap.

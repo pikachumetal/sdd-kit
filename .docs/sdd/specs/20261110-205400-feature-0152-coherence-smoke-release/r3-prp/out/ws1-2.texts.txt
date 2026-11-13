@@ -1,0 +1,100 @@
+--- [3]
+Ahora: leer el contexto SDD (producto, roadmap, steering, capacidades). Queda: clasificar y preguntarte por el carril patch, ~3 min.
+
+--- [20]
+Ahora: instalar dependencias y reproducir el fallo. Queda: patch.md, test rojo, fix, revisor y commit, ~25 min.
+
+--- [33]
+Estoy en el fix: el test rojo falló bien, pero mi script perdió las barras invertidas de la regex y quedó un test en rojo. Lo corrijo con Edit.
+
+--- [38]
+Ahora: revisión del patch por un revisor (sonnet). Queda: aplicar sus hallazgos, commit y cierre con `sdd-archive`, ~10 min.
+
+--- [40]
+El revisor está en marcha y no tengo sus hallazgos todavía. Mientras tanto no toco los ficheros que revisa. Espero su notificación para aplicar lo que salga, hacer el commit del fix y pasar a `sdd-archive`.
+
+--- [45]
+Sin hallazgos de severidad alta o media. Solo hay dos observaciones menores.
+
+**Comprobaciones**
+1. **Solución fijada:** se cumple. `libres 25:00-26:00` devuelve exactamente «franja no válida: usa HH:MM-HH:MM», igual que la fila 0012. El patch deja fuera «inicio < fin» de forma explícita y el fix no lo valida, así que no hay desvío.
+2. **Fix mínimo y correcto:** la regex `^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$` está anclada y limita horas a 00-23 y minutos a 00-59. Rechaza `10-12`, `10:60-11:00` y `25:00-26:00`. El caso sin argumento (`params[0] ?? ''`) no lanza excepción y devuelve el mismo mensaje. El cambio toca solo la rama `libres`.
+3. **Test:** cubre `25:00-26:00`, `10:60-11:00`, `10-12` y `undefined`, y las cuatro aserciones llevan mensaje. No ejecuté el test sin el fix, para no editar nada. Por el código, en HEAD la línea 29 devuelve `freeRooms(...)` sin validar, que da `Norte, Sur` con `25:00-26:00`, así que el test fallaría. El patch §4 también declara el RED. `node --test` pasa 5 de 5.
+4. **`libres 10:00-12:00` no se rompe:** devuelve `Sur`, que es lo esperado porque Norte está reservada. `14:00-15:00` devuelve `Norte, Sur`.
+
+**Hallazgos**
+1. **Baja:** `patch.md` pone `status: done` con `commit: pendiente` y `Esfuerzo real: pendiente`. Es coherente si el cierre lo hace `sdd-archive` después, pero conviene confirmar que no se archiva así.
+2. **Baja:** la tabla de verificación del patch solo registra el RED. No recoge el GREEN ni la comprobación de regresión de `libres 10:00-12:00`, que yo sí he hecho y es correcta.
+
+--- [49]
+Ahora: cerrar con `sdd-archive`. Queda: validación y cierre de la fila 0012.
+
+--- [52]
+Ahora: comprobaciones previas del cierre y preparar el mensaje de validación. Queda: tu validación (el cierre espera a que la des).
+
+--- [58]
+Ahora el cierre queda detenido en tu validación: el patch está hecho y commiteado, pero no lo fusiono hasta que lo valides.
+
+🦆 `libres` ya no lista las salas cuando la franja es inválida. `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM»; antes devolvía `Norte, Sur`. Una franja válida, como `10:00-12:00`, sigue dando `Sur`.
+
+**✋ Me salí del plan en…**
+
+- Nada. Una lectura mía, que debes confirmar: válida = `HH:MM-HH:MM` con hora 00-23 y minutos 00-59. Por eso `10-12` y `10:60-11:00` también se rechazan. No compruebo inicio < fin, porque nadie lo pidió.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` responde el aviso | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` no cambia | ejecución real | `Sur` |
+| `10-12` y `10:60-11:00` se rechazan | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres` sin argumento se rechaza | `suite` | cubierto por el test nuevo |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 sobre `4d87a90`, lint sin hallazgos.
+- El revisor (sonnet) no dio hallazgos altos ni medios.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente del cierre**
+
+- `sdd merge --check` dice que a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Tras tu validación te los pido antes de fusionar, porque con el bloque incompleto no fusiono solo.
+- La fila 0012 sigue en `⏳` hasta que valides.
+
+Panel: plan B en http://127.0.0.1:61390/
+
+**Guion**
+
+Rama `feature/0012-slot-format` · worktree `<run>/repo`
+
+Es una CLI sin entorno que arrancar. Terminal:
+
+```
+cd <run>/repo
+```
+
+1. Ejecuta lo siguiente → debe salir `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 25:00-26:00
+```
+
+2. Ejecuta lo siguiente → debe salir `Sur`
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+3. Ejecuta lo siguiente → debe salir `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 10-12
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

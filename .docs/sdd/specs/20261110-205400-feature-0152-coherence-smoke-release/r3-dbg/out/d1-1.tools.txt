@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md 2>&1 | head -50; echo ===HOOKS; ls -la .githooks; git config core.hooksPath; echo ===STATUS; git status --short; ls -la
+<<< # Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+===HOOKS
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov 12 00:04 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 12 00:04 ../
+-rwxr-xr-x 1 <user> 197609 830 Nov 11 10:28 pre-commit*
+.githooks
+===STATU
+
+>>> Bash: cat -A .githooks/pre-commit; echo ===NOTAS; cat -A notas.txt; echo ===RUN; sh .githooks/pre-commit; echo "exit=$?"
+<<< #!/usr/bin/env node$
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.$
+import { spawnSync } from 'node:child_process';$
+import { rmSync } from 'node:fs';$
+import { join } from 'node:path';$
+$
+const git = (args, options = {}) => spawnSync('git', args, { stdio: 'inherit', ...options }).status === 0;$
+const tmp = join(spawnSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8' }).stdout.trim(), 'hook-check');$
+rmSync(tmp, { recursive: true, force: true });$
+if (!git(['worktree', 'add', '-q', '--detach', tmp, 'HEAD'])) process.exit(1);$
+if (!git(['status', '--porcelain
+
+>>> Bash: node --version; node .githooks/pre-commit; echo "exit=$?"; echo ===; git worktree list; git rev-parse --git-dir; cat package.json
+<<< v26.10.0
+exit=0
+===
+<run>/repo 6a352d6 [develop]
+.git
+{"type": "module"}
+
+>>> Bash: cat > .git/dbg-hook.sh <<'EOF'
+#!/bin/sh
+for v in GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX; do eval "val=\${$v-<unset>}"; echo "$v=$val"; done
+EOF
+chmod +x .git/dbg-hook.sh
+git -c core.hooksPath=.git/ -c alias.x=x config --get core.hooksPath >/dev/null
+# hook temporal de diagnóstico real, vía hooksPath apuntando a un dir aparte
+mkdir -p .git/dbg-hooks && cp .git/dbg-hook.sh .git/dbg-hooks/pre-commit
+git -c core.hooksPath=.git/dbg-hooks commit -m probe --dry-run 2>&1 | head; echo ===SIM
+GIT_INDEX_FILE=.git/index node .githooks/pre-commit; echo "exit(GIT_INDEX_FILE relativo)=$?"
+GIT_DIR=.git node .githooks/pre-commit; echo "exit(GIT_DIR relativo)=$?"
+<<< This Bash command contains multiple operations. The following parts require approval: cat <<'EOF'
+#!/bin/sh
+for v in GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX; do eval "val=\${$v-<unset>}"; echo "$v=$val"; done
+EOF
+chmod +x .git/dbg-hook.sh
+git -c core.hooksPath=.git/ -c alias.x=x config --get core.hooksPath
+# hook temporal de diagnóstico real, vía hooksPath apuntando a un dir aparte
+mkdir -p .git/dbg-hooks && cp .git/dbg-hook.sh .git/dbg-hooks/pre-commit
+git -c core.hooksPath=.git/dbg-hooks commit -m probe --dry-run 2>&1, head; echo ===SIM
+GIT_INDEX_FILE=.git/index node .githooks/pre-co
+
+>>> Bash: GIT_INDEX_FILE=.git/index node .githooks/pre-commit; echo "exit con GIT_INDEX_FILE=$?"
+
+>>> Bash: GIT_DIR=.git node .githooks/pre-commit; echo "exit con GIT_DIR=$?"
+<<< fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+exit con GIT_INDEX_FILE=1
+<<< exit con GIT_DIR=0
+
+>>> Bash: git worktree list; ls .git | grep -i hook-check; git status --short
+<<< <run>/repo 6a352d6 [develop]
+A  notas.txt
+
+=== RESULTADO (10 turnos, 0.1494697 $)
+El pre-commit falla porque `git commit` le pasa `GIT_INDEX_FILE` y el hook se lo hereda a un worktree temporal. Reproduje el fallo simulando esa variable. No ejecuté un `git commit` real, así que no he visto el error exacto dentro del commit.
+
+## Causa raíz
+
+El hook `.githooks/pre-commit` crea un worktree temporal en `.git/hook-check` y ejecuta `git status --porcelain` dentro de él. `git status` falla por culpa de `GIT_INDEX_FILE`.
+
+1. Al lanzar un hook de commit, git exporta `GIT_INDEX_FILE=.git/index`, una ruta relativa.
+2. El hook usa `spawnSync` sin pasar `env`, así que sus hijos heredan esa variable.
+3. `git status` corre con `cwd: tmp`, y ahí `.git` es un fichero, no un directorio. Git intenta usar el índice en `<tmp>/.git/index` y no puede.
+4. Falla con `Unable to create '.../.git/hook-check/.git/index.lock': No such file or directory`. El hook lo recoge como «el worktree temporal no responde» y sale con 1.
+
+## Evidencia
+
+| Ejecución | Resultado |
+| --- | --- |
+| `node .githooks/pre-commit` a mano | exit 0 |
+| `GIT_INDEX_FILE=.git/index node .githooks/pre-commit` | exit 1, con el error de `index.lock` de arriba |
+| `GIT_DIR=.git node .githooks/pre-commit` | exit 0 |
+
+Por eso a mano pasa y solo falla dentro de `git commit`. Tampoco tiene que ver con `notas.txt`: el hook solo comprueba `HEAD` y nunca mira lo que stageas.
+
+## Otros puntos
+
+- **Deuda:** `.docs/sdd/steering/debt.md` no tiene ninguna fila que cubra este fallo.
+- **Mi error:** probé primero con `sh .githooks/pre-commit`. El hook es de Node, así que eso fallaba por mi culpa y no cuenta como evidencia.
+- **Estado del repo:** tras las pruebas no quedan restos. `git worktree list` solo muestra el principal, no hay `.git/hook-check` y `notas.txt` sigue staged.
+
+No he tocado nada. Cuando quieras el arreglo, la ruta natural es un patch con un test que reproduzca el fallo antes de cambiar el hook.

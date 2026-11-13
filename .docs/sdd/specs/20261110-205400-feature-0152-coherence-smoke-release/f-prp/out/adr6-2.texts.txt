@@ -1,0 +1,148 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, anunciar y escribir la spec hasta presentártela, ~10 min.
+
+--- [21]
+Estoy escribiendo la `spec.md` en `.docs/sdd/changes/`, que es donde nacen los cambios nuevos. Después hago el repaso de coherencia y lanzo la review.
+
+--- [25]
+Nada se ha escrito (falló el shell, no la spec). Uso Write.
+
+--- [27]
+Ahora: repaso de coherencia (delta sobre una copia y `git grep` de lo que se retira). Queda: review de la spec y presentártela.
+
+--- [32]
+Ahora: lanzo los dos revisores de la spec en paralelo (dominio y técnica, ambos Sonnet: no hay roles ni reglas de flujo). Queda: integrar sus hallazgos y presentarte la spec.
+
+--- [38]
+Los dos revisores están en marcha (dominio y técnica). Espero a que terminen para integrar sus hallazgos en la spec antes de presentártela. Todavía no sé qué han encontrado.
+
+--- [44]
+1. Importante · Reglas de la capacidad / Scope · La regla "Límites: sin tope de reservas" contradice la decisión 7 y el hecho de que `reservar` no entra. Tampoco declara tamaño máximo del archivo ni qué pasa con un archivo enorme o con campos inválidos (`status` o `day` desconocidos, `reservas` no array). Hoy "ilegible" solo cubre JSON roto y `version` desconocida. · Declarar un límite real (p. ej. tamaño máximo del archivo, o "no aplica: solo existe la reserva de ejemplo") y decidir si un JSON válido con campos mal formados cuenta como ilegible.
+
+2. Importante · Reglas de la capacidad (Avisos) · "Solo el de archivo ilegible" omite avisos que el propio delta implica: el primer arranque sin archivo, un fallo al escribir (permisos, `~/.salas/` inexistente, disco lleno) y la creación silenciosa de la carpeta. Un fallo de guardado tras `anular` daría un "anulada" falso, que es justo la pérdida silenciosa que el Intent llama fracaso. · Añadir el aviso y el código de salida cuando falla el guardado, y decir si `~/.salas/` se crea o no.
+
+3. Importante · Reglas de la capacidad (Regla ante conflicto) · "Gana la última terminal que guarda" no dice qué pasa con el estado. Cada proceso carga una vez al arrancar y guarda su lista completa, así que una terminal puede pisar las cancelaciones de otra, incluso de reservas distintas. La regla no cubre el caso reservas distintas, ni si se relee antes de guardar. Además, es una decisión del dev-lead que afecta al dato, no solo una nota técnica. · Precisar que se sobrescribe el archivo entero con el estado en memoria de esa terminal, y que se pierden los cambios intermedios. Después, mantenerlo en ✋ como decisión explícita.
+
+4. Importante · Delta de comportamiento (Archivo ilegible) / Reglas · El caso `version` desconocida, declarado en la decisión 7, no tiene escenario en el delta. Tampoco lo tiene "no se pueden leer" ante un `libres` con archivo roto. La promesa del Intent es "no escribir al consultar", pero el delta no dice si `libres` también falla con archivo roto. · Añadir los escenarios `version` desconocida y `libres` con archivo roto, o limitar el mensaje a los comandos que escriben (esto es de alcance, no de testabilidad).
+
+5. Menor · Scope vs. decisión 6 · La decisión 6 dice "el archivo se crea al primer cambio", pero el Scope no lista la creación de `~/.salas/`, y el escenario "Consultar no escribe" solo cubre `libres`. Con `cancelar` o `anular` sobre una reserva inexistente o ya anulada, no se dice si hay escritura. · Añadir a Scope la creación de la carpeta y decir si un comando que no cambia nada escribe.
+
+6. Menor · Reglas de la capacidad (Idioma de los nombres) · Dice "campos del archivo en inglés, como en el código", pero la terminología de PRODUCT.md marca evitar `booking` y `room`, y los campos son `room`, `day`, `slot`, `status`. Con la constitución 4 (castellano en interfaz y documentos), el archivo es dato visible al usuario y no es interfaz ni documento. Hay que decidir explícitamente que esto no la infringe, y los valores de `status` (activa/cancelada/anulada) no se declaran. · Citar la constitución 4 y justificar el inglés en los campos. Declarar los valores válidos de `status` y de `day` (`lun`), y si van en castellano.
+
+7. Menor · Capacidades / decisión 2 · El slug `booking-persistence` usa `booking`, término que PRODUCT.md manda evitar en favor de "reserva". Lo mismo con `loadBookings` y `saveBookings` en Approach. · Valorar `reservas-persistencia` o justificar la excepción para identificadores, igual que el archivo. Si se mantiene, anotarlo como excepción.
+
+8. Menor · Intro 🦆 y decisión 3 · El texto dice "archivo de tu carpeta personal" y fija `~/.salas/`. En Windows `~` no está definido igual, y el repo se desarrolla en win32 según el entorno. La regla de "dónde viven los datos" no dice cómo se resuelve `~`. · Declarar la resolución de la ruta (`os.homedir()`) o decir que solo se soporta donde `~` exista.
+
+9. Menor · Intro 🦆 / Intent · Terminología: se mezclan "cancelas o anulas" sin distinguir, cuando PRODUCT.md define Cancelación (la anula el cliente antes de 24 h) y Anulación (la anula el responsable de sala). `cancelar` y `anular` aparecen como equivalentes ("`cancelar` hace lo mismo") y sin un escenario propio con `cancelada Norte lun`. · Probar `cancelar` con su propio escenario, o aclarar que ambos solo se diferencian por el mensaje en esta feature.
+
+10. Menor · Examples (Delta) · Los ejemplos usan Norte/Sur y `lun`, que son datos inventados del producto y no hay problema. Sin embargo, "Primer arranque" y "Consultar no escribe" son escenarios casi idénticos (mismo GIVEN, WHEN y THEN `Sur`), y el segundo solo añade que el archivo no existe. No hay hallazgo de cliente o persona real. · Fundir los dos escenarios en uno o dar al primero otro valor distinto, por ejemplo `libres 14:00-16:00`.
+
+--- [46]
+El revisor de dominio ya ha terminado, con 4 hallazgos Importantes y 6 Menores. Falta el técnico. Integro los dos juntos cuando llegue el segundo, así que todavía no he tocado la spec.
+
+--- [47]
+1. Crítico · Delta de comportamiento (ADDED «Lo cancelado o anulado sobrevive al cierre») · El escenario cubre `anular` y solo menciona `cancelar` en un AND, sin GIVEN/WHEN propios. Además, `libres 10:00-12:00` da `Norte, Sur` tanto con el archivo guardado como si `anular` ya limpiara el estado en memoria, así que no prueba la persistencia entre procesos. · Separar un escenario para `cancelar` con su GIVEN/WHEN/THEN. Añadir a cada uno un THEN sobre el archivo, con un `status` concreto y la `version: 1` en `SALAS_ARCHIVO`. Dejar claro que el segundo `libres` corre en otro proceso con el mismo `SALAS_ARCHIVO`.
+
+2. Crítico · Delta de comportamiento (ADDED «Archivo ilegible») · Solo cubre JSON roto. La decisión 7 también dice «`version` desconocida» y no tiene escenario. El AND «sigue conteniendo `{roto`» sí protege contra sobrescribir. El escenario no fija si el mensaje sale por stdout o por stderr, ni cuál es la `<ruta>` exacta. Una implementación que imprima otra cosa pasaría «a ojo». · Añadir un escenario con `{"version": 2, "reservas": []}`. Fijar el canal de salida y que `<ruta>` es el valor literal resuelto de `SALAS_ARCHIVO` o de `~/.salas/reservas.json`. Aplicar lo mismo a un comando de solo lectura como `libres`, que también debe fallar con código 1.
+
+3. Importante · Delta de comportamiento (ADDED «Primer arranque») · Es idéntico a «Consultar no escribe», salvo el AND del archivo. Tal como está redactado, un `libres` fijo con la reserva de ejemplo cableada pasa sin tocar el store. Tampoco cubre la decisión 6: «con archivo, manda el archivo, aunque ya no contenga la de ejemplo». · Sustituirlo por un escenario con un archivo que tenga `reservas: []`, donde `libres 10:00-12:00` responda `Norte, Sur`. Fundir el actual en «Consultar no escribe».
+
+4. Importante · Delta de comportamiento · Ningún escenario cubre que se cree `~/.salas/` ni el archivo en el primer guardado, ni que un guardado deje el archivo con el formato de la decisión 4 (los cuatro campos y `version: 1`). La spec no dice qué pasa si falla la escritura: carpeta sin permisos, disco lleno. Tampoco dice si se escribe de forma atómica. Un guardado a medias dejaría un archivo roto, que luego el propio flujo de la decisión 7 rechazaría. · Añadir un escenario GIVEN sin archivo y sin carpeta, WHEN `anular Norte lun`, THEN existe el archivo con JSON `{"version":1,"reservas":[…]}` y `status` anulada. Decidir y escribir el comportamiento si la escritura falla (código de salida y mensaje). Decidir también escribir en un temporal y renombrar.
+
+5. Importante · ✋ Decisiones / Approach · Hay decisiones tomadas en el cuerpo que no están en la lista de decisiones: (a) la carga ocurre «al arrancar el módulo», lo que obliga a un import con efectos laterales y afecta a cómo se prueba `app.js`; (b) `app.js` imprime el mensaje y sale con código 1, cuando hoy `run()` solo devuelve texto; (c) guardar en `cancelar`/`anular` por comando, no por cambio de estado; (d) sin tope de reservas y sin otros avisos, en las «Reglas de la capacidad». · Promover (a), (b) y (c) a decisiones numeradas en «✋». Indicar dónde se tratan los errores de lectura: en `run()` o en el arranque.
+
+6. Importante · Dónde se prueba / ✋ decisión 3 · `SALAS_ARCHIVO` es una variable de entorno nueva y la spec no describe su contrato. Faltan: si una cadena vacía cuenta como no definida, si la ruta es relativa o absoluta y si se expande `~`. Los tests lanzan `node src/app.js` como subproceso y no hay control sobre `HOME`. Si una prueba falla en `SALAS_ARCHIVO`, escribirá en la carpeta personal real. · Documentar la variable en `operations.md`, en Comandos. Fijar la semántica de vacío y de ruta. Añadir un escenario o una prueba de que sin `SALAS_ARCHIVO` se usa `~/.salas/reservas.json`. Exigir `SALAS_ARCHIVO` en todos los tests, para que ninguno toque la carpeta personal real.
+
+7. Importante · Dónde se prueba / Términos y ADR · El gate de cierre es `node --test && node scripts/lint.mjs`. La spec no dice si `scripts/lint.mjs` impone la regla de `node:fs`, ni cómo se comprueba la nueva Confirmación del ADR 0007 («`node:fs` solo en `src/store.js`»). Esa regla se haría cumplir con un test o con el lint, y la spec no menciona ninguno. Además, lanzar `node src/app.js` dos veces desde un test usa `child_process`, que tampoco se declara. · Añadir una tarea o un escenario que compruebe la Confirmación (grep de `node:fs` en `src/` desde un test, o una regla del lint). Ver si el lint actual rechaza `node:fs` por el ADR 0004 y cambiarlo. Nombrar los tests de subproceso como parte del gate `node --test`.
+
+8. Importante · Lo que se retira o cambia de forma / ✋ decisión 1 · Las menciones al ADR 0004 y a `operations.md` se aplazan «al cerrar». Pero `architecture.md` dice «Un solo fichero de entrada: `src/app.js`» y no se menciona. Con `src/store.js` ya no es cierto. Tampoco se dice si el 0004 estaba enlazado desde otros documentos, ni qué pasa con su Confirmación mientras dure la implementación, que prohíbe `node:fs` en `src/`. · Añadir la fila de `architecture.md` a la tabla de cambios. Decidir que el 0004 y su Confirmación se actualizan en la primera tarea del plan, no al cerrar, para que el lint o los tests no fallen durante el trabajo.
+
+9. Importante · Approach / Delta · La spec mantiene el modelo de un proceso por comando: cada `node src/app.js` carga, ejecuta y sale. «Gana la última que guarda» no se cumple si dos procesos leen el archivo antes de que ninguno escriba. Los cambios de uno se pierden por completo, y no solo se sobrescriben. La spec dice «el 0004 ya lo nombraba», pero no declara este efecto de «lost update» en el escenario. · Dejar escrito en la decisión 8 que un `anular` concurrente puede perder otro `anular` ya guardado, y que se acepta. Quedaría cubierto por el dev-lead. O bien releer el archivo justo antes de escribir.
+
+10. Menor · Delta de comportamiento · El escenario «Consultar no escribe» comprueba que el archivo no existe, pero no dice qué pasa con un archivo existente. Un `libres` que reescribe el archivo idéntico pasaría con un archivo previo. El resto de comandos de solo lectura tampoco están cubiertos. · Añadir una variante con archivo existente: comparar el contenido y la fecha de modificación antes y después de `libres`.
+
+--- [49]
+Los dos revisores han terminado: hay 2 Críticos, que acepto, y 10 Importantes. Con un Crítico aceptado la rúbrica exige una segunda ronda, así que reescribo la spec, la reviso otra vez y entonces te la presento.
+
+--- [51]
+Ahora: segunda ronda con un revisor sobre la spec corregida y el delta sobre una copia. Queda: integrar lo que salga y presentarte la spec.
+
+--- [54]
+El delta pasa sin rechazos en la copia: 7 requisitos y 5 reglas. Falta la segunda ronda de review, que sigue en marcha. La espero antes de presentarte la spec.
+
+--- [61]
+1. Crítico · Delta «Fallo al guardar» + decisión 7 · El GIVEN usa una ruta cuya carpeta es un archivo normal. La carga ocurre antes, y leerla da ENOTDIR, no ENOENT. La decisión 7 solo define como ilegible el contenido (JSON roto, `version`, campos) y la 6 solo el caso «sin archivo». Si cualquier error de lectura que no sea ENOENT cuenta como ilegible, este escenario acaba en `no se pueden leer…` y nunca llega a `no se pueden guardar…`. Si ENOENT y ENOTDIR cuentan como «sin archivo», el escenario sí funciona, pero la spec no lo dice. · Decir en las decisiones 6 y 7 qué pasa con cada error de lectura (ENOENT, ENOTDIR, EACCES, ruta que es una carpeta). Cambiar el GIVEN del escenario para que la carga dé «sin archivo» y falle solo el guardado, por ejemplo una carpeta sin permiso de escritura.
+
+2. Importante · «Dónde se prueba» vs decisión 11 y Approach · Los escenarios «Archivo ilegible» y «Fallo al guardar» exigen código de salida 1, mensaje en la salida de error y que no se imprima `anulada`. Eso pasa en el arranque de `app.js`. Pero «Dónde se prueba» los asigna a `store.js` directamente, donde no se puede comprobar nada de eso. Tampoco se dice cómo el arranque sabe si `cancelar` o `anular` cambió algo. `run()` solo devuelve texto, así que habría que leer `sin reserva …` o comparar el estado. · Dejar claro dónde ocurre el guardado (dentro o fuera de `run()`) y cómo se detecta el cambio. Mover la comprobación de código de salida, mensaje y no impresión de `anulada` al test con `child_process`. Dejar en `store.js` solo las pruebas de lectura y escritura.
+
+3. Importante · Decisión 13 · Dice que `sdd capability merge` dio «4 requisitos» y sus 5 reglas, pero el delta ya tiene 7 ADDED. El resultado está obsoleto y la spec lo admite al decir «se vuelve a pasar». Un borrador que se envía a revisión con esa cifra no demuestra que el delta actual haga merge. · Repetir el merge con el delta actual antes de pasarlo a revisión y poner el número real (7). Quitar la frase «se vuelve a pasar».
+
+4. Importante · Decisión 8 y 🦆 («no pierde lo que había guardado») · Ningún escenario prueba el guardado atómico ni que un fallo respete el archivo previo. «Fallo al guardar» parte de una ruta imposible, donde no hay archivo previo que conservar, y pasa igual con una escritura directa no atómica. Tampoco se dice nada del archivo temporal (nombre único o no, limpieza). Con dos procesos, un nombre fijo podría corromper el archivo. · Añadir un escenario con archivo válido preexistente y fallo forzado al guardar (por ejemplo, el renombrado falla). El THEN debe comprobar que el contenido original queda intacto y que no sobra ningún `.tmp`. Fijar en la spec el nombre del temporal (con pid).
+
+5. Importante · Hallazgos, rechazo del ADR 0004 · El motivo («ni los tests ni lint hacen cumplir su Confirmación») no se sostiene. Durante toda la rama el código usa `node:fs` en `src/`, contra un ADR vigente, y el eje Arquitectura de la revisión final compara el código con los ADR vigentes. Esto se detectaría en esa revisión, no en el gate. · Reabrir la cuestión: marcar el 0004 como `superseded` o `proposed 0007` en la primera task. Si no, anotar aquí expresamente la excepción para que el eje de Arquitectura no la reporte como violación.
+
+6. Importante · Decisión 11 vs decisiones 3 y 7 · «`app.js` solo importa `store.js`» choca con la resolución de la ruta (`os.homedir()`, `path.resolve` contra la carpeta de ejecución, vacía = no definida). La spec no dice dónde vive esa lógica. Si va en `app.js`, importa `node:os` y `node:path`. Si va en `store.js`, `loadBookings(path)` ya no recibe «la ruta por parámetro», como dice el Approach. Tampoco se dice cómo `app.js` distingue «ejecutado como programa» de «importado por un test». · Decidir quién resuelve la ruta y ajustar el enunciado. Una opción es `resolvePath(env)` en `store.js`. Explicar el mecanismo de «ejecutado como programa».
+
+7. Menor · Decisión 5 vs escenario «Primer guardado crea la carpeta» · La decisión dice «se crea `~/.salas/`», pero el escenario crea `<tmp>/nueva`, un directorio de `SALAS_ARCHIVO`. No se define si se crean carpetas intermedias anidadas ni qué pasa con una ruta de `SALAS_ARCHIVO` en otra ubicación. · Redactar la decisión 5 como «se crea la carpeta padre del archivo, recursivamente».
+
+8. Menor · Decisión 8 y regla «Avisos» · `<causa>` es el mensaje del sistema (ENOSPC, EACCES…), en inglés. La constitución (art. 4) pide castellano en el texto de la interfaz. Además, «cualquier comando» no aclara si entran los comandos desconocidos, el uso sin argumentos o `reservar`. · Traducir las causas conocidas, o admitir expresamente en la spec que `<causa>` va tal cual. Listar los comandos afectados.
+
+9. Menor · Delta «Consultar no escribe» · Comparar la fecha de modificación tras ejecutar `libres` pasa aunque se reescriba en el mismo milisegundo o en la granularidad del sistema de archivos. No prueba nada. · Fijar la fecha del archivo con `utimes` a un valor antiguo antes de ejecutar, o comparar con una lectura de contenido más un `stat` de `ino`.
+
+10. Menor · Cabecera de la review (tamaño) y título/Intent · «6 ficheros» y «dos tests» no coinciden con «Dónde se prueba», que describe tres pruebas: store, e2e con `child_process` y el escaneo de `node:fs`. Además salen 7 o más archivos, contando el ADR 0004. El título «Las reservas sobreviven» promete más de lo que `reservar` permite, y la revisión «Mínimo razonable» lo dejó sin mirar. · Corregir el recuento de tests y ficheros. Título más acotado: «Las cancelaciones y anulaciones sobreviven…».
+
+--- [63]
+La segunda ronda trae 1 Crítico y 9 hallazgos más. No hay tercera ronda: los integro y te presento la spec.
+
+--- [67]
+Los cambios de decisiones están aplicados. Ahora: reescribo escenarios, Approach, «Dónde se prueba» y los hallazgos de la segunda ronda. Después paso el delta por la copia de nuevo.
+
+--- [71]
+La spec está escrita y revisada, pero no está aprobada: el plan y el código esperan tu respuesta. Está en `.docs/sdd/changes/20261112-121834-feature-0012-persistir-reservas/spec.md`, en la rama `feature/0012-persistir-reservas` (id 0012, reservado con `sdd id claim`).
+
+🦆 Hoy, si anulas la reserva de Norte del lunes y cierras la terminal, al volver a abrirla la reserva sigue ahí como si nada: `salas` olvida todo. Con este cambio, lo que cancelas o anulas queda guardado en un archivo de tu carpeta personal, y al volver a abrir `libres 10:00-12:00` ya cuenta Norte como libre. La primera vez, sin archivo, `salas` arranca con la reserva de ejemplo de siempre. Si el archivo está estropeado o no se puede escribir, `salas` te lo dice, sale con error y no pierde lo que había guardado.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Sustituye el ADR 0004**, que decía «cerrar la terminal pierde las reservas» y prohibía `node:fs` en `src/`.
+   - Se escribe un ADR 0007 al cerrar y el 0004 pasa a `superseded by 0007`.
+   - También se actualizan `operations.md` y `architecture.md`.
+   - La nueva Confirmación es que `node:fs` solo aparece en `src/store.js`, y un test lo comprueba.
+   - Hasta el cierre, `store.js` usa `node:fs` contra el 0004 todavía vigente. Lo dejo escrito como excepción para que la revisión de Arquitectura no lo reporte.
+2. Capacidad nueva `booking-persistence`. El proyecto no tiene `capabilities/`, así que es la primera.
+3. El archivo es `~/.salas/reservas.json`, con `~` resuelto por `os.homedir()`.
+   - `SALAS_ARCHIVO` cambia la ruta. Una cadena vacía cuenta como no definida y no se expande `~`.
+   - Todos los tests la fijan a una carpeta temporal.
+4. Formato: `{"version": 1, "reservas": [{room, day, slot, status}]}`, con `status` en `active`, `cancelled` o `voided`.
+5. Se guarda solo tras `cancelar` o `anular`, y solo si cambió una reserva. Antes de guardar se crea la carpeta del archivo.
+6. Sin archivo (`ENOENT` o `ENOTDIR`), se parte de la reserva de ejemplo (Norte, lun, 10:00-12:00). Con archivo, manda el archivo.
+7. Archivo ilegible, es decir, JSON roto, `version` distinta de 1, campos inválidos u otro error de lectura:
+   - Cualquier comando dado falla, `libres` incluido.
+   - El mensaje es `no se pueden leer las reservas de <ruta>; no se ha cambiado nada`, por la salida de error y con código 1.
+   - Nunca se sobrescribe el archivo.
+8. Fallo al guardar:
+   - Sale con código 1, dice `no se pueden guardar las reservas en <ruta>: <causa>` y no imprime `anulada`.
+   - La `<causa>` es el mensaje del sistema, en inglés.
+   - El guardado va a `<archivo>.<pid>.tmp` y se renombra.
+9. **`reservar` no entra.** Hoy solo devuelve «reserva semanal creada» y no crea nada, así que lo único que puede sobrevivir es la reserva de ejemplo y sus cancelaciones o anulaciones. Por eso acoté el título a «Las cancelaciones y anulaciones sobreviven…». Si esperabas que `reservar` ya guardara, dímelo: cambia el alcance.
+10. **Dos terminales a la vez:** si dos cancelaciones coinciden, la de la terminal que guarda antes puede perderse. No hay bloqueo y lo acepto.
+11. Enfoque A: un módulo `src/store.js`, frente a B (todo en `app.js`) y C (SQLite).
+    - `store.js` también resuelve la ruta.
+    - La carga, el guardado y los errores van en el bloque `if (command)` de `app.js`. `run()` sigue devolviendo texto y importarlo desde un test no toca disco.
+
+**Review:** dos revisores en paralelo (dominio y técnica, ambos Sonnet) y una segunda ronda con un tercero, porque la primera dejó 2 Críticos.
+- Acepté 2 Críticos y casi todos los Importantes. Los escenarios pasaron de 4 a 8.
+- Rechacé dos cosas: renombrar el slug `booking-persistence` y distinguir cancelación de anulación en la spec.
+- Acepté en parte mover el ADR 0004 a la primera task: no lo muevo, pero queda la excepción escrita.
+- El delta pasa `sdd capability merge` sobre una copia, con 8 requisitos y 5 reglas, sin rechazos.
+- Los hallazgos completos, aceptados y rechazados, están en la spec.
+
+**Validación:** la haces tú. Cierras la terminal, la abres y miras si siguen tus reservas.
+
+Aviso: la spec y el repaso de coherencia ya están hechos, pero no he hecho commit de nada. El plan no se escribe hasta que apruebes la spec.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 3 tasks)
+

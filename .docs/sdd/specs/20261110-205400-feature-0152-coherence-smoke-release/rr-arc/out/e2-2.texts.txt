@@ -1,0 +1,124 @@
+--- [3]
+Empiezo por los pre-checks del paso 0 y por localizar las specs E2E que toca la rama.
+
+--- [7]
+Pre-checks limpios: sin cambios sin commitear, destino listo y ninguna otra rama abierta. Ahora leo las referencias del paso 1 y los campos E2E.
+
+--- [13]
+Validación en modo `field`: la hago yo. Hay campos E2E, así que sigo `e2e-suite.md`. Antes de repetir nada necesito el alcance real contra `develop` (`merge.into`), no contra `main`.
+
+--- [20]
+Entorno levantado por mí (pid 6232) y comprobado, sin variables de entorno añadidas. Lanzo el gate de cierre literal.
+
+--- [29]
+Entorno parado. Sigo con el cierre. Quedan por leer las referencias del paso 0.6, la validación en modo `field`, los registros y las plantillas.
+
+--- [45]
+El paquete es de 33 líneas. Despacho la re-revisión única (`sdd-kit:effort-high` + `opus`) y su vigilancia de silencio en el mismo turno.
+
+--- [54]
+Re-revisión lanzada en segundo plano, con su vigilancia. Hasta que vuelva y la cierre no escribo ningún registro del cierre. Esto es lo que llevo hecho y lo que queda.
+
+**Hecho**
+- **Pre-checks:** sin cambios sin commitear, `merge --check` con el destino `develop` listo, y ninguna otra rama `feature/*` o `patch/*` abierta a la vez.
+- **Estabilidad de las specs E2E:** la rama solo toca `e2e/cancel.e2e.mjs`, con 1 test cambiado y 2 nuevos. `free.e2e.mjs` no lo toca, así que no entró en la tanda. Los tests cambiados corrieron ×3 y los otros dos tests del fichero ×1, con el entorno levantado por mí. Fueron 11/11 en verde, sin ninguno inestable. La tanda real duró 1 min 24 s.
+- **Gate de cierre literal sobre `4eccb05`:** 5 unit y 7 E2E en verde, con 48,1 s de E2E. Eso supera el «Presupuesto E2E» de 0,5 min, así que abriré una fila de deuda con la duración y el presupuesto. Ya había la misma marca de tiempo sin la rama (7 tests, trace `on` por defecto).
+- **Entorno:** lo paré al acabar.
+
+**Pendiente cuando vuelva la re-revisión**
+- **`tasks.md`:** la tabla cita `7faa840` en las dos tasks, pero la Task 1 es `5d853c0`. Lo corrijo al cerrar.
+- **Ruling de la Task 2:** habla de `--test-concurrency=1` en el gate, pero ni `operations.md` ni `package.json` lo llevan. Voy a comprobar si se aplicó. El ruling irá al walkthrough en «Decisiones tomadas sin el dev-lead». Si queda como workaround, necesita su fila de deuda.
+- **Resto del cierre:**
+  - Registro de la validación en campo, `walkthrough.md` y `capabilities/bookings.md` con `capability merge`.
+  - Retro, roadmap, `debt.md` y `decision check`.
+  - Squash del cierre y `sdd merge --sync`.
+  - Merge a `develop` sin push.
+
+--- [58]
+**Veredicto: con hallazgos.** Hay dos Important y dos Minor, todos en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`.
+
+El commit `4eccb05` solo añade ese `tasks.md` (17 líneas) y no toca código. No se sale del scope ni del «No entra» (lo de 0011) y no cambia el delta. Los fallos están en lo que el fichero dice del repo.
+
+### Critical
+Ninguno.
+
+### Important
+
+1. **`tasks.md:10`: la Task 1 apunta a un commit que no es el suyo.** Pone `7faa840`, pero la Task 1 («Cancelar con motivo») se hizo en `5d853c0` («feat(bookings): cancelar con un motivo de la lista»), que toca `src/app.js` y `test/cancel.test.js`. `7faa840` es el commit de la Task 2. Así el registro no deja seguir la Task 1 hasta su commit. Arreglo: `| 1 | Cancelar con motivo | done | 5d853c0 | |`.
+
+2. **`tasks.md:17`: el Ruling cambia el gate de cierre y su motivo no se sostiene.**
+   - **Va contra la constitución y el plan.** La constitución, artículo 2, fija el gate en «`node --test` entero en verde». El plan, en `plan.md:50`, pone «Gate de cierre: `node --test`». El Ruling lo cambia a `node --test --test-concurrency=1`. Este Ruling no puede rebajar una regla de la constitución.
+   - **La carrera que describe no existe a `4eccb05`.** `node --test` ejecuta cada fichero en su propio proceso, así que `test/app.test.js` y `test/cancel.test.js` no comparten el array `bookings` de `src/app.js:4`. Dentro de `test/cancel.test.js` los tests van uno tras otro. Lo que sí existe es otra cosa: el test 3 («canceladas…») depende del estado que deja el test 1. Es un problema de orden, no de concurrencia, y `--test-concurrency=1` no lo arregla.
+   - **No queda reflejado en ningún otro sitio.** `package.json` sigue con `"test": "node --test test/"`. El «workaround hasta aislar el almacén» no está en `.docs/sdd/steering/debt.md`, que no tiene ninguna entrada en «Lista».
+   - **Está colgado de la Task 2.** Pero la verificación de la Task 2 es `node --test test/cancel.test.js` (`plan.md:45`) y el gate es de la validación final, no de una task.
+
+   Arreglo: quitar el Ruling y dejar el gate como dice la constitución. Si se quiere tratar la dependencia de orden entre tests, va a la deuda, no al gate.
+
+### Minor
+
+3. **`tasks.md:11`: las Notas de la Task 2 no dicen que se tocó e2e.** `7faa840` también modifica `e2e/cancel.e2e.mjs`, que no está entre los Ficheros del plan (`plan.md:46`). El registro debería dejar constancia.
+
+4. **Fuera del rango, sin bloquear.** El escenario de `spec.md:54` («sin `--motivo` responde lo mismo») no tiene test en `test/cancel.test.js` ni en el e2e. El código sí lo cubre, porque `reasonOf` devuelve `undefined` y ese valor no está en la lista. La revisión final dio esta parte por limpia; lo dejo anotado.
+
+### Comprobaciones pendientes
+No he ejecutado nada. Si el Ruling se quita, recomiendo que el hilo principal ejecute `node --test` sin flags para confirmar el gate tal como lo pide la constitución.
+
+--- [60]
+La re-revisión vuelve `con hallazgos`: dos Important y dos Minor, todos en `tasks.md`. No los doy por buenos sin comprobarlos. Paro la vigilancia, quito el worktree de revisión y verifico en el repo el ruling y la dependencia de orden entre tests.
+
+--- [67]
+Git ya da el worktree por retirado, pero queda su carpeta suelta junto al repo. La miro antes de borrarla.
+
+--- [73]
+Ahora el smoke del modo `field`, con una fila por THEN y ejecución real contra el servidor que levanto yo. El THEN «sin `--motivo`» no tiene test, así que lo provoco con la entrada que falla.
+
+--- [76]
+Los cuatro THEN pasan con ejecución real, incluido «sin `--motivo`», y el entorno quedó parado. Ahora los registros. Empiezo por el delta de capacidades, con el CLI y nunca a mano.
+
+--- [79]
+Capacidad creada con el CLI. Reviso los rulings de la ejecución en el ledger, si el workspace sigue existiendo, para que el walkthrough los sume a los de `tasks.md`.
+
+--- [85]
+Escribí un `Retro:` provisional. El paso lo deja `sdd-retro`, así que lo invoco con `cierre` y que él decida la línea.
+
+--- [90]
+Ahora la deuda y el roadmap. Dos filas en «Por triar»: la suite E2E sobre su presupuesto y la dependencia de orden entre tests. En el roadmap solo cambia el «Estado» de la 0010.
+
+--- [93]
+Esa invocación no aplicó nada: debt y roadmap siguen sin cambios. Lo hago con un script aparte.
+
+--- [99]
+El cambio en disco es mi propio `sed`, nada más. No quedan citas a `4eccb05`. Junto y commiteo.
+
+--- [102]
+Commit de cierre `7573864` y los shas citados siguen alcanzables. Paso 6: la sincronización con la base va en su propia llamada, y leo su salida antes de nada más.
+
+--- [112]
+La 0010 está cerrada y fusionada en `develop`. Las specs E2E que toca la rama salieron estables, sin ninguna inestable.
+
+**Estabilidad de las E2E**
+- La rama solo toca `e2e/cancel.e2e.mjs`: un test cambiado y dos nuevos, que corrí ×3. Los otros dos tests del fichero fueron ×1. `free.e2e.mjs` no lo toca y solo corrió ×1, dentro del gate.
+- Dieron 11/11 en verde, en 1 min 24 s.
+- Antes de la tanda pasó el gate de cierre literal, `node --test test/ && node e2e/run.mjs`: unit 5/5 y E2E 7/7. El E2E tardó 48,1 s, frente a un presupuesto de 0,5 min, así que abrí una fila de deuda.
+- Levanté y paré el entorno yo cada vez.
+
+**Decisiones tomadas sin el dev-lead**
+- El `Ruling` de la Task 2 decía que el gate llevaba `--test-concurrency=1`. Nunca se aplicó: no está en `package.json` ni en `operations.md`. Tampoco hay esa carrera, porque `node --test` corre un proceso por fichero. Lo dejé anotado como «no aplicado», sin borrarlo.
+- La spec se aprobó sin review de spec. Por eso el THEN «sin `--motivo`» no tiene test propio. Lo provoqué con ejecución real y devuelve «motivo no válido: …».
+- La revisión final estaba limpia, pero `4eccb05` (solo `tasks.md`) movió `HEAD` después. El paso 0.6 pide una re-revisión única, así que la lancé. Volvió con 2 Important y 2 Minor, todos en `tasks.md`; el código sale sin hallazgos. La Task 1 apuntaba a `7faa840` en vez de a `5d853c0`. Corregí eso y la nota del ruling, y añadí a la Task 2 que también toca `e2e/cancel.e2e.mjs`.
+- No arreglé la dependencia de orden entre tests de `test/cancel.test.js`. El test de `canceladas` usa el estado que deja el de `cancelar`. Es un cambio de tests fuera del scope y quedó en «Por triar» de la deuda.
+
+**Pendiente y minors diferidos**
+- No hay nada pendiente del cambio.
+- Minor diferido: el THEN «sin `--motivo`» sigue sin test propio.
+- Creé `capabilities/bookings.md` con `capability merge`.
+- Marqué la 0010 como ✅ en el roadmap.
+- `roadmap check`, `capability check` y `decision check` salen en verde.
+- No aplica el estimation-log, porque el proyecto no tiene `estimation.md`.
+- El sync dijo `base: al día`. Desde la suite solo cambió `.docs/`, así que el merge omitió la verificación y llevó `--verified-at 7573864`.
+
+**Ticket del kit**
+Hay una contradicción en el kit. `final-review-check.md` manda re-revisar un commit de solo documentación y menos de 20 líneas. `sdd-implement` y `sdd-verify` mandan leerlo en el hilo y no despachar. ¿Te preparo el ticket con `sdd-feedback`? No bloquea nada.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`b8c4c6f`) · push: no hecho: `merge.push` no está activo · la rama está en el checkout principal del repo, así que no hay worktree que borrar.
+

@@ -1,0 +1,62 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -100 && ls .docs/sdd 2>/dev/null
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat PRODUCT.md && cat .docs/sdd/specs/*free/spec.md .docs/sdd/specs/*cancel/patch.md && cat .docs/sdd/steering/debt.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (5 turnos, 0.1005688 $)
+Porque `cancelar` no cancela nada. Solo devuelve un texto.
+
+Lo que hace el código en `src/app.js`:
+
+- **`cancelar`** (línea 11) devuelve `cancelada lun 10:00-12:00` y no toca `bookings`. La reserva de Norte, lunes 10:00-12:00, sigue en la lista, y `libres` la sigue viendo.
+- **`libres`** (líneas 4-6) ignora el día. Filtra solo por `room` y `slot`, y `freeRooms(slot)` ni siquiera recibe el día. Aunque la cancelación funcionara, la reserva de un martes a esa hora también ocuparía Norte.
+- **Las reservas no se guardan.** `bookings` es un array en memoria con la reserva de Norte puesta a mano. Cada ejecución de la CLI es un proceso nuevo y vuelve a empezar desde ese estado. Una cancelación no sobreviviría al siguiente `libres`, ni aunque borrara del array.
+- **`reservar`** tampoco añade nada a `bookings`. Con `--cada-semana` solo devuelve `reserva semanal creada`.
+
+Esto es lo que dice el código. Los documentos del repo cuentan otra cosa. El `patch.md` de `patch-0007-cancel` dice «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado», pero en `app.js` no veo ese fix. Tampoco veo un test que lo cubra, y no he abierto `test/app.test.js` ni lo he ejecutado. Cuadra con que el patch lo diera por cerrado sin que el comportamiento real esté arreglado. Mi hipótesis es que el patch se verificó contra el texto de salida y no contra el efecto en `libres`.
+
+No he cambiado nada. Arreglarlo implica decidir tres cosas:
+
+1. Dónde persistir las reservas (archivo JSON, por ejemplo).
+2. Si `libres` recibe el día.
+3. Si `reservar` y `cancelar` escriben de verdad.
+
+Eso ya es trabajo. Dime si lo quieres y lo paso al roadmap como patch o como feature, según lo grande que lo veas.

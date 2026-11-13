@@ -1,0 +1,133 @@
+--- [5]
+Solo hay pendiente la migración v3.0.0. Miro el estado del proyecto para evaluar cada paso.
+
+--- [13]
+La migración a v3.0.0 está lista para aplicar, pero no he tocado nada. Los pasos 1, 2, 3 y 5 llevan **gate** y necesito tu «sí» y unas decisiones. El árbol está limpio en `d162490` y el único tag es `v1.2.0`. Solo hay pendiente la v3.0.0.
+
+## Gate 1 · Movimientos
+| Qué hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md`; no hay uno en la raíz |
+| `constitution.md`, `architecture.md`, `estimation.md` | `git mv` a `steering/`. En `constitution.md`, `decisions/0001-…` pasa a `../decisions/0001-…` |
+| `estimation-log.md` | `git mv` a `steering/` y se regenera con `sdd estimation log`. La diferencia es solo de forma: hoy tiene la cabecera mínima y quedaría con cabecera AUTO-GENERADO y las columnas nuevas. Hay 0 filas escritas a mano, así que no se pierde nada |
+
+## Gate 2 · Producto y operaciones
+**`mission.md` → `PRODUCT.md`**
+- «Por qué existe» pasa a `## Product Purpose`.
+- «Usuarios y roles» pasa a `## Users`.
+- «Qué es y qué no es» pasa a `## Capabilities and Constraints`.
+- «Dominio» pasa a `## Terminology`, con el texto `**Franja**: una hora reservable, de en punto a en punto.` No hay `_Evitar_`, porque el original no nombra sinónimos.
+
+**`tech-stack.md` + `environments.md` → `steering/operations.md`**
+- «Comandos», «Testing» y «Frontend» pasan tal cual.
+- «Testing» gana estos campos:
+  - Nivel de la suite `npm test`: `pendiente`, porque no hay config que diga qué arranca.
+  - «Sin filtro»: lo propongo con `npm test`.
+  - «Lint»: `ninguno`, porque no hay script `lint`/`format` ni pre-commit.
+  - «CI de la base»: `ninguna`.
+  - «Temporales»: lo propongo como en la init.
+  - No hay E2E (no existe `e2e/`).
+- `environments.md` pasa a `## Entornos`, condensado: marcador `.sdd-env.json`, las tres entradas `env:setup`/`env:clean`/`env:status` y el runner.
+- «Tecnologías» (Node 22, Vitest 3) ya lo dicen los manifests, así que sale. `package.json` lo confirma.
+- «Decisiones abiertas» («¿Avisos por correo al reservar?») va al gate 3, a Later.
+- Después se hace `git rm` de los tres originales. Quedan en `git show d162490:.docs/sdd/<doc>.md`.
+
+## Gate 3 · `ROADMAP.md` y `steering/debt.md`
+**Publicada**: solo la 0029, cuyo walkthrough está en `v1.2.0`. La última release cerrada es la v1.2.0.
+
+| Fila 2.x | Destino |
+| --- | --- |
+| 0029 (publicada) | sale; ya está en `CHANGELOG.md` |
+| 0030 ✅, 0032 ✅, 0033 ✅ (patch) | Now, bajo `## Now — 3.0.0 · en preparación` |
+| 0031 ⏳ (Release 3.0.0) | Now |
+| Patch 0023 (2026-09-25, posterior a la v1.2.0) | Now ✅, `**Carril:** patch`, requisitos hacia su `patch.md`. Sin fila previa en Próximo |
+| 0021, 0022, 0024 | Next |
+| «1 Estreno con recepción», 🔄, sin id | **Pregunta**: ¿Later con un id nuevo (`sdd id next --reserve`) o Next? Later no admite 🔄, así que dime qué estado toma |
+| Backlog 0040 | Later, conserva el id |
+| Backlog B3 | Later, con id reservado, sin `B3` |
+| Decisión abierta «¿Avisos por correo?» | Later, con id reservado, `⏳` |
+| Patches antes de la última release | no hay |
+| «Releases cerradas» v1.2.0 | sale. Queda `validaciones pendientes: 0016` en su walkthrough |
+
+Notas del gate 3:
+- **«Tras»**: 0022 → 0021. 0024 → `—`, porque la 0015 no está en el roadmap ni en el changelog.
+- **«Tamaño»**: **tienes que decidir S/M/L** para 0030, 0031, 0032, 0033, 0023, 0021, 0022 y 0024.
+- **Ids**: se reservan tres con `sdd id next --reserve --count 3`, y si añades la fila «1» a Later, cuatro.
+
+**Deuda → `debt.md`**
+| Ítem | Sección | Notas |
+| --- | --- | --- |
+| Patch 0023 saldada | Lista | Origen SAL-44. Evidencia: su `patch.md`. Destino 0023 |
+| `cancel` no comprueba el dueño | Lista | Origen SAL-45. Evidencia: `../field-reports/sal-45.md`. Causa: `defecto del producto (propuesta)`. Arreglo: `—` |
+| Test de avisos y la fecha | Lista | Origen SAL-46. Causa: prueba o molde. Arreglo: mover regla. Remedio: `—` |
+| Rutas largas | Lista | Origen SAL-47. Causa: entorno de la máquina. Arreglo: comprobación automática. Remedio: `lanza desde D:\r` |
+| Avisos salen dos veces | Lista | Tiene dos tickets (SAL-48 y SAL-49): **dime el Origen y el Remedio** |
+| Mensajes de error castellano/inglés | Por triar | Fecha 2026-09-01 (commit que añadió la fila). Se pierde «Impacto: Bajo — confunde» |
+| Pasar `src/app.js` a TypeScript | Por triar | Fecha 2026-09-15. Se pierde «Impacto: Bajo» |
+| Test de franjas falla en CI | En espera | Falta: «un segundo fallo con su log». Causa: `sin determinar`. Fecha 2026-09-01 |
+| Changelog pierde una entrada | En espera | Falta: «reproducirlo». Causa: fusión de registros. Fecha 2026-09-01 |
+| Validar formato de franja | sale | Estaba como Descartada |
+
+Los «Origen» sin ticket ni walkthrough llevan `roadmap 2.x`.
+
+## Gate 5 · Nombres de skills retirados
+- **Se reemplaza sin gate**:
+  - `CLAUDE.md`: `sdd-end-feature` pasa a `sdd-archive`.
+  - `.claude/commands/pregunta.md`: `/sdd-consult` pasa a `/sdd-explore`.
+- **Gate**: la línea de `tech-stack.md` («2 de 2 sujetos de `sdd-end-patch`…», task 0012) es una medición fechada. Propongo **conservarla** tal cual al pasarla a `operations.md`.
+
+## Después de aprobar (sin gate)
+- **Enlaces**: se corrigen los de `CLAUDE.md`, `README.md` y los de dentro de `steering/` hacia las rutas nuevas. La línea «El roadmap vive en `.docs/sdd/roadmap.md`» pasa a `ROADMAP.md`.
+- **Estimación**: `estimation.md` recibe las dos líneas nuevas del método. «Notas de calibración» no se toca.
+- **Marcador**: se añade `.temp/` a `.gitignore`, que no existe. También se instala el hook del proyecto, se pasa la Verificación, se escribe `--mark 3.0.0` y se hace el commit `chore(sdd): migrar al kit v3.0.0`.
+- **Paso 9 (gate de merge)**: `npm test` no genera avisos.
+- **Paso 10 (superpowers)**: se omite porque no hay `.claude/settings.json`.
+- **Paso 8 (commit aparte)**: te propondré una regla de `constitution.md` que choca con el kit. «Ids: el id de una feature se elige a mano» choca con `sdd-propose/references/nombrado.md`, y la propuesta es quitarla.
+
+**¿Apruebo estas tablas?** Para aplicarlas necesito tres cosas:
+1. El «sí», o los cambios que quieras en las tablas.
+2. Los tamaños S/M/L de las ocho filas.
+3. Tu decisión sobre la fila «1», y el Origen y Remedio de los avisos duplicados.
+
+Si no contestas, todo queda pendiente y sin tocar. Para reanudar: aprueba las tablas y vuelve a pedir la migración.
+
+--- [29]
+Diff limpio. Ahora `ROADMAP.md` y `debt.md`.
+
+--- [41]
+La migración a v3.0.0 está aplicada y commiteada (`d7bf9d7`, `chore(sdd): migrar al kit v3.0.0`). `sdd-kit.json` declara `3.0.0`. Queda un gate por resolver: el del paso 8.
+
+## Qué cambió
+- **Movimientos**: `changelog.md` pasó a `CHANGELOG.md`. `constitution`, `architecture`, `estimation` y `estimation-log` pasaron a `steering/`. El enlace de `constitution.md` a la ADR ahora sube un nivel (`../decisions/`) y `estimation-log.md` se regeneró.
+- **Producto y operaciones**: nacieron `PRODUCT.md` y `steering/operations.md`. Los originales `mission`, `tech-stack` y `environments` se borraron con `git rm`, y también `roadmap.md`. Se recuperan con `git show d162490:.docs/sdd/<doc>.md`.
+- **Roadmap y deuda**: nacieron `ROADMAP.md` y `steering/debt.md`, con tamaño M en todas las filas. Los ids reservados son 0041 (CSV), 0042 (avisos por correo) y 0043 (la fila «1»). La 0043 quedó en Later con `⏳`, porque Later no admite 🔄.
+- **Nombres de skills**: `CLAUDE.md` pasó a `sdd-archive`, `pregunta.md` a `/sdd-explore` y `capabilities/cierre.md:12` a `sdd-archive`. Mantuve la línea 19 del mismo fichero (nombra el nombre viejo y el nuevo) y la medición de la task 0012, que ahora está en `operations.md`.
+- **Estimación**: `estimation.md` tiene las dos líneas nuevas del método. «Notas de calibración» no se tocó.
+- **Marcador**: se añadió `.temp/` a `.gitignore` y se instaló el hook del proyecto en `.claude/hooks/sdd-kit-loaded.mjs` y `.claude/settings.json`.
+- **Verificación**: `sdd roadmap check` da «Roadmap válido» y `sdd capability check` da «Capacidades válidas: 2».
+
+## Pendiente de ti
+- **Avisos duplicados (SAL-48 y SAL-49)**: como no sabías el Origen ni el Remedio, puse Origen `SAL-48`, Evidencia `SAL-49` y Remedio `—`. Es fácil de corregir si lo averiguas.
+- **Paso 8, reglas que ya cubre el kit**: es un gate y va en su propio commit. Está sin aplicar:
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «Ids: el id de una feature se elige a mano, el siguiente libre del roadmap» | `steering/constitution.md:7` | `skills/sdd-propose/references/nombrado.md` | choca: en `sequence` el id sale de la fila del roadmap o de `sdd id next --reserve` | quitarla |
+
+  **¿Aplico esta propuesta?** Si dices que sí, hago el commit `chore(sdd): reglas del proyecto que ya cubre el kit`. Si no, queda pendiente: para reanudar, pide «revisa las reglas del proyecto contra el kit».
+
+## Avisos
+- **ADR 0001**: `decisions/0001-salas-por-franja.md:10` sigue enlazando `../mission.md`, ahora roto. Es inmutable, así que no lo toqué.
+- **Validaciones pendientes de la v1.2.0**: la 0016 sigue anotada en su walkthrough.
+- **Paso 9**: sin avisos, el gate es `npm test`.
+- **Paso 10**: omitido, porque no hay `.claude/settings.json` previo con superpowers.
+
+--- [50]
+Quité la regla «Ids» de `steering/constitution.md` y dejé las demás tal cual. Está en el commit `d79b83d`, `chore(sdd): reglas del proyecto que ya cubre el kit`, y el árbol quedó limpio.
+
+Con esto la migración a v3.0.0 está completa. La versión es la 3.0.0 y el único paso pendiente era este.
+
+En el commit de la migración (`d7bf9d7`), `constitution.md` y `estimation.md` entraron con finales de línea LF, y los originales usaban CRLF. En el diff contra `d162490` esos dos ficheros se ven como reescritos enteros aunque solo cambiaron unas pocas líneas. Es solo cosmético. Reescribir ese commit me parecía excesivo, así que lo dejé así.
+
+Sigue pendiente lo que ya te comenté: el Origen y el Remedio de los avisos duplicados (SAL-48 y SAL-49) llevan valores provisionales. El enlace roto de la ADR 0001 a la misión tampoco se tocó, porque la ADR es inmutable.
+

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0029
 date: 2026-09-30
 rutas:
   - skills/sdd-start-feature/**

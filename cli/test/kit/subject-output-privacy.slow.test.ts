@@ -219,13 +219,13 @@ describe('El lanzador de sujetos oculta el home y el usuario', () => {
 // --others o --deleted, otro segundo; lo que aún no está en el índice lo mira el pre-commit al añadirlo (patch 0325).
 // Toda subcarpeta de la tarea: las fugas que se escaparon estaban en campaign/.
 function repoEvidence(): string[] {
-  const args = ['-c', 'core.quotePath=false', 'ls-files', '--', '.docs/sdd/specs', 'tests'];
+  const args = ['-c', 'core.quotePath=false', 'ls-files', '--', '.docs/sdd/specs', '.docs/sdd/changes', 'tests'];
   const result = run('git', args, { cwd: kitRoot });
   // Un error de git no es «sin evidencia»: la revisión pasaría sin mirar nada.
   if (result.code !== 0) throw new Error(`git ${args.join(' ')}: ${result.output}`);
   return result.output
     .split(/\r?\n/)
-    .filter((path) => (path.startsWith('.docs/sdd/specs/') && path.split('/').length > 5) || /^tests\/[^/]+-(red|green)\.md$/i.test(path));
+    .filter((path) => (/^\.docs\/sdd\/(specs|changes)\//.test(path) && path.split('/').length > 5) || /^tests\/[^/]+-(red|green)\.md$/i.test(path));
 }
 
 describe('La evidencia de los sujetos no lleva el home de la máquina', () => {
@@ -241,7 +241,7 @@ describe('La evidencia de los sujetos no lleva el home de la máquina', () => {
     expect(evidence.some((file) => /\/campaign\/out\//i.test(file.path))).toBe(true);
   });
 
-  it('ningún fichero de specs/*/red|green|refactor/ tiene una ruta de usuario', () => {
+  it('ningún fichero de specs/ o changes/ (red|green|refactor) tiene una ruta de usuario', () => {
     expect(findLeak(evidence, USER_PATH_PATTERN), because).toEqual([]);
   });
 

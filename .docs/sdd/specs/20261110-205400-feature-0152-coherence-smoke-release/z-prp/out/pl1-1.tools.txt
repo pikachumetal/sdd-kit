@@ -1,0 +1,117 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; ls .docs/sdd .docs/sdd/steering .docs/sdd/changes 2>/dev/null; git ls-files | head -50
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\patch-lane.md
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/s
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+
+>>> Bash: cd "<run>/repo" && cat src/app.js package.json ROADMAP.md && cat .docs/sdd/steering/constitution.md | head -60 && git ls-files -o --exclude-standard | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md; cat .docs/sdd/steering/architecture.md | head -30; grep -rn "gate\|Gate" .docs/sdd/specs/*/patch.md | head -5
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+=== RESULTADO (8 turnos, 0.1561077 $)
+No lo abro como patch: son tres comportamientos nuevos, y no creé rama, carpeta ni id.
+
+Por el árbol de `patch-lane.md`, un patch es lo que reproduce **un** test. Aquí fallarían tres:
+
+- `reservas <sala>` lista las reservas activas, una por línea (`lun 10:00-12:00`).
+- `reservas <sala>` sin reservas responde `sin reservas <sala>`.
+- `libres` sin franja responde `indica una franja`.
+
+Que cada literal esté fijado no cambia eso. Pediste un patch y yo veo un carril más pesado, así que no bajo de carril por mi cuenta y te lo pregunto.
+
+🦆 En llano: hoy `src/app.js` solo sabe listar salas libres, cancelar y anular. Esto le añade un comando de consulta nuevo y cambia lo que responde `libres` cuando falta el argumento. No toca datos ni contratos.
+
+Comprobé las condiciones de lite una a una:
+
+- **Flujo existente y legible:** sí, el despachador `run` ya está en `src/app.js`.
+- **Sin cambio de contratos públicos:** `reservas` es un comando nuevo que se añade. El único cambio de contrato es `libres` sin franja, que antes devolvía una línea vacía.
+- **Sin cambio de esquema de datos:** sí, `bookings` no cambia.
+- **Un solo módulo:** sí, solo `src/app.js` y su test.
+- **Estimación ≤ medio día:** estimo ~1 h de implementación, más el gate de cierre. No hay un gate medido en un `patch.md` anterior (`patch-0007` no lo registra), así que ese tiempo queda por medir.
+
+Con las cinco se habilita lite. Siguen valiendo la revisión de spec, el gate de aprobación, el smoke y el `walkthrough.md`, solo que sin `plan.md`.
+
+1. **Lite (Recomendada).** Una `spec.md` corta con la estimación dentro y sus tres escenarios. Perfil `delegate`, del proyecto (`sdd-kit.json`).
+2. **Feature en modo full.** Spec, plan y tasks. Es más ceremonia de la que pide el tamaño.
+3. **Patch tal como lo pediste.** No te lo recomiendo, porque el carril no admite tres comportamientos nuevos.
+
+Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación» y la apruebo yo con esa frase registrada. Para otro perfil, di «perfil `<otro>` para esta feature».
+
+¿Cuál eliges?

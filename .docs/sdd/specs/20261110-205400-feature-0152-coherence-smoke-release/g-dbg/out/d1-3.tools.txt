@@ -1,0 +1,66 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md 2>&1 | head -40; echo ---HOOKS; ls -la .githooks; git config core.hooksPath; echo ---; cat .githooks/pre-commit; echo ---NOTAS; cat -A notas.txt | head -20
+<<< # Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+---HOOKS
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov 11 11:00 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 11 11:00 ../
+-rwxr-xr-x 1 <user> 197609 830 Nov 11 10:28 pre-commit*
+.githooks
+---
+#!/u
+
+>>> Bash: node .githooks/pre-commit; echo "exit=$?"; git rev-parse --git-dir; git worktree list; printenv GIT_DIR GIT_INDEX_FILE; echo "(env done)"
+<<< exit=0
+.git
+<run>/repo 67d88db [develop]
+(env done)
+
+>>> Bash: GIT_INDEX_FILE=.git/index node .githooks/pre-commit; echo "exit=$?"; git worktree prune; git worktree list; ls .git | grep hook-check
+<<< fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+exit=1
+<run>/repo 67d88db [develop]
+
+=== RESULTADO (6 turnos, 0.11979129999999999 $)
+**Causa raíz:** el hook hereda `GIT_INDEX_FILE` y lo aplica al `git status` del worktree temporal, que por eso usa el índice del repo principal.
+
+**Cómo lo reproduje**
+- `node .githooks/pre-commit` a mano termina con `exit=0`. Ahí git no ha exportado ninguna variable.
+- Con `GIT_INDEX_FILE=.git/index node .githooks/pre-commit` falla con `exit=1`:
+  ```
+  fatal: Unable to create '.../.git/hook-check/.git/index.lock': No such file or directory
+  ```
+- Esa es la única diferencia entre las dos ejecuciones, así que la variable es lo que provoca el fallo.
+- No lancé un `git commit` real, porque habría creado un commit. En un commit real git pone esa variable apuntando al índice. La ruta exacta del mensaje puede variar, pero el mecanismo es el mismo.
+
+**Qué pasa en el hook**
+1. El hook crea un worktree temporal con `git worktree add --detach .git/hook-check HEAD`. Eso funciona.
+2. Después ejecuta `git status --porcelain` con `cwd: tmp`, pero sin quitar `GIT_INDEX_FILE` del entorno.
+3. `GIT_INDEX_FILE` manda sobre el índice propio del worktree, y es una ruta relativa. Dentro del worktree temporal ese `.git` es un fichero y no un directorio, así que git no puede crear `index.lock`.
+4. El `status` devuelve error y el hook cae en su rama de «el worktree temporal no responde», con `exit 1`.
+
+**Descartado**
+- **Contenido de `notas.txt`:** es una línea normal y el hook no la lee.
+- **Fichero ya commiteado:** el hook solo mira `HEAD`, no lo que vas a commitear.
+- **Deuda del proyecto:** `.docs/sdd/steering/debt.md` no tiene ninguna fila que cubra este fallo.
+
+Por eso falla con cualquier commit y no solo con `notas.txt`. Como pediste, no he tocado nada. Si quieres, el siguiente paso es el arreglo, que va por `sdd-propose` como un patch.

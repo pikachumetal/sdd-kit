@@ -1,0 +1,113 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, roadmap, steering, capabilities). Queda: clasificar, escribir la spec y presentártela, ~5 min.
+
+--- [17]
+Ahora: clasifico (feature, modo full, 3 tasks o menos: no se parte) y reservo el id con `id claim`. Queda: escribir la spec, repaso de coherencia, review y presentártela, ~8 min.
+
+--- [26]
+Ahora: despacho los dos revisores de la spec (dominio y técnica, sonnet) en paralelo. Queda: integrar hallazgos y presentarte la spec, ~5 min.
+
+--- [34]
+Los dos revisores de la spec (dominio y técnica) están en marcha y aún no han devuelto nada. Espero su notificación para integrar los hallazgos antes de presentarte la spec.
+
+--- [44]
+1. Crítico · Intent vs `capabilities/bookings.md` · El Intent dice que hoy `anular` no tiene restricción de rol y que «cualquiera puede anular». El requisito vigente «Anular una reserva» dice «WHEN el responsable ejecuta». La spec contradice la verdad viva sin declararlo, y el motivo del `REMOVED` («solo para el responsable») queda sin base. · Decidir cuál es la verdad. O el comando nunca respetó el rol, y entonces hay que decirlo en el motivo del `REMOVED`, o el Intent está mal. Reescribir el Intent y el motivo de forma coherente.
+
+2. Importante · Delta, `REMOVED` «Cancelar una reserva propia» + `ADDED` «Cancelar una reserva» · Quitar «propia» cambia el alcance del título aunque el escenario sea idéntico. El glosario de PRODUCT.md define «Cancelación» como lo que anula «el propio cliente», y esa distinción con «Anulación» (responsable) es lo que sostenía «propia». Declarar «sin cambiar comportamiento» es discutible, porque el título nuevo sugiere que se puede cancelar cualquier reserva. · Mantener el título «propia», o justificar el cambio en un MODIFIED explícito. Alinear la glosa de «Cancelación» y de «Anulación» en PRODUCT.md, o anotar por qué no se tocan.
+
+3. Importante · Delta, `ADDED` «Cancelar una reserva» (complemento) · No hay escenario del caso prohibido. Nada dice qué pasa si la persona intenta cancelar la reserva de otra. Con «propia» fuera del título, el requisito queda abierto a que cualquiera cancele la de cualquiera, y tras retirar `anular` esa pasa a ser la única vía. · Añadir un escenario para la reserva ajena (permitido o rechazado, con su respuesta exacta), o declarar fuera de alcance quién puede cancelar y por qué.
+
+4. Importante · Decisión 2 / «Dónde se prueba» vs Delta · El comportamiento nuevo, `anular` responde `salas` como cualquier comando desconocido, no está en ningún requisito ni escenario de `bookings`. Solo lo cubre un test, así que la capacidad viva ya no refleja el comportamiento observable. · Añadir al delta un escenario (por ejemplo «comando desconocido responde `salas`») o declarar explícitamente que el comando desconocido queda fuera de las capacidades.
+
+5. Importante · Scope / Capacidades vs Delta · El propósito de `bookings` aparece en «Entra», pero el delta no lo lleva. Se edita a mano al cierre fuera del `sdd capability merge`, y el cambio se escapa de la trazabilidad spec a capacidad. Además «Capacidades: Modificadas» no lo menciona. · Reflejar el propósito en la sección Capacidades como cambio manual verificable, y añadirlo a la comprobación de cierre.
+
+6. Menor · Scope «Entra» · Quedan fuera de la lista cosas que el resto de la spec sí promete: el test nuevo en `test/cancel.test.js` y la marca ✅ de la fila 0012 en ROADMAP al cierre. · Añadir ambos a «Entra», o dejar el roadmap explícitamente en «No entra».
+
+7. Menor · Intent, criterio de éxito vs «Dónde se prueba» · El Intent promete que «ningún documento ni test menciona `anular` como comando vigente». El grep de comprobación solo cubre `docs README.md src`. No cubre `.docs/sdd/capabilities`, PRODUCT.md ni `test/`, y el propio test nuevo menciona `anular`. · Ampliar el grep a los documentos vivos, o acotar el criterio del Intent a lo que realmente se comprueba, con la excepción del test negativo.
+
+8. Menor · Decisión 5 vs Intent · Se deja en PRODUCT.md «Anulación» como concepto vigente (responsable de sala) mientras no existe ningún requisito que lo sustente. Eso contradice la idea de que ningún documento presenta la anulación como vigente. · Aclarar en la glosa, o en la decisión, que el término está reservado para la 0011 y no es funcionalidad actual.
+
+9. Menor · Approach, «no hay usuarios que migrar (PRODUCT.md: solo lo usa el autor)» · Choca con el encabezado «contrato público (el comando `anular` lo usan personas desde la terminal)» y con la validación «dev-lead». PRODUCT.md dice que no hay más usuarios ni más desarrolladores. · Unificar el relato: quién usa el comando y quién valida, de acuerdo con PRODUCT.md.
+
+--- [45]
+1. Crítico · Delta de comportamiento / Decisión 2 / Dónde se prueba · El comportamiento nuevo, que `anular` pase a ser un comando desconocido y deje la reserva activa, no tiene escenario GIVEN/WHEN/THEN. Solo lo cubre un test, y la propia decisión 2 lo admite. `REMOVED — Anular una reserva` solo lleva motivo, así que `sdd capability merge` borra el requisito y nada queda como contrato verificable. · Añadir un requisito `ADDED` (por ejemplo «Comando retirado») con GIVEN una reserva activa de Norte el lunes, WHEN `anular Norte lun`, THEN responde lo mismo que un comando desconocido y la reserva sigue activa. Enlazarlo al test.
+
+2. Importante · Dónde se prueba (test de `anular`) · La respuesta `salas` para un comando desconocido es un valor que el agente da por sabido («hoy `salas`»). El test lo fija de memoria, sin comprobarlo en el código. El test tampoco declara su precondición: debe reservar Norte el lunes antes de `anular`, o `cancelar` respondería `sin reserva` y el paso final fallaría. · Medir la respuesta real de un desconocido (por ejemplo `run('zzz', [])`) y citarla en la spec. Escribir el test con setup explícito: reservar, `anular` → desconocido, `cancelar` → `cancelada Norte lun`. Añadir una aserción de que no es `anulada Norte lun`.
+
+3. Importante · Dónde se prueba (gate de documentos) · `git grep -n "anular" -- docs README.md src` es sensible a mayúsculas, así que no detecta «Anular» ni «Anulación». Se ejecuta a mano en el cierre y no es un test del gate `node --test`. Además el Intent promete «ningún documento ni test menciona `anular` como comando vigente», pero el test nuevo contiene `anular`. · Usar `-i` con exclusiones explícitas (`PRODUCT.md`, el glosario y el test nuevo). Pasarlo a un test automatizado o a un paso verificable del plan. Reformular el Intent para que admita el test de retirada.
+
+4. Importante · Lo que se retira o cambia de forma / Dónde se prueba · No se dice qué pasa con los tests existentes de `voidBooking` o `anular`. Decisión 8 cita 5/5 en verde hoy, y `cancel.test.js` es el único fichero de tests mencionado. Si existe un test de `anular`, fallará o habrá que borrarlo, y la spec ni lo lista ni lo decide. Tampoco menciona `module.exports` ni otros usos del estado `voided` (por ejemplo, si `reserve` o un listado lo consultan). Solo cita `src/app.js:20-24` y `:31`. · Listar los tests que se borran o ajustan, con el número final de tests. Confirmar que `voided` y `voidBooking` no tienen más referencias (exports, estado, otros ficheros) y anotarlo en la tabla.
+
+5. Importante · Intent / Scope · El comando `anular` es un contrato público para quien usa la terminal, y su retirada es un cambio incompatible. La spec no dice si hay versión, tag `vX.Y.Z` o CHANGELOG, aunque la constitución exige tags anotados. Tampoco recoge el aviso a usuarios, que se descarta con «solo lo usa el autor» (PRODUCT.md, que no está leído). · Declarar el impacto de versión: ruptura de la interfaz, y si se etiqueta o no. Citar la fuente del «solo lo usa el autor» o quitar la frase.
+
+6. Menor · Lo que se retira o cambia de forma (fila ROADMAP) · Marcar la fila 0012 en ✅ al cierre es una decisión y un fichero tocado que no están en «✋ Decisiones» ni en Scope, que lista los ficheros que entran. · Añadirlo a Scope y a las decisiones, o quitar la frase de la tabla.
+
+7. Menor · Dónde se prueba (ubicación del test) · La elección de `test/cancel.test.js` para un test de `anular` no figura en las decisiones. Mezcla cobertura de un comando retirado con la de `cancelar`. · Decidir el fichero explícitamente (por ejemplo `test/retired.test.js`) o listarlo en las decisiones.
+
+8. Menor · Decisión 8 / Decisión 4 · La verificación de `sdd capability merge` sobre una copia solo prueba que el delta fusiona. No prueba que `bookings.md` quede coherente: el propósito queda desfasado hasta una edición manual en el cierre, y el requisito renombrado cambia de posición y de título. Esa edición manual no tiene un paso que la compruebe. · Añadir un check en el cierre de que el propósito de `bookings` ya no menciona «anular». Incluirlo en el grep del hallazgo 3 ampliando a `.docs/sdd/capabilities`.
+
+9. Menor · Dependencias (PRODUCT.md) · PRODUCT.md no se pudo leer en la ruta `.docs/sdd/steering/PRODUCT.md`. La spec cita `PRODUCT.md:14` y «solo lo usa el autor» sin confirmar que el fichero exista en esa ruta. La referencia a `PRODUCT.md` (decisión 5, tabla) puede apuntar a un fichero inexistente. · Confirmar la ruta real de PRODUCT.md y corregir las referencias, o hacer explícito que vive en otro sitio.
+
+--- [47]
+Esa notificación es del revisor de dominio, no tuya: no aprueba nada. Integro sus hallazgos en la spec y sigo esperando al revisor técnico.
+
+--- [54]
+Ahora: ronda de revisión extra (aceptado un Crítico) con un revisor sonnet. Queda: integrar y presentarte la spec, ~3 min.
+
+--- [56]
+La segunda ronda de revisión está en marcha. Espero su resultado antes de presentarte la spec, porque puede cambiarla.
+
+--- [62]
+1. Importante · Delta de comportamiento, «ADDED — Cancelar una reserva» / «REMOVED — Cancelar una reserva propia» · El renombrado quita «propia» y la capacidad viva restringe la cancelación a la reserva propia. PRODUCT.md define «Cancelación» como la reserva «que anula el propio cliente antes de 24 h». Si se quita «propia» sin decirlo, es un MODIFIED encubierto como REMOVED+ADDED. El rechazo de la review se apoyó en que «el código nunca comprobó la propiedad». Eso no responde al argumento: la verdad viva es el requisito, no el código. · Declarar el renombrado como MODIFIED explícito, con motivo «se quita "propia": el código nunca comprobó la propiedad». Añadir a «✋ Decisiones» la decisión de que la restricción de propiedad deja de formar parte de la capacidad. Esa restricción pasa a estar en PRODUCT.md («Cancelación») y en la 0011 sin cobertura de test.
+
+2. Importante · Delta, «ADDED — Un comando retirado no hace nada» · El escenario es correcto, pero en el cuerpo del delta no hay marca de que `anular` sea el ejemplo de un comando retirado. Así, un test que pase con cualquier comando desconocido (`run('zzz',[])` → `salas`) lo cumple sin comprobar que `anular` se retiró. El requisito es genérico («Un comando retirado…») y su único dato es `anular`. Si la 0011 reintroduce `anular`, este requisito la contradice directamente. · Acotar el título y el escenario a «El comando `anular` no está disponible hasta la 0011», o declarar en el requisito cómo se retira cuando la 0011 lo reintroduzca (REMOVED en la 0011).
+
+3. Importante · Delta, AND de «Un comando retirado no hace nada» · El AND «la reserva sigue activa: `cancelar Norte lun` responde `cancelada Norte lun`» solo se puede comprobar si `anular` no cambia el estado. Pero esa respuesta también aparece si `anular` no hace nada Y si cancelar se ejecutó antes. El test debe hacer `anular` y luego `cancelar` en ese orden, con un estado limpio por test. · Fijar en «Dónde se prueba» que el estado se reinicia en cada test (o que el test lee el estado antes y después de `anular`), y que la comprobación posterior es la de `cancelar`.
+
+4. Importante · Decisión 2 / Dónde se prueba · «medido hoy `run('zzz', [])` → `salas`» mide un comando sin argumentos, mientras que el requisito usa `anular Norte lun` (con argumentos). Un manejador de desconocidos que dependa de los argumentos daría otra respuesta. · Medir `run('anular', ['Norte','lun'])` después de retirar la rama y fijar ese dato, no el de `zzz`.
+
+5. Menor · Decisión 7 / Scope · El Scope incluye marcar la fila 0012 en `ROADMAP.md` al cierre, y la tabla dice a la vez «no cambian, son planificación» y «pasa a ✅». Son dos instrucciones contradictorias sobre la misma fila. · Dejar una sola redacción: «la fila 0011 no cambia; la 0012 pasa a ✅ al cierre».
+
+6. Menor · Decisión 9 · La decisión mezcla cinco hechos distintos: prueba del merge, medida de tests, referencias de `voided`, número de tests tras el cambio y el estado del escenario nuevo. Al revisarla, nadie puede validar cada uno por separado. · Dividirla en una decisión de enfoque y una sección de «Mediciones» fuera de «✋ Decisiones». Además, el recuento «serán 6 tests» da por hecho un único test nuevo, pero «Dónde se prueba» describe un solo caso con dos aserciones; confirmar que es un test.
+
+7. Menor · Decisión 4 / Scope · El propósito de `bookings` se edita a mano en el cierre, fuera del delta. La comprobación `git grep -niE "anular|anulad"` dice que solo debe dar el escenario nuevo. Pero «Dónde se prueba» añade `void` al patrón y la decisión 4 no. Además, la propia regla de PRODUCT.md («Anulación», glosario) está fuera de `.docs/sdd/capabilities`, así que no se comprueba. Los dos greps no coinciden. · Unificar el patrón en un único comando y declarar si el glosario queda excluido.
+
+8. Menor · Decisión 10 / Review propuesta · La política de modelos es ambigua: «ejes de la revisión final según el plan · sin otros despachos en paralelo · en paralelo hasta `control.maxParallelAgents`» se contradice (sin paralelo / paralelo hasta el máximo). Además, el modo es `full`, pero el plan no existe todavía. · Eliminar una de las dos frases y concretar el tope.
+
+9. Menor · Encabezado, `approvers` / Aprobaciones · `approvers` está en `TBD` y la tabla de aprobaciones vacía, mientras que el perfil es `delegate` y la validación recae en el autor, que es el dev-lead. No se dice quién aprueba el spec antes de implementar, y el autor es también el revisor. · Nombrar al aprobador en `approvers` o declarar que, en `delegate`, aprueba el dev-lead.
+
+10. Menor · Intent · «La 0011 reintroducirá la anulación solo para el responsable» es un compromiso sobre una feature de otra spec que no se ha leído y que no consta en `capabilities/`. La spec depende de ese hecho para justificar el motivo del `REMOVED` y para conservar «Anulación» en PRODUCT.md. · Citar la fila exacta de `ROADMAP.md` que lo respalda, o reformular como «previsto en el roadmap».
+
+--- [66]
+Ahora: spec lista y parada en el gate de aprobación. Queda: nada hasta tu respuesta (el plan y la implementación esperan a la aprobación).
+
+Spec escrita en `.docs/sdd/changes/20261112-162748-feature-0012-retire-void/spec.md`. Carril: feature, modo full, perfil delegate. Son pocas tasks, así que no la parto. Pasó dos revisores en paralelo más una segunda ronda, porque se aceptó un Crítico. No he hecho commit.
+
+## 🦆 Qué cambia
+Hoy `salas anular Norte lun` responde `anulada Norte lun`. Tras la feature, `anular` se comporta como un comando desconocido: responde `salas` y la reserva sigue activa. Después, `cancelar Norte lun` sigue respondiendo `cancelada Norte lun`. «Cancelar una reserva propia» pasa a «Cancelar una reserva», con el mismo comportamiento. Se borra `voidBooking` y su rama en `run`. Se actualizan `docs/guia.md`, `README.md` y la capacidad `bookings`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+1. **Enfoque**: borrado directo, frente a un alias de `anular` a `cancelar` o un aviso «comando retirado».
+2. **`anular` como comando desconocido**: responde lo mismo que cualquier desconocido, sin mensaje. Hoy `run('zzz', [])` da `salas`. Con `anular Norte lun` y argumentos queda `sin medir`: se mide en el RED, tras quitar la rama.
+3. **Renombrado del requisito**: va como `REMOVED` + `ADDED`, y la capacidad deja de decir «propia». El código nunca comprobó la propiedad y el glosario no se toca.
+4. **Propósito de `bookings`**: se edita a mano en el cierre, con `git grep` de comprobación, porque el delta no lo fusiona.
+5. **«Anulación» en `PRODUCT.md`**: se queda, reservado para la 0011.
+6. **Guía y README**: se borra la línea de `anular` de la guía, incluido «lo retira la 0012». El README queda solo con `cancelar`.
+7. **Sin versión ni tag**: la retirada entra en el CHANGELOG cuando se corte la release. Los tests van en un `test/retired.test.js` nuevo. La fila 0012 pasa a ✅ al cierre.
+8. **`voided`**: desaparece con `voidBooking`. No hay migración, porque las reservas viven en memoria.
+9. **Delta probado** en una copia de `.docs/sdd` con `sdd capability merge`, sin rechazos. Hoy `node --test` da 5/5 en verde, sin ningún test de `anular`. Quedarán 6.
+10. **Política de modelos**: dos revisores de la spec en paralelo (sonnet), hasta `control.maxParallelAgents`.
+
+Se añade un requisito nuevo, «El comando anular no está disponible», para que el comportamiento retirado quede como contrato. Salió de la review técnica.
+
+**Review**: aceptados los dos Críticos. Uno pedía escenario para el comportamiento nuevo. El otro señalaba que el Intent decía «cualquiera puede anular» mientras la capacidad decía «el responsable». Rechazados, con motivo en la spec: tratar el renombrado como `MODIFIED` encubierto, y un escenario de cancelar la reserva ajena.
+
+**Decisiones tomadas contigo** (frases literales en la spec): retirar `anular`, el renombrado, actualizar la guía, perfil delegate.
+
+**Validación**: la haces tú.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué ajustar.
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1** para bajar la sesión a gama media (prevé 3 tasks o menos). Solo merece la pena si la sesión corre en el modelo más capaz y quieres cambiarlo.
+

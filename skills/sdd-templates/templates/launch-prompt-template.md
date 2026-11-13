@@ -66,7 +66,7 @@ Decisiones ya tomadas:
 - ROADMAP.md va en la raíz, porque lo lee quien no abre .docs/
 
 Antes de diseñar, lee:
-- .docs/sdd/specs/20261007-144256-proposal-0131-kit-rework/proposal.md, §Documentos
+- .docs/sdd/changes/20261007-144256-proposal-0131-kit-rework/proposal.md, §Documentos
 
 Salda la parte de §Testing de la 0097.
 

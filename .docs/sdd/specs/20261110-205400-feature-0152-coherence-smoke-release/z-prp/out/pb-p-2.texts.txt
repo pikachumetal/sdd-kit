@@ -1,0 +1,78 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs SDD) para clasificar. Queda: anuncio, spec y su aprobación, ~5 min.
+
+--- [17]
+Ahora: abro el anuncio y la nota de comprensión de la feature 0012, y cargo `sdd-grilling` para las preguntas de diseño. Queda: enfoques, secciones del diseño, spec y su aprobación, ~10 min.
+
+--- [20]
+Ahora: abro la feature 0012 con su anuncio y mis enfoques. Ya estoy en la rama `feature/0012-informes`, con el id reservado y reclamado. Queda: tu elección de enfoque, las secciones del diseño, la spec y su aprobación, ~8 min.
+
+```text
+Carril: feature, modo full · Perfil: pair, indicado por ti para esta feature (el proyecto trabaja en delegate)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+
+- Un comando nuevo, `informes`, que imprime una tabla de texto con cuatro vistas: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado.
+- `informes --sala Norte` filtra las cuatro vistas a esa sala.
+- Sin reservas, cada vista dice «sin reservas».
+- El plan sale en 5 tasks: una por vista y otra para `--sala`.
+- Son 5 tasks sobre la misma superficie (la CLI), sin migración. No propongo partirla.
+
+Hay dos huecos que no me has dicho y que iré a ✋, para que los valides en la spec:
+
+- Qué reservas cuentan (yo propondré solo las `active`, no las canceladas ni las anuladas).
+- Cómo se ordenan las filas.
+
+**Enfoques (el cómo; el qué ya está decidido):**
+
+- **A. Todo en `src/app.js`**: una función por vista junto a `run`. Es lo más corto y encaja con el «un solo fichero» del proyecto. A cambio, `app.js` crece con cuatro vistas y un formateador de tabla, y los tests de informes se mezclan con el resto.
+- **B. Módulo nuevo `src/informes.js`** (lo recomiendo): funciones puras `(reservas, salas, { sala })` → texto, una por vista y un formateador de tabla compartido. `app.js` solo despacha `informes`. Cada task toca su función y su test sin pisar a las demás, que es lo que pide el plan en 5 tasks. A cambio, hay un fichero más y hay que pasarle `bookings` y `rooms`, que hoy son privados de `app.js`.
+- **C. Agregador genérico** (`agrupar` + configuración por vista). Es poco código, pero «salas que nadie ha reservado» es un complemento y no una cuenta, así que obliga a un caso especial. Además, las 5 tasks dejarían de ser independientes.
+
+Recomiendo **B**, porque el reparto «una vista = una task» queda limpio y las funciones puras se prueban sin tocar el estado de `app.js`.
+
+¿Qué enfoque quieres: A, B (recomendado) o C?
+
+--- [22]
+Voy con el enfoque B. Como la feature prevé 5 tasks, presento el diseño en secciones antes de escribir la spec. Esta es la primera: qué ves al ejecutar el comando.
+
+**Sección 1 de 3: la forma del comando y de la tabla**
+
+`node src/app.js informes` imprime las cuatro vistas una tras otra, cada una con su título y una tabla de texto. Con estas reservas activas, Norte lun 10:00-12:00, Norte mar 10:00-12:00 y Sur lun 16:00-17:00, saldría:
+
+```text
+Ocupación por sala
+sala   reservas
+Norte  2
+Sur    1
+
+Ocupación por día de la semana
+día  reservas
+lun  2
+mar  1
+
+Franjas más reservadas
+franja       reservas
+10:00-12:00  2
+16:00-17:00  1
+
+Salas sin reservas
+(ninguna)
+```
+
+- Sin ninguna reserva, cada vista pone «sin reservas» en lugar de su tabla.
+- `informes --sala Norte` enseña las mismas cuatro vistas, pero solo con las reservas de Norte.
+
+Esto es lo que propongo yo, y irá a ✋ en la spec:
+
+- **Qué cuenta:** solo las reservas activas. Las canceladas y las anuladas no cuentan.
+- **Orden de las filas:** de más a menos reservas y, en caso de empate, alfabético. Los días van en orden de semana (lun… dom) y no por número.
+- **Días sin reservas:** no aparecen en la vista por día. Solo salen los días que tienen alguna.
+- **Cuando no hay ninguna sala sin reservas:** la última vista pone «(ninguna)», como arriba.
+- **Ocupación sin porcentaje:** solo cuenta reservas, porque no hay horario de apertura del que sacar un tanto por ciento.
+
+¿Va bien esta forma de la salida y estas propuestas mías?
+

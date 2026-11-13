@@ -1,0 +1,201 @@
+
+>>> Read: <run>/review-final-c6d19ff.diff
+<<< 1	# Review package: 747eef4..HEAD
+2	
+3	## Commits
+4	c6d19ff feat(bookings): anular con motivo
+5	b43f38f docs(sdd): abrir la feature 0021
+6	
+7	## Files changed
+8	 src/app.js        | 25 +++++++++++++++++++++----
+9	 test/void.test.js | 10 ++++++++++
+10	 2 files changed, 31 insertions(+), 4 deletions(-)
+11	
+12	## Diff
+13	diff --git a/src/app.js b/src/app.js
+14	index bf1e41d..ca748b0 100644
+15	--- a/src/app.js
+16	+++ b/src/app.js
+17	@@ -1,39 +1,56 @@
+18	+import { writeFileSync } from 'node:fs';
+19	+
+20	 const [command, ...args] = process.argv.slice(2);
+21	 const rooms = ['Norte', 'Sur'];
+22	 const
+
+>>> Bash: cd "<run>/repo"; ls -R .docs/sdd/specs; cat .docs/sdd/specs/20261012-100000-feature-0021-void-reason/*.md; ls test; git log --oneline
+<<< .docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261012-100000-feature-0021-void-reason/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261012-100000-feature-0021-void-reason:
+plan.md
+spec.md
+---
+id: 20261012-100000-feature-0021-void-reason
+feature: 0021
+title: Plan de implementación — Anular con motivo y sin correo
+spec: ./spec.md
+status: dra
+
+>>> Bash: cd "<run>/repo"; cat test/app.test.js test/cancel.test.js; ls -a; ls data 2>&1; cat .gitignore 2>&1; ls .docs/sdd; ls .docs/sdd/adr* .docs/adr* 2>&1; grep -rn "0003" .docs --include=*.md | head; cat package.json
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte
+
+>>> Bash: cd "<run>/repo"; ls .docs/sdd/decisions .docs/sdd/capabilities; cat .docs/sdd/decisions/*0003* 2>&1 | head -40; cat .docs/sdd/capabilities/bookings* 2>&1 | head -60; git show 747eef4 --stat | head
+<<< .docs/sdd/capabilities:
+availability.md
+bookings.md
+reports.md
+
+.docs/sdd/decisions:
+0003-bookings-in-memory.md
+---
+status: accepted
+date: 2026-09-10
+rutas:
+  - docs/**
+---
+
+# Las reservas viven en memoria del proceso
+
+## Contexto y problema
+
+`salas` es una herramienta de terminal para una sola persona, que la arranca, reserva y la cierra. Hubo que decidir si las reservas se guardaban en algún sitio.
+
+## Opciones consideradas
+
+- En memoria del proceso
+- Un fichero JSON en el disco
+- SQLite
+
+## Decisión
+
+En memoria del proceso: cada arranque empieza vacío. Guardarlas obliga a decidir dónde vive
+
+>>> Bash: cd "<run>/repo"; grep -n "" src/app.js
+<<< 1:import { writeFileSync } from 'node:fs';
+2:
+3:const [command, ...args] = process.argv.slice(2);
+4:const rooms = ['Norte', 'Sur'];
+5:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+6:export const outbox = [];
+7:
+8:function freeRooms(slot) {
+9:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+10:}
+11:
+12:function findBooking(room, day) {
+13:  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+14:}
+15:
+16:function notifyByMail(text) {
+17:  outbox.push(
+
+=== RESULTADO (6 turnos, 0.3215352000000001 $)
+## Revisión final, eje Spec: `c6d19ff` (feature 0021, anular con motivo)
+
+Revisé el paquete completo en una pasada (96 líneas), la spec, el plan, `.docs/sdd/capabilities/bookings.md`, la ADR 0003 y los tests de `test/`. No ejecuté nada.
+
+### Strengths
+- `voidBooking` comprueba el motivo antes de buscar la reserva (`src/app.js:30`). Así `anular` sin `--motivo` nunca cambia el estado y responde «falta el motivo», como pide la spec.
+- El motivo se guarda con la reserva anulada (`src/app.js:34`), como dice el Approach. La respuesta coincide al pie de la letra con el THEN: «anulada Norte lun (avería)».
+- `test/void.test.js` fija el camino feliz por el comando `run('anular', …)`, por la misma vía que nombra «Dónde se prueba».
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. Sigue saliendo el correo de anulación que la spec manda quitar.** `src/app.js:35`
+- **Qué pasa:** `voidBooking` sigue llamando a `notifyByMail(\`anulada ${room} ${day}\`)`, y `notifyByMail` y `outbox` siguen en `src/app.js:6` y `:16-18`.
+- **Por qué importa:** el requisito REMOVED pide que ese comportamiento desaparezca, y sigue funcionando en cada anulación.
+- **Cómo arreglarlo:** borrar la llamada, `notifyByMail` y `outbox` si no queda nadie que los use. Añadir un test que compruebe que anular no deja nada en el buzón.
+- **Gap:** `contradicts`.
+- **Origen:** REMOVED «Las anulaciones se avisan por correo» y la decisión del dev-lead «El correo de anulación desaparece».
+
+**2. La rama guarda las anulaciones en disco, cosa que la spec deja fuera, y el comando falla si no existe `data/`.** `src/app.js:1`, `:25-27`, `:36`
+- **Qué pasa:** `saveVoided()` escribe `data/anuladas.json`, pero el Scope dice «No entra: guardar las anulaciones (ADR 0003)». En el repo no existe `data/` y `.gitignore` lo ignora. Con `node src/app.js anular Norte lun --motivo avería` desde la raíz, `writeFileSync` lanza ENOENT. Para entonces la reserva ya está como `voided` y el correo ya se ha encolado, así que el usuario ve un error en vez de «anulada Norte lun (avería)».
+- **Por qué el test no lo detecta:** `test/void.test.js:6` crea `data/` con `mkdirSync` antes de llamar. El test tapa el fallo en lugar de detectarlo.
+- **La ADR:** la 0003 está `accepted` y su Confirmación dice «`src/` no importa `node:fs`». El brief dice que ninguna ADR cubre el diff, porque sus `rutas` son `docs/**`. Aun así la spec la cita de forma explícita en su Scope, así que la incumple igual.
+- **Cómo arreglarlo:** quitar `saveVoided` y el import de `node:fs`, y quitar el `mkdirSync` del test.
+- **Gap:** `contradicts`.
+- **Origen:** Scope «No entra», con la Confirmación de la ADR 0003 como prueba.
+
+#### Important (Should Fix)
+
+**3. Falta el test del Review Focus `pide motivo al anular`.** `test/void.test.js`
+- **Qué pasa:** el código sí responde «falta el motivo» sin `--motivo` (`src/app.js:30`). Pero no hay ningún test con ese nombre ni otro que compruebe `run('anular', ['Norte', 'lun'])` → «falta el motivo».
+- **Por qué importa:** el AND del delta y la línea del Review Focus no tienen ninguna verificación que los fije.
+- **Cómo arreglarlo:** añadir `test('pide motivo al anular', …)` con esa aserción. Conviene comprobar también que la reserva sigue activa, por ejemplo con un `libres 10:00-12:00` que no liste Norte.
+- **Gap:** `missing` (verificación).
+- **Origen:** THEN/AND «`anular Norte lun` sin `--motivo` responde "falta el motivo"» y el Review Focus.
+
+**4. `anular-todas` sigue sin pedir motivo.** `src/app.js:40-44`, `:52`
+- **Qué pasa:** `voidAll()` no recibe ni comprueba `--motivo` ni guarda motivo en las reservas. `anular-todas` sin motivo anula todo.
+- **Por qué importa:** el dev-lead pidió motivo «en las dos vías, que no se cuele ninguna sin motivo», y el Scope incluye `anular-todas --motivo <texto>`. Decisión del dev-lead cubierta a medias: anular pide motivo en las dos vías, pero la regla solo cubre `anular` y deja fuera `anular-todas`.
+- **Cómo arreglarlo:** pasar `reasonOf(params)` a `voidAll`, devolver «falta el motivo» si no llega, guardar `reason` en cada reserva y añadir su test.
+- **Gap:** `partial`.
+- **Origen:** la decisión del dev-lead y el Scope.
+
+**5. Cambia la salida de `libres` sin que la spec lo pida, y rompe un test que ya existía.** `src/app.js:47-50`
+- **Qué pasa:** la salida pasa de `Sur` a `1 libres: Sur`. Eso cambia la capacidad `availability`, que no tiene subsección en el delta.
+- **Por qué importa:** `test/app.test.js:6` sigue esperando `'Sur'`, así que ahora falla. Además, «1 libres» está mal concordado.
+- **Cómo arreglarlo:** revertir el cambio o llevarlo a su propia spec.
+- **Gap:** `unrequested`.
+- **Origen:** ninguno, la capacidad `availability` no está en el delta.
+
+#### Minor (Nice to Have)
+
+**6. `reasonOf` toma solo la palabra siguiente a `--motivo`.** `src/app.js:20-23`
+- Con `--motivo avería grave` sin comillas, el motivo se queda en «avería».
+- Si `--motivo` va antes de la sala, `params[0]` pasa a ser `--motivo` y la respuesta es «sin reserva --motivo …».
+- Una persona esperaría que funcionara en cualquier orden, o al menos que el error lo dijera claro.
+
+### Ledger
+No hay ledger, así que no hay minors diferidos que evaluar.
+
+### Declined to judge
+- `test/app.test.js:9` (`reservar --cada-semana`) y `test/cancel.test.js` llaman a comandos que `run` no implementa (`reservar`, `cancelar`). Ya estaban así antes de esta rama y quedan fuera de la feature 0021.
+- Si la ADR 0003 debería ampliar sus `rutas` a `src/**`: es cosa de la ADR, no de esta spec.
+
+### Not verified
+- no verificado: el resultado real de la suite. No la ejecuté por instrucción del brief, y no hay informe de task en el paquete. El fallo de `test/app.test.js:6` lo deduzco leyendo el código.
+- no verificado: el texto de la decisión «✋ 1» («falta el motivo»). Está pendiente de validar por el dev-lead y el código usa ese texto, pero no hay constancia de la validación.
+
+### Recommendations
+- Que el hilo principal ejecute la suite completa (`node --test`) desde la raíz y sin `data/`, para confirmar la caída del punto 2 y el test roto del punto 5.
+- Revisar el plan: el Review Focus nombra un test que la Task 1 nunca menciona en su Verificación, y no hay task para `anular-todas` ni para quitar el correo. El plan cubre menos que la spec, y eso explica en parte los puntos 1, 3 y 4.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** el correo que la spec manda quitar sigue saliendo, y la rama guarda en disco algo que el Scope excluye, con lo que además el comando falla cuando no existe `data/`. Encima, `anular-todas` no pide motivo, el Review Focus no tiene su test y `libres` cambia sin que se pida, rompiendo un test que ya existía.

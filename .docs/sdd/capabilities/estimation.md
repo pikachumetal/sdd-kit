@@ -24,7 +24,6 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y el kit instalado
 - WHEN `sdd-archive` llega al paso estimation-log
 - THEN ejecuta `sdd estimation log` desde el kit, sin buscar ni crear copia en el proyecto
-- AND solo si `pwsh` no está disponible añade la fila a mano
 
 ### El parseo tolera el formato real de las plantillas
 
@@ -250,7 +249,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 ### El gate se atribuye por el comando del «Gate de cierre»
 
-- GIVEN un `tech-stack.md` con `- **Gate de cierre**: \`moon run kit:test-headless cli:typecheck cli:test --affected --base develop\``, y en la fase `cierre` una llamada `moon run kit:test-headless cli:typecheck cli:test --affected --base develop 2>&1 | tail -5` de 240 s y otra `npx vitest run test/session/` de 30 s
+- GIVEN un `steering/operations.md` con `- **Gate de cierre**: \`moon run kit:test-headless cli:typecheck cli:test --affected --base develop\``, y en la fase `cierre` una llamada `moon run kit:test-headless cli:typecheck cli:test --affected --base develop 2>&1 | tail -5` de 240 s y otra `npx vitest run test/session/` de 30 s
 - WHEN se escribe `timing.json`
 - THEN `cierre` lleva `gateSeconds: 240`, y `execSeconds` incluye los 270 s
 - AND `gateCommand` es el literal del gate
@@ -292,4 +291,4 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee; las claves de `timing.json` en inglés y sus nombres de fase sin tilde, como contrato que leen otros verbos.
 - **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes. Un hueco sin actividad pasa de 60 min. Las fases suman el reloj con un margen de 60 s o del 1 % del reloj, lo que sea mayor.
 - **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe, un documento presente en sus dos rutas, y un `timing.json` fuera del margen (al escribirlo y, con la tarea fuera de la tabla, al generar el log). La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout.
-- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos. El «Gate de cierre» de `operations.md` manda sobre el de `tech-stack.md`.
+- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.

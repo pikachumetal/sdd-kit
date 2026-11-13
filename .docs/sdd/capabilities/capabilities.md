@@ -15,7 +15,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 
 ### El comportamiento observable vive solo en `capabilities/`
 
-- GIVEN una feature que escribe en `tech-stack.md`, `architecture.md` o `environments.md`, en su plan o en el cierre
+- GIVEN una feature que escribe en `steering/operations.md` (su `## Entornos` incluido) o en `steering/architecture.md`, en su plan o en el cierre
 - WHEN el texto es un valor de comportamiento (tiempo, límite, cuota, aviso, respuesta, estado)
 - THEN el valor vive en `capabilities/<capability>.md`, y el documento de anclaje dice dónde está la pieza técnica y enlaza la capacidad, sin copiar el valor
 

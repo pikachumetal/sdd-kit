@@ -2,6 +2,10 @@
 
 Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
 
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
 ## Terminology
 
 - **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.

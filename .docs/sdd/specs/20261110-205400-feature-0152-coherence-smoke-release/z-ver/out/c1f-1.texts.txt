@@ -1,0 +1,87 @@
+--- [3]
+Ahora: cargo `sdd-verify` para cerrar la revisión final con los informes de los ejes. Queda: leer los informes y aplicar el cierre, ~5 min.
+
+--- [17]
+RED confirmado (solo falla el test del espacio). Ahora el fix.
+
+--- [21]
+Suite en verde. Anoto el ledger y `tasks.md`, y commiteo la pasada de fix.
+
+--- [26]
+La pasada de fix toca código y test (no es solo docs), así que va la única re-revisión. Preparo el paquete y el worktree aislado.
+
+--- [33]
+Mientras la re-revisión corre, dejo en `tasks.md` las líneas de la revisión final y de la pasada de fix (sin commitear todavía).
+
+--- [35]
+La revisión final está cerrada salvo la re-revisión, que sigue corriendo en segundo plano. No he actualizado `tasks.md` con su veredicto ni he commiteado ese cambio, y `Re-revisión:` irá cuando llegue su informe.
+
+**Informes de los ejes**
+- **Spec (opus+high):** sin Critical ni Important. Un Minor: el test de `canceladas` solo pasaba si `cancelar` había corrido antes.
+- **Código (sonnet+high):** un Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Arquitectura:** no sale. El plan dice `no` y el diff no cruza ninguna de las cuatro señales.
+
+**Pasada de fix (`00f7dcb`)**
+
+El proyecto tiene `review.minors: fix`, así que entraron los dos hallazgos.
+- **Important:** `reasonOf` hace ahora `.trim()` (`src/app.js:16`). Añadí el test «cancelar con un motivo con espacios alrededor», que falló antes del fix y pasa después.
+- **Minor:** cada test carga su propia copia del módulo con un `import()` distinto, así que ya no comparten estado ni dependen del orden.
+- **Suite:** `node --test test/` da 6/6 en verde.
+- **Ledger:** apuntado en `progress.md` (el `Eje Arquitectura` y los dos `fixed`).
+
+**Re-revisión**
+- Va una sola, con `sdd-kit:effort-high` + `opus`, sobre `666f661..00f7dcb`, en el worktree aislado `review-0010-00f7dcb`. Lleva su watch de silencio.
+- Cuando vuelva, anoto su veredicto como `Re-revisión:` en `tasks.md`. Después quito el worktree y commiteo `tasks.md`; ese commit es solo de documentación y menor de 20 líneas, así que lo reviso yo en el hilo. Entonces sigo con el cierre (`sdd-archive`).
+
+Ahora: espero la re-revisión. Queda: aplicar su veredicto y dejar el cierre listo, ~5 min.
+
+--- [42]
+**Trimmed reason (`src/app.js:14-17`, Important)**: ADDRESSED.
+- `reasonOf` now returns `params[index + 1]?.trim()` (`src/app.js:16` at 00f7dcb). `"sala ocupada "` becomes `"sala ocupada"` before the `reasons.includes` check in `cancelBooking` (`src/app.js:20`).
+- The `?.` keeps the spec's "sin `--motivo`" case working: `--motivo` with nothing after it gives `undefined`, which the check rejects as «motivo no válido…».
+- A new test covers the case: `cancelar con un motivo con espacios alrededor` (`test/cancel.test.js:18-21`) expects «cancelada Norte lun (sala ocupada)».
+
+**`canceladas` test depends on test order (`test/cancel.test.js:13`, Minor)**: ADDRESSED.
+- Each test now loads its own copy of `app.js` through a unique query string (`test/cancel.test.js:4-6`, `fresh()`). `app.js` has no imports and keeps the `bookings` array at module level, so every test starts from clean state.
+- The `canceladas` test (`test/cancel.test.js:23-27`) now sets up its own GIVEN (Norte lun cancelled with «sala ocupada») before asserting «Norte lun — sala ocupada». That matches the spec scenario «El listado de canceladas enseña el motivo».
+- The RED tests were not modified. Test names, assertions and data are the same as at 666f661. The only changes are the async wrapper, the `fresh()` load, and the added setup line in the `canceladas` test.
+
+### New Breakage in the Fix Diff
+
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:9`: Task 1 ("Cancelar con motivo") is recorded with commit `666f661`, but it was implemented in `f4f3fab`. `666f661` is Task 2. The new file also has no row for this fix pass (`00f7dcb`), so the task log is wrong from the start.
+- **Minor**, `test/cancel.test.js` (whole file): the fix switched the file's line endings from CRLF to LF. At 666f661 it had 15 CRs and now it has 0. `src/app.js` and `test/app.test.js` are still CRLF, and the repo has no formatter, `.editorconfig` or `.gitattributes` that requires LF. Because of this the diff rewrites all 15 lines, which hides the real change (about 16 added and 4 changed lines when whitespace is ignored) and leaves the repo with mixed line endings.
+
+### Out-of-Scope Observations
+
+- Trimming the reason is new behaviour that the spec does not describe. "Delta de comportamiento" has no scenario for a reason with spaces around it, and "Enmiendas" still says "(ninguna)". The new test has no spec scenario behind it. Consider adding a one-line amendment so the spec and tests line up when the feature is archived.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage. The two new issues above (wrong commit in `tasks.md`, line-ending change in `test/cancel.test.js`) are Minor.
+
+--- [44]
+La re-revisión confirma que los dos hallazgos quedan resueltos y no encuentra nada Critical ni Important nuevo. Cierro los flecos: ledger, `tasks.md`, quitar el worktree y commit de documentación.
+
+--- [47]
+La revisión final de la 0010 está cerrada y la rama queda lista para `sdd-archive`. No he lanzado el cierre. Los dos hallazgos de los ejes están arreglados, el commit `00f7dcb` los resuelve y la suite da 6/6 en verde.
+
+**Resultado**
+- **Eje Spec:** sin Critical ni Important. Un Minor, la dependencia de orden entre tests, que está arreglado.
+- **Eje Código:** un Important, `reasonOf` conservaba los espacios del motivo, y está arreglado. El test nuevo falló antes del fix y pasa después.
+- **Re-revisión única** (opus + high, `666f661..00f7dcb`): ambos hallazgos resueltos, sin Critical ni Important nuevos. Encontró dos Minor, que adjudico abajo.
+- **`tasks.md`** lleva las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:`. Corregí el commit de la Task 1, que apuntaba a `666f661` en vez de `f4f3fab`, y añadí la fila del fix. Fue el commit `40db8ef`, solo de documentación y de 7 líneas. Lo he revisado yo en el hilo.
+
+✋ **Para tu decisión antes de archivar** (rulings en el ledger, `progress.md`):
+1. **Recortar el motivo no está en el spec.** La re-revisión lo marcó como fuera de alcance. Lo traté como normalización de la entrada y no como desviación, porque no cambia ningún THEN, el Scope ni la lista de motivos válidos. Si prefieres una línea en «Enmiendas» o un escenario en el spec, dímelo. Eso sí sería una enmienda y pararía hasta que la apruebes.
+2. **`test/cancel.test.js` pasó de CRLF a LF.** Es un Minor de la re-revisión. Lo dejo así porque no hay formatter ni `.gitattributes` que lo exija, pero el diff de ese fichero sale ruidoso y quedan finales de línea mezclados con `src/app.js`. Revertirlo sería un commit de código fuera de la re-revisión, que iría a ✋ como `sin revisar`.
+
+Ahora: sigo con `sdd-archive` (validación, walkthrough y merge) en cuanto me confirmes esos dos puntos. Queda: el cierre completo, ~10 min.
+
+--- [48]
+Ese aviso es solo el watch de silencio de la re-revisión, que ha terminado sin avisos. Como la re-revisión ya volvió, no hay nada que relanzar.
+
+No he recibido tu confirmación de los dos puntos de ✋, así que sigo parado antes de `sdd-archive`. Los puntos son estos:
+
+1. El recorte del motivo no está en el spec. ¿Lo dejo como normalización de entrada, tal como está en el ledger, o prefieres una enmienda en el spec?
+2. `test/cancel.test.js` pasó de CRLF a LF. ¿Lo dejo así o lo revierto en un commit aparte, que iría como `sin revisar`?
+

@@ -1,0 +1,68 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities) para clasificar el cambio. Queda: clasificar, escribir la spec y presentártela para aprobar.
+
+--- [18]
+Ahora: escribo la spec (feature, modo full) con el tope de palabras que choca. Queda: repaso de coherencia, una revisión de spec y presentártela para aprobar.
+
+--- [23]
+Ahora: espero la revisión de la spec (un revisor, sonnet). Queda: integrar sus hallazgos y presentártela para aprobar, ~2 min, ~0,3 $.
+
+--- [31]
+1. Crítico · Spec entera (falta sección de escenarios) · Ningún requisito tiene escenario GIVEN/WHEN/THEN. La spec habla de «el THEN literal del párrafo» (revisión) y de «Dónde se prueba», pero no hay ningún escenario escrito, así que el revisor no puede comparar nada carácter a carácter. · Añadir escenarios. GIVEN `aviso.md` con la línea de aviso, WHEN se añade el párrafo, THEN el fichero termina con el literal exacto de la decisión del dev-lead. Otro escenario: el tope 114 deja `node --test` en verde.
+2. Importante · Decisión 2 y «Dónde se prueba» · Decisión 2 exige línea en blanco, salto final y línea 1 intacta (decisión 3). El test descrito solo comprueba que «termina con el párrafo». Con el salto final obligatorio, un `endsWith(párrafo)` falla o exige `trimEnd`, y no se dice cuál. Tampoco hay test de la línea en blanco ni de la línea 1. · Especificar la aserción exacta, por ejemplo `readFileSync(...) === 'Aviso de sala: {sala} el {dia}.\n\n' + párrafo + '\n'`. Así cubre separación, línea 1 y salto final.
+3. Importante · Intent y gate (`node scripts/lint.mjs`) · La constitución, punto 2, fija como gate solo `node --test`. La spec añade `scripts/lint.mjs` como gate de éxito, y eso no está respaldado por la constitución ni se dice que exista. · Comprobar que existe y citarlo. Si no existe o no es gate, dejar solo `node --test`.
+4. Importante · Intro (🦆) · Dice que `aviso.md` hoy contiene «Aviso de sala: Norte el lun.». El fichero real es `Aviso de sala: {sala} el {dia}.`, que es el literal que cita la decisión 3. La spec se contradice a sí misma. · Corregir la intro con el contenido real de la plantilla.
+5. Importante · «Decisiones tomadas con el dev-lead» · PRODUCT.md dice «No hay más usuarios ni más desarrolladores», y aun así la spec atribuye decisiones a un «dev-lead» y habla de «el equipo». · Cambiar a la persona real (el autor) o aclarar quién decide.
+6. Importante · Decisión 1 y «Topes de palabras» · Es una decisión que cambia una restricción de calidad: la propia spec admite que no sabe por qué el tope es 60. El tope se sube a 114 sin un ancla para el margen de 20 («el mínimo del método» no está en la constitución ni en PRODUCT). Los números sí cuadran: 6 + 46 = 52, el párrafo mide 42, 52 + 42 = 94 y 94 + 20 = 114. Con B, el máximo para `recibo.md` es 12. · Bloquear la aprobación hasta que el dev-lead confirme el origen del tope. Citar la fuente del margen de 20 o llamarlo criterio propio.
+7. Menor · Decisiones, punto 4 (test en `words.test.js`) · Un test del literal de `aviso.md` dentro de `words.test.js`, un fichero sobre topes de palabras, es una decisión de organización no declarada como alternativa. Además, el test existente hay que renombrarlo y su título lleva el número. · Declarar la elección (fichero nuevo `test/aviso.test.js` frente a reutilizar este) y quién renombra el test.
+8. Menor · «Lo que se retira o cambia de forma», segunda fila · Lista una fila para `aviso.md:1` cuyo destino es «no cambia». No es un retiro ni un cambio de forma, y confunde al revisor. · Quitar la fila o reformularla como «se conserva».
+9. Menor · «Review de spec propuesta» dentro de «✋ Decisiones» · Mezcla la política de revisión y de modelos con las decisiones del usuario, y ensucia la lista que el usuario debe validar. · Mover la política de revisión y de modelos a una sección propia, y dejar en «✋» solo las decisiones.
+10. Menor · Decisión 6 y Scope · El Intent y la decisión 6 plantean la ausencia de fila en `ROADMAP.md` como pregunta abierta («dime si la quieres»). Es una decisión pendiente que no consta como tal en Scope ni en el gate. · Cerrarla antes de aprobar, o listarla como pregunta abierta explícita.
+
+--- [33]
+Ahora: integro los hallazgos de la revisión en la spec (la notificación es del revisor, no una aprobación tuya). Queda: segunda ronda de revisión por el Crítico aceptado y presentártela.
+
+--- [38]
+Ahora: espero la segunda ronda de revisión (un revisor, sonnet, la última). Queda: integrar lo que salga y presentarte la spec para aprobar, ~1 min.
+
+--- [48]
+1. Importante · línea 27 («tamaño: ~50 líneas en 2 ficheros») y Approach A («dos ficheros») · Dicen dos ficheros, pero Scope, la decisión 4 y «Dónde se prueba» tocan tres: `aviso.md`, `words.test.js` y `test/aviso.test.js` (nuevo). Eso falsea el tamaño que usa la política de review. También contradice «sin tocar nada más» del Elegido. · Cambiar a 3 ficheros en las dos frases y recalcular el tamaño.
+2. Importante · decisión 4 y escenario 1 · Compara el fichero con `\n` exacto. El entorno es win32; con `core.autocrlf` o un editor, `aviso.md` puede quedar con CRLF y el test falla sin que el contenido esté mal. La spec no lo dice ni lo cubre. · Añadir una decisión: fijar los finales de línea (LF en `.gitattributes` o comprobación) o normalizar `\r\n` en el test. Decir cuál, y cuál es el efecto en el conteo de palabras (ninguno).
+3. Menor · escenario 2 · «con el tope en 60 fallaría» no es una aserción: ningún test lo comprueba. Además el escenario pasa igual sin el párrafo (52 ≤ 114), así que no prueba el comportamiento. Su cobertura real sale del escenario 1. · Reformularlo como verificación manual del RED: antes de editar el valor, `words.test.js` con el párrafo añadido debe fallar con 94 > 60. Dejar claro que el escenario 1 es el que prueba el párrafo.
+4. Menor · «Topes de palabras» y decisión 1 · El «mínimo que fija el método de topes del kit» (20 de margen) no se puede comprobar con los ficheros del proyecto. Presentarlo como regla verificable es frágil. Los conteos (6 + 46 = 52; párrafo 42; total 94; 60 − 6 − 42 = 12) sí los verifiqué con `split(/\s+/)` y cuadran. · Citar dónde está el método, o marcarlo como «criterio mío» también en la tabla y no solo en la decisión 1.
+5. Menor · Scope y «Dónde se prueba» · El gate incluye `scripts/lint.mjs`, que no se ha leído ni se sabe qué comprueba. Un fichero de test nuevo o un `.md` más largo podrían incumplir una regla del lint (nombres, formato, longitud de línea). La spec afirma «sigue en verde» sin base. · Añadir un paso de línea base (`node scripts/lint.mjs` antes y después) o una nota de que el lint no impone nada sobre `test/` ni `docs/`.
+6. Menor · decisión 4 · El literal del test se describe con comillas y saltos de línea reales dentro de una cadena JS, que no es válida con comillas simples. Dos implementadores lo escribirían distinto. · Dar la expresión como `'Aviso de sala: {sala} el {dia}.\n\n' + PARRAFO + '\n'`, con `PARRAFO` definido una sola vez.
+7. Menor · decisión 6 y Scope · Se decide no añadir fila al roadmap «si la quieres, se añade en el cierre». Eso deja una tarea de cierre condicional que ni Scope ni los escenarios recogen. · Marcarla como pregunta resuelta del gate (sí o no) y no como opcional en el cierre.
+
+--- [51]
+La spec está escrita y pasó dos rondas de revisión, pero **no está aprobada**: se queda en espera hasta que me contestes. Hay un choque con el tope de 60 palabras que tienes que mirar.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+No la traté como patch: el párrafo no cabe en el tope de palabras del test, así que hay que decidir una regla y la solución no estaba fijada.
+
+**Spec:** `.docs/sdd/specs/20261111-192314-feature-0014-notice-room/spec.md`, en la rama `feature/0014-notice-room`. El id 0014 está confirmado, sin remoto. Aún no hay plan ni código.
+
+🦆 Hoy `docs/plantillas/aviso.md` tiene una sola línea: `Aviso de sala: {sala} el {dia}.`. Debajo llevará tu párrafo, tal cual lo dijiste y separado por una línea en blanco. Las plantillas suman hoy 52 palabras, con el párrafo serían 94, y `test/words.test.js` las limita a 60. Sin tocar ese tope, `node --test` falla.
+
+### ✋ Decisiones que he tomado yo — valida estas
+
+1. **Subir el tope de 60 a 114.** Es 94 más 20 de margen, y el 20 es mi criterio, no del proyecto. Descarté recortar `recibo.md` (46 palabras de relleno) a 12 o menos, porque toca un fichero que nadie pidió. No sé por qué el tope es 60, así que si lo quieres mantener, dilo y cambio al recorte.
+2. **Tests.**
+   - Un `test/aviso.test.js` nuevo compara el fichero entero con la línea original, una línea en blanco, el párrafo y un salto final. Normaliza CRLF, porque estás en Windows.
+   - `words.test.js` solo cambia el título y el valor del tope.
+3. **Sin fila 0014 en `ROADMAP.md`.** No la añado.
+4. **Sin capacidad ni delta.** Es un documento.
+
+La revisión de la spec la hizo un revisor sonnet y, por un Crítico aceptado, hubo una segunda ronda. Los hallazgos y lo que hice con cada uno están en la spec. Rechacé tres:
+- El gate que cita `scripts/lint.mjs`: `operations.md` lo fija así.
+- «dev-lead» sin más personas en el proyecto: es el rol del kit y lo dijiste tú.
+- Mover la política de revisión fuera del apartado ✋: la plantilla exige que lo abra.
+
+¿Cómo seguimos?
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué, por ejemplo recortar `recibo.md` en vez de subir el tope.
+

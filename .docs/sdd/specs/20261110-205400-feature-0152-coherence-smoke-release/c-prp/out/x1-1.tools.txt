@@ -1,0 +1,57 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd 2>&1 | head -50; echo ---; cat .docs/sdd/sdd-kit.json 2>&1 | head -40; echo ---; cat .docs/sdd/sdd-kit.local.json 2>&1 | head; echo ---; git ls-files | head -50
+<<< ./
+../
+sdd-kit.json
+specs/
+steering/
+---
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.doc
+
+>>> Bash: cd .docs/sdd/steering && cat constitution.md architecture.md; cd ../../..; cat PRODUCT.md ROADMAP.md package.json; cat src/app.js; ls .docs/sdd/capabilities 2>&1; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `featur
+
+=== RESULTADO (5 turnos, 0.1320935 $)
+Ahora: clasificar el cambio. Queda: tu respuesta a cómo partirlo, y luego el entendimiento y el diseño de la spec, ~3 min.
+
+**Carril:** feature, modo full. Perfil `delegate`, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`.
+
+Veo cuatro tasks en el plan: usuarios con login, rol de responsable de sala, autor en cada reserva y migración de las reservas actuales. Tocan capacidades distintas (autenticación, permisos, reservas) y una lleva migración de datos. Con ese tamaño el kit propone partirlo en vez de hacerlo todo junto.
+
+Hay un solape con el roadmap. La fila 0011, «Anular reservas de otros», dice que solo el responsable de cada sala anula reservas ajenas. Eso no se puede cumplir sin roles ni usuarios, así que dependería de esta partición.
+
+¿Cómo lo hacemos?
+
+1. **Partir en 3 features con fila propia en el roadmap (recomendada).**
+   - **0012 · Usuarios con login.** Alta de usuarios y login. Es la base de las otras dos.
+   - **0013 · Rol de responsable de sala.** Asigna el rol a un usuario y se apoya en la 0012. La 0011 pasaría a ir tras ella.
+   - **0014 · Autor en cada reserva y migración.** La reserva guarda quién la hizo, y las reservas actuales pasan a un usuario genérico. Va tras la 0012. La migración va dentro porque el campo autor no puede ser obligatorio mientras haya reservas sin él.
+
+   Empezaría por la 0012 y dejaría las otras dos en el roadmap, sin arrancarlas.
+2. **Mantenerlo entero** como una sola feature, con las cuatro tasks. No volvería a proponerte partirlo.
+
+Si te vas a ausentar, puedes decirme «apruebo la spec por delegación, nos vemos en la validación» y no paro en el gate de la spec. Para otro perfil, dime «perfil `<otro>` para esta feature».

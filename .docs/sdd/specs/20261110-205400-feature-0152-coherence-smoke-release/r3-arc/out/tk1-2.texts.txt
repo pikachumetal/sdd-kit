@@ -1,0 +1,131 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [5]
+Pre-checks 1–3 limpios: sin cambios sin commitear, destino listo y ninguna otra rama abierta. Miro el spec y lo que hay en la carpeta de la feature.
+
+--- [26]
+Smoke y suite verdes sobre `75b75db`. Mientras vuelve la re-revisión leo las referencias de los registros, sin escribir nada todavía.
+
+--- [35]
+Los pre-checks están hechos y la re-revisión del rango `5e65b57..75b75db` sigue en marcha. Hasta que vuelva y cierre no escribo ningún registro, como pide el paso 0.6.
+
+- **Pre-checks:** el worktree está limpio, `sdd merge --check` dice `destino: listo` (`develop`) y no hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Spec:** `approved`, firmada por Laura el 2026-10-08, modo `full`.
+- **Validación:** el modo es `field`, así que valido yo y no pido nada.
+  - Suite: `node --test --test-concurrency=1` da 5/5 sobre `75b75db` (salida guardada en el scratchpad).
+  - Smoke con ejecución real: «cancelada Norte lun (sala ocupada)», «motivo no válido: …» con un motivo fuera de la lista y también sin `--motivo`, y «Norte lun — sala ocupada» en `canceladas`, cancelando y listando en un mismo proceso.
+- **Pendiente tras la re-revisión:**
+  - walkthrough con su `Validación en campo`
+  - fusión de la capacidad `bookings`
+  - ADR/`decision check`, y roadmap más una fila de deuda por el workaround de `--test-concurrency=1`
+  - squash del cierre, `merge --sync` y `merge` a `develop`, sin push porque `merge.push` es `false`
+
+Sigo cuando termine.
+
+--- [36]
+**Veredicto: necesita arreglos.** Hay dos hallazgos Important y uno Minor. Revisé el rango `5e65b57..75b75db` en un worktree detached, que ya he quitado. No ejecuté la suite, ni el build, ni el lint.
+
+Fichero: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+**Critical**
+- Ninguno.
+
+**Important**
+1. **`tasks.md:10`: la Task 1 cita el commit equivocado.** Dice `5e65b57`, pero ese commit solo añade el listado `canceladas` (la Task 2). La Task 1 (cancelar con motivo: `reasons`, `reasonOf` y el cambio en `cancelBooking`, con sus tests) está en `9042cfe` («feat(bookings): cancelar con un motivo de la lista»). Arreglo: poner `9042cfe` en la fila 1.
+2. **`tasks.md:17`: el ruling no se corresponde con el repo.**
+   - En el repo nada usa `node --test --test-concurrency=1`. El gate de `plan.md:50` (en `plan.md` es la línea 50, aunque mi listado concatenado la mostró como 119) es `node --test`, y `package.json` solo contiene `{"type": "module"}`, sin script de test. Una búsqueda de `concurrency` solo encuentra esta misma línea.
+   - El motivo que da tampoco encaja. `node --test` ejecuta cada fichero en su propio proceso, así que cada fichero tiene su propia copia de `bookings`, y dentro de `test/cancel.test.js` los tests van en secuencia. Ese almacén compartido no produce ninguna carrera.
+   - Además, se atribuye a la Task 2, que no toca el gate.
+   - Arreglo: quitar el ruling, o llevar el cambio al gate y al plan con una justificación que se sostenga.
+
+**Minor**
+3. **`tasks.md:13`: la revisión final da el eje Spec por «limpia», pero un escenario de la spec no tiene test.** `spec.md:54` exige que cancelar sin `--motivo` responda «motivo no válido: …». El código lo cumple (`src/app.js:14-20`, porque `reasonOf` devuelve `undefined`), pero ningún test de `test/cancel.test.js` lo comprueba. Por otro lado, «Arquitectura no (plan)» remite al plan, y `plan.md` no dice nada de omitir ese eje. Es una justificación sin respaldo.
+
+Lo que sí cuadra:
+- Las dos tasks marcadas `done` tienen código y tests que las cubren.
+- El sha de la revisión (`5e65b57`) es el último commit con código.
+- Todo el texto está en castellano.
+
+--- [38]
+Verifico los hallazgos antes de actuar sobre ellos.
+
+--- [46]
+El commit `75b75db` está en el rango que se squashea, así que reescribo esa línea sin su sha, como pide «History». Después fusiono el delta de capacidad.
+
+--- [49]
+La capacidad `bookings` queda creada y validada, y no hay ADR candidatas. Ahora la retro del cierre.
+
+--- [55]
+Ahora el roadmap y la deuda, y después los chequeos.
+
+--- [58]
+Todo valida. Paso 5: squasheo el cierre en un único commit desde el de la última task. Compruebo antes que ninguna sha del rango quede citada en los registros.
+
+--- [60]
+Paso 6: sincronizo la base, en su propia llamada.
+
+--- [66]
+Cerré la feature 0010: `feature/0010-cancel-reason` está fusionada en `develop` (`7022bbc`), sin push. `merge.push` es `false`.
+
+**Validación.** Como `validation.mode` es `field`, validé yo y no pedí nada.
+- **Suite:** `node --test` plano dio 5/5 tres veces seguidas. Con `--test-concurrency=1` también da 5/5.
+- **Smoke con ejecución real:**
+  - «cancelada Norte lun (sala ocupada)»
+  - «motivo no válido: …» con un motivo fuera de la lista
+  - lo mismo sin `--motivo`
+  - «Norte lun — sala ocupada» en `canceladas`
+- **Merge:** la base ya estaba al día, así que no hizo falta merge de sincronización ni segunda suite. `--verified-at` llevó el commit de cierre `c9bccd9`.
+
+**Re-revisión.** `HEAD` se había movido sobre la revisión final con un commit que solo tocaba `tasks.md`, así que la lancé antes de escribir nada. Devolvió dos Important y un Minor:
+- **Corregido:** `tasks.md` citaba `5e65b57` para la Task 1, y ese commit es la Task 2. La Task 1 es `9042cfe`.
+- **Sostenido con ruling:** el workaround `--test-concurrency=1` no se reproduce. Nada en el repo lo aplica y el gate plano pasa. No borré un ruling que no era mío: lo dejé escrito con esa nota.
+- **A deuda:** ningún test cubre «cancelar sin `--motivo`». El comportamiento sí lo vi con ejecución real.
+
+**Qué ha quedado escrito:**
+- **Walkthrough:** `walkthrough.md`, con la línea `Retro: documento o skill desmentido → corregido en el mismo documento`.
+- **Capacidad:** `bookings` creada con `sdd capability merge`, porque la spec aprobada la declaraba nueva.
+- **Roadmap y deuda:** fila 0010 en ✅ y una fila nueva en «Por triar» de `debt.md`.
+- **Historia:** el cierre va en un solo commit desde el de la Task 2.
+- **Chequeos:** `roadmap check`, `capability check` y `decision check` salen con exit 0.
+- **Sin aplicar:** no había `estimation.md`, ni ADR candidatas, ni aprendizajes nuevos para los documentos vivos.
+
+**Decisiones tomadas sin el dev-lead:**
+- Task 2: `node --test --test-concurrency=1` en el gate, para esquivar una carrera sobre el almacén en memoria. En el cierre no se reproduce, como queda dicho arriba.
+- Dejé sin cambio la línea «Arquitectura no (plan)» de la revisión final, aunque el plan no la justifica. No altera el resultado.
+
+**Pendiente:** el push de `develop`, que `merge.push: false` no autoriza («push: no hecho: `merge.push` no lo autoriza»).
+
+**Siguiente:** la 0010 no tiene `parent:` ni `proposal:`, así que no hay familia que cerrar.
+
+¿Quieres el ticket de mejora del kit con `sdd-feedback`? La retro no dejó ninguna línea `ticket del kit`. Solo lo haría con lo que la sesión mostró sobre el kit.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`7022bbc`) · push: no hecho: `merge.push` no lo autoriza
+
+--- [70]
+Leo del disco las dos fuentes de versión y escribo el ticket completo, porque hay un ruling y un hallazgo.
+
+--- [73]
+Pasada de privacidad, y compruebo una afirmación mía que no verifiqué: que `capability check` no vigila la regla 2.
+
+--- [79]
+La sincronización integró `develop`, que solo traía el merge anterior. Compruebo que no cambió nada fuera de `.docs` y `*.md` antes de fusionar, para saber si hay que repetir la suite.
+
+--- [81]
+He escrito el ticket del kit y lo he fusionado en `develop` (`61496c6`), sin push.
+
+El fichero es `.docs/sdd/kit-feedback/20261111-225113-feature-0010-cierre-con-re-revision.md`. La carpeta `kit-feedback/` es nueva y no está ignorada por git. Si no quieres versionar los tickets, puedes ignorarla tú. No he tocado `.gitignore`.
+
+**Hallazgos del ticket** (ninguno verificado con el kit modificado):
+1. **Commit mal citado en `tasks.md`.** Lo cazó el re-revisor, no el cierre. Un `git show --stat` lo habría descubierto en un comando. Propongo un chequeo de la CLI, `sdd tasks check`.
+2. **Ruling de workaround sin contrastar.** Entró al cierre sin que nada comprobara su premisa, y `node --test` plano pasa 5/5. Propongo que el paso 2 de `sdd-archive` lo ejecute sin la opción y lo anote como «no reproducido».
+3. **Capacidad nueva sin aprobar en las decisiones de la spec.** `capability-template.md` dice que debe estar en «Decisiones…», pero ningún paso ni validador lo comprueba, y `capability merge` la creó sin objetar nada.
+
+También recoge la iniciativa propia (esperar la re-revisión mientras corría el smoke, y extender «juntada en el cierre» a `Re-revisión:`), lo que funcionó y tres menores. Uno de ellos es que `.docs/sdd/sdd-kit.json` dice `3.0.0` y el `plugin.json` del kit cargado dice `2.3.4`. Los costes de tiempo y tokens del hilo van como «no medido».
+
+**Privacidad y lint.** Pasé la comprobación de privacidad: quité el único nombre de dominio, el de la capacidad, de una cita. El proyecto no tiene linter de docs, así que no pasé ninguno.
+
+**Segunda fusión.** El commit del ticket cuenta como cambio de la rama, así que hice un segundo `sdd merge`. Antes, `merge --sync` integró `develop`, que solo traía el merge anterior. No hubo cambios fuera de `.docs` y `*.md`, por eso no repetí la suite y `--verified-at` sigue siendo `c9bccd9`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`61496c6`) · push: no hecho: `merge.push` no lo autoriza
+

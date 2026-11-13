@@ -1,0 +1,100 @@
+--- [22]
+Ahora: reservo el id 0012 y abro la rama del patch. Queda: escribir el test en rojo, el arreglo y el cierre.
+
+--- [28]
+RED por la razón correcta. Ahora el arreglo mínimo.
+
+--- [36]
+Un revisor (Sonnet) está leyendo el patch. Hasta que vuelva no hago commit, porque el commit del fix va después de su revisión. Te aviso cuando responda.
+
+--- [39]
+Sin hallazgos bloqueantes. Hay una observación menor.
+
+1. **Causa raíz (patch.md §2): cierta.** `git diff` muestra que la línea original de `findBooking` en `src/app.js` filtraba solo por `b.room` y `b.status === 'active'`. Ignoraba `day`, y `cancelBooking` y `voidBooking` confían en ella.
+
+2. **Fix mínimo y correcto: sí.** Es un único cambio, `b.day === day`, en el punto compartido, así que cubre también `voidBooking` sin tocarla.
+
+3. **Test de regresión (`test/cancel.test.js`): correcto.**
+   - **Falla sin el fix:** no pude quitar el fix porque es solo lectura, así que lo razoné. Sin él, `findBooking('Norte','mar')` devuelve la reserva `Norte lun`. El resultado sería `cancelada Norte mar` y no `sin reserva Norte mar`, y la primera aserción falla.
+   - **Independiente del orden:** `import('../src/app.js?dia-sin-reserva')` crea una instancia nueva del módulo con su propio array `bookings`. Los otros tests mutan la instancia base, por eso no le afectan.
+   - **Suite:** `node --test` da 5/5 en verde con el fix, como dice patch.md §4.
+
+4. **Menor (`test/cancel.test.js`):** patch.md §1 afirma que `anular` tiene el mismo fallo, pero no hay test que cubra `voidBooking`. Con el fix compartido es de riesgo bajo. Aun así, un caso `anular Norte mar` con import fresco dejaría documentado el alcance.
+
+5. **Menor (patch.md):** el frontmatter tiene `status: done` y `commit: pendiente`. Es coherente con cambios sin commitear, pero hay que rellenar el commit al cerrar.
+
+No ejecuté `node scripts/lint.mjs`, que patch.md cita como limpio, así que esa afirmación queda sin verificar.
+
+--- [42]
+Ahora: cierro con la validación. Queda: tu confirmación de que funciona.
+
+--- [50]
+Ahora: te pido la validación antes de cerrar. Queda: tu «validado», y luego el registro, el cierre y la fusión.
+
+Antes de la validación:
+
+- **Una sola rama abierta:** no hay otras ramas ni worktrees abiertos.
+- **Falta política de fusión:** `sdd merge --check` dice que a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Por eso presentaré la fusión y esperaré tu orden, sin hacerla sola.
+
+🦆 Cancelar (o anular) una sala en un día en el que no tienes reserva ya no toca la de otro día. Con la reserva de Norte el lunes, `cancelar Norte mar` ahora responde «sin reserva Norte mar» y la del lunes sigue activa. Antes respondía «cancelada Norte mar» y te quitaba la del lunes. El comando ahora compara también el día al buscar la reserva.
+
+**✋ Me salí del plan en…**
+
+- Nada. Añadí un test para `anular`, porque el revisor señaló que solo estaba probado `cancelar`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día no cancela la del lunes | `ejecución real` + `suite` | `sin reserva Norte mar` |
+| `cancelar Norte lun` sigue cancelando la reserva existente | `ejecución real` | `cancelada Norte lun` |
+| `anular Norte mar` no toca la del lunes | `ejecución real` + `suite` | `sin reserva Norte mar` |
+| `anular Norte lun` sigue anulando | `ejecución real` | `anulada Norte lun` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre la rama `feature/0012-cancelar-otro-dia`, menos de 1 s.
+- `node scripts/lint.mjs`: sin hallazgos.
+
+**Sin probar**
+
+- Nada.
+
+**Guion**
+
+Rama `feature/0012-cancelar-otro-dia` · worktree `<run>/repo`
+
+Terminal 1: es una CLI sin servidor, así que no hay entorno que arrancar. Las reservas viven en memoria, y cada comando parte con `Norte lun` reservada.
+
+```
+cd <run>/repo
+```
+
+1. Tu caso: cancela el martes, que no está reservado.
+
+```
+node src/app.js cancelar Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+2. Cancela el lunes, que sí está reservado.
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `cancelada Norte lun`
+
+3. El mismo fallo en el otro comando: anula el martes.
+
+```
+node src/app.js anular Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

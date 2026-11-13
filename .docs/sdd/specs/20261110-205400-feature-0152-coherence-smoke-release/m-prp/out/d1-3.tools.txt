@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1 | head -50; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20; ls node_modules .venv 2>&1 | head -3
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-br-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+ls: cannot access '.venv': No such file or directory
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat package.json PRODUCT.md ROADMAP.md .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md; ls -R src test scripts
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-br-0152\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+<<< {"type": "module", "engines": {"node": ">=20"}}
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la re
+
+>>> Bash: cd "<run>/repo" && cat -n src/app.js; cat test/cancel.test.js; cat .docs/sdd/steering/estimation.md; ls -R .docs/sdd/specs; git branch -a
+<<<      1	const [command, ...args] = process.argv.slice(2);
+     2	const rooms = ['Norte', 'Sur'];
+     3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+     4	
+     5	function freeRooms(slot) {
+     6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+     7	}
+     8	
+     9	function findBooking(room, day) {
+    10	  return bookings.find((b) => b.room === room && b.status === 'active');
+    11	}
+    12	
+    13	export function cancelBooking(room, day) {
+    14	  const booking = findBooking(
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; git log --oneline -5; ls .docs/sdd/specs/*/ ; grep -n "gate\|Gate" -r .docs/sdd/specs | head
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+a5dc46f feat: base del molde
+.docs/sdd/specs/20260915-090000-task-0005-weekly/:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free/:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/:
+patch.md
+
+=== RESULTADO (9 turnos, 0.16422669999999998 $)
+🦆 **Qué pasa:** `findBooking(room, day)` en `src/app.js:9-11` recibe el día pero no lo mira. Devuelve la primera reserva activa de la sala. Por eso `cancelar Norte mar` encuentra la del lunes, la marca como cancelada y responde con el día que tecleaste. `anular` usa la misma función, así que tiene el mismo fallo.
+
+**Por qué es un patch:** el fallo es determinista y la causa está confirmada en el código. La solución es comparar también `b.day === day`, y no hay que decidir nada visible. El test que falla hoy es `cancelar Norte mar` con solo la reserva de Norte lun. Debería devolver `sin reserva Norte mar` y dejar la del lunes activa. Con el arreglo pasa a verde. Los tests existentes siguen en verde: el de `Sur mar` ya espera `sin reserva`. Las dependencias no hacen falta: el proyecto no tiene ninguna.
+
+**Estimación:** 0,5 h, más 0,0003 h de gate de cierre (~1 s de `node --test`, según `operations.md`; no hay un gate medido en los patches anteriores). Para comparar, el patch 0007 fue de 0,5 h.
+
+**Perfil:** `delegate`, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`.
+
+¿Lo abro como patch?
+
+1. **Sí, patch (Recomendada).** Creo la rama y la carpeta `patch-`, escribo el test rojo, hago el arreglo en `findBooking` y cierro con el gate (`node --test && node scripts/lint.mjs`). `anular` queda arreglado con el mismo cambio, y lo cubro con un segundo assert en el mismo test.
+2. **Otro perfil para este patch.** Dime cuál, por ejemplo `pair`.
+3. **Mejor como feature.** Solo si quieres que `anular` tenga además su propio test y spec. No lo recomiendo: es la misma causa y el mismo cambio.

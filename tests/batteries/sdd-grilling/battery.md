@@ -2,7 +2,7 @@
 
 Cómo pregunta el kit cuando una skill necesita decisiones del usuario. Cada escenario lanza una petición que lleva a una de las seis skills que entrevistan (`sdd-explore`, `sdd-init` sin código, `sdd-init` con código, `sdd-propose`, `sdd-roadmap`, `sdd-config`) y mide la forma de sus preguntas. El **paso** es la skill que llama: una edición de su regla de preguntas lanza su tramo.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-grilling/mold-reservas`, con glosario en `PRODUCT.md`), `salas-csv` (el de `salas` con una fila 2 en «Próximo» de su roadmap, que fija separador y salida) o carpeta vacía.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-grilling/mold-reservas`, con glosario en `PRODUCT.md`), `salas-csv` (el de `salas` con la fila 0002 en Now de su `ROADMAP.md` —la «2» de la 2.x; la petición dice «la 2 del roadmap»—, que fija separador y salida) o carpeta vacía.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo: un juez automático sería otro modelo, con su propio ruido.
 
@@ -30,7 +30,7 @@ Turnos extra por escenario, en `subject.mjs`: g3 lleva `TURN2` «sí, adelante: 
 | sk-c | boceto | Carril feature: añade a la web una página nueva de informes: una fila por sala con su porcentaje de ocupación de la semana. Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, pantalla nueva: boceto aparte; sin Artifact, en texto con su escena |
 | p1 | sdd-propose | Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido) |
 | p2 | sdd-propose | Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido) |
-| p3 | sdd-propose | Carril feature, modo full: arranca la 2 del roadmap. | salas-csv | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido); molde `salas` con la fila 2 en «Próximo» de su roadmap |
+| p3 | sdd-propose | Carril feature, modo full: arranca la 2 del roadmap. | salas-csv | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0314: brainstorming 7.0.2 (porqué primero, sin relleno, pasos de proceso, lo ya decidido); molde `salas` con la fila 0002 en Now de su `ROADMAP.md` |
 
 ## Rúbrica
 
@@ -38,13 +38,13 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| R1 Una decisión por turno | g1, g2, g3, g4, g8, g9 | el mensaje pide más de una decisión al usuario (dos preguntas, una lista numerada de preguntas, «y además…») |
+| R1 Una decisión por turno | g1, g2, g3, g8, g9 | el mensaje pide más de una decisión al usuario (dos preguntas, una lista numerada de preguntas, «y además…») |
 | R2 Formato | todos | una decisión de diseño sin alternativas marcadas ni recomendación separada, o con `AskUserQuestion` intentado en `tools.txt` |
-| R3 Alternativas reales | g3, g4, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
-| R4 Recomendada con razón | g3, g4, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
+| R3 Alternativas reales | g3, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
+| R4 Recomendada con razón | g3, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
 | R5 Descubrimiento sin ancla | g2, g5, g8 | una pregunta sobre lo que solo sabe el usuario (para quién, qué problema) lleva recomendación o hipótesis; en g8, no enseña el hecho del código con su fuente |
 | R6 Escena concreta | g3, g6 | una decisión sobre lo que ve el usuario de `salas` sin un ejemplo con datos (sala, franja, qué sale en la terminal) |
-| R7 Rebatir una vez | g4 | el turno 1 no señala que `--cada-semana` ya existe; o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
+| R7 Rebatir una vez | g4 | el turno 1 no rebate ninguna premisa de la petición que los documentos o el código desmienten (`--cada-semana` ya existe en `CHANGELOG.md` y `src/app.js`; el aviso por correo ya tiene la fila 0008); o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
 | R8 «Decide tú» | g5 | el turno 2 vuelve a preguntar una decisión de método, o decide por su cuenta para quién es la app en vez de dejarlo pendiente |
 | R9 Rechazo en texto | g6 | el turno 2 vuelve a presentar la misma decisión con alternativas marcadas en vez de explicarla en prosa |
 | R10 Cuándo para | g7 | sigue preguntando tras la última clave, vuelve a preguntar una clave ya contestada (la hoja contesta dos juntas) o no devuelve lo decidido por el usuario, lo decidido por el agente y lo pendiente |

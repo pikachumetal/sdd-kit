@@ -1,0 +1,51 @@
+--- [3]
+Empiezo el cierre de la 0010 con los pre-checks del paso 0.
+
+--- [25]
+Verifico los hallazgos en el repo antes de darles crédito.
+
+--- [33]
+El puerto está libre. Levanto el entorno yo mismo y ejecuto el gate de cierre tal como lo declara `operations.md`, sin interruptores añadidos. Guardo la salida completa en el scratchpad.
+
+--- [36]
+Falla por `ERR_CONNECTION_REFUSED`. Según el procedimiento, eso apunta primero al entorno y no al código. Miro si el servidor sigue vivo y qué dio la parte unitaria.
+
+--- [45]
+Smoke completo: los 4 THEN con ejecución real, también por CLI. El entorno está parado y el puerto libre. Antes de escribir los registros leo las referencias del cierre.
+
+--- [52]
+Todo en orden para escribir los registros. Empiezo por el delta de capacidad y la comprobación de ADR, que son comandos del kit, nunca a mano.
+
+--- [63]
+Ahora el roadmap (fila 0010 a `✅`, porque la validación en campo queda registrada) y el walkthrough.
+
+--- [69]
+Cierre commiteado (`bd8b158`). Paso 6: base integrada, en su propia llamada.
+
+--- [75]
+🦆 Ahora, al cancelar una reserva hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo que no está en la lista, o sin motivo, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista cada cancelación con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Task 2 (decisión de la ejecución, antes del cierre): puso `--test-concurrency=1` en el gate para esquivar una carrera sobre el almacén. **No se aplicó.** El gate de cierre corrió como lo declara `operations.md`, sin esa opción, y pasó. La re-revisión dijo que el motivo no se sostiene, porque cada fichero de test corre en su propio proceso. Queda en la deuda la dependencia de orden real de `test/cancel.test.js`.
+
+**Cómo se validó (modo `field`, lo hice yo):**
+- **Suite:** 5/5 unitarios y 7/7 E2E con el gate declarado.
+- **Smoke:** los 4 THEN con ejecución real, contra el servidor con una sesión propia y por CLI.
+- **Re-revisión:** el HEAD estaba un commit por delante de lo revisado, así que hubo una. Dio 2 Important y 1 Minor, los tres sobre `tasks.md` y ninguno sobre código.
+  - Corregí la fila de Task 1, que citaba el commit de Task 2 (ahora `481bfa7`).
+  - El ruling lo adjudiqué como se explica arriba.
+  - El Minor, la etiqueta «Ruling:» repetida bajo `## Rulings`, queda diferido porque no hay `review.minors: fix`.
+
+**Pendiente y deuda abierta («Por triar»):**
+- El primer pase E2E dio 7 `ERR_CONNECTION_REFUSED`. `server.mjs` sale en la primera petición a `/run` tras un clon y el health no lo avisa. Levanté el entorno otra vez y repetí el pase entero. Está anotado en `operations.md` (§Testing) con su fila de deuda.
+- El E2E tarda 48,1 s con un presupuesto de 0,5 min.
+- El test `canceladas` depende del orden de los tests.
+- `ROADMAP.md` tiene la 0014, «Motivo guardado: el motivo de una cancelación se guarda en el almacén». La 0010 ya guarda el motivo con la reserva. No toqué esa fila: decide la dev-lead si sigue haciendo falta.
+- Retro: `documento o skill desmentido` (el health de `operations.md`) lo corregí en el propio documento. `error que cazaría un chequeo` va como ticket del kit: un commit mal anotado en `tasks.md` solo lo cazó la re-revisión.
+- Capacidad nueva `bookings`, creada con `sdd capability merge`.
+- No había `estimation.md` ni CHANGELOG que tocar: la fila queda en Now con `✅`.
+
+**Ticket del kit:** ¿quieres que genere con `sdd-feedback` el ticket de la línea `Retro: error que cazaría un chequeo → ticket del kit`?
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (84eff46) · push: no hecho: `merge.push` no lo autoriza.
+

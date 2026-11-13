@@ -1,0 +1,68 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [28]
+Mientras la re-revisión corre, avanzo en lo que no escribe nada: leo las referencias del cierre y compruebo el estado del repo.
+
+--- [45]
+Los dos THEN del spec están comprobados con ejecución real, y la suite pasa con 5 de 5 tests en verde (`node --test --test-concurrency=1`). El listado `canceladas` solo muestra datos dentro del mismo proceso. Una invocación suelta de la CLI sale vacía porque el almacén está en memoria, y eso lo cubre la fila 0014 del roadmap, «Motivo guardado». No escribo ningún registro hasta que vuelva la re-revisión del commit 379af98, que ya está en marcha en segundo plano.
+
+--- [49]
+**New Breakage in the Fix Diff**
+
+The range `ac454f1..379af98` contains one commit. It only adds `tasks.md`; `git diff --stat ac454f1 379af98` shows no code or test changes. Both cited commits exist and are reachable from `379af98`. I found two problems in the new record:
+
+1. **Important** — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. The Task 2 ruling changes the closing gate to `node --test --test-concurrency=1`. That breaks three ways:
+   - **It conflicts with the plan and the constitution.** `plan.md:50` sets the gate as `node --test`, and `constitution.md:2` says «Gate de cierre: `node --test` entero en verde». Neither document was updated. A ruling in the task record does not change the gate the constitution sets.
+   - **Its stated cause is wrong.** It claims a race between tests over a shared in-memory store. That store is module state in `src/app.js`, and by default `node --test` runs each test file in its own process. So `test/app.test.js` and `test/cancel.test.js` never share it, and `--test-concurrency=1` only limits how many files run at once. The real fragility is inside `test/cancel.test.js`: «canceladas enseña sala, día y motivo» only passes if «cancelar con un motivo de la lista» has already cancelled `Norte lun`. That is an ordering dependency, and the flag does nothing about it.
+   - **The deferred fix is recorded nowhere else.** It calls itself a «workaround hasta aislar el almacén por test», but `.docs/sdd/steering/debt.md` has no entry for it, so the fix would be lost when the feature closes.
+
+   Fix: drop the ruling, or correct its cause (tests that depend on order within the file), keep the `node --test` gate, and record the test isolation work in `debt.md` (Por triar).
+
+2. **Minor** — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. Task 1 («Cancelar con motivo») cites commit `ac454f1`, but its commit is `f0c533c` («feat(bookings): cancelar con un motivo de la lista»). `ac454f1` is Task 2's commit, so it is cited for both rows. The commit exists and is reachable, but it is the wrong one, so the record does not trace Task 1 to its own change.
+
+Everything else matches the plan: two tasks with the plan's names, both `done`, and the final review line («Spec … limpia · Código … limpia … sobre ac454f1») agrees with the review that came back clean. The record's text is in Spanish (castellano).
+
+**Out-of-Scope Observations**
+
+- `test/cancel.test.js` (from `ac454f1`, outside the range): the third test depends on the state left by the first, so it fails if run alone or in a different order (for example with `--test-name-pattern`). The final review over `ac454f1` did not flag this. It explains the symptom the ruling attributes to a race. I'm not reopening the Code axis here; it belongs in debt.
+
+**Verdict**
+
+Findings remain open:
+- Important — `tasks.md:17`: the ruling changes the closing gate against `plan.md:50` and `constitution.md:2`, its stated cause (a race between test files) does not match the code, and the deferred fix is not in `debt.md`.
+- Minor — `tasks.md:10`: Task 1 cites `ac454f1` instead of `f0c533c`.
+
+No code or test changed in the range.
+
+--- [73]
+Mi `sed` con comodín tocó también los walkthroughs de las features 0005 y 0006, que no me corresponden. Reviso qué cambió y lo revierto.
+
+--- [76]
+Solo cambiaron los finales de línea, no el contenido. Restauro los dos ficheros desde ac454f1 y enmiendo mi commit de cierre, que aún no se ha publicado.
+
+--- [82]
+La feature 0010 está cerrada y fusionada en `develop`. Pasé las comprobaciones previas, validé en campo, hice los registros y fusioné con `sdd merge`.
+
+Decisiones que tomé sin el dev-lead:
+- **Ruling retirado:** quité de `tasks.md` el ruling que cambiaba el gate a `--test-concurrency=1`. Su causa, una carrera entre ficheros, era falsa. `node --test` pasa en verde 3 de 3 veces sin la bandera, así que el gate sigue siendo el de la constitución. El coste si me equivoco es ninguno.
+
+Otros cambios del cierre:
+- **Re-revisión:** el único commit posterior a la revisión final solo tocaba `tasks.md`, y la regla obliga a re-revisarlo. La re-revisión (opus) devolvió dos hallazgos sobre ese registro, y los dos están corregidos. El Important era el ruling del gate. El Minor era que la Task 1 citaba el commit de la Task 2 (ahora `f0c533c`).
+- **Cambio mío por error:** un `sed` con comodín tocó los finales de línea de los walkthroughs de las features 0005 y 0006. Lo detecté antes de fusionar, los restauré y enmendé mi commit de cierre, que aún no estaba publicado.
+
+Verificación:
+- **Suite:** 5 de 5 tests en verde.
+- **Smoke:** los dos THEN del spec (cuatro filas) están comprobados con ejecución real.
+- **Capacidad `bookings`:** fusionada con `sdd capability merge` y validada con `capability check`.
+- **Roadmap:** la fila 0010 pasa a ✅ y `sdd roadmap check` sale válido.
+- **Base:** estaba al día, así que no hubo merge de sincronización ni segunda suite.
+- **Tiempo real:** el proyecto no tiene `estimation.md`, así que no hay bloque de tiempo ni log de estimación.
+
+Pendiente, sin bloquear el cierre:
+- **Test dependiente del orden:** «canceladas enseña sala, día y motivo» solo pasa si antes corre «cancelar con un motivo de la lista». Ejecutado solo falla. Lo apunté en «Por triar» de `debt.md`.
+- **Listado fuera de proceso:** `canceladas` por la CLI en una invocación suelta sale vacío porque el almacén está en memoria. Eso ya es la fila 0014 del roadmap.
+- **Push:** no hecho, porque `merge.push` no lo autoriza.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (6471972) · push: no hecho: `merge.push` no lo autoriza
+

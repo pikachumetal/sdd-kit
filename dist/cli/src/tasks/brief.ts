@@ -24,7 +24,7 @@ const MAX_SHAPED = 5;
 
 interface PlanScan {
   picked: string[];
-  tasks: number;
+  ids: { id: string; depth: number }[];
   shaped: string[];
   fence: { line: number; hidden: boolean } | null;
   inTask: boolean;
@@ -35,7 +35,7 @@ export function isTaskId(value: string): boolean {
 }
 
 class PlanScanner {
-  readonly scan: PlanScan = { picked: [], tasks: 0, shaped: [], fence: null, inTask: false };
+  readonly scan: PlanScan = { picked: [], ids: [], shaped: [], fence: null, inTask: false };
   private readonly task: string;
   private level = 0;
 
@@ -62,7 +62,7 @@ class PlanScanner {
   }
 
   private enterHeading(depth: number, id: string): void {
-    this.scan.tasks++;
+    this.scan.ids.push({ id, depth });
     const extendsTask = id.startsWith(this.task) && /[A-Za-z.]/.test(id[this.task.length] ?? '');
     if (this.scan.inTask && depth > this.level && extendsTask) return;
     this.scan.inTask = id === this.task;
@@ -82,6 +82,13 @@ function readPlan(plan: string): string {
   } catch {
     throw new UsageError(`no such plan file: ${plan}`);
   }
+}
+
+// Las tasks del plan en orden, sin las subtasks (`### Task 2.1` bajo `## Task 2`).
+export function planTaskIds(plan: string): string[] {
+  const { ids } = scanPlan(readPlan(plan), '');
+  const top = Math.min(...ids.map((item) => item.depth));
+  return ids.filter((item) => item.depth === top).map((item) => item.id);
 }
 
 const FRONTMATTER = /^---\n([\s\S]*?)\n---(?:\n|$)/;
@@ -113,7 +120,7 @@ function notFoundMessage(scan: PlanScan, request: BriefRequest): string {
   const { plan, task } = request;
   const lines: string[] = [];
   if (scan.fence?.hidden) lines.push(hidingFence(scan, plan));
-  else if (scan.tasks === 0 && scan.shaped.length > 0) lines.push(TRANSLATED_PLAN_HINT, ...scan.shaped.map((heading) => `  ${heading}`));
+  else if (scan.ids.length === 0 && scan.shaped.length > 0) lines.push(TRANSLATED_PLAN_HINT, ...scan.shaped.map((heading) => `  ${heading}`));
   lines.push(`task ${task} not found in ${plan} (no heading matching 'Task ${task}')`);
   return lines.join('\n');
 }
@@ -126,7 +133,7 @@ function strayFenceWarnings(scan: PlanScan, plan: string): string[] {
 function briefOf(planText: string, request: BriefRequest): { picked: string[]; warnings: string[] } {
   if (isLiteSpec(planText)) return { picked: splitLines(planText), warnings: [] };
   const scan = scanPlan(planText, request.task);
-  requireTasksFile(scan.tasks, request.plan);
+  requireTasksFile(scan.ids.length, request.plan);
   if (scan.fence?.hidden && scan.inTask) throw new DomainError(hidingFence(scan, request.plan));
   if (scan.picked.length === 0) throw new DomainError(notFoundMessage(scan, request));
   return { picked: scan.picked, warnings: strayFenceWarnings(scan, request.plan) };

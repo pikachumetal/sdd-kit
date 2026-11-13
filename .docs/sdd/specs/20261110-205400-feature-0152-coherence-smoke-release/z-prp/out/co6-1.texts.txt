@@ -1,0 +1,112 @@
+--- [3]
+Ahora: leer la spec de la 0030 y las referencias del paso 4 (coherencia y revisión). Queda: pasada de coherencia, revisión y presentarte la spec para aprobar.
+
+--- [21]
+El delta se fusiona bien en una copia y el repo no ha cambiado. Ahora: lanzo la revisión de la spec, dos revisores, porque hay `MODIFIED`.
+
+--- [30]
+Los dos revisores (dominio en Opus, técnica en Sonnet) están en marcha. Espero a que terminen para integrar sus hallazgos en la spec antes de presentártela.
+
+--- [38]
+1. Crítico · Delta `quality-gate` / «El gate corre una sola vez» · El THEN «el gate corre una vez, y no se repite aunque el cierre se retome» no se puede probar con nada de lo que declara «Dónde se prueba». Esa sección solo comprueba que `SKILL.md` contiene el paso 4. Un «Corre el gate.» de una línea cumple el escenario aunque el gate corra dos veces al retomar. Además, la skill no trae ningún mecanismo que impida repetirlo. · Decir qué marca o qué estado impide la repetición. Añadir una prueba observable: retomar un cierre y comprobar que el gate corre una sola vez. Si no hay mecanismo, declarar el requisito como no cubierto.
+
+2. Crítico · Delta `quality-gate` / «Un gate en rojo para el cierre» · «el cierre para y dice qué test falló» pasa sin comportamiento. Es una frase que el agente escribe en `SKILL.md`, y la skill no dice cómo se detiene el cierre ni dónde se informa del test. Con el paso 4 como un literal de tres palabras, el requisito queda sin implementar. · Redactar el paso 4 con la condición explícita: si el gate falla, parar y nombrar el test. Probarlo con un test en rojo real y comprobar que no se ejecutan los pasos posteriores ni el merge.
+
+3. Importante · «Dónde se prueba» / delta `closing` · El THEN «no existe la skill `aviso-cierre`» y «el paso 3 dice qué se cierra» se comprueban leyendo ficheros. No demuestran que quien cierra reciba un solo mensaje, que es el Intent. Tampoco hay prueba de que ningún otro disparador siga invocando `aviso-cierre`. · Añadir una comprobación de que no queda ninguna referencia a `aviso-cierre` (grep sobre `skills/` y los hooks o descripciones de disparo). Añadir un escenario de salida con un único mensaje de cierre.
+
+4. Importante · «Delta de comportamiento» / `closing` «El resumen va al final» · El requisito dice que `resumen-cierre` cuenta commits y lista filas, y con los pasos 3 y 4 se queda obsoleto. El paso 1 y el 2 ya no son lo último, y el gate (4) va después de un «resumen». El spec no lo incluye como MODIFIED ni lo lista en la tabla de cambios, pese a que el título del requisito (y la decisión descartada B) lo usa como argumento. · Añadir un MODIFIED de «El resumen va al final» con los pasos 3 y 4. O justificar por qué el título sigue siendo cierto con el gate detrás.
+
+5. Importante · «✋ Decisiones» / decisión 2 · La tensión de orden se deja abierta, pero el spec ya decide el orden (3 y 4 al final, tras el resumen), y el delta lo fija. Un gate que corre después de contar commits y saldar filas del roadmap deja el roadmap saldado aunque el gate esté en rojo. Eso contradice «un gate en rojo para el cierre». · Resolver el orden antes de aprobar, o decir qué pasa con las filas ya saldadas si el gate falla. Mover el gate antes del paso 2 si el saldado de filas debe depender de él.
+
+6. Importante · Scope / «Lo que se retira» · El título del requisito de `closing` cambia el nombre de quien hace el aviso, pero no se menciona el contrato de invocación. Las skills se disparan por la `description` del frontmatter. La de `resumen-cierre` es «al acabar el cierre», y no cubre «avisar de qué se cierra» ni «correr el gate». Quien dependía del disparo de `aviso-cierre` queda sin disparador. · Declarar en el Scope si se actualiza la `description` de `resumen-cierre`. Decir cuándo se dispara ahora el gate. Añadir una comprobación del frontmatter.
+
+7. Importante · «Lo que se retira» / ficheros tocados sin declarar · Se cita `skills/aviso-cierre/SKILL.md:2,6`, y el Scope dice «entera (`SKILL.md`)». No se verifica que la carpeta no tenga más ficheros (referencias, tests, scripts). La comprobación solo cubre `git grep` de nombres en documentos, no en manifiestos de plugin, índices de skills ni tests que enumeren las skills. · Listar el contenido real de `skills/aviso-cierre/`. Ampliar el grep a manifiestos y tests, y declarar los que se tocan.
+
+8. Menor · «✋ Decisiones» / decisión 4 · Decide reescribir los requisitos de `quality-gate` y citar la skill y el paso por número. Esa referencia por número ya produjo esta ambigüedad y vuelve a romperse si se reordenan los pasos. La decisión no lo reconoce. · Referirse al paso por su efecto («el paso que corre el gate de `resumen-cierre`») o aceptar expresamente el acoplamiento al número.
+
+9. Menor · Delta `closing` / «Quien cierra sabe qué se cierra» · El AND «no existe la skill `aviso-cierre`» mezcla un hecho de repositorio con un comportamiento de quien cierra, y vive en el capability, donde el requisito se queda como invariante para siempre. · Sacar ese AND del delta y dejarlo solo en el Scope o en la prueba de cierre.
+
+10. Menor · «Términos y ADR» / constitution 2 · Se dice «ADR candidatas: ninguna», pero el gate pasa de depender de una skill a otra. La constitución fija el gate de cierre como `node --test` entero en verde y el spec no dice que el paso 4 use ese comando. «Corre el gate.» sin comando deja a la skill sin contrato verificable. · Nombrar en el paso 4 el comando (`node --test`, constitución 2) y referirse a él en el escenario.
+
+--- [40]
+El revisor técnico ya ha terminado: trae 10 hallazgos, 2 de ellos Críticos. Falta el de dominio. Espero a que acabe para integrar los dos juntos, y no te presento la spec hasta entonces.
+
+--- [42]
+1. Crítico · Delta `quality-gate` «Un gate en rojo para el cierre» y decisión 2 · El gate pasa al paso 4 de `resumen-cierre`, pero en `closing.md` («El resumen va al final») esa skill corre con «GIVEN una feature cerrada». Un gate que corre cuando la feature ya está cerrada no puede «parar el cierre». Los dos requisitos se contradicen, y la spec deja la tensión a la vista sin resolverla. · Decidir el orden antes de aprobar. Una opción es poner el gate al principio (paso 1 de `resumen-cierre`, o un paso previo al resumen). La otra es declarar `MODIFIED` de «El resumen va al final» con un GIVEN que no sea «feature cerrada».
+2. Importante · Delta `closing` (falta el requisito) · «El resumen va al final» describe `resumen-cierre` con dos pasos, y los otros tres requisitos pasan a citar sus pasos 3 y 4. La verdad viva queda incompleta. Además, el nombre del requisito («al final») deja de ser cierto si después del resumen se corre un gate que puede parar. · Añadir `MODIFIED — El resumen va al final` con los cuatro pasos y el orden decidido en el hallazgo 1. Quitar del «No entra» la afirmación de que ese requisito no cambia.
+3. Importante · Delta `closing` «Quien cierra sabe qué se cierra» frente a «El resumen va al final» · El MODIFIED pone el paso 3 de `resumen-cierre` en «WHEN la persona la cierra» con una feature «terminada». El mismo `resumen-cierre` corre sobre una feature «cerrada». La misma skill queda con dos momentos de disparo distintos en la misma capacidad. · Unificar el GIVEN/WHEN de los dos requisitos en un único momento del cierre.
+4. Importante · Delta `quality-gate` «Un gate en rojo para el cierre» (lo complementario de la parada) · Si el gate falla en el paso 4, los pasos 1 a 3 ya han dicho qué se cierra y qué filas del roadmap se saldan. Nada dice que esas filas no se saldan, ni que el mensaje ya dado deja de valer. · Añadir un `AND`: con el gate en rojo no se salda ninguna fila y el cierre no se da por hecho. Una alternativa es ordenar el gate antes de los pasos que lo anuncian.
+5. Importante · Intent frente a Scope · El Intent parte de que «al cerrar una feature se lanzan dos skills». El Scope solo borra la carpeta y edita `resumen-cierre`, y no lista lo que lanza `aviso-cierre` (registro, hook o invocación desde el cierre). Retirar la carpeta puede dejar una invocación colgando o un error en el cierre. · Incluir en el Scope y en la tabla de «Lo que se retira» el punto que dispara `aviso-cierre`, o dejar constancia de que no existe tal punto.
+6. Menor · Decisión 2 y tabla «Lo que se retira» (`quality-gate.md:18,23`) · La verdad viva dice «el paso 2» sin nombrar skill. La spec da por hecho que es el de `aviso-cierre`, aunque el paso 2 de `aviso-apertura` y el paso 2 de `resumen-cierre` también existen en `closing.md`. Los «antes:» de los MODIFIED arrastran esa ambigüedad. · Poner en los «antes:» de los dos MODIFIED de `quality-gate` el texto completo actual, y anotar que el paso 2 se atribuye a `aviso-cierre` comparándolo con `skills/aviso-cierre/SKILL.md:9`.
+7. Menor · Frontmatter (`author`, `approvers`) y «Decisiones tomadas con el dev-lead» · `PRODUCT.md` dice que hay una sola persona que desarrolla y usa la herramienta, pero la spec introduce un «dev-lead» y una aprobadora con nombre propio («Laura») como roles distintos. · Usar el rol que corresponde a ese único desarrollador y una aprobación coherente con él, o un nombre inventado si solo es un relleno.
+
+--- [44]
+Ahora: integro los hallazgos en la spec. Queda: segunda ronda con un revisor, porque acepto Críticos, y presentarte la spec.
+
+--- [49]
+La edición por script no se ha aplicado. Reescribo la spec entera.
+
+--- [52]
+Ahora: segunda ronda, con un revisor Sonnet que relee la spec corregida.
+
+--- [55]
+La spec corregida está escrita y el delta se fusiona sin errores en una copia. La segunda ronda de revisión está en marcha. Cuando termine, integro lo que traiga y te presento la spec para aprobar. Hasta entonces sigue en espera.
+
+--- [61]
+1. Importante · Decisión 2 y delta de `closing` y `quality-gate` · El gate pasa a correr después de decir qué se cierra. Eso contradice el propósito de «Un gate en rojo para el cierre» y el nombre «El resumen va al final», porque con el gate en rojo el aviso ya ha salido. El AND «no se da por cerrada» es un parche. · Poner el gate antes de «Di qué se cierra» (renumerar), o dejar el aviso para después de un gate en verde. Si se mantiene el orden, justificarlo en la decisión 2 como regla de producto, no como comodidad de no renumerar.
+
+2. Importante · Delta `quality-gate` «Un gate en rojo» · El AND «la feature no se da por cerrada» no está en el texto del paso 4 (solo «para y di qué test falló»). Es comportamiento nuevo sin ancla en Scope, y el escenario pasa leyendo la skill sin que nada lo cumpla. · Añadirlo al literal del paso 4 en Scope, o quitar el AND del delta.
+
+3. Importante · Delta `quality-gate` «El gate corre una sola vez» y decisión 7 · El THEN «no se repite aunque el cierre se retome» se modifica sin ningún mecanismo. Con `sin medir` el escenario «pasa» con solo escribir el texto. Además, la validación con un cierre real no sustituye al test previo que pide la constitución (punto 2). · Mantener el requisito sin cambio de comportamiento (solo cambiar «paso 2» por «paso 4 de `resumen-cierre`») o definir una comprobación observable.
+
+4. Importante · Decisión 2 (alternativa descartada) y `quality-gate` · Si `sdd-archive` también corre el gate al cerrar, aparece un segundo gate y «una sola vez» se rompe. La spec no dice si ambos coexisten. · Declarar la relación con `sdd-archive` (si lo corre o no) y reflejarla en el delta o en No entra.
+
+5. Importante · Decisión 5 (`description`) · «Usar al cerrar una feature.» cambia el disparo de `resumen-cierre`: pasa de «al acabar el cierre» a «al cerrar». Eso mueve el momento en que corre, y choca con «El resumen va al final» y con «pasos 1 y 2 como hoy». No hay escenario que lo cubra. · Justificarlo con un escenario, o conservar la `description` actual y fusionar solo los pasos.
+
+6. Importante · «Dónde se prueba» y tabla (fila `aviso-cierre`) · La comprobación «`git grep aviso-cierre` no da nada fuera de la historia de las specs» fallará: `ROADMAP.md:9` lo nombra, y la tabla reconoce que solo se salda «al cerrar». · Excluir `ROADMAP.md` de la comprobación o hacer que el cierre lo actualice antes de ejecutarla.
+
+7. Menor · Decisión 4 y delta `closing` «El resumen va al final» · El escenario nuevo no cubre «si falla, para»; el THEN del paso 4 solo dice «corre el gate». Cubre la condición solo `quality-gate`, y el vínculo entre ambas capacidades no se declara. · Añadir un AND «y si falla, para» o una referencia cruzada a `quality-gate`.
+
+8. Menor · Decisión 2 · Dice que el gate es «el gate de cierre (`operations.md`)», pero la constitución (punto 2) lo define como `node --test` entero. Hay dos fuentes del comando y la spec no reconcilia cuál manda. · Citar la constitución como origen, o confirmar que `operations.md` coincide.
+
+9. Menor · «Decisiones que he tomado yo» · La sección mezcla en las líneas iniciales no numeradas la review, la política de modelos y las decisiones 1 a 7. Las decisiones 3 (Approach A) y 7 (sin medir) son de proceso, no del usuario. Es difícil ver qué debe validar Laura. · Separar las decisiones numeradas de la política de modelos y de la review.
+
+10. Menor · Frontmatter y Hallazgos · «Laura», aprobadora real, y «dev-lead» quedan sin contrastar porque `.docs/sdd/steering/PRODUCT.md` no existe en el repo (la lectura falló). La spec rechaza el hallazgo diciendo que «vienen del molde». · Confirmar la ruta de `PRODUCT.md` o crearlo, y usar un rol genérico si el nombre es de una persona real.
+
+--- [63]
+La segunda ronda no trae Críticos, así que no hay tercera. Integro lo que corresponde y cierro.
+
+--- [69]
+Añado el 🦆 y la línea de validación que pide la plantilla.
+
+--- [71]
+🦆 Hoy, al cerrar una feature, salen dos mensajes: el de `aviso-cierre` («di qué se cierra» y «corre el gate») y el de `resumen-cierre` (commits y filas del roadmap). Con este cambio sale uno solo: `resumen-cierre` cuenta los commits, lista las filas, dice qué se cierra y corre el gate. `aviso-cierre` desaparece. Lo delicado es el gate: si se borrara con la skill, nadie lo correría, así que pasa a `resumen-cierre`.
+
+La spec está en `.docs/sdd/specs/20261008-150000-feature-0030-retire-close-notice/spec.md`, en `status: draft`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Paso 3 de `resumen-cierre`**: «Di qué se cierra.», el literal que hoy tiene `aviso-cierre`.
+2. **El gate pasa a ser el paso 4 de `resumen-cierre`**: «Corre el gate de cierre (`operations.md`); si falla, para, di qué test falló y no des la feature por cerrada.»
+   - La spec original no lo recogía. `aviso-cierre` lo corría en su paso 2 y `quality-gate` lo exige.
+   - Descarto dejarlo solo al cierre del kit (`sdd-archive`): cambiaría lo que `quality-gate` promete y nadie lo ha pedido.
+   - **Orden:** va después de los pasos 1 a 3 porque dijiste que los pasos 1 y 2 siguen igual. El coste es que, con el gate en rojo, el resumen ya ha salido.
+   - **La alternativa** es poner el gate primero, lo que obliga a renumerar los pasos 1 y 2. Dímelo y lo reordeno.
+3. **Enfoque A** (ampliar `resumen-cierre`), frente a dejar solo `aviso-cierre` o dejar las dos skills.
+4. **`closing` y `quality-gate`**: «El resumen va al final» pasa a `MODIFIED` y su GIVEN cambia a «un cierre en marcha». En `quality-gate`, «el paso 2» pasa a «el paso 4 de `resumen-cierre`».
+5. **La `description` de `resumen-cierre` no cambia.** Quien disparaba `aviso-cierre` al cerrar pasa a disparar `resumen-cierre` al acabar el cierre. Si prefieres el disparo «al cerrar», lo cambio.
+6. **`sin medir`**: que el gate «no se repite al retomar» y que «para» en rojo son texto de skill sin mecanismo que los fuerce. Se comprueban en la validación con un cierre real.
+
+Tres cosas que no he tocado:
+- **`aviso-apertura`.**
+- **Los pasos 1 y 2 de `resumen-cierre`.**
+- **Los nombres «Laura» y «dev-lead» del frontmatter**, que vienen del molde del proyecto.
+
+**Revisión.** Pasó por dos revisores (dominio Opus, técnica Sonnet) y una segunda ronda con un tercero, porque se aceptaron dos Críticos. La segunda ronda no trajo Críticos. Los hallazgos aceptados y rechazados, cada uno con su motivo, están en la spec.
+
+**Coherencia.** El delta se fusiona sin errores en una copia de `.docs/sdd` (4 requisitos sustituidos en `closing` y `quality-gate`). El repo no ha cambiado salvo la carpeta de la spec, que sigue sin versionar.
+
+**¿Apruebas?** Si apruebas, escribo el plan y paso a la implementación.
+1. **Apruebo (Recomendada)**
+2. **Cambios**: por ejemplo, el gate primero, o la `description` «al cerrar».
+

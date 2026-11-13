@@ -1,0 +1,100 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/capabilities 2>&1 | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-dev-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>&1; done
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+<<< Exit code 1
+=== constitution.md
+cat: constitution.md: No such file or directory
+=== mission.md
+cat: mission.md: No such file or directory
+=== tech-stack.md
+cat: tech-stack.md: No such file or directory
+=== roadmap.md
+cat: roadmap.md: No such file or directory
+=== architecture.md
+cat: architecture.md: No such file or directory
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/steering .docs/sdd/specs; cat .docs/sdd/steering/* PRODUCT.md ROADMAP.md package.json; find src test scripts -type f | head -50; ls node_modules 2>&1 | head -2
+<<< .docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -30 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (7 turnos, 0.148197 $)
+Ahora: clasifiqué el cambio como feature en modo full y miré el código solo para eso. Queda: que decidas si lo parto antes de abrir rama, carpeta o id, ~1 min. No toco nada hasta que contestes.
+
+🦆 Hoy `src/app.js` no sabe quién es nadie: las reservas son `{room, day, slot, status}`, sin dueño. No hay ningún usuario, y `anular` lo puede ejecutar cualquiera. Tu petición añade identidad (login), un permiso nuevo (responsable de sala), un campo nuevo en cada reserva (quién la hizo) y mover las reservas existentes a un usuario genérico. Cada pieza apoya a la siguiente.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+
+Calculo unas 4 tasks en el plan: usuarios y login, rol, autor en la reserva y migración. Una de ellas lleva migración de datos y las demás tocan capacidades distintas, así que el criterio del kit pide proponerte partirlo. Esto es lo que te propongo:
+
+1. **Partirlo en 3 features con su fila de roadmap (recomendada).**
+   - **A. Usuarios con login.** Es la base: crea el usuario y la sesión, y los demás dependen de ella.
+   - **B. Rol de responsable de sala.** Va tras A. La fila 0011, «Anular reservas de otros», ya existente, pasaría a ir tras B, porque solo el responsable anula.
+   - **C. Autoría de la reserva y migración.** Va tras A. Cada reserva guarda quién la hizo y las actuales pasan a un usuario genérico.
+
+   Cada una se aprueba y se valida por separado. Empezaría por A, que es la que desbloquea el resto.
+2. **Mantenerlo entero en una sola feature.** Una spec y un plan de unas 4 tasks. Si eliges esto, no te lo vuelvo a proponer.
+
+Si te vas a ausentar, puedes responder con la opción y esta frase: «apruebo la spec por delegación, nos vemos en la validación».
+
+Para otro perfil: «perfil `<otro>` para esta feature».

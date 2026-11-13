@@ -1,6 +1,6 @@
 # sdd-kit
 
-Catorce skills para Claude Code que convierten «hazme esta feature» en un flujo con spec, plan, tests en rojo antes del código y un cierre que deja la documentación al día.
+24 skills para Claude Code que convierten «hazme esta feature» en un flujo con spec, plan, tests en rojo antes del código y un cierre que deja la documentación al día.
 
 La idea es sencilla: **el resultado debería depender del proceso, no de con qué pie se levantó el agente esa mañana**. Dos sesiones con la misma tarea deberían producir los mismos artefactos, pasar por los mismos gates y dejar el mismo rastro.
 
@@ -127,7 +127,7 @@ El kit se usa a sí mismo. Sus features salen por `sdd-propose`, sus releases po
 
 ## Estado
 
-La versión publicada es la 2.3.0 ([notas](.docs/sdd/releases/v2.3.0/release-notes.md)). El roadmap tiene una forma fija que se comprueba en cada cierre, un proyecto sin pantalla que probar puede validar en el uso y el carril patch lo decide quién fija la solución.
+La versión publicada es la 2.3.4 ([notas](.docs/sdd/releases/v2.3.4/release-notes.md)). El roadmap (`ROADMAP.md`, con Now, Next y Later) tiene una forma fija que se comprueba en cada cierre, un proyecto sin pantalla que probar puede validar en el uso y el carril patch lo decide quién fija la solución.
 
 La [2.2.0](.docs/sdd/releases/v2.2.0/release-notes.md) trajo el cierre en paralelo con la revisión final, la verificación del frontend, los cierres simultáneos y los avisos de arranque. La [2.1.0](.docs/sdd/releases/v2.1.0/release-notes.md) trajo los retoques visuales por el carril patch y el vigía de agentes colgados. La [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md) trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature.
 
@@ -175,9 +175,9 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 0 skills de superpowers: ninguna. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan.
+El kit invoca 0 skills de superpowers: ninguna. La lista sale de `grep -rhoE "superpowers:[a-z-]+" dist/skills/ | sort -u`, y un test la compara con esta frase para que no diverjan.
 
-impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
+impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `## Frontend` de `.docs/sdd/steering/operations.md`, y el kit no las invoca por su nombre.
 
 ## Idioma
 

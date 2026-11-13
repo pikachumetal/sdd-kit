@@ -1,0 +1,175 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; git log --oneline | head; ls .docs/sdd 2>/dev/null; ls .docs/sdd/changes/* 2>/dev/null; cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<< 5dbc01a docs(sdd): tasks de la 0020
+1523e63 feat(libres): filtro por sala
+6ded489 docs(sdd): abrir la feature 0020
+b06a18d feat: base del molde salas
+changes/
+sdd-kit.json
+specs/
+steering/
+plan.md
+spec.md
+tasks.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd/changes | head -30; for f in .docs/sdd/changes/*/{spec,plan,tasks}.md; do echo "=== $f"; cat "$f"; done; ls; ls .docs/sdd/changes/*/ -a
+<<< .docs/sdd/changes:
+20260920-090000-feature-0020-room-filter/
+
+.docs/sdd/changes/20260920-090000-feature-0020-room-filter:
+plan.md
+spec.md
+tasks.md
+=== .docs/sdd/changes/20260920-090000-feature-0020-room-filter/spec.md
+---
+mode: full
+profile: delegate
+---
+
+# Spec — filtro por sala en libres
+
+## Intent
+
+`libres` da las salas libres de una franja; hay que poder preguntar por una sala y exigir la franja.
+
+## Requisitos
+
+- GIVEN Norte reservada en 10:00-12:00 WHEN `libres 10:00-12:00 --sala Norte` THEN responde `ocupada`
+- GIVEN cualquier estado WHEN `libres` sin franja THEN responde `indica una fr
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20260920-090000-feature-0020-room-filter/plan.md; $SDD workspace $P; git branch --show-current; git worktree list | head -3; cat package.json; cat src/app.js; cat test/app.test.js; cat README.md; cat .docs/sdd/steering/*.md 2>/dev/null | head -40; git show --stat HEAD~2 HEAD~1 | head -30
+<<< <run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+feature/0020-room-filter
+<run>/repo 5dbc01a [feature/0020-room-filter]
+{"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20260920-090000-feature-0020-room-filter/plan.md; git branch -a; git remote; W=.temp/sdd/plan; ls $W; cat $W/progress.md 2>/dev/null; git check-ignore .temp; $SDD task start $P 2
+<<<   develop
+* feature/0020-room-filter
+  main
+plan-path
+brief: <run>\repo\.temp\sdd\plan\task-2-brief.md
+base: 5dbc01a720d8aeef2620f4963582841899f1ae8b
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/task-2-brief.md; git status --short; M=$(git merge-base HEAD develop); git diff $M develop -- ROADMAP.md | head; git diff --name-only $M develop; git log --oneline develop | head -3
+<<< ## Task 2: libres sin franja
+
+Modificar: src/app.js, test/app.test.js. Test: `libres` sin franja responde `indica una franja`. Verificación: node --test.
+
+b06a18d feat: base del molde salas
+
+>>> Bash: cd "<run>/repo" && W=.temp/sdd/plan; cat > $W/progress.md <<'EOF'
+# SDD ledger — plan: .docs/sdd/changes/20260920-090000-feature-0020-room-filter/plan.md
+Resume: sin ledger previo; Task 1 hecha según tasks.md y git log (1523e63).
+Task 1: complete (commits 6ded489..1523e63, tests: node --test → verde en commit; reconstruida de tasks.md)
+
+## Pre-flight
+| Par / task | Qué produce vs consume | Hallazgo |
+| --- | --- | --- |
+| 1–2 | ambas tocan src/app.js y test/app.test.js; T1 añade rama `--sala`, T2 añade guarda de franja ausente en `libres` | sin conflicto si la guarda va antes de ramas que lean params[0] |
+| 2–3 | T3 solo README | sin conflicto |
+| T1 | consistente con spec | ok |
+| T2 | test `libres` sin franja → `indica una franja`; código en app.js | ok |
+| T3 | README explica --sala, sin código | ok |
+EOF
+mkdir -p $W/../red 2>/dev/null
+cat >> test/app.test.js <<'EOF'
+
+test('libres sin franja pide indicar una franja', () => {
+  assert.equal(run('libres', []), 'indica una franja');
+});
+EOF
+cp test/app.test.js $W/red-task2.test.js
+node --test 2>&1 | tail -25
+<<< ✖ failing tests:
+
+test at test\app.test.js:21:1
+✖ libres sin franja pide indicar una franja (0.7338ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte, Sur'
+  - 'indica una franja'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/app.test.js:22:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --no-index --stat .temp/sdd/plan/red-task2.test.js test/app.test.js; git add src/app.js test/app.test.js && git commit -q -m "feat(libres): exigir franja
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+<<< ℹ pass 5
+ℹ fail 0
+warning: in the working copy of '.temp/sdd/plan/red-task2.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/app.test.js', LF will be replaced by CRLF the next time Git touches it
+264347e feat(libres): exigir franja
+5dbc01a docs(sdd): tasks de la 0020
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20260920-090000-feature-0020-room-filter/plan.md; $SDD task done $P 2 5dbc01a720d8aeef2620f4963582841899f1ae8b -- node --test 2>&1 | tail -6
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 82.4508
+ledger: Task 2: complete (commits 5dbc01a..264347e, tests: node --test → ℹ duration_ms 82.4508)
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20260920-090000-feature-0020-room-filter/plan.md; $SDD task start $P 3; printf '\nUsa `libres <franja> --sala <nombre>` para comprobar si una sala concreta está libre u ocupada en esa franja.\n' >> README.md; cat README.md; node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git add README.md && git commit -q -m "docs(readme): explicar --sala
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -1
+<<< brief: <run>\repo\.temp\sdd\plan\task-3-brief.md
+base: 264347e2975345879f944075a72fd414fbd332c6
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+
+Usa `libres <franja> --sala <nombre>` para comprobar si una sala concreta está libre u ocupada en esa franja.
+ℹ pass 5
+ℹ fail 0
+82b12ea docs(readme): explicar --sala
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20260920-090000-feature-0020-room-filter/plan.md; $SDD task done $P 3 264347e2975345879f944075a72fd414fbd332c6 -- node --test 2>&1 | tail -1
+sed -i 's/^| 2 | ⏳ | |/| 2 | ✅ | 264347e |/; s/^| 3 | ⏳ | |/| 3 | ✅ | 82b12ea |/' .docs/sdd/changes/*/tasks.md; cat .docs/sdd/changes/*/tasks.md; git add .docs && git commit -q -m "docs(sdd): tasks 2 y 3 hechas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"; git status --short
+<<< ledger: Task 3: complete (commits 264347e..82b12ea, tests: node --test → ℹ duration_ms 90.4463)
+# Tasks
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| 1 | ✅ | 1523e63 |
+| 2 | ✅ | 264347e |
+| 3 | ✅ | 82b12ea |
+warning: in the working copy of '.docs/sdd/changes/20260920-090000-feature-0020-room-filter/tasks.md', LF will be replaced by CRLF the next time Git touches it
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+=== RESULTADO (15 turnos, 0.2690971 $)
+

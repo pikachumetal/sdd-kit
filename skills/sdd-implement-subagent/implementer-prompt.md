@@ -5,7 +5,7 @@ Use this template when dispatching an implementer subagent.
 <!-- kit: 4597d47e -->
 Declare the `model` and the `subagent_type` that the task's **Modelo** line names, and fill every `<…>` and `[…]`. The «De proceso» block of the plan (model policy, method) you apply: it doesn't travel (`tests/gates-reviews-red.md`, E3).
 
-**Placeholders:** `[BRIEF_FILE]`, the path `sdd task brief` prints · `[REPORT_FILE]`, the brief's path with `-report.md` instead of `-brief.md` · `[directory]`, the worktree · `<ruta>`, the task's RED tests · `<comando de los RED>`, the RED command · `<comandos>`, the task's «Verificación» · *(if `.docs/sdd/environments.md` exists)* the context line says where the `.sdd-env.json` marker is.
+**Placeholders:** `[BRIEF_FILE]`, the path `sdd task brief` prints · `[REPORT_FILE]`, the brief's path with `-report.md` instead of `-brief.md` · `[directory]`, the worktree · `<ruta>`, the task's RED tests · `<comando de los RED>`, the RED command · `<comandos>`, the task's «Verificación» · *(if `§Entornos` exists)* the context line says where the `.sdd-env.json` marker is.
 
 The decalogue condenses five books (`tests/sdd-implement-red.md`, r1b). The task reviewer doesn't get it: a judgment rule a reviewer reads becomes an Important. The implementer rules come from `tests/dispatch-brief-red.md`; «Verificación» replaces superpowers' «run the full suite once before committing» (`tests/task-verification-red.md`); the RED tests are the thread's (`tests/tests-red-hilo-red.md`).
 

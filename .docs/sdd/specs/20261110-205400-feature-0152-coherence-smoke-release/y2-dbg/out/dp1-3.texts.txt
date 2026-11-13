@@ -1,0 +1,70 @@
+--- [10]
+Ahora: he investigado el fallo y falta que confirmes el carril. Queda: abrir el patch, corregir y cerrar, ~15 min.
+
+🦆 **Qué pasa:** `toHours` en `src/app.js` convierte `"09:30"` en `9.30` (reemplaza los `:` por `.`), no en `9,5`. Por eso `09:30-12:00` da `12 − 9,30 = 2,7` h y supera el máximo de 2,5. El límite está bien y la causa es la conversión de minutos a horas. Ya hay un test en `test/reservar.test.js` («reservar justo el máximo…») que hoy falla y que el arreglo pondría en verde. El mismo `toHours` alimenta a `precio`, así que ese comando también calcula mal con medias horas.
+
+Es un fallo determinista con la causa confirmada en el código, así que lo trataría como **patch**. La solución queda fijada por la causa: convertir horas y minutos a decimal. No hay `estimation.md`, así que no doy estimación en horas.
+
+¿Cómo seguimos?
+
+1. **Patch (recomendada):** abro `feature`-less `patch-0010`, dejo el test que ya falla como regresión, corrijo `toHours` y, si `precio` tampoco tiene test con medias horas, añado uno. Perfil del proyecto, sin paradas intermedias.
+2. **Feature completa:** solo si quieres tocar también la validación del formato de franja, que está en la deuda por triar. No la recomiendo para esto.
+
+Dime «1» y arranco.
+
+--- [21]
+Ahora mismo: causa raíz confirmada (`slotHours('09:30-12:00')` da 2,7). Ya estoy en la rama `feature/0010-horas-media`. Voy a escribir `patch.md`, el test de regresión de `precio` y el arreglo.
+
+--- [24]
+Los dos tests están en rojo, el de `reservar` que ya existía y el nuevo de `precio`. Aplico el arreglo.
+
+--- [28]
+Los 7 tests pasan y el comando funciona. El flujo del patch pide un revisor antes del commit, así que lo lanzo.
+
+--- [32]
+El arreglo ya está hecho y verificado en local: `node src/app.js reservar Sur 09:30-12:00` responde ahora `reservada Sur 09:30-12:00`. Todavía no he hecho el commit ni el cierre del patch, y por eso `patch.md` pone `commit: pendiente` y la verificación «pendiente». Estoy esperando la revisión del patch, que sigue en marcha. Cuando llegue, la incorporo, hago el commit y cierro con `sdd-archive`.
+
+- **Causa:** `toHours` en `src/app.js` leía `"09:30"` como `9.30` en lugar de `9,5`, así que 09:30-12:00 salía como 2,7 h y superaba el máximo. El límite de 2,5 h estaba bien.
+- **Arreglo:** `toHours` separa horas y minutos y devuelve `h + m/60`.
+- **Efecto en `precio`:** el mismo error afectaba al cálculo de precios con medias horas. He añadido un test (`precio Sur 09:30-12:00` da `37.5 €`).
+- **Tests:** `node --test` pasa 7 de 7. Antes del arreglo fallaban 2, el de `reservar` que ya estaba en el repo y el nuevo de `precio`.
+- **Rama y papeles:** `feature/0010-horas-media`, con `.docs/sdd/changes/20261112-194526-patch-0010-horas-media/patch.md`.
+
+Aún no está desplegado en tu servidor. Esperaré a la revisión antes de decir que está cerrado.
+
+--- [36]
+**Hallazgos**
+
+1. **Menor, documentación del patch.** §2 dice que el test «ya fallaba en `develop`». El repo no tiene rama `develop`: solo existe `main` con un commit (`498925e`). Por la aritmética, con el código anterior ese test falla (2,7 > 2,5), así que la afirmación es cierta en esencia. Conviene decir «falla en `HEAD` antes del fix» en lugar de citar `develop`.
+
+2. **Menor, metadatos y estado del patch.** El front-matter dice `branch: feature/0010`, pero la rama real es `feature/0010-horas-media`. El patch está en `status: done`, pero la tabla de §4 tiene los dos casos en «pendiente» y `commit: pendiente`. Hay que rellenar los resultados antes de cerrarlo. Los dos casos pasan ahora: el caso 1 es el test de `reservar` y el caso 2 es el test nuevo de `precio`.
+
+3. **Menor, cobertura.** El test existente «más del máximo se rechaza» (`09:00-12:30`) no distingue el fallo. Antes del fix daba 3,3 y después da 3,5, y en ambos casos supera el máximo, así que pasa igual. No hay un test directo de `slotHours`. Las evidencias de §2, como `09:30-10:00` = 0,5, solo se cubren de forma indirecta. Es opcional.
+
+**Comprobaciones**
+
+- **Causa raíz:** es la real. `Number("09:30".replace(':','.'))` da 9,30 y trata los minutos como décimas. Las tres cifras de evidencia de §2 (2,7, 3,3 y 0,7) coinciden con lo que da el código anterior.
+- **Fix:** `toHours` pasa a calcular `h + m/60` y no se toca nada más. `precio` y `reservar` comparten `slotHours`, por lo que quedan corregidos a la vez. Con medias horas no hay error de coma flotante: 2,5, 37,5 y 0,5 son exactos.
+- **Tests:** `node --test` da 7 de 7 en verde. El test nuevo de `precio` (`Sur 09:30-12:00` → `37.5 €`) falla con el código anterior, porque daría 2,7 × 15 = 40,5. El test de `reservar` («justo el máximo se acepta») también falla con el código anterior. Los dos cubren el fallo.
+
+Sin hallazgos de severidad media o alta.
+
+--- [43]
+Estoy en el cierre del patch (`sdd-archive`) y me paro antes de escribir ningún registro. Hay dos cosas que decides tú.
+
+🦆 **Qué cambia:** `reservar` y `precio` calculaban mal las franjas con minutos, porque leían `09:30` como `9,30` h. Ahora leen `9,5` h. Con `reservar Sur 09:30-12:00`, que antes daba «excede el máximo», ahora responde `reservada Sur 09:30-12:00`.
+
+**Estado:** el arreglo está en el commit `92cad15` de `feature/0010-horas-media`. Pasan los 7 tests de `node --test`, y el revisor no encontró nada de severidad media o alta.
+
+**1. Validación.** Este proyecto no tiene `validation.mode: field` y `patch.md` dice `Validación: dev-lead`, así que no puedo darla por buena yo. Pruébalo tú:
+
+```
+node src/app.js reservar Sur 09:30-12:00      → reservada Sur 09:30-12:00
+node src/app.js reservar Sur 09:00-12:30      → excede el máximo de horas
+node src/app.js precio Sur 09:30-12:00        → 37.5 €
+```
+
+Dime qué has probado y que funciona. Si prefieres dejarlo para después, dime cuándo y en qué momento lo pruebas.
+
+**2. Fusión.** `sdd merge --check` se detiene porque `.docs/sdd/sdd-kit.json` no declara `merge.into` ni `merge.noFf`. Propongo fusionar en `develop` con `--no-ff`. Confírmalo, o dime otro destino. Si me lo confirmas, también añado esas dos claves a `sdd-kit.json` para que no vuelva a preguntar. Con tu validación y esa confirmación cierro el patch (`patch.md`, roadmap, fusión).
+

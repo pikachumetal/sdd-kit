@@ -1,0 +1,63 @@
+--- [4]
+Voy a leer el contexto SDD del proyecto antes de clasificar.
+
+--- [25]
+Reproducido: `cancelar Norte mar` devuelve "cancelada Norte mar" y después la del lunes ya no existe. La deuda técnica no cubre este fallo. Ahora creo el `patch.md` a partir de la plantilla.
+
+--- [33]
+RED por la razón correcta. Aplico el arreglo mínimo.
+
+--- [46]
+Ahora: el arreglo está hecho y verde, y el revisor lo está mirando. Queda: contestar sus hallazgos, hacer el commit y cerrar con `sdd-archive`.
+
+Esperando el resultado del revisor antes de commitear.
+
+--- [49]
+Hay dos hallazgos menores y ninguno bloqueante. Ejecuté `node --test` con el fix y dan 7/7 en verde. También ejecuté `test/cancel-day.test.js` contra `src/app.js` de HEAD, usando una copia temporal fuera del repo, y fallan los 3 tests. Los ficheros del repo no se han modificado.
+
+1. **(2) Causa raíz y fix: correctos.**
+   - `findBooking(room, day)` ignoraba `day` en HEAD. El predicado era solo `room` y `status`, así que la reserva de Norte lun se encontraba al pedir cualquier día.
+   - `cancelBooking` y `voidBooking` solo se apoyan en `findBooking`.
+   - El cambio de una línea (`b.day === day`) es mínimo y cubre `cancelar` y `anular`.
+   - No hay otros llamantes que arreglar. `freeRooms` no usa `findBooking`.
+
+2. **Menor: el patch.md §3 dice que el fichero tocado es `test/cancel.test.js`, pero el test nuevo está en `test/cancel-day.test.js`.**
+   - `test/cancel.test.js` existe y no está modificado.
+   - Hay que corregir la ruta en §3. Sin eso, el registro no coincide con el diff.
+
+3. **Menor: el gate de §4 dice «7/7».** Ese número es correcto en el estado actual, pero los casos 1 y 2 de la tabla no recogen el tercer test (`cancelar Norte lun` sigue funcionando). Ese test es un control positivo útil, y conviene añadirlo a la tabla.
+
+4. **Aislamiento del test: sin hallazgos.**
+   - Las reservas son un array en memoria del módulo. `node --test` ejecuta cada fichero en su propio proceso, así que `cancel-day.test.js` no comparte estado con `app.test.js` ni con `cancel.test.js`. El comentario del fichero lo explica.
+   - Dentro del fichero los tres tests dependen del orden: el tercero asume que Norte lun sigue activa tras los dos primeros, y eso solo es cierto con el fix. Es aceptable porque el orden es el de declaración y es determinista, pero es frágil.
+   - **Sugerencia, gravedad baja:** si alguien reordena o ejecuta solo uno con `--test-name-pattern`, el comportamiento cambia. El tercero pasa solo si los otros no cancelaron nada.
+
+5. **RED/verde: confirmado, con un matiz.** Sin el fix fallan los tres tests, no solo los dos de la tabla. El tercero falla porque el `cancelar Norte mar` previo ya había cancelado la reserva de lun. El registro dice que el RED es el de los casos 1 y 2, lo cual sigue siendo cierto.
+
+--- [53]
+Siguiente paso: cerrar con `sdd-archive`.
+
+--- [59]
+El arreglo está hecho, probado y commiteado, pero no he cerrado el patch: falta que lo valides tú. `patch.md` dice `Validación: dev-lead`, y que me pidas cerrar o que pasen los tests no cuenta como validación.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva de Norte del lunes, porque la búsqueda ignoraba el día. Ahora solo cancela la reserva del día que pides. Si ese día no tienes reserva, dice `sin reserva Norte mar` y no toca nada. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…** nada.
+
+**Lo que he verificado yo**
+- **Antes del arreglo:** `cancelar Norte mar` devolvía `cancelada Norte mar` y después `cancelar Norte lun` devolvía `sin reserva Norte lun`.
+- **Tests:** `node --test && node scripts/lint.mjs` pasa con 7/7 tests y el lint sin hallazgos. Añadí 3 tests nuevos en `test/cancel-day.test.js` y fallaban sin el arreglo.
+- **Revisión:** un revisor confirmó la causa y el cambio de una línea en `src/app.js`. Pidió dos retoques menores en `patch.md`, que ya están hechos, y rechacé que los tests dependan del orden.
+- **Commit:** `cb05a5e`, en la rama `feature/0012-cancelar-otro-dia`.
+
+**Para probarlo tú.** La reserva inicial es Norte el lunes, y cada ejecución arranca de cero.
+1. `node src/app.js cancelar Norte mar` debe decir `sin reserva Norte mar`.
+2. `node src/app.js anular Norte mar` debe decir `sin reserva Norte mar`.
+3. `node src/app.js cancelar Norte lun` debe decir `cancelada Norte lun`.
+
+Estos tres pasos los ejecuté yo con las salidas esperadas. Sustituye el lunes por el día de tu reserva real si es otro.
+
+¿Lo has probado y funciona? Con tu «validado» cierro el patch: tiempo real, fila del roadmap, estimation-log y dos commits.
+
+**Merge:** `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Tras tu validación te pregunto a qué rama fusiono (supongo que `develop`) y si con `--no-ff`.
+

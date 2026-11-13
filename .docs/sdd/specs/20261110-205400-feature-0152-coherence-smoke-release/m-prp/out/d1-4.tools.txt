@@ -1,0 +1,86 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3; git ls-files | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-
+
+>>> Bash: cat package.json PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md; cat src/app.js; cat test/cancel.test.js; cat .docs/sdd/specs/*patch-0007*/patch.md
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-br-0152\skills\sdd-propose\references\patch-lane.md
+<<< {"type": "module", "engines": {"node": ">=20"}}
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la re
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cat .docs/sdd/steering/estimation.md; head -30 .docs/sdd/specs/*0006*/walkthrough.md; grep -rn "Gate de cierre\|min" .docs/sdd/specs/*/walkthrough.md .docs/sdd/specs/*/patch.md | head; node src/app.js cancelar Norte mar; git log --oneline | head
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+=== RESULTADO (7 turnos, 0.1494612 $)
+Reproducido: `node src/app.js cancelar Norte mar` imprime `cancelada Norte mar` y marca como cancelada la reserva del lunes.
+
+**Causa raíz** (`src/app.js:12`): `findBooking(room, day)` recibe `day` pero solo compara `room` y `status`, así que devuelve la primera reserva activa de la sala sea cual sea el día. `anular` usa la misma función, así que tiene el mismo fallo. Ese fallo es determinista y el arreglo está fijado: comparar también `b.day === day`. Los walkthroughs de 0005 y 0006 están cerrados, así que es un patch. Dijiste «patch» y mi análisis lo confirma, así que no lo vuelvo a preguntar.
+
+🦆 Hoy `cancelar` y `anular` buscan la reserva solo por sala. Si pides `cancelar Norte mar`, encuentran la del lunes y la cancelan. Voy a hacer que busquen también por día. Cuando no haya reserva ese día, dirán `sin reserva Norte mar` y no tocarán la del lunes. El test que hoy falla y que el arreglo pone en verde es `cancelar Norte mar` con la reserva del lunes activa. Debe devolver `sin reserva Norte mar`, y la reserva del lunes debe seguir activa.
+
+**Estimación:** 0,3 h, más el gate de cierre (`node --test && node scripts/lint.mjs`, sin tiempo medido en el proyecto, ~1 s de tests).
+
+1. **Abrir el patch (Recomendada):** creo `feature`-less `patch-0012-cancel-dia`, escribo el test de regresión en rojo, hago el arreglo en `findBooking` y cierro con el gate.
+2. **Cambiar el alcance:** por ejemplo, no tocar `anular` o hacerlo con spec completa.
+
+¿Abro el patch con la opción 1?

@@ -1,0 +1,95 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [5]
+Árbol limpio, destino listo y sin otras ramas abiertas. Ahora miro los artefactos de la feature.
+
+--- [10]
+`HEAD` (bf9be3d) se movió respecto a lo revisado (06e1bc0) con un commit de solo documentación y sin `Re-revisión:`. Leo cómo manda el kit cerrar esa revisión y las referencias del cierre.
+
+--- [21]
+`bf9be3d` solo toca `tasks.md` (17 líneas) y no hay `Re-revisión:`. El paso 0.6 manda despachar la re-revisión única de `06e1bc0..HEAD`, así que preparo el paquete y la lanzo en segundo plano.
+
+--- [29]
+Mientras la re-revisión corre, hago el smoke en campo (una fila por THEN, ejecución real) y miro si la base avanzó.
+
+--- [37]
+Smoke y suite verdes (5/5). Leo las plantillas del walkthrough y de la validación mientras espero la re-revisión.
+
+--- [42]
+**Verdicts**
+- (1) Only documentation changed: **yes.** The range 06e1bc0..bf9be3d is one commit (bf9be3d). It creates `tasks.md` (+17 lines) and touches no code or test (`git diff 06e1bc0 bf9be3d --stat` shows only that file).
+- (2) The rows and the `Revisión final:` line match git log and the plan: **no, one row is wrong.** The Task 2 row is correct and the `Revisión final:` line is correct. The Task 1 row has the wrong commit.
+- (3) The `--test-concurrency=1` Ruling fits the tests: **no.** The race it describes cannot happen with these tests.
+
+**Findings**
+
+**Important**
+- `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`: the Ruling's reason is false, and it changes the gate the constitution sets.
+  - **Nothing is shared between test files.** `node --test` runs each test file in its own child process. The `bookings` array (`src/app.js:4`) is module state, so `test/app.test.js` and `test/cancel.test.js` each get their own copy. `--test-concurrency` only limits how many files run at once, so setting it to 1 removes no race.
+  - **Inside a file, tests already run one after another.** `node:test` runs top-level tests in order by default. The only real weak point is order: the `canceladas` test (`test/cancel.test.js:14`) depends on the cancellation made by the first test (`test/cancel.test.js:6`). `--test-concurrency=1` does not fix or protect that.
+  - **It doesn't apply to its own task.** It is filed under Task 2, but Task 2 checks a single file (`plan.md:45`, `node --test test/cancel.test.js`), where this flag does nothing.
+  - **It changes the gate.** The constitution (`.docs/sdd/steering/constitution.md:2`) and `plan.md:50` say the closing gate is `node --test`. The Ruling records a different command with a reason that isn't true, and nothing in the repo backs it: `package.json` has no script, and `debt.md` has no entry. It also calls itself a workaround "until each test gets its own store" but adds no debt item to track that.
+  - **Fix:** remove the Ruling, or rewrite it. The accurate note is the order dependency inside `cancel.test.js`, which could go to `debt.md` if they want to track it. The gate stays `node --test`.
+
+**Minor**
+- `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: the Task 1 row ("Cancelar con motivo") gives commit `06e1bc0`. Git log shows Task 1 is `98d07ea feat(bookings): cancelar con un motivo de la lista`. `06e1bc0` is Task 2 ("listado de canceladas con su motivo"), so both rows now point to the same commit. It should be `98d07ea`.
+
+**Checked and consistent**
+- The Task 2 row (`tasks.md:11`, `06e1bc0`) is correct.
+- There are two task rows with the same names as Task 1 and Task 2 in `plan.md:36,42`.
+- `Revisión final: … sobre 06e1bc0` (`tasks.md:13`) names the head the final review saw. It records Spec and Code as clean and Architecture as not run. The plan has no architecture task or focus (`plan.md:30-32`), so that fits. I can't confirm the model and effort labels from the repo.
+- The text is in Spanish, as the constraints require.
+
+**Outside the scope of this re-review (not counted)**
+The spec's scenario "sin `--motivo` responde lo mismo" (`spec.md:54`) has no test in `test/cancel.test.js`. The code covers it: `reasonOf` returns `undefined`, so the reason is rejected. This is in code the final review already closed, so I only flag it as a note.
+
+**Verdict:** hallazgos. 1 Important (`tasks.md:17`), 1 Minor (`tasks.md:10`), 0 Critical.
+
+--- [44]
+La re-revisión devuelve 1 Important y 1 Minor, ambos en `tasks.md`. Antes de corregir compruebo la afirmación sobre el Ruling: ¿hay carrera real sin `--test-concurrency=1`?
+
+--- [50]
+El script no aplicó el cambio; escribo el fichero directamente.
+
+--- [56]
+Las dos señales de la sesión: el Ruling desmentido (ya corregido en `tasks.md`) y el THEN «sin `--motivo`» sin test. Escribo el walkthrough con la validación y el §5.
+
+--- [60]
+Registros listos y validadores en verde. Junto `bf9be3d` y el cierre en un solo commit sobre `06e1bc0`, y luego sincronizo con la base.
+
+--- [65]
+El push por SSH falló y `develop` quedó intacto. La receta permite un único reintento por HTTPS con el token de `gh` si hay sesión; lo compruebo.
+
+--- [69]
+La 0010 está cerrada y fusionada en `develop`. La re-revisión del cierre encontró dos fallos y los corregí antes de fusionar.
+
+**Decisión tomada sin el dev-lead.** El Ruling de la Task 2 decía que había una carrera entre tests y fijaba `node --test --test-concurrency=1` como gate. Lo retiré porque la premisa era falsa: cada fichero de test corre en su propio proceso. `node --test` a secas dio 5/5 cinco veces seguidas. El gate sigue siendo `node --test`, y la decisión queda en el walkthrough.
+
+**Re-revisión.** `HEAD` había avanzado desde la revisión final (`06e1bc0`) con un commit que solo tocaba `tasks.md`, y el kit manda re-revisar ese rango. La re-revisión (`sdd-kit:effort-high` con `opus`) devolvió un Important y un Minor, ambos en `tasks.md`:
+- **Important:** el Ruling anterior, ya corregido.
+- **Minor:** la Task 1 citaba `06e1bc0` en vez de `98d07ea`, también corregido.
+
+El walkthrough dice la verdad: la revisión final fue limpia sobre `06e1bc0`, y la re-revisión tuvo esos dos hallazgos, corregidos.
+
+**Validación en campo.**
+- **Suite:** `node --test` pasa 5/5 sobre el commit de cierre.
+- **Smoke:** los 4 THEN de la spec los ejecuté de verdad y dieron el literal esperado. Cancelar con un motivo de la lista da «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista y la ausencia de `--motivo` dan el mismo «motivo no válido: …». `canceladas` da «Norte lun — sala ocupada».
+
+**Registros.**
+- **Capacidad:** `capabilities/bookings.md` es nueva, con los dos requisitos de la spec.
+- **ROADMAP:** la fila 0010 pasa a ✅.
+- **Deuda:** añadí una fila a la deuda: el THEN «sin `--motivo`» no tiene test y el test `canceladas` depende del orden del primero.
+- **Historial:** `bf9be3d` y el cierre quedaron juntos en un solo commit, `cca27e4`.
+- **Retro:** dos señales anotadas en el walkthrough, ambas ya resueltas.
+- **Sin estimación:** no hay `estimation.md`, así que no hay tiempo real ni estimation-log.
+
+**Pendiente: nada.**
+- La base ya estaba al día y no hubo sync merge.
+- El primer push por SSH falló con `Permission denied (publickey)`. Lo relancé una vez por HTTPS con el token de `gh`, como permite la receta, y salió bien.
+- No hay otras ramas abiertas.
+
+Si quieres el ticket de mejora del kit con `sdd-feedback`, dímelo. Esta sesión no dejó ninguna línea `Retro:` que apunte al kit.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`b8e124a`) · push: hecho a `origin/develop`
+

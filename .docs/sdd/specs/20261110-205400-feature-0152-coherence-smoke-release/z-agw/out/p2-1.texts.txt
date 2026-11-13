@@ -1,0 +1,23 @@
+--- [13]
+No he podido crear la skill porque el permiso de escritura en `.claude/skills/sql-migrations/` fue denegado. No he escrito ningún fichero. Si quieres que siga, concédeme ese permiso y repito las dos escrituras. No voy a buscar otra ruta para esquivarlo.
+
+Esto es lo que iba a crear:
+
+- **`.claude/skills/sql-migrations/SKILL.md`**: una skill que el agente puede activar solo, con la descripción «Use when…» sobre crear, editar o aplicar migraciones de `db/migrations/` o cambiar el esquema de `salas.db`. Tiene cinco pasos:
+  1. Escribir `up` y `down` a la vez.
+  2. Copiar `salas.db` y `db/` a un directorio temporal fuera del repo.
+  3. Probar `up`, `down` y `up` en esa copia, con los tres comandos en código 0.
+  4. Comprobar que el esquema de `sqlite_master` tras `down` es idéntico al de antes de `up`.
+  5. Aplicar en la real solo con los pasos 3 y 4 en verde.
+
+  La skill se da por cerrada cuando el agente deja una línea por cada uno de los pasos 3 y 4 con lo que vio. Lleva además una tabla de excusas típicas, como «es un `CREATE TABLE`, el `down` es obvio».
+- **`.claude/skills/sql-migrations/scenarios.md`**: dos escenarios de presión escritos pero sin ejecutar. El primero mezcla prisa, «es una línea» y datos reales en juego. El segundo es un `down` que no se puede revertir sin perder datos.
+
+No he lanzado todavía los subagentes de baseline sin skill (RED) ni con ella (GREEN). El kit exige esa prueba antes de dar la skill por terminada, y está pendiente.
+
+**Dudas que dejo para después, como pediste:**
+1. `db/migrate.js` y `salas.db` no existen en este repo. Solo hay `db/migrations/0001-rooms.sql`, que tiene un `up` y ningún `down`. Escribí los pasos sin depender de cómo `migrate.js` lee el `down`: ¿va en el mismo fichero, en un `.down.sql` o en otro formato?
+2. Para la copia asumí que `migrate.js` resuelve `salas.db` relativo al directorio de trabajo o a su propia carpeta, así que copio `db/` y `salas.db` juntos. Si la ruta está fija, ese paso hay que cambiarlo.
+3. No indiqué qué herramienta compara el esquema, porque `sqlite3` puede no estar instalado. Con Node 22 se puede usar `node:sqlite`, aunque según la versión menor exige un flag experimental.
+4. `0001-rooms.sql` sigue sin `down`. ¿Lo añado cuando exista el formato?
+

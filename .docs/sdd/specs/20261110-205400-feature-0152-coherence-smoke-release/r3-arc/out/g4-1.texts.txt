@@ -1,0 +1,95 @@
+--- [3]
+Empiezo por los pre-checks del cierre y por leer las referencias de validación y de la suite.
+
+--- [22]
+Cierre de la 0010 parado en la validación: el guion está abajo y me falta tu «validado». La tanda E2E no la he lanzado.
+
+La tanda usaría el servidor del puerto 62986, el mismo que usas tú para validar. Lanzarla mientras pruebas puede dejarte sin entorno o con datos mezclados, y el kit lo prohíbe. Así que la lanzo en cuanto me contestes y sigo con el cierre sin que esperes nada más. Este es su aviso:
+
+```
+# Tanda: 3 tests cambiados de e2e/cancel.e2e.mjs ×3 + 2 más de ese fichero ×1 = 11 ejecuciones · ~1,4 min (14 pasos × 6 s ÷ 1 worker)
+```
+
+`e2e/free.e2e.mjs` no la toca la rama, así que no entra. Voy a usar el gate tal como está declarado, sin `E2E_TRACE=light`.
+
+**Antes de que pruebes**
+- No hay otras ramas `feature/*` ni `patch/*` abiertas. Solo existe este worktree.
+- `merge --check` da «listo»: `develop` irá en un worktree temporal.
+- El árbol está limpio.
+
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y el nuevo comando `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Task 2: usé `node --test --test-concurrency=1` en el gate para esquivar una carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test, y si es erróneo la suite tarda el doble. Lo tomé sin ti y todavía no tiene fila en `debt.md`. La abro en el cierre.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | `ejecución real` (HTTP en sesión propia y CLI) | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | el mismo literal |
+| `canceladas` enseña el motivo | `ejecución real` (HTTP) | «Norte lun — sala ocupada» |
+
+El ensayo lo hice en mi propia sesión, así que tu sesión empieza vacía. No hay nada que restaurar.
+
+**Suites**
+- `node --test test/` y `node e2e/run.mjs`: aún no han corrido en este cierre.
+- Corren tras tu respuesta: la tanda primero y el gate de cierre después.
+
+**Sin probar**
+- Nada de la spec.
+- El E2E completo dura unos 50 s frente a un presupuesto de 0,5 min. Si lo confirma la pasada, abro fila de deuda con las dos cifras.
+
+Panel: plan B en http://127.0.0.1:58734/
+(Sin herramientas de Chrome. Esta página no ve tu app: si algo falla, cuéntame el error en el comentario. Al acabar, pulsa «listo».)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno (queda en el puerto 62986):
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con tu sesión `validacion`:
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: validacion" "http://localhost:62986/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+2. Sin `--motivo` → el mismo literal
+
+```
+curl -s -H "x-session: validacion" "http://localhost:62986/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+3. Motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: validacion" "http://localhost:62986/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+4. Listado → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: validacion" "http://localhost:62986/run?cmd=canceladas&args=%5B%5D"
+```
+
+Los pasos 1 y 2 van antes del 3 porque no cambian el estado. El 4 solo enseña algo después del 3, y el 3 solo funciona una vez por sesión. Para repetirlo, cambia `validacion` por otro nombre.
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

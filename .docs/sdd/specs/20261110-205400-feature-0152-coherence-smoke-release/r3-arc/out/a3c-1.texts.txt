@@ -1,0 +1,98 @@
+--- [3]
+Empiezo el cierre de la 0010 por los pre-checks del paso 0.
+
+--- [29]
+La re-revisión está en marcha y no escribo ningún registro hasta que vuelva. Mientras tanto no toco nada de los ficheros que revisa.
+
+Estado del cierre de la 0010:
+- **Pre-checks:** el árbol está limpio y `merge --check` da `destino: listo` (`develop`). No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Revisión final:** `Revisión final:` es sobre `bf16f08`, y `HEAD` (`1bd5dca`) avanzó con dos commits solo de documentación. Uno es `tasks.md` y el otro es el cambio de «Capacidades» de `Nuevas` a `Modificadas` en la spec. Sin `Re-revisión:`, el kit pide una re-revisión única de ese rango.
+- **Cosas que he visto y que atenderé después de la re-revisión:**
+  - `develop` ya está por delante (la 0015 toca `src/rooms.js` y `capabilities/bookings`), así que el `sync` del paso 6 traerá cambios y repetirá el gate.
+  - El delta de la spec usa bloques `ADDED` aunque «Capacidades» dice `Modificadas`. Lo resolverá `capability merge`.
+  - Hay un ruling de Task 2 (`--test-concurrency=1`) que es un workaround. Según `learnings.md`, necesita su fila en la deuda.
+  - La validación es `field`, así que hago yo el smoke sin pedírtelo.
+
+Cuando vuelva la re-revisión, sigo con la validación, el walkthrough, el delta de capacidad, el roadmap, el merge y el mensaje final.
+
+--- [32]
+The paquete is in `a3c-1/`, not the given path. Reading it and the context files.
+
+--- [43]
+**Nota previa:** el paquete no estaba en la ruta del encargo (`.../r3-arc/review-0010-range.diff`). Estaba en `.../r3-arc/a3c-1/review-0010-range.diff` y es el que he leído. Su contenido coincide con `git log --stat` del worktree. No he modificado nada.
+
+## Veredicto por punto
+
+**1. Cambio Nuevas → Modificadas: coherente.** `capabilities/bookings.md` ya existía antes de la feature, desde f1faf4b. Por eso «Modificadas» es la clasificación correcta (`spec.md:20`). Que el delta use ADDED dentro de una capacidad modificada también encaja: `bookings.md` solo documenta «Reservar una sala» y no tiene ningún requisito de cancelar, así que los dos requisitos del delta son nuevos respecto al documento de la capacidad. Lo único pendiente aquí es de forma (ver Minor 3).
+
+**2. `tasks.md` no es fiel a la realidad.** El commit de la fila 1 es incorrecto, y el ruling de Task 2 cambia el gate que fijan el plan y la constitution. Detalle en Important 1 y 2.
+
+**3. Lo aprobado en la spec no cambia.** El diff toca solo la línea 20 de `spec.md`. Requisitos, THEN, Scope, «No entra» y «Dónde se prueba» siguen igual que en la spec aprobada, así que no hay desviación de comportamiento. El ruling sí cambia el plan (Important 2), pero eso es el plan, no la spec.
+
+## Hallazgos
+
+- **Important 1 — `tasks.md:10`.** La fila de Task 1 apunta al commit `bf16f08`, pero Task 1 se hizo en `0c573e8` («feat(bookings): cancelar con un motivo de la lista»). `bf16f08` es el de Task 2 («listado de canceladas»). El registro atribuye a Task 1 un commit que no es suyo. La fila debe decir `0c573e8`.
+
+- **Important 2 — `tasks.md:17`.** El ruling cambia el gate de cierre a `node --test --test-concurrency=1`. Eso choca con dos cosas:
+  - el plan fija el gate como `node --test` (`plan.md:50`);
+  - la constitution pide «`node --test` entero en verde» (`constitution.md:2`).
+
+  El cambio no aparece como enmienda del plan. Además, el motivo que da no se sostiene:
+  - `--test-concurrency` solo decide cuántos ficheros de test corren en paralelo, y cada fichero corre en su propio proceso. El almacén en memoria (`src/app.js:4`) no se comparte entre procesos, así que entre ficheros no puede haber carrera.
+  - Dentro de un fichero, los `test()` de primer nivel ya corren uno tras otro.
+  - La dependencia real es de orden dentro de `test/cancel.test.js`: el tercer test depende del estado que deja el primero. Esa opción no la arregla.
+  - El ruling es de Task 2, cuya verificación es `node --test test/cancel.test.js`, un solo fichero, donde la opción no cambia nada.
+  - El «workaround hasta aislar el almacén por test» no aparece en `steering/debt.md`.
+
+  Habría que quitar el ruling, o bien enmendar el plan con un motivo correcto y apuntar la deuda.
+
+- **Minor 3 — `spec.md:20` y `spec.md:63`.** La línea de Capacidades se cambió en una spec ya aprobada (`status: approved`, Laura 2026-10-08) y después de la revisión final. «Enmiendas» sigue en «(ninguna)». No cambia el comportamiento, pero el cambio debería quedar anotado en Enmiendas.
+
+## Observaciones fuera de alcance
+
+Todas son anteriores a este rango, del commit 9d8ee95 o de 0c573e8.
+
+- `spec.md:25`: la decisión 3 justifica no revisar la spec con «dos señales (MODIFIED, datos)», pero el delta solo tiene ADDED. Antes de la feature, `cancelar Norte lun` sin motivo respondía «cancelada Norte lun», como se ve en el test anterior a 0c573e8. Ahora responde «motivo no válido…». Es un cambio de comportamiento que ya existía, aunque no esté en `bookings.md`. Hay que decidir si va como MODIFIED o si se corrige la decisión.
+- `spec.md:24-25`: las decisiones van numeradas 1 y 3; falta la 2.
+- `test/cancel.test.js`: en 0c573e8 se reescribieron los tests que ya existían (nombre, dato y aserción) y desapareció «cancelar sin reserva lo dice». Por eso el camino «sin reserva» de `src/app.js:23` ya no tiene test. Tampoco hay test para el AND «sin `--motivo`…» (`spec.md:54`), aunque «Dónde se prueba» lo sitúa en `test/cancel.test.js`.
+- `plan.md:50`: la casilla del gate de cierre sigue sin marcar.
+
+**Veredicto:** quedan hallazgos abiertos: Important 1 (commit de Task 1 en `tasks.md:10`), Important 2 (el ruling `--test-concurrency=1` choca con el gate de `plan.md:50` y `constitution.md:2`, y su motivo es falso) y Minor 3 (cambio en la spec aprobada sin anotar en Enmiendas).
+
+--- [45]
+La re-revisión devolvió hallazgos abiertos. Compruebo sus afirmaciones contra el repositorio antes de actuar.
+
+--- [51]
+El cierre de la 0010 está parado en el paso 0 y no he escrito ningún registro. Necesito una decisión tuya antes de seguir.
+
+Como `HEAD` se movió desde la revisión final, lancé la re-revisión única (`bf16f08..1bd5dca`). Volvió con **hallazgos abiertos**, y los he comprobado contra el repositorio.
+
+🦆 Los dos commits de después de la revisión eran documentación, pero destapan que la revisión «limpia» pasó por alto cosas del código y de los tests.
+
+**✋ Lo que encontré:**
+1. **`tasks.md`, fila de Task 1 (Important):** cita `bf16f08`, que es el commit de Task 2. El de Task 1 es `0c573e8`. Es un arreglo de registro que puedo hacer sin consultarte.
+2. **Ruling de Task 2 (Important):**
+   - El ruling cambia el gate a `node --test --test-concurrency=1`, pero el plan y la constitution fijan `node --test`.
+   - La razón que da (una carrera sobre el almacén en memoria) no se sostiene según la re-revisión: cada fichero de test corre en su propio proceso.
+   - Yo ejecuté `node --test` normal cuatro veces y las cuatro dieron exit 0, sin carrera.
+   - No consta en `debt.md` ni como enmienda del plan.
+3. **Tests (fuera de alcance de la re-revisión, pero real):**
+   - `0c573e8` reescribió los tests previos de `cancelar` en vez de añadir nuevos, y borró «cancelar sin reserva lo dice». Ese camino ya no tiene test.
+   - El AND «sin `--motivo` responde “motivo no válido…”» tampoco tiene test.
+4. **Spec aprobada (Minor, pero toca lo aprobado):**
+   - El cambio `Nuevas → Modificadas` no está anotado en «Enmiendas».
+   - Hoy `cancelar Norte lun` sin motivo cambia de «cancelada» a «motivo no válido». Es un comportamiento existente que cambia, y el delta lo declara como `ADDED` en vez de `MODIFIED`.
+   - La decisión 3 («señales: MODIFIED, datos») no cuadra con eso.
+
+**Mi recomendación:**
+- Quitar el ruling de `--test-concurrency=1` y usar `node --test` plano, que es el gate declarado.
+- Corregir el commit de Task 1 en `tasks.md`.
+- Restaurar el test «cancelar sin reserva» y añadir el del AND «sin `--motivo`», en un commit nuevo.
+- Enmendar la spec: el delta pasa a `MODIFIED` para el comportamiento que cambia, con su `(antes: …)` y su línea en «Enmiendas».
+
+Los puntos 3 y 4 tocan lo que aprobó Laura, así que en `delegate` no los hago sin ti. Los commits nuevos irían a ✋ como `sin revisar`, porque una re-revisión no abre otra.
+
+**¿Hago estos cambios como los describo, o prefieres otro tratamiento (por ejemplo, dejar el ruling y anotarlo en la deuda)?**
+
+**No terminado.** Falta resolver los hallazgos, validar, cerrar los registros y fusionar en `develop`. Todavía no se ha fusionado nada. El worktree `<run>/repo` no se borra todavía.
+

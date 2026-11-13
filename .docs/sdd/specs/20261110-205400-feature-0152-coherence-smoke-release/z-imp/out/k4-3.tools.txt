@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git log --oneline && find . -path ./.git -prune -o -type f -print | head -100 && cat .docs/sdd/sdd-kit.json; ls .docs/sdd/changes/*
+<<< Exit code 2
+f580ac8 docs(sdd): abrir la feature 0028 con su spec y su plan
+b2f7e9d feat: base del molde
+./.docs/sdd/sdd-kit.json
+./.docs/sdd/specs/20261016-100000-feature-0028-note-tags-kept-flags/plan.md
+./.docs/sdd/specs/20261016-100000-feature-0028-note-tags-kept-flags/spec.md
+./.docs/sdd/steering/constitution.md
+./.gitignore
+./notas/reunion-lunes.md
+./README.md
+./skills/guardar-nota/SKILL.md
+./test/words.test.js
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+ls: cannot acc
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/plan.md .docs/sdd/steering/constitution.md .gitignore notas/reunion-lunes.md README.md skills/guardar-nota/SKILL.md test/words.test.js; do echo "=== $f"; cat "$f"; done; git branch -a
+<<< === .docs/sdd/specs/20261016-100000-feature-0028-note-tags-kept-flags/spec.md
+---
+id: 20261016-100000-feature-0028-note-tags-kept-flags
+feature: 0028
+title: Etiquetas en la nota, con las red flags de guardar-nota
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-16
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-16
+---
+
+# Spec — Etiquetas en la nota, con las red flags de guardar-nota
+
+## Capacidades
+
+- Modificadas: `notes`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+### 
+
+>>> Bash: cd "<run>/repo" && git remote -v; mb=$(git merge-base HEAD develop); echo mb=$mb; git diff $mb develop -- ROADMAP.md; git diff --name-only $mb develop; node --test 2>&1 | tail -5; node -e "const s=require('fs').readFileSync('skills/guardar-nota/SKILL.md','utf8');console.log(s.split(/\s+/).filter(Boolean).length); const a='4. Ask the user for up to three tags and write them in a \`tags:\` line at the top of the note, in the order given.';console.log(a.split(/\s+/).filter(Boolean).length)"
+<<< mb=b2f7e9dcb30e13efad163095b5fc1da9b5fee16e
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96.0188
+73
+26
+
+>>> Bash: cd /tmp && cat > min.md <<'EOF'
+---
+name: guardar-nota
+description: Use when saving notes.
+---
+1. Ask for the title and the body if the request lacks them.
+2. Write `notas/<slug of the title>.md` with the body.
+3. Tell the user the path you wrote.
+4. Ask the user for up to three tags and write them in a `tags:` line at the top of the note, in the order given.
+- You're about to write a note without a title.
+- You're about to make up a title the user didn't give.
+EOF
+node -e "console.log(require('fs').readFileSync('min.md','utf8').split(/\s+/).filter(Boolean).length)"
+<<< 87
+Shell cwd was reset to <run>\repo
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261016-100000-feature-0028-note-tags-kept-flags\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261016-100000-feature-0028-note-tags-kept-flags\spec.md has been updated successfully.
+
+=== RESULTADO (8 turnos, 0.33138660000000003 $)
+He parado la Task 1 sin escribir código: la spec pide cuatro cosas que no caben juntas.
+
+🦆 La skill `guardar-nota` mide ahora 73 palabras y el paso 4, con el texto literal que pediste, añade 26: en total 99, y el test de `test/words.test.js` corta en 80. Con lo que se puede tocar no hay forma de bajar de 80. Si quito los encabezados y dejo la `description` en cuatro palabras, sin tocar los pasos 1 a 3 ni las red flags, la skill mide 87; lo he medido con un borrador fuera del repo. Para llegar a 80 habría que romper una de tus cuatro decisiones: el texto literal del paso, el tope de 80, las dos red flags o los pasos 1 a 3. Elegir cuál cambia la spec aprobada, así que te toca a ti.
+
+Antes de parar he comprobado que en la rama `develop` no hay cambios de `ROADMAP.md` ni de ficheros de esta task, y que `node --test` sale en verde sin fallos.
+
+✋ **Desviación: el tope de 80 palabras choca con el paso 4 literal.** He dejado esta línea en «Enmiendas» de `spec.md`, sin commit:
+
+> 2026-11-12, pendiente de aprobar: el tope de `skills/guardar-nota/SKILL.md` pasa de 80 a 100 palabras (`test/words.test.js`), y ese test entra en los ficheros de la Task 1.
+
+- **Recomendado: subir el tope a 100.** El paso cabe tal cual (99 palabras) y no se tocan las red flags, los pasos de la fuente ni los encabezados. Sale de las cuatro decisiones la que es solo un número; las otras protegen cómo se comporta el agente, y de las red flags dijiste que sin ellas se inventa el título.
+- **Alternativa: acortar el paso 4,** por ejemplo a «4. Ask for up to three tags; write them first as `tags: a, b`.» Sigue cumpliendo el THEN, pero rompe tu «lo quiero con esas palabras».
+- **Alternativa: quitar las red flags** o reescribir los pasos 1 a 3. No lo recomiendo.
+
+La enmienda no cambia lo que hace la feature: la nota sigue empezando por `tags: a, b`. Por eso no he mandado a nadie a revisar la spec.
+
+En cuanto elijas, preparo el humo `h1` (que tiene que fallar sin el paso), escribo el paso 4, ajusto el tope si toca, lo verifico con `node --test` y hago el commit de la Task 1.

@@ -16,11 +16,12 @@ Los documentos de anclaje describen el sistema **tal como es hoy**, no como debe
 
 | Documento | Qué captura de un codebase existente |
 | --- | --- |
-| `.docs/sdd/mission.md` | Qué hace el sistema, para quién, y el modelo de dominio |
-| `.docs/sdd/constitution.md` | Convenciones existentes, aunque no sean ideales, y reglas no negociables |
-| `.docs/sdd/tech-stack.md` | Tecnologías con **versiones exactas** y dependencias bloqueadas |
-| `.docs/sdd/architecture.md` | Estructura real de módulos, capas y flujos |
-| `.docs/sdd/roadmap.md` | Deuda técnica inventariada, bloqueos críticos y prioridades |
+| `PRODUCT.md` (raíz) | Qué hace el sistema, para quién, y el modelo de dominio |
+| `.docs/sdd/steering/constitution.md` | Convenciones existentes, aunque no sean ideales, y reglas no negociables |
+| `.docs/sdd/steering/operations.md` | Cómo se compila, se arranca y se prueba **de verdad**, con sus comandos reales; las versiones exactas y las dependencias bloqueadas están en los manifests |
+| `.docs/sdd/steering/architecture.md` | Estructura real de módulos, capas y flujos |
+| `ROADMAP.md` (raíz) | Prioridades y bloqueos críticos, en Now, Next y Later |
+| `.docs/sdd/steering/debt.md` | Deuda técnica inventariada y su triaje |
 | `CLAUDE.md` (corto) | Punteros a los anteriores y reglas críticas |
 
 **`capabilities/` no se vuelca de golpe.** En un codebase existente es tentador pedirle al agente que documente todo el comportamiento de una vez, y el resultado son ficheros que nadie revisa. La carpeta nace vacía y crece con la primera tarea que toca cada capacidad, igual que en greenfield: cada spec declara su delta (`ADDED`, `MODIFIED`, `REMOVED`) y el cierre lo fusiona. Si al hacer el onboarding aparece comportamiento documentado que no encaja en ninguna capacidad todavía, se queda en un fichero de legado hasta que una tarea lo reclame.
@@ -32,11 +33,11 @@ Reglas que protegen el sistema en producción y que la constitution del proyecto
 - **Retrocompatibilidad por defecto**: ningún cambio rompe datos ni contratos existentes.
 - **Respetar el patrón existente**, aunque no sea el ideal. Los cambios de patrón se proponen y se documentan; nunca se aplican como refactor oportunista dentro de otra tarea.
 - **Migraciones masivas solo con justificación escrita** y aprobada.
-- **La deuda técnica se registra en el roadmap**, no se corrige sobre la marcha.
+- **La deuda técnica se registra en `steering/debt.md`**, no se corrige sobre la marcha.
 
 ### 1.3. Kit de skills
 
-- **Skills de proceso**: desde el día cero, como en greenfield. `sdd-init` es además la vía de actualización: cuando el kit publica una versión nueva, lee la que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json` y aplica en orden las migraciones posteriores, preguntando antes de borrar o renombrar nada. Cada versión del kit trae su migración, aunque no cambie nada del proyecto, y el arranque de la sesión avisa cuando hay alguna pendiente.
+- **Skills de proceso**: desde el día cero, como en greenfield. La vía de actualización es `sdd-upgrade`: cuando el kit publica una versión nueva, pide «actualízame al kit», y la skill lee la versión que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json` y aplica en orden las migraciones posteriores, preguntando antes de borrar, renombrar o mover nada. Cada versión del kit trae su migración, aunque no cambie nada del proyecto, y el arranque de la sesión avisa cuando hay alguna pendiente. La de la 3.0.0 es la que mueve los documentos a su forma actual (`PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md` en la raíz, y `steering/`), y la 3.0.0 no da soporte a un proyecto 2.x sin migrar.
 - **Skills técnicas**: en brownfield conviene crearlas pronto, porque capturan el conocimiento tribal del proyecto, como se compila, qué patrón siguen backend y frontend o cómo se hacen las migraciones. Cada skill escrita es conocimiento que deja de depender de la memoria de una persona.
 
 ### 1.4. No hace falta parar el desarrollo
@@ -47,16 +48,16 @@ El onboarding no bloquea: se crea la documentación mínima de anclaje y se empi
 
 El ciclo es el mismo que en greenfield, guiado por las skills:
 
-1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta: consulta, patch, roadmap o `sdd-propose`, que carga el contexto del proyecto y confirma el modo (lite o ciclo completo) y el perfil de control.
-2. **Especificación**: brainstorming con Claude hasta llegar a `spec.md`, con el delta de comportamiento por capacidad, revisada y aprobada antes de continuar. En brownfield conviene activar la revisión adversarial de la spec más a menudo, porque el riesgo está en lo que la spec da por supuesto del sistema existente.
+1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta: `sdd-explore`, `sdd-roadmap` o `sdd-propose`, que carga el contexto del proyecto, clasifica el cambio en uno de cinco carriles (spike, config, patch, lite o feature) y, en una feature o un spike, anuncia carril, modo y perfil de control y sigue; patch, lite y config preguntan antes de abrir nada. No hay edición directa.
+2. **Especificación**: una entrevista con Claude (`sdd-grilling`) hasta llegar a `spec.md`, con el delta de comportamiento por capacidad, revisada y aprobada antes de continuar. La revisión adversarial la decide una rúbrica por las señales de la spec, sin preguntarte. En brownfield pesa más, porque el riesgo está en lo que la spec da por supuesto del sistema existente: una capacidad ya existente que cambia (`MODIFIED`) o un contrato público que se toca suben el nivel.
 3. **Plan** en `plan.md`, con la estimación de esfuerzo, el método de ejecución y las restricciones globales. Solo para a que lo apruebes en el perfil `pair`.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos.
-5. **Implementación** en la propia sesión por defecto, o con subagentes en los planes largos, y en los dos casos con los tests en rojo escritos antes del código de cada tarea: son el contrato de quien implementa.
+5. **Implementación** en la propia sesión por defecto, o con subagentes en los planes largos, y en los dos casos con los tests en rojo escritos antes del código de cada tarea, siempre: son el contrato de quien implementa. La revisión final de rama va por ejes (Spec, Código y, si el plan lo marca, Arquitectura).
 6. **Verificación**, que se detalla en el punto 2.2.
 7. **Validación**: el agente presenta lo hecho, su smoke y un guion de pruebas, y espera a que digas qué has probado y que funciona, o a que lo difieras con un disparador concreto. Qué contestar en cada parada lo cuenta la [guía de uso](usage-guide.md#4-qué-te-pregunta-el-agente-y-qué-contestar).
-8. **Cierre** con `walkthrough.md` y `sdd-archive`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y roadmap (en 2.x, también changelog) y registro de estimaciones actualizados.
+8. **Cierre** con `walkthrough.md` y `sdd-archive`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, retro, ADR candidatas, y la fila de Now y el registro de estimaciones actualizados. El cierre no toca `CHANGELOG.md`: lo sella `sdd-end-release`.
 
-Los artefactos viven en `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/`, como en greenfield.
+Los artefactos viven en `.docs/sdd/changes/<fecha>-feature-<id>-<nombre>/`, como en greenfield. Un proyecto que viene de la 2.x conserva su `specs/`, que se sigue leyendo.
 
 Las tareas tienen que ser pequeñas, de una jornada o menos. En las demasiado grandes los últimos pasos pierden calidad. Si una tarea crece mientras se trabaja, se divide.
 
@@ -70,25 +71,25 @@ En brownfield el riesgo principal es la **regresión**: cambios plausibles y sin
 
 - **Smoke manual documentado en el `walkthrough.md`**, que es la base obligatoria. Verifica la funcionalidad nueva **y** los flujos existentes que toca, con evidencia escrita.
 - **Playwright** para proteger los flujos críticos existentes. Cada flujo cubierto es una regresión que se detecta antes de llegar a producción.
-- **Tests automatizados donde sea viable.** Introducir TDD en código que no se diseñó para ser testeado es caro, así que se aplica de forma oportunista, en el código nuevo y en las zonas que se tocan a menudo, y no como requisito universal.
+- **Tests antes que el código, en todo lo que cambias.** Introducir tests en código que no se diseñó para ser testeado es caro, pero la regla no se relaja: cada cambio lleva en su task el test que falla antes del código (`sdd-tdd`). Si algo parece una excepción, el agente para y te lo pregunta; no la decide solo. Solo la config y el spike tienen su propio carril sin este ciclo.
 
 ### 2.3. Carril rápido: patch
 
-En un sistema en producción los bugs pequeños son frecuentes. Para un cambio pequeño con la solución ya fijada (un fallo determinista, un ajuste o una retirada solo de presentación, o una petición cerrada), `sdd-implement` genera un único `patch.md` con síntoma, causa raíz y verificación: trazabilidad completa sin el ciclo entero. Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos), con la intención en una frase y una captura como verificación.
+En un sistema en producción los bugs pequeños son frecuentes. Para un cambio pequeño con la solución ya fijada (un fallo determinista, un ajuste o una retirada solo de presentación, o una petición cerrada), el agente te pregunta primero si va como patch, con su estimación y el test que falla hoy, y `sdd-implement` genera un único `patch.md` con síntoma, causa raíz y verificación: trazabilidad completa sin el ciclo entero. Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos), con la intención en una frase y una captura como verificación.
 
 ### 2.4. Carril de consulta
 
-En un codebase que no conoces, la mitad de lo que le pides a Claude son preguntas. `sdd-consult` responde con la documentación de anclaje cargada y sin producir artefactos, y avisa cuando la consulta se convierte en trabajo.
+En un codebase que no conoces, la mitad de lo que le pides a Claude son preguntas. `sdd-explore` responde con la documentación de anclaje cargada y sin producir artefactos, y avisa cuando la consulta se convierte en trabajo: entonces lo pasa a `sdd-roadmap`, que escribe la fila y te da el prompt de arranque.
 
 ### 2.5. Cuándo no usar el ciclo completo
 
-Si el cambio se puede describir en una frase, se hace directamente. La planificación es proporcional a la incertidumbre y al tamaño del cambio.
+Si el cambio se puede describir en una frase, va por un carril ligero (patch, config o lite), sin spec ni plan completos; no hay edición directa. La planificación es proporcional a la incertidumbre y al tamaño del cambio.
 
 ## 3. Fase 3: presentar al cliente
 
 Igual que en el flujo original: presentación periódica, idealmente semanal, de lo implementado al cliente o a los stakeholders internos, y recogida de feedback con notas, capturas y decisiones. Las notas pasan por `sdd-roadmap`, que propone qué cambia en el roadmap, y cada fila nueva entra después por el ciclo de la fase 2.
 
-Si el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente y `sdd-end-release` corta la versión: changelog sellado, lo hecho fuera de Now, notas para el cliente y el merge y el tag, que confirmas tú; el repaso de la deuda por causa y, si la pides, la retro con números. En brownfield hay un tipo de feedback que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
+Si el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente y `sdd-end-release` corta la versión: `CHANGELOG.md` sellado, lo hecho fuera de Now, notas para el cliente y el merge y el tag, que confirmas tú; el repaso de la deuda por causa y, si la pides, la retro con números. En brownfield hay un tipo de feedback que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
 
 ## 4. Trazabilidad y estimación
 
@@ -102,7 +103,7 @@ Cada `walkthrough.md` recoge los aprendizajes de la tarea, y el cierre con `sdd-
 
 ## 6. Principio general
 
-Mantén la documentación de anclaje actualizada durante todo el proyecto. Los documentos de `.docs/sdd/` son la fuente de verdad y el contexto base de cualquier interacción con Claude. En brownfield, además, son la única defensa contra el contexto que el agente no puede inferir del código.
+Mantén la documentación de anclaje actualizada durante todo el proyecto. Los documentos de anclaje (`PRODUCT.md`, `ROADMAP.md` y `.docs/sdd/`) son la fuente de verdad y el contexto base de cualquier interacción con Claude. En brownfield, además, son la única defensa contra el contexto que el agente no puede inferir del código.
 
 ## Objetivo final
 
@@ -110,7 +111,7 @@ Reducir el tiempo necesario para entregar cambios validados sobre un sistema exi
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.3.4, octubre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.0, noviembre de 2026.*
 
 ## Referencias
 

@@ -1,0 +1,92 @@
+
+=== RESULTADO (1 turnos, 0.0658471 $)
+Antes de empezar con el filtro por sala: el proyecto tiene el kit 2.3.3 y el kit cargado trae migraciones hasta la 2.3.4. ¿Quieres que las aplique ahora, con `sdd-upgrade`? (sí/no)
+
+Si dices que sí, las aplico y después sigo con el filtro por sala en `libres`. Si dices que no, sigo directamente con el filtro y no te lo vuelvo a ofrecer en esta sesión.
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -2
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+{"version": "2.3.3", "channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}, "release": {"hasRe
+
+>>> Bash: cd "<run>/repo" && cat package.json src/app.js test/app.test.js .docs/sdd/constitution.md .docs/sdd/roadmap.md .docs/sdd/specs/*task-0006-free/spec.md
+<<< {"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references" && cat modo-lite.md
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enable
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills" && head -40 sdd-propose/references/control-profiles.md; echo ----; sed -n 1,40p sdd-rubber-duck/SKILL.md
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+
+=== RESULTADO (7 turnos, 0.1616772 $)
+Ahora: clasificar el cambio. Queda: tu respuesta a esta pregunta de carril, y después la spec, ~1 min.
+
+🦆 Hoy `libres` solo recibe una franja (`libres 10:00-12:00`) y devuelve todas las salas libres en ella, ahora «Sur». Con el cambio podrás pedir también una sala concreta y te dirá si esa sala está libre o no en la franja. Se toca solo el cálculo de salas libres y su texto de salida. Falta decidir cómo se escribe el filtro y qué responde si la sala no existe.
+
+No es un patch: la forma de escribir el filtro y la respuesta ante una sala inexistente no están fijadas, y hay que decidirlas. Es una feature pequeña que cumple las condiciones del modo lite:
+- **El flujo ya existe y se lee:** `libres` está en `src/app.js` (`freeRooms`).
+- **No cambia contratos públicos:** `libres <franja>` sigue funcionando igual; el filtro es opcional y se añade.
+- **No toca esquema de datos:** las salas y reservas son datos en memoria.
+- **Cabe en un solo módulo:** solo `src/app.js` y su test.
+- **Estimación:** no hay `estimation.md`, así que esa condición no aplica.
+
+Perfil actual: `delegate`, el valor por defecto, porque no hay perfil en `sdd-kit.json` ni en `sdd-kit.local.json`. Para este cambio tienes que elegir:
+
+1. **Lite (recomendada):** spec corta, sin plan ni tasks. Mantiene la puerta de aprobación de la spec, la revisión, el smoke y el walkthrough.
+2. **Full:** spec y plan completos. Es más ceremonia para un cambio de una sola función.
+
+Puedes añadir una de estas frases a tu respuesta:
+- «apruebo la spec por delegación, nos vemos en la validación» si te vas a ausentar.
+- «perfil `pair` para esta feature» o «perfil `unattended` para esta feature» si prefieres otro perfil.
+
+¿Cuál eliges?

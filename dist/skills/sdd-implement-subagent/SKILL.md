@@ -1,6 +1,6 @@
 ---
 name: sdd-implement-subagent
-description: Use when sdd-implement runs a plan with SDD: a fresh implementer subagent and a task review per task. Invoked from there; not the entry of a change (that is sdd-propose) nor of resuming paused work (that is sdd-implement).
+description: Use when sdd-implement runs a plan with SDD; a fresh implementer subagent and a task review per task. Invoked from there; not the entry of a change (that is sdd-propose) nor of resuming paused work (that is sdd-implement).
 ---
 
 # Subagent-Driven Development
@@ -82,7 +82,7 @@ digraph process {
 
 ## Setup
 
-Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `.docs/sdd/environments.md` exists, and runs the baseline in a detached worktree.
+Ensure the work happens in an isolated workspace: invoke `sdd-worktrees` with `Skill`; it detects or creates it, runs `env:setup` if `§Entornos` exists, and runs the baseline in a detached worktree.
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
 
@@ -91,7 +91,7 @@ controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
-- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; your next message, under its phase notice and also when you resume, opens with `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`), where `<ruta>` is the plan's git-ignored directory it prints, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`).
+- Each plan owns a workspace: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it also prints, for the user, the `Workspace del plan:` line; the path it prints is the plan's git-ignored directory, home to every artifact for THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write.
 - Check for this plan's ledger at `<workspace>/progress.md`. If one exists,
   read [references/resuming.md](references/resuming.md) before anything
   else: it says whose ledger it is and where to resume.

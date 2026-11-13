@@ -15,15 +15,15 @@ Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: explorin
 
 ## How it works (light, no gates)
 
-1. **Context proportional to the question** — read the relevant anchor documents (`mission`, `constitution`, `tech-stack`, `roadmap`, `architecture`, `capabilities/<capability>`, minutes in `releases/`) before answering, and the code if the question needs it. If the question is about behavior and `capabilities/` exists, pick the capability with `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` before opening any, and read the one its purpose points to. Proportion: a structure question reads `architecture` and the code; a «¿qué hacemos ahora?» reads `roadmap` and the minutes. **Always tell what the doc says from what you infer.**
+1. **Context proportional to the question** — read the relevant anchor documents (`PRODUCT.md`, `ROADMAP.md`, `steering/`, `capabilities/<capability>`, minutes in `releases/`) before answering, and the code if the question needs it. If the question is about behavior and `capabilities/` exists, pick the capability with `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` before opening any, and read the one its purpose points to. Proportion: a structure question reads `architecture` and the code; a «¿qué hacemos ahora?» reads `ROADMAP.md` and the minutes. **Always tell what the doc says from what you infer.**
 2. **Pick the mode:**
    - **Understand / explain** («¿por qué…?», «¿dónde tocaría…?», «¿esto cómo va?») → read and answer. **No interrogation**: grilling a one-off question annoys as much as over-triggering.
    - **Probe / test feasibility** («¿se puede…?», «pruébalo rápido», output = an answer) → explore and try what you need, but everything you build is **throwaway and labeled so**; the output is a recommendation in the conversation. Nothing persists: no spec folder, no branch, no kept code.
-   - **Think / structure / stress-test a direction** («¿cómo enfocarías X?», «pensémoslo bien») → `sdd-grilling` (invoke it with `Skill`; no artifacts, not tied to SDD). **NEVER superpowers' `brainstorming`**: it is the engine that builds features and ends in spec → plan → implementation; applied to a question, it turns it into what it wasn't.
+   - **Think / structure / stress-test a direction** («¿cómo enfocarías X?», «pensemos cómo…») → first thing: invoke `sdd-grilling` with `Skill` (no artifacts, not tied to SDD). **NEVER superpowers' `brainstorming`**: it is the engine that builds features and ends in spec → plan → implementation; applied to a question, it turns it into what it wasn't.
 3. **Zero artifacts by default** — no spec folder, no branch, no code touched, no editing `roadmap` or docs «on the way». The answer lives in the conversation.
 4. **Optional durable output (with approval)** — if the question uncovers an outdated anchor document or produces a decision worth recording, **propose it** and wait for the user's OK; only then write it, in the document it belongs to. Updating a doc **is not** «taking the chance to leave it done».
 5. **When it becomes work, it goes to the roadmap** — once the conversation ends in work («si se puede, lo quiero», «arréglalo», «quiero la tabla de medidas»), say so, name the lane you see and hand it over; the roadmap sizes and splits it:
-   - **Feature, patch or spike** → invoke `sdd-roadmap` with `Skill` and hand it what was said: what, why, each decision taken with its literal, and the lane you see. The roadmap writes the row or rows, reserves the id and closes with the launch prompt. You don't write the row, reserve an id or invoke `sdd-propose`: work without a row is work nobody can track (`tests/sdd-explore-0161-red.md`, e3).
+   - **Feature, patch or spike** → invoke `sdd-roadmap` with `Skill` and hand it what was said: what, why, each decision taken with its literal, and the lane you see. The roadmap writes the row or rows, reserves the id and closes with the launch prompt. You don't write the row, reserve an id or invoke `sdd-propose`: work without a row is work nobody can track.
    - **Config** (dependencies, CI, settings, a typo outside visible text: no row) → give its launch prompt yourself, traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md): no id, branch `feature/<slug>`, `Carril: config`.
 <!-- kit: incluye start-here-offer -->
    - Planning without doing («apúntalo, no lo hagas») → `sdd-roadmap`. A failure to fix is a patch: the first bullet.
@@ -32,7 +32,7 @@ Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: explorin
 
 ## Red flags — STOP, this is no longer exploring
 
-- You're about to create a folder in `.docs/sdd/specs/` (or a `patch.md`, or a branch) from explore.
+- You're about to create a folder in `.docs/sdd/changes/` (or a `patch.md`, or a branch) from explore.
 - You're **reproducing a lane by hand** (copying a spec's or a patch's naming) instead of invoking its skill.
 - You're about to write a **ticket id you made up** because «it's the next free one».
 - You're about to edit `roadmap`, `changelog` or an anchor document without the user's approval.

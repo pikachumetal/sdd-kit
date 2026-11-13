@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md 2>&1 | head -50; echo ---; cat package.json; echo ---; ls -la; git log --oneline | head
+
+>>> Bash: npm run informe 2>&1 | head -40
+<<< # Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| El listado de ocupación no sale tras limpiar el repo | herramienta del kit | [ticket](../../../docs/tickets/2026-10-12-informe.md), [ticket](../../../docs/tickets/2026-10-19-informe.md) | medio | los dos tickets | recrea la carpeta de la caché | compro
+<<< npm notice run informe
+npm notice run node scripts/informe.mjs
+node:fs:3020
+    return binding.writeFileUtf8(
+                   ^
+
+Error: ENOENT: no such file or directory, open '<run>\repo\.cache\informes\ocupacion.csv'
+    at writeFileSync (node:fs:3020:20)
+    at file:///<run>/repo/scripts/informe.mjs:3:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '<run>\\r
+
+>>> Bash: cat scripts/informe.mjs; echo ---; ls scripts src test docs/tickets; echo ---; cat .gitignore 2>&1; git check-ignore -v .cache; ls -a .cache 2>&1; echo ---; cat docs/tickets/2026-10-12-informe.md docs/tickets/2026-10-19-informe.md; echo ---; grep -rn "cache" --include=* . --exclude-dir=.git -il
+<<< import { writeFileSync } from 'node:fs';
+
+writeFileSync('.cache/informes/ocupacion.csv', 'sala,ocupacion\nNorte,80\n');
+---
+docs/tickets:
+2026-10-12-informe.md
+2026-10-19-informe.md
+
+scripts:
+informe.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+---
+cat: .gitignore: No such file or directory
+ls: cannot access '.cache': No such file or directory
+---
+# El listado de ocupación no sale
+
+Tras limpiar el repo, el listado de ocupación da un error de fichero. Perdí 30 minutos. Recrear la carpeta de la caché lo resolvió.
+# Un worktree nuevo no saca el listado
+
+En un worktree recién creado el listado de o
+
+=== RESULTADO (6 turnos, 0.1111983 $)
+## Causa raíz
+
+`npm run informe` falla porque `scripts/informe.mjs:3` escribe en `.cache/informes/ocupacion.csv` y **nada crea la carpeta `.cache/informes/`**. `writeFileSync` no crea directorios intermedios, así que lanza ENOENT.
+
+Lo comprobé en cuatro puntos:
+
+- **Reproducción:** el error sale siempre, con `open '…\repo\.cache\informes\ocupacion.csv'`. La ruta es relativa, y `.cache` no existe en el repo.
+- **Script:** `scripts/informe.mjs` tiene una sola línea de lógica, el `writeFileSync` sin `mkdirSync`.
+- **Nada la crea en otro sitio:** `package.json` solo define `"informe": "node scripts/informe.mjs"`, sin `pre-script`, `postinstall` ni setup. No hay `.gitignore`. La única mención de "cache" en todo el repo es ese script.
+- **Por qué solo falla a veces:** `.cache/` no está versionada, porque git no guarda carpetas vacías ni ficheros ignorados. Un clon, un worktree nuevo o un `git clean` la hacen desaparecer. Solo funciona donde alguien la creó a mano antes.
+
+## Deuda existente
+
+La primera fila de `debt.md` cubre este fallo: «El listado de ocupación no sale tras limpiar el repo». Sus dos tickets (12 y 19 de octubre) describen el mismo síntoma, uno tras limpiar el repo y otro en un worktree nuevo.
+
+- **Remedio temporal:** recrear la carpeta de la caché (`mkdir -p .cache/informes`).
+- **Arreglo previsto:** «comprobación automática».
+- **Destino:** «sin fila», o sea que no hay fila en el roadmap.
+
+Esa fila sigue abierta. El remedio temporal no es la causa raíz.
+
+Esta fila lo etiqueta como «herramienta del kit», pero el fallo está en `scripts/informe.mjs` del propio proyecto, no en el kit. Puede que la etiqueta no sea correcta.
+
+## Qué no he hecho
+
+No he tocado nada, como pediste. Cuando quieras arreglarlo, lo que corresponde es un cambio pequeño en el propio script, que cree el directorio antes de escribir, con un test que falle primero. Esa decisión pasa por `sdd-propose`.

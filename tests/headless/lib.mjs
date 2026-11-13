@@ -274,7 +274,8 @@ const GIT_CONFIG = ['-c', 'user.email=fixture@example.com', '-c', 'user.name=Fix
 function runGit(s, deps, { repo, args }) {
   if (args[0] !== 'init' && !repo.checked) {
     const cdup = deps.run('git', ['-C', s.R, 'rev-parse', '--show-cdup'], { env: s.env });
-    if (cdup.code !== 0 || cdup.stdout.trim() !== '') s.die(`el molde ${s.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git`);
+    // Con el código de git a la vista: un fallo suelto de git no se distingue de un molde sin git init.
+    if (cdup.code !== 0 || cdup.stdout.trim() !== '') s.die(`el molde ${s.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git (git rev-parse --show-cdup: código ${cdup.code}, «${(cdup.stdout + cdup.stderr).trim()}»)`);
     repo.checked = true;
   }
   const result = deps.run('git', ['-C', s.R, ...GIT_CONFIG, ...args], { env: s.env });
@@ -516,8 +517,7 @@ async function launch(s, deps, ask) {
     const code = await runClaude(s, deps, { args: [...s.claudeArgs, ask] });
     if (code !== 0) return code;
   }
-  if (s.env.TURN2) await resume(s, deps, s.env.TURN2);
-  return 0;
+  return s.env.TURN2 ? resume(s, deps, s.env.TURN2) : 0;
 }
 
 // Segundo turno sobre la sesión real del primero: su molde es lo que el primero dejó, no el relato de un ticket.

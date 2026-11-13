@@ -10,41 +10,43 @@ Con el kit se trabaja con tres verbos, siempre en este orden:
 
 | Verbo | Skill | Qué haces | Qué queda escrito |
 | --- | --- | --- | --- |
-| **Planificar** | `sdd-roadmap` | Meter trabajo en el roadmap sin hacerlo todavía: algo grande, algo concreto, los items del gestor, las notas de una reunión, un cambio de orden, la siguiente release | Filas en `.docs/sdd/roadmap.md` con su id y su orden y, si es algo grande o una reunión, una propuesta en `.docs/sdd/specs/<fecha>-proposal-<id>-<nombre>/proposal.md` |
-| **Hacer** | `sdd-propose` y `sdd-implement` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, la fila del roadmap al día (en 2.x, también el changelog), y el merge en `develop` |
-| **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | El changelog sellado, lo hecho fuera de Now, la deuda caducada, las notas de la versión si hay destinatario y, cuando tú lo confirmas, el merge a `main` y el tag |
+| **Planificar** | `sdd-roadmap` | Meter trabajo en el roadmap sin hacerlo todavía: algo grande, algo concreto, los items del gestor, las notas de una reunión, un cambio de orden, la siguiente release | Filas en `ROADMAP.md` (Now, Next y Later) con su id, su tamaño y su orden y, si es algo grande o una reunión, una propuesta en `.docs/sdd/changes/<fecha>-proposal-<id>-<nombre>/proposal.md` |
+| **Hacer** | `sdd-propose` y `sdd-implement` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta del cambio en `.docs/sdd/changes/` (`spec.md`, `plan.md`, `walkthrough.md`, o el `patch.md`), el código, la fila de Now al día y el merge en `develop` |
+| **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | `CHANGELOG.md` sellado, lo hecho fuera de Now, la deuda caducada, las notas de la versión si hay destinatario y, cuando tú lo confirmas, el merge a `main` y el tag |
 
 Planificar no hace nada: deja el roadmap listo para que alguien arranque. Hacer arranca una fila y termina con ella fusionada. Entregar publica lo hecho.
 
 No hace falta nombrar ninguna skill. Al empezar cada sesión, el kit le inyecta al agente la skill `using-sdd`, que decide por qué verbo entra lo que escribes. Aparte de los tres verbos hay dos ayudas que no crean trabajo:
 
-- **Preguntar** (`sdd-consult`): «¿por qué…?», «¿se puede…?», «¿dónde tocaría…?». Responde con los documentos del proyecto cargados y no crea ni carpetas ni ramas.
+- **Preguntar** (`sdd-explore`): «¿por qué…?», «¿se puede…?», «¿dónde tocaría…?», «¿cómo lo enfocarías?». Responde con los documentos del proyecto cargados y no crea ni carpetas ni ramas. Si la conversación acaba en trabajo, lo pasa a `sdd-roadmap`.
 - **Cómo quieres trabajar tú** (`sdd-config`): «me paras mucho», «quiero trabajar en pair solo yo». Tus preferencias van a `.docs/sdd/sdd-kit.local.json`, que no va a git; las del equipo, a `.docs/sdd/sdd-kit.json`.
 
-Casi todo lo del kit acaba en `.docs/sdd/`. Los documentos de anclaje (mission, constitution, tech-stack, architecture, capabilities, roadmap) los lee el agente al arrancar cada tarea; qué es cada uno lo cuenta [greenfield](greenfield.md#11-documentación-de-anclaje).
+Casi todo lo del kit acaba en `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`, en la raíz, y en `.docs/sdd/`. Los documentos de anclaje (`PRODUCT.md`, `constitution.md`, `operations.md`, `architecture.md`, `capabilities/` y `ROADMAP.md`) los lee el agente al arrancar cada tarea; qué es cada uno lo cuenta [greenfield](greenfield.md#11-documentación-de-anclaje).
 
 ## 2. Planificar: el roadmap es la entrada
 
-El roadmap es el índice del proyecto: lo leen todas las skills, y cada fila es el enunciado de una feature o un patch. Todo lo que no vas a hacer ahora mismo entra por `sdd-roadmap`. La señal está en el verbo que usas: «apunta», «organízalo», «planifica», «no lo arranques» es planificar; «añade», «hazme», «arréglalo» es hacer.
+`ROADMAP.md` es el índice del proyecto: lo leen todas las skills, y cada fila es el enunciado de una feature o un patch. Tiene tres secciones, Now (lo que se hace ya), Next (lo que viene, ya con su brief) y Later (lo que aún no está decidido). La deuda técnica no va ahí, sino en `.docs/sdd/steering/debt.md`. Todo lo que no vas a hacer ahora mismo entra por `sdd-roadmap`. La señal está en el verbo que usas: «apunta», «organízalo», «planifica», «no lo arranques» es planificar; «añade», «hazme», «arréglalo» es hacer.
 
-`sdd-roadmap` reconoce sola qué le traes. Hay cinco entradas, más preparar una release:
+`sdd-roadmap` reconoce sola qué le traes:
 
 | Lo que traes | Frases de ejemplo | Qué hace |
 | --- | --- | --- |
-| **Algo grande y difuso** | «Quiero que los clientes puedan pagar a plazos», «organízalo para el equipo» | Te entrevista, una pregunta por turno. Escribe una propuesta (`proposal.md`) con el porqué, las reglas de negocio con ejemplos con datos y el reparto en features, cada una con su id y su «tras NNNN». La entrevista nunca acaba en spec: acaba en la propuesta y en las filas |
-| **Algo concreto** | «Apunta lo del filtro por estado en pedidos, no lo arranques» | Una fila, sin propuesta. Una épica de una sola feature es una feature |
+| **Algo grande y difuso** | «Quiero que los clientes puedan pagar a plazos», «organízalo para el equipo» | Te entrevista, una pregunta por turno. Escribe una propuesta (`proposal.md`, en `changes/`) con el porqué, las reglas de negocio con ejemplos con datos y el reparto en features, cada una con su id y su «Tras». La entrevista nunca acaba en spec: acaba en la propuesta y en las filas |
+| **Algo concreto** | «Apunta lo del filtro por estado en pedidos, no lo arranques» | Una fila, sin propuesta, en Now o en Next si se va a hacer y en Later si no está decidido. Lleva un tamaño: `S` (un patch, un lite o hasta 3 tasks), `M` (4 o 5) o `L` (más de 5, que se parte al arrancar). Las horas no van a la fila, van al plan de la feature. Una épica de una sola feature es una feature |
 | **Items del gestor** | «Estos son los PBI 4512 a 4516 que me ha asignado el PM» | Cada item entra con su id del gestor. Si uno parece duplicar una fila, te lo pregunta: no borra ni fusiona nada sin ti. Si uno es grande, te propone ya cómo partirlo, para que el PM cree los hijos en el gestor |
 | **Una reunión con el cliente** | Pegas las notas de la reunión de ayer | Una propuesta con el acta literal (fecha, asistentes, notas). Cada cosa nueva que pide el cliente es una fila; lo que descarta queda `⏸️ aparcada`, sin borrarse; el orden que pide se aplica a lo pendiente |
 | **Reordenar o cambiar** | «La 0014 va tras la 0012», «quita la 0020», «el cliente ha cambiado la regla del descuento» | Solo toca las filas que nombras. Si cambia una regla ya acordada, añade una enmienda fechada a la propuesta y reparte solo lo pendiente. Una feature cerrada o en marcha no se toca: lo que el cambio le pida va a una fila nueva «tras» ella |
-| **Preparar una release** | «Prepara la release 3», «qué entra en la siguiente entrega» | Inventario (backlog, deuda, lo que quedó de la anterior), orden por riesgo con los bloqueos marcados y una sección `## Release <N>` con las filas que decidas tú |
+| **Preparar una release** | «Prepara la release 3», «qué entra en la siguiente entrega» | Inventario (Later, deuda, lo que quedó de la anterior), orden por riesgo con los bloqueos marcados y el título de Now con la versión (`## Now — 3.0.0 · en preparación`), con las filas que decidas tú; lo pendiente que no entra pasa a Next |
+| **Un prompt o la siguiente** | «Dame el prompt de la 0014», «qué sigue», «dame la siguiente» | No escribe nada: lee la fila y su propuesta y te da el prompt de arranque. Con «qué sigue» ofrece primero las piezas abiertas de lo que ya está empezado, y luego las filas de Now y de Next en orden; no ofrece una que esté en marcha, bloqueada o en Later |
+| **Triar la deuda** | «Tria el ticket», «triaje de la deuda» | Cada ítem de «Por triar» de `steering/debt.md` sale con uno de tres destinos: «En espera» (falta reproducirlo o un segundo caso), «Lista» (con su evidencia y la fila que la salda) o descartado |
 
 Tres cosas que conviene saber:
 
 - **Propone, no decide.** En `pair` y en `delegate` te enseña las filas y la propuesta antes de escribirlas, y espera tu respuesta. Si le dices «decide tú», escribe y deja apuntadas las decisiones que tomó.
 - **Los ids no se inventan.** Con gestor (Azure DevOps, Jira: `ids.mode: tracker`), el id es el del gestor. Sin gestor (`ids.mode: sequence`), `sdd-roadmap` reserva de una vez los ids de todo lo que apunta y publica la reserva con un commit en `develop` que solo toca el roadmap. Hasta ese commit, los demás worktrees no ven la reserva.
-- **Termina diciéndote qué fila va primero** y con qué skill se arranca. No arranca nada: ni rama, ni carpeta, ni spec.
+- **Termina diciéndote qué fila va primero y dándote su prompt de arranque**, también con «apunta, no lo arranques». No arranca nada: ni rama, ni carpeta, ni spec. Si prefieres hacerlo en esta sesión, di «arráncalo».
 
-Cuando abres el worktree de esa fila y arrancas `sdd-propose` en la rama `feature/<id>-<nombre>`, el agente toma la fila como enunciado. Si la fila dice «`proposal: <id>`», lee también la propuesta: ahí están las reglas y sus ejemplos.
+Cuando abres el worktree de esa fila y arrancas `sdd-propose` en la rama `feature/<id>-<nombre>`, el agente toma la fila como enunciado. Si el brief de la fila apunta a una propuesta en `**Requisitos:**`, lee también la propuesta: ahí están las reglas y sus ejemplos.
 
 ## 3. Hacer: feature o patch
 
@@ -55,10 +57,21 @@ Llega algo, o arrancas una fila, y lo escribes tal cual. El agente elige la puer
 | «Añade el filtro por estado en el listado de pedidos», «es una tontería, hazlo rápido», o `/sdd-propose` en la rama de una fila | Feature |
 | «El total del carrito no suma el envío cuando hay cupón» | Patch |
 | «Apunta en el roadmap lo de la exportación, no lo arranques» | Planificar (sección 2) |
-| «¿Por qué las reservas caducan a las 24 h?», «pruébalo rápido» | Consulta |
-| «Corrige la errata del botón» | Directo, sin skill: una edición sin comportamiento no abre carril |
+| «¿Por qué las reservas caducan a las 24 h?», «pruébalo rápido» | Preguntar (`sdd-explore`) |
+| «Corrige la errata del botón» | Patch: la errata de un texto que se ve es una petición cerrada |
+| «Sube la versión de la librería», «cambia la variable de CI» | Config |
 
 Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las reservas»), el agente te hace una sola pregunta sobre eso, con su recomendación, y elige la puerta con tu respuesta.
+
+No hay edición directa: ni una errata ni una subida de versión se hacen sin carril. Un cambio entra por `sdd-propose`, que lo clasifica en uno de cinco carriles:
+
+- **Spike**: una investigación que tiene que dejar su evidencia, una tabla de medidas. No escribe código de producción.
+- **Config**: un cambio que no altera lo que el usuario ve ni puede hacer (dependencias, CI, variables de entorno, ajustes, una errata fuera de un texto visible). Va por su propio carril, sin spec.
+- **Patch**: un cambio pequeño con la solución ya fijada (abajo).
+- **Lite**: un cambio acotado, con una spec corta y sin plan (sección 4).
+- **Feature**: todo lo demás.
+
+El carril solo sube: si al hacerlo aparece lo que su carril excluye (un cambio de comportamiento en una config, una decisión visible que nadie fijó en un patch), el agente para, te lo dice y sube de carril; nunca baja.
 
 **Patch o feature.** Lo decide quién fija la solución, no los minutos. Un patch es un cambio pequeño cuya solución ya está fijada antes de empezar. Hay tres casos:
 
@@ -76,24 +89,28 @@ Si el agente tendría que decidir algo que se ve (qué texto, dónde, con qué r
 
 Lo que pasa en una feature, en orden:
 
-1. **La primera pregunta**: confirma carril, modo, perfil y enunciado (sección 4).
-2. **La spec**: te la enseña empezando por las decisiones que tomó sin ti, y espera tu aprobación.
-3. **El plan y la implementación**: con el perfil por defecto, sin pararte, salvo desvíos. Los tests se escriben antes que el código.
+1. **El anuncio o la pregunta de carril**: en una feature o un spike, el agente anuncia carril, modo y perfil y sigue; en un patch, un lite o una config, te pregunta antes de abrir nada (sección 4).
+2. **La spec**: la entrevista, una pregunta por turno, y una revisión independiente que decide una rúbrica. Te la enseña empezando por las decisiones que tomó sin ti, y espera tu aprobación.
+3. **El plan y la implementación**: con el perfil por defecto, sin pararte, salvo desvíos. Los tests se escriben antes que el código, siempre.
 4. **La validación**: te presenta lo hecho con un guion de pruebas y te pregunta qué has probado (sección 5).
-5. **El cierre**: walkthrough, roadmap (en 2.x, también changelog) y merge en `develop` (sección 5).
+5. **El cierre**: walkthrough, retro, la fila de Now al día y merge en `develop` (sección 5).
 
 Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación; en un ajuste visual, la intención en lugar de la causa, y en una petición cerrada, la solución fijada con su autor), sin spec ni plan, y su validación al cerrar.
 
 ## 4. Qué te pregunta el agente y qué contestar
 
-### La primera pregunta
+### El anuncio y la primera pregunta
 
-Al arrancar una feature, el primer mensaje del agente es una sola pregunta que confirma varias cosas a la vez:
+En una **feature o un spike** el agente no te pide confirmar nada. Su primer mensaje, antes de la primera pregunta de diseño, lleva un anuncio de cuatro líneas: el carril y el modo, el perfil y de dónde sale, las dos frases con las que puedes ausentarte («apruebo la spec por delegación…») y cómo cambiar de perfil. Si algo no es lo que quieres, dilo en tu respuesta.
 
-- **El carril**: feature, o el que le haya parecido (a veces te propone que sea un patch o una consulta).
+En un **patch, un lite o una config** sí te pregunta, y solo, antes de abrir rama, carpeta o id: una pregunta con su recomendación primero. La del patch lleva su estimación y el test que falla hoy; la de la config, qué toca y qué tests corren antes de guardarla; la del lite, sus condiciones una a una. Una petición que ya trae el carril («patch: …») no lo repregunta, salvo que el agente vea uno más pesado. Con el perfil `unattended` no pregunta: patch, config y spike siguen, y lite va como full.
+
+La pregunta, o el anuncio, confirma varias cosas a la vez:
+
+- **El carril**: el que le haya parecido, con lo que tendrías que decidir si es uno más pesado.
 - **El modo, lite o full.** Lite es una spec corta y sin plan, para cambios acotados. Solo te lo ofrece si se cumplen todas estas condiciones, y te las cita una a una: el flujo que se toca ya existe y se puede leer, no cambia contratos públicos, no cambia el esquema de datos (una migración solo de datos, idempotente y reversible, no lo descarta, pero la spec la nombra), cabe en un módulo y, si el proyecto estima, la estimación no pasa de media jornada. Lite no se salta ni la aprobación de la spec ni la validación.
 - **El perfil de control** (abajo), y de dónde sale: de la feature, de tu `sdd-kit.local.json`, de la release o del proyecto.
-- **Partir la feature**, si el agente prevé muchas tasks. Con 3 o menos no lo propone nunca; con más de 5, siempre; con 4 o 5, solo si tocan capacidades o superficies distintas (base de datos, interfaz, API) o llevan migración. Partir crea filas nuevas en el roadmap. Si lo propone, «seguir entera» también es una respuesta válida, y no te lo vuelve a preguntar.
+- **Partir la feature**, si el agente prevé muchas tasks. Con 3 o menos no lo propone nunca; con más de 5, siempre; con 4 o 5, solo si tocan capacidades o superficies distintas (base de datos, interfaz, API) o llevan migración. Partir crea filas nuevas en `ROADMAP.md`. Si lo propone, esa pregunta sustituye al anuncio, y «seguir entera» también es una respuesta válida: no te lo vuelve a preguntar.
 - **Aprobar la spec por delegación**: «apruebo la spec por delegación, nos vemos en la validación». Elígela si te vas a ausentar. El agente aprueba la spec por ti, apunta tu frase y la fecha, y no vuelve a pararte por la spec. El resto de paradas de tu perfil sigue igual.
 - **Bajar de modelo**, pegado a la opción anterior: si la sesión va con el modelo más caro y el plan va a tener varias tasks, una variante de la delegación añade parar antes de la primera task para que cambies a Sonnet con effort medium (`/model`). El caro se guarda para la revisión final. Si no delegas la spec, la misma opción te llega al aprobarla (en `delegate`) o al aprobar el plan (en `pair`).
 
@@ -113,7 +130,9 @@ El perfil del proyecto está en `sdd-kit.json`. Si quieres otro para ti, díselo
 
 ### Aprobar la spec
 
-El agente te enseña la spec empezando por el bloque «Decisiones que he tomado yo — valida estas». Es lo único que necesitas leer para aprobar. La pregunta va sola al final.
+Antes de enseñártela, el agente pasa la spec por revisores independientes. Cuántos lo decide una rúbrica con las señales de la spec (un contrato público, un `MODIFIED`, datos o migración, un rol nuevo…) y no te lo pregunta; el nivel va en el bloque que abre las decisiones. Solo si tus instrucciones piden confirmar antes de paralelizar y no delegaste la spec, te hace una pregunta de coste.
+
+Luego te enseña la spec empezando por el bloque «Decisiones que he tomado yo — valida estas». Es lo único que necesitas leer para aprobar. La pregunta va sola al final.
 
 Aprueba con «sí», «apruebo» o una opción cuyo texto diga que apruebas. Otras respuestas no cuentan:
 
@@ -137,10 +156,10 @@ Mientras espera a un subagente o a un comando largo, el agente vigila que no se 
 
 ### Validar de verdad
 
-El agente lanza la revisión final en segundo plano en cuanto commitea la última task, sobre ese commit, y mientras tanto hace la verificación visual y escribe los borradores del cierre. La validación te llega cuando la revisión vuelve. Si deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, siempre con la misma forma: qué hay y «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
+El agente lanza la revisión final en segundo plano en cuanto commitea la última task, sobre ese commit. Va por ejes, cada uno con su informe y su modelo: Spec (opus), Código (sonnet) y Arquitectura (opus), este solo si el plan la marca. Mientras tanto hace la verificación visual y escribe los borradores del cierre. La validación te llega cuando la revisión vuelve. Si deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, siempre con la misma forma: qué hay y «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
 
 - El smoke, que es lo que ya hizo él: una fila por escenario de la spec, con su evidencia: `suite` (lo cubre un test), `ejecución real` (lo probó en la aplicación) o `no probado`. Lo que se ve en una pantalla, una respuesta o un fichero solo cuenta como verificado con `ejecución real`.
-- Las suites, con su recuento, y lo que no pudo probar. Si alguna task cambió lo que se ve, van también las capturas y, si el proyecto declara un detector en `tech-stack.md` §Frontend, su salida en escritorio y en móvil; sin detector, el agente te avisa de que la composición no está medida.
+- Las suites, con su recuento, y lo que no pudo probar. Si alguna task cambió lo que se ve, van también las capturas y, si el proyecto declara un detector en `## Frontend` de `operations.md`, su salida en escritorio y en móvil; sin detector, el agente te avisa de que la composición no está medida.
 - El guion de pruebas, el último, que es lo que harás tú: la rama, el worktree y cómo arrancar la aplicación, con un bloque por terminal, y pasos numerados, cada uno con una acción y lo que debería pasar. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`). Acaba en «dime "validado" o qué paso falla».
 
 Si la spec dice `Validación: agente`, porque no verías nada que él no haya medido ya, no hay guion: te deja la línea con su evidencia.
@@ -170,7 +189,8 @@ Validado el trabajo (o diferido), el cierre lo hace `sdd-archive` de un tirón:
 
 - escribe el `walkthrough.md` con lo que se hizo, cómo se verificó, el tiempo real, el coste de la sesión y las decisiones que tomó sin ti;
 - lleva los aprendizajes a los documentos que los guardan y fusiona el comportamiento nuevo en `capabilities/`;
-- actualiza la fila del roadmap (en 2.x, también el changelog) y el registro de estimaciones, si el proyecto los tiene;
+- hace la retro de la feature (`sdd-retro`) y escribe las ADR de las decisiones que la spec marcó como candidatas;
+- pone al día la fila de Now en `ROADMAP.md` y el registro de estimaciones, si el proyecto estima. No toca `CHANGELOG.md`: lo sella el corte de la release;
 - fusiona en `develop` con `sdd merge`, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite (si la rama no tiene remoto, fusiona igual y te dice «push: no hecho: sin remoto»). Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
 - termina con una línea que dice si está **Terminado** (rama fusionada, push hecho o por qué no, y que puedes borrar el worktree) o **No terminado** y qué falta.
 
@@ -184,13 +204,15 @@ Si no lo quieres, dile que no. Lo que no conviene es pedir «no generes más tic
 
 ## 6. Entregar: cortar la release
 
-Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la entrega». `sdd-end-release` corta lo hecho, como la rama de release de git-flow. No importa si la release se preparó antes con `sdd-roadmap` o si has ido cerrando features sueltas: el corte es el mismo, en siete pasos, y pide el proyecto en la forma 3.0.0: si no, te ofrece migrar.
+Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la entrega». `sdd-end-release` corta lo hecho, como la rama de release de git-flow. No importa si la release se preparó antes con `sdd-roadmap` o si has ido cerrando features sueltas: el corte es el mismo, en siete pasos.
+
+Antes del paso 1 hay una puerta de entrada. El proyecto tiene que estar en la forma 3.0.0 (con `ROADMAP.md` en la raíz): si no, para y te ofrece `sdd-upgrade`. Cada fila ✅ o 🧪 de Now tiene que tener su `walkthrough.md` o `patch.md` en `changes/` o en `specs/`: con trabajo a medias o sin esa evidencia, decides tú si entra o se mueve. Y la suite tiene que estar en verde sobre el sha que se corta; si el proyecto declara «CI de la base», basta su `success` sobre ese sha, y con `failure` o una suite en rojo el corte se para hasta que un patch lo arregle.
 
 1. **Alcance y versión.** Te propone qué entra y qué pasa a la siguiente, y la versión. La confirmas tú. Si el proyecto no tiene decidido si la release se entrega a alguien distinto de quien la hace (`release.hasRecipient`), te lo pregunta una vez. Si hay registro de estimaciones, te ofrece la estimación y los action items de la retro en una línea: solo se hace si la pides. El repaso de la deuda por causa va siempre, sin preguntar, y te nombra sus propuestas.
 2. **Smoke y validaciones diferidas.** Te pregunta qué probaste, nombrando lo que tiene la validación diferida a esta release. Lo que nombras queda validado; lo que no, gana un disparador nuevo.
-3. **Changelog.** Una línea por cada fila hecha de Now, y `[Unreleased]` pasa a `[X.Y.Z] - fecha`, con la línea de smoke.
-4. **Now.** Sale lo hecho y validado. Lo que sigue sin validar se queda, con su disparador.
-5. **Deuda.** Lo que lleva dos releases en espera sin segundo caso sale de `debt.md`, sin preguntar, con `caducada` en el cuerpo del commit del corte, y lo saldado sale de «Lista».
+3. **Changelog.** En `CHANGELOG.md`, una línea por cada fila hecha de Now, y `[Unreleased]` pasa a `[X.Y.Z] - fecha`, con la línea de smoke.
+4. **Now.** Sale lo hecho y validado. Lo que sigue sin validar se queda, con su disparador, y el título de Now recupera su forma sin versión.
+5. **Deuda y retro.** Lo que lleva dos releases en espera sin segundo caso sale de `steering/debt.md`, sin preguntar, con `caducada` en el cuerpo del commit del corte, y lo saldado sale de «Lista». Después, la retro de la release (`sdd-retro`), que entra en el mismo commit.
 6. **Notas de la versión**, solo si hay destinatario. Van en `.docs/sdd/releases/vX.Y.Z/`, destiladas del changelog y contadas por lo que gana quien la usa, sin ids ni jerga. Las envías tú.
 7. **Versión, merge y tag.** Pasa el validador, sube la versión, deja la rama lista y te presenta el merge a `main`, el tag y el push. Esperan tu «sí». Después fusiona `main` de vuelta en `develop`.
 
@@ -210,7 +232,7 @@ El feedback de una demo o una reunión no se procesa en el corte: eso es planifi
 
 **Cuando la base se mueve.** Antes de cada task, el agente mira si `develop` ha cambiado la fila de tu feature o algún fichero que la task va a tocar. Si pasa, para y te lo enseña con los commits que lo cambiaron. Si el solapamiento era el previsto, díselo y sigue.
 
-**Conflictos en los registros.** `changelog.md`, `roadmap.md` y `estimation-log.md` los tocan todas las features, y chocan a menudo al fusionar. El script del merge los resuelve solo, sin soltar su turno: cuando cada lado solo añade filas o líneas nuevas, entran todas, y el `estimation-log.md` se regenera. Así varias sesiones pueden cerrar a la vez. Si los dos lados cambiaron la misma línea, o el conflicto está en otro fichero, para y te lo deja a ti.
+**Conflictos en los registros.** `ROADMAP.md`, `CHANGELOG.md`, `steering/debt.md` y `estimation-log.md` los tocan varias features, y chocan a menudo al fusionar. El script del merge los resuelve solo, sin soltar su turno: cuando cada lado solo añade filas o líneas nuevas, entran todas, y el `estimation-log.md` se regenera. Así varias sesiones pueden cerrar a la vez. Si los dos lados cambiaron la misma línea, o el conflicto está en otro fichero, para y te lo deja a ti.
 
 ### Uso otra carpeta de configuración (`CLAUDE_CONFIG_DIR`)
 
@@ -221,7 +243,7 @@ Al medir los tokens de la sesión en el cierre, `sdd session tokens` busca los t
 ### Las skills no cargan, o llegan viejas
 
 - **El agente no entra por el carril que toca**: `using-sdd` la inyecta un hook al empezar la sesión, solo si el proyecto tiene `.docs/sdd/`. Si el hook no llegó a correr (sin Node, Claude Code enseña el error del hook; el kit pide Node 22.18 o posterior), nombra la skill en la petición («con `sdd-propose`, añade…»).
-- **Tras actualizar el kit, el agente sigue con la versión anterior** o nombra una skill que ya no existe (la 2.0.0 renombró las skills de «task» a «feature»): una sesión sirve las skills con el texto que tenían al arrancar. Actualiza con `/plugin marketplace update`, abre una sesión nueva y, si el proyecto viene de una versión anterior, pide «ponme el proyecto al día con `sdd-init`». Desde la 2.2.0, el arranque de la sesión te avisa de los dos casos: si el kit cargado es más viejo que el del proyecto, con el comando para actualizarlo, y si el proyecto tiene migraciones pendientes, con esa misma frase.
+- **Tras actualizar el kit, el agente sigue con la versión anterior** o nombra una skill que ya no existe (la 3.0.0 renombró `sdd-consult` a `sdd-explore`): una sesión sirve las skills con el texto que tenían al arrancar. Actualiza con el comando que te da el aviso del arranque, `claude plugin update sdd-kit@sdd-kit --scope project`, y reinicia Claude Code: `/reload-plugins` no aplica una actualización de ámbito proyecto. Si el proyecto viene de una versión anterior, pide «actualízame al kit» (`sdd-upgrade`). La 3.0.0 no da soporte a un proyecto 2.x sin migrar: sus skills esperan la forma 3.0.0, y la migración es lo primero que hay que aceptar. El arranque de la sesión te avisa de los dos casos: si el kit cargado es más viejo que el del proyecto, con ese comando, y si el proyecto tiene migraciones pendientes, con esa misma frase.
 
 ### El merge del cierre falla
 
@@ -229,9 +251,13 @@ El merge lo hace un script, y su mensaje empieza por el paso que falló. La rama
 
 | Empieza por | Qué pasa | Qué haces |
 | --- | --- | --- |
-| `merge: conflicto en` solo `changelog.md`, `roadmap.md` o `estimation-log.md` | Los dos lados cambiaron la misma línea de un registro (las filas nuevas ya las une el script) | Decide con el agente cómo combinar esa línea |
+| `merge: conflicto en` solo `ROADMAP.md`, `CHANGELOG.md`, `steering/debt.md` o `estimation-log.md` | Los dos lados cambiaron la misma línea de un registro (las filas nuevas ya las une el script) | Decide con el agente cómo combinar esa línea |
 | `merge: conflicto en` otro fichero | Dos features tocaron lo mismo | Lo resuelves tú o decides con el agente |
-| `push:` o `base:` | Otra sesión publicó mientras tanto | Nada: el agente relanza una vez, desde el remoto nuevo |
+| `base: conflicto en <ficheros>` | Al integrar la base en tu rama quedó un conflicto que el script no resolvió | Si son Markdown y cada lado solo añade, o toca otras filas, el agente lo resuelve y lo dice con «Conflicto de la base resuelto por el agente: …» en el commit y en el mensaje final. Si no, lo resuelves tú y el cierre queda «No terminado» |
+| `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos` (o `merge: … sigue cambiando tras 3 intentos`) | Otras sesiones publicaron mientras el script reintentaba | Nada ya: el script integró y reintentó solo tres veces. Relanza el merge en un rato |
+| `push: no se pudo publicar` | El remoto rechazó el push por otro motivo (credenciales, un hook del servidor) | El agente no reintenta ni usa `--force`, `pull` ni `rebase`: te da el comando |
+| `base: en rojo` | El mismo comando de verificación falla también en la base, sin tu rama | No es de tu rama: el agente te da el informe del rojo, mira la deuda del proyecto y te pregunta si fusionar igualmente |
+| `bloqueado:` | Un proceso tiene abierto un fichero que el gate necesita | Ciérralo y pide el merge otra vez |
 | `destino sacado:` con una lista de ficheros | `develop` está sacada con cambios sin commitear | Commitea o descarta esos cambios donde estén, y pide el merge otra vez |
 | `destino sacado: ya existe '…merge-<id>'` | Quedó la carpeta de un merge anterior, con contenido o todavía registrada como worktree | Mira qué hay dentro antes de borrarla. Si está vacía y no es un worktree, el script ya la borra solo |
 | `verificación:` | Los tests fallan sobre el resultado del merge | Es un fallo real: se arregla antes de volver a fusionar |
@@ -242,4 +268,4 @@ En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `
 
 ---
 
-*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.3.4, octubre de 2026.*
+*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v3.0.0, noviembre de 2026.*

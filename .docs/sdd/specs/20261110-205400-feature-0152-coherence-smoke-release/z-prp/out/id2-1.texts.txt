@@ -1,0 +1,79 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs de SDD) para clasificar. Queda: confirmar el carril con el código y abrir el patch, ~5 min.
+
+--- [22]
+Ahora: escribo el test en rojo y compruebo que falla. Queda: fix, revisión por un revisor, commit y cierre, ~8 min.
+
+--- [24]
+Rojo por el motivo esperado (lista las salas). Ahora el fix mínimo.
+
+--- [27]
+Los escapes `\d` se perdieron en el regex; lo corrijo.
+
+--- [32]
+Ahora el revisor único del patch (sonnet, effort medio).
+
+--- [34]
+El revisor del patch está en marcha; espero su resultado antes del commit del fix.
+
+--- [36]
+Hallazgos:
+
+1. **Corrección del fix: sin hallazgos.** La regex `^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$` cumple lo fijado: formato HH:MM-HH:MM, horas 00-23 y minutos 00-59. Está anclada con `^` y `$`. Rechaza `25:00-26:00`, que era el síntoma.
+2. **`libres` sin franja: intacto.** La guarda `params[0] !== undefined` evita validar cuando no hay argumento, y el flujo sigue a `freeRooms(undefined)` como antes.
+3. **Mínimo: sí.** Solo hay una constante, una línea de guarda y los llaves del `if`. No toca otros comandos.
+4. **Test: cubre el síntoma.** Comprueba `25:00-26:00` con el texto exacto. No hay tests nuevos para `libres` sin franja ni para una franja válida con formato correcto. Los dos casos de la tabla de verificación (`10:00-12:00` y `09:00-10:00`) son comprobaciones manuales, y `libres` sin franja ni aparece en la tabla. El test existente `libres excluye la sala reservada en la franja` ya cubre una franja válida. Es una carencia menor, no bloqueante.
+5. **Patch: dos detalles de forma.** En `patch.md`, `commit: pendiente` y `Esfuerzo real: pendiente` son normales antes del cierre. Pero `status: done` con el commit pendiente es algo adelantado.
+6. **Fila de deuda no comprobada.** La petición dice que salda la fila «Sin validación del formato de franja horaria» en `steering/debt.md`. Ese fichero no está en el diff staged, que solo incluye `patch.md`, `src/app.js` y `test/app.test.js`. Si el patch debe retirar esa fila, falta hacerlo. No he verificado si ese fichero existe ni si la fila sigue ahí.
+7. **Verificación del gate no reproducida.** No he ejecutado `node --test` ni el lint. Es solo lectura y me fío del «5/5» que declara el patch. En el repo veo 3 tests tras el cambio (2 previos y 1 nuevo), no 5. Conviene revisar esa cifra, que puede incluir otros ficheros de test.
+
+--- [43]
+Ahora: el cierre llega a la validación y para aquí. Queda: tu «validado» y el bloque `merge`, ~3 min.
+
+🦆 `libres` ahora comprueba la franja antes de buscar salas. Si escribes `libres 25:00-26:00`, antes te listaba `Norte, Sur`, como si estuvieran libres. Ahora responde `franja no válida: usa HH:MM-HH:MM`. `libres 10:00-12:00` sigue dando `Sur`, y `libres` sin franja queda como estaba.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` → «franja no válida: usa HH:MM-HH:MM» | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| Franja válida ocupada sigue funcionando | ejecución real | `libres 10:00-12:00` → `Sur` |
+| Franja válida libre sigue funcionando | ejecución real | `libres 09:00-10:00` → `Norte, Sur` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 tests y lint sin hallazgos. Lo corrí sobre el árbol antes del commit `173db8a`. Volverá a correr sobre el árbol que se fusione.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente de decidir: el bloque `merge`**
+
+`sdd merge --check` se detiene porque a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. En `delegate`, con el bloque incompleto, no lo invento. Dime qué quieres y lo añado. Mi propuesta es `{"merge": {"into": "develop", "noFf": true}}`, y entonces fusiono con `sdd merge --push` como pediste. Con `into: main`, `merge` es otro asunto.
+
+**Guion**
+
+Rama `feature/0016-slot-format` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Un terminal:
+
+```
+cd <run>\repo
+node src/app.js libres 25:00-26:00
+node src/app.js libres 10:00-12:00
+node src/app.js libres
+```
+
+1. `libres 25:00-26:00` → `franja no válida: usa HH:MM-HH:MM`
+2. `libres 10:00-12:00` → `Sur`
+3. `libres` → `Norte, Sur`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla, y si te vale el bloque `merge` propuesto.
+

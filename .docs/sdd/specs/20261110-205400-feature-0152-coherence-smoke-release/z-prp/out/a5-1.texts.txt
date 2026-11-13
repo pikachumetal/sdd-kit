@@ -1,0 +1,66 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, anunciar y escribir la spec, ~10 min.
+
+--- [11]
+Ahora: leo la plantilla, el perfil y la rúbrica de revisión, y reservo el id. Queda: escribir la spec, pasar la coherencia y presentártela, ~8 min.
+
+--- [16]
+Carril: **feature, modo full** (hay una decisión de datos que nadie fijó: de dónde sale la planta de cada sala). Perfil `delegate`, del proyecto. Ahora reservo el id y la rama.
+
+--- [24]
+Ahora: repaso de coherencia (delta sobre una copia). Queda: revisión de spec con un revisor y presentártela, ~6 min.
+
+--- [29]
+Revisor de la spec en marcha (uno, en sonnet). Espero su resultado antes de presentártela.
+
+--- [33]
+1. Importante · Delta de comportamiento (escenarios 2 y 3) · El escenario "Planta sin valor" y el de planta inexistente usan "responde vacío" sin dato literal. Un THEN que dice "vacío" pasa igual con una salida cualquiera que no contenga salas, y el kit pide datos en cada THEN. · Fijar la salida exacta (cadena vacía, `""`) o decir "no imprime nada". Añadir un AND que compruebe que no aparece `Norte` ni `Sur`.
+
+2. Importante · Delta de comportamiento (Planta sin valor) · No hay escenario para `--planta` seguido de otra opción o de la franja (`libres --planta 14:00-16:00`). El valor sería `14:00-16:00` y se filtraría por esa planta, sin franja. Es justo el fracaso que declara el Intent: listar mal sin avisar. · Añadir un escenario o una decisión que diga qué pasa cuando falta la franja y qué pasa cuando el valor de `--planta` parece una franja. Hoy tampoco se dice qué responde `libres --planta 1` sin franja.
+
+3. Importante · Delta de comportamiento · Hay tres requisitos ADDED en una capacidad "nueva", pero ninguno cubre "sala con planta conocida" como dato visible. Además, el requisito 1 ("sin filtro") duplica lo que hace hoy `libres` y no depende del cambio, así que pasa sin implementar nada. · Marcar ese requisito como regresión, o añadir un AND que haga fallar el código viejo (por ejemplo, la forma `{ name, planta }`). Si no, quitarlo del delta y dejarlo como test de no regresión.
+
+4. Importante · Decisiones (punto 7 frente a Capacidades) · `free-rooms` se declara "Nueva" con tres comportamientos "sin volcar el resto", pero el comportamiento de hoy de `libres` (franja, ocupadas, formato `Norte, Sur`, ignorar el día) queda sin documentar en `capabilities/`. La capacidad nace parcial y la verdad viva no refleja lo real. · Declarar el alcance parcial de forma explícita en las reglas de la capacidad, o volcar el comportamiento actual de `libres` como ADDED. Anotar en Scope que la verdad viva queda incompleta.
+
+5. Importante · ✋ Decisiones (decisión 10) · El "Repaso de coherencia" afirma resultados de `sdd capability merge`, `run('libres', …)` y `git grep`. Lo pone un autor que no puede acreditarlo en una spec en `draft`, y el revisor tiene prohibido leer el código. Es una afirmación sin evidencia verificable en el documento. · Quitar los resultados o enlazar a la salida real. Si se dejan, que la decisión diga cómo se reproducen.
+
+6. Importante · Cabecera, Decisiones y Delta (conflicto de fuentes) · El Intent, el 🦆 y la decisión 1 dicen "sin `--planta` todo sigue igual que hoy". Las «Decisiones tomadas con el dev-lead» citan "lista todas las salas". Esa frase literal sugiere mostrar también las ocupadas; la decisión 1 la reinterpreta como "solo libres" sin que el dev-lead la haya validado. · Mover la decisión 1 a "con el dev-lead" solo si él confirma la lectura. Si no, marcarla como pendiente de confirmación explícita.
+
+7. Importante · Decisiones (puntos 2 y 4) · Los datos Norte → `1`, Sur → `2` son inventados y la spec lo reconoce, pero los tres escenarios dependen de ellos como si fueran hechos. Si el dev-lead corrige una planta, los THEN cambian de valor sin que lo avise nada. Además el valor es "texto comparado tal cual", y no hay regla sobre `--planta 01` o `--planta " 1"`. · Marcar los escenarios como dependientes de la decisión 2. Añadir en las reglas de la capacidad que `01` no es `1`, o declarar que no se contempla.
+
+8. Menor · Reglas de la capacidad — Límites · "no aplica" sin razón. Hay un límite real: una sola planta por invocación (el Scope lo excluye) y el formato de franja. Tampoco queda dicho qué ocurre con un segundo `--planta`. · Declarar el límite (un solo `--planta`) y qué responde un segundo, o justificar por qué no aplica.
+
+9. Menor · Delta frente a Approach (decisión 6) · El aviso `falta la planta: usa --planta <n>` se fija antes de mirar las reservas, pero el delta no lo prueba con una franja ocupada. El orden declarado en Approach no queda cubierto por ningún escenario. · Añadir un caso `libres 10:00-12:00 --planta` que responda el aviso, o quitar la promesa de orden del Approach.
+
+10. Menor · Términos y ADR frente a PRODUCT.md · El término **Planta** queda "resuelto" en la spec, pero `PRODUCT.md` define **Sala** solo con nombre (Norte, Sur) y no incorpora planta. Además el kit usa `rooms` y `libres` con `room` como identificador, que PRODUCT.md manda evitar. · Añadir **Planta** a la sección Terminology de `PRODUCT.md` como cambio de esta feature. Usar `sala` o `salas` en identificadores nuevos, en vez de `room`, salvo que el código ya lo exija.
+
+--- [35]
+Sin Críticos en la review, así que no hay segunda ronda. Integro los hallazgos en la spec.
+
+--- [39]
+La spec de `libres --planta` está escrita, pero está en `draft` y no la doy por aprobada: espero tu «Apruebo» antes de escribir el plan.
+
+La rama es `feature/0012-libres-por-planta` y la spec está en `.docs/sdd/changes/20261112-155552-feature-0012-libres-por-planta/spec.md`. El carril es feature en modo full, con perfil `delegate` (el del proyecto). Hay que decidir una cosa que nadie fijó: las salas no tienen planta en ningún sitio. Un revisor adversarial (sonnet) la leyó y no encontró nada crítico. Integré sus hallazgos y rechacé dos, con el motivo anotado en la spec. La spec es un borrador sin commit.
+
+🦆 Hoy `libres 14:00-16:00` dice qué salas están libres en esa franja, estén en la planta que estén: `Norte, Sur`. Con este cambio puedes añadir `--planta 1` y solo enseña las de esa planta: `libres 14:00-16:00 --planta 1` → `Norte`. Sin `--planta` todo sigue como hoy. Para que sea posible, cada sala pasa a saber en qué planta está.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **«Sin `--planta`, lista todas las salas» (pendiente de tu confirmación):** lo leí como «sin filtro», o sea, lo de hoy: las salas libres de todas las plantas, sin mostrar las ocupadas. Si querías ver también las ocupadas, es otro alcance.
+2. **Plantas inventadas:** Norte es la planta `1` y Sur la `2`. Ningún documento dice cuáles son.
+3. **Sintaxis:** `--planta <n>` con espacio, antes o después de la franja.
+4. **Valor de la planta:** es un texto que se compara tal cual, así que `01` no es `1`. No hay nombres de planta.
+5. **Planta inexistente o sin salas libres:** no imprime nada.
+6. **`--planta` sin valor:** responde `falta la planta: usa --planta <n>`. Ese texto es mío.
+7. **Capacidad nueva `free-rooms`:** nace parcial, solo con lo de este delta.
+8. **Enfoque:** cada sala lleva su planta en el propio dato de `src/app.js`. Descarté un mapa aparte sala→planta y un subcomando `libres-planta`.
+9. **Cómo se lee `--planta`:** toma siempre el argumento siguiente como valor, aunque parezca una franja. Solo cuenta un `--planta` por invocación; con dos se usa el primero.
+
+El delta pasó `sdd capability merge` en una copia sin rechazos. Los dos THEN que comprobé contra lo que devuelve `run('libres', …)` hoy (`Sur` y `Norte, Sur`) coinciden.
+
+La validación la haces tú (dev-lead).
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**: dime qué ajustar, por ejemplo las plantas de las salas o la lectura de la decisión 1.
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1** para que baje la sesión a gama media. Prevé 2 o 3 tasks, y la sesión corre en el modelo más capaz.
+

@@ -43,6 +43,31 @@ describe('-C sitúa los verbos del workspace en otro working tree', () => {
     expect(existsSync(join(review, '.temp', 'sdd'))).toBe(false);
   });
 
+  it('workspace prints on stderr the line the thread repeats to the user', () => {
+    const { repo, review } = featureWithReviewWorktree();
+    const result = sdd(review, 'workspace', '-C', repo, plan);
+    expect(result.err.trim()).toBe(`Workspace del plan: ${featureWorkspace(repo)} — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`);
+  });
+
+  const resumeLine = (completed: string[]) => {
+    const repo = emptyRepo();
+    write(join(repo, plan), '# Plan\n\n## Task 1: a\n\nx\n\n## Task 2: b\n\n### Task 2.1: b1\n\nx\n\n## Task A3: c\n\nx\n');
+    commitAll(repo, 'plan');
+    mkdirSync(featureWorkspace(repo), { recursive: true });
+    write(join(featureWorkspace(repo), 'progress.md'), `# SDD ledger — plan: plan.md\nTask 2: Ruling: x\n${completed.map((id) => `Task ${id}: complete (commits a..b)\n`).join('')}`);
+    return sdd(repo, 'workspace', plan).err.trim();
+  };
+
+  it('workspace ends the line with the first task of the plan the ledger has not completed', () => {
+    expect(resumeLine(['1', 'A3'])).toMatch(/queda limpia · retomo en la Task 2$/);
+    expect(resumeLine(['1', '2'])).toMatch(/queda limpia · retomo en la Task A3$/);
+  });
+
+  it('workspace adds no resume suffix with no task or every task complete', () => {
+    expect(resumeLine([])).toMatch(/queda limpia$/);
+    expect(resumeLine(['1', '2', 'A3'])).toMatch(/queda limpia$/);
+  });
+
   it('task brief and review package with -C write into the same workspace', () => {
     const { repo, review, base, head } = featureWithReviewWorktree();
     const brief = sdd(review, 'task', 'brief', '-C', repo, plan, '1');

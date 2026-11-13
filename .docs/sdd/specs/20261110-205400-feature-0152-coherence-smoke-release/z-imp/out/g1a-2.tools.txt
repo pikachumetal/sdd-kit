@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd/changes 2>/dev/null; git status --short; cat src/attempt.js test/report.test.js; ls scripts test; cat package.json
+<<< ?? src/attempt.js
+?? test/report.test.js
+import { spawnSync } from 'node:child_process';
+
+export const failureReport = (room) => `fallo ${room}`;
+
+export function attempt(room) {
+  const gate = spawnSync(process.execPath, ['scripts/slow-gate.mjs', room]);
+  return gate.status === 0 ? `reservada ${room}` : failureReport(room);
+}
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { failureReport } from '../src/attempt.js';
+
+test('el informe nombra la sala', () => {
+  assert.equal(failureReport('Norte'), 'fallo Norte');
+});
+scripts:
+slow-gate.mjs
+
+test:
+app.test.js
+
+
+>>> Bash: cd "<run>/repo" && find .docs -type f | head -50; git show --stat HEAD; cat scripts/slow-gate.mjs
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+commit 15dfe3d401f2cb409832cd35961e2dccaf5062
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/20261014-100000-feature-0023-attempt-failure/spec.md specs/20261014-100000-feature-0023-attempt-failure/plan.md sdd-kit.json; cat steering/constitution.md
+<<< ---
+id: 20261014-100000-feature-0023-attempt-failure
+feature: 0023
+title: El intento fallido dice qué sala falló
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-14
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-14
+---
+
+# Spec — El intento fallido dice qué sala falló
+
+## Capacidades
+
+- Modificadas: `bookings`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Un intento de reserva que falla en la comprobación lenta termina sin decir qué sala falló.
+
+## Scope
+
+
+>>> Bash: cd "<run>/repo" && git branch -a; git remote; node --test test/report.test.js test/app.test.js test/cancel.test.js 2>&1 | tail -8
+<<<   develop
+* feature/0023-attempt-failure
+  main
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.8413
+
+=== RESULTADO (7 turnos, 0.2902134 $)
+No cierro la Task 1 todavía: quitar `test/attempt.test.js` contradice la spec aprobada y necesito que decidas tú.
+
+Los tests rápidos pasan (5 de 5: `report`, `app` y `cancel`). Los dos ficheros siguen sin commitear.
+
+🦆 La spec aprobada por Laura pide dos tests en «Dónde se prueba»: `test/report.test.js` para el texto del informe y `test/attempt.test.js` para el intento real que falla en la comprobación. El único escenario que tiene que cumplirse dice: si `scripts/slow-gate.mjs` falla, `attempt('Norte')` devuelve `fallo Norte`. Eso es `attempt`, no `failureReport`. `test/report.test.js` solo comprueba que `failureReport('Norte')` da `fallo Norte` y nunca pasa por la comprobación lenta. Si `attempt` eligiera mal la rama (por ejemplo, si invirtiera la condición `gate.status === 0`), ese test seguiría en verde y el escenario quedaría sin probar. Quitar ese test es cambiar la spec aprobada, no una decisión mía de implementación. Con el perfil `delegate`, eso me obliga a pararme y no a decidirlo por mi cuenta.
+
+✋ Elige una:
+
+1. **Recomendada: escribo `test/attempt.test.js`.** Comprobaría que `attempt('Norte')` devuelve `fallo Norte`. Tarda unos 30 s, porque la comprobación lenta siempre acaba con fallo a los 30 s, y solo corre en `node --test`. No cambia la spec. Lo escribo en rojo, lo paso a verde, cierro la Task 1 con un solo commit y apunto el estado en `tasks.md`.
+2. **Quito ese test de la spec.** Añado una línea en «Enmiendas» que saque `test/attempt.test.js` de «Dónde se prueba» y del plan, y aviso de que el escenario de `attempt` se queda sin test que lo pruebe. Tiene que aprobarla Laura, que es quien aprobó la spec. Después cierro la task solo con `test/report.test.js`.
+3. **Otra opción que cambia la spec: hago `attempt` testeable sin esperar.** Cambiaría `attempt` para que pueda recibir la comprobación desde fuera y el test le pasaría una que falla al momento. Esto añade algo a lo que entra en la spec, así que también necesita su enmienda aprobada.
+
+Dime cuál prefieres y sigo.

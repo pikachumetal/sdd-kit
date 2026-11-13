@@ -19,7 +19,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - GIVEN la rama `feature/0081-booking-reminders` con `notes.md` sin seguimiento en su worktree y la rama `feature/0083-room-photos` con worktree en `../0083-room-photos`
 - WHEN empieza el cierre de la 0081
 - THEN antes de escribir ningún registro pregunta «Hay cambios sin commitear: `notes.md`. ¿Los commiteo en la rama, los descarto o paro?» y no descarta nada sin la respuesta
-- AND con solo los borradores que deja `sdd-implement` sin commitear —`walkthrough.md` de la carpeta de la 0081, los ficheros de `capabilities/` que nombra «Capacidades» de su spec y, en 2.x, `.docs/sdd/changelog.md`—, no pregunta: el cierre parte de ellos y los completa sin reescribirlos
+- AND con solo los borradores que deja `sdd-implement` sin commitear —`walkthrough.md` de la carpeta de la 0081 y los ficheros de `capabilities/` que nombra «Capacidades» de su spec—, no pregunta: el cierre parte de ellos y los completa sin reescribirlos
 - AND un `capabilities/rooms.md` modificado que la spec de la 0081 no nombra sí pregunta, como `notes.md`
 - AND ejecuta `sdd merge --check`; con `destino sacado:`, para con su salida antes de escribir
 - AND avisa en una línea, sin parar: «Abiertas a la vez: `feature/0083-room-photos` (`../0083-room-photos`). La que fusione segunda integra la base y repite sus gates.»
@@ -29,9 +29,9 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - GIVEN el cierre de la 0081 cuya suite falla sobre la rama con la base integrada con `TimeoutError: tests/e2e/export.spec.ts:12`
 - WHEN el cierre recibe ese rojo
 - THEN la salida de cada pasada de la suite ya está entera en un fichero del scratchpad de la sesión, guardada antes de filtrarla
-- AND crea un worktree temporal desanclado de `origin/develop`, prepara su entorno como el Step 2 de `sdd-worktrees` (dependencias y, con `environments.md`, `env:setup`) y lo retira al acabar; no fusiona hasta que acaba el contraste
+- AND crea un worktree temporal desanclado de `origin/develop`, prepara su entorno como el Step 2 de `sdd-worktrees` (dependencias y, con `## Entornos` en `steering/operations.md`, `env:setup`) y lo retira al acabar; no fusiona hasta que acaba el contraste
 - AND corre primero el fichero que falla, `tests/e2e/export.spec.ts`, con el runner del proyecto, en la rama y en ese worktree a la vez, sin limpiar estado ni cachés
-- AND si también falla, escribe `base: en rojo: el mismo comando también falla sin la rama` y busca `export.spec.ts` y `TimeoutError` en la deuda del proyecto antes de abrir el test; si una fila lo nombra, la cita en el informe; si no, abre una fila en «Por triar» de `debt.md` (o en «Deuda técnica» del roadmap 2.x) con la evidencia
+- AND si también falla, escribe `base: en rojo: el mismo comando también falla sin la rama` y busca `export.spec.ts` y `TimeoutError` en la deuda del proyecto antes de abrir el test; si una fila lo nombra, la cita en el informe; si no, abre una fila en «Por triar» de `debt.md` con la evidencia
 - AND para con un bloque que lleva el comando, el código de salida, la ruta del log, las últimas 20 líneas, la línea `base:` y «`develop` sin tocar en `<hash>`», con el hash de `git rev-parse develop`, y pregunta si fusiona igual
 - AND si pasa sin la rama y falla en la rama, el rojo es de la rama: vuelve a ella, arregla con un test que falla primero y vuelve al gate como dice «Tras un rojo, el gate repite los tests que fallaron y lo afectado por el arreglo»
 - AND si en la rama también pasa, «No se repite»: abre una fila de intermitentes en la deuda, donde abriría la del rojo que también falla sin la rama, con el test, su línea de error copiada entera de la salida guardada, sin «…», y las dos pasadas en verde, y sigue con el cierre en cualquier perfil
@@ -71,8 +71,8 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 ### Un workaround que el cierre escribe en el stack lleva su fila de deuda
 
 - GIVEN el walkthrough de la 0081 con el aprendizaje «la suite del backend corre en serie para esquivar la carrera del logger estático»
-- WHEN el cierre lo vuelca a `tech-stack.md`
-- THEN abre en la deuda una fila con ese workaround y el enlace a la línea de `tech-stack.md`
+- WHEN el cierre lo vuelca a `steering/operations.md`
+- THEN abre en la deuda una fila con ese workaround y el enlace a la línea de `steering/operations.md`
 
 ### El kit no invoca `finishing-a-development-branch`
 
@@ -86,8 +86,8 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - GIVEN un cierre de feature cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
 - WHEN `sdd-archive` vuelca los aprendizajes a los docs vivos
 - THEN crea `architecture.md` calcando `architecture-template.md` de `sdd-templates`, vuelca ahí el aprendizaje y lo dice en el informe final («`architecture.md` no existía: creado desde la plantilla»)
-- AND no escribe el aprendizaje estructural en `tech-stack.md` ni en otro documento en su lugar
-- AND lo mismo con cualquier otro destino que falte (`constitution.md`, `tech-stack.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la deuda
+- AND no escribe el aprendizaje estructural en `steering/operations.md` ni en otro documento en su lugar
+- AND lo mismo con cualquier otro destino que falte (`constitution.md`, `operations.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la deuda
 
 ### Una carpeta `-task-` se cierra como legado
 
@@ -215,7 +215,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - THEN corre `PeopleTests.Zero_is_saved` y `PeopleTests.Empty_name_is_rejected` con el runner del proyecto, la suite unitaria entera, el gate con `--base a1b2c3d` y `app:integration`
 - AND la línea es `` Gate: `npm run test:unit` · `moon run :integration --affected --base develop --include-relations` → tras el rojo en `a1b2c3d`, arreglo `e4f5a6b`: PeopleTests.Zero_is_saved: corrió 1/1 · PeopleTests.Empty_name_is_rejected: corrió 1/1 · unit: corrió 510/510 · api:integration: corrió 61/61 · app:integration: corrió 12/12 (no corrió en la pasada roja) ``
 - AND si el runner paró en el primer rojo (bail) y no dice qué tests quedaron sin correr, corre `api:integration` entera
-- AND si el arreglo solo toca `.docs/sdd/specs/<carpeta>/walkthrough.md` y `README.md`, corre solo los dos tests que fallaron, y la línea es `` Gate: `moon run :integration --affected --base develop --include-relations` → tras el rojo en `a1b2c3d`, arreglo `e4f5a6b` solo de docs: PeopleTests.Zero_is_saved: corrió 1/1 · PeopleTests.Empty_name_is_rejected: corrió 1/1 ``
+- AND si el arreglo solo toca `.docs/sdd/changes/<carpeta>/walkthrough.md` y `README.md`, corre solo los dos tests que fallaron, y la línea es `` Gate: `moon run :integration --affected --base develop --include-relations` → tras el rojo en `a1b2c3d`, arreglo `e4f5a6b` solo de docs: PeopleTests.Zero_is_saved: corrió 1/1 · PeopleTests.Empty_name_is_rejected: corrió 1/1 ``
 - AND si el rojo fue de `api:typecheck`, no de un test, repite `api:typecheck` entera
 - AND si el arreglo toca un fichero de «Sin filtro», corre todo sin filtro
 - AND un rojo de lint (markdownlint en `README.md`) no repite el gate: se arregla el fichero, lo comprueba el pre-commit y no corre ningún test
@@ -226,7 +226,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - WHEN el cierre lee el conflicto, en cualquier perfil
 - THEN deja la fila con el prefijo de la rama y el «Destino» de la base, commitea el merge de sincronización con el hook, repite el gate y sigue el cierre
 - AND el cuerpo del commit y el mensaje final llevan `Conflicto de la base resuelto por el agente: .docs/sdd/roadmap.md — el prefijo de cierre de la rama y el «Destino» de la base en la fila «…»`
-- AND lo mismo con una frase que la base añade al final de una línea de `.docs/sdd/tech-stack.md` que la rama reescribe, si no dice lo contrario que la línea de la rama: queda la línea de la rama más la frase de la base
+- AND lo mismo con una frase que la base añade al final de una línea de `.docs/sdd/steering/operations.md` que la rama reescribe, si no dice lo contrario que la línea de la rama: queda la línea de la rama más la frase de la base
 - AND lo mismo fuera de `.docs/`, en cualquier `*.md`: dos adiciones en la línea `**Escribe**` de una migración quedan juntas, y dos filas contiguas de una tabla que toca cada lado quedan con el cambio de cada uno
 - AND si los dos lados reescriben la misma frase de forma distinta, si en un trozo ponen dos «Destino» distintos (`**Actuar → 0240**` y `**Descartada**`), si la frase de la base dice lo contrario que la línea de la rama, si el conflicto incluye un fichero que no es Markdown (`src/slots.js`), o ante la duda, no resuelve nada: el cierre queda «No terminado» para una persona
 
@@ -246,11 +246,10 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - WHEN `sdd-archive` cierra el patch
 - THEN `CHANGELOG.md` no cambia
 - AND Now gana la fila 0021 con su brief y `✅`, y `sdd roadmap check` escribe `Roadmap válido`
-- AND con `.docs/sdd/roadmap.md` y `.docs/sdd/changelog.md` (2.x), el cierre sigue añadiendo su entrada con `add-to-changelog`
 
 ### Un aprendizaje cuyo destino no cabe tiene salida
 
-- GIVEN el cierre de una feature con un aprendizaje de 40 palabras («la suite lenta necesita `--maxWorkers 8`…») para `tech-stack.md`, que mide 900 palabras en la rama y en `origin/develop`; el tope es 950 en la rama y 920 en `origin/develop`, porque otra feature bajó el tope a 920 sin tocar el contenido después de abrirse la rama; y un pre-commit que lo comprueba
+- GIVEN el cierre de una feature con un aprendizaje de 40 palabras («la suite lenta necesita `--maxWorkers 8`…») para `steering/operations.md`, que mide 900 palabras en la rama y en `origin/develop`; el tope es 950 en la rama y 920 en `origin/develop`, porque otra feature bajó el tope a 920 sin tocar el contenido después de abrirse la rama; y un pre-commit que lo comprueba
 - WHEN se vuelca el aprendizaje
 - THEN antes de escribirlo, tras `git fetch`, mide el documento como lo dejará el merge de sincronización (el de `origin/develop` con los cambios de la rama) más el aprendizaje, 940 palabras, contra el tope de `origin/develop`, 920, y no contra el de la rama
 - AND como no cabe, sale de ese documento la pieza más vieja que ya vive en otro sitio, y el aprendizaje entra
@@ -261,7 +260,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; cuándo corre la suite del cierre y qué corre tras el merge de sincronización, en `skills/sdd-archive/references/closing-suite.md`; la comprobación de la revisión final, en `skills/sdd-archive/references/final-review-check.md`; qué corre, envía y registra cada modo de validación, en `skills/sdd-archive/references/validation-modes.md`; adónde va cada aprendizaje, en `skills/sdd-archive/references/learnings.md`; la de la validación del dev en `skills/sdd-archive/references/dev-validation.md`, con su panel en `validation-panel.js`, que guarda las marcas en el `localStorage` del navegador (`sdd-validation-<id>`) o, en el plan B, en `.temp/validation/<id>.json` del worktree; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)
+- **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; cuándo corre la suite del cierre y qué corre tras el merge de sincronización, en `skills/sdd-archive/references/closing-suite.md`; la comprobación de la revisión final, en `skills/sdd-archive/references/final-review-check.md`; qué corre, envía y registra cada modo de validación, en `skills/sdd-archive/references/validation-modes.md`; adónde va cada aprendizaje, en `skills/sdd-archive/references/learnings.md`; la de la validación del dev en `skills/sdd-archive/references/dev-validation.md`, con su panel en `validation-panel.js`, que guarda las marcas en el `localStorage` del navegador (`sdd-validation-<id>`) o, en el plan B, en `.temp/validation/<id>.json` del worktree; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md`
 - **Idioma de los nombres**: skill y ficheros en inglés kebab-case; marcas de carril de la skill `Feature only:`, `Patch only:`, `Hotfix only:`; el panel, `sddValidationPanel`, con los estados `pending`, `ok` y `ko`; las líneas de registro, en castellano (`Validado:`, `no ensayado:`)
 - **Límites**: tope de palabras de `sdd-archive`, el de `cli/test/kit/word-budget.test.ts`; el gate de cierre corre una vez por árbol: en la validación o, con otra rama abierta o la base por delante, solo sobre el merge de sincronización; corre enteras las suites unitarias y `pendiente` de «Suites», y el gate por lo afectado, o entero si la rama toca un fichero de «Sin filtro»; tras un rojo corren los tests que fallaron, los que no llegaron a correr y el gate con `--base <sha rojo>`, y con un arreglo solo de docs, solo los tests que fallaron; tras el merge de sincronización se repiten solo las tareas que tocan la rama y la base a la vez: con un gate filtrado, las que selecciona contra `<merge.into>` y también contra el sha de la última suite en verde; sin filtro, el gate entero si la base trae cambios fuera de `.docs/` que no sean `*.md`; si la base trae un fichero de «Sin filtro», el gate entero; el informe de rojo lleva las últimas 20 líneas; una suite E2E que pasa de su «Presupuesto E2E», o sin presupuesto, una suite de más de 10 minutos, va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` en la línea de procedencia de `skills/sdd-archive/SKILL.md` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0, v3.0.0)
 - **Avisos**: «Hay cambios sin commitear: `<ficheros>`. ¿Los commiteo en la rama, los descarto o paro?» · «Abiertas a la vez: `<rama>` (`<ruta>`). La que fusione segunda integra la base y repite sus gates.» · «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?» · el bloque del rojo (comando, código de salida, ruta del log, últimas 20 líneas, línea `base:`, «`<merge.into>` sin tocar en `<hash>`») · «`base: en rojo: el mismo comando también falla sin la rama`» (contraste a mano) · «Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas; su prompt lo da `sdd-roadmap`: «dame el prompt de la `<id>`».» · «Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.» · «Para acabar la propuesta `<N>` falta: …» · «La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.» · «`<documento>` no existía: creado desde la plantilla» · `ADR: <candidata> → decisions/NNNN-<slug>.md` · `Validado: <fecha> · panel: <n>/<n> OK · «listo»` · `no ensayado: <motivo>` · que la captura es la del momento de leer y la red no trae hora (panel en Chrome) · que la página del plan B no ve la app: sin consola, red ni captura del KO · `Panel: Chrome sobre <url de la app>` · `Panel: plan B en http://127.0.0.1:<puerto>/` · `Panel: no arrancó: <su error>` · `Conflicto de la base resuelto por el agente: <fichero> — <qué juntó de cada lado>`

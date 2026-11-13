@@ -2,9 +2,9 @@
 
 Pensar con el contexto del proyecto cargado, sin dejar artefactos propios: entender, sondear con una prueba desechable o estructurar con `sdd-grilling`. Nace en la feature 0161 como humo (Art. I: renombrar `sdd-consult` es editarla y se vuelve a medir su entrada), y mide además la salida cuando la conversación acaba en trabajo: una feature o un patch pasan por `sdd-roadmap`, y un config da su prompt de arranque directo. Los controles de pensar viven en la batería de `sdd-grilling` (g1, g9, k1).
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-explore`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo. Un molde, `salas` (el de `tests/batteries/using-sdd/mold-salas`), con `control.profile: delegate` y `merge.push: true` en el marcador y `engines` en `package.json`. Si el kit que se prueba no tiene la skill esperada (el RED), la guarda de `initSubject` comprueba `using-sdd`.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-explore`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado y con 30 turnos como máximo. Un molde, `salas` (el de `tests/batteries/using-sdd/mold-salas`), con `control.profile: delegate` y `merge.push: true` en el marcador y `engines` en `package.json`. Si el kit que se prueba no tiene la skill esperada (el RED), la guarda de `initSubject` comprueba `using-sdd`.
 
-**La salida de explore se mide con una pregunta de verdad** (feature 0161): «¿Podemos subir node…? Si se puede, lo quiero» es una petición de cambio y entra, con razón, por `sdd-propose`; e2 pide el prompt de forma explícita.
+**La salida de explore se mide con una pregunta de verdad** (feature 0161): «¿Podemos subir node…? Si se puede, lo quiero» es una petición de cambio y entra, con razón, por `sdd-propose`; e2 pide el prompt de forma explícita, y e3 pregunta y su segundo turno (`TURN2`) contesta «Si se puede, lo quiero.» (batería de release de la 0152: en un solo mensaje, e3 entraba por `sdd-propose`).
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»; en el RED sale rojo por construcción, porque la skill se llama `sdd-consult`). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
 
@@ -15,7 +15,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-explore`); el m
 | e1 | control | ¿Dónde se cancelan las reservas? | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | batería de `sdd-grilling`, k1: entender sin interrogatorio ni artefactos |
 | e2 | config | Estoy pensando en subir node a 22.18 en los engines de package.json. ¿Rompe algo? Si no, dame el prompt para hacerlo en otro worktree. | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0161: un config sale con su prompt de arranque |
 | f1 | failure | ¿Por qué si cancelo la reserva de Norte del lunes, libres 10:00-12:00 sigue sin darme Norte? | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | feature 0165: la salida de explore ante un fallo ya no nombra `superpowers:systematic-debugging` |
-| e3 | roadmap | ¿Se podría filtrar libres por planta? Si se puede, lo quiero. | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0161 (dev-lead, 2026-10-10): lo que acaba en trabajo pasa por el roadmap |
+| e3 | roadmap | ¿Se podría filtrar libres por planta? | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0161 (dev-lead, 2026-10-10): lo que acaba en trabajo pasa por el roadmap |
 
 ## Rúbrica
 
@@ -24,7 +24,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
 | E1 Entender | e1 | crea rama, carpeta o fila; lanza una entrevista; o no dice dónde se cancela (`src/app.js`, el comando `cancelar`) |
-| E2 Prompt de config | e2 | no termina con el prompt de arranque con esta forma: título `###` en cursiva con ⚙️, sin id ni «—»; `***Nombre:***` con `feature/<slug>`, `***Base:***` con `develop` y `***Carril:***` con `config` en líneas seguidas, con el valor en código en línea; `***Prompt***`; un bloque de código sin lenguaje que arranca con `sdd-propose` y lleva alcance, fuera de alcance, criterio de hecho, «Nada que saldar», «Perfil delegate» y «Al fusionar, `sdd merge --push`»; o escribe una fila, reserva un id o toca `package.json`; o no termina con *si prefieres hacerlo en esta sesión, di "arráncalo"* en cursiva |
+| E2 Prompt de config | e2 | no termina con el prompt de arranque con esta forma: título `###` en cursiva con ⚙️, sin id ni «—»; `***Nombre:***` con `feature/<slug>`, `***Base:***` con `develop` y `***Carril:***` con `config` en líneas seguidas, con el valor en código en línea; `***Prompt***`; un bloque de código sin lenguaje que arranca con `sdd-propose` y lleva alcance, fuera de alcance, criterio de hecho, «Nada que saldar», «Perfil delegate» y «Al fusionar, `sdd merge --push`»; o escribe una fila, reserva un id o toca `package.json`; o no termina con la frase «si prefieres hacerlo en esta sesión, di "arráncalo"», con o sin la cursiva de la plantilla (como `M2` de `sdd-roadmap`) |
 | E3 Pasa por el roadmap | e3 | tras responder no invoca `sdd-roadmap` (`tools.txt`); o invoca `sdd-propose`, crea rama o carpeta, o da un prompt de arranque sin fila |
 | F1 Fallo | f1 | invoca `superpowers:systematic-debugging` (solo mide con `SUPERPOWERS_DIR`); edita `src/` o crea rama o carpeta; o no dice la causa (`cancelar` no cambia `bookings`) ni que arreglarlo es un patch |
 | L Idioma | todos | algún mensaje al usuario en inglés |

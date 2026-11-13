@@ -1,0 +1,97 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [23]
+La re-revisión del rango f34dd22..HEAD devolvió dos hallazgos Important sobre `tasks.md`. Los compruebo yo antes de tocar nada.
+
+--- [29]
+Ahora el paso 1. Con `validation.mode: manual` el que valida eres tú, así que ensayo el guion yo antes de pedírtelo. Miro cómo se arranca el servidor.
+
+--- [34]
+El e2e falló porque yo había parado el entorno antes de lanzarlo (`ERR_CONNECTION_REFUSED`). No es un fallo del código. Lo repito con el entorno arriba.
+
+--- [37]
+Todo corre. Me falta el panel de validación. No tengo herramientas de Chrome, así que uso el plan B.
+
+--- [42]
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el ruling de `--test-concurrency=1` lo descarté en `tasks.md`. Nunca se aplicó y no arregla nada. El test `canceladas…` depende de que corra antes el primero de `test/cancel.test.js`. Va a la deuda.
+- En `tasks.md` corregí el commit de la Task 1: es `8cfadb3`, no `f34dd22`.
+
+**Re-revisión** (`f34dd22..1db097b`, opus): 2 Important, los dos en `tasks.md` y ya corregidos. 1 Minor: `plan.md` no nombra el comando de arranque. Va a la deuda.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| cancelar con motivo de la lista | `ejecución real` | `cancelada Norte lun (sala ocupada)` |
+| motivo fuera de la lista | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` | `ejecución real` | el mismo literal |
+| `canceladas` | `ejecución real` | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre 1db097b, 0,1 s.
+- `node e2e/run.mjs`: 7/7 sobre 1db097b, 48 s. La primera pasada falló por mi orden: lo lancé con el entorno parado. Repetido con el entorno arriba, pasa.
+- No he corrido la suite sobre el merge de sync del paso 6: va después del cierre.
+
+**Sin probar**
+
+- Nada de la spec. Tampoco he corrido todavía `sdd merge --sync`, ni escrito walkthrough, roadmap ni commit de cierre. Quedan pendientes hasta tu validación.
+
+Panel: plan B en http://127.0.0.1:56099/ (no ve la app, así que no recoge consola ni red de un KO: cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno (puerto 55629):
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con tu sesión `persona`:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: persona" -G http://localhost:55629/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: persona" -G http://localhost:55629/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+3. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: persona" -G http://localhost:55629/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+4. Listado de canceladas → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: persona" -G http://localhost:55629/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

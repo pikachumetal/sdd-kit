@@ -8,7 +8,7 @@ description: Use at the start of any conversation in a project with .docs/sdd/, 
 ## Overview
 
 This project works with the SDD kit (`.docs/sdd/`). This is a project instruction and **takes precedence** over superpowers' rule of invoking `brainstorming` first: the entry gates are the kit's skills, which don't invoke `brainstorming` or `writing-plans`.
-Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—, also while the reference you follow is in English.
 
 ## Gates
 
@@ -16,8 +16,8 @@ Write everything the user reads in the language of their message, skill announce
 | --- | --- |
 | No `.docs/sdd/` and wants to work with SDD, or an init in progress (`.docs/sdd/sdd-kit.json` with the `init` key): «sigue con la init» | `sdd-kit:sdd-init` |
 | An initialized project wants to catch up with the kit («actualízame al kit», «ponme el proyecto al día»), or accepts the offer of the migrations notice | `sdd-kit:sdd-upgrade` |
-| A question or a doubt: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-explore` |
-| Planning without doing it yet: «apunta en el roadmap», «no lo arranques». Something big: several features at once, or one that `sdd-propose`'s splitting criterion would split; notes from a meeting; items from the tracker (Azure DevOps, Jira), including those assigned to you to do; reordering; preparing the next release; «dame el prompt de la <id>»; «qué sigue», «dame la siguiente» | `sdd-kit:sdd-roadmap` |
+| A question or a doubt: «¿cómo funciona…?», «¿se puede…?», «no lo pillo», «pensemos cómo…» | `sdd-kit:sdd-explore` |
+| Planning without doing it yet: «apunta en el roadmap», «no lo arranques». Several features at once; notes from a meeting; items from the tracker (Azure DevOps, Jira), including those assigned to you to do; reordering; preparing the next release; «dame el prompt de la <id>»; «qué sigue», «dame la siguiente» | `sdd-kit:sdd-roadmap` |
 | A change, even a small one or one asked for as a patch: a feature («añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido»), a failure, a presentation adjustment or removal, a dependency, CI or settings change, a typo or rename, an investigation that leaves measurements | `sdd-kit:sdd-propose`, before `brainstorming` |
 | Creating a skill: «quiero una skill para…» | `sdd-kit:sdd-agent-writing` |
 | Resuming a paused feature or patch: «retoma la feature», «sigue con la Task 3», «retoma el patch» | `sdd-kit:sdd-implement` |

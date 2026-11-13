@@ -10,7 +10,7 @@ A feature's branch counts its milestones: **opening**, **one commit per plan tas
 | Task N | its RED tests, its implementation, the fixes of its review, its evidence | with its review (and re-review) clean, before dispatching the next one or the final review; in Native, with its completion contract met and before `sdd task done` | the `BASE` you noted before dispatching it (in Native, the one `sdd task start` prints) |
 | Closing | `sdd-archive` documentation, fixes of the final branch review and of the validation, and `tasks.md` with the review lines of the range rewritten without sha | after the closing documentation, before the merge | the last task's commit |
 | Fix (patch) | code, tests and `patch.md` | with the fix verified | `git merge-base HEAD <integration>` |
-| Closing (patch) | `patch.md` with hash and time, changelog (2.x), roadmap, estimation-log | before the merge | the fix's commit |
+| Closing (patch) | `patch.md` with hash and time, roadmap, estimation-log | before the merge | the fix's commit |
 | Sync merge | the target branch integrated into the feature, with the registries resolved | not squashed | — |
 
 If the dev-lead fixes another shape of commits («three commits in order»), theirs wins over «a single commit» and the milestone isn't squashed. A test in RED goes in the commit of its fix or a later one, never before: a `pre-commit` that runs the suite rejects it, and without it the branch would carry a red commit. The RED is recorded in `patch.md` §4 (in a feature, in its evidence). No `--no-verify` (ticket of patch 0072 §2).
@@ -26,7 +26,7 @@ git reset --soft <base>
 git commit        # the project's commit convention
 ```
 
-The recipe holds also with a single commit in the range: you write the milestone's message with the project's convention, and it is never inherited from the implementer, because the task review package shows the subject and not the body. Measured in `tests/native-adapt-red.md`: with «a single commit, nothing to squash», 2 of 2 subjects left a body without accents on the branch. Never `rebase -i`, `push --force` or `--no-verify`.
+The recipe holds also with a single commit in the range: you write the milestone's message with the project's convention, and it is never inherited from the implementer, because the task review package shows the subject and not the body. With «a single commit, nothing to squash», 2 of 2 subjects left a body without accents. Never `rebase -i`, `push --force` or `--no-verify`.
 
 ## Guards
 

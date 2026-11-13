@@ -1,0 +1,93 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, escribir la spec y presentártela.
+
+--- [17]
+Ahora: reservo el id (modo `sequence`, sin fila en el roadmap), creo la rama y lo reclamo. Queda: spec, repaso de coherencia, revisión y presentarte la spec.
+
+--- [28]
+Ahora: el shell rechazó el heredoc y no se creó nada, así que escribo la spec con la herramienta de ficheros. Queda: repaso de coherencia, revisión y presentarte la spec.
+
+--- [30]
+Ahora: el repaso de coherencia, probando el delta sobre una copia fuera del repo.
+
+--- [34]
+Ahora: despacho un revisor adversarial (sonnet, siete puntos), según el criterio de tamaño. Queda: integrar sus hallazgos y presentarte la spec.
+
+--- [36]
+La spec está escrita y el revisor sigue trabajando. Espero su resultado para integrar los hallazgos antes de presentártela.
+
+--- [41]
+1. Crítico · Decisiones 1 y Delta (ADDED «Libres sin planta…», «Libres filtradas…») · Los escenarios dan por hecho que existe la reserva activa de Norte en `10:00-12:00`, pero ninguna capacidad ni requisito define las reservas (`reservar`, franjas solapadas, qué es «activa»), y la spec dice que `libres` hoy ya funciona así. Solo el «Sin planta» documenta el comportamiento previo de `libres`, lo que de hecho es un MODIFIED encubierto o un ADDED sobre código sin capacidad. · Declarar en el Delta que `libres` sin `--planta` es comportamiento preexistente que se captura (capacidad nueva, sin MODIFIED), o quitar ese requisito y dejarlo solo como AND de regresión. Precisar en el GIVEN cómo se crea la reserva (`reservar Norte …`).
+
+2. Crítico · Delta «Planta no válida» · El escenario no fija el orden de validación frente a una franja mal escrita ni cubre `--planta 1.5`, `--planta -1`, `--planta 0` o `--planta 01`. Tampoco cubre la bandera sin valor cuando va antes de la franja (`libres --planta 14:00-16:00`), donde `14:00-16:00` se tomaría como valor, y «primer argumento que no es bandera» queda ambiguo. · Añadir escenarios para `--planta 14:00-16:00` (valor = franja, franja ausente), negativos, cero y decimales, y definir qué es «entero».
+
+3. Importante · Delta «Libres filtradas por planta» y decisión 3 · La regla «la franja es el primer argumento que no es bandera ni valor de bandera» no tiene escenario para una franja ausente, para `--planta` repetido (`--planta 1 --planta 2`) ni para banderas desconocidas como `--cada-semana`, que existe en el sistema. El requisito pasa sin probar el parseo. · Añadir escenarios de `--planta` duplicado y de `libres --planta 1` sin franja, y decir qué hace con `--cada-semana`.
+
+4. Importante · Intent y Scope · El Intent dice que fracasa si «una planta mal escrita parece ninguna sala libre», pero la decisión 4 hace que `--planta 9` (inexistente) responda vacío, igual que «ninguna libre». Es contradicción directa con el criterio de fracaso. · Elegir: o `--planta 9` da aviso propio, o se retira esa frase del Intent y se declara en ✋ que planta inexistente es indistinguible de sin libres.
+
+5. Importante · ✋ Decisiones · Hay decisiones tomadas en el cuerpo que no están listadas: que el aviso se imprima como salida normal (¿stdout o stderr? ¿exit code?), el formato de salida `Norte, Sur` (separador), y la ausencia de ordenación. Tampoco figuran como decisión «no mostrar la planta en la salida» (está en Scope). · Añadir esas decisiones a ✋ o citar el comportamiento actual verificable.
+
+6. Importante · Reglas de la capacidad · «Límites: no aplica» y «Regla ante conflicto: no aplica» se declaran sin motivo, aunque hay un límite evidente (rango de plantas válido, 1–2) y un conflicto posible (`--planta` repetido o con valores contradictorios). Además «Avisos» repite un literal, y la regla «Idioma» se justifica con `--cada-semana`, cuya capacidad no existe en `capabilities/`. · Justificar el «no aplica» o rellenar con la regla real (planta inexistente = vacío; duplicado = error), y no apoyarse en `--cada-semana` como si fuera verdad viva.
+
+7. Importante · ✋ decisión 8 y Scope · Asegura haber probado el delta con `sdd capability merge` y afirma «3 requisitos añadidos y las 5 reglas», pero no hay ninguna prueba verificable en la spec, y el escenario «Sin planta» pasaría igual si el agente no tocara nada, porque ya funciona así: el escenario no demuestra la feature. · Marcar claramente que ese requisito es regresión, o añadir un escenario que falle sin el código nuevo, y retirar o respaldar la afirmación de la decisión 8.
+
+8. Menor · Frontmatter y ✋ · `approvers` con `name: TBD`, y la política de modelos y de revisión están mezcladas dentro de «Decisiones que he tomado yo» sin ser decisiones de dominio. La validación es «dev-lead» pero PRODUCT.md dice que no hay más usuarios ni desarrolladores que el propio autor. · Nombrar al aprobador real (el único usuario del producto) y sacar la política de modelos de ✋.
+
+9. Menor · Lo que se retira o cambia de forma · Cita líneas concretas (`src/app.js:28`, `:2`, `:5`) y `CHANGELOG.md:10` que no pueden comprobarse sin leer código, y se fían del estado actual, que se desactualiza. · Referenciar símbolos (`run`, `freeRooms`, `rooms`) en vez de números de línea.
+
+10. Menor · Terminología y ejemplos · PRODUCT.md define **Sala** con nombres (Norte, Sur) pero no recoge **Planta**; la spec la resuelve como término, y las salas Norte/Sur con plantas 1/2 son un dato inventado que se codifica como constante de producción. Para los escenarios bastaría un dato de prueba. · Añadir **Planta** a PRODUCT.md al aprobar, y separar en los escenarios las salas de prueba del reparto real, o confirmar el reparto con el dev-lead antes de aprobar.
+
+--- [43]
+Ahora: integro los hallazgos de la revisión en la spec. Hay dos Críticos aceptados, así que después toca la segunda ronda con un revisor nuevo.
+
+--- [48]
+La primera revisión está integrada y el delta sigue fusionando sin rechazos. La segunda ronda está en marcha. Espero su resultado antes de presentarte la spec.
+
+--- [53]
+1. Crítico · Delta «Planta no válida» y decisión 5 · El escenario lista `libres --planta 14:00-16:00` como planta no válida, pero esa entrada no tiene franja. La decisión 6 dice que sin franja `libres` queda «como hoy», y la decisión 5 dice que la planta se comprueba antes de leer la franja. Con la entrada `libres --planta 14:00-16:00`, el valor de `--planta` se toma como `14:00-16:00` y no queda ninguna franja, así que ambas decisiones se aplican a la vez. Dos comportamientos son posibles y el escenario no distingue cuál se espera. · Fijar en la decisión 6 que la validación de planta va primero también sin franja. Reformular «sin franja» como «sin franja y sin `--planta`», y añadir un escenario `libres --planta 1` sin franja que responda `planta no válida` si no hay franja y la planta es válida (o lo que se decida).
+
+2. Importante · Delta «Planta no válida» · No hay escenario que fije la salida cuando `--planta` es válido y falta la franja (`libres --planta 1`). La decisión 6 lo declara «fuera de esta feature», pero `libres --planta 1` es entrada nueva que hoy se lee como franja `--planta`. La feature cambia lo que hoy ocurre con ese comando. «Queda como hoy» no es verificable si hoy `--planta` se leería como franja. · Decidir y escribir qué responde `libres --planta 1` (aviso, vacío o error), con su escenario. No lo dejes como «como hoy».
+
+3. Importante · Delta «Libres sin planta listan todas las salas» · El requisito de regresión incluye `libres 10:00-12:00` → `Sur`, que prueba la reserva activa y no la ausencia de `--planta`. Es comportamiento preexistente de reservas, no de planta. Aun así el escenario 1 de «Libres filtradas por planta» ya cubre ese caso con `--planta`. · Dejar en el requisito de regresión solo el contraste con y sin `--planta` sobre el mismo dato, o quitar el AND que repite la lógica de reserva.
+
+4. Importante · Delta, requisito «Planta no válida» · El escenario agrupa una decena de entradas en un solo WHEN/THEN, y la prueba pasaría con un solo caso implementado. `--planta 01` aparece como AND bajo un THEN que dice «responde aviso», lo cual contradice su propio resultado (vale como planta 1). Un test que siga el THEN literal fallaría. · Separar en dos requisitos o escenarios: «no válida» (con una tabla de entradas) y «`--planta 01` vale como planta 1» con su propio GIVEN/WHEN/THEN y salida esperada (`Norte`).
+
+5. Importante · Decisión 5 y Reglas de la capacidad · Cadena que contradice el alcance: `--planta` repetido se rechaza, pero también hay valores como `-1`. `libres --planta -1 14:00-16:00` plantea la pregunta de si `-1` es valor o bandera. La decisión 3 define la franja como «primer argumento que no es bandera ni valor de bandera», pero «bandera» no está definida (¿todo lo que empieza por `--`? ¿`-1`?). Es el caso límite que rompe el parseo. · Definir «bandera» en la decisión 3 (solo `--planta`, o todo `--xxx`) y qué pasa con un argumento que empieza por `-` como `-1` o una bandera desconocida. Se rechazó lo de `--cada-semana`, pero sigue sin decirse qué hace `libres 14:00-16:00 --otra`.
+
+6. Importante · Decisión 4 vs Intent · El Intent dice que una planta mal escrita no debe parecer «ninguna sala libre», pero `--planta 9` sí responde vacío, igual que «ninguna libre». Es indistinguible de «no hay salas libres en esa planta» para quien lo usa, lo cual es el fracaso que el Intent describe para `alta` y `0`. `0` y `9` tienen el mismo aspecto para el usuario. · Reconocerlo como riesgo aceptado en la decisión 4 o elegir un aviso distinto para planta inexistente. Si se mantiene el vacío, que el dev-lead lo valide explícitamente como decisión de producto.
+
+7. Menor · Decisión 7 y Capacidades · La decisión 7 dice que el requisito de regresión «no demuestra la feature», pero lo cuenta entre «3 requisitos añadidos». La decisión 9 afirma una prueba con `sdd capability merge` sobre una copia, con resultado concreto (3 requisitos, 5 reglas, exit 0), que el revisor no puede comprobar desde la spec y que no aparece como paso en «Dónde se prueba». · Quitar el resultado numérico de la decisión 9 o enlazarlo a una evidencia (comando, salida). Dejar solo «se comprobó el merge».
+
+8. Menor · Decisión 1 y Términos · La planta de cada sala es dato inventado (decisión 1). Aun así, los ejemplos del delta y de PRODUCT.md usan Norte y Sur como hechos, y el término **Planta** se escribe en «Términos resueltos» como resuelto, cuando su asignación no está confirmada. · Mover «Planta» a términos pendientes de confirmar con el dev-lead, o condicionar el cierre a que valide el reparto.
+
+9. Menor · «Revisión de spec» (líneas 29-32) y Política de modelos · La cabecera dice «un revisor con los siete puntos» pero el reparto lista «Dominio» y «Técnica» como dos revisiones y luego «Mínimo razonable: lo que se despacha ya es un solo revisor». La línea de política repite «dominio y técnica juntas». Texto redundante y confuso sobre cuántos revisores hay. · Reducir a una sola frase: un revisor en sonnet, con los bordes de argumentos y la planta de Norte y Sur a su cargo.
+
+10. Menor · Hallazgos de la review y decisión 2 · La decisión 2 apoya `--planta=2` no admitido «igual que `--cada-semana` no admite variantes», pero el hallazgo rechazado dice que `--cada-semana` en `libres` queda fuera de Scope. Se cita como precedente una bandera que no pertenece a `libres`. Además, la decisión 2 no dice qué responde `--planta=2` (¿planta no válida?, ¿se toma como franja?). · Indicar en la decisión 2 la salida de `--planta=2` y añadir esa entrada al escenario de planta no válida, o quitar la referencia a `--cada-semana`.
+
+--- [55]
+Ahora: integro los hallazgos de la segunda ronda (sin tercera ronda, según el protocolo) y compruebo otra vez el delta.
+
+--- [58]
+Ahora: la spec está lista y espera tu aprobación. No he escrito el plan ni código, y no he hecho commit. Creé la rama `feature/0012-libres-por-planta` y reservé el id 0012.
+
+La spec está en `.docs/sdd/specs/20261111-191339-feature-0012-libres-por-planta/spec.md`. Es una feature en modo full, con perfil delegate y validación a cargo del dev-lead.
+
+🦆 Hoy `salas libres 14:00-16:00` te dice qué salas están libres a esa hora, sin importar la planta. Con la feature, `salas libres 14:00-16:00 --planta 1` responde solo `Norte`. Sin `--planta` todo sigue igual y lista todas las salas. Para poder filtrar, cada sala pasa a tener una planta, y ese reparto lo he puesto yo.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Planta de cada sala:** Norte en la 1 y Sur en la 2. Es un dato inventado: si el real es otro, hay que cambiarlo.
+2. **Forma del valor:** `--planta 2`, en argumento separado. `--planta=2` no vale y da el aviso.
+3. **Posición:** la opción vale antes o después de la franja. Es la única opción de `libres`, y cualquier otro argumento se ignora, como hoy.
+4. **Planta inexistente:** `--planta 9` responde vacío, igual que cuando no queda ninguna libre. El riesgo es que se ve igual que «ninguna libre», y necesito que lo valides.
+5. **Planta no válida:** una planta válida es un entero positivo. `--planta` sin valor, `alta`, `0`, `-1`, `1.5`, repetida o `--planta=2` responden `planta no válida: usa --planta <número entero>`. Ese texto lo he inventado yo.
+6. **Salida:** igual que hoy, con salas separadas por `, ` y en orden fijo. Sin franja, `libres --planta 1` responde `Norte`, y la falta de franja no se avisa.
+7. **Capacidad nueva `room-availability`:** no había ninguna en el proyecto. Su requisito «sin `--planta` lista todas» es de regresión: ya funciona así y no demuestra la feature.
+8. **Enfoque A:** `rooms` pasa a objetos `{ name, floor }`, con el filtro en `freeRooms` y el parseo dentro de `run`. Descarté un mapa de plantas aparte y parsear en `app.js`.
+9. **Fuera de la feature:** `reservar`, `cancelar` y `anular`, mostrar la planta en la salida, y el filtro por día. Tampoco toca `CHANGELOG.md`.
+
+**Revisión:** hubo dos rondas con un revisor en sonnet cada una. Acepté los hallazgos de la primera salvo tres que rechacé con motivo: banderas desconocidas como `--cada-semana`, `approvers: TBD` y la política de modelos en ✋, y mover «Planta» a PRODUCT.md ahora. Los de la segunda los acepté todos. Están en la spec bajo «Hallazgos». El delta fusiona sin rechazos sobre una copia en `sdd capability merge`.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada):** escribo el plan y sigo con `sdd-implement`.
+2. **Cambios:** dime qué ajusto.
+

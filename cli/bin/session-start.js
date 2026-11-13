@@ -38,7 +38,34 @@ function escapeForJson(text) {
   return text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
 }
 
-const OFFER_ORDER = 'Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres. Con `control.profile: unattended` en `.docs/sdd/sdd-kit.json`, no ofrezcas ni migres: atiende la petición y anótalo en tu mensaje final.';
+const OFFER_ORDER = 'Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres.';
+const REQUIRED_ORDER = 'El kit cargado exige la forma 3.0.0 y el proyecto sigue en la 2.x: antes de atender ninguna petición, invoca la skill `sdd-upgrade` y migra; sin migrar, las skills no encuentran sus documentos. Con el «no» del usuario, no hagas el trabajo: dile que lo pida tras migrar.';
+const UNATTENDED_REQUIRED_ORDER = 'El kit cargado exige la forma 3.0.0 y el proyecto sigue en la 2.x, con el perfil `unattended`: no hagas el trabajo; anota en tu mensaje final que el proyecto tiene que migrar a la 3.0.0 («actualízame al kit»).';
+const UNATTENDED_ORDER = 'El perfil vigente es `unattended`: no ofrezcas ni migres; atiende la petición y anótalo en tu mensaje final.';
+
+// desde esta versión las skills no leen la forma 2.x: migrar deja de ser una oferta
+const MIGRATION_REQUIRED_FROM = '3.0.0';
+
+function migrationOrder(wanted, latest, unattended) {
+  const required = isOlder(wanted, MIGRATION_REQUIRED_FROM) && !isOlder(latest, MIGRATION_REQUIRED_FROM);
+  if (required) return unattended ? UNATTENDED_REQUIRED_ORDER : REQUIRED_ORDER;
+  return unattended ? UNATTENDED_ORDER : OFFER_ORDER;
+}
+
+// el perfil de sdd-kit.local.json, el de cada persona, manda sobre el del proyecto
+function controlProfile(projectDir) {
+  for (const name of ['sdd-kit.local.json', 'sdd-kit.json']) {
+    const file = join(projectDir, '.docs', 'sdd', name);
+    if (!existsSync(file)) continue;
+    try {
+      const profile = JSON.parse(readFileSync(file, 'utf8'))?.control?.profile;
+      if (profile) return profile;
+    } catch {
+      continue;
+    }
+  }
+  return '';
+}
 
 // un kit que ya trae la migración de la versión del proyecto sabe leerlo, aunque su plugin.json vaya detrás
 function versionWarning(loaded, wanted, migrations) {
@@ -63,7 +90,7 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   if (nodeProblem) warnings.push(nodeProblem.replace(/^sdd /, 'sdd-kit '));
   const joined = warnings.join('\n\n');
   const skill = readFileSync(join(pluginRoot, 'skills', 'using-sdd', 'SKILL.md'), 'utf8').replace(/\n+$/, '');
-  const order = migration.length > 0 ? [OFFER_ORDER] : [];
+  const order = migration.length > 0 ? [migrationOrder(wanted, latest, controlProfile(projectDir) === 'unattended')] : [];
   const context = [...(joined ? [joined] : []), ...order, skill].join('\n\n');
   const systemMessage = joined ? `  "systemMessage": "${escapeForJson(joined)}",\n` : '';
   return `{\n${systemMessage}  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "${escapeForJson(context)}"\n  }\n}\n`;

@@ -5,12 +5,12 @@ import { gitSync } from '../../src/git/git.ts';
 import { repoRoot } from './kit-files.ts';
 
 // Los scripts del repo son Node para que corran igual en Windows, Linux y macOS (tech-stack.md).
-// .docs/sdd/specs/ es evidencia histórica y no se toca.
-const EVIDENCE = '.docs/sdd/specs/';
+// .docs/sdd/specs/ y .docs/sdd/changes/ son evidencia de cada cambio y no se tocan.
+const EVIDENCE = ['.docs/sdd/specs/', '.docs/sdd/changes/'];
 
 // También los ficheros sin versionar no ignorados: sin ellos, el test pasa en falso antes de `git add`.
 const paths = (gitSync(repoRoot, ['ls-files', '--cached', '--others', '--exclude-standard']) ?? []).filter(
-  (path) => !path.startsWith(EVIDENCE) && existsSync(join(repoRoot, path)) && statSync(join(repoRoot, path)).isFile(),
+  (path) => !EVIDENCE.some((folder) => path.startsWith(folder)) && existsSync(join(repoRoot, path)) && statSync(join(repoRoot, path)).isFile(),
 );
 
 const firstLine = (path: string) => readFileSync(join(repoRoot, path), 'utf8').split('\n', 1)[0];
@@ -20,7 +20,7 @@ describe('el repo sin scripts de shell', () => {
     expect(paths.length).toBeGreaterThan(0);
   });
 
-  it('ningún .sh ni .ps1 fuera de .docs/sdd/specs/', () => {
+  it('ningún .sh ni .ps1 fuera de la evidencia de .docs/sdd/specs/ y changes/', () => {
     expect(paths.filter((path) => /\.(sh|ps1)$/i.test(path))).toEqual([]);
   });
 

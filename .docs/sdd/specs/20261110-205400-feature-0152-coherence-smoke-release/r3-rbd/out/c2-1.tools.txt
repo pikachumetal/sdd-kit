@@ -1,0 +1,140 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: export|exporta
+
+>>> Glob: .docs/sdd/*
+<<< .docs\sdd\sdd-kit.json
+<<< Found 15 files
+.docs\sdd\steering\debt.md
+ROADMAP.md
+.docs\sdd\steering\architecture.md
+PRODUCT.md
+src\export\index.js
+src\export\writer.js
+test\export.test.js
+src\cli.js
+src\export\filter.js
+src\export\ics.js
+src\bookings\repository.js
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+README.md
+.docs\sdd\steering\constitution.md
+
+>>> Read: <run>\repo\src\export\index.js
+<<< 1	import { loadBookings } from '../bookings/repository.js';
+2	import { bookingsBySlot } from './filter.js';
+3	import { toIcs } from './ics.js';
+4	import { writeExport } from './writer.js';
+5	
+6	export function exportMonth(month) {
+7	  return writeExport(month, toIcs(bookingsBySlot(loadBookings(), month)));
+8	}
+9	
+
+>>> Read: <run>\repo\src\export\filter.js
+<<< 1	export function bookingsBySlot(bookings, month) {
+2	  return bookings
+3	    .filter((booking) => booking.day.startsWith(month) && booking.status !== 'cancelled')
+4	    .sort((a, b) => `${a.day} ${a.slot}`.localeCompare(`${b.day} ${b.slot}`));
+5	}
+6	
+
+>>> Read: <run>\repo\src\export\ics.js
+<<< 1	const COWORKING_OFFSET = '+02:00';
+2	
+3	function toUtcStamp(day, time) {
+4	  const utc = new Date(`${day}T${time}:00${COWORKING_OFFSET}`).toISOString();
+5	  return utc.replace(/[-:]/g, '').slice(0, 15);
+6	}
+7	
+8	function toEvent(booking) {
+9	  const [start, end] = booking.slot.split('-');
+10	  return [
+11	    'BEGIN:VEVENT',
+12	    `SUMMARY:Sala ${booking.room}`,
+13	    `DTSTART:${toUtcStamp(booking.day, start)}`,
+14	    `DTEND:${toUtcStamp(booking.day, end)}`,
+15	    'END:VEVENT',
+16	  ].join('\r\n');
+17	}
+18	
+19	export function toIcs(bookings) {
+20	  return ['BEGIN:VCALENDAR', 'VERSION:2.0
+
+>>> Read: <run>\repo\src\export\writer.js
+<<< 1	import { mkdirSync, writeFileSync } from 'node:fs';
+2	
+3	export function writeExport(month, ics) {
+4	  mkdirSync('exports', { recursive: true });
+5	  const path = `exports/${month}.ics`;
+6	  writeFileSync(path, ics);
+7	  return path;
+8	}
+9	
+
+>>> Grep: export
+<<< README.md:1:# exportes
+README.md:3:Reservas de salas de reuniones desde la terminal, con exportación al calendario.
+ROADMAP.md:1:# Roadmap — exportes
+ROADMAP.md:7:| 0012 | — | **Exportar las reservas de un mes al calendario (.ics)**<br>*—*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | 🔄 implementada, sin cerrar | — | M |
+ROADMAP.md:8:| 0013 | — | **Exportar solo las reservas de una sala**<br>*—*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tom
+
+>>> Read: <run>\repo\src\cli.js
+<<< 1	import { exportMonth } from './export/index.js';
+2	
+3	const [command, ...args] = process.argv.slice(2);
+4	
+5	if (command === 'exportar') {
+6	  const month = args[args.indexOf('--mes') + 1];
+7	  console.log(exportMonth(month));
+8	}
+9	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# exportes
+2	
+3	## Users
+4	
+5	- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+6	- **Responsable del coworking**: mantiene la herramienta; hace de dev-lead: decide qué entra y aprueba las specs, pero no lee el código.
+7	- **Dev**: desarrolla la herramienta.
+8	
+9	## Product Purpose
+10	
+11	Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+12	
+13	## Capabilities and Constraints
+14	
+15	- **Es**: reservar, cancelar y exportar las 
+
+=== RESULTADO (12 turnos, 0.1216905 $)
+La exportación genera un fichero de calendario (`.ics`) con las reservas de un mes. El socio lo importa en Google Calendar u Outlook.
+
+## Cómo se usa
+
+`src/cli.js:5` define el comando `exportar --mes <AAAA-MM>`. Llama a `exportMonth(month)` e imprime la ruta del fichero generado.
+
+## Qué hace, paso a paso
+
+`exportMonth` (`src/export/index.js:6`) encadena cuatro pasos:
+
+1. **Carga** todas las reservas con `loadBookings()`. Salen de `data/bookings.json`, según `architecture.md`.
+2. **Filtra y ordena** (`src/export/filter.js`). Se queda con las reservas cuyo día empieza por el mes pedido y descarta las que tienen `status === 'cancelled'`. Las ordena por día y franja.
+3. **Convierte a ICS** (`src/export/ics.js`):
+   - Cada reserva pasa a ser un `VEVENT` con `SUMMARY:Sala <sala>`, `DTSTART` y `DTEND`.
+   - La franja (`"09:00-10:00"`) se lee como hora del coworking, con el desfase fijo `+02:00`. Se pasa a UTC para los sellos de tiempo.
+4. **Escribe** el fichero en `exports/<mes>.ics` (`src/export/writer.js`). Crea la carpeta `exports/` si no existe y devuelve la ruta.
+
+## Lo que dicen los documentos y lo que deduzco
+
+- **Dicen:** `PRODUCT.md` describe la exportación como el fichero de calendario con las reservas de un mes. Aclara que no es sincronización en vivo.
+- **Dicen:** `ROADMAP.md` tiene la 0012 (exportar el mes a `.ics`) como «implementada, sin cerrar». La 0013 (exportar solo una sala) está en «spec en borrador».
+- **Deduzco, sin confirmarlo en los docs:**
+  - El desfase `+02:00` está fijado en el código. Con el cambio de hora de invierno, las reservas de noviembre a marzo saldrían una hora desplazada. No lo he probado.
+  - Hay un límite en el filtro por mes: `startsWith(month)` no valida el formato. Si falta `--mes`, `args.indexOf` devuelve `-1` y se lee `args[0]`, que es `'--mes'` o `undefined`.
+  - Los `VEVENT` no llevan `UID` ni `DTSTAMP`, y el formato exige ambos. Algunos calendarios pueden rechazar el fichero o importarlo mal.
+
+Si alguno de esos puntos te interesa como trabajo, dímelo y lo paso al roadmap. No he tocado nada.

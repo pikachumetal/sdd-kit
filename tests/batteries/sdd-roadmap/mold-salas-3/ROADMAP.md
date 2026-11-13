@@ -18,4 +18,4 @@ Perfil de control: delegate
 
 | Id | Externo | Tarea | Estado | Tras | Tamaño |
 | --- | --- | --- | --- | --- | --- |
-| B1 | — | **Exportar reservas a calendario (.ics)**<br>*Idea propia* | ⏳ | — | — |
+| 0009 | — | **Exportar reservas a calendario (.ics)**<br>*Idea propia* | ⏳ | — | — |

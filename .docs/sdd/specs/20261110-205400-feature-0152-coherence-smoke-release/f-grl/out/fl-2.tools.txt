@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -maxdepth 3 -type f | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd/sdd-kit.json
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; find src test -type f; 
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; git branch -a; ls .docs/sdd
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-f-0152\skills\sdd-propose\references\spec-writing.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The 
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-propose/references" && grep -n -i "default\|por defecto" control-profiles.md | head -20; grep -n -i "sequence" nombrado.md | head -20
+<<< 8:- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+18:4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
+30:- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
+222:| Key | Type | Default |
+240:`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied.
+
+=== RESULTADO (8 turnos, 0.1683962 $)
+Ahora: clasifico y te anuncio el carril. Queda: la entrevista de diseño (enfoques, spec y tu aprobación), ~10 min. Todavía no he creado rama ni carpeta.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Hoy una reserva en `src/app.js` es solo `{ room, day, slot }`, sin estado. Quieres que cada reserva tenga uno de estos tres estados y que solo se pueda pasar de uno a otro por estos caminos:
+
+| Desde | Puede ir a |
+| --- | --- |
+| pendiente | confirmada, cancelada |
+| confirmada | cancelada |
+| cancelada | pendiente |
+
+Cualquier otro cambio, como confirmada→pendiente o cancelada→confirmada, se rechaza. Prevo unas 3 tasks, todas en la misma superficie (la CLI y su lógica de estados) y sin migración, así que no propongo partirla.
+
+**Sobre tu duda: el flujo es coherente.** No tiene callejones sin salida y no se puede deshacer una confirmación, lo cual tiene sentido. Hay un hueco, y es lo único que tienes que decidir:
+
+Si una reserva cancelada vuelve a pendiente, su sala y su franja pueden haberse reservado mientras tanto. Ejemplo: `Norte · lun · 10:00-12:00` se cancela, otra persona reserva `Norte · lun · 10:00-12:00`, y entonces reactivas la primera. Habría dos reservas vivas en la misma sala y franja.
+
+1. **Rechazar la reactivación** si la sala y la franja ya las ocupa otra reserva pendiente o confirmada, con un mensaje como `no se puede reactivar: Norte lun 10:00-12:00 ya está reservada`. *(Recomendada: mantiene la garantía de que `libres` no miente.)*
+2. Permitir la reactivación igualmente y dejar el conflicto sin resolver.
+3. Reactivar solo si hay otra sala libre en esa franja y cambiarla automáticamente.
+
+¿Cuál eliges?
