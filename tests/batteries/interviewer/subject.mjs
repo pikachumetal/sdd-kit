@@ -51,6 +51,8 @@ const turn2 = {
 };
 if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];
 if (s.SC === 'g9') s.env.EXTRA_ALLOWED = 'WebSearch WebFetch';
+// Lo que pe mide acaba antes de la review de la spec, cuyos revisores costaban 1 $ por sujeto en la pasada en seco.
+if (s.SC === 'pe') s.env.EXTRA_DISALLOWED = 'Agent';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
 if (s.SC === 'pe') await s.converse(join(HERE, 'persona-pe.md'), 8);

@@ -49,16 +49,23 @@ export function userTurns(runsDir, label) {
 
 const personaIndex = (file) => Number(/\.persona-(\d+)\.json$/.exec(file)[1]);
 
+// Cada llamada a claude -p abre con un system:init; un aviso de tarea en segundo plano también reabre la sesión con otro init,
+// justo tras su task_notification. Solo el init que sigue a un result (o el primero) es un turno nuevo del usuario.
+const isInit = (event) => event.type === 'system' && event.subtype === 'init';
+const isNotification = (event) => event.type === 'system' && event.subtype === 'task_notification';
+
 export function render({ events, cut }, turns) {
   const lines = [];
-  let turn = 0;
-  const openTurn = () => turns[turn] && lines.push(`\n# turno ${turn + 1}\n## ${turns[turn].who}\n${turns[turn].text}`);
-  openTurn();
-  for (const event of events) {
+  let turn = -1;
+  let last = 'result';
+  for (const event of events.filter((e) => !e.parent_tool_use_id)) {
+    if (isInit(event) && last === 'result') {
+      turn += 1;
+      if (turns[turn]) lines.push(`\n# turno ${turn + 1}\n## ${turns[turn].who}\n${turns[turn].text}`);
+    } else if (isInit(event)) lines.push('(aviso de una tarea en segundo plano)');
     if (event.type === 'assistant') lines.push(...renderAssistant(event));
-    if (event.type !== 'result' || PERSONA_TOTAL.test(event.result ?? '')) continue;
-    turn += 1;
-    openTurn();
+    if (isNotification(event)) last = 'notification';
+    if (event.type === 'result' && !PERSONA_TOTAL.test(event.result ?? '')) last = 'result';
   }
   if (cut) lines.push('(stream cortado)');
   return `${lines.join('\n')}\n`;
