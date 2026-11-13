@@ -39,6 +39,9 @@ const F31 = '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load';
 const F32 = '.docs/sdd/specs/20261015-120000-feature-0032-free-rooms-fast';
 const F33 = '.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates';
 const F34 = '.docs/sdd/specs/20261015-140000-feature-0034-tags-max-two';
+// Las features nuevas de la 0152 nacen en changes/, la carpeta de los cambios de la 3.0.0.
+const F35 = '.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs';
+const F36 = '.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations';
 const NOTE_PROMPT = 'skills/guardar-nota/references/note-prompt.md';
 let markSha = '';
 const SEED_LINE = 'export const seed = (list) => bookings.push(...list);\n\n';
@@ -64,6 +67,8 @@ const HALF_RED = "import { test } from 'node:test';\nimport assert from 'node:as
 const BROKEN_ON_BRANCH = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
   + "test('salas en orden', () => {\n  assert.equal(run('salas', []), 'Norte, Sur');\n});\n";
 const at = (path) => join(s.R, path);
+const OPS = '.docs/sdd/steering/operations.md';
+const CONSTITUTION = '.docs/sdd/steering/constitution.md';
 // En los encargos, la carpeta con barras, la forma que llevaban los encargos medidos.
 const forward = (path) => path.replaceAll('\\', '/');
 const edit = (path, change) => writeFileSync(at(path), change(readLf(at(path))));
@@ -74,7 +79,7 @@ const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, en
 // La copia del kit es `dist/` y no lleva `.docs/` (el sujeto leería la spec medida): las reglas de forma salen del repo del que se lanza.
 const REPO_DOCS = join(HERE, '..', '..', '..', '.docs', 'sdd');
 function formRules() {
-  const constitution = join(REPO_DOCS, 'constitution.md');
+  const constitution = join(REPO_DOCS, 'steering', 'constitution.md');
   const lines = existsSync(constitution) ? readLf(constitution).split('\n') : [];
   const from = lines.findIndex((line) => line.startsWith('## Art. II — La forma sigue al fallo'));
   const to = lines.findIndex((line, i) => i > from && line.startsWith('*Por qué*'));
@@ -82,13 +87,14 @@ function formRules() {
   if (article.length === 0) s.die(`sin el Art. II en la copia del kit: ${constitution}`);
   article[0] = article[0].replace(/^## Art\. II /, '## Art. III ');
   writeFileSync(join(s.RUN, 'form-article.md'), `${article.join('\n')}\n`);
-  appendFileSync(at('.docs/sdd/constitution.md'), `\n${article.join('\n')}\n`);
-  const refactor = readLf(join(REPO_DOCS, 'tech-stack.md')).split('\n').filter((line) => line.includes('- **Una ronda de REFACTOR que da 0/N'));
-  writeFileSync(at('.docs/sdd/tech-stack.md'), ['# Tech stack — notas', '', '## Pruebas de skills', '', ...refactor, ''].join('\n'));
-  writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
+  appendFileSync(at(CONSTITUTION), `\n${article.join('\n')}\n`);
+  const refactor = readLf(join(REPO_DOCS, 'steering', 'operations.md')).split('\n').filter((line) => line.includes('- **Una ronda de REFACTOR que da 0/N'));
+  writeFileSync(at(OPS), ['# Operations — notas', '', '## Testing', '', ...refactor, ''].join('\n'));
+  writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/steering/constitution.md` y `.docs/sdd/steering/operations.md`.\n');
 }
 
-s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'k4', 'k4r', 'cp1'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
+const moldDir = ['k2', 'k3', 'o1', 'o2', 'a1', 'a2', 'a3', 'a4', 'k4', 'k4r', 'cp1'].includes(s.SC) ? 'mold-kit' : s.SC === 'cs1' ? 'mold-cs' : 'mold-reservas';
+s.copy(join(HERE, moldDir));
 s.putKitMarker(MARKER);
 const molds = {
   r1: () => (cp('app-0012.js', 'src/app.js'), cp('cancel-task1.test.js', 'test/cancel.test.js')),
@@ -101,8 +107,8 @@ const molds = {
     cp('package-w1.json', 'package.json');
     mkdirSync(at('scripts'), { recursive: true });
     cp('env-setup.mjs', 'scripts/env-setup.mjs');
-    cp('environments-w1.md', '.docs/sdd/environments.md');
-    cp('tech-stack-w1.md', '.docs/sdd/tech-stack.md');
+    cp('operations-w1.md', OPS);
+    cp('architecture-w1.md', '.docs/sdd/steering/architecture.md');
   },
   k1: () => (cp('app-0018.js', 'src/app.js'), cp('readme-0018.md', 'README.md'), cp('readme.test.js', 'test/readme.test.js')),
   // Se escriben aquí y no en fixtures/: el repo del kit no admite scripts de bash. El hook va sin extensión, para que solo lo delate su `#!`.
@@ -126,7 +132,7 @@ const molds = {
     mkdirSync(at('test'), { recursive: true });
     writeFileSync(at('test/words.test.js'), WORDS_TEST);
   },
-  a2: () => appendFileSync(at('.docs/sdd/constitution.md'), ART_I),
+  a2: () => appendFileSync(at(CONSTITUTION), ART_I),
   // Dos red flags que repiten el paso 1: el paso nuevo solo cabe en 80 palabras quitándolas.
   k4: () => {
     mkdirSync(at('test'), { recursive: true });
@@ -143,7 +149,7 @@ const molds = {
     mkdirSync(at('skills/guardar-nota/references'), { recursive: true });
     cp('note-prompt-original.md', NOTE_PROMPT);
     cp('upstream-cp1.json', 'upstream.json');
-    appendFileSync(at('.docs/sdd/constitution.md'), GITFLOW);
+    appendFileSync(at(CONSTITUTION), GITFLOW);
   },
 };
 molds.g2 = molds.g1;
@@ -155,7 +161,7 @@ molds.b2 = molds.b1;
 molds.b3 = molds.b1;
 molds.r2 = molds.r1;
 for (const id of ['t1a', 't1b', 't1c']) molds[id] = molds.r1b;
-for (const id of ['t5a', 'p1', 'p2']) molds[id] = molds.t2;
+for (const id of ['t5a', 'p1', 'p2', 'p4', 'p4o']) molds[id] = molds.t2;
 molds.t5b = molds.t3;
 molds.o2 = molds.o1;
 molds.w2 = molds.w1;
@@ -349,6 +355,18 @@ const steps = {
     openFixture('0016-room-hours', F16, '0016');
     cp('app-0016-done.js', 'src/app.js');
   },
+  // El `horas` a medias, sin commitear: suma las horas de la sala sin mirar si la reserva está cancelada.
+  p4: () => {
+    openFixture('0016-room-hours', F16, '0016');
+    cp('app-0016-half.js', 'src/app.js');
+  },
+  // El RED por compilación: `Tests.cs` usará `Rooms.Hours`, que no existe; solo el sujeto llama a `dotnet`.
+  cs1: () => openFixture('0035-room-hours-cs', F35, '0035'),
+  // Dos capas (`src/store.js` nuevo y `src/app.js`) con su RED ya escrito en el árbol, sin commitear.
+  ml1: () => {
+    openFixture('0036-saved-cancellations', F36, '0036');
+    cp('persist.test.js', 'test/persist.test.js');
+  },
   t5a: () => {
     openFixture('0016-room-hours', F16, '0016');
     ASK = redWriter(F16, 'test/horas.test.js');
@@ -431,6 +449,7 @@ steps.e1 = () => {
   cp('cancel-task1.test.js', 'test/cancel.test.js');
 };
 steps.p1 = steps.t2;
+steps.p4o = steps.p4;
 steps.w2 = steps.w1;
 steps.w3 = steps.w1;
 steps.w4 = steps.w1;
@@ -465,24 +484,39 @@ if (s.SC.startsWith('pt')) s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit
 steps[s.SC]?.();
 
 const FRONTS_WITHOUT_AGENT = ['g1', 'g2', 'd1', 'a1', 'a2', 'a3', 'a4', 'k4', 'k4r', 'b1', 'b2', 'b3', 'n1', 'e1', 'fr1', 'cp1', 'rt1'];
-if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', ...FRONTS_WITHOUT_AGENT].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+if (['sp1', 'sp2', 'sp3', 'r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 'w4', 't6', 'p4', 'p4o', 'cs1', 'ml1', ...FRONTS_WITHOUT_AGENT].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', w4: '40', h2: '80' };
-for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_WITHOUT_AGENT]) turns[id] = '40';
+for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'p4', 'p4o', 'cs1', 'ml1', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_WITHOUT_AGENT]) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
+// cs1: dotnet sin aviso de primera vez ni telemetría en el entorno del sujeto.
+if (s.SC === 'cs1') Object.assign(s.env, { DOTNET_NOLOGO: '1', DOTNET_CLI_TELEMETRY_OPTOUT: '1', DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1' });
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const folder of [F30, F31, F32, F33, F34, F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27, F28]) {
+for (const folder of [F30, F31, F32, F33, F34, F35, F36, F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27, F28]) {
   for (const kept of ['spec', 'plan', 'tasks', 'research']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
-for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash', 'attempt', 'report', 'legacy', 'free', 'words', 'note-prompt']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
+for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash', 'attempt', 'report', 'legacy', 'free', 'words', 'note-prompt', 'persist']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
 keepIf(NOTE_PROMPT, 'note-prompt.md');
 keepIf('src/app.js', 'app.js');
+keepIf('src/store.js', 'store.js');
+keepIf('Rooms.cs', 'Rooms.cs');
+keepIf('Tests.cs', 'Tests.cs');
+// cs1 y ml1: el gate de la task, pasado por el lanzador sobre el árbol que dejó el sujeto, para que una fila de fichero lo lea.
+const gateOf = { cs1: ['dotnet', ['run', '--nologo'], 'gate.txt'], ml1: [s.NODE, ['--test'], 'suite.txt'] }[s.SC];
+if (gateOf) {
+  const [command, args, name] = gateOf;
+  const gate = spawnSync(command, args, { cwd: s.R, env: s.env, encoding: 'utf8', timeout: 120000 });
+  writeFileSync(join(s.RUN, name), `${gate.stdout ?? ''}${gate.stderr ?? ''}salida ${gate.status}\n`);
+  s.keep(join(s.RUN, name), name);
+}
 keepIf('.sdd-env.json', 'sdd-env.json');
 keepIf('README.md', 'README.md');
 keepIf('skills/guardar-nota/SKILL.md', 'guardar-nota.md');
 const sddTemp = at('.temp/sdd');
 for (const plan of existsSync(sddTemp) ? readdirSync(sddTemp).sort() : []) keepIf(`.temp/sdd/${plan}/progress.md`, 'progress.md');
-const patchFolder = existsSync(at('.docs/sdd/specs')) ? readdirSync(at('.docs/sdd/specs')).filter((name) => name.includes('-patch-')).sort().at(-1) : undefined;
-if (patchFolder) s.keep(at(`.docs/sdd/specs/${patchFolder}/patch.md`), 'patch-new.md');
+// El patch del sujeto nace en changes/; si lo crea en specs/ (donde está el patch 0007 del molde), también se guarda.
+const patchIn = (dir) => (existsSync(at(dir)) ? readdirSync(at(dir)).filter((name) => name.includes('-patch-')).sort().map((name) => `${dir}/${name}`).at(-1) : undefined);
+const patchFolder = patchIn('.docs/sdd/changes') ?? patchIn('.docs/sdd/specs');
+if (patchFolder) s.keep(at(`${patchFolder}/patch.md`), 'patch-new.md');
 s.save(`## petición\n${ASK}\n${markSha ? `## sha de la marca\n${markSha}\n` : ''}## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}## worktrees\n${s.git('worktree', 'list')}`);

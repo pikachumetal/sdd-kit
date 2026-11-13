@@ -1,0 +1,64 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [24]
+La re-revisión de `44bf353..e3f0c61` está lanzada en segundo plano con su vigilancia de silencio. No escribo ningún registro hasta que vuelva y quede cerrada.
+
+Lo que he comprobado hasta ahora:
+
+- **Árbol limpio.** No hay cambios sin commitear.
+- **Otras ramas.** Abiertas a la vez: ninguna. `git worktree list` solo muestra esta.
+- **`merge --check` falla.** Dice «falta `merge.into` o `merge.noFf`» en `sdd-kit.json`. No es un `destino sacado:`, así que sigo. En el paso 7 te presentaré el bloque `merge` y esperaré tu confirmación.
+- **Validación.** El proyecto no declara `validation.mode`, así que cuenta como `manual`. Tomo tu frase («probé cancelar con motivo y sale en canceladas», del dev-lead) como validación y la registraré literal.
+- **Revisión final.** Fue sobre `44bf353`, y `33989c7` (el fix de espacios) y `e3f0c61` (`sin canceladas`) tocan código. Por eso la re-revisión.
+- **Suite en local.** `node --test` pasa 6/6 en `e3f0c61`.
+- **Descuadre en `tasks.md`.** Atribuye las dos tasks a `44bf353`, pero la 1 es `ce84251`. Lo corregiré al cerrar.
+
+Cuando vuelva la re-revisión, sigo con el cierre: walkthrough, capacidad `bookings`, roadmap, squash y merge.
+
+--- [36]
+### Finding Verdicts
+- **Motivo with surrounding spaces is mishandled (Important, final review of 44bf353): ADDRESSED.** The motivo is now trimmed before it is checked, at `src/app.js:16`: `return index === -1 ? undefined : params[index + 1]?.trim();`
+  - `cancelBooking` checks and stores the value `reasonOf` returns, so `"otro "` and `" otro"` are now accepted, stored and echoed as `otro`.
+  - Edge cases still work. An all-space motivo becomes `""` and is rejected. `--motivo` as the last argument gives `undefined` (thanks to `?.`) and is rejected, which matches the spec scenario "sin `--motivo`".
+  - The new test at `test/cancel.test.js:17-19` tells the old and new code apart. Before the fix it answered «motivo no válido…»; now it answers «sin reserva Sur mar». It does not check the stored value, because Sur/mar has no booking (Minor test gap, see below).
+  - I checked the whitespace claim. `git diff -w 44bf353 e3f0c61 -- src/app.js` shows only 2 real lines changed: the `trim()` and the `|| 'sin canceladas'`. The other ~46 lines are only line-ending changes (see below).
+
+### New Breakage in the Fix Diff
+- **Important: `src/app.js:36` (e3f0c61).** This commit adds behaviour the spec does not describe, and nothing tests it.
+  - `|| 'sin canceladas'` adds a new message the user sees. The spec's «Delta de comportamiento» has only one `canceladas` scenario (a cancelled booking listed as «Norte lun — sala ocupada»). It has no empty-list scenario, and «Enmiendas» still says «(ninguna)».
+  - e3f0c61 changes only `src/app.js` (1 line, no test), and no test runs `canceladas` with nothing cancelled. The message is not pinned, so a regression would go unnoticed, and the approved spec no longer fully describes how `canceladas` behaves.
+  - The text is in Spanish (castellano), so the code constraint holds.
+  - It is labelled `fix` but answers no review finding.
+  - To fix: add the scenario to the spec as an amendment approved by the dev-lead, plus a RED→GREEN test in `test/cancel.test.js`. Or revert the commit and leave it for a later change.
+- **Minor: `src/app.js:1-48` (33989c7).** This commit switched the whole file from CRLF to LF line endings (48 carriage returns at 44bf353, 0 now). That is 46 lines of noise, it hides `git blame`, and nothing asked for it. The repo has no `.gitattributes`.
+- **Minor: `test/cancel.test.js:16-19` (33989c7).**
+  - The 4 added lines use LF while the rest of the file uses CRLF, so `git ls-files --eol` now reports the file as `i/mixed`.
+  - The new test uses double quotes; every other test in the file uses single quotes.
+  - It only checks that validation passes (`sin reserva Sur mar`). It does not cancel a real booking and check that `(otro)` comes out trimmed.
+- **Minor: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:13-14`.** The live log lists only 33989c7 as the fix round. e3f0c61 is not recorded.
+
+### Out-of-Scope Observations
+- `test/cancel.test.js` relies on the order of the tests and on state they share: the `canceladas` test only passes because the first test already cancelled Norte/lun. This was already the case before this range.
+- The spec's numbered «Decisiones» list jumps from 1 to 3 (`spec.md:24-25`).
+
+### Verdict
+**Fix round:** Findings remain open. The original motivo-trimming finding is addressed. The round is not clean because of the new Important: e3f0c61 adds a «sin canceladas» message that is outside the spec and has no test (`src/app.js:36`).
+
+--- [41]
+La 0010 no está cerrada: la re-revisión encontró un problema que decide Laura, y no he escrito ni mergeado nada.
+
+El fix de los espacios en el motivo (`33989c7`) queda arreglado. El problema está en `e3f0c61`, el commit de «canceladas sin canceladas dice "sin canceladas"» (`src/app.js:36`). Es un mensaje visible para el usuario que la spec aprobada no describe: solo tiene el escenario de la lista con una cancelada, y «Enmiendas» dice «(ninguna)». Además, ningún test lo cubre. El revisor lo grada Important. Como lo introdujo una pasada posterior a la revisión, el kit no me deja resolverlo con un ruling mío.
+
+Otros hallazgos de la re-revisión, que van sin parar el cierre:
+
+- **Finales de línea.** `33989c7` cambió `src/app.js` de CRLF a LF entero, unas 46 líneas de ruido. Mezcló además finales de línea en `test/cancel.test.js`.
+- **Test nuevo.** Usa comillas dobles, y solo comprueba que el motivo pasa la validación, no que se guarde recortado.
+- **`tasks.md`.** No recoge `e3f0c61` como pasada de fix.
+
+**¿Qué hacemos con «sin canceladas»?** Recomiendo mantenerlo, porque un listado vacío sin mensaje desconcierta:
+1. **Mantenerlo:** añado una enmienda a la spec con el escenario de lista vacía, que Laura firmaría, y un test RED→GREEN. Después sigo con el cierre.
+2. **Revertir `e3f0c61`:** el cierre sigue sin tocar la spec, y el mensaje queda para otra feature.
+
+Con la 1 necesito que Laura apruebe la enmienda. Su validación de «sale en canceladas» no cubría este mensaje.
+

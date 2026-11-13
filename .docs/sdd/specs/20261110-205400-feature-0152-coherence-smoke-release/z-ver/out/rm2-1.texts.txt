@@ -1,0 +1,53 @@
+--- [8]
+### Strengths
+
+- The change stays inside the spec's scope. `anular-todas` (`src/app.js:22-26`) is untouched, as the spec's "No entra" requires.
+- The decision for Laura (the dev-lead) to validate holds: `anular` still answers «anulada <sala> <día>» (`src/app.js:19`), and `test/void.test.js:6` pins that through the `anular` command, as the spec's «Dónde se prueba» asks.
+- The unused helper `formatMail` was removed cleanly. Interface text stays in Spanish, and no comments were added.
+- ADR 0003 holds: `src/` imports neither `node:fs` nor any database package (`package.json` has no dependencies).
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed notice still runs — `src/app.js:18`**
+- **What's wrong:** `voidBooking` still pushes a notice to `outbox`: `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`. The commit only dropped the `subject` and the «(enviado por correo)» suffix. `anular Norte lun` followed by `salida` still prints `responsable: anulada Norte lun` (`pending()`, `src/app.js:28-30`).
+- **Why it matters:** The spec deletes the whole notice: «REMOVED — Avisar por correo», Intent «Se quita el aviso», Approach «`anular` deja de preparar el aviso». The dev-lead's decision says «El aviso por correo al anular desaparece: el responsable avisa en persona». The responsable still gets a queued notice nobody reads, which is exactly what the feature set out to remove.
+- **How to fix:** Delete the `outbox.push(...)` line from `voidBooking`.
+- **Gap:** `contradicts`.
+- **Source:** the REMOVED requirement «Avisar por correo» of `bookings`, and the dev-lead's decision «El aviso por correo al anular desaparece». That decision is also only half covered: the rule drops the mail's format but keeps the notice.
+
+#### Important (Should Fix)
+
+**2. The test does not check what its name claims — `test/void.test.js:5-6`**
+- **What's wrong:** The test is named «anular responde sin aviso», but it only asserts the reply text. It never checks `outbox` or `salida`, so it passes with the notice still queued. That is why issue 1 got through.
+- **Why it matters:** «Dónde se prueba» names this test as the check for «Anular sin aviso». As written, nothing pins the absence of the notice.
+- **How to fix:** Add an assertion that no notice is queued after `anular`, for example `assert.deepEqual(outbox, [])` (it is exported), or `assert.equal(run('salida', []), '')`.
+- **Gap:** `partial`.
+- **Source:** the spec's «Dónde se prueba» line «Anular sin aviso: por el comando `anular`, como `test/void.test.js`».
+
+#### Minor (Nice to Have)
+
+- None. There is no ledger, so there are no deferred minors to weigh.
+
+### Declined to judge
+
+- **`test/app.test.js:9-11` and `test/cancel.test.js:5-11`:** these call `run('reservar', …)` and `run('cancelar', …)`, but `run` (`src/app.js:32-38`) handles neither command and would return `'salas'`, so they look like failing tests. Set aside because they predate this branch and the diff doesn't touch them. The main thread should confirm this when it runs the whole suite.
+- **Whether `outbox`, `pending()` and the `salida` command should stay once `anular` stops filling them:** set aside because the spec says nothing about `salida`. If issue 1 is fixed by deleting the push, `salida` will always be empty. Whether to keep it is a Quality or Architecture call, and roadmap row 0008 (email notices) may reuse it.
+- **Updating `.docs/sdd/capabilities/bookings.md`, which still lists «Avisar por correo»:** set aside because that capability file is normally updated when the feature is archived, not in the implementation diff.
+
+### Not verified
+
+- **Task report evidence for `node --test test/void.test.js`:** no verificado: the package contains no task report, and I did not run the suite, as instructed.
+
+### Recommendations
+
+- After the fix, run the whole suite on the main thread. Pay attention to the pre-existing `reservar` and `cancelar` tests described under "Declined to judge".
+- When a requirement is REMOVED, name the test after the missing behavior and make it assert that absence. A test that only checks the reply cannot catch a REMOVED requirement that still runs.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The REMOVED requirement «Avisar por correo» still runs: `anular` keeps queuing a notice for the responsable at `src/app.js:18`. Only the email formatting was removed, and the test is too weak to notice. It's a one-line fix plus one assertion.
+

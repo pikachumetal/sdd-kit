@@ -1,0 +1,35 @@
+--- [2]
+Empiezo por la Fase 1: leo la deuda del proyecto, el script y reproduzco el error.
+
+--- [6]
+## Causa raíz
+
+`scripts/informe.mjs` escribe con `writeFileSync('.cache/informes/ocupacion.csv', …)`, y `writeFileSync` no crea los directorios que faltan. En este repo `.cache/` no existe, así que Node lanza `ENOENT` en la línea 3 del script.
+
+## Evidencia
+
+- **Reproducido:** `npm run informe` falla siempre con `ENOENT: no such file or directory, open '…\repo\.cache\informes\ocupacion.csv'`.
+- **El script:** tiene una sola línea de lógica, el `writeFileSync` sobre `.cache/informes/ocupacion.csv`. No hay `mkdirSync`, ni `{ recursive: true }`, ni ningún paso previo que prepare la carpeta.
+- **El repo:** `ls -a .cache` dice que no existe. No hay `.gitignore` y `package.json` no define ningún script `pre…` que la cree. Tampoco la crea ningún otro archivo, porque `grep` sólo encuentra "cache" en `informe.mjs`.
+- **Por qué falta ahora:** `.cache/` es un directorio generado que nunca se versiona. El script depende de que alguien lo haya creado antes, y un clon limpio, un worktree o un repo recién limpiado no lo tienen.
+
+## Deuda existente
+
+La fila **«El listado de ocupación no sale tras limpiar el repo»** de `.docs/sdd/steering/debt.md` cubre este mismo fallo.
+
+- **Remedio temporal:** recrear la carpeta de la caché, por ejemplo `mkdir -p .cache/informes`.
+- **Arreglo previsto:** «comprobación automática».
+- **Destino:** sin fila en el roadmap.
+- **Origen:** dos tickets, el de 2026-10-12 y el de 2026-10-19.
+
+Esa fila no es la causa raíz. Sigue abierta y la investigación sigue en ese punto.
+
+## Sin tocar nada
+
+Como pediste, no he arreglado nada y no he creado la carpeta. Cuando quieras pasar a arreglarlo, entra por `sdd-propose`. Hay dos opciones:
+
+1. Que el script cree el directorio antes de escribir (`mkdirSync(..., { recursive: true })`). Es la que recomiendo, porque quita la dependencia de un estado previo.
+2. La «comprobación automática» que ya anota la deuda.
+
+Me falta leer los dos tickets enlazados, que no he abierto, para ver si añaden algún matiz.
+

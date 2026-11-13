@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json 2>&1; find .docs -type f 2>/dev/null | head -50
+<<< ./
+../
+.docs/
+.git/
+.github/
+CLAUDE.md
+e2e/
+package.json
+playwright.config.ts
+PRODUCT.md
+README.md
+src/
+{"init": {"approved": ["PRODUCT.md", ".docs/sdd/steering/constitution.md"], "config": {"ids": {"mode": "sequence"}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto", "validation": {"mode": "manual"}}}}
+.docs/sdd/sdd-kit.json
+.docs/sdd/steering/constitution.md
+
+>>> Bash: cd "<run>/repo" && cat package.json playwright.config.ts CLAUDE.md; find .github e2e src -type f; cat .github/workflows/* 2>/dev/null; git branch -a; ls .husky 2>&1 | head -3; head -c 1500 .docs/sdd/steering/constitution.md
+<<< {
+  "name": "reservas",
+  "scripts": { "dev": "vite", "test": "vitest run", "e2e": "playwright test" },
+  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "@playwright/test": "^1.55.0" }
+}
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  retries: process.env.CI ? 2 : 0,
+  timeout: 60_000,
+});
+# Reservas
+
+- Usa `npm run dev` en el puerto 3000.
+- Las fechas van en UTC.
+.github/workflows/ci.yml
+e2e/booking.spec.ts
+e2e/cancel.spec.ts
+src/app.ts
+name: ci
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: action
+
+>>> Bash: cd "<run>/repo" && cat src/app.ts e2e/*.ts; cat .docs/sdd/steering/constitution.md | sed -n 1,80p; git remote -v
+<<< export function reserve(room: string, slot: string): string {
+  return `reservada ${room} ${slot}`;
+}
+import { expect, test } from '@playwright/test';
+
+test('reserva Norte a las 10:00', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Reservar' }).click();
+  await expect(page.getByText('reservada Norte 10:00')).toBeVisible();
+});
+import { expect, test } from '@playwright/test';
+
+test('cancela una reserva', async ({ page }) => {
+  await page.goto('/mis-reservas');
+  await page.getByRole('button', { name: 'Cancelar' }).click();
+  await expect(page.getByText
+
+=== RESULTADO (6 turnos, 0.1290645 $)
+Retomo la init de `reservas` (modo: con código; si es un template recién instanciado, dímelo y sigo sin código).
+
+**Estado según `init.approved`:**
+- ✅ `PRODUCT.md`
+- ✅ `.docs/sdd/steering/constitution.md`
+- Configuración del kit ya respondida (ids por secuencia, perfil delegate, ejecución auto, validación manual). No la vuelvo a preguntar.
+- Falta: `operations.md`, `architecture.md`, `ROADMAP.md`, `debt.md`, `estimation.md`, `CHANGELOG.md` (si lo quieres), `CLAUDE.md`, y después git y cierre.
+
+Sigo con `operations.md`. Esto es lo que he verificado en el código, y lo que te pregunto.
+
+**Discrepancias del `CLAUDE.md` previo (no entran como reglas hasta que me digas):**
+- «`npm run dev` en el puerto 3000»: no hay `server.port` ni `--port` en ningún sitio. Vite usa 5173 por defecto, así que no está verificado.
+- «Las fechas van en UTC»: `src/app.ts` no maneja fechas, así que tampoco está verificado.
+
+**Propuesta para `## Testing`, a confirmar o corregir:**
+
+| Suite | Comando | Nivel | Duración |
+| --- | --- | --- | --- |
+| Vitest | `npm test` | pendiente (no hay tests ni config que muestren qué arranca) | pendiente |
+| Playwright (`e2e/`, 2 specs) | `npm run e2e` | E2E | pendiente |
+
+- **CI de la base**: GitHub Actions, `ci.yml`, solo ejecuta `npm test` (no el E2E). Orden de lectura propuesto: `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`. No hay remoto configurado, y no lo he ejecutado.
+- **Lint**: `ninguno`. No hay script `lint`/`format` ni pre-commit.
+- **Sin filtro**: `package.json`, `playwright.config.ts` y `.github/**`. No hay lockfile ni `.moon`.
+- **Temporales**: Playwright no declara `outputDir`, así que hoy escribe en `test-results/`. Te propongo moverlo a `.temp/playwright` (`outputDir: '.temp/playwright'`).
+- **E2E**: reintentos 2 en CI y 0 en local. Timeout de 60 s por test, sin motivo escrito. Flujos candidatos a core: «reserva Norte a las 10:00» y «cancela una reserva».
+- **Tests con el motor de producción**: los datos viven en memoria (según la constitución), así que no hay motor externo.
+- **Cómo entra el agente a la app**: `npm run dev` con Vite. La URL de entrada está pendiente por lo del puerto, y no hay `baseURL` en la config de Playwright, así que los `page.goto('/')` hoy no resuelven.
+
+**Preguntas**, una por turno. La primera es el puerto: ¿la app corre en 3000 (y entonces falta configurarlo) o en el 5173 por defecto?
+
+Cuando me contestes sigo con el resto: comando de tests afectados, gate de cierre y de merge, la rama (hoy solo `main`; te recomiendo git-flow con `develop`), worktrees, tracker de tickets, `## Frontend` (¿detector tipo impeccable?), y si quieres el test de títulos del E2E. No escribo ningún documento hasta tu «sí».

@@ -1,0 +1,79 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, ya que los ejes volvieron. Queda: leer los dos informes y llevarlos al stop, ~5 min.
+
+--- [15]
+RED confirmado. Ahora: aplico el fix del Important (recortar el motivo) y paso la suite entera.
+
+--- [22]
+Ahora: la re-revisión única de la pasada de fix (`ba66121..08fc37c`). Queda: despacharla con opus+high y esperar su informe, ~5 min, ~1 dólar.
+
+--- [27]
+Preparo el paquete del rango del fix, el worktree desacoplado y el brief.
+
+--- [34]
+Cerré el fix de la revisión final, pero la re-revisión sigue en marcha y todavía no sé su veredicto.
+
+**Informes de los ejes**
+- **Spec:** limpia, lista para el merge. Tiene 1 Minor: el test de `canceladas` depende de que `cancelar` se ejecute antes. Lo dejé diferido en el ledger porque `sdd-kit.json` no tiene `review.minors: fix`.
+- **Código:** 1 Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+
+**Arreglo**
+- Escribí primero el test `cancelar acepta el motivo con espacios alrededor` y falló.
+- Recorté el motivo en `src/app.js:16` y el test pasó.
+- Con el cambio, `node --test test/` da 6 pasan y 0 fallan. Eso es lo que ejecuté.
+- Está en el commit `08fc37c`.
+
+**Registro**
+- El ledger lleva `Eje Arquitectura: no`, el fix `RED→GREEN` y el minor diferido.
+- `tasks.md` tiene `Revisión final` y `Pasada de fix`. Esos cambios de `tasks.md` siguen sin commit.
+
+**Pendiente**
+- **Re-revisión:** está en segundo plano (opus+high) sobre `ba66121..08fc37c`, con su vigilancia de silencio. Cuando vuelva, apunto su línea `Re-revisión:` en `tasks.md`.
+- **Worktree de revisión:** hay que quitar `review-0010-08fc37c` cuando termine.
+- **Después:** la validación y el cierre con `sdd-archive`.
+
+--- [39]
+The fix closes the finding and introduces no Critical or Important breakage. The only issue is a weak new test, which is Minor.
+
+### Finding Verdicts
+- **[Code axis, Important] `src/app.js:14-17` — `reasonOf` keeps the spaces around the reason: ADDRESSED** (`src/app.js:16`).
+  - The function now returns `params[index + 1]?.trim()`, so `"sala ocupada "` becomes `"sala ocupada"` before the `reasons.includes` check at `src/app.js:20`.
+  - The trimmed value is also what gets stored (`booking.reason`) and printed, so `canceladas` shows no stray spaces either.
+  - The `?.` keeps the spec's "sin `--motivo`" case working: when `--motivo` is the last argument, the reason stays `undefined` and the answer is «motivo no válido: …».
+  - A reason of only spaces trims to `""`, which is not in the list, so it is rejected as before.
+  - The new test fails without the fix, so the RED claim in the ledger holds.
+
+### New Breakage in the Fix Diff
+- **Minor — `test/cancel.test.js:17-19`: the new test never checks that the cancellation happens.**
+  - The first test (`test/cancel.test.js:6`) already cancels Norte lun, and the bookings list is shared module state. So with the fix, the new test's call actually returns «sin reserva Norte lun», and `assert.doesNotMatch(..., /motivo no válido/)` passes on that.
+  - The test only proves the reason is no longer rejected. It does not check the finding's real scenario: the answer «cancelada Norte lun (sala ocupada)» with a clean stored reason.
+  - A wrong fix would still pass, for example one that trims only inside the check in `cancelBooking` and stores the raw value (answer «cancelada Norte lun (sala ocupada )»).
+  - The test also depends on running after the first test.
+  - Suggested fix: run it on a booking that is still active, or reset the state first, and use `assert.equal` with «cancelada Norte lun (sala ocupada)». In this fixture the only active booking is Norte lun, which the first test cancels.
+
+### Out-of-Scope Observations
+- **Trimming is not in the spec.** The spec's behaviour delta (`spec.md:49-54`) does not say that reasons are trimmed, and its Enmiendas section says «(ninguna)». The review introduced this behaviour, so it may deserve an amendment line or an extra AND in the delta.
+- **The "sin `--motivo`" scenario has no test.** `spec.md:54` describes it, but `test/cancel.test.js` has no test for it. That gap was there before this fix.
+- **Numbering skips 2.** The list in «Decisiones que he tomado yo» (`spec.md:24-25`) goes 1, 3.
+- **Verification to recommend.** I did not run the suite or check the ledger's 6/6 count; the thread's suite run is what backs it. Running `node --test` after strengthening the test would confirm it still goes RED then GREEN.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [42]
+🦆 La revisión final está cerrada y el único hallazgo grave quedó arreglado. Falta una decisión tuya sobre el recorte del motivo.
+
+✋ **Decisión que necesito:** `08fc37c` recorta los espacios del motivo, y eso no está en `spec.md`: `Enmiendas` dice «(ninguna)».
+- Lo arreglé como un fix del Important del eje Código, pero añade un comportamiento que la spec no nombra.
+- Según las reglas de `sdd-implement` puede contar como desviación. Por eso no lo cierro yo.
+- Mi recomendación es aprobarlo y añadir una línea en `Enmiendas` y un AND en el delta de `spec.md`. Si no lo apruebas, se revierte `08fc37c` y el Important queda como un ruling.
+
+**Estado de la revisión**
+- **Spec:** limpia, con 1 Minor diferido (el test de `canceladas` depende del orden de los tests).
+- **Código:** 1 Important, arreglado en `08fc37c` con RED→GREEN. La suite da 6 pasan y 0 fallan (la ejecuté yo).
+- **Re-revisión (opus+high):** el hallazgo queda resuelto y no hay Critical ni Important nuevos. Me dejó un Minor: el test nuevo pasa también con «sin reserva», porque comparte estado con el primer test y no comprueba que la cancelación ocurra. Lo dejé como ruling, porque una re-revisión no abre otra.
+
+**Pendiente**
+- **Commit:** `tasks.md` y el ledger siguen sin commit (`tasks.md` es un fichero nuevo sin añadir).
+- **Cierre:** el cierre con `sdd-archive` queda a la espera de tu decisión.
+

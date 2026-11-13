@@ -1,0 +1,27 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [26]
+La 0010 no está cerrada: la re-revisión encontró dos problemas Important en el último commit y necesito una decisión de la dev-lead. No he escrito ningún registro ni he fusionado nada, y el árbol sigue limpio.
+
+**Lo que ha pasado**
+- La revisión final quedó limpia sobre `3a7fb85`, pero después se añadió `768819a`. Ese commit hace que `canceladas` sin canceladas responda «sin canceladas». El kit manda una única re-revisión de ese rango antes de cerrar, y ya ha vuelto.
+- **Important, sin spec:** la spec no define el listado vacío. `## Enmiendas` está en «(ninguna)» y no hay ningún escenario para ese caso. Es una salida nueva y visible que la dev-lead no ha aprobado.
+- **Important, sin test:** el commit solo toca `src/app.js` y ningún test fija «sin canceladas». Eso va contra la constitución («tests antes que código»).
+- **Minor:** `768819a` convirtió todo `src/app.js` de CRLF a LF. El stat crudo marca 48/48 líneas para un cambio real de una. No rompe nada, pero `git blame` atribuye ahora el fichero entero a ese commit.
+- La validación que me has pasado, «probé cancelar con motivo y sale en canceladas», cubre el camino con una cancelada. No cubre el listado vacío.
+
+**Una pregunta para la dev-lead**
+¿Quiere «sin canceladas» como comportamiento de la 0010 o prefiere dejar el listado vacío como estaba? Mi recomendación es que lo apruebe: es coherente y pequeño. Si lo aprueba, el trabajo es:
+1. Una enmienda en la spec con un escenario ADDED para el listado vacío.
+2. Un test de ese caso, que tiene que ir antes de `cancelar con un motivo de la lista` porque los tests comparten estado.
+3. Rehacer el commit sin el cambio de finales de línea.
+
+Si no lo aprueba, revertimos `768819a`.
+
+**Otros pendientes**
+- **Merge:** `sdd merge --check` falla porque `sdd-kit.json` no tiene el bloque `merge` (`merge.into` y `merge.noFf`). Con `profile: delegate` y el bloque incompleto no fusiono sin que lo apruebes. Mi propuesta es `merge.into: develop` (la constitución usa `develop` como rama de integración) y `merge.noFf: true`. Dime si te sirve.
+- **Sin otras ramas abiertas:** `git worktree list` solo muestra esta.
+
+**No terminado.** Falta la decisión sobre `768819a` y el bloque `merge`. No borres todavía el worktree `<run>/repo`.
+

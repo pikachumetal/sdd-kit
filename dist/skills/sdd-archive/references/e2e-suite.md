@@ -4,7 +4,7 @@ Used by the validation and integrated-base steps of `sdd-archive` when `operatio
 
 ## 1. The environment, raised by this session
 
-Before each pass, run the command of «Entorno de la suite» yourself, in this session, and its check, and see it green. A server that was already listening doesn't count, even if it answers: it may serve another worktree's code or the data of another pass. With `no aplica`, there's nothing to raise, and the 4.1 says so. If the suite's port is held by a process you didn't start and the command doesn't free it, stop and ask: its port is the project's, and another one would check the wrong server. Stop what you raised afterwards, by its PID or its port (`sdd-implement`, «Processes you start»).
+Before each pass, run the command of «Entorno de la suite» yourself and its check, in a call of their own, and see them green: never chain the pass after them. A server already listening doesn't count, even if it answers: it may serve another worktree's code or another pass's data. With `no aplica`, there's nothing to raise, and the 4.1 says so. If the suite's port is held by a process you didn't start and the command doesn't free it, stop and ask: another port would check the wrong server. Stop what you raised afterwards, by its PID or its port (`sdd-implement`, «Processes you start»).
 
 ## 2. The gate as declared
 
@@ -20,14 +20,14 @@ Compare the E2E suite's duration with «Presupuesto E2E» and write both in the 
 
 ## 5. A repeated batch
 
-Before repeating tests (`--repeat-each`, a loop of passes), your message carries this line, and only then you launch:
+The command that repeats tests (`--repeat-each`, a loop of passes) opens with this line as a comment, so the user sees it before it runs:
 
 ```text
-Tanda: <tests nuevos o cambiados> ×<N> + <los demás de esos ficheros> ×1 = <ejecuciones> ejecuciones · ~<minutos> (<duración media> × <ejecuciones> ÷ <workers>)
+# Tanda: <tests nuevos o cambiados> ×<N> + <los demás de esos ficheros> ×1 = <ejecuciones> ejecuciones · ~<minutos> (<duración media> × <ejecuciones> ÷ <workers>)
 ```
 
 - **Scope**: «the branch» is `git diff <merge.into>...HEAD`, not `main`. Its added or changed tests ×N; the other tests of the files it touches ×1; nothing from the files it doesn't touch, even when asked for «the specs it touches».
-- **Estimate**: the average duration comes from the last pass's times. The 4.1 repeats the line with the real minutes: an estimate written after the batch isn't one.
+- **Estimate**: the average duration comes from the last pass's times. The 4.1 repeats it with the real minutes.
 - While it runs, don't edit what it executes (`src/`, the tests, the runner's config): a change halfway makes the batch measure two codes.
 
 ## Common Rationalizations

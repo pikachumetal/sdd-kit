@@ -1,0 +1,95 @@
+--- [20]
+Ahora: reservé el id 0012 y creo la rama del patch. Queda: claim del id, `patch.md`, test en rojo, fix, un revisor, commit y cierre, ~25 min.
+
+--- [30]
+RED confirmado: ambos fallan por la causa esperada. Ahora el fix.
+
+--- [33]
+Ahora el revisor único del patch (sonnet, effort medium).
+
+--- [35]
+Ahora: el revisor del patch está corriendo. Queda: sus hallazgos, rellenar §4 de `patch.md`, commit y cierre, ~10 min. Espero su resultado.
+
+--- [39]
+Hallazgos:
+
+1. **`patch.md` §3 (línea "Fichero(s)")** — Lista `test/cancel.test.js`, pero ese fichero no está modificado. Los tests nuevos están en `test/cancel-day.test.js` y `test/void-day.test.js`. Hay que corregir la lista a los ficheros reales. De paso, convendría decir en el patch por qué `anular` va en un fichero aparte (estado en memoria compartido por proceso).
+
+2. **`patch.md` cabecera y §4 y §5** — Pone `status: done` pero la fila 1 de verificación dice «pendiente», el esfuerzo real está «pendiente» y `commit: pendiente`. Es inconsistente. Los tests pasan (6/6 con `node --test`), así que falta anotar el resultado en §4. Además, §4 solo cubre reproducir con `cancelar` y no menciona `anular`, aunque §1 y §2 dicen que también falla.
+
+3. **`test/cancel-day.test.js:5-8` y `test/void-day.test.js:5-8`** — Pequeño hueco, no bloqueante. Los tests comprueban el mensaje para el día equivocado y que la reserva del lunes sigue activa, porque después se puede cancelar o anular. Eso prueba el comportamiento real. No cubren el caso de volver a cancelar o anular la misma reserva, ni una sala sin ninguna reserva. El fix tampoco cambia esos casos.
+
+Comprobaciones sin hallazgo:
+- **Causa raíz:** es cierta. En el `git diff`, la línea 9 original de `src/app.js` filtraba solo por sala y estado, sin usar `day`.
+- **Fix:** es mínimo (una condición, `b.day === day`) y correcto para ambos comandos, porque `cancelBooking` y `voidBooking` comparten `findBooking`. El texto `sin reserva <sala> <día>` ya existía.
+- **Tests:** la separación en ficheros tiene sentido, porque cada fichero corre en su propio proceso con su propio estado. Si fueran uno solo, el segundo test encontraría la reserva ya cancelada.
+
+--- [44]
+Las ediciones se aplicaron. Commit del fix y cierre.
+
+--- [56]
+**✋ Me paro en la validación del patch 0012.** El modo es `manual`: valida una persona, así que no sigo con el cierre hasta que me digas qué has probado.
+
+🦆 Antes, `cancelar Norte mar` con solo la reserva del lunes respondía «cancelada Norte mar» y dejaba cancelada la del lunes. Ahora responde `sin reserva Norte mar` y no toca la del lunes. `anular` tenía el mismo fallo y también queda arreglado.
+
+**Me salí del plan en…**
+
+- nada
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día | `ejecución real` | `sin reserva Norte mar` |
+| `cancelar Norte lun` sigue funcionando | `ejecución real` | `cancelada Norte lun` |
+| `anular Norte mar` sin reserva ese día | `ejecución real` | `sin reserva Norte mar` |
+| `anular Norte lun` | `ejecución real` | `anulada Norte lun` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y lint sin hallazgos, sobre `8a9d7ae`, ~1 s.
+
+**Sin probar**
+
+- Nada.
+
+Panel: plan B en http://127.0.0.1:60727/. Esta página no ve la aplicación: si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0012-cancel-day` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar, y las reservas viven en memoria. Cada comando parte de la reserva del lunes recién creada.
+
+Terminal:
+
+```
+cd <run>/repo
+```
+
+1. El caso reportado: la sala Norte no tiene reserva el martes → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. La reserva del lunes sigue disponible → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Lo mismo con anular → `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+Cuando acabes, paro el servidor del panel por su PID.
+
+Si no puedes ahora: `Diferir: lo pruebo en el próximo uso real de cancelar, a cargo de quien valida`
+
+Hay un segundo punto pendiente para el merge, que no bloquea la validación. `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Sin ese bloque no fusiono por mi cuenta: te presentaré el merge y esperaré tu respuesta. Además, `.temp/` no está en un `.gitignore`: te propongo añadirlo para que el panel no deje basura sin seguimiento.
+
+Dime "validado" o qué paso falla.
+

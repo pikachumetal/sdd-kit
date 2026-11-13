@@ -1,0 +1,89 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | head -80; echo ----; grep -n -i -A40 "testing" .docs/sdd/operations.md | head -90; git log --stat -3 --format='%h %s' 
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (1.6013ms)
+✔ reservar --cada-semana crea la reserva semanal (0.2643ms)
+✔ cancelar con un motivo de la lista (1.6085ms)
+✔ cancelar con un motivo fuera de la lista (0.2465ms)
+✔ canceladas enseña sala, día y motivo (13.9154ms)
+✖ el README nombra cancelar con motivo (1.9525ms)
+✖ el README nombra canceladas (0.3285ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 260.6872
+
+✖ 
+
+>>> Bash: ls; cat scripts/gate.mjs | head -40; ls .docs/sdd 2>/dev/null; cat package.json; cat test/docs.test.js; git status --short
+<<< CHANGELOG.md
+gate.json
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+#!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const tasks = JSON.parse(readFileSync('gate.json', 'utf8')).tasks;
+
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).split('\n').filter(Boolean);
+}
+
+function changedFiles(base) {
+  const committed = git(['diff', '--name-only', `$
+
+>>> Bash: cat gate.json; node --test test/docs.test.js 2>&1 | tail -20; echo exit=$?
+<<< {"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js test/docs.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js","test/docs.test.js","README.md"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+✔ el README nombra cancelar con motivo (1.4283ms)
+✔ el README nombra canceladas (0.2325ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.772
+exit=0
+
+>>> Bash: git diff --name-only develop...HEAD; node scripts/gate.mjs task rooms:test 2>&1 | head
+<<< .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+README.md
+src/app.js
+test/cancel.test.js
+Task: rooms:test
+Inputs:
+  - src/rooms.js
+  - test/rooms.test.js
+
+=== RESULTADO (7 turnos, 0.1382839 $)
+Los dos tests que fallaron en c847ab4 pasan ahora. No he corrido el gate completo, y es lo que pide el kit en este caso. El arreglo a6467dd solo toca `README.md`, así que el ítem 3 de «Running a gate» manda repetir solo los tests que fallaron, sin gate ni suites.
+
+- **Rerun:** `node --test test/docs.test.js` dio 2 pass y 0 fail. Son `el README nombra cancelar con motivo` y `el README nombra canceladas`.
+- **Tarea roja:** en la pasada roja corrieron los 7 tests de `bookings:test`, y los otros 5 ya estaban en verde. No hubo tests sin correr que haya que repetir.
+- **Tarea saltada:** `rooms:test` sigue saltada. Sus inputs son `src/rooms.js` y `test/rooms.test.js`, y ninguno aparece en `git diff --name-only develop...HEAD`. Eso lo dice `gate.json`, no mi lectura.
+
+Para el walkthrough:
+
+```
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → tras el rojo en c847ab4, arreglo a6467dd solo de docs: bookings:test: corrió 2/2 (los que fallaron: test/docs.test.js) · rooms:test: saltada (sus inputs src/rooms.js y test/rooms.test.js no están entre los ficheros cambiados)
+```
+
+No he corrido la revisión final por ejes (Spec y Code) porque no me la has pedido. La necesita el cierre de la 0010, así que pídemela si la quieres.

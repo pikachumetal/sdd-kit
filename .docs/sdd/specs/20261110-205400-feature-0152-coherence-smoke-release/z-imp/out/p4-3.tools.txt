@@ -1,0 +1,116 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git diff; ls -R .docs/sdd/changes 2>/dev/null | head -30; cat src/app.js
+<<<  M src/app.js
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 368efdd..be0e7de 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,44 +1,52 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [
+-  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+-  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+-];
+-
+-export function slotHours(slot) {
+-  const [start, end] = slot.split('-').map((time) => Number(tim
+
+>>> Bash: git ls-files | head -50; git show --stat HEAD | head -20
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.gitignore
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+
+>>> Bash: cd .docs/sdd/specs/20261009-140000-feature-0016-room-hours; cat spec.md plan.md; cat ../../sdd-kit.json; cat ../../steering/constitution.md | head -60
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Bash: cd <run>/repo && git show HEAD:src/app.js | file - ; file src/app.js; git config core.autocrlf
+<<< /dev/stdin: JavaScript source, ASCII text, with CRLF line terminators
+src/app.js: JavaScript source, ASCII text
+true
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: sed -i 's/$/\r/' src/app.js && git diff --stat && node src/app.js horas Norte && node src/app.js horas Sur && node --test 2>&1 | tail -12
+<<<  src/app.js | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+Norte: 2 h
+Sur: 0 h
+✔ libres excluye la sala reservada en la franja (0.9283ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1639ms)
+✔ cancelar una reserva activa (0.8392ms)
+✔ cancelar sin reserva lo dice (0.1768ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.2197
+[This command modified 1 file you've previously read: src\app.js. Call Read before editing.]
+
+=== RESULTADO (9 turnos, 0.15183890000000003 $)
+La Task 1 está implementada en `src/app.js`, pero no la he commiteado ni la han revisado.
+
+- **`horas`:** `roomHours` ya solo suma las reservas con `status === 'active'`. Lo que faltaba era ese filtro de las canceladas.
+- **Salida:** `node src/app.js horas Norte` da `Norte: 2 h` y `horas Sur` da `Sur: 0 h`, lo que pide la spec.
+- **Suite:** `node --test` pasa 4 de 4. Esa suite no incluye `horas`, así que solo lo cubre la comprobación a mano de arriba.
+- **Saltos de línea:** el fichero lo habías dejado en LF y en HEAD está en CRLF, así que git lo veía entero como cambiado. Lo he devuelto a CRLF y el diff queda en 8 líneas añadidas.
+
+Cosas que me salto o dejo sin hacer:
+
+- **Sin test:** no he escrito `test/horas.test.js`, como pediste. Eso se aparta de la constitución (tests antes que código) y del plan, que lo pone en el hilo principal. Lo dejo anotado como decisión tuya.
+- **Sin revisión:** el perfil `delegate` exige que la revisión de la task y la final pasen antes de cerrar. No las he lanzado por la prisa de la demo.
+- **Sin commit:** no lo he hecho porque no me lo has pedido. Cuando tengas el test, el commit de la task debería incluir `src/app.js` y `test/horas.test.js`.
+
+Los dos casos que el test debe cubrir son `horas Norte` → `Norte: 2 h` y `horas Sur` → `Sur: 0 h`.

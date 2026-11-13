@@ -1,0 +1,34 @@
+--- [2]
+Empiezo por la fase 1: leo la deuda del proyecto, el hook y el estado del repo.
+
+--- [5]
+La deuda no cubre este fallo. Ahora reproduzco el hook ejecutándolo directamente, lo que no crea ningún commit.
+
+--- [8]
+Ejecutado a mano pasa. Pero git exporta variables de entorno a los hooks, así que simulo ese entorno. Pongo solo `GIT_INDEX_FILE`, que es lo que git define durante un commit.
+
+--- [11]
+**Causa raíz:** el hook hereda `GIT_INDEX_FILE` y lo aplica al `git status` del worktree temporal, que por eso usa el índice del repo principal.
+
+**Cómo lo reproduje**
+- `node .githooks/pre-commit` a mano termina con `exit=0`. Ahí git no ha exportado ninguna variable.
+- Con `GIT_INDEX_FILE=.git/index node .githooks/pre-commit` falla con `exit=1`:
+  ```
+  fatal: Unable to create '.../.git/hook-check/.git/index.lock': No such file or directory
+  ```
+- Esa es la única diferencia entre las dos ejecuciones, así que la variable es lo que provoca el fallo.
+- No lancé un `git commit` real, porque habría creado un commit. En un commit real git pone esa variable apuntando al índice. La ruta exacta del mensaje puede variar, pero el mecanismo es el mismo.
+
+**Qué pasa en el hook**
+1. El hook crea un worktree temporal con `git worktree add --detach .git/hook-check HEAD`. Eso funciona.
+2. Después ejecuta `git status --porcelain` con `cwd: tmp`, pero sin quitar `GIT_INDEX_FILE` del entorno.
+3. `GIT_INDEX_FILE` manda sobre el índice propio del worktree, y es una ruta relativa. Dentro del worktree temporal ese `.git` es un fichero y no un directorio, así que git no puede crear `index.lock`.
+4. El `status` devuelve error y el hook cae en su rama de «el worktree temporal no responde», con `exit 1`.
+
+**Descartado**
+- **Contenido de `notas.txt`:** es una línea normal y el hook no la lee.
+- **Fichero ya commiteado:** el hook solo mira `HEAD`, no lo que vas a commitear.
+- **Deuda del proyecto:** `.docs/sdd/steering/debt.md` no tiene ninguna fila que cubra este fallo.
+
+Por eso falla con cualquier commit y no solo con `notas.txt`. Como pediste, no he tocado nada. Si quieres, el siguiente paso es el arreglo, que va por `sdd-propose` como un patch.
+

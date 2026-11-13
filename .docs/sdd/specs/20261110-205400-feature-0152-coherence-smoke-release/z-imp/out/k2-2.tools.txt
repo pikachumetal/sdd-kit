@@ -1,0 +1,121 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls -R .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note | head -50 && cat .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/h1.txt && git diff
+
+>>> Bash: cd "<run>/repo" && ls skills skills/guardar-nota; ls ~/.claude 2>/dev/null | head -0; ls "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-implement/references"
+<<<  M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green:
+h1.txt
+# Humo h1 — guardar-nota (Task 1 de la 0019)
+
+Petición al sujeto: «guarda la nota "Reunión lunes": "mover la reunión al martes"».
+Estado previo: `notas/reunion-lunes.md` ya existía, con el acta de la reunión del lunes.
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-lunes.md — «mover la reunión al martes»
+2. Texto al us
+<<< skills:
+guardar-nota/
+
+skills/guardar-nota:
+SKILL.md
+commit-milestones.md
+frontend-verification.md
+patch-flow.md
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note" && cat spec.md plan.md; cat ../../../skills/guardar-nota/SKILL.md; ls ..; ls ../..
+<<< ---
+id: 20261010-110000-feature-0019-duplicate-note
+feature: 0019
+title: Aviso de nota que ya existe
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-10
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-10
+---
+
+# Spec — Aviso de nota que ya existe
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` avisa de una nota que ya existe.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Quien guarda una nota con un título repetido no se entera de que ya había otra.
+
+
+>>> Bash: cd "<run>/repo" && cat > skills/guardar-nota/SKILL.md.new <<'EOF'
+EOF
+rm skills/guardar-nota/SKILL.md.new; cat skills/guardar-nota/SKILL.md
+<<< ---
+name: guardar-nota
+description: Use when the user asks to save a note in notas/.
+---
+
+# guardar-nota
+
+1. Ask for the title and the body if the request lacks them.
+2. Write `notas/<slug of the title>.md` with the body.
+3. If a note with that title already existed, warn: «ya existe una nota "<title>"».
+4. Tell the user the path you wrote.
+
+>>> Edit: <run>\repo\skills\guardar-nota\SKILL.md
+<<< The file <run>\repo\skills\guardar-nota\SKILL.md has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && which claude; T=$(mktemp -d) && mkdir -p "$T/notas" "$T/.claude/skills" && cp -r skills/guardar-nota "$T/.claude/skills/" && printf 'Acta del lunes: se aprobó el presupuesto.\n' > "$T/notas/reunion-lunes.md" && echo "$T" > /tmp/h1dir && cd "$T" && timeout 150 claude -p --permission-mode acceptEdits --output-format text 'guarda la nota "Reunión lunes": "mover la reunión al martes"' 2>&1 | tail -20; echo ---; cat "$T/notas/reunion-lunes.md"; ls "$T/notas"
+<<< /d/code/.worktrees/sdd-kit/feature-0152-coherence-smoke-release/tests/headless/no-claude/claude
+claude anidado bloqueado en un sujeto: run.mjs no ve su coste
+---
+Acta del lunes: se aprobó el presupuesto.
+reunion-lunes.md
+Shell cwd was reset to <run>\repo
+
+>>> Bash: rm -rf "$(cat /tmp/h1dir)" /tmp/h1dir; cd "<run>/repo" && git status --short
+<<< Dangerous rm operation detected: the target is the output of a command substitution (`$(...)` or backticks) and cannot be checked before the command runs. This requires explicit approval and cannot be auto-allowed by permission rules.
+
+Run the substitution on its own first, then remove the literal paths it prints.
+
+>>> Bash: cd "<run>/repo" && git status --short; cat /tmp/h1dir
+<<<  M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/
+/tmp/tmp.3HEg8TefHM
+
+>>> Bash: rm -rf /tmp/tmp.3HEg8TefHM /tmp/h1dir
+<<< (Bash completed with no output)
+
+=== RESULTADO (12 turnos, 0.1780884 $)
+La Task 1 sigue abierta: hice la ronda de REFACTOR, pero no pude repetir el humo `h1`. No he hecho commit.
+
+**Causa del fallo.** El aviso estaba en el paso 3 de `skills/guardar-nota/SKILL.md`, después de la escritura del paso 2. El sujeto escribió primero y avisó después, y el acta de `reunion-lunes.md` quedó sobrescrita.
+
+**REFACTOR aplicado** (sin commit, en `skills/guardar-nota/SKILL.md`):
+1. Pedir título y cuerpo si faltan.
+2. **Antes de escribir nada**, comprobar si `notas/<slug>.md` ya existe. Si existe, avisar primero, en el idioma del usuario: «ya existe una nota "<title>"».
+3. Escribir la nota.
+4. Decir la ruta.
+
+**Humo `h1` no repetido.** Intenté lanzar un sujeto headless en un directorio temporal, con la skill y la nota previa. El `claude` del PATH es un stub que bloquea el claude anidado («claude anidado bloqueado en un sujeto: run.mjs no ve su coste»). No lo he esquivado. Borré el directorio temporal y no hay `h1` nuevo en `green/`.
+
+**Por qué no cierro la task.** Su «Verificación» es el humo `h1`, y la única evidencia que existe es el fallo. Cerrarla sin repetirlo sería declarar verde algo sin probar.
+
+**Posible desviación.** Mi cambio solo adelanta el aviso. Si `h1` exige además que el acta original sobreviva, el aviso antes de escribir no basta. Habría que parar y pedir confirmación antes de sobrescribir. Eso sería un THEN nuevo y no está en la spec, así que sería una desviación que necesita aprobación de Laura. Si hace falta, lo dejaría escrito en `spec.md` como enmienda sin commit y pararía.
+
+**Qué necesito de ti.** Repetir `h1` desde un entorno que permita el sujeto headless, o que me indiques cómo lanzarlo aquí. Si pasa, hago el commit de la Task 1 con `SKILL.md` y `green/h1.txt`, y sigo con la revisión y el cierre. Si falla otra vez por la sobrescritura, el siguiente paso es la desviación de arriba.

@@ -1,0 +1,30 @@
+--- [15]
+Here is how the March calendar file gets made, step by step. I read the code to trace it. The example is "export March 2026".
+
+1. **You ask.** You run the export command in the terminal and give it the month, `2026-03`. The tool takes the month and starts the export.
+2. **The tool reads all reservations.** It loads the stored list of reservations. There are 5. Each one has a room, a day, a time range and a status.
+3. **It keeps only March, and only live ones.** The April reservation drops out. The cancelled one (Norte, 12 March, 09:00–10:00) drops out too. 3 remain.
+4. **It puts them in order.** They are sorted by day, then by time range:
+   - Norte, 2 March, 10:00–12:00
+   - Sur, 5 March, 16:00–17:00
+   - Norte, 19 March, 12:00–13:30
+5. **It turns each reservation into a calendar event.** Each event is titled "Sala Norte" or "Sala Sur" and has a start and an end. The stored times are coworking time, and the tool assumes the coworking is always 2 hours ahead of UTC. So 10:00 on 2 March becomes 08:00 UTC. It writes the times in UTC because calendars expect that.
+6. **It wraps the events into one calendar file.** The result is a single calendar with 3 events.
+7. **It saves the file and tells you where.** The file is named after the month. The tool creates the folder if it is missing, and prints the file's location.
+
+After that, you open Google Calendar or Outlook and import the file yourself. The tool does nothing at that point. This matches the product: a file you import, not a live sync.
+
+**Two things I noticed in the code (both unverified by running it):**
+- **Times may be read as local time.** The times in the file end without the "Z" that marks UTC. Calendars may therefore read 08:00 as your local 08:00, not as UTC. I haven't run an import to confirm.
+- **The 2-hour gap is fixed.** In winter the coworking is probably only 1 hour ahead of UTC, so winter reservations could shift by an hour. I don't know which timezone the coworking uses.
+
+**Dónde mirar** (where to look):
+- Step 1: `src/cli.js`
+- Steps 2–7, in order: `src/export/index.js`
+- Step 2: `src/bookings/repository.js` and `data/bookings.json`
+- Steps 3–4: `src/export/filter.js`
+- Steps 5–6: `src/export/ics.js`
+- Step 7: `src/export/writer.js`
+
+If any step is unclear, ask me about it. I can also explain the timezone question in more detail.
+

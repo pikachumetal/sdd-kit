@@ -1,0 +1,77 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [50]
+**Findings**
+
+1. **Important**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. The `## Rulings` entry doesn't hold up. It says the gate runs `node --test --test-concurrency=1` "para esquivar la carrera de los tests sobre el almacén compartido en memoria". No such race is possible:
+   - `node --test` runs each test file in its own process. The module-level `bookings` array in `src/app.js:4` is therefore never shared between `test/app.test.js` and `test/cancel.test.js`.
+   - Tests inside one file already run one after another by default.
+   - The flag fixes nothing, and the stated cost ("la suite tarda el doble") has no basis.
+
+   The ruling also doesn't match the rest of the record:
+   - `plan.md:50` still says `Gate de cierre: node --test`.
+   - Constitution §2 sets the gate as `node --test`.
+   - No script or config in the repo adds the flag.
+   - It calls itself a "workaround hasta aislar el almacén por test", but `steering/debt.md` has no matching debt row.
+
+   The real coupling is test order inside `cancel.test.js` (see Out-of-Scope Observations). The ruling needs to be corrected or withdrawn, and if a workaround stays, it needs its debt row.
+
+2. **Minor**, `tasks.md:10`. The Task 1 row ("Cancelar con motivo") records commit `7c3b821`. The commit that did Task 1 is `fc06854` ("feat(bookings): cancelar con un motivo de la lista", which touches `cancelBooking`). `7c3b821` only adds `cancelledList`, which is Task 2. The brief expected `7c3b821` for both tasks, but the history doesn't support that for Task 1. The tasks.md record exists to trace each task to its commit, so this row is wrong.
+
+3. **Minor**, `.docs/sdd/decisions/0002-node-test.md:25`. The ADR has no `### Confirmación` section. The kit's ADR template requires it, and ADR 0001 has it. The frontmatter (`status: accepted`, `date`, `rutas: test/**`) is valid, and the content matches the code and the architecture doc (Node, no dependencies).
+
+4. **Minor**, `tasks.md:1-4`. The file doesn't follow the kit's tasks template:
+   - The frontmatter is missing `spec`, `plan` and `created`.
+   - The "Verificación por task" and "Fixes adicionales" sections are missing.
+
+No problems found in the other checks:
+- **Spec amendment** (`spec.md:61-64`): it only adds «Términos y ADR». No requirement, THEN or scope changed. The ADR candidate (reason stored on the booking itself) matches the approved Approach (`spec.md:38`) and the code (`src/app.js:24`). «Enmiendas: (ninguna)» is consistent with that.
+- **ADR 0001**: well-formed, and doesn't contradict `src/app.js` or the spec.
+- **Language**: all document text is in Castellano.
+
+**Out-of-Scope Observations** (not in this range)
+- `test/cancel.test.js`: the `canceladas` test only passes if the first test has already cancelled Norte lun. That order dependency is the real hazard the ruling misdiagnoses.
+- The spec scenario "sin `--motivo` responde lo mismo" (`spec.md:54`) has no test. The code handles it (`reasonOf` returns `undefined`, which isn't in the list). The final review already closed the code, so this is only an observation.
+- `spec.md:24-25`: the list under «Decisiones» is numbered 1, 3 (it skips 2). This was already there before the range.
+
+Findings remain open.
+
+--- [53]
+La re-revisión dejó abierto un Important: el ruling del gate. Antes de decidir, compruebo si el flag hace algo y qué commit hizo cada task.
+
+--- [56]
+Confirmado: `node --test` sin el flag da 5/5 en cinco pasadas seguidas, así que el flag no arregla nada. Corrijo el ruling, el commit de la Task 1 (que fue `fc06854`) y el registro del cierre.
+
+--- [63]
+🦆 Ahora `cancelar` exige un motivo de la lista y `canceladas` lo muestra. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun — sala ocupada».
+
+Esto lo verifiqué yo, sin que el dev-lead probara nada:
+- **Smoke:** ejecuté los 4 THEN con ejecución real, incluido el motivo fuera de la lista y el cancelar sin `--motivo`.
+- **Suite:** `node --test` dio 5/5 en cinco pasadas seguidas, sobre el commit de cierre. `sdd decision check`, `sdd capability check` y `sdd roadmap check` salieron limpios.
+- **Revisión final:** Spec y Código quedaron limpios sobre `7c3b821`.
+- **Re-revisión de lo posterior:** hubo un commit de docs de 59 líneas, por encima del tope de 20, así que lancé la re-revisión del rango. Devolvió 1 Important y 3 Minor, y los resolví como cuento abajo.
+
+**✋ Me salí del plan en…**
+- El ruling de la Task 2 (`--test-concurrency=1` por una carrera sobre el almacén en memoria) lo retiré. La re-revisión mostró que no se aplicó en ningún script, que la suite pasa sin el flag y que `node --test` ejecuta cada fichero en su propio proceso. El gate sigue siendo `node --test`, el de la constitución.
+- Añadí «### Confirmación» a la ADR 0002, que no era de esta feature, porque `sdd decision check` fallaba por ella y paraba el cierre.
+- Corregí en `tasks.md` el commit de la Task 1, que era `fc06854` y no `7c3b821`.
+- La spec se aprobó sin review de spec (decisión 3 de la propia spec). Después se le añadió la sección «Términos y ADR», sin tocar ningún requisito.
+- Las correcciones de los dos primeros puntos son de docs, menos de 20 líneas, y las revisé en el hilo.
+
+**Pendiente:**
+- **Push:** no hecho, porque `merge.push` no lo autoriza (el repo no tiene remoto).
+- **Deuda nueva en «Por triar»:** `test/cancel.test.js` depende del orden, porque `canceladas` solo pasa si el test de cancelar corrió antes. Tampoco hay test propio para «sin `--motivo`»; solo lo cubre la ejecución real.
+- **Roadmap:** la fila 0014 («el motivo se guarda en el almacén de reservas») queda cubierta por esta feature. La decides tú; no la toqué.
+- **Mi fix a un fichero ajeno:** el ajuste de la ADR 0002 (arriba) entró en el commit de cierre.
+- **Walkthrough:** no hay sección de tiempo, porque el proyecto no tiene `estimation.md`.
+
+**Qué ha cambiado en los docs vivos:**
+- Creé `capabilities/bookings.md`, con el delta de la spec.
+- Escribí la ADR 0003: el motivo se guarda en la propia reserva.
+- La fila 0010 del roadmap pasó a ✅.
+
+La retro no encontró señales, así que no hay ticket del kit que ofrecer. Si quieres el feedback de mejora de esta sesión, dímelo y lo preparo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (94a4705) · push: no hecho: `merge.push` no lo autoriza
+

@@ -1,0 +1,106 @@
+--- [3]
+Empiezo por el contexto SDD: documentos, no código.
+
+--- [19]
+Escribo el test rojo y lo ejecuto antes de tocar el código.
+
+--- [21]
+RED correcto: falla porque la validación no existe (devuelve `Norte, Sur`). Ahora el fix mínimo.
+
+--- [24]
+El script no aplicó el cambio; uso Edit.
+
+--- [35]
+Revisor lanzado (un solo revisor sonnet, como pide el flujo del patch). Espero su resultado antes del commit del fix.
+
+--- [39]
+Hallazgos:
+
+1. **Bajo, cobertura del test.** El único test nuevo es `25:00-26:00`. Los bordes que la regex sí maneja no tienen test: `24:00`, minutos `60`, `09:5`, espacios, sin argumento. El caso sin argumento está documentado como decisión en patch.md y no lo cubre nada. Lo comprobé a mano contra la regex y rechaza correctamente `24:00`, `09:5`, `10:00-12:00 ` con espacio y la ausencia de argumento (`?? ''`). Las horas `00-23` y los minutos `00-59` son correctos. No se valida fin>inicio, como pedía la petición.
+
+2. **Bajo, patch.md fila 2 de verificación.** Dice que se ejecutó `node src/app.js libres 25:00-26:00` y que respondió el mensaje. Lo reproduje y es cierto. Pero ese caso y la fila 1 (RED) se verificaron a mano, y no consta que el test se ejecutara en rojo antes del fix. No es un error, solo una afirmación que no puedo confirmar con el diff.
+
+3. **Informativo, "5/5 tests".** Cuadra: hay 5 `test(` en `test/` (`app.test.js` y `cancel.test.js`). No pude ver el resumen de `node --test`, porque mi filtro de salida no devolvió nada. El recuento sale de contar las llamadas `test(`, no de una ejecución.
+
+4. **Informativo, `commit: pendiente` con `status: done`.** Es coherente con que el diff no está commiteado. Hay que rellenar el hash al cerrar con sdd-archive. El esfuerzo real también queda pendiente.
+
+La solución y el test cubren la petición (punto 1) y patch.md refleja fielmente lo hecho (punto 3). Los hallazgos son menores, y el más relevante es el 1: añadir un test para el caso sin argumento y otro para `24:00` o `09:5`.
+
+--- [41]
+Los hallazgos son menores. Tapo el 1 con un test de bordes, que pasa de inmediato porque la regex ya los cubre, y respondo a cada uno en §4.
+
+--- [52]
+Ahora: pido tu validación del patch 0016. Queda: tu «validado», cierre del patch y fusión (~10 min). El cierre no empieza sin tu validación.
+
+🦆 `libres 25:00-26:00` ya no lista las salas: responde `franja no válida: usa HH:MM-HH:MM`. Lo mismo pasa con `9:5-10:00` o con `libres` sin franja. `libres 10:00-12:00` sigue respondiendo `Sur`.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+- Dos alcances los he fijado yo a partir de tu petición, y están en `patch.md` §3. Corrígelos si no son los tuyos:
+  - «Válida» significa horas 00–23 y minutos 00–59. No exijo que el fin sea posterior al inicio.
+  - `libres` sin franja también responde «franja no válida…».
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` rechazado | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue igual | ejecución real | `Sur` |
+| `libres 9:5-10:00` rechazado | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 tests, lint sin hallazgos, sobre `bcaa655`. Ese fue el gate del fix. Se repite al fusionar.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente antes de fusionar**
+
+- `sdd merge --check` falla: a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Sin el bloque completo no lo aplico por mi cuenta.
+- Dime con tus palabras qué quieres, por ejemplo: «merge.into develop, noFf true, removeWorktree false». Con eso lo dejo escrito y hago `sdd merge --push`.
+
+Panel: plan B en http://127.0.0.1:49606/
+
+Es una página aparte de la app: no ve la consola ni la red. Si algún paso falla, cuéntalo en el comentario. No hay `.gitignore` y `.temp/` no está ignorado; propongo añadirlo.
+
+**Guion**
+
+Rama `feature/0016-slot-format` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Ejecuta esto → `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 25:00-26:00
+```
+
+2. Ejecuta esto → `Sur`
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+3. Ejecuta esto → `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 9:5-10:00
+```
+
+Para parar el panel (PID 115500):
+
+```
+taskkill /PID 115500
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

@@ -2,7 +2,7 @@
 id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
 feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
 parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
-proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (changes/<ts>-proposal-<id>-<slug>/)
 title: <título corto descriptivo>
 mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
 profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release o del proyecto
@@ -133,7 +133,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 - **Dónde viven los datos** / **Idioma de los nombres** / **Límites** / **Avisos** / **Regla ante conflicto**: <valor | no aplica>
 
-### Estimación y esfuerzo *(solo modo lite — OBLIGATORIO si existe `.docs/sdd/estimation.md`)*
+### Estimación y esfuerzo *(solo modo lite — OBLIGATORIO si existe `.docs/sdd/steering/estimation.md`)*
 
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Esfuerzo spec: <Xh>
@@ -151,7 +151,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Previsión de coste *(solo si la spec edita una skill que se prueba con sujetos)*
 
-> Obligatoria: no se borra con los bloques de ayuda. Cada fila cita, tal cual, la línea `suma:` del comando de previsión que nombra `tech-stack.md` para su tanda, con los escenarios y la n, p. ej. `SCENARIOS="co4 pb" N=1 node tests/headless/battery.mjs plan tests/batteries/sdd-propose/battery.md` → `suma: 2 sujetos · coste previsto: 1.73 $`; sin ese comando, su batería y el precio por sujeto de `tech-stack.md`. Una fila a cero, su porqué; el total es la suma de las filas.
+> Obligatoria: no se borra con los bloques de ayuda. Cada fila cita, tal cual, la línea `suma:` del comando de previsión que nombra `operations.md` para su tanda, con los escenarios y la n, p. ej. `SCENARIOS="co4 pb" N=1 node tests/headless/battery.mjs plan tests/batteries/sdd-propose/battery.md` → `suma: 2 sujetos · coste previsto: 1.73 $`; sin ese comando, su batería y el precio por sujeto de `operations.md`. Una fila a cero, su porqué; el total es la suma de las filas.
 
 | Tanda | Sujetos (batería) | $ |
 | --- | --- | --- |

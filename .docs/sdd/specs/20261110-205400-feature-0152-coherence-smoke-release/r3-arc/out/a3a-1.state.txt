@@ -1,0 +1,95 @@
+## petición
+Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala.
+## entorno al acabar el sujeto
+abajo
+## git status
+## git log
+*   7dffba3 merge: feature/0010-cancel-reason en develop
+|\  
+| * 5e25df2 docs(sdd): cerrar la feature 0010 con su walkthrough y la capacidad bookings
+| * f90ee39 feat(bookings): listado de canceladas con su motivo
+| * 337621c feat(bookings): cancelar con un motivo de la lista
+| * 715b3e8 docs(sdd): abrir la feature 0010 con su spec y su plan
+|/  
+* da98ef4 test(bookings): el almacén guarda una reserva, con slot-format
+* 2d572b1 chore: gate de cierre filtrado por tareas
+* bf26044 feat: base del molde
+## etiquetas
+## timing.json en la historia
+## kit-feedback en develop
+## ROADMAP.md en develop
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ✅ | — | M |
+| 0011 | — | **Anular reservas de otros**<br>*solo el responsable de cada sala anula reservas de otras personas*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0012 | — | **Informe de canceladas**<br>*`informe` lista las reservas canceladas por sala, con su motivo y el total*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0013 | — | **Precio en su módulo**<br>*el cálculo del precio sale de `app.js` sin cambiar lo que responde `precio`*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0014 | — | **Motivo guardado**<br>*el motivo de una cancelación se guarda en el almacén de reservas*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*—*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ✅ | — | S |
+
+## Next
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+
+## Later
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0004 | — | **Exportar reservas a calendario (.ics)**<br>*idea propia* | ⏳ | — | — |
+## debt.md en develop
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+| Test inestable `el almacén guarda una reserva` (`test/store.test.js`): en la 1.ª pasada de `node --test --test-concurrency=1` falló con `Error: EBUSY: resource busy or locked, open 'data/bookings.json'` y no se repite: sola en la rama y en `develop` (da98ef4) verde y verde, y la suite entera en verde a la segunda | feature 0010, cierre | 2026-11-11 |
+| Workaround `--test-concurrency=1` en el gate de la 0010 (ruling de la Task 2): esquiva la carrera de los tests sobre el almacén compartido en memoria; hasta aislar el almacén por test, la suite tarda el doble | feature 0010, ruling Task 2 | 2026-11-11 |
+| El CLI no conserva el estado entre procesos: `cancelar …` y luego `canceladas` en otra invocación sale vacío (el almacén vive en memoria); el THEN de `canceladas` solo se ve en el mismo proceso. Lo cubriría 0014 «Motivo guardado» | feature 0010, cierre | 2026-11-11 |
+| La 0010 quitó el test `cancelar sin reserva lo dice` (`sin reserva Sur mar`); `cancelBooking` conserva la rama, sin test que la fije | feature 0010, cierre | 2026-11-11 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+## bookings en develop
+# Capacidad — bookings
+
+## Propósito
+
+cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Requisitos
+
+### Cancelar pide un motivo de la lista
+
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro»
+- AND sin `--motivo` responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»
+
+### El listado de canceladas enseña el motivo
+
+- GIVEN la reserva de Norte del lunes cancelada con «sala ocupada»
+- WHEN `canceladas`
+- THEN responde «Norte lun — sala ocupada»
+## architecture en develop
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).

@@ -28,7 +28,7 @@ Panel: Chrome sobre <url de la app>
 Panel: plan B en http://127.0.0.1:<port>/
 ```
 
-Without the Chrome tools it's the second, CLI apps included: launch `sdd validation serve` (§6) before presenting. «Sin panel» is not an option; only if that command fails, the line is `Panel: no arrancó: <su error>`.
+Without the Chrome tools it's the second, CLI apps included: launch `sdd validation serve` (§6) before presenting. «Sin panel» is not an option, also with the app's environment down; only if that command fails, the line is `Panel: no arrancó: <su error>`.
 
 ## 5. The panel in Chrome
 

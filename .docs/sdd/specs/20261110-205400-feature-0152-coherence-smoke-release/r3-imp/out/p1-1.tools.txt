@@ -1,0 +1,181 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd/changes/*0016* 2>/dev/null; ls
+<<< CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+>>> Bash: cd "<run>/repo" && git show --stat HEAD | head -20; find . -path ./.git -prune -o -type f -print | head -50; ls -a
+<<< commit 12d9467f3ca408b777ee8401911094f2c28cfbaf
+Author: Fixture <fixture@example.com>
+Date:   Thu Nov 12 10:05:29 2026 +0100
+
+    docs(sdd): abrir la feature 0016 con su spec y su plan
+    
+    Cuerpo del commit.
+
+ .../plan.md                                        | 50 ++++++++++++++++++++
+ .../spec.md                                        | 53 ++++++++++++++++++++++
+ 2 files changed, 103 insertions(+)
+./.docs/sdd/sdd-kit.json
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+./.docs/sdd/specs/20260917-090000-task-000
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/20261009*/spec.md specs/20261009*/plan.md sdd-kit.json steering/constitution.md; cat ../../src/app.js ../../package.json
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && git rev-parse --git-dir --git-common-dir; git branch --show-current; SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js'; $SDD workspace .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md; git worktree add --detach ../baseline-0016 HEAD -q && (cd ../baseline-0016 && node --test 2>&1 | tail -12); git worktree remove --force ../baseline-0016; cat test/cancel.test.js | head -20; git diff $(git merge-base HEAD develop) develop --stat 2>&1 | tail -3
+<<< .git
+.git
+feature/0016-room-hours
+<run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+✔ libres excluye la sala reservada en la franja (0.7317ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1228ms)
+✔ cancelar una reserva activa (0.7032ms)
+✔ cancelar sin reserva lo dice (0.1161ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 98.5198
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+impo
+
+>>> Bash: cd "<run>/repo" && cat > test/horas.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('horas suma las reservas activas de la sala', () => {
+  assert.equal(run('horas', ['Norte']), 'Norte: 2 h');
+});
+
+test('horas no cuenta una reserva cancelada', () => {
+  assert.equal(run('horas', ['Sur']), 'Sur: 0 h');
+});
+EOF
+mkdir -p ../red-copy && cp test/horas.test.js ../red-copy/horas.test.js
+node --test test/horas.test.js 2>&1 | grep -E "^# (pass|fail)|ℹ (pass|fail)|expected|actual" ; git check-ignore .temp && echo ignored; git branch -a | head; git status --short
+<<< ℹ pass 0
+ℹ fail 2
+  + actual - expected
+    actual: 'salas',
+    expected: 'Norte: 2 h',
+  + actual - expected
+    actual: 'salas',
+    expected: 'Sur: 0 h',
+.temp
+ignored
+  develop
+* feature/0016-room-hours
+  main
+?? test/horas.test.js
+
+>>> Bash: cd "<run>/repo" && git diff $(git merge-base HEAD develop) develop --name-only | head; python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"function findBooking\",\"function roomHours(room) {\n  return bookings\n    .filter((b) => b.room === room && b.status === 'active')\n    .reduce((total, b) => total + slotHours(b.slot), 0);\n}\n\nfunction findBooking\");
+s=s.replace(\"  return 'salas';\",\"  if (cmd === 'horas') return \`\${params[0]}: \${roomHours(params[0])} h\`;\n  return 'salas';\");
+fs.writeFileSync('src/app.js',s)"
+EOF
+git diff src/app.js; node --test test/horas.test.js 2>&1 | grep -E "ℹ (pass|fail)"
+<<< ℹ pass 0
+ℹ fail 2
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && git diff --no-index --stat ../red-copy/horas.test.js test/horas.test.js && echo RED-copy-igual; node --test test/horas.test.js 2>&1 | grep -E "ℹ (pass|fail)"; node --test 2>&1 | grep -E "ℹ (pass|fail)"; node src/app.js horas Norte
+<<< warning: in the working copy of '../red-copy/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+RED-copy-igual
+ℹ pass 2
+ℹ fail 0
+ℹ pass 6
+ℹ fail 0
+Norte: 2 h
+
+>>> Bash: cd "<run>/repo" && BASE=$(git rev-parse --short HEAD) && git add src/app.js test/horas.test.js && git commit -q -m "feat: comando horas con las horas reservadas por sala
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && echo $BASE && node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js task done .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md 1 $BASE -- node --test test/horas.test.js 2>&1 | tail -8
+<<< warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+7efe80d feat: comando horas con las horas reservadas por sala
+12d9467 docs(sdd): abrir la feature 0016 con su spec y su plan
+12d9467
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 195.3189
+ledger: Task 1: complete (commits 12d9467..7efe80d, tests: node --test test/horas.test.js → ℹ duration_ms 195.3189)
+
+=== RESULTADO (19 turnos, 0.27155930000000006 $)
+La Task 1 de la 0016 está implementada y commiteada (`7efe80d`). `horas Norte` responde `Norte: 2 h`, y `horas Sur` responde `Sur: 0 h` porque su reserva está cancelada.
+
+- **RED:** `test/horas.test.js` falló antes del código porque el comando no existía (devolvía `salas`).
+- **Copia del RED:** guardé una copia fuera del repo y es idéntica al test commiteado.
+- **Código:** `src/app.js` tiene `roomHours` y la rama `horas`. Solo suma las reservas con estado `active`.
+- **Pruebas:** `node --test test/horas.test.js` pasa 2/2. `node --test` entero pasa 6/6, y la línea base ya estaba en verde (4/4).
+- **Ledger:** `sdd task done` registró `Task 1: complete (commits 12d9467..7efe80d)`.
+- **Prueba a mano:** `node src/app.js horas Norte` imprime `Norte: 2 h`.
+
+Hay tres cosas pendientes o a tener en cuenta:
+- **Revisión final:** el kit exige una revisión de toda la rama con revisores en paralelo antes de cerrar con `sdd-archive`. No la he lanzado, porque tarda y pediste solo la Task 1. La revisión final y el cierre (`sdd-archive`) no están hechos, y el kit pide pasarlos antes del merge.
+- **Rama de integración:** al cruzar la base con `develop` no vi cambios que afecten a la feature, y no hay `origin` con el que comparar. No hay freno de alcance.
+- **Rulings:** no tomé ninguno, y no hubo desvíos de la spec ni del plan.
+
+El código ya está listo para que el cliente lo pruebe en esta rama. Dime si lanzo la revisión final y el cierre ahora.

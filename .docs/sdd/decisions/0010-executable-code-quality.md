@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0031
 date: 2026-09-22
 rutas:
   - skills/**/scripts/**

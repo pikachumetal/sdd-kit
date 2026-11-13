@@ -1,0 +1,108 @@
+--- [22]
+Primero reproduzco el fallo. La deuda del proyecto solo tiene una fila, la de la validación de franja horaria, y no cubre este fallo.
+
+--- [30]
+Ahora escribo `patch.md` con el síntoma y la causa antes de tocar código. La carpeta es `changes/`, como dice la regla del kit. Los patches anteriores del proyecto están en `specs/`.
+
+--- [42]
+RED correcto: fallan los 4 tests que dependen del día (`cancelar mar`, la del lunes ya consumida, `anular mar` y su equivalente), y pasan los 3 que no. Ahora el arreglo mínimo.
+
+--- [46]
+Verde: 7 de 7. El diff es de 1 línea más tests, muy por debajo del límite de patch. Completo `patch.md` y envío al revisor único que pide el flujo.
+
+--- [49]
+`patch.md` ya tiene el fix y la verificación. Envío al revisor único, con el diff y el `patch.md`.
+
+--- [58]
+Los tests reforzados siguen dando RED sin el arreglo (3 pasan, 4 fallan) y 7 de 7 con él. Hago el commit del fix con el código, los tests y `patch.md`.
+
+--- [68]
+Ensayo los pasos del guion tal como los escribirá la persona y levanto el panel plan B.
+
+--- [72]
+🦆 Antes, `cancelar Norte mar` sin reserva el martes decía «cancelada Norte mar» y cancelaba la reserva del lunes. Ahora dice «sin reserva Norte mar» y la del lunes sigue activa. Lo mismo vale para `anular`.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva el martes | `ejecución real` | `sin reserva Norte mar` |
+| La reserva del lunes sigue activa tras ese intento | `ejecución real` | `libres 10:00-12:00` → `Sur`, y `cancelar Norte lun` → `cancelada Norte lun` |
+| `anular Norte mar` sin reserva el martes | `ejecución real` | `sin reserva Norte mar` |
+| Mismo fallo antes del arreglo | `suite` | 4 de 7 tests en rojo sin el arreglo |
+
+**Suites**
+
+- `node --test`: 7/7 sobre `f982a49`, ~0,1 s.
+
+**Sin probar**
+
+- Nada del fix. Un revisor (sonnet) vio la causa y el arreglo bien. Aceptó dos matices (tests dependientes del orden, una referencia de línea) y los corregí antes del commit. `libres` no tiene este fallo porque no recibe día.
+
+**Aviso para el merge:** `sdd merge --check` dice que a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. No fusiono por mi cuenta. Cuando valides te propongo el destino (`develop`) para que lo confirmes.
+
+Panel: plan B en http://127.0.0.1:61325/. No ve la app, así que si un paso falla, cuéntalo en el comentario.
+
+**Guion**
+
+Rama `feature/0015-cancel-day` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Cada comando arranca con la reserva de Norte del lunes, porque no se guardan reservas entre ejecuciones.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Tu caso del reporte, cancelar el martes sin reserva:
+
+```
+node src/app.js cancelar Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+2. La reserva del lunes sigue ahí, Norte no está libre en esa franja:
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+→ `Sur`
+
+3. La del lunes se cancela con normalidad:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `cancelada Norte lun`
+
+4. Lo mismo con `anular`:
+
+```
+node src/app.js anular Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [75]
+El commit del fix ya está hecho, así que no hay nada más que escribir para llegar ahí. Es `f982a49`, en `feature/0015-cancel-day`. El árbol está limpio, `patch.md` no tiene cambios sin commitear y el servidor del panel ya no escucha.
+
+Tomo tu «Sí, como patch» como confirmación del carril y no como validación. No he cerrado nada: no he registrado `Validado`, ni escrito el hash en `patch.md`, ni tocado el roadmap, ni fusionado.
+
+Para cerrar con `sdd-archive` faltan dos cosas:
+1. Que pruebes el guion y me digas «validado», o qué paso falla. Si no puedes ahora, puedes diferirlo con la línea `Diferir:`.
+2. Que confirmes el destino del merge. A `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Te propongo `develop` y que me digas si va con `--no-ff`.
+
+Cuando me digas «validado», retomo el cierre con el `patch.md` final, el roadmap y el merge.
+

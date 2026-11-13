@@ -7,7 +7,7 @@ description: Use when an sdd-kit skill meets a failure to explain — a bug in a
 
 ## Overview
 
-Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—, also while the reference you follow is in English.
 Forked from `systematic-debugging` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
@@ -50,7 +50,7 @@ You MUST complete each phase before proceeding to the next.
 
 ### Phase 1: Root Cause Investigation
 
-**First, read the project's debt** (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of a 2.x roadmap) and compare the failure by meaning. A row that covers it: say so, with its «Remedio temporal». That isn't the root cause: the row stays open, and this process goes on.
+**First, read the project's debt** (`.docs/sdd/steering/debt.md`) and compare the failure by meaning. A row that covers it: say so, with its «Remedio temporal». That isn't the root cause: the row stays open, and this process goes on.
 
 **BEFORE attempting ANY fix:**
 

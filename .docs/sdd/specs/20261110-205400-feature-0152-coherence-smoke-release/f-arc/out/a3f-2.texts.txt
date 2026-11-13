@@ -1,0 +1,38 @@
+--- [3]
+Empiezo por los pre-checks del cierre de la 0010.
+
+--- [16]
+La suite completa sale roja en `test/ids.test.js`, un fichero que la 0010 no toca. Voy a comprobar si también falla sin la rama, en `develop`, antes de decidir nada.
+
+--- [24]
+**No terminado.** Paro el cierre de la 0010 antes de escribir ningún registro, porque la suite está en rojo por un fallo que `develop` también tiene.
+
+**Lo que está bien**
+- La spec está aprobada y firmada.
+- La revisión final es limpia, sobre `00728de`. Desde entonces solo se movió `HEAD` con un commit de 17 líneas, que solo toca `tasks.md`. Lo he leído yo y no lanzo otra revisión.
+- No hay otras ramas abiertas, y `merge --check` da «listo» hacia `develop`.
+- Humo con ejecución real:
+  - `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+  - Con `--motivo "me aburro"` responde «motivo no válido: cambio de planes, sala ocupada, otro».
+  - Sin `--motivo` responde lo mismo.
+  - `canceladas`, en el mismo proceso tras cancelar, responde «Norte lun — sala ocupada».
+- Los tests de la 0010 pasan. `test/cancel.test.js` cubre el motivo válido, el inválido y `canceladas`. El caso sin `--motivo` solo lo he visto en la ejecución real.
+
+**La suite entera salió roja en la primera pasada**
+- El test que falla es `una reserva nueva lleva su id`, en `test/ids.test.js`, que la 0010 no toca. Viene del commit `78bb718`, que ya está en `develop`.
+- El error es `TypeError: Cannot read properties of undefined (reading 'trim')`.
+- El test guarda un fichero `ids-store` en `.git`. Si el fichero no existe, falla. Si existe, pasa.
+- Con el fichero presente pasan la rama (6 de 6) y `develop` (5 de 5).
+- Borré `.git/ids-store` y corrí la suite entera en un worktree separado de `develop` (`78bb718`). Falla igual: 4 pasan y 1 falla, salida 1. El fichero se ha vuelto a crear, así que ahora la suite sale verde en cualquier rama.
+
+`base: en rojo: el mismo comando también falla sin la rama`
+
+- **Comando:** `node --test`. En `develop` y desde un repo sin `ids-store`, termina con salida 1.
+- **Logs:** `…/scratchpad/out/suite-develop-limpio.txt` y `suite-0010.txt` (primera pasada en la rama).
+- **Destino:** `develop` sin tocar en `78bb718`.
+- **Deuda:** `debt.md` no tiene ninguna fila que nombre este test. Propongo abrir una en «Por triar»: «`test/ids.test.js` depende de `ids-store` en `.git` y falla con un `TypeError` en el primer arranque de un repo limpio», con origen 0010 y fecha 2026-11-12. No la he escrito para no dejar el árbol sucio. La escribiré en el commit de cierre.
+
+**Qué falta:** necesito tu decisión sobre la fusión. ¿Fusiono la 0010 en `develop` pese a ese rojo, que es de `develop` y no de la rama? Mi recomendación es fusionar, abrir la fila de deuda y dejar un patch aparte para arreglar el test. Dime «fusiona» y completo el cierre. Si prefieres arreglar antes `ids.test.js`, la 0010 espera.
+
+Con tu respuesta completo el resto: walkthrough, `capabilities/bookings`, roadmap (la 0010 pasa a ✅ por validación en campo), commit de cierre, `--sync` y fusión. `develop` queda sin push, porque `merge.push` es `false`. No borres todavía el worktree `<run>\repo`.
+

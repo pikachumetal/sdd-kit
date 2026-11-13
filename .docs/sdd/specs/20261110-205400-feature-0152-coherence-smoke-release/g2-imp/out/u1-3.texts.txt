@@ -1,0 +1,86 @@
+--- [3]
+Primero leo el estado de la feature: la spec, el plan y `tasks.md`.
+
+--- [9]
+Paro antes de escribir código en la Task 2: la spec pide algo que la aplicación no puede dar hoy. No he tocado nada.
+
+🦆 El THEN del listado es «Norte lun — sala ocupada — Ana». Para eso `canceladas` tendría que saber quién canceló, y ese dato no existe en ningún sitio:
+- `cancelBooking` en `src/app.js` solo guarda `status` y `reason`.
+- La CLI no tiene usuario, sesión ni parámetro `--por`.
+- `PRODUCT.md` dice que lo usas tú solo y que no hay más usuarios.
+
+El «Ana» del GIVEN solo se sostiene en el texto de la spec. La decisión 2 («sala, día, motivo y quién canceló») la tomé yo, y la spec la marcaba para validar.
+
+Inventar un valor para «quién» cambiaría la salida observable, y eso es un freno de alcance en este perfil. Por eso no sigo.
+
+✋ Necesito que elijas una de estas dos opciones:
+
+1. **Quitar «quién canceló» (mi recomendación).**
+   - En la spec cambian la decisión 2, el título y el THEN: `canceladas` responde «Norte lun — sala ocupada».
+   - Se añade una línea en «Enmiendas».
+   - Con un solo usuario, ese dato no aporta nada. La Task 2 queda pequeña y la Task 1 no se toca.
+2. **Pedir quién cancela con `cancelar … --motivo … --por <nombre>`.**
+   - Cambia el contrato de la Task 1, que ya está cerrada, y su THEN actual.
+   - Se haría con una Task 3 de enmienda al final, y la Task 1 quedaría marcada «afectada por enmienda».
+   - Hay que decidir también si `--por` es obligatorio y qué responde si falta.
+
+Con tu respuesta escribo la enmienda en `spec.md` y la dejo sin commitear. Antes de seguir con la Task 2, un revisor la lee con los siete puntos de `review-spec.md`.
+
+--- [11]
+Entiendo que apruebas la opción 1, quitar «quién canceló». Escribo la enmienda en la spec.
+
+--- [14]
+La enmienda está escrita y sin commitear. Lanzo el revisor que anuncié, con la spec y el diff.
+
+--- [19]
+Escribí la enmienda en `spec.md` y la dejé sin commitear. Un revisor la está leyendo ahora y espero su respuesta antes de seguir con la Task 2. Todavía no sé qué dirá.
+
+Cambios en `spec.md`:
+- **Decisión 2:** el listado enseña sala, día y motivo. «Quién canceló» sale.
+- **THEN del listado:** pasa a «Norte lun — sala ocupada».
+- **Enmiendas:** añadí la línea con fecha 2026-11-11, marcada como aprobada por el dev-lead.
+
+Cuando el revisor conteste, aplico sus hallazgos si los hay. Después escribo en RED el test del listado, implemento `canceladas` en `src/app.js` y paso `node --test test/cancel.test.js`.
+
+--- [26]
+Hallazgos (review-spec aplicada con un solo revisor: la enmienda tiene unas 8 líneas, sin contrato público ni MODIFIED).
+
+1. **Coherencia del diff: bien.** Decisión 2, THEN del listado, título del ADDED y Enmiendas dicen lo mismo. No quedan «Ana» ni «quién» salvo en la decisión 2 y en la Enmienda, donde es intencionado. Intent, Scope, Approach y «Dónde se prueba» no hablaban de «quién» y no necesitan cambio. Ni `plan.md`, ni `tasks.md`, ni `ROADMAP.md` ni `app.js` mencionan «quién» o «Ana».
+
+2. **Menor · Decisión 2 · afirmación sin respaldo.** «El producto lo usa una sola persona» no consta en el código ni en la spec, y el motivo ya se sostiene sin ella con «no hay usuarios ni dato de quién ejecuta». Conviene quitarla o confirmar que la dijo el dev-lead (punto 4 y 7 de la review).
+
+3. **Menor · Aprobaciones y frontmatter.** La enmienda queda aprobada solo por la línea de Enmiendas. La tabla de Aprobaciones y `approved_at` siguen en 2026-10-08. Si el kit pide reflejar las re-aprobaciones, falta una fila o fecha. Si no lo pide, no hace falta tocar nada.
+
+4. **Menor · THEN del listado: probable con el código actual, con dos huecos.**
+   - Con `run('cancelar', ['Norte','lun','--motivo','sala ocupada'])` y luego `run('canceladas', [])`, `bookings` ya guarda `room`, `day`, `reason` y `status`. El THEN «Norte lun — sala ocupada» se puede probar en el mismo proceso, como `test/cancel.test.js`. Falta la rama `canceladas` en `run`. Hoy cae en `'salas'`, y es lo que implementa la Task 2.
+   - La spec no dice qué responde `canceladas` con varias canceladas (separador) ni con ninguna. Si la Task 2 lo decide, debe ir a «Decisiones», no quedarse solo en el código.
+
+5. **Aviso, fuera del diff.** `bookings` está en memoria, así que cada invocación de la CLI parte de cero. `cancelar` y `canceladas` en dos ejecuciones separadas no comparten estado. El THEN solo se prueba llamando a `run` en el mismo proceso. Ya era así antes de la enmienda y no la invalida.
+
+Ficheros revisados: `spec.md`, `plan.md` y `tasks.md` en `<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/`, además de `src/app.js` y `test/cancel.test.js`.
+
+--- [28]
+El revisor no ve incoherencias en la enmienda. Tomo en cuenta su hallazgo 2: la afirmación de «una sola persona» sí tiene respaldo en `PRODUCT.md`, así que lo cito en la spec. Después sigo con la Task 2, empezando por el test en RED.
+
+--- [32]
+El test falla por la razón esperada: `canceladas` hoy cae en `'salas'`. Ahora implemento el comando.
+
+--- [36]
+Mi edición rompió la sintaxis de `src/app.js`. Miro el fichero.
+
+--- [38]
+El `\n` se escribió como salto de línea real. Lo corrijo.
+
+--- [42]
+La suite completa pasa: 5 tests, 0 fallos. Marco la Task 2 en `tasks.md` y hago el commit.
+
+--- [44]
+La Task 2 está hecha y commiteada (`2251888`). El comando `canceladas` responde «Norte lun — sala ocupada», sin «quién canceló». La suite completa pasa: 5 tests, 0 fallos.
+
+- **Enmienda:** quité «quién canceló» de la decisión 2 y del THEN del listado, y añadí la línea en «Enmiendas». El revisor no vio incoherencias en la spec. Su hallazgo 2 (la afirmación de «una sola persona») lo resolví citando `PRODUCT.md`.
+- **Test:** lo escribí antes que el código y falló por la razón esperada (`'salas'`). Depende de que el test de la Task 1 haya cancelado antes «Norte lun» en el mismo proceso, porque el estado está en memoria. Funciona porque `node:test` ejecuta los tests en orden de fichero.
+- **Decisión mía sin THEN en la spec:** con varias canceladas el listado pone una por línea, y con ninguna devuelve vacío. Lo anoté como `Ruling` en `tasks.md`. Si quieres otro formato, dímelo.
+- **Fuera del commit:** no pasé una revisión de código aparte de la Task 2. Solo hubo el revisor de la spec, y el código del commit son unas 8 líneas.
+
+Siguen el closing gate (`node --test`) y el cierre con `sdd-archive`. No los he lanzado: dime si sigo.
+

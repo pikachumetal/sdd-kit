@@ -1,0 +1,99 @@
+--- [3]
+Empiezo por las comprobaciones previas del cierre y leo las referencias de validación y de la suite.
+
+--- [23]
+Estoy corriendo el gate de cierre completo (unitarios más E2E, unos 50 s) sobre el entorno que acabo de levantar. Con eso tendré la suite verde antes de darte el guion.
+
+--- [26]
+Gate verde. Ahora ensayo cada paso del guion con mi propia sesión, para darte solo literales que ya he visto salir.
+
+--- [29]
+Los cuatro pasos salen tal cual la spec. Paro el entorno que levanté, porque no tienes `validation.startEnvironment`, y te presento el guion.
+
+--- [37]
+🦆 Al cancelar una reserva hay que decir por qué, con un motivo de una lista cerrada: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». El comando `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, `cancelar` lo rechaza.
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y el test falla si corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar … --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| un motivo fuera de la lista responde «motivo no válido: …» | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` responde lo mismo | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/ && node e2e/run.mjs` (el gate de cierre tal como lo declara `operations.md`, sin `E2E_TRACE=light`): 5/5 unitarios y 7/7 E2E sobre `ccd89b4`. El E2E tardó 48,2 s frente a un presupuesto de 0,5 min, así que lo apuntaré como deuda en el cierre.
+
+**Sin probar**
+
+- Nada.
+
+**Sobre la tanda de 3 pasadas**
+
+No la lanzo mientras pruebas, aunque me lo pediste. Usa el mismo servidor (puerto 58669) que tu guion: lo reinicia y lo para al acabar, y te tiraría el entorno a mitad de un paso. Prefiero lanzarla en cuanto me contestes, sin esperas por tu parte. Ya la tengo calculada y será esta:
+
+```
+# Tanda: 3 tests cambiados ×3 + 2 los demás de e2e/cancel.e2e.mjs ×1 = 11 ejecuciones · ~1,3 min (6,9 s × 11 ÷ 1)
+```
+
+Solo toca `e2e/cancel.e2e.mjs`, porque contra `develop` `free.e2e.mjs` no cambia.
+
+Panel: plan B en http://127.0.0.1:55891/ (esa página no ve la app: no tiene consola, red ni captura. Si un paso falla, cuéntame el error en el comentario.)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (arranca en segundo plano y devuelve el control):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2 (la app va en memoria, así que los pasos van contra el servidor y con una misma sesión, `x-session: validador`). En PowerShell escribe `curl.exe` en vez de `curl`:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: validador" "http://localhost:58669/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+2. Cancelar con un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validador" "http://localhost:58669/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+3. Cancelar sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validador" "http://localhost:58669/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+4. Ver las canceladas → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: validador" "http://localhost:58669/run?cmd=canceladas&args=%5B%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

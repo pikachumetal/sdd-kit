@@ -1,0 +1,88 @@
+--- [3]
+Empiezo el cierre con los pre-checks del paso 0.
+
+--- [5]
+Limpio, destino listo, sin otras ramas abiertas. Sigo con la spec y la revisión final.
+
+--- [25]
+Abiertas a la vez: ninguna más (el único worktree es este). He lanzado la re-revisión única de `fe348a0..588d9c0` y no escribo ningún registro hasta que vuelva.
+
+Mientras tanto no toco los ficheros que pueda ver el revisor. Espero su resultado.
+
+--- [37]
+1. **Commit de la Task 1, Minor.** `tasks.md` (línea 10) atribuye la Task 1 a `fe348a0`, pero `git log --oneline` muestra que la Task 1 entró en `f697955 feat(bookings): cancelar con un motivo de la lista`. `fe348a0` es la Task 2 (`listado de canceladas con su motivo`). Los dos commits tocan `src/app.js` y `test/cancel.test.js`, así que la confusión es posible, pero el registro está mal. La fila de la Task 1 debe citar `f697955`. La fila de la Task 2 (`fe348a0`) y la línea de la revisión final («sobre fe348a0») son correctas.
+
+2. **El diff no toca código ni tests: correcto, sin hallazgo.** El único cambio es un fichero nuevo, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, con 17 líneas añadidas. No hay cambios en `src/` ni en `test/`. El texto está en castellano, así que cumple la restricción de código.
+
+3. **El Ruling de la Task 2 (`--test-concurrency=1`) no tiene respaldo, Important.** El spec (`spec.md`) no dice nada de concurrencia ni del gate, y no recoge la decisión: «Enmiendas: (ninguna)». El gate de cierre que existe por escrito lo contradice:
+   - `.docs/sdd/steering/constitution.md:4` dice: «Gate de cierre: `node --test` entero en verde».
+   - `plan.md:50` dice: «Gate de cierre: `node --test`».
+
+   El Ruling relaja ese gate y deja el resultado limpio sujeto a correr en serie. Además, se presenta como provisional («workaround hasta aislar el almacén por test») y no tiene fila en `.docs/sdd/steering/debt.md`, que solo recoge los dos ítems de la 0007 y el del cliente. El cambio tampoco existe fuera del documento: `package.json` es `{"type": "module"}`, sin script de test, y nada más en el repo menciona `test-concurrency`.
+
+   Para corregirlo hay dos caminos. Uno es registrar el cambio de gate como enmienda o desviación aprobada y abrir un ítem de deuda («almacén en memoria compartido entre tests», con `--test-concurrency=1` como remedio temporal y el aislamiento por test como arreglo). El otro es aislar el almacén y quitar el Ruling.
+
+Ficheros relevantes:
+- <run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\tasks.md
+- <run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md
+- <run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md
+- <run>\repo\.docs\sdd\steering\constitution.md
+- <run>\repo\.docs\sdd\steering\debt.md
+
+**Fix round:** Findings remain open
+
+--- [45]
+Ahora la verificación en campo: la suite entera y un smoke con ejecución real por cada THEN. Miro antes la CLI de la app.
+
+--- [55]
+Suite 5/5 en verde sobre `588d9c0` y smoke con ejecución real de los 5 THEN. Registro ahora la re-revisión y corrijo `tasks.md`.
+
+--- [60]
+Ahora el ruling con su adjudicación, el capability merge y el retro.
+
+--- [69]
+`node --test` sin la opción pasa 3/3, así que la carrera del ruling no se reproduce. Lo dejo así en la deuda, sin afirmar más de lo medido. Edito deuda y roadmap.
+
+--- [72]
+Escribo el walkthrough.
+
+--- [75]
+Antes de juntar el cierre en un solo commit reescribo los sha del rango que se squashea (`588d9c0`) en los registros.
+
+--- [78]
+Esos cambios son los míos. Junto el cierre en un commit desde el de la Task 2.
+
+--- [81]
+Base al día. Leo la receta del merge para el CI de la base y los flags.
+
+--- [84]
+El bloque `merge` está completo y el perfil es `delegate`: fusiono sin preguntar, sin push (`merge.push: false` y no hay remoto). No hay «CI de la base» declarado.
+
+--- [87]
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro): `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- **`--test-concurrency=1` en el gate** (Task 2). Es un workaround para una carrera sobre el almacén en memoria. Al cierre `node --test` sin la opción pasó 3/3, así que esa carrera no se reproduce. Lo dejé en «Por triar» de `debt.md`, sin afirmar más de lo medido.
+- **Ruling de la re-revisión.** La re-revisión dijo que ese workaround relaja el gate de la constitución. Lo juzgué al revés: la suite sigue corriendo entera y en verde, solo en serie. Lo que sí faltaba era la fila de deuda, y está añadida.
+
+**Cómo fue el cierre**
+- **Validación en campo** (`validation.mode: field`), hecha por mí y no por el dev-lead:
+  - La suite pasó 5/5.
+  - Los 5 THEN del smoke se ejecutaron de verdad.
+  - Para `canceladas` tras cancelar usé un solo proceso, porque el almacén es en memoria.
+- **Re-revisión.** `HEAD` había avanzado desde la revisión final con el commit de `tasks.md` (solo documentación), así que lancé la re-revisión única. Encontró dos cosas:
+  - La Task 1 citaba `fe348a0` en `tasks.md`, pero entró en `f697955`. Lo corregí.
+  - El workaround sin fila de deuda, descrito arriba.
+- **Capacidad.** `capabilities/bookings.md` se creó con `capability merge`. Los checks de capacidad, roadmap y decisiones pasan.
+- **Deuda.** «El motivo de cancelar no se valida» sale de la lista. «Los motivos no se traducen» queda reescrita a lo que falta, el inglés.
+- **Roadmap.** La 0010 está en ✅.
+- **Sin `estimation.md`.** No hay tiempo real ni estimation-log.
+- **Merge.** El historial quedó en dos commits sobre la Task 2: la 1, la 2 y el cierre. La base ya estaba al día, así que no hizo falta suite tras el sync. `--verified-at` lleva el sha del cierre, porque el código es el mismo que ejecutó la suite.
+- **Sin push.** `merge.push` es `false` y no hay remoto.
+
+**Pendiente:** nada de esta feature. Tampoco hay «CI de la base» declarado en `operations.md`, que no existe, así que no se leyó ningún CI.
+
+**Ticket del kit:** el cierre deja una línea `Retro: … → ticket del kit`: `tasks.md` aceptó dos tasks con el mismo commit y solo la re-revisión lo cazó. ¿Quieres que lance `sdd-feedback` con ella?
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (7f7ec1f) · push: no hecho: `merge.push` es `false` y no hay remoto.
+

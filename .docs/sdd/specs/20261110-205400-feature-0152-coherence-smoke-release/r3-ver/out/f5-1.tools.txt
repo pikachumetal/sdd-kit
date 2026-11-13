@@ -1,0 +1,61 @@
+
+>>> Read: <run>/review-final-a2b261a.diff
+<<< 0	# Review package: c6a57ba..HEAD
+1	
+2	## Commits
+3	a2b261a test(invoices): e2e de recordar el filtro
+4	86aa014 feat(invoices): la lista recuerda el último estado elegido
+5	
+6	## Files changed
+7	 e2e/0024-remember-filter.spec.ts | 16 ++++++++++++++++
+8	 e2e/helpers.ts                   |  5 +++++
+9	 playwright.config.ts             |  2 ++
+10	 server/api.js                    |  4 ++++
+11	 src/invoices/InvoiceList.tsx     | 14 +++++++++++---
+12	 5 files changed, 38 insertions(+), 3 deletions(-)
+13	
+14	## Diff
+15	diff --git a/e2e/0024-remember-filter.spec.ts b/e2e/0024-remember-filter.spec.ts
+1
+
+=== RESULTADO (2 turnos, 0.16769660000000003 $)
+### Strengths
+- The feature is small and does one thing. The `Status` type is extracted and `choose` keeps the state update and the persistence together.
+- The component is a function with hooks, and the UI text is in Spanish, so both code constraints are met.
+- The server endpoint follows the existing `Map` pattern, and the key regex is restricted to `[\w-]+`.
+- No comments cite documents, and none repeat the code.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`playwright.config.ts:8-9`**: `timeout: 90_000` and `expect: { timeout: 20_000 }` raise the timeouts above the declared value, which is the default. The diff doesn't touch `operations.md`, so no reason is written there. This also hides slow-app failures for the whole suite. Remove them, or document the reason in `operations.md`.
+2. **`e2e/0024-remember-filter.spec.ts:24-36`**: neither new E2E test names a core flow. The only related core flow is «marca una factura como cobrada», in `0018-invoice-status.spec.ts`. The second test, «cuatro opciones», checks static markup and belongs in a component test one layer down. The remember-filter test also belongs there, or it should extend 0018.
+3. **`e2e/0024-remember-filter.spec.ts:27`**: `expect.poll(() => savedStatus(request))` waits on server state between two user actions, with no comment giving a reason. If the save hasn't landed by the time the user navigates away, that is the bug the test exists to catch. Drop the poll and assert only what the user sees after navigating back.
+4. **`server/api.js:94-96` and `InvoiceList.tsx:115`**: the preference is global, not per user. The clipboard and cells are keyed by `x-user`, but `prefs` is keyed only by name, and the component sends no user header. Every user shares one filter, so one user's choice changes another's list. A reasonable person expects the preference to be their own. Key it by user like the clipboard.
+5. **`InvoiceList.tsx:114-116`**: the initial `fetch` has no `.catch` and no cancellation. This causes three problems:
+   - If the user picks a status before the GET resolves, the late response overwrites their choice.
+   - It calls `setState` after unmount.
+   - A failed request is an unhandled rejection.
+   - The saved value is also not validated against `STATUSES`, so a stale or garbage value leaves the `<select>` out of sync with the data. Add an `ignore` flag in the effect cleanup, validate the value, and catch errors.
+6. **`InvoiceList.tsx:119`**: the `PUT` ignores its result and sends no `content-type` header. A failed save is silent, and the UI claims the filter will be remembered. Handle the failure or at least catch it.
+
+#### Minor (Nice to Have)
+- `InvoiceList.tsx:115,119`: the `'/api/prefs/invoice-status'` URL is duplicated. Extract a constant, or a small `useRemembered` hook that hides the fetch. That would be a deeper module (Ousterhout, «interfaces simpler than implementations»: possible shallow coupling of UI and transport).
+- `e2e/helpers.ts:53`: `savedStatus` sends no `x-user` header, unlike its sibling helpers. This goes away if the per-user fix is applied.
+- `server/api.js:94-96`: the new handlers are dense one-liners with no error handling, as are the existing ones. `JSON.parse` in `read` can throw on malformed bodies and crash the server.
+
+### Declined to judge
+- Whether remembering the filter is what the spec asked for, and whether it should persist on the server or in `localStorage`. That is the Spec axis.
+- Whether the in-memory `prefs` store, which is lost on restart, fits the architecture. That is the Architecture axis.
+- The `workers: 3` setting in the config. It predates this diff.
+
+### Recommendations
+- Move the persistence into a hook, make it per user, and cover the race and failure paths with a component test. Then reduce the E2E to the user-visible round trip, or fold it into 0018.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works on the happy path. The undocumented raised timeouts, the E2E tests that name no core flow, the poll on server state, the global (non-per-user) preference and the unguarded fetch race and error handling should be fixed first.

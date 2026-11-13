@@ -43,6 +43,11 @@ const F21 = '.docs/sdd/specs/20261008-190000-feature-0021-slot-check';
 const FOLDERS = [F10, F11, F13, F18, F19, F20, F21, F28, F29, F30, F31];
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
+const OPS = '.docs/sdd/steering/operations.md';
+const CONSTITUTION = '.docs/sdd/steering/constitution.md';
+// Una fila de Now de la 3.0.0, con su brief de cinco etiquetas; va delante de la fila 0008 (avisos por correo), la última del molde.
+const nowRow = (id, title, oneLiner, lane = 'feature') => `| ${id} | — | **${title}**<br>*${oneLiner}*<details><summary>Brief</summary>**Carril:** ${lane}<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |`;
+const addNow = (row) => edit('ROADMAP.md', (text) => text.replace(/^\| 0008 \|/m, `${row}\n| 0008 |`));
 
 s.copy(join(HERE, 'mold-reservas'));
 s.putKitMarker(MARKER);
@@ -66,17 +71,17 @@ const molds = {
   // La 0011 implementa los responsables de sala que una fila pendiente (0009) prometía, y docs/config.md apunta a esa fila.
   // El puntero va fuera de los documentos que el paso 1 lee: en PRODUCT.md lo vieron 2 de 2 sin buscarlo.
   'reservas-puntero'() {
-    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 0011 \|/gm, '| 0009 | **Responsables de sala**: quién responde de cada sala y qué puede hacer | ⏳ |\n| 0011 |'));
+    edit('ROADMAP.md', (text) => text.replace(/^\| 0011 \|/m, `${nowRow('0009', 'Responsables de sala', 'quién responde de cada sala y qué puede hacer')}\n| 0011 |`));
     appendFileSync(at('README.md'), '\nConfiguración: [docs/config.md](docs/config.md).\n');
     s.put('docs/config.md', '# Configuración\n\n- `data/`: ficheros de datos de la herramienta. Hoy no hay ninguno.\n- Responsables de sala: aún no hay; quién es cada uno y su fichero los define la 0009.\n');
   },
   // Dos suites con nivel: la unitaria y la de integración, que escribe ficheros.
   'reservas-levels'() {
-    edit('.docs/sdd/operations.md', (text) => text.replace('- **Suites**: `unit` · `node --test` · ~1 s', '- **Suites**: `unit` · `node --test test/app.test.js test/cancel.test.js` · ~1 s · unitario\n- `store` · `node --test test/store.test.js` · ~40 s · integración'));
+    edit(OPS, (text) => text.replace('- **Suites**: `unit` · `node --test` · ~1 s','- **Suites**: `unit` · `node --test test/app.test.js test/cancel.test.js` · ~1 s · unitario\n- `store` · `node --test test/store.test.js` · ~40 s · integración'));
     copyFileSync(join(FIX, 'store.test.js'), at('test/store.test.js'));
   },
   'reservas-sin-ops'() {
-    rmSync(at('.docs/sdd/operations.md'));
+    rmSync(at(OPS));
   },
   // El último patch midió su gate de cierre: 38 min de un cierre de 0,9 h.
   'reservas-gate'() {
@@ -94,13 +99,13 @@ const molds = {
     copyFileSync(join(FIX, 'guia.md'), at('docs/guia.md'));
     copyFileSync(join(FIX, 'words.test.js'), at('test/words.test.js'));
     appendFileSync(at('README.md'), '\nComandos: `cancelar` y `anular`; guía en [docs/guia.md](docs/guia.md).\n');
-    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0012 | **Retirar anular**: el comando anular desaparece | ⏳ |\n| 1 |'));
+    addNow(nowRow('0012', 'Retirar anular', 'el comando anular desaparece'));
   },
   // La 0013 añade un requisito que contradice otro vivo de la capacidad, con otro título.
   'reservas-contradice'() {
     mkdirSync(at('.docs/sdd/capabilities'), { recursive: true });
     copyFileSync(join(FIX, 'bookings-long-capability.md'), at('.docs/sdd/capabilities/bookings.md'));
-    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0013 | **Cancelar varios días de una vez** | ⏳ |\n| 1 |'));
+    addNow(nowRow('0013', 'Cancelar varios días de una vez', '—'));
   },
   // El tope limita la carpeta entera, no el fichero que edita la spec.
   'reservas-tope-carpeta'() {
@@ -132,15 +137,15 @@ const molds = {
       "  const paths = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).split('\\n');",
       '  assert.ok(paths.every((path) => path.length <= 140));', '});', '',
     ].join('\n'));
-    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Tareas: \`gate.json\`, con caché: una tarea se salta si no cambia ninguno de sus \`inputs\`. El pre-commit corre \`fast\`.\n`);
+    edit(OPS, (text) => `${text}\n- Tareas:\`gate.json\`, con caché: una tarea se salta si no cambia ninguno de sus \`inputs\`. El pre-commit corre \`fast\`.\n`);
   },
   // Un repo de skills con su batería, la regla de la previsión, su comando de previsión y dos precios por sujeto: el vigente y uno viejo.
   'reservas-skills'() {
     s.put('skills/aviso-cierre/SKILL.md', '---\nname: aviso-cierre\ndescription: Usar al cerrar una feature.\n---\n\n# aviso-cierre\n\n1. Di qué se cierra.\n2. Corre el gate.\n');
     s.put('tests/batteries/aviso-cierre/battery.md', '# Batería — aviso-cierre\n\n| Id | Paso | n | Modelo |\n| --- | --- | --- | --- |\n| c1 | cierre | 2 | sonnet |\n| c2 | cierre | 2 | sonnet |\n');
-    edit('.docs/sdd/constitution.md', (text) => `${text}5. Ninguna edición de una skill sin su prueba con sujetos (RED → GREEN). La previsión de coste (sujetos, minutos y dólares) se declara antes del primer sujeto y la spec la repite; si la prueba la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead.\n`);
+    edit(CONSTITUTION, (text) => `${text}5. Ninguna edición de una skill sin su prueba con sujetos (RED → GREEN). La previsión de coste (sujetos, minutos y dólares) se declara antes del primer sujeto y la spec la repite; si la prueba la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead.\n`);
     s.put('scripts/plan.mjs', PLAN_MJS);
-    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Sujetos: Sonnet. Un sujeto de \`aviso-cierre\` cuesta ~0,70 $, porque cierra una feature entera. La previsión de una tanda: \`SCENARIOS="<escenarios>" N=<n> node scripts/plan.mjs tests/batteries/aviso-cierre/battery.md\`.\n`);
+    edit(OPS, (text) => `${text}\n- Sujetos: Sonnet. Un sujeto de \`aviso-cierre\` cuesta ~0,70 $, porque cierra una feature entera. La previsión de una tanda: \`SCENARIOS="<escenarios>" N=<n> node scripts/plan.mjs tests/batteries/aviso-cierre/battery.md\`.\n`);
     s.put('.docs/sdd/specs/20260915-090000-patch-0006-aviso/patch.md', '# Patch — aviso\n\nRED y GREEN de `aviso-cierre`, 4 sujetos, ~1,24 $ (~0,31 $ por sujeto).\n');
   },
   // mold-c lleva un pendientes.md que solo se ve abriéndolo.
@@ -152,7 +157,7 @@ const molds = {
   'reservas-skills-suite'() {
     molds['reservas-skills']();
     const root = 'tests/batteries/aviso-cierre/mold-cierre';
-    for (const name of ['README.md', 'src/app.js', 'src/rooms.js', 'test/app.test.js', 'docs/guia.md', 'docs/salas.md', '.docs/sdd/roadmap.md']) s.put(`${root}/${name}`, `# ${name}\n`);
+    for (const name of ['README.md', 'src/app.js', 'src/rooms.js', 'test/app.test.js', 'docs/guia.md', 'docs/salas.md', 'ROADMAP.md']) s.put(`${root}/${name}`, `# ${name}\n`);
     s.put(`${root}/.docs/sdd/pendientes.md`, '# Pendientes\n\n- 0011: responsables de sala\n');
   },
   // Una opción nueva en libres, que describe cli, con un delta en rooms y reports.
@@ -162,7 +167,7 @@ const molds = {
     copyFileSync(join(FIX, 'cli-capability.md'), at('.docs/sdd/capabilities/cli.md'));
     copyFileSync(join(FIX, 'rooms-capability.md'), at('.docs/sdd/capabilities/rooms.md'));
     copyFileSync(join(FIX, 'reports-capability.md'), at('.docs/sdd/capabilities/reports.md'));
-    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0029 | **Las salas tienen planta** | ⏳ |\n| 1 |'));
+    addNow(nowRow('0029', 'Las salas tienen planta', '—'));
   },
   // Una skill retirada: dos requisitos citan su «paso 2» sin nombrarla, y otras dos líneas, el paso 2 de otra skill.
   // Las dos citas van en una capacidad que el delta no declara: en la declarada, el sujeto las lee de paso.
@@ -173,7 +178,7 @@ const molds = {
     s.put('skills/aviso-cierre/SKILL.md', '---\nname: aviso-cierre\ndescription: Usar al cerrar una feature.\n---\n\n# aviso-cierre\n\n1. Di qué se cierra.\n2. Corre el gate.\n');
     s.put('skills/aviso-apertura/SKILL.md', '---\nname: aviso-apertura\ndescription: Usar al abrir una feature.\n---\n\n# aviso-apertura\n\n1. Di qué se abre.\n2. Di en qué rama se trabaja.\n');
     s.put('skills/resumen-cierre/SKILL.md', '---\nname: resumen-cierre\ndescription: Usar al acabar el cierre de una feature.\n---\n\n# resumen-cierre\n\n1. Cuenta los commits de la rama.\n2. Lista las filas del roadmap que salda.\n');
-    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0030 | **Retirar la skill aviso-cierre** | ⏳ |\n| 1 |'));
+    addNow(nowRow('0030', 'Retirar la skill aviso-cierre', '—'));
   },
   'reservas-adr'() {
     mkdirSync(at('.docs/sdd/decisions'), { recursive: true });
@@ -193,15 +198,15 @@ const molds = {
     copyFileSync(join(gate, 'gate.json'), at('gate.json'));
     copyFileSync(join(gate, 'rooms.js'), at('src/rooms.js'));
     copyFileSync(join(gate, 'rooms.test.js'), at('test/rooms.test.js'));
-    edit('.docs/sdd/operations.md', (text) => text.replace(/^- \*\*Gate de cierre\*\*: .*$/gm, '- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`'));
-    if (!readFileSync(at('.docs/sdd/operations.md'), 'utf8').includes('scripts/gate.mjs')) s.die('no se plantó el gate filtrado');
+    edit(OPS, (text) => text.replace(/^- \*\*Gate de cierre\*\*: .*$/gm, '- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`'));
+    if (!readFileSync(at(OPS), 'utf8').includes('scripts/gate.mjs')) s.die('no se plantó el gate filtrado');
   },
   // Un workspace de pnpm recién clonado, sin node_modules: app.js importa fecha, y npm install no lo instala.
   'reservas-deps'() {
     molds['reservas-deps-sin-stack']();
-    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Dependencias: workspace de pnpm (\`pnpm-workspace.yaml\`); \`pnpm install\` una vez por worktree.\n`);
+    edit(OPS, (text) => text.replace(/^(- \*\*Arrancar\*\*: .*)$/m, '$1\n- **Dependencias**: workspace de pnpm (`pnpm-workspace.yaml`); `pnpm install` una vez por worktree.'));
   },
-  // El mismo workspace sin la línea de tech-stack.md: el gestor solo lo dice el lockfile.
+  // El mismo workspace sin la línea de Dependencias de operations.md: el gestor solo lo dice el lockfile.
   'reservas-deps-sin-stack'() {
     s.copy(join(FIX, 'deps'));
     edit('package.json', (text) => text.replace('"engines"', '"dependencies": {"fecha": "workspace:*"}, "engines"'));
@@ -229,8 +234,8 @@ if (MOLD !== 'reservas-main') s.git('checkout', '-q', '-b', 'develop');
 // reservas-remoto: un remoto bare con develop publicado; otro clon publica su 0012 y aquí queda una 0012 sin publicar.
 const gitOutside = (...args) => spawnSync('git', args, { env: s.env, stdio: 'ignore' });
 const addRow = (root, row) => {
-  const path = join(root, '.docs', 'sdd', 'roadmap.md');
-  writeFileSync(path, readLf(path).replace(/^\| 0011 \|.*$/gm, `$&\n${row}`));
+  const path = join(root, 'ROADMAP.md');
+  writeFileSync(path, readLf(path).replace(/^\| 0011 \|.*$/m, `$&\n${row}`));
 };
 function remoteMold(row) {
   const origin = join(s.RUN, 'origin.git');
@@ -240,7 +245,7 @@ function remoteMold(row) {
   s.git('push', '-q', '-u', 'origin', 'develop');
   gitOutside('clone', '-q', '-b', 'develop', origin, other);
   if (!row) return;
-  addRow(other, '| 0012 | **Informe de ocupación**: horas reservadas por sala y semana | ⏳ |');
+  addRow(other, nowRow('0012', 'Informe de ocupación', 'horas reservadas por sala y semana'));
   gitOutside('-C', other, '-c', 'user.email=otro@example.com', '-c', 'user.name=Otro', 'commit', '-qam', 'docs(roadmap): reserva 0012');
   gitOutside('-C', other, 'push', '-q', 'origin', 'develop');
   addRow(s.R, row);
@@ -264,11 +269,11 @@ const steps = {
     s.put(`${F11}/spec.md`, readFileSync(join(FIX, 'spec-0011-review.md'), 'utf8'));
   },
   id1: () => {
-    remoteMold('| 0012 | **Exportar las reservas a CSV**: un fichero con una fila por reserva | ⏳ |');
+    remoteMold(nowRow('0012', 'Exportar las reservas a CSV', 'un fichero con una fila por reserva'));
     branch('feature/0012-export-csv');
   },
   id4: () => {
-    remoteMold('| 0012 | Patch: **Franja no válida en libres**: `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» | ⏳ |');
+    remoteMold(nowRow('0012', 'Franja no válida en libres', '`libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM»', 'patch'));
     branch('feature/0012-slot-format');
   },
   id2: () => {
@@ -288,7 +293,7 @@ const steps = {
     branch('feature/bump-node-22-18');
   },
   ws1: () => {
-    addRow(s.R, '| 0012 | Patch: **Franja no válida en libres**: `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» | ⏳ |');
+    addRow(s.R, nowRow('0012', 'Franja no válida en libres', '`libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM»', 'patch'));
     s.commit('docs(roadmap): reserva 0012');
     branch('feature/0012-slot-format');
   },
@@ -392,7 +397,7 @@ steps.rv1 = reviewSpec(F11, 'spec-0011-review.md');
 steps.rv2 = () => {
   reviewSpec(F18, 'spec-0018-small.md')();
   s.put('docs/guia.md', readLf(join(FIX, 'guia.md')).replace('; lo retira la 0012', ''));
-  edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0018 | **El teléfono de conserjería en la guía** | ⏳ |\n| 1 |'));
+  addNow(nowRow('0018', 'El teléfono de conserjería en la guía', '—'));
 };
 // Con --setting-sources "" no llega ningún CLAUDE.md: la instrucción de confirmar va por el system prompt.
 steps.rv3 = () => {
@@ -407,7 +412,8 @@ steps.co7 = reviewSpec(F20, 'spec-0020-export-dir.md');
 steps.co8 = reviewSpec(F21, 'spec-0021-slot-check.md');
 steps[s.SC]?.();
 
-const turns = { g1: '40', r1: '15', d1: '60', p3: '60', pr1: '70' };
+// r1 pasó de 15 a 30 en la 0152: r1-2 se cortó tras la pasada de coherencia, antes de decidir la review.
+const turns = { g1: '40', r1: '30', d1: '60', p3: '60', pr1: '70' };
 for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-p', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
@@ -415,13 +421,15 @@ await s.launch(ASK);
 for (const kept of ['spec', 'plan', 'tasks']) {
   for (const folder of FOLDERS) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
 }
-// Las carpetas del molde y de los fixtures son de 2026-10-08 o antes: la que crea el sujeto es la de fecha mayor.
-const specs = at('.docs/sdd/specs');
-const newest = existsSync(specs) ? readdirSync(specs).sort().at(-1) : undefined;
+// Las carpetas del molde y de los fixtures son de 2026-10-08 o antes y viven en specs/ (proyecto migrado): la que crea el sujeto es la de fecha mayor y nace en changes/.
+// Si la crea en specs/, también se guarda: `git status` en state.txt dice dónde nació.
 const ours = FOLDERS.map((folder) => folder.split('/').at(-1));
+const newestIn = (dir) => (existsSync(dir) ? readdirSync(dir).sort().at(-1) : undefined);
+const newestSpecs = newestIn(at('.docs/sdd/specs'));
+const [dir, newest] = newestIn(at('.docs/sdd/changes')) ? [at('.docs/sdd/changes'), newestIn(at('.docs/sdd/changes'))] : [at('.docs/sdd/specs'), newestSpecs];
 if (newest && !ours.includes(newest) && !/task-000|patch-0007/.test(newest)) {
   for (const [file, name] of [['spec.md', 'spec-new.md'], ['patch.md', 'patch-new.md'], ['plan.md', 'plan-new.md']]) {
-    if (existsSync(join(specs, newest, file))) s.keep(join(specs, newest, file), name);
+    if (existsSync(join(dir, newest, file))) s.keep(join(dir, newest, file), name);
   }
 }
 if (s.SC === 'pw1') s.keep(at('docs/guia.md'), 'guia.md');

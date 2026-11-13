@@ -1,0 +1,348 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days/ && cat .docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days/*.md; ls .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\coherence-pass.md
+<<< 1	## Coherence pass
+2	
+3	In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+4	
+5	**Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —the literal and the function or step that 
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\review-spec.md
+<<< 1	# Spec review — the complexity rubric and the adversarial reviewer
+2	
+3	Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+4	
+5	## 1. Count the signals (observable in the spec)
+6	
+7	| Signal | Holds if… |
+8	| --- | --- |
+9	| New capability | «✋ Decisiones que he tomado yo» declares a new capability in `capabilities/` |
+10	| Public contract | the delta touches an API, a file format or an interface 
+<<< Exit code 1
+.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days/:
+spec.md
+---
+id: 20261008-120000-feature-0013-cancel-many-days
+feature: 0013
+title: Cancelar varios días de una vez
+mode: full
+profile: delegate
+status: draft
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - name: Laura
+    approved_at: null
+---
+
+# Spec — Cancelar varios días de una vez
+
+## Capacidades
+
+- Modificadas: `bookings` — `cancelar` acepta varios días.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Los días van separados por espacios, sin límite.
+
+## Intent
+
+Hoy, p
+
+>>> Bash: cd "<run>/repo" && ls; ls .docs/sdd/capabilities test src 2>/dev/null; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md; cat .docs/sdd/capabilities/*.md; cat src/app.js; cat test/cancel.test.js 2>/dev/null; cat ROADMAP.md | head -60; git grep -n -i "0013\|cancelar" -- . ':!.docs/sdd/specs'
+<<< CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd/capabilities:
+bookings.md
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+#
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/specs/20261008-120000-feature-0013-cancel-many-days/spec.md"; echo exit $?; git grep -n -i "varios días\|cancelada" -- README.md PRODUCT.md CHANGELOG.md; ls node_modules 2>&1 | head -1
+<<< bookings.md: añadido «Cancelar varios días de una vez»
+exit 0
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days" && python3 - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('spec.md','utf8');
+const rep=(a,b)=>{if(!s.includes(a))throw new Error('falta '+a);s=s.replace(a,b)};
+rep('1. Los días van separados por espacios, sin límite.','1. Los días van separados por espacios, sin límite (la capacidad declara «Límites: no aplica»).\n2. **Corregido en la pasada de coherencia:** la spec decía «todo o nada» con una sola línea, pero `bookings` ya exige «Un comando con varios días trata cada día aparte» (atiende los demás y responde una línea por día). Un ADDED que cambia un requisito existente es un MODIFIED no declarado, así que `cancelar` sigue esa regla y no cambio ningún requisito. Si prefieres «todo o nada», es un MODIFIED y lo reescribo.\n3. Política de modelos: sesión Native; revisión de spec con un revisor (Sonnet) por alcance pequeño y sin MODIFIED.\n4. Delta probado en una copia de `.docs/sdd`: `sdd capability merge` → «añadido «Cancelar varios días de una vez»», sin rechazos.');
+rep('- Entra: \`cancelar <sala> <día> <día>…\` en \`src/app.js\`.','- Entra: \`cancelar <sala> <día> <día>…\` en \`src/app.js\` (rama \`cancelar\` de \`run\`) y su test en \`test/cancel.test.js\`. \`anular\` queda fuera: acepta un solo día.');
+rep('\`cancelar\` comprueba todos los días antes de tocar ninguna reserva.','\`cancelar\` recorre los días y trata cada uno aparte, como exige la capacidad; responde una línea por día.');
+rep('- THEN las dos quedan canceladas y responde \`canceladas Norte lun mie\`\n- AND con \`cancelar Norte lun mar\`, sin reserva el martes, no cancela ninguna y responde \`sin reserva Norte mar\`','- THEN las dos quedan canceladas y responde dos líneas: \`cancelada Norte lun\` y \`cancelada Norte mie\`\n- AND con \`cancelar Norte lun mar\`, sin reserva el martes, cancela el lunes y responde \`cancelada Norte lun\` y \`sin reserva Norte mar\`');
+fs.writeFileSync('spec.md',s);"
+grep -n "mie\|aparte" spec.md
+<<< Exit code 1
+/usr/bin/bash: line 9: warning: here-document at line 8 delimited by end-of-file (wanted `E')
+/usr/bin/bash: line 1: bookings: command not found
+/usr/bin/bash: line 1: cancelar: command not found
+/usr/bin/bash: line 1: .docs/sdd: No such file or directory
+/usr/bin/bash: line 1: sdd: command not found
+[eval]:3
+const rep=(a,b)=>{if(!s.includes(a))throw new Error('falta '+a);s=s.replace(a,b)};
+                                    ^
+
+Error: falta - THEN las dos quedan canceladas y responde `canceladas Norte lun mie`
+- AND con `cancelar Norte lun mar`, sin reserva el martes, no canc
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md has been updated successfully.
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión adversarial de spec
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: ad660d3fcf4491379 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md
+<<< 1	---
+2	id: 20261008-120000-feature-0013-cancel-many-days
+3	feature: 0013
+4	title: Cancelar varios días de una vez
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - name: Laura
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Cancelar varios días de una vez
+16	
+17	## Capacidades
+18	
+19	- Modificadas: `bookings` — `cancelar` acepta varios días.
+20	
+21	## Decisiones que he tomado yo — valida estas
+22	
+23	1. Los días van separados por espacios, sin límite (la capacidad declara «Límites: no aplica»).
+24	2. **Corregido en la 
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\bookings.md
+<<< 1	# Capacidad — bookings
+2	
+3	## Propósito
+4	
+5	Reservar, cancelar y consultar salas desde la línea de comandos.
+6	
+7	## Requisitos
+8	
+9	### Reservar una sala
+10	
+11	- GIVEN Norte libre el lunes
+12	- WHEN la persona ejecuta `reservar Norte lun`
+13	- THEN la reserva queda activa y responde `reservada Norte lun`
+14	
+15	### Reservar una sala ocupada
+16	
+17	- GIVEN Norte ya reservada el lunes
+18	- WHEN la persona ejecuta `reservar Norte lun`
+19	- THEN responde `ocupada Norte lun` y la reserva existente no cambia
+20	
+21	### Cancelar una reserva propia
+22	
+23	- GIVEN una reserva activa de Norte el l
+
+>>> Bash: cd "<run>/repo" && grep -n -i "24\|cancel\|propia" PRODUCT.md; git grep -n "0013" -- src test README.md .docs/sdd/steering .docs/sdd/capabilities; echo grep-exit $?
+<<< 13:- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+grep-exit 1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-120000-feature-0013-cancel-many-days\spec.md
+<<< 14	
+15	# Spec — Cancelar varios días de una vez
+16	
+17	## Capacidades
+18	
+19	- Modificadas: `bookings` — `cancelar` acepta varios días.
+20	
+21	## Decisiones que he tomado yo — valida estas
+22	
+23	1. Los días van separados por espacios, sin límite (la capacidad declara «Límites: no aplica»).
+24	2. **Corregido en la pasada de coherencia:** la spec decía «todo o nada» con una sola línea de respuesta, pero `bookings` ya exige «Un comando con varios días trata cada día aparte» (atiende los demás y responde una línea por día). Un ADDED que cambia un requisito existente es un MODIFIED no declarado, a
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days" && cat > /tmp/new.txt <<'EOF'
+## Capacidades
+
+- Modificadas: `bookings` — se añade un requisito (`cancelar` acepta varios días); ningún requisito existente cambia.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Los días van separados por espacios, sin límite (la capacidad declara «Límites: no aplica»).
+2. `cancelar` sigue la regla que `bookings` ya tiene, «Un comando con varios días trata cada día aparte»: cancela los días que tienen reserva y responde una línea por día, en el orden en que se escriben. Si prefieres «todo o nada», es un MODIFIED de ese requisito y lo reescribo.
+3. Un día repetido (`lun lun`) responde `cancelada` la primera vez y `sin reserva` la segunda; un día que no existe responde `sin reserva`, igual que hoy. `cancelar Norte` sin días queda como hoy, fuera de esta feature.
+4. Reglas de la capacidad: dónde viven los datos, idioma, límites, avisos y conflicto no cambian («no aplica»). Roles y permisos: no aplica, la regla de las 24 h de `PRODUCT.md` no está en `bookings` ni en el código y no entra aquí.
+5. Política de modelos: sesión Native; revisión de la spec con un revisor (Sonnet), por alcance pequeño y sin MODIFIED.
+
+### Hallazgos de la review
+
+Revisión de spec propuesta: un revisor — señales: ninguna de contrato público ni MODIFIED · tamaño: ~10 líneas en 2 ficheros. No hubo ningún Crítico, así que no hay segunda ronda.
+- **Aceptado** — «Modificadas» contradice un ADDED → la línea de Capacidades aclara que se añade un requisito y no cambia ninguno.
+- **Aceptado** — faltan días repetidos, inválidos y sin días → decisión 3 y escenario del día repetido.
+- **Aceptado** — decisiones sin declarar (orden, duplicados, límites) → decisiones 1 a 4.
+- **Aceptado** — el Intent hablaba de «operación entera» → reescrito a una respuesta por día; el historial de la corrección sale de las decisiones.
+- **Aceptado** — `anular` afirmado sin respaldo → pasa a «No entra» sin describirlo.
+- **Rechazado** — reservas ajenas y menos de 24 h → `bookings` no tiene esa regla y el código tampoco; añadirla es otra feature.
+- **Aceptado** — verificación del merge y política de modelos mezcladas con decisiones → el merge sale de las decisiones y consta aquí: `sdd capability merge` en una copia de `.docs/sdd` dio «añadido «Cancelar varios días de una vez»», sin rechazos.
+- **Aceptado** — el grep no cubría `src` ni `test` → ampliado.
+- **Aceptado** — «Dónde se prueba» no pedía el caso mixto → ahora lo exige.
+
+## Intent
+
+Hoy, para cancelar una semana hay que lanzar `cancelar` cinco veces. Quien cancela quiere hacerlo de una vez y saber, día por día, cuál se canceló y cuál no tenía reserva.
+
+## Scope
+
+- Entra: `cancelar <sala> <día> <día>…` en `src/app.js` (rama `cancelar` de `run`) y su test en `test/cancel.test.js`.
+- No entra: reservar varios días, ni `anular`.
+
+## Lo que se retira o cambia de forma
+
+| Qué | Dónde aparece | Destino |
+| --- | --- | --- |
+| nada | | |
+
+- Filas que implementa: 0013 → nada: comprobado con `git grep -n 0013 -- src test README.md .docs/sdd/steering .docs/sdd/capabilities` (sin resultados) y el README no documenta `cancelar`.
+
+## Approach
+
+`cancelar` recorre los días y trata cada uno aparte, como exige la capacidad; responde una línea por día.
+
+## Dónde se prueba
+
+- cancelar varios días: por el comando, como `test/cancel.test.js`, con el caso mixto (`lun mar`), el orden de las líneas y el día repetido.
+EOF
+node -e "
+const fs=require('fs');let s=fs.readFileSync('spec.md','utf8');
+const a=s.indexOf('## Capacidades'), b=s.indexOf('## Términos y ADR');
+s=s.slice(0,a)+fs.readFileSync('/tmp/new.txt','utf8').replace(/\r?\n$/,'')+'\n\n'+s.slice(b);
+s=s.replace('- AND con \`cancelar Norte lun mar\`, sin reserva el martes, cancela el lunes y responde \`cancelada Norte lun\` y \`sin reserva Norte mar\`','- AND con \`cancelar Norte lun mar\`, sin reserva el martes, cancela el lunes y responde \`cancelada Norte lun\` y \`sin reserva Norte mar\`\n- AND con \`cancelar Norte lun lun\` responde \`cancelada Norte lun\` y \`sin reserva Norte lun\`');
+fs.writeFileSync('spec.md',s)"
+T=$(mktemp -d); cp -r ../../ "$T/sdd"; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/specs/20261008-120000-feature-0013-cancel-many-days/spec.md"; sed -n 60,90p spec.md
+<<< node:fs:620
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open 'D:\tmp\new.txt'
+    at Object.readFileSync (node:fs:620:20)
+    at [eval]:4:19
+    at runScriptInThisContext (node:internal/vm:219:10)
+    at node:internal/process/execution:485:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:483:60)
+    at evalFunction (node:internal/process/execution:317:30)
+    at evalTypeScript (node:internal/process/execution:329:3)
+    at node:internal/main/eval_string:7
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days" && cp /tmp/new.txt ./new.tmp && node -e "
+const fs=require('fs');let s=fs.readFileSync('spec.md','utf8');
+const a=s.indexOf('## Capacidades'), b=s.indexOf('## Términos y ADR');
+s=s.slice(0,a)+fs.readFileSync('new.tmp','utf8').replace(/\r?\n$/,'')+'\n\n'+s.slice(b);
+const t='- AND con \`cancelar Norte lun mar\`, sin reserva el martes, cancela el lunes y responde \`cancelada Norte lun\` y \`sin reserva Norte mar\`';
+if(!s.includes(t))throw 1;
+s=s.replace(t,t+'\n- AND con \`cancelar Norte lun lun\` responde \`cancelada Norte lun\` y \`sin reserva Norte lun\`');
+fs.writeFileSync('spec.md',s)"; rm new.tmp; T=$(mktemp -d); cp -r ../../ "$T/sdd"; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/specs/20261008-120000-feature-0013-cancel-many-days/spec.md"; ls; grep -c "" spec.md; sed -n 15,30p spec.md
+<<< bookings.md: añadido «Cancelar varios días de una vez»
+spec.md
+92
+# Spec — Cancelar varios días de una vez
+
+## Capacidades
+
+- Modificadas: `bookings` — se añade un requisito (`cancelar` acepta varios días); ningún requisito existente cambia.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Los días van separados por espacios, sin límite (la capacidad declara «Límites: no aplica»).
+2. `cancelar` sigue la regla que `bookings` ya tiene, «Un comando con varios días trata cada día aparte»: cancela los días que tienen reserva y responde una línea por día, en el orden en que se escriben. Si prefier
+
+=== RESULTADO (14 turnos, 0.4293042 $)
+Ahora: la revisión de la spec está en marcha (un revisor). Queda: plegar sus hallazgos y presentarte la spec para aprobar, ~3 min, ~$0,10.
+
+Todavía no tengo el resultado del revisor, así que no puedo presentarte la spec. Cuando termine, plegaré sus hallazgos en «✋ Decisiones que he tomado yo» y te la presentaré.
+
+Hasta ahora:
+- **Pasada de coherencia:** la spec contradecía a `bookings`, que ya exige «un comando con varios días trata cada día aparte», con una línea por día. Yo la había escrito como «todo o nada» con una sola línea de respuesta. La he alineado con la capacidad: `cancelar` trata cada día aparte y responde una línea por día. Ningún requisito existente cambia.
+- **Si prefieres «todo o nada»:** sería un `MODIFIED` de ese requisito. Lo dejo anotado en ✋ para que lo decidas tú.
+- **Delta probado en una copia de `.docs/sdd`:** `sdd capability merge` lo acepta sin rechazos.
+- **Scope:** ahora incluye `test/cancel.test.js` y deja `anular` fuera, porque acepta un solo día.
+
+=== RESULTADO (5 turnos, 0.4293042 $)
+**Spec 0013 — Cancelar varios días de una vez** lista para aprobar. Está en `.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days/spec.md`, con `status: draft` y la aprobación de Laura pendiente.
+
+🦆 **En llano:** hoy `cancelar Norte lun mar mie` solo mira el primer día. La spec hace que acepte varios días a la vez. Cada día se trata aparte: los que tienen reserva se cancelan y se responde una línea por día (`cancelada Norte lun`, `sin reserva Norte mar`…). Es lo que `bookings` ya pide para cualquier comando con varios días, y no cambia ningún requisito existente.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Los días van separados por espacios, sin límite.
+2. Cada día se trata aparte, con una línea por día y en el orden escrito. Si prefieres «todo o nada», es un `MODIFIED` del requisito «Un comando con varios días trata cada día aparte».
+3. Un día repetido (`lun lun`) responde `cancelada` y luego `sin reserva`. Un día que no existe responde `sin reserva`. `cancelar Norte` sin días queda como hoy.
+4. Roles y permisos no aplican. La regla de las 24 h de `PRODUCT.md` no está en `bookings` ni en el código, y no entra aquí.
+5. Política de modelos: sesión Native; revisión de la spec con un revisor (Sonnet).
+
+**Cómo se ha comprobado**
+- **Coherencia:** la primera versión decía «todo o nada» con una sola línea, y contradecía a `bookings`. La he corregido.
+- **Delta de comportamiento:** probado en una copia de `.docs/sdd`; `sdd capability merge` lo acepta sin rechazos.
+- **Review:** un revisor, sin ningún Crítico, así que no hay segunda ronda. Acepté 8 hallazgos y rechacé 1 (las reservas ajenas y la regla de las 24 h). Están en «Hallazgos de la review».
+
+**Scope:** `src/app.js` (rama `cancelar` de `run`) y `test/cancel.test.js`. No entran reservar varios días ni `anular`.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media** — la prevé una sola task, así que no lo recomiendo: cambiar de modelo cuesta más de lo que ahorra.

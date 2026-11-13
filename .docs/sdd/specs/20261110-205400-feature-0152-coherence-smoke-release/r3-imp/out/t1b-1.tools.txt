@@ -1,0 +1,100 @@
+
+>>> Bash: cd <run>/repo && cat .temp/sdd/plan/task-1-brief.md; node --test test/informe.test.js 2>&1 | head -40; ls; ls src test; git status --short
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> canceladas`; sin `--por`, `
+
+>>> Bash: cd <run>/repo && cat src/app.js; cat test/informe.test.js | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled',
+
+>>> Bash: cd <run>/repo && python3 - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"export function run(\",\`const reportGroupings = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    belongs: (b, room) => b.room === room,
+    line: (b) => \\\`  \\\${b.day} \\\${b.slot} — \\\${b.reason} (\\\${b.owner})\\\`,
+  },
+  motivo: {
+    groups: () => reasons,
+    belongs: (b, reason) => b.reason === reason,
+    line: (b) => \\\`  \\\${b.room} \\\${b.day} \\\${b.slot} (\\\${b.owner})\\\`,
+  },
+};
+
+function byRoomThenWeekday(a, b) {
+  return a.room.localeCompare(b.room) || week.indexOf(a.day) - week.indexOf(b.day);
+}
+
+function cancelledReport(by) {
+  const grouping = reportGroupings[by];
+  if (!grouping) return 'uso: informe --por sala|motivo';
+  const cancelled = bookings.filter((b) => b.status === 'cancelled').sort(byRoomThenWeekday);
+  const out = [];
+  for (const group of grouping.groups()) {
+    const members = cancelled.filter((b) => grouping.belongs(b, group));
+    if (!members.length) continue;
+    out.push(\\\`\\\${group}: \\\${members.length} canceladas\\\`, ...members.map(grouping.line));
+  }
+  out.push(\\\`Total: \\\${cancelled.length} canceladas\\\`);
+  return out.join('\\\\n');
+}
+
+export function run(\`);
+s=s.replace(\"  if (cmd === 'mias') {\",\"  if (cmd === 'informe') return cancelledReport(params[params.indexOf('--por') + 1]);\\n  if (cmd === 'mias') {\");
+fs.writeFileSync('src/app.js',s)"
+E
+git diff | head -60; node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 0
+ℹ fail 3
+
+>>> Bash: cd <run>/repo && git status --short; grep -c informe src/app.js
+<<< ?? test/informe.test.js
+0
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | grep -E "^(ℹ (pass|fail)|✖)"
+<<< ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd <run>/repo && git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de canceladas por sala o motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 — Comando informe
+Implementado `informe --por sala|motivo` en `src/app.js` (`reportGroupings`, `byRoomThenWeekday`, `cancelledReport`); `run` solo delega.
+RED: `node --test test/informe.test.js` → 3 fallos (run devolvía 'salas'); esperado: el comando no existía.
+GREEN: mismo comando → pass 3, fail 0.
+Ficheros: src/app.js, test/informe.test.js (commiteado sin cambios).
+Notas: `run` sigue siendo una cadena larga de ifs (no tocada). Un grupo sin canceladas se omite (no lo piden los tests).
+E
+<<< f9eb94e feat: comando informe de canceladas por sala o motivo
+
+=== RESULTADO (9 turnos, 0.15892920000000002 $)
+- **Status:** DONE
+- **Commit:** f9eb94e feat: comando informe de canceladas por sala o motivo
+- **Tests:** `node --test test/informe.test.js` pasa 3/3. Antes de implementar fallaban los 3, porque `run` devolvía `'salas'` para `informe`.
+- **Concerns:**
+  - Los grupos sin canceladas no se imprimen, porque el contrato no dice qué hacer con ellos.
+  - `run` sigue siendo una cadena larga de `if`. Solo añadí una línea de delegación y no lo reestructuré.
+  - No ejecuté la suite completa, tal como indicaba la tarea.
+- **Informe:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

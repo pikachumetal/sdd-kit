@@ -1,0 +1,53 @@
+--- [6]
+Ahora el código: busco dónde se cancela.
+
+--- [24]
+Reproducido: `cancelar Norte mar` devuelve `cancelada Norte mar`. Esa es la causa raíz que ya había visto en el código. Escribo el `patch.md`, aplico el fix y lo verifico.
+
+--- [26]
+Mi edición con heredoc salió mal. Uso la herramienta de edición.
+
+--- [30]
+Gate en verde: 5 de 5 tests pasan y el lint no da hallazgos. Completo §4 y paso el patch por su revisor, como pide el flujo.
+
+--- [33]
+El revisor está trabajando. Espero su informe antes de hacer el commit del fix y pasar al cierre.
+
+--- [37]
+Sin hallazgos.
+
+1. **Causa raíz correcta.** Antes del fix, `findBooking` en `src/app.js:9-11` no comparaba `day`. `cancelBooking` (`src/app.js:13`) y `voidBooking` (`src/app.js:20`) la usan, así que el fallo era el descrito en `patch.md:17`.
+
+2. **Fix mínimo y sin regresiones.** El cambio es una sola condición, `b.day === day`, en `src/app.js:10`. `anular` mejora porque pasa por la misma función. `libres` usa `freeRooms` (`src/app.js:5-7`), que no toca `findBooking`. El test `libres` de `test/app.test.js:5` sigue en verde. Ejecuté `node --test` con el fix puesto y salió tests 5, pass 5, fail 0, que coincide con `patch.md:27`.
+
+3. **El test reproduce el síntoma.** `test/cancel-day.test.js:6` cancela `Norte mar`. Sin el fix, `findBooking` devolvía la reserva activa del lunes y el resultado era `cancelada Norte mar`, no `sin reserva Norte mar`, lo que cuadra con el `actual` de `patch.md:26`. Con el fix pasa. La segunda aserción (`:7`) comprueba que la reserva del lunes sigue activa. No revertí el fix para confirmarlo, solo lo razoné.
+
+4. **Fichero de test aparte, válido.** `bookings` es estado de módulo (`src/app.js:3`). `test/cancel.test.js:6` ya cancela `Norte lun`, y el test nuevo necesita esa reserva activa. `node --test` ejecuta cada fichero en su propio proceso, así que no se pisan. Comprobé que las dos pruebas conviven en la misma ejecución.
+
+Observación menor, sin acción: no hay test directo de `anular` con día distinto. El fix lo cubre igualmente, y `patch.md:17` ya lo menciona.
+
+--- [46]
+El fix está hecho y commiteado, pero el cierre se queda parado en dos puntos. Ninguno puedo decidirlo yo.
+
+🦆 **Qué cambia.** Antes, `cancelar Norte mar` cancelaba la reserva del lunes y decía "cancelada Norte mar", porque el código buscaba la reserva solo por sala. Ahora también mira el día. Si no hay reserva ese día responde `sin reserva Norte mar` y la del lunes sigue en pie. `anular` tenía el mismo fallo y queda arreglado con el mismo cambio.
+
+**✋ Me salí del plan en…** nada. Los dos únicos ajustes los fijé yo, sin que nadie me los dictara:
+- El test va en un fichero aparte, `test/cancel-day.test.js`, porque el estado de las reservas se comparte dentro de un fichero y `cancel.test.js` ya cancela la del lunes.
+- La carpeta del patch está en `.docs/sdd/changes/20261112-120523-patch-0012-cancelar-dia/`, como manda el kit. Las anteriores del proyecto están en `specs/`.
+
+**Lo que he probado yo** (ejecución real, en la CLI):
+- `node src/app.js cancelar Norte mar` imprime `sin reserva Norte mar`.
+- `node src/app.js cancelar Norte lun` imprime `cancelada Norte lun`.
+- Gate completo: `node --test && node scripts/lint.mjs` da 5 de 5 tests en verde y `lint: sin hallazgos`.
+- El revisor, un agente aparte, no puso ningún reparo.
+
+**Lo que necesito de ti**
+1. **Validación.** El proyecto no declara quién valida, así que lo tomo como `manual`: la validación es tuya. Prueba lo que cuenta tu caso:
+   ```
+   node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','mar']));console.log(m.run('cancelar',['Norte','lun']))})"
+   ```
+   Debe salir `sin reserva Norte mar` y después `cancelada Norte lun`. Dime qué probaste y que funciona. Si prefieres, puedes diferir la validación diciendo qué disparador la activa.
+2. **Config de merge.** `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Dime a qué rama fusiono (supongo `develop`) y si va con `--no-ff`. Con eso lo añado y fusiono.
+
+Hasta entonces el patch queda **No terminado**: está commiteado en `feature/0012-cancelar-dia` (de3b3a2), sin fusionar y sin registro de tiempo real ni roadmap. No borres el worktree.
+

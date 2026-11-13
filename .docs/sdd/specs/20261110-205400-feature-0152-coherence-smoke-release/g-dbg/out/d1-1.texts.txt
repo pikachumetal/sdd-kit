@@ -1,0 +1,34 @@
+--- [2]
+Empiezo la Fase 1: leo la deuda del proyecto, el hook y el estado de git.
+
+--- [6]
+La deuda no tiene ninguna fila que cubra este fallo. Ahora reproduzco ejecutando el hook directamente, sin commitear.
+
+--- [9]
+Ejecutado a mano, el hook pasa. La diferencia con un commit real es que git exporta `GIT_INDEX_FILE` al hook. Pruebo esa hipótesis con una copia del índice, para no tocar el real.
+
+--- [15]
+## Causa raíz
+
+El hook `.githooks/pre-commit` falla porque, durante un commit real, git le pasa `GIT_INDEX_FILE` con una ruta **relativa** (`.git/index`). El hook hereda esa variable en sus llamadas a `git`, y la ruta se resuelve contra otro directorio.
+
+## Cómo llegué a eso
+
+1. **Deuda:** `.docs/sdd/steering/debt.md` no tiene ninguna fila que cubra este fallo.
+2. **Ejecución a mano:** `node .githooks/pre-commit` termina con `exit=0`. `GIT_DIR` y `GIT_INDEX_FILE` no estaban definidas en mi shell.
+3. **Qué hace el hook:**
+   - Crea un worktree temporal en `.git/hook-check` con `git worktree add --detach … HEAD`.
+   - Lanza `git status` dentro de ese worktree.
+4. **Hipótesis:** en un commit real git exporta `GIT_INDEX_FILE`, y el hook no la limpia al lanzar sus subprocesos.
+5. **Comprobación:** ejecuté el hook con `GIT_INDEX_FILE=.git/index-copy`, una ruta relativa como la que pone git. Falló con `Unable to create '…/.git/hook-check/.git/index-copy.lock': No such file or directory`.
+   - El `.git` del worktree temporal es un archivo, no un directorio. Por eso la ruta relativa no existe allí y `git worktree add` aborta, y el hook sale con 1.
+   - En mi prueba `.git/index-copy` no existía, porque el comando para copiarlo requería aprobación y no se ejecutó. El error es de creación del `.lock` en un directorio inexistente, así que no depende de que el archivo exista. Aun así no probé con un commit real.
+
+## Estado del repositorio
+
+No arreglé nada ni modifiqué ficheros. El estado sigue siendo `A  notas.txt`, y tras la prueba `git worktree prune` no dejó restos de `hook-check`.
+
+## Qué falta
+
+No he confirmado qué valor exacto exporta tu versión de git en el commit. La Fase 1 está cerrada, pero la causa sigue siendo una hipótesis hasta verificarlo. Puedo confirmarlo con un hook de diagnóstico que imprima `GIT_INDEX_FILE` y `GIT_DIR`, o tú me indicas cómo seguir con el arreglo.
+

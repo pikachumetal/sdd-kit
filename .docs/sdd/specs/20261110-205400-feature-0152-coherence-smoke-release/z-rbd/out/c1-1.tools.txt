@@ -1,0 +1,122 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls -a; ls .docs/sdd 2>/dev/null; git ls-files | head -50
+
+>>> Grep: cancel|cancela|reserva
+<<< Found 7 files
+ROADMAP.md
+CHANGELOG.md
+PRODUCT.md
+test\app.test.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+README.md
+src\app.js
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel
+<<< ROADMAP.md-7-| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+ROADMAP.md:8:| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Grep: cancel
+<<< 10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+>>> Grep: cancel|reserva
+<<< README.md:3:Reservas de salas de reuniones desde la terminal.
+PRODUCT.md:5:Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+=== RESULTADO (10 turnos, 0.1158809 $)
+Lo de cancelar es muy poco: es un solo `if` en `src/app.js:12`, y casi no hace nada de verdad.
+
+**Qué hace el código**
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- Se usa como `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`.
+- **No toca el array `bookings`.** No busca ninguna reserva y no borra nada.
+- No valida nada. Si la reserva no existe, también responde «cancelada».
+
+**Lo que dicen los documentos**
+
+- El `CHANGELOG.md` lista «Cancelar una reserva propia» como funcionalidad.
+- Además, el patch 0007 está cerrado (✅ en `ROADMAP.md`, S). Se titula «La cancelación borraba reservas de otro día con la misma hora».
+- El `patch.md` dice: «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.»
+- El test `cancelar respeta el día` (`test/app.test.js:13`) solo comprueba que el texto de salida lleve el día. No comprueba que se borre la reserva correcta.
+
+**Por qué no lo pillas**
+
+Creo que es porque los documentos y el código no cuadran. Esto es inferencia mía a partir de lo que he leído, no algo que diga ningún documento.
+
+- El patch habla de una comparación por hora que borraba reservas. En `src/app.js` no hay ninguna comparación ni borrado de reservas.
+- Solo `freeRooms` mira `bookings`, y lo hace con `room` y `slot`. Ignora `day`.
+- Lo más probable es que el código sea un esqueleto de prueba y que el patch describa un fix que ahí no existe.
+- Otra posibilidad es que el fix se perdiera en algún commit. Solo hay uno en el historial (`feat: base del molde`), así que no puedo comprobarlo.
+
+Hay otro hueco de código que conviene saber. `libres` también compara solo por `slot` e ignora el día, así que cualquier reserva de ese tramo bloquea la sala todos los días.
+
+No he cambiado nada. Si quieres dejarlo bien, sería una fila de patch en el roadmap: implementar la cancelación real, por día y hora, con un test que compruebe el borrado. Dime si te la apunto. Y si prefieres hacerlo en esta sesión, di «arráncalo».

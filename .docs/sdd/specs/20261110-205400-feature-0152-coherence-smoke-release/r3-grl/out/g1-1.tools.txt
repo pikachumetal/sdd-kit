@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls .docs/sdd 2>&1 | head -30; ls; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+
+>>> Grep: reserv|cita|slot|hora|duraci
+<<< sdd-kit.json
+specs/
+steering/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+Sin capacidades
+<<< Found 8 files
+ROADMAP.md
+.docs\sdd\steering\debt.md
+CHANGELOG.md
+PRODUCT.md
+test\app.test.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+README.md
+src\app.js
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+>>> Read: <run>\repo\.docs\sdd\steering\debt.md
+<<< 1	# Deuda técnica — salas
+2	
+3	## Por triar
+4	
+5	| Ítem | Origen | Fecha |
+6	| --- | --- | --- |
+7	| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+8	
+9	## En espera
+10	
+11	| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+12	| --- | --- | --- | --- | --- | --- |
+13	
+14	## Lista
+15	
+16	| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+17	| --- | --- | --- | --- | --- | --- | --- | --- |
+18	
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.1221229 $)
+Esto es lo que he encontrado antes de proponer nada. Distingo lo que dicen los documentos de lo que deduzco.
+
+**Lo que dicen los documentos y el código**
+- `PRODUCT.md`: la herramienta es solo tuya, para reservar las salas del coworking. No hay más usuarios.
+- `src/app.js:3`: una reserva guarda la franja como texto libre, por ejemplo `'10:00-12:00'`. `libres` solo compara que el texto sea idéntico.
+- `.docs/sdd/steering/debt.md`: ya hay una deuda por triar, "Sin validación del formato de franja horaria".
+- `ROADMAP.md`: el 0008 (avisos por correo) está en curso y el 0009 (exportar a .ics) está en Later. Ninguno trata de medias horas.
+- No hay `capabilities/`, así que no hay un comportamiento documentado de las reservas.
+
+**Lo que deduzco**
+- Como la franja es texto, hoy se podría escribir `10:00-10:30`.
+- Pero `10:00-10:30` y `10:00-12:00` se verían como franjas distintas. Aunque se solapen, `libres` diría que la sala está libre.
+- Es decir, el problema probablemente no es "permitir" medias horas. Es cómo se decide que dos franjas chocan. Eso afecta a la reserva y a la cancelación, y arrastra la deuda de validación del formato.
+
+Antes de elegir un enfoque necesito saber lo que solo sabes tú:
+
+❓ **¿Qué problema tienes hoy en el coworking que te haga querer reservar medias horas?** ¿Qué te pasa ahora, o qué reservas que no puedes hacer?

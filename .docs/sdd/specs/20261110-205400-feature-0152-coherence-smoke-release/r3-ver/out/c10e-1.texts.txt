@@ -1,0 +1,85 @@
+--- [3]
+Ahora: abro el cierre de la revisión final con `sdd-verify`. Queda: leer los dos informes, resolver los hallazgos y llegar al siguiente stop, ~5 min.
+
+--- [18]
+El script no aplicó el cambio (el `python3` salió sin hacer nada). Lo hago con Edit.
+
+--- [22]
+Los dos tests nuevos fallan por la razón esperada (RED). Ahora el código y la enmienda del spec.
+
+--- [30]
+Suite completa: 6/6 en verde. Escribo el ledger y `tasks.md`, y hago el commit del paso de fix.
+
+--- [33]
+Ahora: re-revisión única del paso de fix (`c3e51e0`). Queda: leer el encargo, despachar el revisor `opus`+high y esperar su informe, ~8 min.
+
+--- [45]
+La re-revisión está en marcha en segundo plano, con su vigilancia de silencio. No tengo su veredicto todavía y no lo doy por supuesto.
+
+**Estado hasta ahora**
+- **Revisión final:** Spec sin críticos ni importantes. Código con 1 Important, que ya está arreglado.
+- **Paso de fix (`c3e51e0`):** `review.minors: fix` hizo entrar los dos Minor, así que arreglé los tres hallazgos en un solo paso, cada uno con su test.
+  - `reasonOf` ahora recorta el motivo. Test nuevo: «cancelar acepta el motivo con espacios alrededor». Falló en RED y ahora pasa.
+  - `canceladas` separa con ` - `. Falló en RED y ahora pasa.
+  - El test de `canceladas` ya no depende del orden: cancela por su cuenta antes de listar.
+- **Suite completa:** 6/6 en verde.
+- **Registro:** `tasks.md` lleva la `Revisión final:` y la `Pasada de fix:`. El ledger tiene tres líneas `Final: fixed`. El commit `7499874` solo añade esa línea a `tasks.md` (1 línea, docs); lo he leído yo en el hilo (`revisado en el hilo`).
+
+**Para el ✋ del dev-lead**
+- **Enmienda `sin aprobar`:** el THEN del listado decía «Norte lun — sala ocupada», pero la decisión del dev-lead en el mismo spec fija ` - ` por la consola `cp850`. Corregí el THEN a «Norte lun - sala ocupada» y lo dejé anotado en «Enmiendas».
+- **Recorte del motivo:** el spec no dice nada sobre espacios alrededor del motivo. Lo traté como el arreglo de un hallazgo Important, no como un AND nuevo. Si prefieres verlo como cambio de spec, dímelo y lo paso por enmienda.
+
+Cuando vuelva la re-revisión escribo su línea en `tasks.md`, quito el worktree `review-0010-7499874` y sigo con el cierre.
+
+--- [54]
+### Finding Verdicts
+
+1. **[Code · Important] `reasonOf` kept the spaces around the reason** — ADDRESSED. `src/app.js:16` is now `return index === -1 ? undefined : params[index + 1]?.trim();`. The trimmed value is both checked against `reasons` and stored, so `"sala ocupada "` passes the check and the output reads `(sala ocupada)` with no trailing space. When `--motivo` is the last argument the value is still `undefined` and the answer is still «motivo no válido…». The new test at `test/cancel.test.js:13-15` goes RED to GREEN: without the trim the answer would be «motivo no válido…», not «sin reserva Sur mar». It is a weak test, though (see New Breakage).
+
+2. **[Code · Minor] ` — ` in `canceladas` breaks on a cp850 console** — ADDRESSED. `src/app.js:36` now joins with `` `${b.room} ${b.day} - ${b.reason}` ``. On the Spec side, the amended THEN at `spec.md:63`, «Norte lun - sala ocupada», matches the dev-lead decision at `spec.md:29` exactly: ` - ` with the example `Norte lun - sala ocupada`. The amendment is logged at `spec.md:67` and marked `sin aprobar`. The test assertion at `test/cancel.test.js:19` was changed to match. That change follows the amended THEN. Laura still has to approve the amendment for it to count.
+
+3. **[Spec · Minor] The `canceladas` test only passed after the `cancelar` test had run** — ADDRESSED. `test/cancel.test.js:18` now cancels Norte lun before it asserts, so the test passes when run alone. In the full run the second cancel answers «sin reserva Norte lun», the answer is ignored, and the listing still has exactly one entry. The tests still share module state (see New Breakage).
+
+### New Breakage in the Fix Diff
+
+- **Minor, `test/cancel.test.js:13-15`.** The test is named «cancelar acepta el motivo con espacios alrededor», but it asserts «sin reserva Sur mar». It only shows that the padded reason gets past the check. It does not cover the case the finding reported, which is `cancelar Norte lun --motivo "sala ocupada "` answering «cancelada Norte lun (sala ocupada)». It also would not catch a regression that checks the trimmed value but stores the raw one. The test name and its assertion contradict each other.
+- **Minor, `test/cancel.test.js:5-20`.** The order dependence was moved rather than removed. All tests share the `bookings` array in the module. If `canceladas…` (line 17) ran before `cancelar con un motivo de la lista` (line 5), line 5 would answer «sin reserva Norte lun» and fail. This works today only because `node:test` runs tests in the order they are declared.
+
+### Out-of-Scope Observations
+
+- `spec.md:58`: the THEN «sin `--motivo` responde lo mismo: «motivo no válido: …»» has no test, neither in `test/cancel.test.js` nor in `test/app.test.js`. The fix did not cause this, since that test file never had such a test. It does fail the Spec-axis check that every THEN has its test.
+- `spec.md:24-25`: the list «Decisiones que he tomado yo» skips from 1 to 3.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage. Two Minor test-quality issues are left in the fix diff: the padded-reason test does not check the reported case, and the tests still depend on their order through shared state. The amendment at `spec.md:67` still needs the dev-lead's approval.
+
+--- [56]
+Ahora: cierro la re-revisión (línea en `tasks.md`, rulings de los Minor, worktree fuera). Queda: ese registro y presentar el estado, ~2 min.
+
+--- [58]
+La revisión final de la 0010 está cerrada y la implementación está lista para el ✋. No he empezado la validación ni el cierre con `sdd-archive`, porque la enmienda del spec necesita tu aprobación.
+
+**Resultado de la revisión final**
+- **Revisión final:** Spec sin críticos ni importantes. Código con 1 Important, arreglado.
+- **Paso de fix (`c3e51e0`):** arreglé los tres hallazgos en un solo paso, cada uno con su test. Suite completa 6/6 en verde. La re-revisión, `opus`+high sobre `b6aa62f..7499874`, los da por resueltos y no encontró críticos ni importantes nuevos.
+- **`tasks.md`:** lleva las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:`.
+- **Commits docs:** `7499874` y `47487e5` añaden una línea a `tasks.md` cada uno (docs, menos de 20 líneas) y los leí yo en el hilo (`revisado en el hilo`).
+- **Worktree:** el worktree de revisión ya está quitado.
+
+**Para el ✋ del dev-lead**
+1. **Enmienda `sin aprobar` en `spec.md`:** el THEN del listado pasa de «Norte lun — sala ocupada» a «Norte lun - sala ocupada». Aplica la decisión del dev-lead sobre la consola `cp850` del propio spec. Está anotada en «Enmiendas».
+2. **Recorte del motivo:** el spec no dice nada sobre espacios alrededor del motivo, y lo traté como arreglo de un hallazgo Important, no como un AND nuevo. Si prefieres que pase por enmienda, dímelo.
+3. **Deferred minors (rulings en el ledger):**
+   - **Test del motivo con espacios:** asserta «sin reserva Sur mar», no el caso exacto del hallazgo. No cazaría una regresión que valide el valor recortado pero guarde el crudo.
+   - **Tests con estado compartido:** dependen del orden de declaración, que `node:test` respeta.
+4. **Hueco heredado de la Task 1:** el THEN «sin `--motivo` responde lo mismo» no tiene test. No lo introdujo el fix, pero quedó sin cubrir.
+5. **Erratas en el spec:** la lista «Decisiones que he tomado yo» salta de la 1 a la 3.
+
+¿Apruebas la enmienda y cierro con la validación y `sdd-archive`, o prefieres que antes añada el test que falta del punto 4?
+
+--- [59]
+Es solo el aviso de que ha terminado la vigilancia de silencio de la re-revisión (salió con código 0). No cambia nada del estado.
+
+Sigo esperando tu respuesta al ✋. Necesito saber si apruebas la enmienda de ` - ` en el THEN, y si añado antes el test que falta para «sin `--motivo`». Con eso paso a la validación y a `sdd-archive`.
+

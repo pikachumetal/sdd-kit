@@ -3,7 +3,8 @@
 ## Users
 
 - **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
-- **Responsable del coworking**: mantiene la herramienta.
+- **Responsable del coworking**: mantiene la herramienta; hace de dev-lead: decide qué entra y aprueba las specs, pero no lee el código.
+- **Dev**: desarrolla la herramienta.
 
 ## Product Purpose
 

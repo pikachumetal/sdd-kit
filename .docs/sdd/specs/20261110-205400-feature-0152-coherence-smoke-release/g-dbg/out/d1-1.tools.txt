@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md 2>&1 | head -40; echo ---HOOKS; ls -la .githooks; echo ---CFG; git config core.hooksPath; echo ---NOTAS; cat notas.txt | head -20
+
+>>> Bash: for f in .githooks/*; do echo "=== $f"; cat "$f"; done
+<<< # Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+---HOOKS
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov 11 10:59 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 11 10:59 ../
+-rwxr-xr-x 1 <user> 197609 830 Nov 11 10:28 pre-commit*
+---CFG
+.githooks
+-
+<<< === .githooks/pre-commit
+#!/usr/bin/env node
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+import { spawnSync } from 'node:child_process';
+import { rmSync } from 'node:fs';
+import { join } from 'node:path';
+
+const git = (args, options = {}) => spawnSync('git', args, { stdio: 'inherit', ...options }).status === 0;
+const tmp = join(spawnSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8' }).stdout.trim(), 'hook-check');
+rmSync(tmp, { recursive: true, force: true });
+if (!git(['worktree', 'add', '-q', '--detach', tmp, 'HEAD'])) process.exit(1);
+if (!git(['status
+
+>>> Bash: node .githooks/pre-commit; echo "exit=$?"; echo ---; echo "GIT_DIR: $([ -n "${GIT_DIR:-}" ] && echo SET || echo UNSET)"; echo "GIT_INDEX_FILE: $([ -n "${GIT_INDEX_FILE:-}" ] && echo SET || echo UNSET)"; git rev-parse --git-dir; git worktree list; git log --oneline -3; cat package.json 2>&1 | head
+<<< exit=0
+---
+GIT_DIR: UNSET
+GIT_INDEX_FILE: UNSET
+.git
+<run>/repo c566a05 [develop]
+c566a05 feat: base del molde
+{"type": "module"}
+
+>>> Bash: cp .git/index .git/index-copy; GIT_INDEX_FILE=.git/index-copy node .githooks/pre-commit; echo "exit=$?"; rm -f .git/index-copy; git worktree list; git status --short; ls .git | grep -i hook-check
+<<< This Bash command contains multiple operations. The following part requires approval: cp .git/index .git/index-copy; GIT_INDEX_FILE=.git/index-copy node .githooks/pre-commit; echo "exit=$?"; rm -f .git/index-copy; git worktree list; git status --short; ls .git
+
+>>> Bash: GIT_INDEX_FILE=.git/index-copy node .githooks/pre-commit
+<<< Exit code 1
+fatal: Unable to create '<run>/repo/.git/hook-check/.git/index-copy.lock': No such file or directory
+
+>>> Bash: git worktree prune; git worktree list; ls .git/hook-check 2>&1 | head -3; git status --short
+<<< <run>/repo c566a05 [develop]
+ls: cannot access '.git/hook-check': No such file or directory
+A  notas.txt
+
+=== RESULTADO (9 turnos, 0.137591 $)
+## Causa raíz
+
+El hook `.githooks/pre-commit` falla porque, durante un commit real, git le pasa `GIT_INDEX_FILE` con una ruta **relativa** (`.git/index`). El hook hereda esa variable en sus llamadas a `git`, y la ruta se resuelve contra otro directorio.
+
+## Cómo llegué a eso
+
+1. **Deuda:** `.docs/sdd/steering/debt.md` no tiene ninguna fila que cubra este fallo.
+2. **Ejecución a mano:** `node .githooks/pre-commit` termina con `exit=0`. `GIT_DIR` y `GIT_INDEX_FILE` no estaban definidas en mi shell.
+3. **Qué hace el hook:**
+   - Crea un worktree temporal en `.git/hook-check` con `git worktree add --detach … HEAD`.
+   - Lanza `git status` dentro de ese worktree.
+4. **Hipótesis:** en un commit real git exporta `GIT_INDEX_FILE`, y el hook no la limpia al lanzar sus subprocesos.
+5. **Comprobación:** ejecuté el hook con `GIT_INDEX_FILE=.git/index-copy`, una ruta relativa como la que pone git. Falló con `Unable to create '…/.git/hook-check/.git/index-copy.lock': No such file or directory`.
+   - El `.git` del worktree temporal es un archivo, no un directorio. Por eso la ruta relativa no existe allí y `git worktree add` aborta, y el hook sale con 1.
+   - En mi prueba `.git/index-copy` no existía, porque el comando para copiarlo requería aprobación y no se ejecutó. El error es de creación del `.lock` en un directorio inexistente, así que no depende de que el archivo exista. Aun así no probé con un commit real.
+
+## Estado del repositorio
+
+No arreglé nada ni modifiqué ficheros. El estado sigue siendo `A  notas.txt`, y tras la prueba `git worktree prune` no dejó restos de `hook-check`.
+
+## Qué falta
+
+No he confirmado qué valor exacto exporta tu versión de git en el commit. La Fase 1 está cerrada, pero la causa sigue siendo una hipótesis hasta verificarlo. Puedo confirmarlo con un hook de diagnóstico que imprima `GIT_INDEX_FILE` y `GIT_DIR`, o tú me indicas cómo seguir con el arreglo.

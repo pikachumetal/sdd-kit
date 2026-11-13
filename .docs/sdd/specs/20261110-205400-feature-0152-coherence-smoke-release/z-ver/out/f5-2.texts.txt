@@ -1,0 +1,62 @@
+--- [3]
+### Strengths
+- The change is small and focused. The `Status` type alias removes the repeated `(typeof STATUSES)[number]`.
+- The `choose` handler keeps the save next to the state change.
+- The server endpoints follow the existing `Map` plus `json` pattern.
+- The UI text is in Spanish and the component is a function with hooks, so the code constraints are met.
+- The test name is descriptive.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`server/api.js:95-97` and `InvoiceList.tsx:116,120`: the preference is global, not per user.**
+   - The `prefs` map is keyed only by the preference name. The clipboard and cells code reads `x-user`, but this code does not.
+   - Any user's choice of status filter becomes every other user's initial filter.
+   - The client sends no user header either.
+   - Fix: key by `${user}:${name}` and send the same user identification the other calls use.
+   - The same global state also leaks between tests running on 3 workers. A saved `cobrada` can change the starting state of other invoice tests, such as `0018-invoice-status`.
+
+2. **`playwright.config.ts:69-70`: timeouts raised without a documented reason.**
+   - The test timeout is now 90s and the expect timeout is 20s, against the declared default. The diff has no `operations.md` entry explaining either.
+   - Important per the E2E rules. Remove the overrides or document why they are needed.
+
+3. **`e2e/0024-remember-filter.spec.ts:25` and `:34`: the E2E tests name no core flow.**
+   - Neither test covers sum, PDF export or marking an invoice as paid.
+   - Remembering the filter belongs one layer down, as a component test with a mocked `fetch`.
+   - The "cuatro opciones" test (line 34) is a static render check and a poor fit for E2E.
+
+4. **`e2e/0024-remember-filter.spec.ts:28`: `expect.poll(() => savedStatus(request))` waits on API state between two user actions.**
+   - It has no comment giving a reason.
+   - It also hides a real race: the UI navigates away before the `PUT` is guaranteed to finish.
+   - It points to the product bug in item 5 rather than a test need.
+
+5. **`InvoiceList.tsx:115-121`: race and missing error handling.**
+   - The initial `GET` can resolve after the user has already picked a status. It then overwrites that choice with the old saved value.
+   - The `GET` has no `.catch`, so a failed request is an unhandled rejection.
+   - The `PUT` is fire-and-forget. A failed save is silent, and the filter is not remembered with no sign why.
+   - `saved.value` is cast to `Status` without validation. An unknown value would break the `select`, and the list would show nothing.
+   - Fix: check the value against `STATUSES`, ignore a late `GET` result if the user has already chosen, and handle errors.
+
+#### Minor (Nice to Have)
+- `server/api.js:96`: the `PUT` has no `content-type` header. The JSON parse of a bad body would throw and crash the server, as the existing `read` helper already does.
+- `e2e/helpers.ts:54`: `savedStatus` is the only helper that sends no `x-user` header, which is inconsistent with the others.
+
+### Recommendations
+- Make the preference per-user.
+- Cover persistence with a component test.
+- Keep a single minimal E2E only if it ties to a core flow.
+- Reset the preference between tests.
+
+### Declined to judge
+- No document-citing comments appear in the diff, so the candidate list is empty and nothing is declined for that.
+- I did not check whether the spec requires persistence per user or globally. That is the Spec axis. I rated the global scope on what a reasonable user would expect.
+- I did not check whether `operations.md` already justifies the timeouts, because the package excludes the spec folder. If a reason exists elsewhere, item 2 drops.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works for a single user. The preference is shared across all users, the initial load can overwrite a user's choice, the E2E tests are off-policy, and the timeouts are raised without a documented reason.
+

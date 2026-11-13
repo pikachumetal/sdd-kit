@@ -1,0 +1,106 @@
+--- [3]
+Ahora: leo el contexto SDD (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y anunciar el carril, ~2 min.
+
+--- [10]
+Ahora: clasifico (feature, ≈3 tasks, sin dependencias que instalar) y leo las referencias de la spec. Queda: nota de comprensión, spec, revisión y puerta de aprobación, ~10 min.
+
+--- [16]
+Ahora: reservo la id con `sdd id claim` antes de crear la carpeta. Queda: escribir la spec, ~8 min.
+
+--- [28]
+Sigo con la 0013 (la 0012 ya la tenía otra fila en `origin/develop`): ya reservé la id y ahora escribo la spec.
+
+--- [31]
+Ahora: repaso de coherencia, probando el delta en una copia de `.docs/sdd`.
+
+--- [37]
+Ahora: despacho los dos revisores de la spec en paralelo (dominio y técnica, Sonnet), cada uno con su vigilancia de silencio. Queda: integrar hallazgos y presentar la spec, ~6 min y ~0,5 $.
+
+--- [51]
+Los dos revisores de la spec están en marcha, cada uno con su vigilancia de silencio. Espero a que terminen antes de integrar los hallazgos y presentar la spec.
+
+Hasta ahora:
+- **Id:** la 0012 ya la usaba otra fila en `origin/develop` (el "Informe de ocupación"). `sdd id claim` pasó esta feature a la **0013** y renombró la rama a `feature/0013-export-csv`.
+- **Spec:** está escrita en `.docs/sdd/changes/20261111-195425-feature-0013-export-csv/spec.md`.
+- **Coherencia:** el delta se fusiona sin rechazos en una copia de `.docs/sdd`.
+- **Fusión:** he anotado tu `sdd merge --push` en la spec para el cierre.
+
+--- [52]
+1. Importante · Delta, «El CSV lleva una fila por reserva» · El escenario se resuelve a ojo porque no fija el valor exacto del fichero final: no dice si acaba en `\n` tras la última fila ni cómo se unen cabecera y filas. Un `\n` de más o de menos pasaría el escenario y el test del formato podría escribirse de cualquier manera. · Fijar en el THEN el texto exacto del fichero con o sin `\n` final, y que el test compare la cadena completa. Falta además una decisión en «✋» sobre el salto de línea final, y si los saltos son `\n` y no CRLF como pide RFC 4180 (ver 6).
+
+2. Importante · Delta, «Un campo con coma o comillas va entre comillas» · El escenario solo cubre la coma y la comilla. La decisión 5 también exige comillas para un salto de línea dentro del campo, y ese caso no tiene escenario. Una implementación que ignore `\n` pasa todos los escenarios. · Añadir un GIVEN con una sala con salto de línea y su THEN. Añadir también un campo sin caracteres especiales que NO lleve comillas, para que quien las ponga siempre no pase el escenario.
+
+3. Importante · Delta, «El comando exportar escribe el fichero» · «Se escribe `reservas.csv` en la carpeta de trabajo» no se puede probar como está redactado. «Dónde se prueba» usa `run('exportar', [ruta])` con una carpeta temporal, pero el caso sin argumentos escribe en el `cwd` del proceso, y el escenario no dice cómo se aísla. Una ruta relativa depende además del directorio de trabajo y la respuesta dice `reservas.csv`, no la ruta absoluta. · Decidir y escribir cómo se inyecta o se cambia el `cwd` en el test (`process.chdir` a una carpeta temporal, o un parámetro de directorio base). Aclarar que la respuesta repite el argumento tal como se escribió, no la ruta resuelta.
+
+4. Importante · Delta, «Exportar sobrescribe y admite cero reservas» · Dos comportamientos distintos en un solo requisito. «Sin reservas» no tiene GIVEN propio, y hoy hay siempre una reserva de partida (decisión 11), así que no está claro cómo se llega a cero reservas en el test. El texto de respuesta de la decisión 7 (singular/plural) queda a medias: ¿qué ocurre con n=0, «exportadas 0 reservas»? Está escrito, pero el escenario de n=1 va en otro requisito. · Separar en dos requisitos, con GIVEN explícito de «sin reservas» y la forma de dejar la lista vacía en el test. Añadir un escenario de pluralización con n=2.
+
+5. Importante · Decisiones vs. cuerpo · Se toman decisiones que no aparecen en «✋»: la cabecera siempre se escribe aunque no haya filas (aparece en la 8, pero el escape de la cabecera no se menciona); las rutas con directorio que no existe o sin permiso de escritura (qué ocurre y qué responde); el orden de las filas (orden de creación, no dicho); la traducción de estados `active/cancelled/voided` a castellano, que está en «Partes del cómo» y no en la decisión 3; y el formato `exportada 1 reserva` (singular) que solo está en la 7. · Añadir a «✋» el orden de las filas, la traducción de estados internos y el error de escritura, cada uno con su porqué.
+
+6. Importante · Decisión 5 · El texto elige `\n` y dice «(RFC 4180)». RFC 4180 exige CRLF, así que la decisión se contradice y una hoja de cálculo estricta puede comportarse distinto. La justificación («evita un CSV roto») no cubre el salto de línea. · Quitar la referencia a RFC 4180 o decir «RFC 4180 salvo el salto de línea, que es `\n`», y razonar por qué.
+
+7. Importante · Delta (contrato y errores) · No hay requisito ni escenario para el fallo de escritura (carpeta inexistente, sin permisos, `fichero` es un directorio) y `node:fs` lo lanza como excepción. Sin ello la implementación puede devolver un traceback o declarar «exportadas» sin haber escrito. El Intent define como fracaso que falte una reserva, pero nada lo comprueba. · Añadir un requisito con GIVEN una ruta no escribible, THEN la respuesta es un error en castellano y no se afirma «exportadas», con la regla «Avisos» actualizada.
+
+8. Menor · Delta, «Reglas de la capacidad» · «Límites: no aplica» no está justificado, aunque el comando acepta una ruta arbitraria del usuario y sobrescribe sin preguntar. Eso es un límite (puede pisar cualquier fichero). Tampoco hay decisión sobre rutas con `..`. · Sustituir «no aplica» por la regla real y declarar en «✋» que sobrescribe cualquier ruta que se pase, sin restricción.
+
+9. Menor · Delta, «El CSV lleva una fila por reserva» · La palabra «anulada sale con el estado `anulada`» va como AND sin un GIVEN que cree esa reserva, así que el escenario cubre un estado que nadie ha puesto. Lo mismo con `activa`: el test podría escribir el texto fijo sin traducir. · Añadir la reserva anulada al GIVEN y comprobar la traducción de los tres estados con reservas reales.
+
+10. Menor · Decisión 11 / Dónde se prueba · Las reservas «viven en memoria» y la prueba de la función pura recibe un array, pero la spec no dice de dónde lee `exportBookings(path)` las reservas (estado global de módulo, parámetro). Es un contrato interno que el plan va a tener que inventar. · Indicar en Approach la firma de `exportBookings` y de dónde toma las reservas, para que el test no dependa del estado global.
+
+--- [55]
+La revisión técnica ha vuelto con 10 hallazgos, ninguno Crítico. Espero a la de dominio para integrar las dos de una vez.
+
+--- [56]
+1. Importante · Reglas de la capacidad (Idioma de los nombres) y Capacidades · El slug `booking-export` usa «booking», que `PRODUCT.md` marca como _Evitar_ (Reserva). La decisión 10 lo justifica como «slug en inglés» sin contrastarlo con ese término. La regla de idioma solo cubre cabecera y estados, no el nombre del comando `exportar`, ni el slug, ni los nombres de función `bookingsToCsv` y `exportBookings`. · Declarar en la regla qué nombres van en castellano y cuáles en inglés. Contrastar el slug con `PRODUCT.md` y, si se mantiene, anotar la excepción en ✋. Si no, renombrar a algo como `reserva-export`.
+
+2. Importante · ✋ 3 y 4, Intent y Scope · `PRODUCT.md` define Reserva como «una sala en un día y una franja, a nombre de quien la pide». El CSV (`sala,dia,franja,estado`) no incluye a quien la pidió. La decisión 4 afirma que «son los campos de la reserva», y eso no coincide con la definición del producto. Además, ni el Scope ni «No entra» dicen que ese dato quede fuera. Si el dato existe, falta una columna. Si no existe, la definición y el volcado no cuadran. · Decidir de forma explícita si se exporta el titular. Si no se exporta, añadirlo a «No entra» con su motivo, incluido el de privacidad. Si se exporta, añadir la columna y el ejemplo.
+
+3. Importante · ✋ 3 y Términos y ADR · La spec dice que los textos de estado «siguen los términos de `PRODUCT.md`», pero `PRODUCT.md` define Cancelación y Anulación como sustantivos y no define `activa`. Tampoco recoge `cancelada` ni `anulada` como estados. Los términos resueltos añaden una definición no escrita en `PRODUCT.md`: «cancelada = cancelación del cliente». Omiten el criterio de 24 h y la leyenda «a nombre de quien la pide». · Reformular la decisión 3 diciendo que son adjetivos derivados de los términos, y que `activa` es nuevo. Proponer añadir `activa` y los estados a `PRODUCT.md`. Reflejar la definición completa de Cancelación (24 h) en Términos.
+
+4. Importante · Reglas de la capacidad (Avisos) · Solo se declara la respuesta de éxito. El Intent dice que lo que falla es «que falte una reserva». Pero no hay aviso ni regla para el fallo de escritura (carpeta inexistente, sin permisos, ruta que es un directorio). Tampoco hay aviso al sobrescribir. · Declarar en Avisos qué se responde si no se puede escribir el fichero. Añadir un escenario de ese error, o dejar escrito que queda fuera de alcance y por qué.
+
+5. Importante · Reglas de la capacidad (Regla ante conflicto) y ✋ 6 · La regla de sobrescribir sin preguntar es nueva. La constitución y `PRODUCT.md` no la fijan, y se presenta como obvia («es un volcado»). Con `exportar [fichero]` abierto a cualquier ruta, `exportar src/app.js` destruiría un fichero ajeno sin aviso. La regla no pone límite sobre qué se puede pisar. · Marcarla en ✋ como decisión de riesgo destructivo que valida el dev-lead. Valorar un límite (p. ej. solo extensión `.csv`) o un aviso en la respuesta cuando se sobrescribe.
+
+6. Menor · Reglas de la capacidad (Límites) · Dice «no aplica» sin motivo. Sí hay límites implícitos: exporta todas las reservas sin tope, y hay una ruta de destino libre. · Cambiar a «no aplica: se exportan todas, sin tope ni paginación» o declarar el límite de ruta que se decida en el punto 5.
+
+7. Menor · Reglas de la capacidad (Dónde viven los datos) y ✋ 11 · Se declara «las reservas, en memoria» y la decisión 11 admite que se exporta solo «la reserva de partida». Eso hace que el Intent «tantas filas como reservas» sea casi trivial hoy. La spec no avisa al dev-lead de que la utilidad real del comando depende de una persistencia que deja fuera. · Dejar una nota visible en el Intent o el Scope: el valor real llega con la persistencia, y se enlaza la fila que la cubra.
+
+8. Menor · Delta (ADDED — El CSV lleva una fila por reserva) · El estado `anulada` solo aparece en un AND sin su GIVEN. Los dos estados no activos son la parte sensible del dominio, y su cobertura en el ejemplo es débil. Es el único sitio donde se fija el texto `anulada` frente a `PRODUCT.md`. · Incluir en el GIVEN una tercera reserva anulada (p. ej. Norte, mié) y su fila exacta en el THEN.
+
+9. Menor · Scope (No entra) · Las referencias «`.ics` es la 0004» y «informe de ocupación (0012)» no se pueden comprobar aquí. Además la 0012 se acaba de renumerar a 0013 (✋, «Decisiones tomadas con el dev-lead»). Un número de fila equivocado dejaría una referencia rota. · Verificar contra `ROADMAP.md` que 0004 y 0012 son esas filas, o quitar los números y dejar los nombres.
+
+10. Menor · ✋ (Review de spec propuesta, «Mínimo razonable») · La línea reconoce que el mínimo «deja sin mirar si el estado en castellano coincide con los términos del producto». Pero ese punto es exactamente el riesgo de dominio de esta spec (puntos 1 a 3 de esta lista). · Quitar la opción de «solo técnica», o justificar por qué se acepta dejar sin mirar la terminología en un contrato público.
+
+--- [58]
+Ahora: integro los hallazgos de las dos revisiones en la spec. No hay ningún Crítico, así que no hace falta segunda ronda.
+
+--- [63]
+**Carril:** feature, modo full · **Perfil:** delegate, del proyecto (`sdd-kit.json`). Id **0013**, no 0012: `sdd id claim` la renumeró y renombró la rama a `feature/0013-export-csv`. La 0012 ya la usa en `origin/develop` el "Informe de ocupación".
+
+La spec está lista para tu aprobación, sin plan todavía. Está en `.docs/sdd/changes/20261111-195425-feature-0013-export-csv/spec.md`.
+
+🦆 Hoy las reservas solo se ven por la terminal, una a una. Con `exportar` se guardan todas en un CSV, una fila por reserva: `Norte,lun,10:00-12:00,activa`. Las canceladas y las anuladas también salen, con su estado. El fichero se crea en la carpeta donde se ejecuta, o donde se indique, y si ya existía se sustituye sin preguntar. Si no se puede escribir, el comando lo dice y no afirma haber exportado nada.
+
+**✋ Decisiones que he tomado yo — valida estas** (la lista entera, con el porqué de cada una, está en la spec):
+- **Comando y destino:** `exportar [fichero]`. Sin argumento escribe `reservas.csv`.
+- **Contenido:** salen todas las reservas, en orden de creación. Columnas `sala,dia,franja,estado`, con los estados `activa`, `cancelada` y `anulada`. `activa` no está en `PRODUCT.md`; propongo añadirlo al cerrar.
+- **Quién reservó:** no sale, porque la herramienta no guarda ese dato. Lo anoté en "No entra".
+- **Formato:** coma, UTF-8 sin BOM, saltos `\n` y comillas dobladas cuando hace falta. Sigue RFC 4180 salvo el salto de línea.
+- **Sobrescribir (riesgo destructivo, valídala):** pisa el fichero sin aviso y sin límite de ruta, así que `exportar src/app.js` pisaría ese fichero. Descarté limitar a `.csv`.
+- **Respuestas:**
+  - Éxito: `exportada 1 reserva a <fichero>` o `exportadas <n> reservas a <fichero>`.
+  - Fallo: `error: no se pudo escribir <fichero>`.
+- **Capacidad nueva:** `reservation-export`. Usé «reservation» porque `PRODUCT.md` marca «booking» como _Evitar_.
+- **Reservas en memoria:** hoy cada ejecución exporta solo la reserva de partida. No añado persistencia.
+
+La review la hicieron dos revisores en Sonnet (dominio y técnica), con 20 hallazgos, ninguno Crítico. Integré 18; rechacé 2 con motivo escrito:
+- **Columna del titular:** no la añado porque la herramienta no guarda ese dato.
+- **Quitar el "mínimo razonable":** lo dejo porque es el registro de lo que daba el rubric, no una opción que se despache.
+
+Probé el delta en una copia de `.docs/sdd` con `sdd capability merge` y salió sin rechazos. Plan previsto: unas 3 tasks sobre `src/app.js`, sin dividir. Lo que no hay que partir: 3 o menos tasks.
+
+Al fusionar usaré `sdd merge --push`, como pediste.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada).** Escribo el plan y paso a la implementación sin parar, porque en `delegate` el plan no es una parada.
+2. **Cambios.** Dime qué ajustar y vuelvo a presentarla.
+

@@ -40,6 +40,8 @@ const tools = (cost: number) => `>>> Bash: ls\n=== RESULTADO (1 turnos, ${cost.t
 
 interface ProcessInfo {
   pid: number;
+  ppid?: number;
+  created?: string;
   commandLine: string;
 }
 
@@ -63,6 +65,7 @@ function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
   let waits = 0;
   let queries = 0;
   let chain: Promise<unknown> = Promise.resolve();
+  const ticks: (() => Promise<void>)[] = [];
   const deps = {
     fs,
     log: (line: string) => log.push(line),
@@ -98,8 +101,13 @@ function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
       return options.processes ?? [];
     },
     kill: (pid: number, tree: boolean) => killed.push({ pid, tree }),
+    every: (_ms: number, tick: () => Promise<void>) => {
+      ticks.push(tick);
+      return () => ticks.splice(ticks.indexOf(tick), 1);
+    },
   };
-  return { deps, log, launched, alive, finishers, killed, waits: () => waits, queries: () => queries };
+  const tick = () => Promise.all(ticks.map((run) => run()));
+  return { deps, log, launched, alive, finishers, killed, tick, waits: () => waits, queries: () => queries };
 }
 
 function mark(fs: MemoryFs, dir: string, name: string, pid: number | '') {
@@ -423,6 +431,25 @@ describe('procesos del sujeto', () => {
     await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
     expect(fake.killed).toEqual([{ pid: 51, tree: true }, { pid: 52, tree: true }]);
     expect(fake.log).toContain(`[a-1] paro 2 procesos de ${folder}`);
+  });
+
+  it('para al acabar el nieto que el sujeto dejó vivo sin nombrar su carpeta, y no un PID reutilizado (find / de la 0152)', async () => {
+    const fs = kitFs();
+    const processes: ProcessInfo[] = [
+      { pid: 2001, ppid: 1000, created: 'a', commandLine: 'claude.exe -p' },
+      { pid: 2002, ppid: 2001, created: 'b', commandLine: 'bash.exe -c find' },
+      { pid: 2003, ppid: 2002, created: 'c', commandLine: 'find.exe / -name review-spec.md' },
+      { pid: 2004, ppid: 1, created: 'd', commandLine: 'vite.js' },
+    ];
+    const fake = fakeDeps(fs, { manual: true, processes });
+    const campaign = runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    await vi.waitFor(() => expect(fake.finishers.size).toBe(1));
+    await fake.tick();
+    processes.splice(0, processes.length, { pid: 2003, ppid: 2002, created: 'c', commandLine: 'find.exe / -name review-spec.md' }, { pid: 2001, ppid: 7, created: 'z', commandLine: 'otra.exe' });
+    fake.finishers.get('a-1')!();
+    await campaign;
+    expect(fake.killed).toEqual([{ pid: 2003, tree: true }]);
+    expect(fake.log).toContain(`[a-1] paro 1 procesos de ${folder}`);
   });
 
   it('no avisa si el sujeto no deja procesos', async () => {

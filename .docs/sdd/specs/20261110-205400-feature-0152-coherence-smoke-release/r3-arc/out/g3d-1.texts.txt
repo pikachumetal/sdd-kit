@@ -1,0 +1,73 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [8]
+Mi cwd cambió; uso rutas absolutas desde la raíz del repo.
+
+--- [35]
+Estoy en el paso 1 del cierre (validación). Voy a ensayar el guion y correr la suite antes de pedirte que valides. `scripts/env-up.mjs` solo imprime un error, así que compruebo el entorno.
+
+--- [41]
+Todavía no puedo cerrar la 0010. El proyecto está en `validation.mode: manual`, así que la validación la tienes que dar tú. Hasta entonces no he escrito ningún registro: el árbol sigue limpio y no hay otras ramas abiertas.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo que no esté en la lista, o ninguno, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- Task 2: gate con `node --test --test-concurrency=1`, para esquivar una carrera entre tests sobre el almacén en memoria. La re-revisión duda de esa causa, porque `node --test` ya corre cada fichero en su propio proceso. Lo que ve es que el test `canceladas enseña sala, día y motivo` solo pasa si antes corrió el de cancelar, y eso es acoplamiento entre tests. Sin la bandera, el gate de `operations.md` es `node --test test/`, que es lo que he corrido.
+
+**Revisión final.** Hubo revisión de Spec y Código, limpias, sobre `d732fd3`. `HEAD` avanzó un commit de 17 líneas que solo toca `tasks.md`, así que lancé la re-revisión única de `d732fd3..e7c6814`. No encontró nada en el código ni en los tests. Dejó un hallazgo Minor:
+
+- `tasks.md` apunta la Task 1 a `d732fd3`, pero se hizo en `7da5db6`. Lo corrijo en el cierre.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| `canceladas` enseña el motivo | ejecución real, en una sola sesión | `Norte lun — sala ocupada` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+
+El e2e `e2e/cancel.e2e.mjs` no lo he podido correr (ver «Sin probar»).
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `e7c6814`, 93 ms.
+
+**Sin probar**
+
+- **El entorno no arranca.** `node scripts/env-up.mjs` solo imprime «Error: no arranca: falta data/seed.json» y sale con 1. Viene de `1ea80c0 chore: env-up sin la semilla de datos`, anterior a esta feature. Por eso no he corrido la suite e2e ni el servidor. Lo apuntaré en `debt.md` al cerrar.
+- **Sin estado entre procesos.** Cada `node src/app.js …` empieza de cero, así que `canceladas` solo enseña lo cancelado en el mismo proceso. Por eso el paso 2 del guion va en una sola sesión.
+- **Hueco de cobertura.** Ningún test cubre «sin `--motivo`»; lo he probado a mano.
+
+Panel: plan B en http://127.0.0.1:51695/ (no tengo Chrome. Esa página no ve la app, así que si algo falla, cuéntamelo en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+No hay entorno que arrancar: `env-up` está roto, ver «Sin probar». El panel de arriba ya está levantado. Para pararlo, avísame y lo paro yo.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Pega este bloque. Debe imprimir tres líneas en este orden: `cancelada Norte lun (sala ocupada)`, `Norte lun — sala ocupada` y `motivo no válido: cambio de planes, sala ocupada, otro`.
+
+```
+node --input-type=module -e "import { run } from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[])); console.log(run('cancelar',['Norte','lun','--motivo','me aburro']))"
+```
+
+2. Cancelar sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

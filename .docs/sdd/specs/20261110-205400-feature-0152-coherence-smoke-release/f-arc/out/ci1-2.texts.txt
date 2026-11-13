@@ -1,0 +1,74 @@
+--- [3]
+Empiezo el cierre de la 0010 por los pre-checks del paso 0.
+
+--- [7]
+Pre-checks 1–3 limpios: sin cambios sin commitear, `merge --check` listo y sin otras ramas abiertas. Sigo con la spec, la revisión final y el estado de las tareas.
+
+--- [25]
+Estoy en el paso 0.6 del cierre. La revisión final está sobre `36e1866` y `HEAD` avanzó con un commit de solo documentación, así que lanzo la única re-revisión que pide el kit.
+
+--- [32]
+Mientras la re-revisión corre, leo las referencias de cierre que tocan el walkthrough, las capacidades y la suite.
+
+--- [54]
+**Finding Verdicts**
+
+None are under verification.
+
+**New Breakage in the Fix Diff**
+
+None. The diff only adds `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (17 lines). I checked what it records against the branch, the spec and the plan:
+
+- **Row 1 (tasks.md:10):** Task 1 "Cancelar con motivo" is done at commit e0a470b. That matches `git log` (e0a470b is "feat(bookings): cancelar con un motivo de la lista"), the Task 1 title in plan.md:36, and the plan's file list (`src/app.js` and `test/cancel.test.js` are the only files touched).
+- **Row 2 (tasks.md:11):** Task 2 "Listado de canceladas" is done at commit 36e1866. That matches `git log` (36e1866 is "feat(bookings): listado de canceladas con su motivo"), the Task 2 title in plan.md:42, and the plan's file list.
+- **Revisión final line (tasks.md:13):** it records Spec opus+high clean, Code sonnet+high clean, and Architecture not raised because of the plan, all on 36e1866. That matches the final review record in the brief. It does not contradict spec.md:25 ("Sin review de spec"): that line skips the review of the spec document before approval, while the Spec axis here is the final review's check of the code against the spec.
+- **Rulings entry (tasks.md:17):** it is accurate. In `test/cancel.test.js` at 36e1866, the `canceladas enseña sala, día y motivo` test does no setup and relies on the cancellation made by the first test (module state in `src/app.js`). The entry labels this a workaround and names what it costs if wrong, so it is a recorded debt. It does not contradict the spec's GIVEN in spec.md:57 or anything in plan.md.
+- The text is in Spanish, as the constitution requires. The working tree was clean before and after the review.
+
+**Out-of-Scope Observations**
+
+- **No test for the missing `--motivo` case.** spec.md:54 requires that `cancelar` without `--motivo` answers «motivo no válido: cambio de planes, sala ocupada, otro». The code covers it: `reasonOf` returns `undefined`, which is not in `reasons`. But `test/cancel.test.js` at 36e1866 only tests a valid reason and an invalid one. This leaves a spec scenario with no test, against the "tests antes que código" rule. It sits in code the final review passed as clean, so it is not part of this diff.
+- **Skipped number in spec.md.** The "Decisiones que he tomado yo" list in spec.md:24-25 goes 1, 3; there is no item 2. This is cosmetic.
+- **`anular` / `voidBooking` in `src/app.js`.** These look like the 0011 work, which the spec puts out of scope, but they were already in 8642cc1, before this feature. This feature did not add them.
+
+**Verdict**
+
+**Fix round:** all clean
+
+--- [59]
+La re-revisión salió limpia. Paro su watch, pongo la línea en `tasks.md` e invoco el retro de cierre.
+
+--- [69]
+Commit de cierre hecho. Ahora sincronizo con la base.
+
+--- [74]
+El CI de `develop` está en rojo, así que no hay merge, en ningún perfil. Miro la causa y abro la fila de deuda que pide la receta.
+
+--- [78]
+Dejo la 0010 cerrada en su rama pero sin fusionar. **No terminado:** el CI de `develop` está en rojo y la receta prohíbe `sdd merge` en ese caso, en cualquier perfil. Falta solo el merge.
+
+`CI de develop en rojo en 3b6aae39f6219c9344a33cda938e92f31d88a7d1`
+
+El workflow es `ci` (`ci.yml`, que corre `node --test`). `gh run view --log-failed` no devolvió la causa. Abrí una fila en «Por triar» de la deuda con ese sha. Lo que arregla `develop` es un patch. Cuando lo pase, relanzo el merge desde esta rama.
+
+**Lo hecho**
+- **Pre-checks:** sin cambios sin commitear, `merge --check` listo, ninguna otra rama abierta, y la spec está aprobada y firmada.
+- **Re-revisión:** la revisión final era sobre `36e1866` y `HEAD` había avanzado con un commit de solo documentación (`tasks.md`). Lancé la re-revisión única (`effort-high` + `opus`) y salió limpia.
+- **Validación en campo:** `node --test` pasa 5/5. El smoke real cubre los THEN de `cancelar`: motivo válido, fuera de la lista y sin `--motivo`.
+- **Capacidad:** `bookings` está fusionada con el CLI y los checks de capacidades, decisiones y roadmap pasan.
+- **Registros:** la fila 0010 del roadmap pasa a ✅, el walkthrough está escrito, y no hay `estimation.md`, así que no hay tiempo real ni estimation-log.
+- **Historia:** commit de cierre `227610a` y, encima, `041a4dc` con la fila de deuda. `sdd merge --sync` dijo `base: al día`.
+
+**Decisiones tomadas sin ti**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y el test falla si corre solo o en otro orden.
+
+**Detalles que debes ver (ya están en deuda)**
+- **`canceladas` sin persistencia:** `node src/app.js canceladas` en un proceso aparte responde vacío, porque las reservas viven en memoria. La THEN solo se cumple dentro de un mismo proceso, donde sí salió «Norte lun — sala ocupada». Lo cubre la 0014.
+- **Sin test propio para `--motivo`:** `cancelar` sin `--motivo` está cubierto por el código y el smoke, no por un test. La re-revisión lo vio fuera de su alcance. No añadí el test, porque habría sido un commit de código sin revisar tras la re-revisión.
+
+**Ticket del kit:** `final-review-check.md` (punto 3) manda lanzar la re-revisión ante un commit de menos de 20 líneas solo de documentación. `closing-the-review.md` dice que con solo commits así, revisados en el hilo, no se lance. Está en la línea `Retro: documento o skill desmentido → ticket del kit` del walkthrough. ¿Quieres que lo abra con `sdd-feedback`?
+
+**Para acabar la `0010`:** no tiene `parent:` ni `proposal:`, así que no hay piezas hermanas.
+
+**No terminado.** Falta fusionar `feature/0010-cancel-reason` en `develop`, a la espera de que el CI de la base deje de estar en rojo. No borres todavía el worktree `<run>/repo`.
+

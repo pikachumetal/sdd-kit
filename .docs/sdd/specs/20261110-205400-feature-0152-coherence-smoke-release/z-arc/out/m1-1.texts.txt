@@ -1,0 +1,28 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [17]
+Estoy cerrando la 0010. Los pre-checks pasaron: árbol limpio, destino `develop` listo, ninguna otra rama abierta y `HEAD` solo con commits de documentación desde la revisión final. Después ejecuté el smoke real, y ahí encontré un problema.
+
+**Smoke de la 0010 (`validation.mode: field`)**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real | ✅ |
+| Motivo fuera de la lista → «motivo no válido: …» | ejecución real | ✅ |
+| Sin `--motivo` → el mismo mensaje | ejecución real | ✅ |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real | ❌ |
+
+Con `node src/app.js canceladas` en un proceso aparte, la salida sale vacía. Las reservas viven solo en memoria dentro de cada proceso, así que una cancelación no llega al comando siguiente. Eso es lo que cubre la 0014 («Motivo guardado»).
+
+- **Cómo pasa la suite:** `node --test` da 5/5 en verde, pero solo porque el test de `canceladas` reutiliza la cancelación del primer test. Es el ruling de la Task 2. Si corre solo, falla: `node --test --test-name-pattern=canceladas` da 0 pass y 1 fail.
+- **Qué significa:** la revisión final no lo vio. El THEN del spec no se cumple desde el comando real, y la suite en verde no lo demuestra.
+
+**He parado antes de escribir ningún registro:** no hay walkthrough, ni roadmap, ni capability, ni merge. Con un THEN de interfaz en rojo, la skill manda volver al arreglo, y cerrar así sería registrar una verificación falsa.
+
+Lo que recomiendo, y necesito que elijas:
+1. **Arreglarlo en la 0010:** persistir las reservas (un fichero JSON, por ejemplo) para que `canceladas` funcione entre procesos. Eso solapa con la 0014 y amplía el alcance del spec, así que lo decides tú, Laura.
+2. **Enmendar el spec:** que el THEN de `canceladas` diga «dentro del mismo proceso» y dejar la persistencia a la 0014. Cierro la 0010 con ese THEN marcado `suite`, con el límite anotado en el walkthrough, y la validación en campo dice que no se probó por CLI.
+
+Mi recomendación es la 2 (menor alcance, la 0014 ya existe), pero una enmienda al spec necesita tu visto bueno. ¿Cuál sigo?
+

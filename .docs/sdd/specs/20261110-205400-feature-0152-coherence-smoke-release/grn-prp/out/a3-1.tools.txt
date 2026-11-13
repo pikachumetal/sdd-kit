@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/sdd-kit.json | head -40; ls node_modules 2>/dev/null | head -3; git ls-files | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/s
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md package.json; cat src/app.js; cat test/cancel.test.js; cat .docs/sdd/specs/*patch-0007*/patch.md
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-grn-0152\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cat .docs/sdd/steering/estimation.md; grep -il "cancel\|findBooking" .docs/sdd/specs/*/*.md; head -30 .docs/sdd/specs/*0006*/walkthrough.md; git log --oneline | head
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+=== RESULTADO (7 turnos, 0.1483029 $)
+🦆 `cancelar Norte mar` busca la primera reserva activa de Norte sin mirar el día, y por eso encuentra la del lunes. `findBooking` (`src/app.js:9`) recibe `day` y nunca lo usa. Sin reserva el martes debería decir `sin reserva Norte mar` y dejar la del lunes como está. `anular` usa la misma búsqueda, así que tiene el mismo fallo y se arregla con lo mismo.
+
+**Carril: patch** (fallo determinista, la causa raíz fija la solución). No hay walkthrough abierto que lo absorba. El parche 0007 corrigió el mismo síntoma comparando por hora, pero la búsqueda sigue sin comparar el día.
+
+**Test que falla hoy y quedará en verde:** `cancelar Norte mar` con solo la reserva del lunes debe devolver `sin reserva Norte mar`, y la del lunes debe seguir activa.
+
+**Estimación:** 0,5 h + 0,02 h del gate de cierre (`node --test && node scripts/lint.mjs`, ~1 s la suite). No hay un gate medido en parches anteriores, así que esa cifra es aproximada. Perfil `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo seguimos?
+
+1. **Abrir como patch (Recomendada):** creo la rama y la carpeta del patch, escribo el test rojo, arreglo `findBooking` y cierro con el gate.
+2. **Llevarlo como feature:** solo tiene sentido si quieres decidir otra cosa, como qué decir cuando el día no coincide. No lo veo necesario.
+3. **No abrirlo:** lo dejo como está.

@@ -1,0 +1,59 @@
+--- [7]
+### Strengths
+
+- The change is small and stays on the `anular` command. `anular-todas`, which the Scope leaves out, is untouched (`src/app.js:22-26`).
+- The response «anulada <sala> <día>» is unchanged (`src/app.js:19`), and `test/void.test.js:5-7` pins it through `run('anular', …)`, the entry point that «Dónde se prueba» names. That covers ✋ decision 1.
+- ADR 0003 holds. Its Confirmación says `src/` imports neither `node:fs` nor any database package, and `src/app.js` has no imports at all.
+- The UI text stays in Spanish, and no comments were added.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed mail notice still runs.** `src/app.js:18`
+- **What's wrong:** `voidBooking` still puts the notice for the room manager in `outbox`: `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`. `salida` (`src/app.js:28-30`, `run` at `:36`) still lists it as «responsable: anulada Norte lun». The capability `bookings.md`, «Avisar por correo», defines the notice exactly that way: «`salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo». The diff only dropped `formatMail`, meaning the `subject` and the «(enviado por correo)» suffix. The entry, and the office mailing it, stay the same.
+- **Why it matters:** the spec's single delta is `REMOVED — Avisar por correo`, and the dev-lead decided «El aviso por correo al anular desaparece… el correo sobra». The behavior still happens, just reformatted.
+- **How to fix:** remove the `outbox.push` line from `voidBooking`. If nothing else writes to `outbox`, also decide what happens to `outbox` and `salida`. Note that `salida` belongs to `bookings` and not to this delta, so ask the dev-lead before removing the command.
+- **Gap:** `contradicts`.
+- **Comes from:** REMOVED «Avisar por correo», plus the dev-lead's decision (only half covered: the rule only changes the shape of the notice and doesn't remove it).
+
+#### Important (Should Fix)
+
+**2. The named test doesn't check that the notice is gone.** `test/void.test.js:5-7`
+- **What's wrong:** the test is called «anular responde sin aviso», but it only asserts the response string. It never checks `outbox` or `salida`. That's why it passes while issue 1 is still there.
+- **Why it matters:** «Dónde se prueba» says «Anular sin aviso: por el comando `anular`, como `test/void.test.js`». The behavior that line names, "without a notice", is what the spec removes, and nothing tests it.
+- **How to fix:** after `run('anular', ['Norte','lun'])`, assert `run('salida', [])` is `''`, or that `outbox` has length 0. That test has to fail on the current code (RED) before you fix `src/app.js:18`.
+- **Gap:** `partial`.
+- **Comes from:** the «Dónde se prueba» line for REMOVED «Avisar por correo».
+
+#### Minor (Nice to Have)
+
+**3. The plan contradicts the spec on the mode.** `plan.md` («**Ejecución**: native, porque es una task»)
+- **What's wrong:** the plan calls this a task, but the spec is `mode: full` and `feature: 0025`.
+- **Why it matters:** this is a problem in the plan, not the code. It doesn't change the behavior, but it can mislead later steps that read the execution mode.
+- **Gap:** n/a (a problem in the plan).
+
+**Ledger:** there is none, so there are no deferred minors to weigh.
+
+### Declined to judge
+
+- `test/app.test.js` and `test/cancel.test.js` call `reservar` and `cancelar`, but `run` doesn't handle either one; it would return «salas». This was already there before the diff and is outside the plan. The main thread should confirm that those tests pass, since the full suite runs there.
+- `bookings.md` still lists the «Avisar por correo» requirement. Updating the capability belongs to archiving the delta, not to this diff.
+- Whether `salida` and `outbox` should be kept. `salida` belongs to `bookings`, outside this delta, and once `voidBooking` stops writing to `outbox` nothing else does, so the command would always be empty. That's a product decision for the dev-lead.
+
+### Not verified
+
+- I didn't run the tests (outside this review's scope). The package doesn't include the task reports, so I have no evidence that `node --test test/void.test.js` was run.
+
+### Recommendations
+
+- Write the RED test from issue 2 first, then remove the `outbox.push` line.
+- Ask the dev-lead about the future of `salida`, and fix the plan's «Ejecución» line.
+- Have the main thread run the full suite, because of the pre-existing tests for `reservar` and `cancelar`.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** the spec's only requirement, REMOVED «Avisar por correo», isn't met: `anular` still puts the notice for the manager in the outbox, `salida` still lists it, and the office still mails it. The test named in «Dónde se prueba» doesn't catch this, because it never checks the outbox or `salida`.
+

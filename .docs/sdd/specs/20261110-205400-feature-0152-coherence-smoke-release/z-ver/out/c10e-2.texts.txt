@@ -1,0 +1,74 @@
+--- [3]
+Ahora: leo los informes de la revisión final y abro `sdd-verify` para cerrar la revisión. Queda: triaje de hallazgos y, si aplica, un fix o la re-revisión, ~10 min.
+
+--- [20]
+Los dos tests nuevos fallan por el motivo esperado. Ahora el código y la enmienda del spec.
+
+--- [32]
+Ahora: despacho la única re-revisión del rango `d93901d..7146218`. Queda: leer su informe, validación, ~8 min.
+
+--- [42]
+La re-revisión está en marcha en segundo plano, así que espero su informe antes de tocar nada más.
+
+Hasta ahora, en la pasada de fix (commit `7146218`):
+- **Código, Important:** `reasonOf` ahora recorta el motivo, así que `"sala ocupada "` se acepta.
+- **Código, Minor:** `canceladas` separa con ` - ` y ya no sale rota en `cp850`.
+- **Spec, Minor:** cada test importa su propia copia del módulo y ya no depende del orden.
+- **Suite:** los tests nuevos fallaron antes del fix y la suite completa da 7/7 después.
+- **Enmienda sin aprobar:** el spec decía «—» en el THEN y « - » en la decisión del dev-lead. Apliqué la decisión literalmente y la anoté en «Enmiendas».
+- **tasks.md:** el commit de la Task 1 constaba mal (`d93901d`) y lo corregí a `d4435c3`.
+
+✋ Enmienda sin aprobar: el THEN de «El listado de canceladas enseña el motivo» pasa de «—» a « - », según las «Decisiones tomadas con el dev-lead».
+
+--- [52]
+**Finding 1 · [Code · Important] `src/app.js:14-17`, the reason keeps its surrounding spaces: ADDRESSED**
+`src/app.js:16` now reads `params[index + 1]?.trim()`. A trailing or leading space no longer breaks the check against `reasons`. If `--motivo` is the last argument, the optional chaining keeps `undefined`, so the reply is still «motivo no válido…», as the spec's AND requires. The new test `test/cancel.test.js:18-21` ('cancelar ignora los espacios alrededor del motivo') covers the reported case, `"sala ocupada "`.
+
+**Finding 2 · [Code · Minor] `src/app.js:36`, « — » in `canceladas`: ADDRESSED**
+`src/app.js:36` now separates with `' - '`, which matches the spec's «Decisiones tomadas con el dev-lead» (`Norte lun - sala ocupada`). The `canceladas` test assertion (`test/cancel.test.js:30`) changes to match.
+
+**Finding 3 · [Spec · Minor] `test/cancel.test.js:13`, order dependence: ADDRESSED**
+Each test now gets its own copy of the module through `import('../src/app.js?test=N')` (`test/cancel.test.js:4-6`). The `canceladas` test sets up its own GIVEN with `run('cancelar', …)` before it asserts (`test/cancel.test.js:28-31`). The order no longer matters: the new test that cancels Norte lun with spaces would otherwise collide with the first test, and it doesn't.
+
+**Spec amendment, THEN of «El listado de canceladas enseña el motivo»: ADDRESSED. It is only that application.**
+The spec delta touches exactly two lines:
+- the THEN, from «—» to « - »
+- the Enmiendas entry, from «(ninguna)» to the dated `sin aprobar` amendment, which cites the dev-lead decision
+
+Nothing else in the delta changes: not the GIVEN or WHEN, not the other requirement, not the frontmatter, not the approvals. The new wording matches the «Decisiones tomadas con el dev-lead» section word for word. One thing is still open: the amendment is `sin aprobar`, and the new assertion in `test/cancel.test.js:30` depends on it. Laura (dev-lead) has to approve it before the close (sdd-archive).
+
+## New Breakage in the Fix Diff
+
+- **Minor · `test/cancel.test.js:28`**: the existing RED test was renamed from 'canceladas enseña sala, día y motivo' to '… con guion normal'. The assertion change is justified by finding 2 and the amendment. The rename is not, and no finding asked for it. Restore the original name.
+- **Minor · `test/cancel.test.js` (whole file)**: the committed file went from CRLF to LF line endings, while `src/app.js`, `test/app.test.js` and `tasks.md` stay CRLF in the repo. There is no linter or formatter config that demands it. That is why the diff rewrites all 15 original lines, which hides that only the name, the assertion and the async structure changed. Restore CRLF so the file matches the rest of the repo.
+
+The interface text stays in Spanish (`Norte lun - sala ocupada`, «motivo no válido…»), so the code constraint holds.
+
+## Out-of-Scope Observations
+
+- The new test `test/cancel.test.js:23-26` ('cancelar sin --motivo responde motivo no válido') covers an AND of the spec that had no test before. It is an addition, not a change to a RED test.
+- In `tasks.md`, the line «Pasada de fix: ver commit de la pasada» doesn't give the hash (7146218). It would help to write it in.
+- `src/app.js:1` and the last line run the CLI at module level. Importing it with a query string doesn't trigger it under `node --test` (there is no `argv[2]`), but each fresh import repeats that code. It doesn't affect anything today.
+- I didn't run anything. Run the closure gate `node --test` before archiving: the per-test module isolation (`?test=N`) depends on how Node resolves file specifiers with a query string, and only a real run confirms it.
+
+**Fix round:** all three findings are ADDRESSED and nothing Important broke. Two Minor issues to tidy up: restore the original name of the `canceladas` test, and restore CRLF in `test/cancel.test.js`. Before the close, the dev-lead has to approve the amendment, and `node --test` has to pass.
+
+--- [55]
+La revisión final de la 0010 está cerrada. La re-revisión no dejó nada Important ni Critical, pero queda una enmienda del spec sin aprobar.
+
+**Qué pasó**
+- Los dos ejes volvieron con tres hallazgos, y con `review.minors: fix` entraron los tres en una sola pasada (commit `7146218`).
+  - **Código, Important:** `reasonOf` conservaba los espacios del motivo. Ahora lo recorta.
+  - **Código, Minor:** `canceladas` separaba con «—», que sale rota en la consola `cp850`. Ahora usa « - ».
+  - **Spec, Minor:** el test de `canceladas` dependía del orden de los tests. Ahora cada test importa su propia copia del módulo.
+- Los dos tests nuevos fallaron antes del fix y pasan después. `node --test` da 7/7 tras el último commit (`6ddee55`).
+- La re-revisión (opus, rango `d93901d..7146218`) dio los tres hallazgos como resueltos. Dejó dos Minor, que anoté como rulings en el ledger y no corregí:
+  - **Renombre del test:** el test de `canceladas` cambió de nombre al cambiar su aserción.
+  - **Fin de línea:** `test/cancel.test.js` pasó de CRLF a LF.
+- Quité el worktree de la re-revisión. `tasks.md` queda con `Revisión final`, `Pasada de fix` y `Re-revisión`, y el commit de la Task 1 corregido a `d4435c3`. La nota que lo registra va en el commit `6ddee55`, que solo toca documentación y revisé yo.
+
+**Pendiente**
+✋ Enmienda sin aprobar: el THEN de «El listado de canceladas enseña el motivo» pasa de «Norte lun — sala ocupada» a «Norte lun - sala ocupada». El spec se contradecía: el THEN decía «—» y las «Decisiones tomadas con el dev-lead» fijan « - ». Apliqué la decisión tal cual y quedó anotada en «Enmiendas». Si Laura prefiere la raya, se revierte una línea del spec, el código y el test. La re-revisión pide que la apruebe antes del cierre.
+
+Siguiente: `sdd-archive` para la validación y el cierre. Ahí se corre el gate completo.
+

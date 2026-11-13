@@ -1,0 +1,81 @@
+--- [3]
+Ahora: leer spec, plan y tasks de la 0010 para ver el THEN de la Task 2. Queda: decidir si es una desviación y parar, ~2 min.
+
+--- [8]
+Workspace del plan: `<run>\repo`, rama `feature/0010-cancel-reason`, sin worktree aparte. La Task 1 está hecha en `6f14cde`.
+
+Ahora: parar antes de escribir código de la Task 2. Queda: tu decisión sobre el "quién", y luego la Task 2 entera, ~10 min.
+
+🦆 **Qué pasa, en llano.** La spec dice que `canceladas` responde «Norte lun — sala ocupada — Ana», y que la reserva está «cancelada por Ana». Pero `src/app.js` no guarda a nombre de quién está ninguna reserva. `cancelar` solo recibe sala, día y `--motivo`. Tampoco hay usuarios, sesión ni variable de entorno con la identidad. El «Ana» del THEN no sale de ningún dato que la aplicación tenga hoy. Para mostrarlo hay que decidir de dónde sale. Esa decisión cambia la entrada de `cancelar` o añade un concepto de usuario nuevo. Eso queda fuera de lo que la spec aprobó.
+
+✋ **Desviación de la spec (no es un `Ruling:`).** Afecta al THEN del segundo requisito «El listado de canceladas enseña el motivo y quién canceló». Afecta también a la decisión 2 de la spec, que pide enseñar «quién canceló». No he tocado nada, ni código ni spec. No cierro esto por mi cuenta, porque cualquier opción cambia la salida observable.
+
+Opciones, con mi recomendación primero:
+
+1. **Recomendada: `cancelar` recibe `--por <nombre>` y se guarda.** `--por` sería obligatorio, igual que `--motivo`, y `canceladas` lo muestra. Es lo mínimo que hace verdadero el THEN. Pero cambia el comando de la Task 1, que ya está cerrada. Eso iría a una Task 3 de enmienda. También hay que decidir qué responde `cancelar` sin `--por`.
+2. **Quitar el «quién» de esta feature.** `canceladas` responde «Norte lun — sala ocupada». El THEN y la decisión 2 se reescriben, y el «quién» pasa al roadmap para cuando haya usuarios (podría ir con la 0011, la de anulaciones del responsable). Es la opción más pequeña y no inventa un dato.
+3. **Introducir identidad** (usuario del sistema o variable `SALAS_USUARIO`). Es lo más cercano a «quién» de verdad, pero es una capacidad nueva que la spec no contempla. No la recomiendo dentro de esta feature.
+
+Dime cuál. Con la 1 o la 2 dejo la enmienda en `spec.md`, con su línea de «Enmiendas», sin commitear. Pasa antes por un revisor de spec (`sdd-kit:effort-medium`) porque cambia el delta. Después te lo muestro y, ya aprobada, implemento la Task 2 (y la Task 3 si es la 1).
+
+--- [14]
+Ahora: escribir la enmienda (opción 1) en `spec.md` sin commitear y pasarla por un revisor. Queda: la review, y después la Task 3 y la Task 2, ~15 min.
+
+--- [17]
+Revisor lanzado. Espero su resultado antes de tocar código; no hay nada más que pueda hacer sin solaparme con él.
+
+--- [23]
+1. Crítico · Delta / «Cancelar pide un motivo de la lista» · El WHEN `cancelar Norte lun --motivo "sala ocupada"` ya no basta: con `--por` obligatorio, ese mismo comando responde «falta quién cancela», no «cancelada Norte lun (sala ocupada)». El THEN y los dos AND de ese requisito quedan falsos o ambiguos. Esto es un MODIFIED no declarado. · Pasar ese requisito a MODIFIED (o reescribirlo) con `--por Ana` en el WHEN. Aclarar el orden de validación (motivo antes que `--por`, o al revés). Si no, el AND «sin `--motivo`» se contradice con «sin `--por`» cuando faltan los dos.
+
+2. Crítico · Enmiendas / «Cancelar pide quién cancela» · Está marcado ADDED, pero cambia la firma y la respuesta de `cancelar`, que ya existía en este mismo delta. Además la spec sigue en `status: approved` con la aprobación de Laura del 2026-10-08, que no cubre la enmienda. · Declararlo MODIFIED. Reabrir el estado (o pedir una nueva aprobación al dev-lead) antes de implementar. Dejar constancia de quién aprueba la enmienda.
+
+3. Importante · Delta / «Cancelar pide quién cancela» · El escenario no demuestra la persistencia. «La reserva guarda que canceló Ana» no se puede observar con `cancelar`. Un test pasaría aunque `--por` se descartara, porque la comprobación real está en `canceladas`, que es otro requisito. · Añadir en el escenario un THEN observable, por ejemplo `canceladas` responde «Norte lun — sala ocupada — Ana». También conviene un GIVEN de la cancelación previa.
+
+4. Importante · Delta / «Cancelar pide quién cancela» · Faltan escenarios límite. `--por` vacío o sin valor, nombres con espacios o con mayúsculas y minúsculas, y la combinación de `--por` ausente y motivo inválido no están definidos. Los AND de la spec no los cubren. · Fijar el comportamiento y el texto de error de `--por` vacío. Fijar qué error sale primero cuando fallan las dos cosas.
+
+5. Importante · Decisiones que he tomado yo · Las decisiones de la enmienda no están en esta sección. Son tres: `--por` es obligatorio, es texto libre sin validación y el texto de error es «falta quién cancela: usa --por <nombre>». Solo se mencionan en Enmiendas. La decisión 2 sigue diciendo «quién canceló» sin explicar de dónde sale el dato. · Añadir a «Decisiones que he tomado yo» la obligatoriedad, la ausencia de validación y el literal del error. Actualizar la decisión 2.
+
+6. Importante · Scope / Intent · Scope sigue diciendo `cancelar <sala> <día> --motivo <motivo>` sin `--por`. Eso es un cambio de contrato de la CLI. Tampoco se dice que rompe a quien ya invoca `cancelar` sin `--por` (scripts propios, tests existentes). · Actualizar Scope con `--por <nombre>`. Declarar el cambio incompatible de la CLI y la necesidad de actualizar los tests de `cancel.test.js` y cualquier otro uso de `cancelar`.
+
+7. Importante · Capacidades / Approach · El dato nuevo (`canceló`) se persiste con la reserva, pero ni Approach ni Capacidades hablan del cambio de modelo de datos o de formato de almacenamiento. Tampoco se dice qué pasa con las reservas ya canceladas, que no tienen `--por`. · Mencionar el campo nuevo en Approach. Definir cómo lista `canceladas` las reservas antiguas sin autor, por ejemplo «—» o «desconocido».
+
+8. Importante · Mission / PRODUCT.md (permisos) · La misión dice que hay un único usuario y que no hay más usuarios. `--por` es texto libre sin autenticación, así que «quién canceló» es declarativo y cualquiera puede suplantar a otro. El término «Cancelación» de PRODUCT.md dice que la anula «el propio cliente», pero la spec no relaciona `--por` con eso. · Decir que `--por` es declarativo y no autenticado. Valorar si el dato es necesario con un solo usuario, o si se justifica por el uso en el coworking. Alinear con el vocabulario de PRODUCT.md.
+
+9. Menor · Enmiendas · La entrada dice «Afecta a la Task 1 → Task 3» pero `tasks.md` aparece como no rastreado y la spec es `mode: full` con plan. No se ve que las tareas se hayan actualizado con la enmienda. La entrada también está redactada en primera persona («lo fijo yo») sin atribución. · Comprobar que `tasks.md` y el plan recogen `--por`, con tests en rojo primero. Poner autor y fecha en la enmienda.
+
+10. Menor · Delta / ejemplos · Los ejemplos usan «Ana» y «Laura» como nombres propios. «Ana» es un nombre ficticio razonable, pero «Laura» es la aprobadora real que figura en la spec. Reutilizar nombres de personas reales en fixtures es un riesgo. · Usar un nombre claramente genérico en los ejemplos (por ejemplo «Persona A»), distinto de cualquier aprobador.
+
+--- [25]
+Los hallazgos 1 y 2 son Críticos y cambian el texto de la enmienda. Los integro en `spec.md`, sin commitear, y después paro. Tu «apruebo» llegó antes de que existiera el texto y la review, y ahora cambia un requisito que ya estaba aprobado.
+
+--- [27]
+🦆 **Qué pasa, en llano.** La enmienda ya está escrita en `spec.md`, sin commitear. Cancelar pasa a pedir `--por <nombre>`, y ese nombre es el «quién» que enseña `canceladas`. El revisor encontró un problema real. El requisito de motivo, el de la Task 1, usaba un comando que con `--por` obligatorio ya no funciona tal cual. Por eso su WHEN lleva ahora `--por Ana`.
+
+✋ **Desviación pendiente de aprobación, y no he escrito código.** Dijiste «apruebo la enmienda» antes de que existiera el texto y la review. Lo que acabo de integrar toca un requisito que Laura ya había aprobado. Prefiero que apruebes el texto concreto antes de implementar.
+
+**Hallazgos de la review (sonnet, 10):**
+- **Aceptado:**
+  - El WHEN del requisito de motivo ya no valía sin `--por`. Lo he cambiado.
+  - La enmienda necesita aprobación del dev-lead. Queda pendiente y consta en «Enmiendas».
+  - El escenario no demostraba que se guarde el quién. He añadido un AND que lo comprueba con `canceladas`.
+  - Faltaban casos límite: `--por` ausente o vacío, y el orden de validación (primero el motivo, luego `--por`). Están escritos.
+  - Las decisiones 2 y 3 y el Scope estaban desactualizados. Están corregidos, y el cambio incompatible de `cancelar` consta en el Scope.
+  - `--por` es declarativo y no autentica a nadie. Consta en la decisión 3.
+- **Rechazado:**
+  - Reservas antiguas sin autor: el almacén es un array en memoria, no hay ninguna.
+  - El riesgo del nombre «Laura»: no aparece en ningún ejemplo, solo «Ana».
+- **Sin cambio:** que `tasks.md` recoja la enmienda. Lo haré con la aprobación.
+
+**Texto que decide el dev-lead:**
+- El error sin `--por` es «falta quién cancela: usa --por <nombre>».
+- `--por` es texto libre, obligatorio y sin validar.
+- Con motivo inválido y sin `--por`, responde el error del motivo.
+
+Si apruebas este texto, hago esto:
+1. Commit de la spec.
+2. En `tasks.md`, marcar la Task 1 como `afectada por enmienda 2026-11-11 → Task 3`.
+3. Task 2: el listado.
+4. Task 3: `--por`, con los tests en RED primero.
+
+La Task 3 va antes de cerrar la Task 2, porque el AND de `canceladas` necesita el `--por`. Lo dejo como `Ruling:` sobre el orden. ¿Apruebas este texto, o cambias algo?
+

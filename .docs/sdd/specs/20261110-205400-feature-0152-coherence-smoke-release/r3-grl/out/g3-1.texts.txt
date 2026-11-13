@@ -1,0 +1,40 @@
+--- [4]
+Primero leo el contexto SDD del proyecto (docs, no código).
+
+--- [17]
+Ahora: clasifico tu petición, abro la rama `feature/0010-lista-espera` y empiezo la entrevista de la spec. Queda: unas pocas preguntas, el borrador de la spec con su revisión y tu aprobación, ~15 min, ~1 $ (los revisores de la spec son subagentes).
+
+Carril: feature, modo full · Perfil: delegate, por defecto (no hay `control.profile` en `sdd-kit.json` ni en `sdd-kit.local.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido, corrígeme si no es así.** Hoy `reservar <sala>` no tiene ninguna opción cuando la sala está ocupada, y `libres <franja>` solo te dice qué salas quedan. Quieres poder apuntarte a una lista de espera de la sala que querías, para no tener que ir mirando a mano si se libera.
+
+Es una feature y no un patch: hay decisiones de producto que nadie ha fijado, como cómo te apuntas, qué pasa cuando se libera la sala y dónde se guarda la lista. Preveo 3 tasks o menos, así que no propongo dividirla. Ya he reservado el id 0010 y la rama.
+
+❓ **Primera pregunta, abierta:** cuando la sala que quieres está ocupada y te apuntas a la lista, ¿qué quieres que pase después? Cuéntame un caso real, por ejemplo qué hiciste la última vez que la sala estaba ocupada y qué te habría ahorrado la lista.
+
+--- [19]
+Entendido: el motivo es no tener que repetir `libres` a mano cada rato. Eso me sirve para ordenar lo que sigue.
+
+Hay un hecho del código que condiciona la respuesta. `src/app.js` es una CLI que se ejecuta y termina, sin proceso en segundo plano. `bookings` es un array en memoria y `cancelar` solo devuelve un texto, no borra nada. Por eso la lista no puede "avisarte" sola. Algo tiene que reaccionar cuando se libera la sala, y esa decisión cambia todo lo demás.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+
+1️⃣ **Pasa a ser tuya automáticamente.** Al cancelar la reserva de Norte, el primero de la lista recibe la reserva sin hacer nada más.
+- `reservar Norte lun 10:00-12:00` → `Norte ocupada; en lista de espera (1.º)`
+- Más tarde, `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a la 1.ª de la lista de espera`
+- Coste: reservas sin confirmarlas, y quizá ya no te hagan falta.
+
+2️⃣ **Te lo dice al consultar.** La reserva queda libre y la próxima vez que ejecutes cualquier comando, la CLI te avisa de lo que se ha liberado.
+- `libres 10:00-12:00` → `Sur. Ya puedes reservar Norte (estabas en espera)`
+- Coste: sigues teniendo que ejecutar algo, pero no tienes que acordarte de mirar `libres`.
+
+3️⃣ **Un comando para ver la lista.** Un `espera` aparte lista tus esperas y cuáles ya se han liberado.
+- `espera` → `Norte lun 10:00-12:00: libre ahora`
+- Coste: es lo más parecido a lo que haces hoy, solo que más cómodo.
+
+Un aviso por correo sería la forma de no tener que ejecutar nada, pero depende de la 0008, que aún está pendiente. Lo dejo fuera de esta feature.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es el sondeo manual y es la única opción en la que no tienes que mirar nada. A cambio, tendré que decidir qué pasa si la reserva automática choca con otra tuya.
+

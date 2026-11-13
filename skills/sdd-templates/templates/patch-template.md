@@ -16,7 +16,7 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 > Registro lightweight de un cambio pequeño con la solución ya fijada: un fallo determinista
 > (la causa raíz), un ajuste o una retirada solo de presentación (la petición) o una petición
 > cerrada (el ticket o el dev-lead). NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad
-> vive aquí + la fila del roadmap (en 2.x, también una línea en el changelog); el diff exacto, en
+> vive aquí + la fila del roadmap; el diff exacto, en
 > el commit. Si el fix toca una feature con walkthrough propio aún abierto, NO crear este doc:
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
 > Borra los bloques de ayuda (`>`) al redactar.
@@ -72,7 +72,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 | 1 | *(ajuste visual)* captura de `<pantalla>` en `<navegador>`, antes y después del cambio | `<rutas de las capturas, fuera de git>` · enseñadas en la validación |
 | 2 | *(ajuste visual)* detector de `§Frontend` en `<viewports>` | `<hallazgos: resueltos · justificados>` · o «composición no medida» |
 
-## 5. Tiempo (ligero) *(si existe `.docs/sdd/estimation.md`)*
+## 5. Tiempo (ligero) *(si existe `.docs/sdd/steering/estimation.md`)*
 
 - Estimación: <Xh, la de la pregunta del carril de `sdd-propose`, escrita antes del fix; si llega en el commit de cierre, `<Xh> (post hoc)`: no calibra>
 - Inicio: <hora UTC en que se abrió el patch, p. ej. 2026-10-09T11:20Z>

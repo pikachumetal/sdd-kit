@@ -38,7 +38,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### La review adversarial tensa la spec antes del gate
 
 - GIVEN un nivel de review decidido por la rúbrica
-- WHEN el agente despacha el revisor con la spec, la constitution, la mission y las capacidades tocadas
+- WHEN el agente despacha el revisor con la spec, la constitution, `PRODUCT.md` y las capacidades tocadas
 - THEN cada hallazgo aparece en «Decisiones a validar» como aceptado (con el cambio en la spec) o rechazado con motivo, antes de pedir la aprobación
 - AND con dos revisores cada lente recibe puntos disjuntos y el encargo le prohíbe reportar lo que pertenece al punto de la otra
 - AND con un revisor la lente única recibe todos los puntos
@@ -187,7 +187,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se escribe el plan y, después, cuando esa task termina su revisión
 - THEN la task lleva una verificación visual con la pantalla o ruta, los estados, los temas, el criterio en frases medibles y la pantalla de referencia (la de `§Frontend` si la task no nombra otra), escritos en el plan antes de tocar el código
 - AND el hilo principal la abre en un navegador real con Playwright —el MCP si está en la sesión, un script del paquete `playwright` si no—, sobre el entorno que el usuario tenga levantado si lo hay, sin build dedicado ni suite de specs nueva
-- AND pasa el detector que declara `§Frontend` de `tech-stack.md` en sus dos viewports, y saca una captura por estado y tema, que mira con la rúbrica de composición (jerarquía, ritmo de espaciado, densidad, alineación) contra la referencia, con 3 rondas de arreglo de composición como máximo, y guarda fuera de git sin borrarla hasta la validación, antes de darla por terminada en `tasks.md`
+- AND pasa el detector que declara `§Frontend` de `steering/operations.md` en sus dos viewports, y saca una captura por estado y tema, que mira con la rúbrica de composición (jerarquía, ritmo de espaciado, densidad, alineación) contra la referencia, con 3 rondas de arreglo de composición como máximo, y guarda fuera de git sin borrarla hasta la validación, antes de darla por terminada en `tasks.md`
 - AND con la tarjeta de resumen de la Task 2 con borde y 0 px de padding, y un criterio que no nombra el padding, el detector da `cramped-padding` y la task no se da por terminada hasta que el hallazgo se arregla o se justifica por escrito; «ya estaba antes» no justifica un hallazgo del elemento que la task toca, y «falso positivo» o «es intencional» no valen sin citar la frase del criterio o el rasgo de la referencia que lo exige
 - AND mide en estilos computados solo lo que el criterio fija con un valor numérico
 - AND si la task cambia comportamiento, recorre el flujo real con sus estados de carga, error y deshabilitado, con la consola y la red sin errores, con el usuario de pruebas de `§Frontend`, nunca contra producción y sin borrar ni modificar datos que no creó la verificación
@@ -199,7 +199,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el agente para tras la task en `pair`, o presenta la validación de `sdd-archive` en `delegate`
 - THEN antes del guion de pruebas enseña el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `select` · arreglado: padding-right 12 px») y la ruta de cada captura
 - AND cada medida en estilos computados, solo porque el criterio fija un valor, con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1»)
-- AND sin detector declarado, el aviso literal «composición no medida: `tech-stack.md` no declara detector en §Frontend»
+- AND sin detector declarado, el aviso literal «composición no medida: `operations.md` no declara detector en §Frontend»
 - AND si la composición sigue mal tras la tercera ronda, lo dice ahí, para que decida el dev-lead
 - AND una task que quedó «no probado» lo dice en ese sitio, con su motivo
 
@@ -314,7 +314,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN un proyecto en modo `sequence` con la fila 0081 «Avisos de reserva» pendiente en el roadmap
 - WHEN `sdd-propose` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
-- THEN la carpeta es `.docs/sdd/specs/20261001-091500-feature-0081-booking-reminders/`
+- THEN la carpeta es `.docs/sdd/changes/20261001-091500-feature-0081-booking-reminders/`
 - AND el frontmatter de `spec.md` lleva `id: 20261001-091500-feature-0081-booking-reminders` y `feature: 0081`
 
 ### Las tasks del plan conservan su nombre
@@ -437,10 +437,10 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### Una spec que cambia lo que se ve propone `§Frontend` si falta
 
-- GIVEN un proyecto ya inicializado con interfaz cuyo `tech-stack.md` no tiene `§Frontend`, y una fila que pide una pantalla nueva
+- GIVEN un proyecto ya inicializado con interfaz cuyo `steering/operations.md` no tiene `§Frontend`, y una fila que pide una pantalla nueva
 - WHEN el agente escribe la spec
 - THEN «Decisiones que he tomado yo» lleva la propuesta de `§Frontend` con sus campos rellenos, recomendando impeccable y Playwright, y el acceso que se ve en el código
-- AND al aprobar la spec, `tech-stack.md` gana esa `§Frontend`, sin parada nueva
+- AND al aprobar la spec, `steering/operations.md` gana esa `§Frontend`, sin parada nueva
 - AND si el dev-lead no quiere detector, queda `Detector: ninguno`, la verificación sigue con capturas y rúbrica y el aviso «composición no medida», y la propuesta no se repite en las features siguientes
 
 ### Lo cambiado tras la validación se separa de lo validado
@@ -500,7 +500,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN el molde `reservas`, con `operations.md` §Testing «Gate de cierre: `node --test`» y sin script `test` en `package.json`
 - WHEN `sdd-propose` escribe el plan
 - THEN la línea del gate de cierre de §3 dice `node --test`, literal
-- AND sin `operations.md`, toma el de `tech-stack.md` §Testing; sin ninguno, el de la constitution; y si no hay ninguno, escribe `no declarado` y lo apunta en las decisiones del plan, sin inventar un comando como `npm test`
+- AND sin `steering/operations.md`, toma el de la constitution; y si no hay ninguno, escribe `no declarado` y lo apunta en las decisiones del plan, sin inventar un comando como `npm test`
 
 ### `sdd-propose` entrega el cambio a la skill que lo sigue
 
@@ -535,10 +535,10 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El workspace del plan se anuncia
 
-- GIVEN un plan sin workspace en `.temp/sdd/`
-- WHEN `sdd-implement-native` o `sdd-implement-subagent` lo crea
-- THEN dice al dev-lead `Workspace del plan: .temp/sdd/plan/ — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
-- AND con un ledger del mismo plan con `Task 1: complete …`, la línea acaba en `· retomo en la Task 2`
+- GIVEN un plan con `## Task 1` y `## Task 2`
+- WHEN `sdd-implement-native` o `sdd-implement-subagent` corre `sdd workspace <plan>`, al empezar o al retomar
+- THEN el comando escribe en stderr `Workspace del plan: <ruta absoluta del workspace> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
+- AND con `Task 1: complete …` en el ledger del plan, la línea acaba en `· retomo en la Task 2`; sin ninguna task completa, o con las dos, no lleva sufijo
 
 ### Tras una caída o un corte por cuota, la ejecución sigue desde el ledger
 
@@ -552,7 +552,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN una feature en Native de 4 tasks cuya sesión compactó en la Task 2 con dos tasks pendientes
 - WHEN el hilo retoma
 - THEN escribe en el ledger `Task 2: Ruling: compactación — sigo con SDD — quedan 2 tasks`
-- AND el walkthrough lleva en «Lo que se hizo» `Compactación: sí, en la Task 2 → SDD desde la Task 3`, y en una feature que no compactó, `Compactación: no`
+- AND el walkthrough lleva en su §2 «Tiempo y coste» `Compactación: sí, en la Task 2 → SDD desde la Task 3`, y en una feature que no compactó, `Compactación: no`
 
 ### Un E2E rojo por tiempo se ajusta sin tocar sus aserciones
 
@@ -598,11 +598,11 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El worktree de la implementación lo prepara `sdd-worktrees`
 
-- GIVEN la 0010 con la spec y el plan aprobados, abierta en un worktree que creó Orca en la rama `feature/0010-cancel`, y un proyecto con `.docs/sdd/environments.md` y `.docs/sdd/operations.md` §Testing `Gate de cierre: node --test`
+- GIVEN la 0010 con la spec y el plan aprobados, abierta en un worktree que creó Orca en la rama `feature/0010-cancel`, y un proyecto con `## Entornos` y §Testing `Gate de cierre: node --test` en `steering/operations.md`
 - WHEN la copia del método (`sdd-implement-native` o `sdd-implement-subagent`) hace su preparación
 - THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su rama, y no crea otro
 - AND ejecuta `env:setup` después de instalar las dependencias, y los encargos de implementador dicen dónde está `.sdd-env.json`
-- AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `operations.md`, `tech-stack.md` ni la constitution, lo dice y pregunta qué ejecutar
+- AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `steering/operations.md` ni en la constitution, lo dice y pregunta qué ejecutar
 - AND con un gate filtrado (`moon run app:test api:test --affected --base develop`), la baseline corre sin el filtro solo las tareas cuyos inputs incluyen ficheros del Scope de la spec (`moon run api:test` si el Scope solo toca `src/api/`), y su informe es la línea `Gate:` con `app:test: saltada (fuera del Scope de la spec)`; nunca da la baseline por buena con un filtro que no corrió ninguna tarea; si ninguna tarea lee ficheros del Scope (un cambio solo en `.docs/`), las nombra todas saltadas fuera del Scope, lo dice y da la baseline por lista
 - AND si la baseline falla, corre el mismo comando en un worktree temporal desanclado de la rama de integración; si también falla allí, busca las primeras líneas de error en la deuda del proyecto y cita la fila o abre una en «Por triar»; después informa de los fallos con ese veredicto y pregunta si sigue o investiga
 - AND ningún fichero de `skills/` invoca `superpowers:using-git-worktrees` ni `superpowers:dispatching-parallel-agents`
@@ -699,17 +699,17 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN la 0010 con el commit de apertura `a1b2c3d` en `feature/0010-cancel` y la línea base de `sdd-worktrees` en segundo plano
 - WHEN la sesión escribe los RED de la Task 1 en su árbol mientras la línea base corre
-- THEN la línea base corre en `git worktree add --detach <padre de los worktrees>/baseline-0010 HEAD`, con las dependencias (y `env:setup`, si hay `environments.md`) instaladas allí, y su resultado es el de `a1b2c3d`: no cambia con los ficheros que la sesión escribe
+- THEN la línea base corre en `git worktree add --detach <padre de los worktrees>/baseline-0010 HEAD`, con las dependencias (y `env:setup`, si hay `## Entornos` en `steering/operations.md`) instaladas allí, y su resultado es el de `a1b2c3d`: no cambia con los ficheros que la sesión escribe
 - AND al acabar, verde o rojo, quita ese worktree (`env:clean` antes, si hubo `env:setup`); la sesión sigue en el suyo
 - AND si sale roja, corre el mismo comando en un worktree desanclado de la rama de integración, como «El worktree de la implementación lo prepara `sdd-worktrees`»
 
 ### La spec que edita una skill con sujetos prevé su coste
 
-- GIVEN un repo con `tests/batteries/aviso-cierre/`, `tech-stack.md` con «un sujeto de `aviso-cierre` cuesta ~0,70 $» y con la previsión de una tanda en `SCENARIOS="<escenarios>" N=<n> node scripts/plan.mjs <battery.md>`, y una spec que edita `skills/aviso-cierre/SKILL.md`
+- GIVEN un repo con `tests/batteries/aviso-cierre/`, `steering/operations.md` con «un sujeto de `aviso-cierre` cuesta ~0,70 $» y con la previsión de una tanda en `SCENARIOS="<escenarios>" N=<n> node scripts/plan.mjs <battery.md>`, y una spec que edita `skills/aviso-cierre/SKILL.md`
 - WHEN el agente escribe la spec
 - THEN «Previsión de coste» lleva las filas RED, GREEN, una tanda de REFACTOR, controles y medición tras la revisión final, cada una con sus sujetos y sus dólares
 - AND cada fila cita la línea `suma: <n> sujetos · coste previsto: <x> $` del comando de previsión para sus escenarios y su n, y el total es la suma de las filas
-- AND con un `tech-stack.md` que no nombra comando de previsión, cada cifra cita su batería y el precio por sujeto de `tech-stack.md`
+- AND con un `steering/operations.md` que no nombra comando de previsión, cada cifra cita su batería y el precio por sujeto de `steering/operations.md`
 - AND una spec que no edita una skill probada con sujetos no lleva la sección
 
 ### El guion arranca por el entorno y acaba en texto
@@ -832,8 +832,8 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
+- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `steering/operations.md`.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
 - **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras; el tope de palabras propuesto en una spec es lo medido más lo previsto más un 2 %, con un mínimo de 20 palabras; la review de spec, dos revisores en full, uno con un Scope de menos de ~50 líneas sin contrato público ni `MODIFIED`, uno en lite y uno en patch; la segunda ronda, una sola vez.
-- **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `tech-stack.md` no declara detector en §Frontend».
-- **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`. El gate de cierre del plan se toma de `operations.md` §Testing; sin él, de `tech-stack.md` §Testing; sin ninguno, de la constitution.
+- **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `operations.md` no declara detector en §Frontend».
+- **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`. El gate de cierre del plan se toma de `steering/operations.md` §Testing; sin él, de la constitution.

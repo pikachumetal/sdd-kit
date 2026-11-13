@@ -1,0 +1,87 @@
+--- [3]
+Los ejes de la revisión final ya volvieron, así que sigo con `sdd-verify` y su «Closing the review».
+
+--- [16]
+Encontré los dos informes en `.temp/sdd/plan/`. Los leo para clasificar los hallazgos.
+
+--- [23]
+El informe de Código trae un Important (`reasonOf` no recorta espacios) y el de Spec solo un Minor. Hago la pasada de fix con TDD, primero el test en rojo.
+
+--- [25]
+En rojo por el motivo esperado. Aplico el fix.
+
+--- [33]
+La pasada de fix queda hecha. Falta la re-revisión única sobre `9a016d1`, así que leo su brief.
+
+--- [40]
+Ahora: re-revisión única del fix (`sdd-kit:effort-high` + `opus`), en segundo plano con su vigilancia de silencio. Queda: su veredicto y presentar el cierre, ~3 min.
+
+--- [46]
+La re-revisión está en marcha. Espero su veredicto antes de seguir; no despacho otra.
+
+**Hecho hasta ahora**
+- **Informes leídos:** están en `.temp/sdd/plan/`, no en la carpeta del spec.
+  - Spec: ningún Critical ni Important, y 1 Minor. Es el test de `canceladas`, que depende del orden del de `cancelar`. Queda diferido en el ledger como `minor (deferred)`.
+  - Código: 1 Important. `reasonOf` no recortaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Fix del Important:** el test nuevo falló antes del cambio y pasó después, con la suite en 6/6 (`9a016d1`).
+- **Registro:** el ledger y `tasks.md` llevan las líneas `Final:`, `Revisión final:` y `Pasada de fix:`. Van en `ad56b7b`, un commit de 15 líneas solo de docs, que revisé yo mismo en el hilo.
+- **Eje Arquitectura:** no sale. El diff no toca ninguna de las señales.
+
+**Pendiente**
+- Veredicto de la re-revisión única (`opus` + `effort-high`) sobre `09fb78d..9a016d1`. Con él escribo la línea `Re-revisión:` en `tasks.md`.
+- Retirar el worktree `review-0010-9a016d1` cuando vuelva.
+- Presentar el cierre, con el Minor diferido bajo «Deferred minors».
+
+--- [53]
+### Finding Verdicts
+- **[Code · Important] `reasonOf` keeps the spaces around the reason, so `--motivo "sala ocupada "` is rejected** — ADDRESSED. `src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`. The value is trimmed before the list check (`src/app.js:20`) and before it is saved (`src/app.js:24`), so the response and the `canceladas` listing both show the clean reason. Without `--motivo`, the value is still `undefined` and the answer is still «motivo no válido: …», as the spec requires (spec.md:54). The same holds when `--motivo` is the last argument, because `?.` keeps `undefined`.
+
+### New Breakage in the Fix Diff
+- **Important — `test/cancel.test.js:17-19`: the new test expects the wrong result and only passes because of earlier tests.** It expects `/^sin reserva/`. That result only appears because test 1 (`test/cancel.test.js:6`) has already cancelled Norte lun in the shared `bookings` state. I ran this one test alone (`node --test --test-name-pattern="espacios alrededor" test/cancel.test.js`), with no other tests or changes. It fails with `actual: 'cancelada Norte lun (sala ocupada)'`, which is exactly what the corrected code should answer and what the finding asked for («a person who copied the reason can't cancel»).
+  - The test does fail on the old code, which answered «motivo no válido», so the RED→GREEN run holds. But it treats a "no booking" error as success.
+  - It never checks that a cancellation actually goes through with the trimmed reason, or that `canceladas` shows `sala ocupada` without the trailing space.
+  - The test name says «acepta un motivo», but what it asserts is a rejection for a different reason.
+  - It also adds another instance of the deferred order-dependence problem.
+  - Fix: use a booking that is still active, or reset the state, and assert the exact text, e.g. `assert.equal(..., 'cancelada Norte lun (sala ocupada)')`.
+
+### Out-of-Scope Observations
+- `src/app.js:28-33` and `src/app.js:44`: `voidBooking` / `anular` (cancellations by the room manager) is in a file the fix touched but not in the diff. The spec puts it outside the scope of 0010 (spec.md:34, "0011"). This needs checking, but outside this fix round.
+
+### Verdict
+**Fix round:** The original finding is addressed in the production code (`src/app.js:16`), but the round is not clean. The fix adds new Important breakage: the regression test at `test/cancel.test.js:17-19` expects `sin reserva`, passes only because of the order the tests run in, and fails on its own against the corrected code.
+
+--- [55]
+El re-revisor confirma el fix de `src/app.js`, pero encuentra un Important que traje yo. El test nuevo pasa solo por el orden de ejecución: aislado falla con `cancelada Norte lun (sala ocupada)`. Según el cierre, un Important que trae la pasada de fix no se adjudica, lo arreglo yo. Primero reproduzco el fallo.
+
+--- [58]
+Reproducido: el test falla aislado. Lo reescribo con un módulo recién importado, para no depender del estado de los otros, y con la aserción exacta.
+
+--- [61]
+El heredoc se tragó el resto del comando y no se ejecutó nada. Lo repito con `Edit`.
+
+--- [65]
+El `node -e` de reserva sí se ejecutó, así que el test ya estaba reescrito. Los resultados son: rojo sin el `trim`, verde aislado y suite 6/6. Compruebo el test y hago commit.
+
+--- [67]
+Registro el ledger y `tasks.md`. La re-revisión ya salió, así que este commit va a ✋ como `sin revisar`, sin otra re-revisión.
+
+--- [69]
+La revisión final de la 0010 está cerrada: las dos tasks están hechas, la suite pasa 6/6 y el fix de `reasonOf` está commiteado. Queda un commit sin revisar.
+
+**Hallazgos de la revisión final**
+- **Código, Important (arreglado):** `reasonOf` no recortaba los espacios, así que `--motivo "sala ocupada "` se rechazaba. El fix es `src/app.js:16` (`?.trim()`), en `9a016d1`. El test nuevo falló antes del cambio y pasó después.
+- **Spec, Minor (diferido):** el test de `canceladas` depende del orden del de `cancelar`. Sigue abierto y va como deferred minor.
+
+**Re-revisión única** (`opus` + `effort-high`, sobre `09fb78d..9a016d1`)
+- Confirma que el fix de producción está bien.
+- Encontró un Important que traje yo: mi test nuevo solo pasaba por el orden de ejecución, y aislado fallaba con `cancelada Norte lun (sala ocupada)`.
+- Lo arreglé en `ba9d768`: el test importa un módulo recién cargado y comprueba el texto exacto.
+- Comprobé que falla sin el `trim`, que pasa aislado y que la suite da 6/6.
+
+**Para ✋**
+- **Sin revisar:** `ba9d768`. Es solo el test de espacios en `test/cancel.test.js`. La re-revisión ya salió y no abre otra.
+- **Ruling:** `anular` queda fuera, porque la spec lo deja en la 0011 (`spec.md:34`).
+- **Deferred minor:** el del orden de los tests, descrito arriba.
+
+Dejé el ledger y `tasks.md` al día y quité el worktree de la re-revisión. El árbol está limpio en `b34247e`. Lo siguiente es la validación y el cierre con `sdd-archive`. No lo he lanzado, porque no me lo has pedido.
+

@@ -1,6 +1,6 @@
 # Frontend verification
 
-The kit decides **when** what is seen gets verified and **what evidence** is needed; the project declares **what with** in `§Frontend` of `tech-stack.md`. A unit test doesn't see the layout, and the model's eye isn't enough either: it misses a 0 px padding or a text that overflows its box, and a detector over the rendered page catches them in seconds.
+The kit decides **when** what is seen gets verified and **what evidence** is needed; the project declares **what with** in `§Frontend` of `operations.md`. A unit test doesn't see the layout, and the model's eye isn't enough either: it misses a 0 px padding or a text that overflows its box, and a detector over the rendered page catches them in seconds.
 
 ## When
 
@@ -10,7 +10,7 @@ The kit decides **when** what is seen gets verified and **what evidence** is nee
 
 ## What with: `§Frontend`
 
-The fields, by name, of the `## Frontend` section of `tech-stack.md`:
+The fields, by name, of the `## Frontend` section of `operations.md`:
 
 - **URL**: where the application answers once started with the «Arrancar» command.
 - **Detector**: the command, with the slots `{url}` and `{viewport}`, and which output counts as a failure (e.g. `npx impeccable@<version> detect {url} --viewport {viewport}`, failure with exit code 2); or `ninguno`.
@@ -32,7 +32,7 @@ The fields, by name, of the `## Frontend` section of `tech-stack.md`:
    - «The spec doesn't fix it» or «it would be a commit outside the already reviewed task» don't leave the finding for the dev-lead: the fix goes in its own commit, which enters the review.
    - On a screen behind a login, the detector opens a browser with no session: it scans the entry URL of the Acceso with the screen's `{path}`. With no entry URL, that screen's detector stays «no probado». Scanning the saved HTML doesn't replace it: it loads no CSS and applies no viewport.
    - If the detector is declared and doesn't run (it can't be installed or downloaded, no network or no Chrome; the URL doesn't answer; the command errors), say the concrete error: what is seen stays «no probado», never «verificado».
-   - With `Detector: ninguno`, go on with the screenshots and the rubric, and the presentation carries, literally: «composición no medida: `tech-stack.md` no declara detector en §Frontend».
+   - With `Detector: ninguno`, go on with the screenshots and the rubric, and the presentation carries, literally: «composición no medida: `operations.md` no declara detector en §Frontend».
 3. **Eyes.** One screenshot per state and theme, which you look at with the composition rubric —hierarchy, spacing rhythm, density, alignment— against the reference. At most 3 rounds of composition fixes; if it is still wrong after the third, say so in the presentation and the dev-lead decides. Screenshots are kept outside git (the session's scratchpad, `%TEMP%`) and are not deleted until the validation.
 4. **Hands**, only if the change touches behavior (it doesn't apply in a visual patch). Walk the real flow —the interaction and the loading, error and disabled states— with the console and the network free of errors; the accessibility tree checks presence, role and state. With the test user of `§Frontend`, never against production, and without deleting or modifying data the verification didn't create.
 5. **Show.** The presentation (the stop of `pair`, the validation of `sdd-archive`) carries the criterion, the detector's output per viewport with each finding resolved or justified («390x844 · `cramped-padding` in `.card` · fixed: padding 16 px»), the path of each screenshot and, if the criterion fixes a value, each measurement with its value and the expected one. Or the notice, or «no probado» with its reason.
@@ -57,7 +57,7 @@ The fields, by name, of the `## Frontend` section of `tech-stack.md`:
 
 ## Without `§Frontend`
 
-- A feature that changes what is seen and whose `tech-stack.md` has no `§Frontend` (or has no Acceso and the application asks for a login) carries in «Decisiones que he tomado yo» of its spec the proposal of `§Frontend` with the fields filled in: impeccable as the detector, Playwright and the access seen in the code. When the spec is approved, you write it in `tech-stack.md`.
+- A feature that changes what is seen and whose `operations.md` has no `§Frontend` (or has no Acceso and the application asks for a login) carries in «Decisiones que he tomado yo» of its spec the proposal of `§Frontend` with the fields filled in: impeccable as the detector, Playwright and the access seen in the code. When the spec is approved, you write it in `operations.md`.
 - A visual patch has no spec: verify with what there is (the notice or «no probado»), and its validation's presentation proposes `§Frontend`.
 - If the dev-lead doesn't want a detector, it stays `Detector: ninguno` and isn't proposed again.
 

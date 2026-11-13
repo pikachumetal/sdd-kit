@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { closeSync, mkdirSync, openSync, readdirSync, renameSync, unlinkSync, writeFileSync, writeSync } from 'node:fs';
 import { hostname } from 'node:os';
 import { basename, join } from 'node:path';
@@ -28,6 +29,7 @@ export interface Lock {
 }
 
 interface Waiting {
+  started: number;
   deadline: number;
   announced: string;
 }
@@ -83,8 +85,36 @@ function isAlive(pid: number): boolean {
   }
 }
 
-function isOrphan(owner: LockOwner): boolean {
-  return owner.host.toLowerCase() === machineName().toLowerCase() && !isAlive(owner.pid);
+// La hora de arranque de un proceso, o null si el sistema no la da (sin permiso, ya salió).
+function processStart(pid: number): number | null {
+  const run =
+    process.platform === 'win32'
+      ? spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString('o')`], { encoding: 'utf8' })
+      : spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+  const start = Date.parse(run.stdout?.trim() ?? '');
+  return Number.isNaN(start) ? null : start;
+}
+
+// Un PID vivo que arrancó después de coger el cerrojo es de otro programa: el sistema reutilizó el número.
+// Se mira una vez por dueño y tras unos segundos de espera, porque en Windows cuesta un PowerShell; `ps -o lstart` da segundos, de ahí el margen.
+const START_SLACK_MILLISECONDS = 2000;
+const REUSE_CHECK_AFTER_MILLISECONDS = 3000;
+const reusedByOwner = new Map<string, boolean>();
+function isReused(owner: LockOwner): boolean {
+  const key = `${owner.pid}@${owner.since}`;
+  let reused = reusedByOwner.get(key);
+  if (reused === undefined) {
+    const start = processStart(owner.pid);
+    const since = Date.parse(owner.since);
+    reused = start !== null && !Number.isNaN(since) && start > since + START_SLACK_MILLISECONDS;
+    reusedByOwner.set(key, reused);
+  }
+  return reused;
+}
+
+function isOrphan(owner: LockOwner, waiting?: Waiting): boolean {
+  const waitedLong = waiting !== undefined && Date.now() - waiting.started > REUSE_CHECK_AFTER_MILLISECONDS;
+  return owner.host.toLowerCase() === machineName().toLowerCase() && (!isAlive(owner.pid) || (waitedLong && isReused(owner)));
 }
 
 function formatSince(since: string): string {
@@ -134,7 +164,7 @@ async function handleHeld(lock: Lock, waiting: Waiting, ahead: LockOwner[] | nul
     if (Date.now() > waiting.deadline) throw new DomainError('cerrojo: no se libera; no se puede leer quién lo tiene.');
     return sleep(UNREADABLE_POLL_MILLISECONDS);
   }
-  if (isOrphan(owner)) {
+  if (isOrphan(owner, waiting)) {
     removeQuietly(lock.path);
     lock.io.err(`Cerrojo huérfano: lo tenía ${formatOwner(owner)}`);
     return;
@@ -145,7 +175,7 @@ async function handleHeld(lock: Lock, waiting: Waiting, ahead: LockOwner[] | nul
 }
 
 function newWaiting(timeoutMinutes: number): Waiting {
-  return { deadline: Date.now() + timeoutMinutes * 60_000, announced: '' };
+  return { started: Date.now(), deadline: Date.now() + timeoutMinutes * 60_000, announced: '' };
 }
 
 async function acquire(lock: Lock, timeoutMinutes: number): Promise<number> {
@@ -168,14 +198,14 @@ function enqueue(queue: string, self: LockOwner): string {
 }
 
 // Las entradas se ordenan por su nombre: la hora de llegada y, en el mismo milisegundo, el PID.
-export function waitersAhead(queue: string, entry: string): LockOwner[] {
+export function waitersAhead(queue: string, entry: string, waiting?: Waiting): LockOwner[] {
   const own = basename(entry);
   const ahead: LockOwner[] = [];
   for (const name of readdirSync(queue).filter((file) => file.endsWith(QUEUE_ENTRY)).sort()) {
     if (name >= own) break;
     const owner = readOwner(join(queue, name));
     if (owner === null) continue;
-    if (isOrphan(owner)) removeQuietly(join(queue, name));
+    if (isOrphan(owner, waiting)) removeQuietly(join(queue, name));
     else ahead.push(owner);
   }
   return ahead;
@@ -187,7 +217,7 @@ async function acquireInTurn(lock: Lock, queue: string, timeoutMinutes: number):
   const entry = enqueue(queue, self);
   try {
     for (;;) {
-      const ahead = waitersAhead(queue, entry);
+      const ahead = waitersAhead(queue, entry, waiting);
       const descriptor = ahead.length === 0 ? tryCreate(lock.path, self) : null;
       if (descriptor !== null) return descriptor;
       await handleHeld(lock, waiting, ahead);

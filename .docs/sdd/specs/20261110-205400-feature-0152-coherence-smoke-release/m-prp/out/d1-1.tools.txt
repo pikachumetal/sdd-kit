@@ -1,0 +1,67 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && ls node_modules 2>&1 | head -3; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+
+>>> Bash: cd "<run>/repo" && cat package.json src/app.js test/cancel.test.js .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/constitution.md | head -40; cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-br-0152/skills/sdd-propose/references/patch-lane.md"
+<<< {"type": "module", "engines": {"node": ">=20"}}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva $
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md; cat .docs/sdd/specs/*patch-0007*/patch.md; grep -il "post-release\|abierto\|open" .docs/sdd/specs/*/walkthrough.md; grep -n "Gate de cierre" -r .docs | head; cat ROADMAP.md | head -30; cat test/app.test.js
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+=== RESULTADO (6 turnos, 0.1472208 $)
+🦆 Al cancelar Norte el martes, `findBooking` (`src/app.js:11`) busca la reserva activa de Norte sin mirar el día. Por eso encuentra la del lunes y la cancela. Es determinista: la causa está en el código, no en cómo se usa el comando. `anular` pasa por la misma función y tiene el mismo fallo, así que el arreglo de una línea (`b.day === day`) lo corrige también.
+
+Lo trato como **patch**, como pediste. Tiene un único test de regresión: `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar activa la del lunes. Lo añadiría en `test/cancel.test.js`, junto a uno equivalente para `anular`. Hoy fallan los dos.
+
+**Estimación:** 0,5 h, más el gate de cierre (`node --test && node scripts/lint.mjs`). El proyecto no tiene una duración medida del gate: ni el patch 0007 ni los walkthroughs la registran. Te la daré cuando la mida.
+
+Perfil: `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Abro el patch?
+
+1. **Sí, abre el patch (recomendada).** Se crea la rama y la carpeta `patch-`, se escribe el test rojo y se arregla.
+2. **Sí, pero como feature.** Solo tiene sentido si quieres decidir otra cosa, por ejemplo qué debe hacer `anular`.
+3. **No lo abras todavía.** Lo apunto en el roadmap.

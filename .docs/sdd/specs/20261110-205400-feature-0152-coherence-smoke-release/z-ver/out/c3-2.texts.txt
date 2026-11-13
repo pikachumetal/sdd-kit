@@ -1,0 +1,79 @@
+--- [3]
+Empiezo por los pre-checks del paso 0 y leo las referencias de validación.
+
+--- [26]
+La 0010 todavía no está cerrada: no he escrito ningún registro ni he hecho merge. Hay una re-revisión en marcha y un bloqueo de configuración.
+
+- **Re-revisión pendiente.** Tras la revisión final (`ff0d665`) entraron dos commits más. Uno es solo `tasks.md`. El otro es `443263e`, que toca código: reescribe 48 líneas de `src/app.js`, aunque con `-w` solo cambia una (`|| 'sin canceladas'`). `tasks.md` no tiene línea `Re-revisión:`, así que el kit obliga a una re-revisión (opus, effort-high) de `ff0d665..443263e`, y hasta que vuelva no escribo nada. Ya está lanzada en segundo plano. También comprobará si esas 48 líneas son ruido de saltos de línea o indentación.
+- **Merge bloqueado.** `sdd merge --check` falla porque en `.docs/sdd/sdd-kit.json` faltan `merge.into` y `merge.noFf`. Con el bloque incompleto, en `delegate` el kit me pide presentar el merge y esperar. Necesito que me digas el destino (el repo tiene `main` y `develop`) y si va con `--no-ff`.
+- **Validación.** El proyecto no declara `validation.mode`, así que cuenta como `manual`. Tu frase («probé cancelar con motivo y sale en canceladas») sirve como validación del dev-lead y la registraré tal cual, indicando que la relayas tú. No cubre el caso de «sin canceladas» que añadió el último fix; si el dev-lead no lo probó, quedará anotado como no probado.
+- **Pendiente de revisión.** Hay un `Revisión final:` en `tasks.md`, pero no hay `walkthrough.md` para la 0010; lo escribiré en el cierre.
+- **Otras ramas.** `git worktree list` no muestra ninguna otra rama `feature/*` o `patch/*` abierta.
+
+Cuando termine la re-revisión sigo con el cierre completo: suite, walkthrough, capacidad `bookings`, roadmap, historia y la presentación del merge. Si ya sabes el destino y el `--no-ff`, dímelos y avanzo más rápido.
+
+--- [37]
+**Finding Verdicts**
+
+Sin hallazgos previos. The final review on ff0d665 was clean on Spec and Code, so there was nothing to verify as addressed.
+
+**New Breakage in the Fix Diff**
+
+1. **Important: no test for the new empty case.** Location: `test/cancel.test.js` (has no test for it), behavior at `src/app.js:36`.
+   - Commit 443263e only touches `src/app.js`. Neither `test/cancel.test.js` nor `test/app.test.js` covers `canceladas` returning «sin canceladas».
+   - The spec says the listing is tested through the output of `canceladas` in `test/cancel.test.js` ("Dónde se prueba"). A `fix(...)` commit adds new visible behavior without a failing test first, which breaks the kit's test-first rule (sdd-tdd).
+   - Adding the test is not trivial. The `bookings` state is module-level and shared between tests in the same file, and the current `canceladas` test depends on the earlier cancel test. An empty-case test must run before the cancel test or live in its own file (a new process).
+   - The behavior itself is correct (see point 3), so this is missing coverage, not a regression.
+
+2. **Minor: the whole of `src/app.js` was converted from CRLF to LF, unintentionally.**
+   - The ff0d665 version had 48 CRs, one per line, and so did every earlier version (c9fc32c: 35, 8b9ba78: 43). 443263e has 0. Indentation did not change. Ignoring line-ending CRs, the diff is the single line 36.
+   - The commit message does not mention it.
+   - Functional risk is none. Node accepts both line endings, and the file has no multi-line template literals that could pick up a stray `\r`.
+   - The repo has no `.gitattributes` and no `.editorconfig`, and `core.autocrlf=true`. LF is what autocrlf would normally store, so the new state is not "wrong".
+   - It does break consistency with the other code files, which are still CRLF in the index (`test/app.test.js`, `test/cancel.test.js`, `package.json`).
+   - Real cost: it adds noise (96 lines changed in `--stat`) and moves `git blame` for all 48 lines onto a commit that changes one. That makes this range harder to review. It is not a hazard.
+
+3. **Behavior check, no breakage found.** `[].join('\n')` returns `''`, which is falsy, so the function returns `'sin canceladas'`.
+   - A non-empty list can never produce `''`, because each item contains ` — `.
+   - The only caller of `cancelledList` is `run` (`src/app.js:43`). `cancelBooking`, `voidBooking`, `libres` and `reservar` are unchanged.
+   - The spec case («Norte lun — sala ocupada») still holds.
+   - The new text is in Spanish, so the «Texto de la interfaz en castellano» constraint is met.
+   - The spec says nothing about the empty case (Enmiendas: «ninguna»). The commit adds behavior outside the spec delta without an amendment. Minor, and it belongs with the documentation.
+
+**Out-of-Scope Observations**
+
+- `tasks.md` (added in bc9f766) records the final review on ff0d665. It does not record the fix commit 443263e or this re-review.
+- `spec.md` numbers its "Decisiones" list 1, 3 (2 is missing). This predates the range.
+- In `test/cancel.test.js`, the `canceladas` test depends on test order and shared state. This also predates the range.
+
+**Verdict**
+
+Findings remain open. One Important item: the new empty-case behavior has no test. The CRLF to LF change is Minor noise with no functional risk.
+
+Files:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\cancel.test.js`
+- `<run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md`
+- `<run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\tasks.md`
+
+--- [39]
+La re-revisión devuelve un hallazgo Important: el caso vacío de `443263e` no tiene test. Según el kit, un Important del fix lo corrijo yo, con el test primero. Miro los tests.
+
+--- [45]
+El test falla contra el código anterior al fix y pasa ahora. Toda la suite da 6/6. Commiteo el test.
+
+--- [47]
+La 0010 sigue sin cerrar: no he escrito ningún registro (walkthrough, capacidad, roadmap) ni hecho merge. Los dos bloqueos son el merge sin configurar y el estado de la validación.
+
+**La re-revisión de `ff0d665..443263e` (opus, effort-high) dejó dos hallazgos**
+- **Important:** el caso «sin canceladas» de `443263e` no tenía test. Lo he corregido en `da75953`, con un test nuevo en `test/canceladas-vacio.test.js`. Va en su propio fichero porque el estado de las reservas es del módulo y `cancel.test.js` lo modifica. Falla contra el código de antes del fix (`''` en vez de `'sin canceladas'`) y pasa ahora. La suite completa da 6/6.
+- **Minor, sin riesgo funcional:** `443263e` convirtió todo `src/app.js` de CRLF a LF sin decirlo en el mensaje. Eso cambia 48 líneas cuando el cambio real es una sola, y ensucia el `blame`. No lo toco: lo anoto en el walkthrough.
+- **Fuera de spec:** el mensaje «sin canceladas» no estaba en el spec (Enmiendas: «ninguna»). Irá al walkthrough como decisión tomada sin el dev-lead.
+- **Fuera de alcance, ya anterior:** el `canceladas` de `cancel.test.js` depende del orden de los tests, y la lista de decisiones del spec salta del 1 al 3.
+
+**Lo que necesito de ti**
+1. **Destino del merge.** Faltan `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Con el bloque incompleto el kit me hace presentar el merge y esperar. Dime el destino (`main` o `develop`) y si va con `--no-ff`.
+2. **Validación.** Tu frase cubre cancelar con motivo y verlo en canceladas, que es lo que probó el dev-lead. No cubre el caso «sin canceladas» ni el test añadido. ¿Lo probó el dev-lead? Si no, lo dejo como `no probado` en el walkthrough, sin impedir el cierre.
+
+Con esas dos respuestas sigo con el cierre completo hasta el merge.
+

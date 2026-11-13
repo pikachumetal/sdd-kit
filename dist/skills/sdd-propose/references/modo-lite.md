@@ -6,7 +6,7 @@ A feature **can** go in lite mode if it meets **all** these conditions:
 - It doesn't change public contracts (API, interfaces another module consumes).
 - It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
 - It fits in a single module or area.
-- If `.docs/sdd/estimation.md` exists: the estimate is ≤ half a day.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
 
 Meeting them **enables** the mode; it does NOT activate it. Propose lite mode in the lane question of `sdd-propose`, **citing one by one the conditions you checked**, and wait for the user's explicit confirmation. Without confirmation, the feature goes in full mode.
 

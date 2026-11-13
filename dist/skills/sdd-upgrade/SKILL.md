@@ -8,7 +8,7 @@ description: Use when a project with .docs/sdd/sdd-kit.json asks to update to th
 ## Overview
 
 Bring an initialized project up to the loaded kit by applying, in order, the migrations it hasn't applied.
-Write everything the user reads in the language of their message, skill announcements and the one-line notes between tool calls included, also while the reference you follow is in English.
+Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—, also while the reference you follow is in English.
 Each file of [references/migrations/](references/migrations/) is one version's changes, as steps that start with a checkable predicate. You migrate only after the user's «sí» (their request, or their answer to the session's offer), you never move content in bulk, and you ask before deleting or restructuring anything. Every `sdd <verb>` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
 
 ## Steps
@@ -19,7 +19,7 @@ Each file of [references/migrations/](references/migrations/) is one version's c
 4. **A gate nobody answers stays pending**: with the user away, don't run it on your own — not executed, not staged «for review». Pending means untouched, with the exact command listed in the report.
 5. **What isn't migrating**: regenerating anchor documents, dumping `capabilities/`, splitting a legacy functional document, touching historical specs or walkthroughs, deleting project scripts that aren't the kit's, and moving content in bulk (the `specs/` folders stay where they are).
 6. **Closing each version**: run the file's «Verification», then `sdd upgrade --root "<root>" --mark <versión>`, which writes `version`, `channel` and `updated` and keeps the other keys, and make one commit `chore(sdd): migrar al kit vX.Y.Z` once its gates are resolved. With a gate pending: no commit and no marker for that version or the later ones; leave the applied changes in the working tree and the pending list in the report.
-7. **Report**: what each version changed, what was skipped and why, and each pending gate with its command and how to resume (answer it and ask for the migration again). If you came from the session's offer, then go back to what the user had asked.
+7. **Report**: what each version changed, what was skipped and why, and each pending gate with its command, closing the turn with its question: the answer resumes. If you came from the session's offer, then go back to what the user had asked.
 
 ## Writing a new migration
 

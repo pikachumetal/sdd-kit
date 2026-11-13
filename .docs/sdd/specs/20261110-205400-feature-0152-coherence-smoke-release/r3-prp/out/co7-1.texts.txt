@@ -1,0 +1,91 @@
+--- [3]
+Ahora: leo la spec y las referencias del paso 4 (spec-writing, coherence-pass, review-spec). Queda: pase de coherencia, revisión y presentarte la spec para aprobar.
+
+--- [9]
+Ahora: pase de coherencia (código, `git grep`, capacidad `export`). Queda: revisión de la spec y presentártela.
+
+--- [24]
+Delta probado en copia: pasa. Ahora despacho el revisor único (sonnet) con su vigilancia de silencio.
+
+--- [31]
+Ahora: espero al revisor de la spec. Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~2 min y ~100k tokens (sonnet).
+
+--- [33]
+1. Crítico · Dónde se prueba / Delta de comportamiento · El escenario THEN dice que `exportPath()` devuelve `./out/reservas.csv`, pero `test/config.test.js` solo importa `readConfig` y comprueba `base`. Nunca llama a `exportPath()`. El test pasa aunque `exportPath` esté roto, así que el escenario puede pasar sin el comportamiento. · Haz que el test importe `exportPath` y afirme `exportPath() === './out/reservas.csv'`, o reescribe el escenario para que hable de `base`. Alinea "Dónde se prueba", la decisión 4 y el título del test con esa elección.
+
+2. Crítico · Decisión 4 / Scope · El test se retitula «la exportación escribe en out/», pero nada escribe en `out/` (decisión 2). Es la promesa que el Intent llama «fracaso». Además, el título del ADDED («La exportación usa out/») sigue sugiriendo una escritura. · Cambia el título del test y el del ADDED a «la ruta de exportación apunta a out/», o algo equivalente que no prometa escritura.
+
+3. Importante · Capacidades / Delta (ADDED) · La capacidad `export` se declara nueva porque no hay `capabilities/`. Pero la spec deja `exportar` y la escritura fuera, así que `export` no describe ningún comportamiento observable por una persona, solo un valor de config. Los futuros ADDED de `exportar` chocarán con esta capacidad o la contradirán. · Declara en la spec que `export` queda parcial (solo la ruta). O nombra la capacidad por lo que existe (`export-path`) y deja `export` para cuando exista el comando.
+
+4. Importante · Scope / Delta · `./out` se cambia sin decidir qué pasa cuando `out/` no existe, ni si se versiona o se ignora con `.gitignore`. El Intent promete que lo exportado «no se mezcle con el código», pero ni el Scope ni la decisión 2 recogen `.gitignore` ni crear la carpeta. · Añade una línea a decisión 2 o a "No entra": `.gitignore` y la creación de `out/` pasan a la fila futura del roadmap. Si no, el objetivo de no mezclar es incumplible.
+
+5. Importante · ✋ Decisiones / Aprobaciones · Una decisión del cuerpo no figura en ✋: el valor `./out` con prefijo `./` y sin barra final, elegido frente a `out` o `./out/`. `exportPath` concatena `/reservas.csv`, así que el valor lo condiciona. Tampoco figura el nombre de capacidad `export` frente a otros, salvo en la decisión 3, y sí se asume que la ruta es relativa al cwd. · Añade a la decisión 1 que `base` es relativa al directorio de trabajo, sin barra final, y que `readConfig` lee `config.json` del cwd. Es un contrato que no se dice.
+
+6. Importante · Review de spec propuesta · La línea de review dice «un revisor — señales: capacidad nueva» y «Mínimo razonable: sin review». El mínimo declara que deja sin mirar justo lo que el riesgo principal exige mirar. Pide también un único revisor para dominio y técnica, cuando la tarea pide ambos lentes. · Sube el mínimo a un revisor, o quita la opción «sin review» si la spec admite que el escenario puede prometer de más.
+
+7. Menor · Lo que se retira o cambia de forma · La tabla cita números de línea (`config.json:2`, `test/config.test.js:5` y `:6`) que se desfasan al editar. Además no incluye el otro lector del valor: `exportPath` en `src/export.js:4` y el uso de `readConfig().base`. La decisión de no tocarlo está en Scope, pero el barrido no lo lista. · Añade la fila `src/export.js:4 (exportPath)` con destino «sin cambio, lee base». Quita los números de línea o fija el commit.
+
+8. Menor · Cabecera / Validación · La validación declara «dev-lead» y la frase para validar solo con el agente «no está dicha». Pero `approvers` lista a Laura y PRODUCT.md dice que solo hay un usuario y ningún otro desarrollador. Hay un nombre de persona real que no cuadra con el contexto de un único desarrollador. · Reconcilia con PRODUCT.md (un solo aprobador, el propio desarrollador) o sustituye el nombre por un rol (`dev-lead`).
+
+9. Menor · ✋ Decisiones, última línea · «Delta probado en una copia de `.docs/sdd`: `sdd capability merge` — resultado anotado abajo.» No hay nada anotado abajo, y no hay `capabilities/` donde probarlo. Es una afirmación sin evidencia. · Anota el resultado o elimina la línea.
+
+10. Menor · Constitution / gate · La constitución exige «Tests antes que código» y el gate es `node --test` entero. La spec no dice que el test se cambia primero y debe fallar con `base: "."`, ni que el gate se ejecuta. El cambio de test solo ve un valor de config, así que podría cambiarse junto al config y nunca fallar antes. · Añade a "Dónde se prueba" el orden: el test nuevo falla con `"."` y pasa con `"./out"`, y se cierra con `node --test` entero.
+
+--- [38]
+Hallazgos integrados. Tengo dos Críticos aceptados, así que toca una segunda ronda con un revisor nuevo.
+
+--- [43]
+Delta con `export-path`: pasa. Despacho la segunda ronda, con un revisor nuevo en sonnet y su vigilancia.
+
+--- [49]
+Ahora: espero la segunda ronda de la review. Queda: integrar lo que salga y presentarte la spec para aprobar, ~1 min.
+
+--- [56]
+1. Importante · Aprobadores y «Validación: dev-lead» · PRODUCT.md dice que solo hay un usuario y ningún otro desarrollador. «Laura» y el «dev-lead» no existen en el proyecto, y el rechazo del hallazgo no resuelve que el aprobador sea ajeno. · Poner como aprobador al usuario único de PRODUCT.md, o dejar `approvers` vacío hasta que se confirme. Corregir también la línea «Validación», que habla de un dev-lead.
+2. Importante · ✋ decisión 2 frente a decisión 5 · La decisión 2 manda construir `exportar`, la escritura, `out/` y `.gitignore` «a una fila propia del roadmap». La decisión 5 dice que no se crea ninguna fila en `ROADMAP.md`. Así lo dejado fuera no queda en ningún sitio y el compromiso es incumplible. · Crear la fila (de otra feature) en el roadmap, o decir que se apunta al cerrar, o quitar la promesa de «fila propia».
+3. Importante · Delta ADDED / «Dónde se prueba» · El GIVEN es el fichero real `config.json` y el test lo lee del cwd. El escenario solo prueba que el valor del fichero concatenado da `./out/reservas.csv`. No prueba nada de «a out/» más allá de ese literal, y depende de que el cwd de `node --test` sea la raíz. · Declarar la dependencia del cwd en la decisión 1 o en «Dónde se prueba», o dejar explícito que el escenario es un test de configuración.
+4. Importante · Scope / tabla de cambios · El test pasa de `readConfig().base === '.'` a `exportPath()`, así que se quita la aserción sobre `base` y se cambia el import. Eso es una reescritura del test y no aparece en «Lo que se retira». La fila de `test/config.test.js:6` solo dice «Scope». · Añadir en la tabla que se retira la aserción sobre `readConfig().base` y que `readConfig` deja de importarse en el test.
+5. Menor · ✋ «Política de modelos» · Mezcla confirmaciones distintas en una sola línea: el modelo del revisor, los ejes de la revisión final y el permiso de paralelizar. La frase «esta línea es la confirmación de paralelizar» obliga a aprobar sin separar las decisiones. · Separar en ítems, o dejar el permiso de paralelizar como decisión explícita.
+6. Menor · ✋ «Delta probado» · El texto dice que el resultado «con `export-path` [está] anotado en la ronda 2», pero esa ronda no existe en el documento. La verificación queda sin evidencia. · Anotar aquí el resultado real de `sdd capability merge` con `export-path`, o quitar la línea.
+7. Menor · «Hallazgos de la review» / Rechazado · Los hallazgos aceptados mencionan una «ronda 2», pero el cuerpo no distingue qué ronda es. La política dice «una ronda más si un Crítico se acepta» y se aceptaron dos Críticos. Hay que dejar claro que esta segunda ronda es la obligada. · Anotar que esta es la ronda 2 y cerrar la regla.
+8. Menor · Frontmatter y rama · `mode: full` y `profile: delegate` con un cambio de ~8 líneas. La spec dice «capacidad nueva» como señal de review, pero el cambio real es un valor de configuración. Que sea modo full y capacidad nueva con un escenario sobre un literal es desproporcionado y no está justificado en ✋. · Justificar el modo o declarar la elección de `full` como decisión.
+9. Menor · Capacidades / decisión 3 · La capacidad `export-path` se declara para una ruta que nadie usa todavía, y cuando llegue `exportar` esa capacidad tendría que pasar a MODIFIED o fusionarse. No hay `capabilities/` que lo sostenga hoy. · Registrar en la decisión 3 el criterio de relación futura entre `export-path` y `export`, o dejar el comportamiento como no-capacidad y cubrirlo con el test.
+
+--- [66]
+Terminé el paso 4 y la spec espera tu aprobación. Cambié el alcance de lo que pediste. Está en la decisión 2 y es lo que más necesito que valides.
+
+La spec está en `.docs/sdd/specs/20261008-180000-feature-0020-export-dir/spec.md` (feature, modo full, perfil delegate, estado `draft`).
+
+🦆 Hoy la ruta de exportación apunta a `./reservas.csv`. Con este cambio apuntará a `./out/reservas.csv`, para que lo exportado no se mezcle con el código. Se cambia `base` en `config.json` y el test pasa a comprobar la ruta completa. Este cambio no escribe ningún fichero ni crea `out/`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **`base` pasa a `"./out"`** en `config.json`. Es relativa al directorio de trabajo y no lleva barra final, porque `exportPath` añade `/reservas.csv`. El test lee el `config.json` real, así que `node --test` tiene que correr desde la raíz del repo.
+2. **Premisa corregida, confírmala.** Tu enunciado decía que `exportar` deja los ficheros en la raíz, pero no es así. `run('exportar')` devuelve `'salas'` y nada escribe `reservas.csv`; solo `exportPath()` calcula la ruta.
+   - Por eso acoté la spec a la ruta.
+   - Quedan fuera el comando `exportar`, la escritura del CSV, crear `out/` y añadirlo a `.gitignore`.
+   - Esa fila no la creo aquí, hay que apuntarla con `sdd-roadmap`.
+3. **Capacidad nueva `export-path`.** No existe `capabilities/export`, así que el delta es `ADDED` y no `MODIFIED`. Uso `export-path` para dejar `export` al comando cuando exista.
+4. **El test cambia.** Se titula «la ruta de exportación apunta a out/», importa `exportPath` y espera `./out/reservas.csv`. Se escribe antes del código y falla con `"."`.
+5. **No hay fila 0020 en `ROADMAP.md`** y no la creo.
+
+- **Escenario único:** con `"base": "./out"`, `exportPath()` devuelve `./out/reservas.csv`.
+- **Pase de coherencia:** el delta pasa `sdd capability merge` en una copia. No hay otros lectores del valor `.` fuera de `src/export.js:4`, que no cambia.
+- **Review:**
+  - Un revisor en sonnet, porque el cambio es pequeño (~8 líneas en 3 ficheros).
+  - Salieron 2 Críticos, aceptados. Eran un test que no llamaba a `exportPath()` y títulos que prometían una escritura.
+  - La segunda ronda no encontró Críticos.
+  - Dos aceptados más en la segunda ronda arreglaron una contradicción entre las decisiones 2 y 5, y añadieron una fila a la tabla de cambios.
+  - Los hallazgos completos están en la spec.
+- **Rechazados con motivo:**
+  - Que «Laura» no cuadra con `PRODUCT.md` (un solo usuario). Ese aprobador viene de tu borrador y no lo cambio yo. Si no eres tú, dilo al aprobar.
+  - Que `mode: full` es desproporcionado. También viene de tu borrador.
+- **Validación final:** dev-lead, porque la ruta la usa una persona y no está dicha la frase que permitiría validar solo con el agente.
+
+**¿Apruebas la spec?**
+
+1. **Apruebo (Recomendada).** Escribo el plan y sigo a la implementación.
+2. **Cambios.** Dime cuáles. Si quieres que construya `exportar` y la escritura dentro de esta feature, la spec se reabre y el alcance crece.
+
+La spec sigue en pausa hasta que respondas.
+

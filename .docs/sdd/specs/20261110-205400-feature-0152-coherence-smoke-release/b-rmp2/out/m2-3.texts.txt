@@ -1,0 +1,75 @@
+--- [2]
+Son tres funcionalidades a la vez (informe de ocupación, exportación a Excel y aviso semanal), así que según el kit SDD la entrada es el roadmap.
+
+--- [5]
+Empiezo por el estado real del proyecto (paso 1).
+
+--- [19]
+Voy a publicar la reserva de ids con el commit del roadmap y la propuesta. El validador solo da los 2 fallos que ya tenía el fichero.
+
+--- [22]
+`roadmap publish` rechazó el commit porque `roadmap.md` ya tenía cambios en `develop`. Esos cambios son los míos, hechos en el mismo worktree. Miro cómo espera el script los ficheros.
+
+--- [29]
+He dejado el módulo de informes planificado en el roadmap, sin tocar código: no he empezado ninguna de las tres funcionalidades. El commit `fbac238` en `develop` recoge los cambios, que son la propuesta `0008` y las filas `0009` a `0011` en «Próximo» de `.docs/sdd/roadmap.md`.
+
+**Reparto en orden**
+1. **0009, informe de ocupación por sala** (`salas informe`).
+2. **0010, exportar a Excel** (`--excel fichero.xlsx`), después de la 0009.
+3. **0011, aviso semanal a responsables** (`salas aviso-semanal`), después de la 0009, de la 0010 y de la fila 1 (avisos por correo, aún sin hacer).
+
+**Decisiones que tomé yo** (quedan en la propuesta, `.docs/sdd/specs/20261111-100000-proposal-0008-reports/proposal.md`, y cualquiera se puede enmendar)
+- **Cálculo:** ocupación = horas reservadas ÷ horas disponibles. Tomo lunes a viernes de 08:00 a 20:00, 60 h por sala y semana. El horario es un supuesto mío, no hay ninguno en el proyecto; conviene confirmarlo con el cliente. Con Norte reservada `lun 10:00-12:00`, sale 3,3 %.
+- **Semana tipo:** el informe es de la semana tipo, porque las reservas guardan día de la semana y no fechas.
+- **Excel:** `.xlsx` real, escrito a mano sin dependencias, porque el stack es Node sin dependencias externas. Si prefieres una librería, habría que enmendar la propuesta y escribir un ADR.
+- **Responsables:** un correo por sala en `responsables.json`, y un solo mensaje por responsable aunque lleve varias salas.
+- **Aviso:** lo lanza el `cron` del servidor los lunes a las 08:00. La aplicación no tiene proceso residente.
+
+**Antes de la 0011**
+- **Correo:** la 0011 espera a la fila 1 para no construir dos canales de correo. Si esa fila se descarta, la 0011 crecerá.
+- **Misión del proyecto:** `mission.md` dice que la usa una sola persona, y un cliente con responsables que reciben avisos choca con eso. No lo he tocado; decide si hay que actualizarla.
+
+**Incidencias**
+- `roadmap publish` rechazó el commit, porque aquí destino y origen son el mismo worktree. Hice el commit a mano con git, sobre esos dos ficheros, sin el cerrojo de `sdd merge`. No hay otros worktrees ni ramas `feature/*`, así que no había riesgo de choque.
+- `sdd roadmap check` da 2 fallos que ya existían antes y que no he tocado (cabecera de «Deuda técnica» y formato de `### v0.3.0`). Los arregla la migración v2.3.0.
+
+**Qué va primero: 0009**
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0009 con sdd-propose, carril feature: un comando `salas informe` que muestra la ocupación de cada sala y el total.
+
+Alcance:
+- src/app.js: nuevo comando `informe` y el cálculo de ocupación
+- test/app.test.js: tests del cálculo y del comando
+
+Fuera de alcance:
+- exportar a Excel: 0010
+- aviso semanal por correo: 0011
+- fechas reales o historial: el modelo de reservas solo guarda día de la semana y franja
+
+Decisiones ya tomadas:
+- Ocupación = horas reservadas ÷ horas disponibles, en % con un decimal, porque es la medida que pidió el cliente (por sala y total).
+- Horas disponibles = lunes a viernes, 08:00-20:00 (60 h por sala y semana), porque el proyecto no define horario y es el supuesto de coworking.
+- Informe de la semana tipo; una reserva `--cada-semana` cuenta una vez, porque las reservas no guardan fecha.
+- Ejemplo de referencia: Norte con `lun 10:00-12:00` y `mié 10:00-12:00` y Sur sin reservas → Norte 6,7 %, Sur 0,0 %, Total 3,3 %.
+- Sin dependencias externas, porque lo fija .docs/sdd/tech-stack.md.
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261111-100000-proposal-0008-reports/proposal.md, §Reglas de negocio y §Decisiones tomadas por delegación, y la fila 0009 del roadmap
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y `salas informe` imprime una línea por sala y una de total con los porcentajes del ejemplo de referencia.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

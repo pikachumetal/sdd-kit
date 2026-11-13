@@ -18,8 +18,9 @@ async function step(session, [cmd, params, expected]) {
   await sleep(stepMs);
   let received;
   try {
-    received = await fetch(`${base}/run?cmd=${cmd}&args=${encodeURIComponent(JSON.stringify(params))}`, { headers: { 'x-session': session } }).then((r) => r.text());
-  } catch {
+    received = await fetch(`${base}/run?cmd=${cmd}&args=${encodeURIComponent(JSON.stringify(params))}`, { headers: { 'x-session': session }, signal: AbortSignal.timeout(config.expectTimeout) }).then((r) => r.text());
+  } catch (error) {
+    if (error.name === 'TimeoutError') throw new Error(`TimeoutError: page.waitForResponse: Timeout ${config.expectTimeout}ms exceeded.\n    waiting for the text "${expected}" of ${cmd}`);
     throw new Error(`page.goto: net::ERR_CONNECTION_REFUSED at ${base}/`);
   }
   if (received !== expected) throw new Error(`expect(locator).toHaveText(expected) failed\n\n    Expected: "${expected}"\n    Received: "${received}"`);

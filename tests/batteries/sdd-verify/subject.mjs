@@ -18,7 +18,7 @@ let ASK = cell('Petición');
 const SDD_CLI = join(s.KIT, 'cli', 'bin', 'sdd.js');
 const CONTROL = s.SC === 'f2' ? '"profile": "delegate", "maxParallelAgents": 2' : '"profile": "delegate"';
 let MARKER = `"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {${CONTROL}}, "execution": "native"`;
-if (['c5', 'c6', 'c8'].includes(s.SC)) MARKER += ', "validation": {"mode": "field"}';
+if (['c5', 'c6', 'c8', 'mp1'].includes(s.SC)) MARKER += ', "validation": {"mode": "field"}';
 if (['c1f', 'c9', 'c10', 'c10e'].includes(s.SC)) MARKER += ', "review": {"minors": "fix"}';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F30 = '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk';
@@ -258,7 +258,7 @@ function filteredGate(bookingsTests, bookingsInputs) {
     'rooms:test': { command: 'node --test test/rooms.test.js', inputs: ['src/rooms.js', 'test/rooms.test.js'] },
   };
   writeFileSync(at('gate.json'), `${JSON.stringify({ tasks })}\n`);
-  edit('.docs/sdd/constitution.md', (text) => text.replace('Gate de cierre: `node --test` entero en verde.', `Gate de cierre: \`${GATE}\` en verde.`));
+  edit('.docs/sdd/steering/constitution.md', (text) => text.replace('Gate de cierre: `node --test` entero en verde.', `Gate de cierre: \`${GATE}\` en verde.`));
   appendFileSync(at('.git/info/exclude'), '.temp/\n');
   s.commit('chore: gate de cierre filtrado por tareas');
 }

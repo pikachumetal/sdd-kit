@@ -230,8 +230,9 @@ async function listProcesses(label, deps) {
   }
 }
 
-function stopIn(label, folder, processes, deps) {
-  const pids = subjectProcesses(processes, folder);
+function stopIn(label, folder, processes, deps, seen = new Map()) {
+  const left = processes.filter(({ pid, created }) => seen.has(pid) && seen.get(pid) === created).map(({ pid }) => pid);
+  const pids = [...new Set([...subjectProcesses(processes, folder), ...left])];
   for (const pid of pids) deps.kill(pid, true);
   if (pids.length > 0) deps.log(`[${label}] paro ${pids.length} procesos de ${folder}`);
 }
@@ -251,9 +252,9 @@ function removeFinished(config, deps) {
 // El servidor del panel nombra la CLI de la copia del kit, no la carpeta del sujeto, y su cwd la bloquea. Su línea
 // de órdenes no dice de qué sujeto es: se para solo sin sujetos en curso, y el último en acabar limpia lo de todos.
 // ponytail: otra campaña con el mismo KIT_DIR y otro RUNS_DIR no cuenta como en curso; separa las copias del kit si pasa.
-async function stopLeftovers(config, label, deps) {
+async function stopLeftovers(config, label, deps, seen) {
   const processes = await listProcesses(label, deps);
-  stopIn(label, subjectFolder(config, label), processes, deps);
+  stopIn(label, subjectFolder(config, label), processes, deps, seen);
   if (countLive(config, deps).running > 0) return;
   stopIn(label, join(config.kitDir, 'cli', 'bin', 'sdd.js'), processes, deps);
   removeFinished(config, deps);
@@ -283,16 +284,48 @@ export async function stopCampaign(config, deps, pids) {
   await sweepCut(config, deps);
 }
 
+// Un nieto que el sujeto deja vivo (el `find /` de la 0152, que retuvo la salida de la tanda casi 5 h) no nombra su
+// carpeta y su padre ya murió: sus descendientes se apuntan mientras corre, con la hora de arranque, que descarta un
+// PID reutilizado. ponytail: un huérfano de un PID muerto y ya reutilizado se cuela como hijo; si pasa, comparar arranques.
+const DESCENDANTS_EVERY_MS = 15_000;
+
+function addDescendants(root, processes, seen) {
+  const parents = new Set([root, ...seen.keys()]);
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const { pid, ppid, created } of processes) {
+      if (!parents.has(ppid) || parents.has(pid)) continue;
+      parents.add(pid);
+      seen.set(pid, created);
+      grew = true;
+    }
+  }
+}
+
+function watchDescendants(root, deps) {
+  const seen = new Map();
+  const cancel = deps.every(DESCENDANTS_EVERY_MS, async () => {
+    try {
+      addDescendants(root, await deps.processes(), seen);
+    } catch {
+      // Sin lista en esta vuelta, la siguiente.
+    }
+  });
+  return { seen, cancel };
+}
+
 // La marca se escribe dentro del cerrojo: el siguiente lanzador ya la cuenta al mirar los sujetos en curso.
 function launchSubject(config, deps, { scenario, label }) {
   const markPath = join(config.live, `${config.phase}.${label}`);
   const { pid, exited } = deps.launch({ subjectSh: config.subjectSh, args: [config.kitDir, label, scenario, config.out], env: config.env });
   deps.fs.write(markPath, `${pid}\n`);
+  const watch = watchDescendants(pid, deps);
   // Envuelta: una promesa devuelta tal cual dentro del cerrojo lo sostendría hasta que el sujeto acabe.
   const done = exited.then(async () => {
+    watch.cancel();
     deps.fs.remove(markPath);
     config.finished.push(subjectFolder(config, label));
-    await stopLeftovers(config, label, deps);
+    await stopLeftovers(config, label, deps, watch.seen);
   });
   return { done };
 }

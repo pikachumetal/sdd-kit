@@ -1,7 +1,7 @@
 // Lee la tabla de escenarios de una batería (tests/batteries/<skill>/battery.md), la lanza y da su veredicto.
 // Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n> por escenario, y la suma de n con el coste previsto (SCENARIOS y N como run)
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
-//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas>|rojo|sin evidencia: la puerta y las filas de máquina (SCENARIOS y N como run)
+//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|puerta verde · sin leer: <filas> · en <out>/<id>-*.texts.txt|rojo|sin evidencia: la puerta y las filas de máquina (SCENARIOS y N como run)
 //      BATTERY=<skill> [STEPS="<paso> …"] [SCENARIOS="<id> …"] [N=<n>] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… [SUBJECT_CAP=…] COST_CAP=… \
 //      node battery.mjs run [--resume]      lanza la batería, entera, por tramos o por escenarios, y da el veredicto de lo lanzado;
 //                                           con --resume, solo las etiquetas sin tools.txt ni sujeto vivo (una tanda cortada)
@@ -51,7 +51,17 @@ function readTable(batteryPath, header, fs) {
 function readScenarios(batteryPath, fs) {
   const rows = readTable(batteryPath, HEADER, fs);
   if (!rows) throw new BatteryError(`sin la tabla de escenarios (| ${HEADER.join(' | ')} |) en ${batteryPath}`);
-  return rows.map((row) => Object.fromEntries(Object.entries(row).map(([column, cell]) => [column, unquote(cell)])));
+  return rows.map((row, i) => checkScenario(Object.fromEntries(HEADER.map((column) => [column, unquote(row[column] ?? '')])), i));
+}
+
+// Una celda vacía o un umbral que no es <k>/<n> con k <= n se leería como un escenario que mide otra cosa; N=<n> los sustituye después.
+function checkScenario(row, index) {
+  const id = row.Id || `fila ${index + 1}`;
+  const empty = ['Id', 'Esperado', 'n', 'Umbral', 'Modelo'].find((column) => !row[column]);
+  if (empty) throw new BatteryError(`${id}: celda vacía en ${empty}`);
+  const [, needed, of] = row.Umbral.match(/^([0-9]+)\/([0-9]+)$/) ?? [];
+  if (!of || Number(of) !== Number(row.n) || Number(needed) > Number(of)) throw new BatteryError(`${id}: Umbral ${row.Umbral} no es <k>/${row.n} (n = ${row.n})`);
+  return row;
 }
 
 // Solo las llamadas, enteras: en la 0257, rc2-1 nombra `node --test` en un resultado y en su mensaje final sin haberlo corrido.
@@ -206,9 +216,9 @@ function failedChecksOf(row, runs, checks, place) {
     .filter(({ labels }) => labels.length > 0);
 }
 
-function statedVerdict(state, prose, id) {
+function statedVerdict(state, prose, id, outDir) {
   const unread = state === 'verde' ? prose.filter(({ covers }) => covers(id)).map((row) => row.id) : [];
-  return unread.length ? `puerta verde · sin leer: ${unread.join(', ')}` : state;
+  return unread.length ? `puerta verde · sin leer: ${unread.join(', ')} · en ${join(outDir, `${id}-*.texts.txt`)}` : state;
 }
 
 function judge(row, { outDir, fs, rubric: { checks, prose } }) {
@@ -231,7 +241,7 @@ function judge(row, { outDir, fs, rubric: { checks, prose } }) {
     unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : '',
     ...failedChecks.map(({ id, labels }) => `${id} falla en ${labels.join(', ')}`),
   ].filter(Boolean);
-  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${statedVerdict(state, prose, row.Id)}`, ...notes].join(' · ');
+  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${statedVerdict(state, prose, row.Id, outDir)}`, ...notes].join(' · ');
 }
 
 function judgeRows(batteryPath, selected, { outDir, fs }) {

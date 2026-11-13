@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0028
 date: 2026-10-14
 rutas:
   - skills/sdd-verify/**

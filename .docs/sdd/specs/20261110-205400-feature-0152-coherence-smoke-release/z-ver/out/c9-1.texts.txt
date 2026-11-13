@@ -1,0 +1,93 @@
+--- [3]
+Ahora: leo el estado de la feature y los informes de revisión. Queda: cerrar la revisión con `sdd-verify`, ~3 min.
+
+--- [16]
+Ahora: aplico la pasada de fix del eje Código (un Important: `reasonOf` no recorta espacios) y decido el Minor del eje Spec. Queda: test en RED, fix, suite, re-revisión, ~10 min.
+
+--- [21]
+Decisión 4 del dev-lead fija el tope (20 últimas + «… y N más»), así que el Minor se aplica literalmente con ese valor, no con el 10 que sugería el revisor. Escribo los tests en RED primero.
+
+--- [23]
+Ambos en RED (el del tope por import inexistente). Ahora el fix.
+
+--- [26]
+El script no aplicó el cambio; uso Edit.
+
+--- [36]
+Ahora: despacho la única re-revisión del rango `a52e6b7..ece1b6d`. Queda: leer los briefs, lanzar el agente, ~5 min.
+
+--- [48]
+La re-revisión de `a52e6b7..ece1b6d` está en marcha en segundo plano (opus + high) y no sé todavía qué dirá. Mientras tanto no toco los ficheros que revisa; espero su informe.
+
+Lo hecho hasta ahora:
+- **Código, Important:** `reasonOf` ya recorta los espacios del motivo. El test `test/reason-trim.test.js` pasó de RED a GREEN.
+- **Spec, Minor:** `canceladas` enseña como mucho las 20 últimas y, con más, añade «… y N más». Es el tope de la decisión 4 del dev-lead, no el 10 que sugería el revisor. El test `test/cancelled-cap.test.js` pasó de RED a GREEN.
+- **Suite:** `node --test` da 8/8 en verde.
+- **Commit:** `ece1b6d`. Incluye la corrección de `tasks.md` (Task 1 pasa a `7d409b2`) y la línea `Revisión final:`.
+- **Ledger:** apunté en el ledger los dos fixes y el ruling de la enmienda.
+
+✋ Enmienda sin aprobar: el delta de `spec.md` no recogía el tope de la decisión 4. Lo añadí como un AND del listado de canceladas, con su línea en «Enmiendas» marcada `sin aprobar`. Si el dev-lead quiere otro tope, hay que cambiarlo ahí.
+
+Cuando llegue la re-revisión, escribo la línea `Re-revisión:` en `tasks.md` y retiro el worktree `review-0010-ece1b6d`. Después sigo con el cierre (`sdd-archive`).
+
+--- [51]
+### Finding Verdicts
+
+**1. [Código · Important] the reason keeps its surrounding spaces: ADDRESSED.**
+`src/app.js:16` now returns `params[index + 1]?.trim()`, so the reason is trimmed before `cancelBooking` checks it at `src/app.js:20`. `" sala ocupada "` now matches the list. The `?.` keeps the old behaviour when `--motivo` comes last (undefined, so «motivo no válido: …»). A reason made only of spaces becomes `""` and is still rejected. The confirmation message uses the trimmed reason (`src/app.js:25`). `test/reason-trim.test.js:5-6` covers this through `run('cancelar', …)`, the same path a user takes.
+
+**2. [Spec · Minor] `canceladas` has no limit: NOT ADDRESSED (only partly fixed).**
+These parts now match decision 4:
+- The limit is 20, not the reviewer's 10 (`src/app.js:35`).
+- The extra line reads `… y ${extra} más`, with the single "…" character, in Spanish (`src/app.js:40`).
+- The count is right: `extra = cancelled.length - shown.length`, so it is total minus 20 and the line only appears when there are more than 20 (`src/app.js:39-40`).
+
+The open part is which cancellations are kept. Decision 4 asks for «las 20 últimas cancelaciones», meaning the 20 most recently cancelled. The code keeps the last 20 cancelled bookings in the order of the `bookings` array (`src/app.js:38`, `cancelled.slice(-CANCELLED_CAP)`, fed by `bookings.filter(...)` at `src/app.js:45`). That order is the order the bookings were created. `cancelBooking` changes the booking in place (`src/app.js:23-24`) and records nothing about when it was cancelled, so the array order has nothing to do with cancellation order.
+
+Example: bookings B1…B25 all get cancelled, and B1 is cancelled last. `canceladas` shows B6…B25 and «… y 5 más», and leaves out B1, which is the most recent cancellation.
+
+`test/cancelled-cap.test.js:5,13-17` calls `cancelledLines` directly with a made-up array that is already in cancellation order. The command never produces that order, so the test passes and the gap stays hidden. Suggested fix: record the cancellation order when cancelling, for example `booking.cancelledSeq = ++seq` or appending to a `cancellations` list. Then sort by it before taking the last 20.
+
+### New Breakage in the Fix Diff
+
+- **Minor, `test/cancelled-cap.test.js:1-18`:** spec «Dónde se prueba» (`spec.md:44`) says the list is tested «por la salida del comando `canceladas`, en `test/cancel.test.js`». The new tests are in their own file and call the exported helper `cancelledLines` instead of the command's output. That is also why the ordering gap above isn't caught.
+- **Minor, `src/app.js:37`:** `cancelledLines` is exported only so the test can reach it. That adds a function to the module's public surface that the spec doesn't ask for. It follows from the previous point.
+
+No new Critical or Important breakage. The spec delta line (`spec.md:61`) and the amendment marked «sin aprobar» (`spec.md:65`) restate decision 4 word for word, as expected. The interface text added stays in Spanish.
+
+### Out-of-Scope Observations
+
+- `src/app.js:38-40`: the list runs oldest to newest and «… y N más» goes at the end, even though the N it hides are the older ones that would come before. Decision 4 doesn't say where the line goes, so this is a wording and readability point, not a deviation.
+- `.docs/sdd/specs/.../tasks.md:61`: the new record line says «Código … con fixes (1 Important)» and «Spec … listo (1 Minor)». That is accurate for the review of a52e6b7, but it doesn't record this fix round yet.
+
+### Verdict
+
+**Fix round:** Findings remain open:
+- Finding 2 (Minor): `canceladas` keeps the last 20 by booking-creation order instead of the 20 most recent cancellations from decision 4 (`src/app.js:38,45`, with nothing recording when each booking was cancelled at `src/app.js:23-24`).
+
+Finding 1 is addressed. I found no new Critical or Important breakage. I didn't run any tests: the open finding comes from reading the code, and with only one hard-coded booking and no way to add more, the command alone can't reproduce it.
+
+--- [53]
+La re-revisión cerró el hallazgo 1 y dejó el 2 a medias. Es un Minor que ya no entra en otra pasada, así que lo adjudico y lo registro.
+
+--- [55]
+La revisión final de la 0010 está cerrada. Queda un Minor abierto, que no he corregido, y una enmienda sin aprobar. Falta el cierre con `sdd-archive`, que no he lanzado.
+
+**Revisión final**
+- **Eje Spec:** listo, con un Minor (`canceladas` sin tope).
+- **Eje Código:** con fixes, un Important (`reasonOf` no recortaba espacios).
+- **Eje Arquitectura:** no salió, el plan dice `no`.
+- **Pasada de fix (`ece1b6d`):** recorta el motivo y limita `canceladas` a las 20 últimas, con «… y N más» si hay más. Ambos tests pasaron de RED a GREEN y `node --test` da 8/8.
+- **Re-revisión de `a52e6b7..ece1b6d` (opus + high):** el Important quedó resuelto y no hay Critical ni Important nuevos. No ejecutó tests; juzgó leyendo el código.
+- **Cierre:** `329257f` registra la re-revisión en `tasks.md`. Es un cambio de 2 líneas en documentación, que leí yo, así que va `revisado en el hilo`. El worktree de revisión está retirado.
+
+**Para ti**
+- **Minor abierto:** el tope se aplica a las últimas 20 reservas por orden de creación, no a las últimas 20 canceladas. Si hay más de 20 canceladas, `canceladas` puede omitir una reciente. Hoy no se reproduce por el comando, porque solo existe una reserva y no hay forma de crear más. Arreglarlo exige guardar el orden de cancelación, un campo que el spec no pide, así que lo dejé como `Final: Ruling` con su coste. Dime si prefieres arreglarlo.
+- **Tests del tope:** `cancelled-cap.test.js` prueba `cancelledLines` exportada, no la salida del comando, y vive en un fichero propio. El spec decía probar el listado por la salida de `canceladas` en `cancel.test.js`, así que eso se aparta de él.
+- ✋ **Enmienda sin aprobar:** el delta no recogía el tope de la decisión 4 del dev-lead. Lo añadí como un AND del listado, con su línea en «Enmiendas» marcada `sin aprobar`.
+
+--- [56]
+Es el aviso de que terminó el vigilante de silencio de la re-revisión, y no cambia nada. El agente ya había devuelto su informe y lo recogí en el mensaje anterior.
+
+La feature 0010 sigue como la dejé: Minor abierto (adjudicado en el ledger), enmienda sin aprobar y cierre con `sdd-archive` pendiente. Espero tu respuesta sobre el Minor del tope.
+

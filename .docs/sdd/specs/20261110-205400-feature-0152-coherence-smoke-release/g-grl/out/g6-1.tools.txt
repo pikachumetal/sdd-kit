@@ -1,0 +1,205 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a . .docs/sdd .docs/sdd/steering 2>&1 | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60
+
+>>> Bash: node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test; ls node_modules 2>&1 | head -3
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cat src/app.js; head -60 test/app.test.js; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills/sdd-propose/references"; head -60 control-profiles.md; echo ------; cat nombrado.md | head -60
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+
+>>> Bash: cd "<run>/repo" && S="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve; git remote -v
+<<< 0010
+
+>>> Bash: S="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js"; git checkout -b feature/0010-lista-espera && node "$S" id claim --project-root .
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Switched to a new branch 'feature/0010-lista-espera'
+sin remoto: la 0010 vale (contador local)
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.1824483 $)
+Ahora: abro la feature de la lista de espera. Ya reservé el id 0010 y creé la rama `feature/0010-lista-espera`. Queda: entrevistarte sobre el diseño, escribir la spec y pasarla a tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** cuando haces `reservar <sala>` y esa sala ya está ocupada en la franja, en vez de fallar quedas apuntado en una lista de espera de esa sala y franja. Sobre el código actual:
+
+- `src/app.js` guarda las reservas solo en memoria y `reservar` aún no comprueba si la sala está ocupada.
+- Solo hay un usuario, tú.
+- No hay ningún canal de aviso (el aviso por correo, 0008, está pendiente en el roadmap).
+
+Corrígeme si algo de esto no es así.
+
+❓ **¿Qué debe pasar cuando la sala en espera queda libre?**
+Hoy `cancelar` solo devuelve un texto. Lo que decidas cambia qué hay que construir.
+
+1️⃣ **Promoción automática.** Al cancelar la reserva, la primera de la lista pasa a ser reserva firme.
+   - `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu reserva (1.ª en espera)`
+   - Coste: reservas sin que lo confirmes en ese momento.
+2️⃣ **Solo aviso.** Al cancelar, se muestra que la sala se liberó y sigues en la lista hasta que reserves tú.
+   - `cancelar lun 10:00` → `cancelada lun 10:00; Norte libre, tienes espera en lun 10:00-12:00`
+   - Coste: otra persona podría reservarla antes, aunque hoy solo hay un usuario.
+3️⃣ **Lista consultable sin acción al liberarse.** Solo `espera` para ver la lista, y tú vuelves a mirar con `libres`.
+   - Coste: no te ahorra volver a comprobar a mano, que es lo que quieres evitar.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y no hay con quién competir por la sala, así que la confirmación extra no aporta nada. A cambio, una espera olvidada se convierte en una reserva que quizá ya no quieras. Lo mitigaría con un comando para salir de la lista.
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-g-0152\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The 
+
+>>> Bash: B="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152"; ls $B/skills/sdd-templates $B/skills/sdd-templates/* | head -40; cat $B/skills/sdd-templates/spec-template.md 2>/dev/null || find $B -name "spec-template.md"
+<<< D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills/sdd-templates/SKILL.md
+
+D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills/sdd-templates:
+SKILL.md
+templates/
+
+D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills/sdd-templates/templates:
+adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+constitution-template.md
+data-model-template.md
+debt-template.md
+estimation-templ
+
+>>> Bash: B="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills"; cat $B/sdd-templates/templates/spec-template.md; echo =======; cat $B/sdd-propose/references/coherence-pass.md
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (changes/<ts>-proposal-<id>-<slug>/)
+title: <título corto descriptivo>
+mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la
+
+>>> Bash: B="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills"; cat $B/sdd-templates/templates/capability-template.md; echo =======; cat $B/sdd-propose/references/review-spec.md
+<<< # Capacidad — <nombre>
+
+> **Reglas anti-proliferación**:
+> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+> 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
+>    la crea `sdd-archive` por su cuenta.
+> 3. `sdd-archive` fusiona el delta de la spec o el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
+>    requisito que tiene ese 
+
+=== RESULTADO (5 turnos, 0.31747410000000004 $)
+Ahora: antes de escribir la spec, necesito cerrar una decisión que cambia el alcance. Queda: tu respuesta, luego la spec, su revisión y tu aprobación, ~8 min.
+
+He tomado 1️⃣ (promoción automática) por tu «sí» y entiendo tu motivo: no volver a mirar `libres` a mano. Al mirar `src/app.js` he encontrado un problema que afecta a ese motivo:
+
+- **Todo vive en memoria.** `bookings` es un array que se reinicia en cada ejecución del comando.
+- **`reservar` y `cancelar` no cambian nada hoy.** Solo devuelven un texto.
+- **Consecuencia:** con el CLI tal cual, `reservar Norte …` apuntaría a alguien a la lista y el proceso terminaría. Cuando después hicieras `cancelar …`, esa espera ya no existiría.
+
+❓ **¿Dónde guarda el estado la lista de espera para que sobreviva entre comandos?**
+
+1️⃣ **Un fichero `salas.json` con todo: reservas y lista de espera.**
+   - `reservar Norte lun 10:00-12:00` (ocupada) → `Norte ocupada; en espera (1.ª)`. Más tarde, en otro comando, `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu reserva (1.ª en espera)`.
+   - Coste: `reservar` y `cancelar` pasan a modificar de verdad las reservas, y la reserva de ejemplo de Norte pasa a ser el estado inicial cuando el fichero no existe.
+2️⃣ **Solo la lista de espera en el fichero; las reservas siguen en memoria.**
+   - Coste: al reiniciar, la sala vuelve a figurar libre y la espera apunta a una reserva que ya no existe. No sirve para tu caso.
+3️⃣ **Todo en memoria, sin fichero.**
+   - Coste: la lista solo existiría dentro de una misma ejecución. Se puede probar con tests, pero no te quita el mirar `libres` a mano.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que cumple lo que me has dicho que quieres: que la espera siga ahí cuando alguien cancele. A cambio, hace real el estado del CLI, que hoy es un prototipo. Me encargo yo del resto de detalles (nombres de los comandos, dónde queda el fichero) y los dejo en la spec para que los valides.
+
+=== RESULTADO (1 turnos, 0.3416155 $)
+Te lo cuento con un caso concreto, sin opciones.
+
+Hoy el programa funciona así: cada vez que escribes un comando en la terminal, arranca, responde y se apaga. Al apagarse olvida todo. La reserva de Norte el lunes de 10:00 a 12:00 no está guardada en ningún sitio. Es una línea fija del código que se vuelve a cargar en cada ejecución. Además, `reservar` y `cancelar` no cambian nada: solo escriben un texto en pantalla.
+
+Imagina que añado la lista de espera sin guardar nada en disco. Pasaría esto:
+
+1. Escribes `reservar Norte lun 10:00-12:00`. Norte está ocupada, así que el programa te apunta en la lista de espera y te responde «en espera (1.ª)». Luego se apaga y olvida que estás apuntado.
+2. Más tarde, otra reserva de Norte se cancela con `cancelar lun 10:00`. El programa arranca de cero y no sabe que estabas esperando. No te promueve.
+
+Para que la lista sirva de verdad, el programa tiene que escribir su estado en un fichero al apagarse y leerlo al arrancar. Ese estado incluye las reservas, no solo la lista. La razón es que la lista de espera depende de que la sala figure ocupada, y esa ocupación también se perdería. Eso implica que `reservar` y `cancelar` pasen a modificar las reservas de verdad. Sin eso no habría nada que liberar ni nadie a quien promover.
+
+Entonces la decisión es esta: si quieres que ese fichero exista (y que `reservar` y `cancelar` pasen a funcionar de verdad), o prefieres no tocar eso en esta feature. En el segundo caso la lista solo funcionaría dentro de una misma ejecución y no te ahorraría mirar `libres` a mano.
+
+¿Quieres que la lista de espera guarde su estado en un fichero para que funcione entre comandos?

@@ -12,7 +12,7 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 **Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill teaches the right thing.
 
 <!-- kit: 0312 · sustituye: «**REQUIRED BACKGROUND:** You…That skill defines…fundamental RED-GREEN-REFACTOR cycle.…skill adapts TDD…documentation. **Official guidance:** For…official…practices, see references/anthropic-best-practices.md.…provides additional patterns…guidelines…complement…TDD-focused approach…this skill.» -->
-The Iron Law and the checklist below bind the kit's repo, by its constitution (Art. I) and `tech-stack.md`, «Baterías por skill». In a project, the failing test is one scenario, run or written next to the skill.
+The Iron Law and the checklist below bind the kit's repo, by its constitution (Art. I) and `operations.md`, «Baterías por skill». In a project, the failing test is one scenario, run or written next to the skill.
 
 <!-- kit: 0312 -->
 Official authoring guidance: Anthropic's skill authoring best practices.

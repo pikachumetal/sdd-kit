@@ -1,0 +1,60 @@
+--- [10]
+### Strengths
+
+- The spec is small and clear. Its delta has one `REMOVED` requirement («Avisar por correo»), and the plan correctly limits the work to `src/app.js` plus `test/void.test.js`.
+- The new test `test/void.test.js:5-7` exercises the real `run('anular', …)` entry point, not a mock. It pins the reply text that decision ✋1 asks to keep («anulada <sala> <día>»).
+- The scope exclusion is respected: `anular-todas` (`src/app.js:22-26`) is untouched, and it never sent a notice.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed behaviour still runs: `anular` still queues the email notice.**
+- File:line: `src/app.js:18`, `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` });`
+- What's wrong: the branch never touches `src/app.js`; the only code change is the new test file. `voidBooking` still pushes the notice to `outbox`, and `salida` (`src/app.js:28-30`, `:36`) still shows it as «responsable: anulada Norte lun».
+- Why it matters: the feature exists to remove this behaviour. The branch ships as «done» while users get exactly the behaviour the dev-lead decided to drop.
+- How to fix: delete line 18 in `voidBooking`. Then decide whether `outbox`, `pending` and `salida` still have any producer. If nothing else writes to `outbox`, removing them is part of the same `REMOVED` (that call belongs to the executor and the dev-lead).
+- Gap: `contradicts`.
+- Source: the delta's `REMOVED — Avisar por correo`, and the dev-lead's decision «El aviso por correo al anular desaparece».
+
+#### Important (Should Fix)
+
+**2. The test named in «Dónde se prueba» doesn't check that the notice is gone.**
+- File:line: `test/void.test.js:5-7`
+- What's wrong: the test is called «anular responde sin aviso», but it only asserts the reply text. That text is the same with or without the notice, which is why the test passes against the unchanged code above. It never looks at `outbox` (which is exported) or at `run('salida', [])`.
+- Why it matters: «Anular sin aviso» has no verification that pins it. The test is green while the behaviour it names is still there, so it would also miss a regression.
+- How to fix: after `anular`, assert that `outbox` didn't grow (for example `assert.equal(outbox.length, 0)`) or that `run('salida', [])` returns `''`. The test must be RED against the current `src/app.js:18` before the fix.
+- Gap: `partial`.
+- Source: the spec's «Dónde se prueba» («Anular sin aviso … `test/void.test.js`») and the dev-lead's decision.
+
+**3. The dev-lead's decision is only half covered.**
+- Decisión del dev-lead cubierta a medias: «El aviso por correo al anular desaparece». The diff adds no rule that removes the notice; it only keeps the reply text.
+- Gap: `missing`. It's the same root cause as Issue 1, listed so the executor can rule on it.
+
+#### Minor (Nice to Have)
+
+- `.docs/sdd/capabilities/bookings.md:15-17` still lists «Avisar por correo». This normally gets folded in at archive time; just confirm that `sdd-archive` removes it.
+
+### Declined to judge
+
+- `test/cancel.test.js` calls `run('cancelar', …)`, but `run` has no `cancelar` branch (`src/app.js:32-38`), so those tests expect output the code doesn't produce. This was there before the branch and isn't in this spec, so I left it to the main thread's full-suite run and the debt triage.
+- `test/app.test.js` expects `reservar --cada-semana` to return «reserva semanal creada», but `run` has no `reservar` branch. Same reason as above.
+- Whether `anular` on a missing booking («sin reserva …», `src/app.js:16`) should have its own test. The spec doesn't cover that path and the branch doesn't change it.
+
+### Not verified
+
+- The test evidence from the task reports: no verificado — the package doesn't include them. Reading the code, `test/void.test.js` should pass, but passing says nothing about the notice (Issue 2).
+- ADRs: none apply; `0003-bookings-in-memory` isn't on the brief's list.
+
+### Recommendations
+
+- Rewrite the test first so it's RED (assert on `outbox` or `salida`), then delete `src/app.js:18`, then run `node --test test/void.test.js`.
+- The main thread should run the whole suite. Going by the code, I expect `cancel.test.js` and part of `app.test.js` to fail, but nothing I set aside has been run.
+- Check that the code constraints still hold after the fix: interface text in Spanish, and no comments that repeat the code.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The branch doesn't implement the spec's only requirement: `src/app.js:18` still queues the email notice that the `REMOVED` delta and the dev-lead's decision say must go. The test that should catch this doesn't check for it.
+

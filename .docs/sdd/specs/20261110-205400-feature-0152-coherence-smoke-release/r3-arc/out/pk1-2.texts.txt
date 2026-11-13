@@ -1,0 +1,104 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [30]
+Sigo en el cierre de la 0010. Ya pasé los pre-checks: árbol limpio, destino `develop` listo y ninguna otra rama abierta. La suite pasa 5/5 sobre `49fbdcd` y mi smoke de los THEN con ejecución real está hecho.
+
+Estoy esperando la re-revisión única de `84a7c6e..49fbdcd`. HEAD se movió con el commit de `tasks.md`, que es solo documentación. No escribo ningún registro hasta que vuelva.
+
+Cuando llegue:
+- Escribiré el walkthrough y la capacidad `bookings`.
+- Anotaré la fila de deuda del workaround `--test-concurrency=1`.
+- Actualizaré el roadmap, haré el commit de cierre y la sync, y fusionaré con `sdd merge`.
+
+Una nota del smoke: tuve que provocar a mano el caso sin `--motivo`, porque `test/cancel.test.js` no lo cubre.
+
+--- [31]
+La revisión no sale limpia: hay 3 hallazgos Important y 1 Minor. Revisé el rango `84a7c6e..49fbdcd`, que es un solo commit con `tasks.md`, contrastándolo con `spec.md`, `plan.md`, `src/app.js`, `test/cancel.test.js`, la constitución, `debt.md` y `package.json`. No ejecuté la suite ni el build, ni edité nada.
+
+## Critical
+Ninguno.
+
+## Important
+
+**1. `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: la Task 1 cita un commit que no es el suyo.**
+La fila «Cancelar con motivo» apunta a `84a7c6e`. Ese commit solo añade `cancelledList()`, la rama `canceladas` y su test, es decir, la Task 2. La Task 1 (lista `reasons`, `reasonOf`, validación en `cancelBooking` y los dos tests de motivo) está en `3f9d431` («feat(bookings): cancelar con un motivo de la lista»). Los dos commits existen, pero `3f9d431` no aparece en el registro y la Task 1 queda atribuida al commit equivocado. La fila 11 (Task 2 con `84a7c6e`) sí es correcta.
+
+**2. `tasks.md:17`: el Ruling no es veraz.**
+- **Comando de gate.** No hay rastro en el repo de `node --test --test-concurrency=1`. `package.json` no tiene scripts. El gate de `plan.md` («Validación final») es `node --test`, y la constitución, punto 2, exige `node --test` entero. Un ruling de una task no puede cambiar en silencio el gate de cierre que fija la constitución.
+- **Premisa falsa.** El Ruling habla de una «carrera de los tests sobre el almacén compartido en memoria», pero no existe esa carrera. `node --test` ejecuta cada fichero en su propio subproceso, así que `bookings` no se comparte entre `test/app.test.js` y `test/cancel.test.js`. Dentro de un mismo fichero, los `test()` de primer nivel van en serie. `--test-concurrency=1` solo serializa ficheros, de modo que no arregla nada.
+- **El problema real es de orden, no de concurrencia.** El test `canceladas enseña sala, día y motivo` (`test/cancel.test.js:13-15`) depende de que el primer test haya cancelado antes Norte lun.
+- **Falta la deuda.** El Ruling se declara «workaround hasta aislar el almacén por test», pero `.docs/sdd/steering/debt.md` no tiene ninguna entrada en «Lista». Ese remedio temporal no está registrado como deuda.
+
+**3. `tasks.md:10` y `tasks.md:13`: «done» y «Spec … limpia» no quedan probados para un escenario de la spec.**
+`spec.md:39` pide que sin `--motivo` responda «motivo no válido: cambio de planes, sala ocupada, otro». El código lo cumple: `reasonOf` devuelve `undefined` y `src/app.js:20` lo rechaza. Pero `test/cancel.test.js` no tiene ningún test para ese caso, aunque `spec.md:28` («Dónde se prueba») dice que el motivo se prueba por el comando `cancelar` en ese fichero. Choca con la constitución, punto 2 («Tests antes que código»), y con la línea que da la revisión de spec por limpia.
+
+## Minor
+
+**4. `tasks.md:13`: la revisión final no tiene respaldo en el plan.**
+La línea dice «Arquitectura no (plan)», pero `plan.md` no dice en ningún sitio que se omita la revisión de arquitectura. Lo único relacionado es «Review Focus: ninguna: comprobado». Tampoco hay ningún artefacto que permita comprobar los modelos y el effort declarados («opus+high», «sonnet+high»). Además, `test/cancel.test.js:9` prueba el motivo inválido sobre `Sur mar`, una reserva que no existe, en vez de sobre el GIVEN de la spec (Norte lun). Pasa solo porque la validación va antes de buscar la reserva, y por eso no prueba que un motivo inválido deje intacta una reserva activa.
+
+## Fuera del rango (no puntúa)
+En `spec.md:24-25` la numeración salta del 1 al 3. Además, la decisión 3 justifica «Sin review de spec» con las señales «MODIFIED, datos», pero el delta solo tiene escenarios ADDED. Eso contradice también `tasks.md:13`, que da por hecha una revisión de spec («Spec opus+high, limpia»).
+
+Ficheros relevantes:
+- `<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+- `<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+- `<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`
+- `<run>/repo/src/app.js`
+- `<run>/repo/test/cancel.test.js`
+- `<run>/repo/.docs/sdd/steering/constitution.md`
+- `<run>/repo/.docs/sdd/steering/debt.md`
+
+--- [33]
+La re-revisión no sale limpia, así que antes de seguir compruebo sus afirmaciones contra el repo.
+
+--- [45]
+El test falla contra el código mutado y pasa con el real: 6/6 en verde. Commiteo el fix.
+
+--- [55]
+Hago el repaso de señales y escribo los registros. Hay una sola señal: el Ruling de `tasks.md` decía algo que la sesión desmintió.
+
+--- [62]
+Los checks pasan. Junto el cierre en un commit desde el de la última task, tras comprobar que ningún registro cita los shas que se pierden.
+
+--- [65]
+Base al día y suite 6/6 sobre el commit de cierre. Fusiono con `sdd merge`; el bloque `merge` está completo y autoriza el push.
+
+--- [68]
+El push falló por `publickey`. Según la receta, miro si `gh` tiene sesión para el reintento único por HTTPS.
+
+--- [70]
+Hay sesión de `gh`. Relanzo el mismo comando una vez por HTTPS con el token de `gh`, solo para esa orden.
+
+--- [73]
+Fue un error de comillas mío: la asignación entrecomillada se tomó por un comando y no se ejecutó nada. Repito con las variables exportadas en un subshell.
+
+--- [76]
+🦆 Cancelar ahora exige un motivo de la lista: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` muestra «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- **Gate `--test-concurrency=1`:** la sesión de ejecución lo había decidido en el Ruling de la Task 2, y no se sostiene. `node --test` sin el flag pasa 5/5 tres veces y es el gate que fijan la constitución y el plan. Lo corregí en `tasks.md` y el cierre usó `node --test`.
+- **Test nuevo:** añadí `cancelar sin motivo`, porque la spec pedía ese caso y no estaba cubierto. Falla si el código acepta un motivo `undefined` y pasa con el real.
+
+**Revisión final:** no estaba tan limpia como decías. HEAD se había movido con el commit de `tasks.md`, así que lancé la re-revisión única de ese commit. Salió con 3 Important y 1 Minor, y los verifiqué contra el repo:
+- **Task 1:** `tasks.md` citaba el commit de la Task 2. Lo cambié a `3f9d431`.
+- **Ruling del gate:** su premisa era falsa, como se explica arriba.
+- **Test de «sin `--motivo`»:** faltaba, y está añadido.
+- **Minor:** el test de motivo inválido usa `Sur mar`, una reserva que no existe. Va a deuda.
+
+El test añadido y los registros corregidos quedan `sin revisar` en el commit de cierre, porque una re-revisión no abre otra.
+
+**Pendiente:**
+- **Push:** SSH falló con `Permission denied (publickey)`. Lo relancé una vez por HTTPS con el token de `gh`: `Push relanzado por HTTPS: Permission denied (publickey) por SSH`. Se publicó en `origin/develop`.
+- **Gate:** el proyecto no tiene `operations.md` ni suites declaradas. Corrí `node --test`, 6/6 sobre `f677b83`, y la base estaba al día, sin segunda pasada ni conflictos.
+- **Deuda:** dos filas nuevas en «Por triar»: los tests de `cancel.test.js` comparten el almacén y dependen del orden, y el Minor del test de motivo inválido.
+- **Spec:** en «Decisiones que he tomado yo» falta la decisión 2, y la 3 cita una señal «MODIFIED» que el delta (solo ADDED) no tiene. Es cosa tuya aclararlo.
+- **Roadmap:** la fila 0010 pasa a ✅.
+- **Capacidad:** la capacidad `bookings` se creó con `sdd capability merge`.
+
+**Ticket del kit:** el retro no dejó ninguna línea «ticket del kit», así que no hay nada que ofrecer. Puedo generar uno con `sdd-feedback` si quieres.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (ce53a3c) · push: hecho a `origin/develop`. La rama estaba en el checkout principal, no en un worktree enlazado, así que no hay worktree que borrar.
+

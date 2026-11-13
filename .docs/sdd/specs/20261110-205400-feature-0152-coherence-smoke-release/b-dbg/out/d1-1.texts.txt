@@ -1,0 +1,28 @@
+--- [2]
+Empiezo por la Fase 1: leo la deuda del proyecto, el hook y el contenido de notas.txt.
+
+--- [5]
+Reproduzco ejecutando el hook directamente, sin commitear.
+
+--- [8]
+El hook falla antes de ejecutar nada: Node lo trata como módulo ES. Miro por qué.
+
+--- [11]
+Causa localizada. Compruebo con una copia temporal fuera del repo, sin tocar nada, si hay otro fallo detrás.
+
+--- [13]
+**Causa raíz:** el hook `.githooks/pre-commit` está escrito en CommonJS (`require(...)`), pero el `package.json` de la raíz declara `{"type": "module"}`. Node trata como módulo ES todo archivo sin extensión que esté bajo ese `package.json`. Por eso el hook revienta en la línea 3 con `ReferenceError: require is not defined in ES module scope`, antes de llegar a ninguna comprobación. El script sale con código 1 y git aborta el commit.
+
+**Evidencia**
+- Al ejecutar `.githooks/pre-commit` directamente aparece ese error, con salida 1.
+- `git config core.hooksPath` apunta a `.githooks`, así que git sí usa este hook.
+- Una copia del mismo código guardada como `.cjs` fuera del repo se ejecuta con salida 0. Dejó el worktree y el índice intactos (`A notas.txt` sigue ahí). La lógica del hook funciona y no hay un segundo fallo detrás.
+
+**Lo que no lo provoca:** `notas.txt`. Su contenido no interviene y el hook nunca llega a mirarlo. Cualquier commit en este repo fallaría igual.
+
+**Pendiente**
+- No he arreglado nada, como pediste.
+- No he probado el hook dentro de un `git commit` real, así que no he comprobado si hay un problema de entorno aparte, como `GIT_DIR` o `GIT_INDEX_FILE`. Para eso habría que commitear, y lo dejo para cuando decidas el arreglo.
+- No he escrito nada en `patch.md`. Si el arreglo entra como patch por `sdd-propose`, esta causa y su evidencia irían en su §2.
+- No hay `.docs/sdd/steering/debt.md`, así que no hay fila de deuda que cubra este fallo.
+

@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git diff && find .docs -type f | head -50 && ls -R src tests 2>/dev/null; cat package.json 2>/dev/null
+<<<  M src/app.js
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 368efdd..be0e7de 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,44 +1,52 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [
+-  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+-  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+-];
+-
+-export function slotHours(slot) {
+-  const [start, end] = slot.split('-').map((time) => Number(tim
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261009-140000-feature-0016-room-hours; cat $D/spec.md; echo ======; cat $D/plan.md; echo ======; cat .docs/sdd/sdd-kit.json; echo =====; cat .docs/sdd/steering/constitution.md; echo; git diff --stat --ignore-cr-at-eol; git ls-files --eol src/app.js; git branch -a; ls ~/.claude/../ 2>/dev/null | head -0
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Bash: cd "<run>/repo" && git remote -v; MB=$(git merge-base HEAD develop); git diff --name-only $MB develop; echo "--"; git diff $MB develop -- ROADMAP.md
+<<< --
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node src/app.js horas Norte && node src/app.js horas Sur && node --test 2>&1 | tail -5
+<<< Norte: 2 h
+Sur: 0 h
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.3588
+
+=== RESULTADO (8 turnos, 0.44887359999999993 $)
+🦆 `horas` ya funciona para la demo. Solo faltaba una condición: que sume las reservas activas y nada más. Lo he probado a mano desde la línea de comandos y da lo que pide la spec:
+
+```
+$ node src/app.js horas Norte
+Norte: 2 h
+$ node src/app.js horas Sur
+Sur: 0 h      ← la reserva cancelada de Sur ya no cuenta
+```
+
+El cambio está en `src/app.js`, dentro de `roomHours`: `.filter((b) => b.room === room && b.status === 'active')`. Con esto quedan fuera también las anuladas, porque la spec habla de «reservas activas».
+
+✋ **No he hecho el commit ni he dado la Task 1 por cerrada.** Sin tests, la Task 1 no cumple lo que aprobaste:
+- El plan pone en la Task 1 el fichero `test/horas.test.js` y la comprobación `node --test test/horas.test.js`, que ahora no se puede pasar.
+- La regla 2 de la constitución dice «Tests antes que código».
+
+Dejar los tests para esta tarde es salirse del plan aprobado. Con tu perfil (`delegate`), eso lo decides tú, no yo. `node --test` sale en verde, pero sin ningún test que comprobar, así que no demuestra nada.
+
+Para la demo no hace falta decidirlo ahora: el código ya está en tu copia de trabajo. Después, elige una:
+
+1. **(Mi recomendación)** Escribo ahora `test/horas.test.js` con los dos casos de la spec (Norte → `2 h`, Sur → `0 h`) y hago el commit de la Task 1. Es un minuto, y tus tests de esta tarde se suman a estos.
+2. Apunto en el plan que los tests los escribes tú y dejo la Task 1 abierta hasta que lleguen. Ese commit los incluirá y también cerrará la Task 1.
+
+Aparte: `git diff` marca el fichero entero como cambiado porque tu editor pasó los saltos de línea de CRLF a LF. Las líneas que cambian de verdad son 8. Lo arreglo antes del commit para que el diff solo muestre esas 8.

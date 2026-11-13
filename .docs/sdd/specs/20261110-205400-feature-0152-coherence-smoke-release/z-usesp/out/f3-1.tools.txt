@@ -1,0 +1,123 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -3
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -60; cat PRODUCT.md ROADMAP.md 2>&1 | head -80
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/app.test.js | head -60; cat package.json; cat .docs/sdd/steering/*.md | head -80; git branch --show-current
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\patch-lane.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+=== RESULTADO (10 turnos, 0.1731995 $)
+🦆 Al reservar una sala podrás añadir una nota, por ejemplo «reunión con el cliente Acme». Hoy la reserva solo guarda sala, día y franja, y no admite texto libre. La nota será opcional, así que reservar sin ella funciona igual que ahora. Se guardaría junto a la reserva, y todo el cambio queda en un solo sitio del programa.
+
+Antes de abrir nada, necesito que me confirmes el carril. No he creado rama ni carpeta.
+
+No es un patch: no hay un fallo que arreglar, y nadie ha fijado el texto, el lugar ni la regla. No hay que decidir la forma de la opción (por ejemplo `--nota "texto"`), si la nota se muestra en algún comando, ni si tiene límite de longitud. Calculo unas 2 o 3 tareas, así que no propongo dividirlo.
+
+¿Con qué carril lo hacemos?
+
+1. **Lite (recomendada).** Spec corta, sin plan ni tareas. Cumple las condiciones una a una:
+   - El flujo ya existe: `reservar` está en `src/app.js`.
+   - No cambia contratos públicos: nadie más consume la interfaz, y la nota es un parámetro opcional nuevo.
+   - No cambia el esquema de datos: las reservas viven en memoria y no hay migración.
+   - Cabe en un solo módulo: `src/app.js`.
+   - No existe `estimation.md`, así que no aplica la condición de la estimación.
+2. **Feature en modo full.** Spec, plan y tareas completos. Es más ceremonia de la que pide un cambio así.
+
+Perfil actual: `pair`, el de por defecto, porque `sdd-kit.json` no fija ninguno y no existe `sdd-kit.local.json`. Eso significa que te pararé en la aprobación de la spec. Si prefieres otro, dilo con una de estas frases:
+
+- «Apruebo la spec por delegación, nos vemos en la validación»
+- «perfil `<otro>` para esta feature»
+
+Además, ahora mismo estás en `develop` y la fila 0008 del roadmap (avisos por correo) está pendiente. Esta petición es distinta, así que la numeraría aparte, con un id nuevo.

@@ -1,0 +1,76 @@
+
+>>> Read: <run>/review-final-c9bc9fb.diff
+<<< 1	# Review package: 7611f1a..HEAD
+2	
+3	## Commits
+4	c9bc9fb feat(bookings): informe de ocupación
+5	
+6	## Files changed
+7	 src/app.js | 28 ++++++++++++++++++++++++++++
+8	 1 file changed, 28 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..5bb4288 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+16	   const booking = findBooking(room, day);
+17	   if (!booking) return `sin reserva ${room} ${day}`;
+18	   booking.status = 'voided';
+19	   return `anulada ${room} ${day}`;
+20	 }
+21	 
+22	 function cancell
+
+>>> Bash: cd <run>/repo && grep -n "rooms\|status" src/app.js | head -20; ls; ls test* 2>/dev/null
+<<< 2:const rooms = ['Norte', 'Sur'];
+4:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+7:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+11:  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+23:  booking.status = 'cancelled';
+31:  booking.status = 'voided';
+36:  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} — ${b.reason}`).join('\n');
+43:  for (const room of rooms) {
+47:      if (b.status !== 'active') continu
+
+=== RESULTADO (3 turnos, 0.1018613 $)
+### Strengths
+- `occupancyReport` is 26 lines, under the 30-line limit.
+- The UI text is in Spanish ("Ocupación", "reservas", "canceladas", "sin reservas activas"), and singular and plural are handled.
+- It counts only `active` bookings per room and reports cancelled ones separately.
+- The new `ocupacion` command is wired into `run` without disturbing the existing commands.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- **`src/app.js:35`**: the comment `// incrementa count` only repeats the line below it (`count++`). Delete it.
+- **No test for the new behavior.** `occupancyReport` and the `ocupacion` command are exported and reachable from `run`, but `test/` has no case for them. I only listed `test/`; I did not open `app.test.js` or `cancel.test.js` to check for coverage. Nothing in the package shows a test added in this commit either. Add tests for these cases:
+  - no active bookings
+  - one booking (singular label)
+  - several bookings
+  - cancelled bookings present
+
+  This is Clean Code's "test for every public method" row, as a judgement.
+
+#### Minor (Nice to Have)
+- **`src/app.js:29,46`**: `const now = 'hoy'` is a constant that never changes, so `(hoy)` is just a fixed string in the output. It looks like a placeholder for a date. Either remove it or use a real date.
+- **`src/app.js:30-41`**: the nested loop with two `continue`s can be a single `bookings.filter((b) => b.room === room && b.status === 'active').length`. That is the same form `freeRooms` and `findBooking` already use. Possible Long Method / duplicated-pattern smell, as a judgement.
+- **`src/app.js:42`**: the filter for `cancelled` bookings is repeated from `cancelledList` (line 36). That is two occurrences, so it is not yet a DRY problem.
+
+### Recommendations
+Reuse a small helper such as `countBy(room, status)` to shorten the report function and remove the loop. Add the tests above.
+
+### Declined to judge
+- Whether the report format and the `ocupacion` command match what the spec asked for: that belongs to the Spec axis.
+- Whether the report belongs in `app.js` or in its own module: that belongs to the Architecture axis.
+- No E2E checks apply, because the project declares none.
+- No comment cites a document, so none were checked against the document-citation list.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the limits. The comment that repeats the code and the missing tests should be fixed first, and the `now = 'hoy'` placeholder should be cleaned up.

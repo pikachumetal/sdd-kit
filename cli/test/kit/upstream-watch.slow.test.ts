@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cleanGitEnv, kitRoot, run, type RunResult } from './process.ts';
 
@@ -37,7 +37,10 @@ function newRoot(): string {
 function release(origin: string, tag: string, files: Record<string, string | null>): void {
   for (const [path, content] of Object.entries(files)) {
     if (content === null) rmSync(join(origin, path));
-    else writeFileSync(join(origin, path), content);
+    else {
+      mkdirSync(dirname(join(origin, path)), { recursive: true });
+      writeFileSync(join(origin, path), content);
+    }
   }
   git(['-C', origin, 'add', '-A']);
   git(['-C', origin, '-c', 'user.name=test', '-c', 'user.email=test@example.com', 'commit', '-q', '--allow-empty', '-m', tag]);
@@ -290,6 +293,53 @@ describe('Un fichero propio no lleva líneas literales de una fuente (tests/upst
     release(source.origin, 'v1.0.0', { 'b.md': `${LITERAL}\n`, 'c.md': `${LITERAL}\n` });
     expect(runCheck(withOwn(root, [{ version: 'v1.0.0' }], ['# Propia', '', LITERAL, '', LITERAL]), source.upstream)).toEqual({
       output: [literalAt(3, 'b.md@v1.0.0'), literalAt(5, 'b.md@v1.0.0')].join('\n'),
+      code: 1,
+    });
+  });
+});
+
+describe('Una revisión nombra cada fichero que cambia en su ámbito (tests/upstream/check.ts)', () => {
+  const REVIEW = '.docs/sdd/changes/20261111-000000-feature-9999-juguete/upstream-review.md';
+  const ROW_B = '| `docs/b.md`: nuevo | — | sin pieza del kit | — |';
+
+  function withReview(root: string, clone: string, jump: [string, string], body: string[]): void {
+    const [from, to] = jump;
+    const header = ['# Revisión de fuentes', '', `## Juguete \`${from}\` → \`${to}\``, '', `\`git -C ${clone} diff --stat ${from}..${to} -- docs/\``, ''];
+    const table = ['| Cambio | Pieza del kit | Decisión | Destino |', '| --- | --- | --- | --- |'];
+    mkdirSync(dirname(join(root, REVIEW)), { recursive: true });
+    writeFileSync(join(root, REVIEW), `${[...header, ...table, ...body].join('\n')}\n`);
+  }
+
+  function bumped(root: string): Source {
+    const source = newSource(root, ['v1.0.0']);
+    release(source.origin, 'v2.0.0', { 'docs/b.md': 'b\n', 'docs/c.md': 'c\n' });
+    return source;
+  }
+
+  it('fails when the review of a version jump leaves a changed file of its scope unnamed', () => {
+    const root = newRoot();
+    const source = bumped(root);
+    withReview(root, source.clone, ['v1.0.0', 'v2.0.0'], [ROW_B]);
+    expect(runCheck(newRegistry(root, [{ version: 'v2.0.0' }]), source.upstream)).toEqual({
+      output: `${REVIEW} · Juguete v1.0.0 → v2.0.0: sin fila ni «Sin leer» para docs/c.md; los lista git -C ${source.clone} diff --name-only v1.0.0..v2.0.0 -- docs/`,
+      code: 1,
+    });
+  });
+
+  it('passes when every changed file is in a row or in «Sin leer»', () => {
+    const root = newRoot();
+    const source = bumped(root);
+    withReview(root, source.clone, ['v1.0.0', 'v2.0.0'], [ROW_B, '', 'Sin leer: `docs/c.md`.']);
+    expect(runCheck(newRegistry(root, [{ version: 'v2.0.0' }]), source.upstream)).toEqual(upToDate);
+  });
+
+  it('fails when the seen version passes the last reviewed jump', () => {
+    const root = newRoot();
+    const source = bumped(root);
+    release(source.origin, 'v3.0.0', { 'docs/b.md': 'b cambiada\n' });
+    withReview(root, source.clone, ['v1.0.0', 'v2.0.0'], [ROW_B, '', 'Sin leer: `docs/`.']);
+    expect(runCheck(newRegistry(root, [{ version: 'v3.0.0' }]), source.upstream)).toEqual({
+      output: `Juguete: la versión vista sube a v3.0.0 sin revisión: la última sección --stat, en ${REVIEW}, llega a v2.0.0`,
       code: 1,
     });
   });

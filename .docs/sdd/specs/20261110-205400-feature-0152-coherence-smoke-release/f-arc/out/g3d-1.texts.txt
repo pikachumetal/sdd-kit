@@ -1,0 +1,92 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [29]
+**Re-revisión 45cd3de..ab41d74: limpia.** No hay hallazgos Critical, Important ni Minor.
+
+1. **Solo documentación:** se cumple. El rango tiene un único commit que crea `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` con 17 líneas y no toca ningún fichero de código. Las restricciones de código (castellano, constitución) no se ven afectadas, y el documento está en castellano, como pide el punto 4 de la constitución.
+
+2. **Las filas coinciden con la realidad:** se cumple.
+   - `tasks.md:10`: la Task 1 apunta a 3a2558b («cancelar con un motivo de la lista»). Ese commit toca `src/app.js` y `test/cancel.test.js`, que son los ficheros que el plan asigna a la Task 1.
+   - `tasks.md:11`: la Task 2 apunta a 45cd3de («listado de canceladas con su motivo»). Ese commit añade `cancelledList()` y el comando `canceladas`, que corresponden a la Task 2 del plan.
+   - `tasks.md:13`: la revisión final dice «sobre 45cd3de», que es el último commit de código. Es coherente.
+
+3. **El Ruling es coherente:** se cumple. `tasks.md:17` dice que el test `canceladas enseña sala, día y motivo` depende de la cancelación de Norte/lun del primer test, y así es en `45cd3de:test/cancel.test.js`. El Ruling incluye las tres partes: la decisión, por qué es un workaround temporal («hasta que cada test prepare sus datos») y el coste si fuera erróneo (el test falla si corre solo o en otro orden). No contradice el «Código … limpia» de la línea 13, porque es una desviación aceptada y queda registrada.
+
+Fuera de alcance, y no cuenta como hallazgo: 45cd3de también modifica `e2e/cancel.e2e.mjs`, que no está entre los ficheros que el plan asigna a la Task 2.
+
+--- [32]
+La 0010 aún no está cerrada: falta tu validación. Con `validation.mode: manual`, «ciérrala» es la orden de cerrar, no la prueba. Todavía no he escrito ningún registro ni he tocado la rama.
+
+**Pre-checks del cierre**
+- El árbol está limpio.
+- `merge --check` da «listo»: la fusión irá a `develop`.
+- No hay otras ramas `feature/*` o `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+- `HEAD` (ab41d74) avanzó un commit de `tasks.md` desde lo revisado (45cd3de). Es documentación pura, 17 líneas. Lancé la re-revisión de ese rango y volvió **limpia**. Su línea `Re-revisión:` la escribo en `tasks.md` al cerrar.
+
+🦆 Hasta ahora `cancelar` no dejaba rastro. Ahora `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y falla si corre solo o en otro orden. Al cerrar le pongo su fila en `debt.md`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | la misma respuesta |
+| `canceladas` enseña el motivo | ejecución real, solo en un proceso de Node | «Norte lun — sala ocupada». No lo he visto por el servidor, porque no arranca |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre ab41d74, 0,15 s.
+- El e2e (`node e2e/run.mjs`) no lo he corrido: necesita el servidor, que no arranca. Tampoco el gate de cierre lo incluye.
+
+**Sin probar**
+
+- **El servidor no arranca.** `node scripts/env-up.mjs` falla con «no arranca: falta data/seed.json». Lo causó el commit `ebc0f0c` (env-up sin la semilla) y el fichero `data/` está en `.gitignore`. Por eso `validation.startEnvironment: true` no se puede cumplir.
+- **`canceladas` por la CLI.** Cada `node src/app.js …` es un proceso nuevo y no guarda reservas entre llamadas. Ahí `canceladas` sale vacío. Por eso ese THEN no está en el guion; solo se prueba en un proceso, o con el servidor.
+
+Panel: plan B en http://127.0.0.1:54744/ (no ve la app: si algo falla, cuéntalo en el comentario)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay entorno que arrancar: la CLI no lo necesita, y `env-up` está roto como arriba. Un solo terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+3. Cancelar sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. El listado, en un solo proceso → «Norte lun — sala ocupada»
+
+```
+node --input-type=module -e "const {run}=await import('./src/app.js'); run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[]))"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

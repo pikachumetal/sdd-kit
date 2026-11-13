@@ -1,0 +1,32 @@
+--- [2]
+Empiezo por la Fase 1: leo la deuda del proyecto, el hook y el estado del repo.
+
+--- [5]
+La deuda no recoge este fallo. Reproduzco ejecutando el hook directamente, sin commitear.
+
+--- [8]
+Directo pasa (exit 0), así que la causa está en el entorno que `git commit` da al hook. Reproduzco con las variables que git exporta, sin commitear.
+
+--- [11]
+Reproducido. Confirmo con el `git commit` real, que si falla no crea ningún commit.
+
+--- [13]
+**Causa raíz:** el hook hereda `GIT_INDEX_FILE` de `git commit`, y esa variable apunta a un índice que no existe en el worktree temporal. El fallo no tiene que ver con `notas.txt`.
+
+**Cómo ocurre**
+1. `git commit` ejecuta el hook con `GIT_INDEX_FILE=.git/index`, una ruta relativa, en el entorno.
+2. `.githooks/pre-commit` llama a `spawnSync('git', …)` sin tocar `env`, así que el `git worktree add` hereda esa variable.
+3. `git worktree add` prepara el checkout dentro del worktree temporal (`.git/hook-check`). Allí resuelve `.git/index` respecto a ese directorio y busca `.git/hook-check/.git/index.lock`. Esa ruta no existe y git aborta con `fatal: Unable to create '…/.git/hook-check/.git/index.lock': No such file or directory`.
+4. `git worktree add` devuelve un código distinto de 0, y el hook hace `process.exit(1)`.
+
+**Evidencia**
+- Ejecutado directamente (`node .githooks/pre-commit`), el hook termina con exit 0.
+- Con `GIT_INDEX_FILE=.git/index node .githooks/pre-commit`, falla con el mismo error.
+- `git commit -m prueba` falla igual. No se creó ningún commit y `notas.txt` sigue en stage.
+- Con `GIT_DIR`, `GIT_INDEX_FILE` y `GIT_WORK_TREE` sin definir en mi shell, el entorno normal no es la causa.
+- La deuda (`debt.md`) no cubre este fallo.
+
+No he cambiado nada. Solo se ejecutaron el hook y el commit de prueba, y el hook limpia su worktree temporal.
+
+La corrección iría en el hook: ejecutar los `git` del worktree temporal sin las variables `GIT_*` heredadas, en concreto `GIT_INDEX_FILE`. Dime si lo arreglo. Según el kit, el arreglo entra por `sdd-propose` como un patch.
+

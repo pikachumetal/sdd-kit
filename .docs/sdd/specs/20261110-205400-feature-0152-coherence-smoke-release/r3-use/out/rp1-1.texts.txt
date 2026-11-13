@@ -1,0 +1,126 @@
+--- [3]
+Es un patch, así que sigo `patch-flow.md`.
+
+--- [15]
+Es un patch ya abierto: `patch.md` está escrito (causa raíz en `src/app.js:12`, que confirmo en el código) pero aún no hay fix ni test. Empiezo por el RED.
+
+--- [18]
+RED correcto: falla porque la función devuelve `cancelada` sin mirar las reservas. Ahora el fix mínimo.
+
+--- [22]
+Verde (4/4). Antes del commit, el patch exige un revisor (sonnet, effort medium). Primero dejo la verificación en §4.
+
+--- [25]
+Ahora: espero al revisor del patch. Queda: contestar sus hallazgos en §4, el commit del fix y el cierre con `sdd-archive`, ~5 min, ~0,10 $.
+
+--- [32]
+Retomé el patch 0021 (cancelar una reserva que no existe). El fix y los tests están hechos, pero todavía no hay commit. Falta el resultado del revisor.
+
+- **Estado de ayer:** `patch.md` ya tenía el síntoma y la causa raíz. No había código ni test, y la causa se confirma en `src/app.js:12`.
+- **RED:** añadí `cancelar una reserva que no existe responde no existe`. Falló como debía: devolvía `cancelada mar 10:00-12:00`.
+- **Test existente:** `cancelar respeta el día` ahora usa `lun 10:00-12:00`, como indicaba `patch.md`. Con el fix, la reserva de `mar 10:00` ya no existiría.
+- **Fix:** `cancelar` responde `no existe` si no hay una reserva con ese día y franja.
+- **GREEN:** `node --test` da 4 de 4 en verde.
+- **`patch.md`:** §4 recoge el RED y el GREEN, con «Revisión: pendiente».
+- **Revisor:** lanzado en segundo plano (sonnet, effort medium), con su vigilancia de silencio. Cuando termine, respondo cada hallazgo en §4, hago el commit único del fix e invoco `sdd-archive`.
+
+La rama se llama `patch/0021-cancel-missing`, que no sigue el `feature/<id>-<slug>` de la constitución. No la he tocado, así que dime si quieres renombrarla antes del commit.
+
+--- [34]
+**Hallazgos**
+
+1. **Menor, `test/app.test.js:13-15`: `cancelar respeta el día` no falla sin el fix.** Con el código anterior, `run('cancelar', ['lun','10:00-12:00'])` devuelve `cancelada lun 10:00-12:00`, así que el test pasa antes y después. Solo sirve de guarda del camino feliz, y su nombre promete más: quien comprueba que el día importa es el test nuevo. Es correcto que el test cambie, porque con `mar 10:00` ya no se podría cancelar. Conviene no presentarlo como cobertura del fix. El patch.md:17 solo dice que el test «pasa a usar» otros datos, y eso es exacto.
+
+2. **Menor, `test/app.test.js:17-19`: el test nuevo cubre solo un caso y falla sin el fix.** Usa `mar` con la franja `10:00-12:00`, que sí existe para `lun`. Por eso falla sin el fix y distingue el día. No cubre el caso de día correcto con franja distinta (`lun 14:00-16:00`), que es la otra mitad de la condición de `src/app.js:14`. No bloquea el patch.
+
+3. **Informativo, `src/app.js:12-16`: cancelar no elimina la reserva.** Cancelar dos veces la misma reserva responde `cancelada` las dos veces, porque `bookings` no se modifica. Queda fuera del síntoma del patch, así que no es un cambio de más. Podría anotarse como deuda. En una invocación de CLI de un solo proceso no tiene efecto visible.
+
+4. **Informativo, `patch.md:17` y `patch.md:23`: documentación.** «Decisiones: texto, dev-lead» es críptico. Debería decir que el texto `no existe` lo fijó dev-lead. La línea «Revisión: pendiente» queda por cerrar con esta revisión.
+
+**Comprobaciones**
+
+- **(1) Causa raíz:** cierta. En el código original, `src/app.js:12` devolvía `cancelada ${params[0]} ${params[1]}` sin consultar `bookings`. La referencia `app.js:12` del patch es correcta para ese código.
+- **(2) Fix:** mínimo y suficiente. Desestructura `day` y `slot`, busca por día y franja, y devuelve `no existe` si no hay coincidencia. No toca nada más, y `bookings` ya existía en el módulo.
+- **(3) Tests:** el nuevo cubre el comportamiento y falla sin el fix. El modificado no falla sin el fix (ver hallazgo 1). No ejecuté el RED, porque el repo es de solo lectura. Por lectura del código, el resultado `actual 'cancelada mar 10:00-12:00'` que da patch.md:21 es coherente con el código anterior.
+- **`node --test`:** 4 tests, 4 pasan, 0 fallan. Coincide con patch.md:22.
+
+No hay hallazgos de gravedad alta ni media.
+
+--- [36]
+El revisor no ve nada grave. Contesto sus cuatro hallazgos en §4 y hago el commit.
+
+--- [41]
+El commit está hecho y el aviso de vigilancia es solo el fin del `watch`. Paso al cierre con `sdd-archive`.
+
+--- [44]
+Empiezo por los pre-checks del cierre.
+
+--- [55]
+No hay `.gitignore`, así que dejo el `steps.json` y el resultado del panel fuera del repo y levanto el panel plan B.
+
+--- [65]
+Cierro el patch 0021 hasta donde puedo. Me paro antes de tocar ningún registro porque faltan dos cosas.
+
+- **Validación:** `sdd-kit.json` no fija `validation.mode`, así que cuenta como `manual`. Un «cierra» no la sustituye: la decide quien prueba.
+- **Merge:** `sdd merge --check` falla con `política: falta 'merge.into' o 'merge.noFf'` en `.docs/sdd/sdd-kit.json`. Sin ese bloque no puedo fusionar. Cuando valides te propongo los valores, porque el kit no me deja suponerlos. La constitución indica `develop` como rama de integración.
+- **Ramas abiertas:** no hay otras `feature/*` ni `patch/*`.
+- **Rama:** `patch/0021-cancel-missing` no sigue el `feature/<id>-<slug>` de la constitución. No la he tocado.
+
+🦆 Cancelar una reserva que no existe deja de decir «cancelada». `cancelar mar 10:00-12:00` ahora responde `no existe`, porque la única reserva es la de `lun 10:00-12:00`. Cancelar esa misma sigue respondiendo `cancelada lun 10:00-12:00`.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Reserva inexistente (`mar 10:00-12:00`) | `ejecución real` + `suite` | `no existe` |
+| Reserva existente (`lun 10:00-12:00`) | `ejecución real` + `suite` | `cancelada lun 10:00-12:00` |
+| Día correcto, franja distinta (`lun 14:00-16:00`) | `ejecución real` | `no existe` |
+
+**Suites**
+
+- `node --test`: 4/4 sobre `22726e4`, dentro del hilo y antes del commit.
+
+**Sin probar**
+
+- Nada. La app no guarda reservas entre procesos, así que ninguno de los pasos escribe datos.
+
+Panel: plan B en http://127.0.0.1:49928/ (no veo la consola ni la red de la app, así que cuéntame el error en el comentario si falla un paso). Su resultado y su `steps.json` están fuera del repo porque no hay `.gitignore`. Al terminar lo paro por su puerto, nunca por nombre de proceso.
+
+**Guion**
+
+Rama `patch/0021-cancel-missing` · worktree `<run>/repo`
+
+No hay comando de arranque declarado: es una CLI sin entorno.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Síntoma del reporte, una reserva que no existe → debe salir `no existe`, ya no `cancelada`:
+
+```
+node src/app.js cancelar mar 10:00-12:00
+```
+
+2. La reserva que sí existe se sigue cancelando → `cancelada lun 10:00-12:00`:
+
+```
+node src/app.js cancelar lun 10:00-12:00
+```
+
+3. Mismo día, otra franja → `no existe`:
+
+```
+node src/app.js cancelar lun 14:00-16:00
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -55,7 +55,7 @@ El ticket de mejora del kit: lo que un proyecto consumidor escribe sobre el comp
 
 ### El ticket pasa el lint de docs del proyecto antes del commit
 
-- GIVEN un proyecto que declara un lint de documentación (en `tech-stack.md`, su gate de docs o su pre-commit), por ejemplo markdownlint con MD013 a 200 caracteres
+- GIVEN un proyecto que declara un lint de documentación (en `steering/operations.md`, su gate de docs o su pre-commit), por ejemplo markdownlint con MD013 a 200 caracteres
 - WHEN `sdd-feedback` guarda el ticket
 - THEN ejecuta ese lint sobre el ticket y lo arregla hasta que pasa, antes de que el cierre lo commitee
 - AND sin lint de docs declarado, lo dice en una línea al entregar el ticket

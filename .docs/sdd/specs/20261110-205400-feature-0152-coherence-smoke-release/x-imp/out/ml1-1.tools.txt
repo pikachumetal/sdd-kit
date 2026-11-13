@@ -1,0 +1,237 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git log --oneline; find .docs -type f | head -50; cat .docs/sdd/sdd-kit.json; ls; cat test/persist.test.js
+<<< ?? test/persist.test.js
+d5aeae4 docs(sdd): abrir la feature 0036 con su spec y su plan
+54d7750 feat: base del molde
+.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/spec.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/stee
+
+>>> Bash: cd .docs/sdd/changes/*0036*; cat spec.md plan.md; cd ../../../..; cat package.json; ls src test; cat src/*.js; cat .docs/sdd/steering/constitution.md; git diff main --stat; git branch -a
+<<< ---
+id: 20261016-110000-feature-0036-saved-cancellations
+feature: 0036
+title: Las cancelaciones se conservan entre ejecuciones
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-16
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-16
+---
+
+# Spec — Las cancelaciones se conservan entre ejecuciones
+
+## Capacidades
+
+- Modificadas: `bookings` — las reservas se guardan en disco y se recargan al arrancar.
+
+## Decisiones que he tomado yo — valida estas
+
+1. El almacén es un fichero `data/bookings.json` relativo al directorio donde se ejecu
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-x-0152/cli/bin/sdd.js'
+P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+cd -P . ; git rev-parse --git-dir --git-common-dir; git rev-parse --show-superproject-working-tree
+$SDD workspace $P; $SDD task start $P 1; git remote -v; git diff $(git merge-base HEAD develop) develop --stat
+<<< .git
+.git
+<run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: d5aeae43985c34320153d7ca213c73d299f3d9b2
+
+>>> Bash: W=.temp/sdd/plan; git status --short; cp test/persist.test.js $W/persist.red.js
+git worktree add --detach ../baseline-0036 HEAD -q 2>&1 | tail -1; (cd ../baseline-0036 && node --test 2>&1 | grep -E "^# (tests|pass|fail)"); git worktree remove --force ../baseline-0036
+node --test test/persist.test.js 2>&1 | grep -E "^# (pass|fail)|not ok|expected|actual" | head; cat $W/task-1-brief.md | head -40
+<<< ?? test/persist.test.js
+  + actual - expected
+    actual: 'Sur',
+    expected: 'Norte, Sur',
+### Task 1 — Almacén y cancelar
+
+**Tras**: —
+**Tests RED**: ya escrito por el dev-lead en el árbol, sin commitear · `test/persist.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/persist.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status }`) y `cancelBooking(room, day)`.
+- Produce: `load(fallback)` y `save(bookings)` en `src/store.js` (`data/bookings.json` del directorio actual; `load` devuelve `fallback` si el fichero no existe), y 
+
+>>> Bash: cat > src/store.js <<'EOF'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const dir = 'data';
+const file = join(dir, 'bookings.json');
+
+export function load(fallback) {
+  if (!existsSync(file)) return fallback;
+  return JSON.parse(readFileSync(file, 'utf8'));
+}
+
+export function save(bookings) {
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(file, JSON.stringify(bookings, null, 2));
+}
+EOF
+python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=\"import { load, save } from './store.js';\n\n\"+s;
+s=s.replace(\"const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];\",\"const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);\");
+s=s.replace(\"if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);\",\"if (cmd === 'cancelar') {\n    const result = cancelBooking(params[0], params[1]);\n    save(bookings);\n    return result;\n  }\");
+fs.writeFileSync('src/app.js',s)"
+EOF
+git diff; node --test 2>&1 | tail -12; git status --short
+<<<       at TestContext.<anonymous> (file:///<run>/repo/test/persist.test.js:21:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Sur',
+    expected: 'Norte, Sur',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+?? src/store.js
+?? test/persist.test.js
+
+>>> Bash: node - <<'EOF'
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s="import { load, save } from './store.js';\n\n"+s;
+s=s.replace("const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];","const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);");
+s=s.replace("if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);","if (cmd === 'cancelar') {\n    const result = cancelBooking(params[0], params[1]);\n    save(bookings);\n    return result;\n  }");
+fs.writeFileSync('src/app.js',s)
+EOF
+git diff --stat; node --test 2>&1 | grep -E "^# (tests|pass|fail)"; git status --short
+<<<  src/app.js | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+ M src/app.js
+?? src/store.js
+?? test/persist.test.js
+
+>>> Bash: node --test 2>&1 | tail -12; ls data 2>&1 | head -2
+<<<       at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'sin reserva Norte lun',
+    expected: 'cancelada Norte lun',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+bookings.json
+
+>>> Bash: cat data/bookings.json | head -5; cat test/cancel.test.js test/app.test.js; git check-ignore data; cat .gitignore
+<<< [
+  {
+    "room": "Norte",
+    "day": "lun",
+    "slot": "10:00-12:00",
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en l
+
+>>> Bash: rm -rf data; node - <<'EOF'
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace("if (cmd === 'cancelar') {\n    const result = cancelBooking(params[0], params[1]);\n    save(bookings);\n    return result;\n  }","if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);");
+s=s.replace("if (command) console.log(run(command, args));","if (command) {\n  console.log(run(command, args));\n  if (command === 'cancelar') save(bookings);\n}");
+fs.writeFileSync('src/app.js',s)
+EOF
+git diff src/app.js; node --test 2>&1 | grep -E "^# (tests|pass|fail)"; node --test 2>&1 | grep -E "^# (pass|fail)"; ls data 2>&1|head -1; git diff --no-index .temp/sdd/plan/persist.red.js test/persist.test.js && echo RED-igual
+<<< diff --git a/src/app.js b/src/app.js
+index fd6d964..cae07bb 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,6 +1,8 @@
++import { load, save } from './store.js';
++
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
++const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);
+ 
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+@@ -32,4 +34,7
+
+>>> Bash: node --test 2>&1 | tail -9; git add src/store.js src/app.js test/persist.test.js && git commit -q -m "feat(0036): conservar las cancelaciones entre ejecuciones
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< ✔ sin cancelaciones guardadas, la reserva sigue activa (75.0822ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 371.5669
+warning: in the working copy of 'src/store.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/persist.test.js', LF will be replaced by CRLF the next time Git touches it
+343e01d feat(0036): conservar las cancelaciones entre ejecuciones
+
+>>> Bash: SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-x-0152/cli/bin/sdd.js'
+P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+echo "Task 1: Ruling: save en el punto de entrada de la CLI, no dentro de run — cancel.test.js llama a run('cancelar') en proceso y escribía data/bookings.json en el repo, rompiendo la siguiente ejecución — si falla, un cancelar vía run() no persiste" >> .temp/sdd/plan/progress.md
+$SDD task done $P 1 d5aeae43985c34320153d7ca213c73d299f3d9b2 -- node --test test/persist.test.js 2>&1 | tail -4; git status --short
+<<< ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 349.8355
+ledger: Task 1: complete (commits d5aeae4..343e01d, tests: node --test test/persist.test.js → ℹ duration_ms 349.8355)
+
+=== RESULTADO (20 turnos, 0.30629570000000006 $)
+La Task 1 está implementada y commiteada en `343e01d`. Los 2 tests de `test/persist.test.js` pasan, y la suite completa (`node --test`) da 6 de 6 en verde.
+
+**Hecho**
+- **RED:** antes de tocar código, el test de la cancelación fallaba con `Sur` en lugar de `Norte, Sur`. Es el fallo esperado. El segundo test, "sin cancelaciones guardadas", ya pasaba antes porque protege el caso sin fichero. La copia del RED es idéntica al test commiteado.
+- **`src/store.js`:** nuevo, con `load(fallback)` y `save(bookings)` sobre `data/bookings.json` del directorio actual. `data/` ya está en `.gitignore`.
+- **`src/app.js`:** carga las reservas al arrancar y guarda tras ejecutar `cancelar`.
+- **Ledger:** `Task 1: complete (d5aeae4..343e01d)`.
+
+**Rulings que tomé**
+- **El `save` va en el punto de entrada de la CLI, no dentro de `run`.** `cancel.test.js` llama a `run('cancelar')` en el proceso del test. Con el `save` dentro de `run`, escribía `data/bookings.json` en la raíz del repo y la siguiente ejecución fallaba (`sin reserva Norte lun`). Si me equivoco, un `cancelar` hecho llamando a `run()` directamente no persiste. La CLI sí persiste, que es lo que cubre la spec.
+- **Aislamiento:** la rama ya era `feature/0036…` en un repo normal y no creé otro worktree.
+- **Línea base:** intenté correrla en un worktree desprendido, pero la salida salió vacía y no la verifiqué.
+
+**Pendiente**
+- No he lanzado la revisión final de `sdd-verify` ni el cierre con `sdd-archive`. Esa revisión despacha subagentes y tiene coste, así que prefiero que me lo confirmes. Si quieres, sigo con ella.

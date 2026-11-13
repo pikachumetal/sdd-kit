@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls; ls .docs/sdd .docs/sdd/steering 2>&1 | head -30; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20; ls node_modules 2>&1 | head -2; git ls-files | grep -i gate
+
+>>> Read: <run>\repo\gate.json
+<<< 1	{"tasks": {
+2	  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+3	  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+4	}}
+5	
+<<< CHANGELOG.md
+gate.json
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+gate.json
+scripts/gate.mjs
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-f-0152\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+
+>>> Bash: cat package.json; ls src; grep -rn "shared" src test scripts | head
+<<< {"type": "module", "engines": {"node": ">=20"}}
+app.js
+rooms.js
+
+=== RESULTADO (7 turnos, 0.1233394 $)
+Ahora: clasifico el cambio y te pregunto antes de tocar nada. Queda: tu confirmación, y luego editar, pasar el gate y commitear, ~3 min.
+
+🦆 Es un cambio de configuración: `gate.json` solo dice de qué archivos depende el resultado cacheado de `rooms:test`. Hoy depende de `src/rooms.js` y `test/rooms.test.js`. Con `src/shared/**` entre los inputs, un cambio en cualquier archivo de `src/shared/` volverá a ejecutar esa tarea en vez de darla por buena. Para quien usa el producto no cambia nada. Ten en cuenta que `src/shared/` no existe todavía. El glob no falla, pero tampoco vale para nada hasta que haya archivos ahí. Antes de guardar correré el gate de cierre del proyecto, y si sale rojo no commiteo.
+
+**Carril propuesto: config.** No lleva spec, plan, id ni fila de roadmap. Es un único commit en `develop` con la línea `Gate:` en el cuerpo.
+
+¿Cómo seguimos?
+
+1. **Config, lo hago ahora (Recomendada):** añado `"src/shared/**"` a los inputs de `rooms:test`, corro el gate de cierre y hago un commit.
+2. **Feature completa:** si lo ves como parte de algo mayor, por ejemplo crear `src/shared/`, lo abrimos con spec y plan.
+3. **No lo hagas:** lo dejamos como está.
+
+>>> Edit: <run>\repo\gate.json
+<<< The file <run>\repo\gate.json has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cat .docs/sdd/steering/operations.md; grep -n -i -A5 "gate" .docs/sdd/steering/constitution.md | head -40; sed -n 1,60p scripts/gate.mjs
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+4:2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5-3. Git-flow: `main` estable, `develop` de i
+
+>>> Bash: node scripts/gate.mjs run bookings:test rooms:test
+<<< ▪ bookings:test (4 passed, 0 failed)
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 2 completed, 0 skipped
+
+>>> Bash: git add gate.json && git commit -q -F - <<'EOF'
+chore: añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run bookings:test rooms:test` → bookings:test: corrió 4/4 · rooms:test: corrió 1/1
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git branch --show-current
+<<< bee69fd chore: añade src/shared/** a los inputs de rooms:test
+d1426ce feat: base del molde
+develop
+
+=== RESULTADO (5 turnos, 0.1605962 $)
+Añadí `"src/shared/**"` a los inputs de `rooms:test` en `gate.json` y lo dejé commiteado en `develop` (`bee69fd`).
+
+Como edité la definición de una tarea, corrí el gate sin `--affected`, es decir, con las dos tareas completas. Salió verde: `bookings:test` pasó 4 de 4 y `rooms:test` pasó 1 de 1. El mensaje del commit lleva esa línea `Gate:`.
+
+No hice merge, porque la rama es `develop` y no una `feature/*`. `src/shared/` todavía no existe, así que el glob no tiene efecto hasta que haya archivos ahí.

@@ -1,0 +1,71 @@
+--- [11]
+Ahora: abro el patch (causa raíz ya confirmada, id 0015 reservado). Queda: crear la rama, reclamar el id y pasar a `sdd-implement` con el test de regresión.
+
+--- [13]
+Rama `feature/0015` creada y el id 0015 reclamado. Paso a `sdd-implement` con el patch.
+
+--- [20]
+Reproducido: `cancelar Norte mar` devuelve «cancelada Norte mar» y deja sin reserva el lunes. Escribo primero el test de regresión (RED).
+
+--- [27]
+RED correcto, por la causa esperada. Aplico el fix mínimo.
+
+--- [33]
+Esperando la revisión del patch antes de hacer el commit del fix.
+
+--- [39]
+Hallazgos:
+
+1. **Causa raíz: correcta.** `findBooking(room, day)` ignoraba `day` y devolvía la primera reserva activa de la sala. `cancelBooking` respondía con el día pedido, y eso explica el mensaje engañoso. La referencia al patch 0007 también es coherente con el CHANGELOG y el ROADMAP.
+
+2. **Fix: mínimo y suficiente.** Es una sola condición, `b.day === day`. `voidBooking` usa el mismo `findBooking`, así que `anular` queda corregido sin tocar nada más. Un único cambio cubre los dos comandos.
+
+3. **Hueco menor: `anular` no tiene test.** El patch afirma que `anular` tenía el mismo fallo, pero ningún test lo cubre. Un aserto equivalente con `voidBooking` o `run('anular', …)` en el módulo fresco lo dejaría protegido. No bloquea.
+
+4. **Test de regresión: válido.**
+   - **Falla sin el fix.** Lo comprobé en una copia temporal con `src/app.js` de HEAD: falla 1 de 5, el nuevo.
+   - **Pasa con el fix.** `node --test` en el repo da 5/5, como dice el patch.
+   - **No depende del orden.** Importa `app.js?regresion-0015`, que es una instancia nueva con su propio `bookings`. No le afecta que el primer test cancele `Norte lun` en el módulo compartido.
+   - **Efecto lateral inocuo.** El import dinámico vuelve a evaluar el top-level, pero con `process.argv` vacío no imprime nada.
+
+5. **Detalle del patch.md.** `commit: pendiente` es normal antes del commit. La fila 1 de verificación (RED) coincide con lo que reproduje.
+
+Resumen: sin hallazgos bloqueantes. Solo queda la sugerencia del punto 3.
+
+--- [42]
+Commit del fix hecho (`0e207d9`). Cierro con `sdd-archive`.
+
+--- [49]
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva del lunes y respondía «cancelada Norte mar». Ahora responde `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…** nada.
+
+El fix está en el commit `0e207d9`, en la rama `feature/0015`. Aún no he cerrado: falta tu validación y la configuración del merge.
+
+**Lo que he comprobado yo** (ejecución real, `node src/app.js`):
+- `cancelar Norte mar` → `sin reserva Norte mar`.
+- `cancelar Norte lun`, justo después → `cancelada Norte lun`. La reserva del lunes no se había perdido.
+- `anular Norte mar` → `sin reserva Norte mar`.
+- `node --test`: 6/6. Los dos tests nuevos fallan sin el fix.
+
+**Lo que te toca a ti**, porque lo usas tú desde la terminal. En la raíz del repo, en un estado limpio:
+1. Ejecuta `node src/app.js cancelar Norte mar`. Debe decir `sin reserva Norte mar`.
+2. Ejecuta `node src/app.js cancelar Norte lun`. Cada ejecución arranca con la reserva del lunes de Norte activa, así que debe decir `cancelada Norte lun`.
+
+Dime qué has probado y que funciona, o «validado». Si prefieres validarlo más tarde, dime cuándo y lo dejo como validación diferida.
+
+**Para el merge**: `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Propongo `merge.into: develop` y `merge.noFf: true`. Si me dices que sí, lo añado.
+
+Hasta que valides no hago el `patch.md` final, el roadmap ni el merge.
+
+--- [51]
+El commit del fix ya estaba hecho, así que no queda nada por hacer hasta ahí. Es `0e207d9` en `feature/0015`, con el fix, los dos tests de regresión y `patch.md`. `node --test` da 6/6.
+
+Me paro ahí porque tu mensaje no es validación. No me dices qué has probado ni que funciona. Por eso no he tocado el roadmap, ni cerrado `patch.md` con el hash final, ni hecho el merge.
+
+No he añadido `merge.into: develop` y `merge.noFf: true` a `.docs/sdd/sdd-kit.json`. No sé si tu «Sí» respondía a eso, y te lo pregunto para no suponerlo.
+
+Para seguir con el cierre necesito:
+1. **Validación**: que pruebes `node src/app.js cancelar Norte mar` (debe decir `sin reserva Norte mar`) y después `cancelar Norte lun` (debe decir `cancelada Norte lun`). Dime qué has probado y que funciona. También vale «validado», o «lo valido más tarde» con cuándo.
+2. **Merge**: si añado esa configuración y fusiono en `develop`, o prefieres otra.
+

@@ -1,0 +1,123 @@
+
+>>> Bash: cd "<run>/repo" && node --test test/store.e2e.test.js 2>&1 | head -60; cat .temp/sdd/plan/task-1-brief.md; ls; git ls-files
+<<< ✖ cancelar guarda el motivo en el almacén (552.8173ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2405.3503
+
+✖ failing tests:
+
+test at test\store.e2e.test.js:7:1
+✖ cancelar guarda el motivo en el almacén (552.8173ms)
+  Error: ENOENT: no such file or directory, open '<run>\repo\data\bookings.json'
+      at readFileSync (node:fs:620:20)
+      at TestContext.<anonymous> (file:///<run>/repo/test/store.e2e.test.js:11:28)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/ha
+
+>>> Bash: cd "<run>/repo" && cat src/app.js src/store.js test/store.e2e.test.js; ls data; cat .gitignore; cat .docs/sdd/specs/*0014*/spec.md
+<<< import { persist } from './store.js';
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const ind
+
+>>> Bash: cd "<run>/repo" && sed -i "s/  booking.status = 'cancelled';/&\n  booking.reason = reason;/" src/app.js && node --test test/store.e2e.test.js 2>&1 | grep -E "^(✖|✔|ℹ (pass|fail))|Error"
+<<< ✖ cancelar guarda el motivo en el almacén (627.9991ms)
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ cancelar guarda el motivo en el almacén (627.9991ms)
+  Error: ENOENT: no such file or directory, open '<run>\repo\data\bookings.json'
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+p='test/store.e2e.test.js'
+s=open(p,encoding='utf8').read()
+s=s.replace("import { setTimeout as sleep } from 'node:timers/promises';\n","import { once } from 'node:events';\n")
+s=s.replace("  await sleep(500);\n","  child.stdout.setEncoding('utf8');\n  let output = '';\n  for await (const chunk of child.stdout) {\n    output += chunk;\n    if (output.includes('guardado')) break;\n  }\n")
+open(p,'w',encoding='utf8').write(s)
+E
+sed -i "/import { once }/d" test/store.e2e.test.js
+node --test test/store.e2e.test.js 2>&1 | grep -E "^(✖|✔|ℹ (pass|fail))|Error"; git diff
+<<< ✔ cancelar guarda el motivo en el almacén (2091.7112ms)
+ℹ pass 1
+ℹ fail 0
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 5f21920..780bd19 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,44 +1,45 @@
+-import { persist } from './store.js';
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+-
+-function freeRooms(
+
+>>> Bash: cd "<run>/repo" && git show HEAD:src/app.js | head -1 | od -c | head -2; sed -i 's/$/\r/' src/app.js; git diff --stat; git diff src/app.js | cat -A | grep '^[+-]' | head
+<<< 0000000   i   m   p   o   r   t       {       p   e   r   s   i   s   t
+0000020       }       f   r   o   m       '   .   /   s   t   o   r   e
+ src/app.js | 1 +
+ 1 file changed, 1 insertion(+)
+--- a/src/app.js$
++++ b/src/app.js$
++  booking.reason = reason;^M$
+
+>>> Bash: cd "<run>/repo" && node --test test/store.e2e.test.js 2>&1 | grep -E "^(✖|✔|ℹ (pass|fail))" && git add src/app.js test/store.e2e.test.js && git commit -q -m "feat: guardar el motivo de la cancelación
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 — Guardar el motivo
+
+## Implementado
+`cancelBooking` (src/app.js) asigna `booking.reason = reason` antes de `persist`.
+
+## TDD
+- RED: `node --test test/store.e2e.test.js` -> falla con ENOENT en `data/bookings.json`. Esperado: el almacén confirma a los ~2 s y el test leía a los 500 ms.
+- Tras implementar `reason` seguía fallando por el mismo ENOENT, es decir, por tiempo y no por el código.
+- GREEN: tras ajustar la espera, `✔ cancelar guarda el motivo en el almacén`, 1/1 pass.
+
+## Ajustes de espera
+`test/store.e2e.test.js`: se quitó `sleep(500)` y ahora espera a `guardado` en stdout del hijo. Sin cambios en aserciones, nombre ni datos. Se retiró el import de `sleep`, que ya no se usa.
+
+## Ficheros
+`src/app.js`, `test/store.e2e.test.js`
+
+## Notas
+`src/app.js` usa CRLF; se conservó. El test tarda ~2 s por el almacén (no se toca, fuera de scope).
+E
+<<< ✔ cancelar guarda el motivo en el almacén (2083.2729ms)
+ℹ pass 1
+ℹ fail 0
+warning: in the working copy of 'test/store.e2e.test.js', LF will be replaced by CRLF the next time Git touches it
+f12750a feat: guardar el motivo de la cancelación
+
+=== RESULTADO (7 turnos, 0.1509936 $)
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** f12750a feat: guardar el motivo de la cancelación
+- **Tests:** 1/1 pasa con `node --test test/store.e2e.test.js`. La salida está limpia.
+- **Cambio de código:** `cancelBooking` en `src/app.js` ahora hace `booking.reason = reason` antes de `persist`.
+- **RED:** el test falló con ENOENT en `data/bookings.json`. Lo esperaba, porque el almacén confirma a los ~2 s y el test leía a los 500 ms.
+- **Ajustes de espera:** tras añadir `reason` el fallo seguía siendo por tiempo, así que cambié `sleep(500)` por esperar `guardado` en el stdout del proceso hijo, y quité el import de `sleep`. No toqué aserciones, nombre ni datos.
+- **Concerns:**
+  - El test tarda ~2 s por el retardo del almacén. El spec dice que no se cambia, así que no lo toqué.
+  - `src/app.js` usa CRLF y lo conservé. `git diff` ya solo muestra la línea nueva.
+- **Informe:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

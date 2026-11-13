@@ -251,7 +251,7 @@ describe('Molde y guardado (lib.mjs)', () => {
     const { subject, errs, calls } = start({}, kitFs(), { run: ({ args }) => (args.includes('--show-cdup') ? { stdout: '../\n' } : undefined) });
 
     expect(dies(() => subject.commit('feat: base'))).toBe('exit 1');
-    expect(errs).toEqual([`[a-1] el molde ${subject.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git`]);
+    expect(errs).toEqual([`[a-1] el molde ${subject.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git (git rev-parse --show-cdup: código 0, «../»)`]);
     expect(calls.some(({ args }) => args.includes('add'))).toBe(false);
   });
 
@@ -657,6 +657,13 @@ describe('Segundo turno y persona (lib.mjs)', () => {
     expect(argsOf(fs).at(-1)).toBe('Primera.');
     const results = fs.read(join(RUNS, 'red', 'a-1.jsonl')).trim().split('\n').map((line) => JSON.parse(line)).filter((event) => event.type === 'result');
     expect(results.map((event) => event.total_cost_usd)).toEqual([0.5, 1]);
+  });
+
+  it('TURN2 hace salir al sujeto con el código del segundo turno (fila 63 de debt.md)', async () => {
+    let calls = 0;
+    const { subject } = start({ TURN2: 'Sigue.' }, kitFs(), { claude: () => ({ code: ++calls === 2 ? 124 : 0 }) });
+
+    expect(await subject.launch('Primera.')).toBe(124);
   });
 
   it('resume reanuda la sesión real con claude', async () => {

@@ -36,6 +36,8 @@ function toyFs(): MemoryFs {
 
 const tools = (fs: MemoryFs, label: string, text: string) => fs.write(join(OUT, `${label}.tools.txt`), text);
 const lineOf = (lines: string[], id: string) => lines.find((line) => line.startsWith(`${id} ·`));
+// El veredicto «sin leer» dice dónde leer: los texts.txt de ese escenario.
+const texts = (id: string) => join(OUT, `${id}-*.texts.txt`);
 
 describe('verdict', () => {
   it('da verde y rojo por escenario', () => {
@@ -157,7 +159,7 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
       tools(fs, label, finished(CLEAN));
       said(fs, label, '🦆 Cambia el separador\n');
     }
-    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1');
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe(`k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1 · en ${texts('k1')}`);
   });
 
   it('text: sin texts.txt da rojo, y lo que solo está en tools.txt no cuenta', () => {
@@ -213,7 +215,7 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     tools(fs, 'k2-1', finished(CHAINED));
     tools(fs, 'k2-2', finished(CHAINED));
     const result = verdict(TABLE, OUT, [], fs);
-    expect(result.lines[0]).toBe('k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1, J2');
+    expect(result.lines[0]).toBe(`k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1, J2 · en ${texts('k1')}`);
     expect(result.red).toBe(false);
     expect(result.noEvidence).toBe(false);
   });
@@ -221,7 +223,7 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
   it('nombra todas las filas de una celda «Fila» con varias', () => {
     const fs = withRubric('| S1, S2, R1 Juntas | k1 | algo en prosa |');
     for (const label of ['k1-1', 'k1-2']) tools(fs, label, finished(CLEAN));
-    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: S1, S2, R1');
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe(`k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: S1, S2, R1 · en ${texts('k1')}`);
   });
 
   it('file: una regex de dos líneas casa con CRLF', () => {
@@ -236,7 +238,7 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
   it('nombra solo las filas que cubren el escenario', () => {
     const fs = withRubric('| J1 Juicio | k1 | algo en prosa |');
     for (const label of ['k1-1', 'k1-2', 'k2-1', 'k2-2']) tools(fs, label, finished(CLEAN));
-    expect(verdict(TABLE, OUT, [], fs).lines).toEqual(['k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1', 'k2 · 2/2 · umbral 1/2 · verde']);
+    expect(verdict(TABLE, OUT, [], fs).lines).toEqual([`k1 · 2/2 · umbral 2/2 · puerta verde · sin leer: J1 · en ${texts('k1')}`, 'k2 · 2/2 · umbral 1/2 · verde']);
   });
 
   it('un rojo y un «sin evidencia» no nombran filas sin leer', () => {
@@ -248,20 +250,20 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
   });
 
   it.each([
-    ['todos', ['puerta verde · sin leer: J1', 'puerta verde · sin leer: J1']],
-    ['todos menos k2', ['puerta verde · sin leer: J1', 'verde']],
+    ['todos', ['gate', 'gate']],
+    ['todos menos k2', ['gate', 'verde']],
     ['todos menos k1 y k2', ['verde', 'verde']],
-    ['k2, turno 2', ['verde', 'puerta verde · sin leer: J1']],
-    ['k1 (GREEN)', ['puerta verde · sin leer: J1', 'verde']],
-    ['ver arriba', ['puerta verde · sin leer: J1', 'puerta verde · sin leer: J1']],
-    ['Todos menos k2', ['puerta verde · sin leer: J1', 'verde']],
-    ['`todos` menos k2', ['puerta verde · sin leer: J1', 'verde']],
-    ['Todos', ['puerta verde · sin leer: J1', 'puerta verde · sin leer: J1']],
+    ['k2, turno 2', ['verde', 'gate']],
+    ['k1 (GREEN)', ['gate', 'verde']],
+    ['ver arriba', ['gate', 'gate']],
+    ['Todos menos k2', ['gate', 'verde']],
+    ['`todos` menos k2', ['gate', 'verde']],
+    ['Todos', ['gate', 'gate']],
   ])('una fila en prosa con Escenarios «%s» cubre lo que dice, y sin ids, todos', (cell, expected) => {
     const fs = withRubric(`| J1 Juicio | ${cell} | algo en prosa |`);
     for (const label of ['k1-1', 'k1-2', 'k2-1', 'k2-2']) tools(fs, label, finished(CLEAN));
     const states = verdict(TABLE, OUT, [], fs).lines.map((line: string) => line.split(' · ').slice(3).join(' · '));
-    expect(states).toEqual(expected);
+    expect(states).toEqual(expected.map((state, i) => (state === 'gate' ? `puerta verde · sin leer: J1 · en ${texts(['k1', 'k2'][i])}` : state)));
   });
 
   const RETRO = '| R1 Retro | k1 | `file: walkthrough.md /^Retro: corrección repetida → /` |';
@@ -330,6 +332,36 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
   });
 });
 
+describe('filas de escenario incompletas o con umbral incoherente (fila 63 de debt.md)', () => {
+  const withRow = (row: string) => {
+    const fs = toyFs();
+    fs.write(TABLE, TOY.replace(/^\| r2 .*$/m, row));
+    return fs;
+  };
+  const BAD = [
+    ['Esperado vacío', '| r2 | roadmap | Reordena. | salas |  | 1 | 1/1 | opus | toy |', 'r2: celda vacía en Esperado'],
+    ['n vacía', '| r2 | roadmap | Reordena. | salas | `ninguna` |  | 1/1 | opus | toy |', 'r2: celda vacía en n'],
+    ['Umbral vacío', '| r2 | roadmap | Reordena. | salas | `ninguna` | 1 |  | opus | toy |', 'r2: celda vacía en Umbral'],
+    ['Modelo vacío', '| r2 | roadmap | Reordena. | salas | `ninguna` | 1 | 1/1 |  | toy |', 'r2: celda vacía en Modelo'],
+    ['fila corta', '| r2 | roadmap | Reordena. | salas | `ninguna` | 1 |', 'r2: celda vacía en Umbral'],
+    ['Id vacío', '|  | roadmap | Reordena. | salas | `ninguna` | 1 | 1/1 | opus | toy |', 'fila 2: celda vacía en Id'],
+    ['denominador distinto de n', '| r2 | roadmap | Reordena. | salas | `ninguna` | 3 | 2/2 | opus | toy |', 'r2: Umbral 2/2 no es <k>/3 (n = 3)'],
+    ['numerador mayor que n', '| r2 | roadmap | Reordena. | salas | `ninguna` | 2 | 3/2 | opus | toy |', 'r2: Umbral 3/2 no es <k>/2 (n = 2)'],
+    ['umbral sin forma k/n', '| r2 | roadmap | Reordena. | salas | `ninguna` | 2 | dos | opus | toy |', 'r2: Umbral dos no es <k>/2 (n = 2)'],
+  ];
+
+  it.each(BAD)('%s da un BatteryError con el id y la columna', (_name, row, message) => {
+    expect(() => verdict(TABLE, OUT, [], withRow(row))).toThrow(new BatteryError(message));
+    expect(() => planLines(TABLE, [], {}, SPEC, withRow(row))).toThrow(new BatteryError(message));
+  });
+
+  it('también al lanzar', async () => {
+    const fake = fakeDeps(withRow(BAD[6][1]));
+
+    await expect(runBattery(env({}), CWD, fake.deps)).rejects.toThrow(new BatteryError(BAD[6][2]));
+  });
+});
+
 describe('la cabecera de battery.mjs', () => {
   const lines = readFileSync(resolve(import.meta.dirname, '../../../../tests/headless/battery.mjs'), 'utf8').split(/\r?\n/);
   const header = lines.slice(0, lines.findIndex((line) => !line.startsWith('//'))).join('\n');
@@ -364,7 +396,7 @@ describe('la batería de sdd-propose', () => {
   });
 
   it('da puerta verde a ws3 con pnpm install antes de node --test: WS y L las lee el hilo', () => {
-    expect(judged('pnpm install --offline', 'node --test')).toBe('ws3 · 2/2 · umbral 2/2 · puerta verde · sin leer: WS, L');
+    expect(judged('pnpm install --offline', 'node --test')).toBe(`ws3 · 2/2 · umbral 2/2 · puerta verde · sin leer: WS, L · en ${texts('ws3')}`);
   });
 });
 
@@ -406,6 +438,7 @@ function fakeDeps(fs: MemoryFs) {
       return { pid: 1, exited: Promise.resolve(0) };
     },
     processes: async () => [],
+    every: () => () => undefined,
     kill: () => undefined,
     syntaxError: (_path: string): string | null => null,
   };

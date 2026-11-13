@@ -1,0 +1,46 @@
+--- [2]
+Es un cambio (una feature), así que entro por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar el carril y empezar la spec, ~5 min.
+
+--- [23]
+Estoy escribiendo la spec; el comando de shell falló por un problema de comillas y la escribo con otra herramienta.
+
+--- [28]
+Añado la línea del resultado de la fusión a ✋ y lanzo el revisor de la spec (uno, sonnet, según la rúbrica).
+
+--- [35]
+Integro los hallazgos en la spec. Hay dos Críticos aceptados, así que después toca la segunda ronda con un revisor.
+
+--- [40]
+Ahora el cuerpo: Intent, Scope, líneas frágiles, «Dónde se prueba» y el delta.
+
+--- [56]
+La segunda ronda no trae Críticos, así que no hay tercera. Integro lo que acepto.
+
+--- [62]
+Ahora los escenarios: GIVEN completos, `--cada-semana`, argumentos sobrantes y solape.
+
+--- [71]
+Ahora: la spec está escrita y revisada, y espera tu aprobación. Queda: plan e implementación, que empiezan cuando apruebes.
+
+La spec está en `.docs/sdd/changes/20261111-231053-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. No he escrito código ni hecho commit.
+
+🦆 Hoy `reservar` solo crea la reserva semanal. Si la sala que quieres está ocupada, no puedes dejar apuntado que la querías. Con esta feature, `reservar Norte lun 10:00-12:00` con la sala ya reservada responde «apuntada en la lista de espera: Norte lun 10:00-12:00». `espera` te enseña lo que tienes apuntado. Si la sala está libre, `reservar` la reserva. Por dentro, la lista es un array en memoria junto a `bookings` en `src/app.js`.
+
+**✋ Decisiones que he tomado yo — valida estas** (hay 19 en la spec; estas son las que más pesan):
+1. **La lista vive en memoria y no sobrevive entre órdenes de la terminal.** Es la decisión más importante. `bookings` ya es un array fijo, y cada `node src/app.js …` es un proceso nuevo. La lista solo se ve dentro de un mismo proceso. Los tests y la validación la ejercen con `run` y `node -e`. Persistirla a fichero queda como otra feature. Recházala si la lista tiene que durar.
+2. **Comando `reservar <sala> <día> <franja>`.** Si la franja está libre, reserva y responde `reservada …`. Si está ocupada, te apunta.
+3. **Repetir lo mismo no duplica la entrada.** Responde «ya estaba en la lista de espera: …».
+4. **`espera` lista las entradas en orden de llegada.** Si no hay ninguna, responde «lista de espera vacía».
+5. **Fuera de esta feature:** pasarte la reserva o avisarte cuando se libere la sala, y quitarte de la lista. Es lo que más echarás en falta. Lo primero pide tocar `cancelar`, que hoy no modifica `bookings`.
+6. **Riesgo que aceptas:** un solape parcial (`10:00-11:00` sobre `10:00-12:00`) se reserva sin más. `libres` sigue ignorando el día.
+7. **Capacidad nueva `room-waitlist`.** El alta de reserva simple vive ahí de forma provisional.
+
+La review fue de un revisor sonnet en dos rondas: la primera con 2 Críticos, ambos aceptados, y la segunda sin Críticos. El detalle está en «Hallazgos de la review». El delta se probó en una copia con `sdd capability merge`: añade 7 requisitos y 5 reglas, sin rechazos.
+
+Para aprobar o pedir cambios, elige una opción:
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajustar, por ejemplo la persistencia.
+

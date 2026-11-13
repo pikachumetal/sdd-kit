@@ -1,0 +1,56 @@
+--- [3]
+Ahora: reviso la spec y leo la rúbrica de review-spec antes de la puerta de aprobación. Queda: la revisión y presentarte la spec, ~3 min.
+
+--- [8]
+Lite: un revisor con los siete puntos, en Sonnet.
+
+--- [11]
+Ya he lanzado la revisión de la spec con un revisor en Sonnet (lite: los siete puntos). Todavía no ha vuelto. Cuando termine, incorporaré sus hallazgos en `### Hallazgos de la review` y te presentaré la spec con su 🦆 para que la apruebes. Mientras tanto no toco nada más.
+
+--- [15]
+1. Crítico · Capacidades / Delta de comportamiento · El delta se declara `ADDED` sobre `rooms` como capacidad «Nueva», pero el comportamiento de `libres` sin franja ya existe hoy (responde `Norte, Sur`). Cambia un comportamiento existente, así que es un `MODIFIED` no declarado. Además no hay `capabilities/`, así que no se puede comprobar contra la verdad viva y `rooms` no existe como capacidad. · Declarar `MODIFIED` con el comportamiento anterior citado (`Norte, Sur`), o crear antes la capacidad `rooms` con su línea base. Decir en la spec que no hay `capabilities/` y cómo se trata.
+
+2. Crítico · Delta de comportamiento (escenario) · El escenario mezcla dos comportamientos. El `AND libres 10:00-12:00 responde Sur` es justo lo que el Scope excluye («No entra: `libres <franja>`, que responde igual que hoy»). Tampoco fija el día: la reserva es «el lunes», pero `libres 10:00-12:00` no dice día, así que el `Sur` depende de una suposición. · Quitar el `AND` y moverlo a un requisito de no regresión con su propio GIVEN/WHEN/THEN. Si se mantiene, concretar el día de la consulta.
+
+3. Importante · Delta de comportamiento (escenario) · El GIVEN con Norte reservada es irrelevante para la salida de `libres` sin franja. El escenario pasaría igual con un `run` que devolviera el mensaje fijo sin mirar el catálogo, y nada comprueba que no se liste ninguna sala. · Separar el escenario de «sin franja» (sin reservas) del de no regresión. Añadir un THEN que excluya `Norte`/`Sur` de la respuesta.
+
+4. Importante · Decisiones que he tomado yo / Delta · Faltan decisiones tomadas en el cuerpo y no listadas. (a) El mensaje es de error o de información, pero no se dice si es un fallo con código de salida distinto de 0 o un texto normal. (b) El caso `libres` con argumentos vacíos o espacios, o con una franja malformada, queda sin definir. (c) Se elige `falta la franja:` con minúscula inicial y sin punto, y la «forma de la guía» no se cita ni se enlaza. · Añadir estas decisiones a «✋» y citar la guía que fija la forma del mensaje.
+
+5. Importante · Scope / Dónde se prueba · Solo se prueba `run('libres', [])`. Falta decir si `run` devuelve cadena o escribe en stdout, y qué pasa con la franja formada solo por espacios o con más de un argumento. El «no entra» deja sin cubrir el límite entre «sin franja» y «franja inválida». · Listar en el Scope los casos límite que entran o los que se descartan, con su test.
+
+6. Importante · Capacidades / Delta (reglas de producto, 5 bis) · El delta introduce un texto nuevo de interfaz y un formato (`<franja>`, `10:00-12:00`) y no declara las cinco reglas: dónde vive el dato, idioma de los nombres, límites, avisos y regla ante conflicto. La constitución solo exige castellano, que sí se cumple. El formato de franja y la regla de conflicto de reservas no están declarados. · Añadir una sección con las cinco reglas, cada una declarada o «no aplica» con motivo (p. ej. el formato `HH:MM-HH:MM` y el aviso como mensaje de error).
+
+7. Menor · Cabecera / Aprobaciones · El modo lite cita «sus cinco condiciones» pero ninguna aparece en la spec; solo está la frase «sí, lite». Además `approved_at` es null mientras la decisión ya figura como validada. · Enumerar las cinco condiciones del modo lite o enlazarlas, y reconciliar el estado de la aprobación.
+
+8. Menor · Steering · `PRODUCT.md` no existe en `.docs/sdd/steering/` (error de lectura). Lo que se promete a nivel de producto no se puede contrastar. · Crear `PRODUCT.md` o indicar que la spec no depende de él.
+
+9. Menor · Delta de comportamiento (fixtures) · Los datos de ejemplo (Norte, Sur, lunes 10:00-12:00) son genéricos y no nombran clientes reales. Pero «Laura» aparece como aprobadora con nombre de persona. No contradice la constitución. · Confirmar que Laura es un rol del equipo y no una persona externa, o sustituir por el rol.
+
+10. Menor · Estimación · La estimación de 0,5 h no cuenta el test de no regresión de `libres <franja>` que el Scope promete («responde igual que hoy»), ni la verificación del gate `node --test` completo. · Ajustar la base de la estimación para incluir el test de no regresión y el gate de la constitución.
+
+--- [25]
+Ahora: presento la spec en la puerta de aprobación. Queda: tu aprobación; después, el traspaso a `sdd-implement` (lite no lleva plan).
+
+**🦆 En llano:** hoy, si escribes `libres` sin decir la franja, la herramienta responde `Norte, Sur`, como si las dos salas estuvieran libres siempre. Alguien puede reservar una sala ocupada. Con este cambio responde `falta la franja: libres <franja>`. `libres <franja>` sigue igual.
+
+**Spec:** `.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot/spec.md`
+- Carril lite, perfil `delegate` (del proyecto). Estimación: 0,5 h, una rama en `run` de `src/app.js` y su test.
+- El escenario: con Norte reservada el lunes de 10:00 a 12:00, `libres` sin franja responde `falta la franja: libres <franja>`, y `libres 10:00-12:00` sigue respondiendo `Sur`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El mensaje es texto plano devuelto por `run`, sin código de salida distinto, como los `sin reserva …` de `cancelar` y `anular`. En tu spec decía «la forma de la guía», pero no he encontrado ninguna guía en el repo. Si existe una, dime cuál y ajusto el texto.
+2. `rooms` se declara capacidad nueva y el delta va como ADDED, porque el repo no tiene `capabilities/`.
+
+**Review** (un revisor en Sonnet, lite): devolvió 10 hallazgos, 2 Críticos.
+- Aceptados 3, todos menores: las decisiones sin listar, las cinco condiciones de lite (ahora enumeradas) y la base de la estimación.
+- Rechazados 7, cada uno con su motivo en la spec. Los dos Críticos van rechazados:
+  - Que el ADDED sea un MODIFIED encubierto: no hay capacidad `rooms` que documente lo que `libres` hace hoy.
+  - Que el `AND libres 10:00-12:00 responde Sur` mezcle comportamientos y falte el día: es la guardia de no regresión, y `libres` no recibe día.
+- Como no acepté ningún Crítico ni reescribí la decisión central, no hay segunda ronda.
+
+Opciones:
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+La spec queda en espera hasta que contestes. Sigue en `draft` y sin la aprobación de Laura.
+

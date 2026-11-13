@@ -1,0 +1,95 @@
+--- [31]
+Ahora: escribo el test de regresión en RED antes de tocar el código. Queda: verlo fallar, arreglar `findBooking`, revisión y commit, ~10 min.
+
+--- [33]
+RED confirmado: falla por la causa esperada. Ahora el fix mínimo.
+
+--- [37]
+Verde: 5/5 y lint limpio. Actualizo `patch.md` y lanzo el revisor único del patch.
+
+--- [40]
+Ahora: espero al revisor único del patch (causa raíz, fix y test). Queda: responder sus hallazgos, hacer el commit del fix y cerrar con `sdd-archive`, ~8 min.
+
+El arreglo y su test ya están hechos y la suite pasa. Sigo cuando llegue el revisor.
+
+--- [43]
+Hallazgos:
+
+1. **Baja, test frágil por orden.** El test de regresión depende de ir antes que `cancelar una reserva activa`. Ese otro test cancela la reserva del lunes, y la aserción `libres` → `Sur` fallaría si se reordenaran. Dentro del fichero `node --test` es secuencial y sigue el orden de declaración, así que hoy pasa. El comentario del test ya lo avisa. Para blindarlo bastaría comprobar con `cancelar Norte lun` en vez de `libres`, o aislar el estado.
+2. **Baja, ruido en el diff de `test/cancel.test.js`.** El diff reescribe el fichero entero, y git avisa de LF→CRLF. Parece un cambio de finales de línea, no de contenido. Conviene normalizarlo para que el diff muestre solo las líneas nuevas.
+3. **Baja, `anular` sin test.** El patch.md afirma que el fix arregla también `anular`. Eso es cierto por el código, porque `voidBooking` comparte `findBooking`, y no hay efectos laterales. Pero ningún test cubre `anular` con otro día, así que esa parte queda sin regresión.
+
+Comprobaciones sin hallazgos:
+- **Causa raíz de §2:** es cierta. El `findBooking` original ignoraba `day` y filtraba solo por `room` y `status === 'active'`. Con eso `cancelBooking` marcaba la reserva del lunes y respondía con el día pedido.
+- **Fix:** añadir `b.day === day` es mínimo y correcto. `freeRooms` no usa `findBooking`, y el resto de llamadores siempre pasan `day`.
+- **El test falla sin el fix:** sin él, `cancelar Norte mar` devuelve `cancelada Norte mar`, y la primera aserción falla (razonado, no ejecutado).
+- **Independencia entre ficheros:** `app.test.js` corre en otro proceso, así que no comparte el estado en memoria.
+- **Afirmación sobre el patch 0007:** no la he podido verificar, porque en el repo solo hay un commit.
+
+No he modificado ficheros.
+
+--- [47]
+Los finales de línea del test eran CRLF y mi heredoc lo dejó en LF; lo restauro y respondo los hallazgos en §4.
+
+--- [52]
+Fix commiteado. Paso al cierre.
+
+--- [60]
+Abiertas a la vez: ninguna otra rama (solo este worktree).
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva del lunes y decía «cancelada Norte mar». Ahora dice `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y queda arreglado también.
+
+**✋ Me salí del plan en…**
+
+- nada
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día | `ejecución real` | `sin reserva Norte mar` |
+| La reserva del lunes sigue activa | `ejecución real` | `cancelada Norte lun` |
+| `cancelar Sur mar` (sin reserva) | `ejecución real` | `sin reserva Sur mar` |
+| La reserva del lunes sigue activa tras el intento del martes | `suite` | `libres 10:00-12:00` → `Sur` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 y lint sin hallazgos sobre el árbol del fix (e7dee58). Vuelve a correr tras el merge de sincronización.
+
+**Sin probar**
+
+- `anular` con otro día: no tiene test propio. El revisor lo señaló y lo dejé fuera del patch.
+- `sdd merge --check` dice `falta 'merge.into' o 'merge.noFf'` en `sdd-kit.json`. El merge lo presento yo y espera tu orden.
+
+Panel: plan B en http://127.0.0.1:55916/ (no ve la app, así que ni consola ni capturas). `.temp/` no está en `.gitignore`; propongo añadirlo.
+
+**Guion**
+
+Rama `feature/0012-cancelar-otro-dia` · worktree `<run>/repo`
+
+Es una CLI: no hay entorno que arrancar, y no guarda reservas entre comandos. Cada ejecución parte con la reserva de Norte el lunes activa.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Tu caso: cancelar Norte el martes, que no está reservado → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Cancelar Norte el lunes sigue funcionando → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+Para cerrar el panel, dímelo y lo paro. Lo arrancó el PID 31794.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

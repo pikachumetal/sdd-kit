@@ -1,0 +1,123 @@
+
+>>> Skill: sdd-kit:sdd-retro
+<<< Launching skill: sdd-kit:sdd-retro
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders/ && ls && cat notas-sesion.md && cat walkthrough.md
+<<< Exit code 1
+walkthrough.md
+cat: notas-sesion.md: No such file or directory
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders/ && cat walkthrough.md; cd <run>; ls; find . -name 'notas-sesion*' -not -path './repo/.git/*'
+<<< # Walkthrough — feature 0081
+
+## 1. Cambios realizados
+
+Recordatorio por correo de cada reserva.
+
+## 5. Aprendizajes
+
+- Ninguno.
+
+Retro: <señal> → <salida> (<fichero>) | Retro: <señal> → ticket del kit: <qué desmiente> | Retro: sin señales
+repo/
+./repo/notas-sesion.md
+
+>>> Read: <run>\repo\notas-sesion.md
+<<< 1	# Notas de la sesión de la 0081
+2	
+3	- En la Task 1 quedó un `console.log` de depuración en `src/`; lo cazó la revisión final y costó una pasada de fix.
+4	- En la Task 2 volvió a quedar otro `console.log` en `src/`, con otra pasada de fix.
+5	- El proyecto corre `node --test` antes de cada commit, y ningún test lo mira.
+6	
+
+>>> Bash: cd repo && git ls-files | head -50; cat package.json; ls test* 2>/dev/null; cat CLAUDE.md 2>/dev/null | head -30
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+notas-sesion.md
+package.json
+src/app.js
+test/app.test.js
+{"type": "mod
+
+>>> Bash: cat test/app.test.js src/app.js .docs/sdd/steering/operations.md; grep -n -i "console" .docs/sdd/steering/constitution.md
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'S
+
+>>> Bash: cat > test/no-console-log.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+
+// La única salida permitida es la del CLI: `console.log(run(...))`.
+test('src/ no deja console.log de depuración', () => {
+  const dir = new URL('../src/', import.meta.url);
+  const found = [];
+  for (const file of readdirSync(dir)) {
+    readFileSync(new URL(file, dir), 'utf8').split('\n').forEach((line, i) => {
+      if (/console\.log\(/.test(line) && !/console\.log\(run\(/.test(line)) found.push(`${file}:${i + 1}`);
+    });
+  }
+  assert.deepEqual(found, []);
+});
+EOF
+node --test 2>&1 | tail -12
+python3 - <<'EOF' 2>/dev/null || sed -i 's/^Retro: <señal>.*$/Retro: error que cazaría un chequeo → test (test\/no-console-log.test.js)/' .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md
+EOF
+tail -3 .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md; git status --short
+<<< ✔ libres excluye la sala reservada en la franja (1.1074ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1822ms)
+✔ cancelar respeta el día (1.0044ms)
+✔ src/ no deja console.log de depuración (2.8739ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 179.4618
+- Ninguno.
+
+Retro: <señal> → <salida> (<fichero>) | Retro: <señal> → ticket del kit: <qué desmiente> | Retro: sin señales
+?? test/no-console-log.test.js
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261020-100000-feature-0081-reminders\walkthrough.md
+<<< The file <run>\repo\.docs\sdd\specs\20261020-100000-feature-0081-reminders\walkthrough.md has been updated successfully.
+
+=== RESULTADO (10 turnos, 0.13150830000000002 $)
+Hice el paso de retro del cierre de la 0081 y salió una señal: `error que cazaría un chequeo`. Los dos `console.log` de depuración (Task 1 y Task 2) llegaron hasta la revisión final y costaron una pasada de fix cada uno. Ninguno de los tests que corre `node --test` los miraba.
+
+- **Salida elegida:** un test, que es la primera opción del orden. Está en `test/no-console-log.test.js` y falla si `src/` contiene un `console.log(` que no sea el del CLI (`console.log(run(`).
+- **Verificación:** con el código actual pasan los 4 tests.
+- **Walkthrough:** en el §5 de `walkthrough.md` dejé la línea `Retro: error que cazaría un chequeo → test (test/no-console-log.test.js)`. Sustituye a la línea de plantilla que había.
+
+Queda todo sin commitear: el test nuevo y el walkthrough modificado.
+
+Otra cosa que vi: `operations.md` dice `Tests: npm test`, pero `package.json` no tiene script `test`. No lo toqué porque no salió de las notas de la sesión.

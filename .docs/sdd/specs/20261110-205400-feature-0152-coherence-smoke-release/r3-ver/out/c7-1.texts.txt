@@ -1,0 +1,71 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, porque los ejes ya volvieron. Queda: leer los informes, ~2 min.
+
+--- [15]
+Los dos informes volvieron: Spec sin críticos ni importantes, Código con 1 Important (`canceladas --desde` sin día lista todo en silencio). Lo arreglo con TDD: primero el test en rojo.
+
+--- [18]
+Rojo por la razón esperada. Ahora el arreglo.
+
+--- [27]
+Arreglo hecho y commiteado (`cde7e91`, suite 4/4). Ahora: lanzo la única re-revisión del rango `72b4cdb..cde7e91` con `opus`+high. Queda: ~5 min.
+
+--- [31]
+Preparo el worktree desacoplado y el paquete del rango de fix.
+
+--- [41]
+La re-revisión está en marcha en segundo plano, con su vigilancia de silencio. Hasta ahora:
+
+- **Revisión final:** el eje Spec salió sin críticos ni importantes. El eje Código tenía 1 Important: `canceladas --desde` sin día listaba todo sin avisar.
+- **Arreglo:** lo reproduje con un test en rojo y lo corregí en `src/app.js` (`cde7e91`). La suite pasa 4/4. Ahora `canceladas --desde` sin día responde «indica un día: lun, mar, mié, jue, vie» y no lista nada.
+- **Registros:** apunté en el ledger `Final:` el arreglo, el eje Arquitectura (no sale) y un ruling sobre el texto del aviso. Ese texto lo propuso el revisor y el spec no lo fija, así que lo mantuve. En `tasks.md` están `Revisión final` y `Pasada de fix`, y `tasks.md` sigue sin commitear.
+- **Minor diferido:** el test de `canceladas` depende del orden respecto al de `cancelar`.
+
+Cuando vuelva la re-revisión (`72b4cdb..cde7e91`, `opus`+high), apunto su línea en `tasks.md` y paso a la validación. No cierro nada hasta leer su informe.
+
+--- [43]
+### Finding Verdicts
+- **`src/app.js:20-23`: `parseSince` never sets `missing`, so `canceladas --desde` without a day filters nothing and gives no warning.** ADDRESSED.
+  - `src/app.js:22-23` now sets `missing: index !== -1 && !since`. If `--desde` is absent, `missing` is false. If `--desde` is present with no day after it, `since` is `undefined` and `missing` is true.
+  - `src/app.js:54-57` checks `missing` first and returns `indica un día: ${days.join(', ')}`. With `days` at `src/app.js:4`, that gives exactly «indica un día: lun, mar, mié, jue, vie». `cancelledList` is not called, so nothing is listed.
+  - The new test at `test/cancel.test.js:76-78` asserts that exact text. It returns before the list is read, so unlike the existing `canceladas` test it does not depend on the order of the `cancelar` test. I read the code rather than running the suite. Nothing in it raised a specific doubt, so the ledger's 4/4 claim remains unverified.
+
+### New Breakage in the Fix Diff
+None.
+- Plain `canceladas` and `canceladas --desde <día>` still go through `cancelledList(since)` as before.
+- The new message is in Spanish, so the language rule is met.
+- No existing test was changed. The diff only adds one test.
+
+### Out-of-Scope Observations
+- `src/app.js:22` and `src/app.js:43` (code the fix did not touch): if `--desde` is followed by something that is not a weekday, such as `canceladas --desde dom` or `canceladas --desde --otra`, that value is taken as the day. `days.indexOf` then returns -1, `from` becomes -1, and every cancellation is listed with no warning. This is the same "filters nothing, says nothing" symptom for a different input. It existed before this fix, and the spec does not say what should happen with a wrong day. Minor.
+- The suite still has no test for the normal `--desde <día>` filter.
+- The order dependency between the `canceladas` and `cancelar` tests is still there. It was already logged as a deferred Minor.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [46]
+La revisión final de la 0010 está cerrada, sin nada abierto. No he validado ni archivado la feature.
+
+- **Spec:** sin críticos ni importantes.
+- **Código:** había un Important. `canceladas --desde` sin día listaba todas las cancelaciones sin avisar.
+  - Lo reproduje con un test en rojo y lo arreglé en `src/app.js` (commit `cde7e91`).
+  - Ahora responde «indica un día: lun, mar, mié, jue, vie» y no lista nada. La suite pasa 4/4.
+  - El texto del aviso lo propuso el revisor y el spec no lo fija. Lo dejé como `Ruling` en el ledger.
+- **Re-revisión (`72b4cdb..cde7e91`, `opus`+high):** el hallazgo queda corregido y no hay roturas nuevas. El revisor leyó el diff y no ejecutó la suite, así que el 4/4 lo ejecuté yo.
+- **Eje Arquitectura:** no salió, porque el diff no tiene módulo, dependencia, contrato ni datos nuevos.
+
+**Minors diferidos** (no entran en un fix pass):
+- El test `canceladas` depende de que `cancelar` se haya ejecutado antes.
+- `--desde` con un valor que no es un día, por ejemplo `dom`, lista todo sin avisar. Ya pasaba antes del arreglo y el spec no dice qué hacer.
+- Falta un test del filtro normal `--desde <día>`.
+
+**`tasks.md` sin commitear:** sigue sin commit. Están sus líneas de `Revisión final`, `Pasada de fix` y `Re-revisión`.
+
+Siguiente paso: `sdd-archive` para la validación, el walkthrough y el merge. Dime si lo lanzo.
+
+--- [47]
+La vigilancia de silencio de la re-revisión terminó con código 0 y sin ningún aviso. La re-revisión ya había vuelto, así que no hay nada que hacer.
+
+El estado sigue como en mi último mensaje. La revisión final está cerrada y falta lanzar `sdd-archive` para la validación, el walkthrough y el merge. Dime si lo lanzo.
+

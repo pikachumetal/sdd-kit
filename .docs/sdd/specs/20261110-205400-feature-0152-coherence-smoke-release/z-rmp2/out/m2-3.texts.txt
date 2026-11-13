@@ -1,0 +1,70 @@
+--- [3]
+Empiezo por el estado real del roadmap.
+
+--- [17]
+Estoy escribiendo las tres filas en el roadmap; ya tengo la propuesta (0010). Las llamadas a Python de antes no hacían nada y no tocaron ningún fichero.
+
+--- [24]
+He apuntado el módulo de informes en el roadmap como tres features en **Next**, con su propuesta. No he arrancado nada. `roadmap check` pasa y está confirmado en `develop` (commit `18e8fdc`).
+
+`sdd roadmap publish` se negó, porque `develop` está en este worktree y `ROADMAP.md` tenía cambios sin confirmar, que eran los míos. Hice `git commit` directamente de los dos ficheros, sin push y sin el bloqueo de `sdd merge`. No hay otras ramas ni worktrees con los que choque.
+
+**Filas** (ids 0010–0013 reservados con `sdd id next --reserve`):
+
+| Id | Feature | Tras | Tamaño |
+| --- | --- | --- | --- |
+| 0011 | Informe de ocupación por sala | — | M |
+| 0012 | Exportar el informe a Excel | 0011 | M |
+| 0013 | Aviso semanal a los responsables | 0012, 0008 | M |
+
+La propuesta (0010) está en `.docs/sdd/changes/20261112-120000-proposal-0010-informes/proposal.md`, con cada regla y su ejemplo con datos.
+
+**Decisiones que tomé yo** (las dejé también en el cuerpo del commit):
+- **Ocupación:** horas reservadas ÷ 60 h por semana, de lunes a viernes, de 08:00 a 20:00. Por ejemplo, Norte con 2 h reservadas da 3,3 %.
+- **Periodo semanal:** las reservas guardan el día de la semana (`lun`), no una fecha. Con fechas habría que cambiar el modelo de reservas.
+- **Excel:** un `.xlsx` real, sin dependencias externas, porque `operations.md` no las admite.
+- **Responsables:** una lista de correos en `responsables.json`.
+- **Periodicidad:** el comando `informe-semanal` lo lanza el cron del servidor. La aplicación no programa nada.
+- **0013 va tras 0008:** el aviso reutiliza el correo de la fila 0008, que aún está en Now.
+- **0012 antes que 0013:** las dos tocan `src/app.js`, y el validador avisaba si no iban en orden.
+
+**A confirmar con el cliente:**
+- **Responsables:** `PRODUCT.md` dice que la herramienta la usa una sola persona. Los responsables son un público nuevo, así que conviene confirmarlo.
+- **Semana lun–vie, 08:00–20:00:** es una suposición mía.
+
+La fila 0011 va primero. Este es su prompt de arranque:
+
+### *✨ 0011 — Informe de ocupación por sala*
+***Nombre:*** `feature/0011-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0011 con sdd-propose, carril feature: un comando `informe` que muestra la ocupación semanal de cada sala.
+
+Alcance:
+- src/app.js y test/app.test.js: comando `informe` con horas reservadas, horas disponibles y % de ocupación por sala
+
+Fuera de alcance:
+- exportar a Excel: 0012
+- aviso semanal por correo: 0013
+
+Decisiones ya tomadas:
+- Horas disponibles: lunes a viernes, 08:00–20:00 (60 h por semana), porque el cliente delegó el detalle
+- Periodo semanal, porque las reservas guardan el día de la semana y no una fecha
+- Formato de salida: `Norte 2 h de 60 h (3,3 %)`, una línea por sala
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261112-120000-proposal-0010-informes/proposal.md, §Reglas de negocio y §Reparto
+
+Nada que saldar.
+
+Está hecho cuando `node src/app.js informe` imprime `Norte 2 h de 60 h (3,3 %)` y `Sur 0 h de 60 h (0,0 %)` con las reservas actuales, y `node --test` pasa.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

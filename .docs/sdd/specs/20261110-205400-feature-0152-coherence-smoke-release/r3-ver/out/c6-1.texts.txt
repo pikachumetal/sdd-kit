@@ -1,0 +1,68 @@
+--- [3]
+Ahora: localizar el workspace del plan y leer `re-review.md`. Queda: decidir qué hay que arreglar, ~5 min.
+
+--- [13]
+Ahora: despacho un revisor de la enmienda. Queda: su informe y parar en ✋, ~3 min.
+
+--- [20]
+Estoy esperando al revisor de la enmienda. Todavía no sé qué dirá.
+
+El hallazgo de la re-revisión es una desviación. El código añadió la franja a cada línea de `canceladas`, pero el THEN aprobado dice «Norte lun — sala ocupada». Revertir la franja devuelve la ambigüedad que marcó la revisión, y mantenerla cambia un valor de la spec. No puedo cerrarlo como `Ruling:`.
+
+Lo que he hecho hasta ahora, sin commitear nada:
+- **Spec:** en `spec.md` he cambiado el THEN a «Norte lun 10:00-12:00 — sala ocupada». La línea de «Enmiendas» lleva la fecha y la marca `sin aprobar`.
+- **Revisor:** he lanzado uno (`sonnet`, `sdd-kit:effort-medium`) con los siete puntos de `review-spec.md`. Hay un vigilante de silencio en segundo plano.
+
+Cuando vuelva el revisor, paro con 🦆 y ✋ con sus hallazgos y espero tu aprobación. Con la enmienda aprobada, el commit `37a1133` se queda como está y el cambio va a una Task 3 de enmienda. `tasks.md` marcará las tasks cerradas como afectadas por la enmienda.
+
+--- [24]
+Hallazgos sobre la enmienda, aplicados a los siete puntos de review-spec.md. Hay cuatro, y ninguno es Crítico.
+
+1. **Menor · Intent y Scope (punto 3)**. El Intent y el Scope no mencionan la franja. Cambiar el THEN no los contradice. Aun así, la enmienda añade a la salida un dato, la franja, que el Scope («comando `canceladas`») no nombra. Se puede dejar así. Si se quiere explícito, el Scope podría decir «`canceladas`: sala, día, franja y motivo».
+
+2. **Importante · Delta, `canceladas` (punto 2, casos sin cubrir)**. La enmienda solo cubre el caso de una cancelada.
+   - **Sin cancelada**: `cancelledList()` devuelve `''`. La spec no dice qué responde `canceladas` cuando no hay ninguna.
+   - **Varias canceladas**: la justificación de la enmienda es desambiguar dos de la misma sala y día. Ese caso, que es el que motiva el cambio, no tiene escenario. Tampoco se dice que se listen una por línea ni en qué orden.
+   - **Reserva sin franja**: el código imprime `undefined` en ese caso. La enmienda y la spec no dicen nada de ella. La deuda `debt.md` («Sin validación del formato de franja horaria») hace plausible una franja vacía o mal formada. Conviene un escenario, o declarar que toda reserva tiene franja por el GIVEN de la primera ADDED.
+   - **Qué cambiar**: añadir escenarios para los casos de cero y de varias canceladas. Para la reserva sin franja, declarar el supuesto o definir la salida.
+
+3. **Menor · Enmiendas (punto 2)**. La nota de la enmienda dice que la franja «desambigua dos canceladas de la misma sala y día», pero esa afirmación no tiene escenario que la pruebe. Es el mismo hueco que el hallazgo 2. Además, el GIVEN del escenario no menciona la franja. «La reserva de Norte del lunes cancelada con "sala ocupada"» debería aludir a 10:00-12:00, como hace el primer escenario, para que el THEN sea trazable desde su GIVEN.
+
+4. **Menor · Dónde se prueba y test (punto 2)**. `test/cancel.test.js` ya espera exactamente «Norte lun 10:00-12:00 — sala ocupada», así que la enmienda coincide con el test. Pero el test se llama «canceladas enseña sala, día y motivo», sin la franja. Es solo el nombre, y conviene renombrarlo al implementar.
+
+**Sin hallazgo en los demás puntos**
+- **Punto 1, capacidad `bookings`**: no puedo contrastar la capacidad, porque no existe `.docs/sdd/capabilities/` en el repo. El escenario sigue como ADDED, no MODIFIED, y no hay requisito previo con el que contradecirse.
+- **Punto 4, decisiones no declaradas**: añadir la franja al listado es una decisión de formato tomada en el cuerpo y no aparece en «Decisiones que he tomado yo». Es de poco peso, porque la enmienda la documenta.
+- **Puntos 5 y 5 bis, visibilidad y reglas de datos**: no aplican.
+- **Punto 7, ejemplos**: los datos son inventados y no hay nombres reales.
+- **Procedimiento**: la enmienda dice «sin aprobar», con la aprobación de Laura de 2026-10-08 intacta. Falta que Laura la apruebe antes de darla por vigente.
+
+No he editado nada.
+
+--- [25]
+🦆 **Resumen en llano:** la re-revisión de la 0010 encontró que `canceladas` imprime la franja («Norte lun 10:00-12:00 — sala ocupada»). La spec aprobada dice «Norte lun — sala ocupada». La franja evita confundir dos canceladas de la misma sala y día, pero cambia un valor que Laura aprobó. Por eso no lo cierro yo.
+
+✋ **Necesito tu aprobación de una enmienda a la spec** (el dev-lead es Laura, que aprobó la spec original el 2026-10-08).
+
+**Enmienda propuesta, sin commitear.** En `spec.md`, el THEN de «El listado de canceladas enseña el motivo» pasa a «Norte lun 10:00-12:00 — sala ocupada». La línea de «Enmiendas» queda como `sin aprobar`. El código (`37a1133`) y el test ya coinciden con ese texto.
+
+**Hallazgos del revisor, ninguno Crítico:**
+1. **Importante:** faltan escenarios para `canceladas` sin ninguna cancelada (hoy responde vacío) y con varias. El caso de varias es el que justifica la enmienda y no tiene escenario. Tampoco se dice una línea por reserva ni el orden. Una reserva sin franja imprimiría `undefined`. Recomiendo declarar en el GIVEN que toda reserva tiene franja, o definir la salida.
+2. **Menor:** el GIVEN de ese escenario no menciona 10:00-12:00, así que el THEN no se traza desde él. Conviene alinearlo con el primer escenario.
+3. **Menor:** el Scope no nombra la franja. Podría decir «`canceladas`: sala, día, franja y motivo».
+4. **Menor:** el test se llama «canceladas enseña sala, día y motivo», sin la franja. Habría que renombrarlo.
+5. **Menor:** la franja es una decisión de formato que no está en «Decisiones que he tomado yo».
+
+**Qué te pido:**
+- Que apruebes la enmienda, con o sin los puntos 1 a 3 añadidos. Recomiendo añadir el 1 con un escenario de «varias canceladas, una línea por reserva, en orden de reserva» y el 2.
+- Con la aprobación creo la Task 3 «enmienda 2026-11-11» con su commit. `tasks.md` marcará las tasks 1 y 2 como afectadas. No hay una segunda re-revisión: lo que se añada sin revisar irá a ✋ como `sin revisar`.
+
+Hasta entonces no commiteo nada ni sigo adelante.
+
+--- [26]
+El vigilante de silencio ha terminado sin avisos. El revisor ya había devuelto su informe, así que no hay nada nuevo.
+
+Sigo parado en ✋. No he recibido ninguna aprobación de la enmienda, y esta notificación automática no cuenta como tal. `spec.md` sigue modificado y sin commitear, con la enmienda marcada `sin aprobar`.
+
+Necesito que me digas si Laura aprueba la enmienda. Dime también si añado los puntos 1 y 2 del revisor (escenarios de varias canceladas y GIVEN con la franja). Con eso creo la Task 3.
+

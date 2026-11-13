@@ -1,0 +1,54 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y presentarte el anuncio, ~2 min.
+
+--- [14]
+Ahora: te presento el anuncio y lo que he entendido, y te hago la primera pregunta del diseño. Queda: la entrevista, la spec (con tu aprobación), el plan y la implementación, ~20 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres una lista de espera para las salas. Hoy `src/app.js` solo sabe listar salas libres (`libres`), reservar (`reservar`) y cancelar. Las reservas viven en memoria y no hay forma de saber que una sala está ocupada, salvo que `libres` no la muestre. Quieres poder apuntarte cuando la sala que quieres está ocupada. Lo he tratado como feature, no como patch, porque es comportamiento nuevo con decisiones de diseño que nadie ha fijado. No toco nada hasta que me contestes.
+
+Las preguntas de diseño vienen después. Antes necesito un dato que solo tú sabes: ¿qué quieres que pase en la práctica cuando la sala que querías esté ocupada y luego quede libre?
+
+--- [22]
+Rama `feature/0010` creada desde `develop`; el id lo reservó el script y no hay remoto con el que contrastarlo. Entiendo el problema: miras `libres` a mano una y otra vez hasta que Norte se libera. La app es de línea de comandos y no tiene ningún proceso en segundo plano, así que esta decisión condiciona el resto del diseño.
+
+❓ **¿Qué pasa cuando la sala que esperabas se libera?**
+Hoy `cancelar` solo devuelve `cancelada <día> <franja>` y `libres` filtra en memoria (`src/app.js`). Nada vigila los cambios.
+
+1️⃣ **Te avisa en el siguiente comando.**
+- Apuntas la espera con `esperar Norte lun 10:00-12:00` y responde `Norte ocupada; en espera (1.º)`.
+- Cuando alguien cancela esa franja, la espera pasa a "libre", pero no se reserva nada.
+- La próxima vez que corras `libres`, ves `Norte libre (tu espera lun 10:00-12:00)` y reservas tú con `reservar`.
+- Coste: sigues teniendo que ejecutar un comando, aunque ya no tienes que adivinar cuándo.
+
+2️⃣ **Reserva automática al liberarse.**
+- Al cancelar la franja, la reserva se crea sola a nombre de quien esperaba: `cancelada lun 10:00; Norte reservada para tu espera`.
+- Coste: reservas sin que tú decidas en ese momento, y hay que cancelar la reserva si ya no la querías.
+
+3️⃣ **Comando aparte `esperas`.**
+- Lista las esperas y marca cuáles ya están libres: `Norte lun 10:00-12:00: libre ahora`.
+- `libres` no cambia.
+- Coste: es otro comando que tienes que acordarte de mirar, parecido a lo que haces hoy.
+
+➡️ **Recomiendo 1️⃣**, porque ya miras `libres` cuando quieres saber si hay sala, y el aviso aparece justo ahí, sin proceso en segundo plano y sin reservar por ti. A cambio, la reserva sigue siendo un paso tuyo.
+
+--- [24]
+Te lo explico con un caso concreto.
+
+Hoy, un lunes a las 9:00, quieres la sala Norte de 10:00 a 12:00. Lanzas `libres 10:00-12:00` y te responde `Sur`, porque Norte ya tiene una reserva en esa franja. Más tarde alguien cancela esa reserva de Norte. Tú no te enteras: la única forma de saberlo es volver a lanzar `libres 10:00-12:00` y ver si Norte aparece. Eso es lo que haces ahora a mano.
+
+La lista de espera consiste en decirle a la herramienta, una sola vez, «avísame de Norte a esa hora». El programa se ejecuta cuando tú escribes un comando y termina. Nadie vigila en segundo plano, así que la herramienta no puede avisarte en el momento exacto en que se libera. Lo único que puede hacer es acordarse de tu espera y actuar la próxima vez que tú ejecutes algo. Lo que hay que decidir es qué hace entonces.
+
+Lo que ocurriría en cada caso, con la misma situación (esperas Norte lun 10:00-12:00, y alguien cancela esa reserva a las 11:00):
+
+- **Que te avise.** Escribes `esperar Norte lun 10:00-12:00` y responde `Norte ocupada; en espera (1.º)`. A las 11:00 alguien cancela. A las 11:30 lanzas `libres 10:00-12:00` y ves `Sur, Norte (tu espera)`. Reservas Norte tú.
+- **Que reserve sola.** Misma espera. A las 11:00, al cancelar la otra persona, la herramienta crea una reserva de Norte a tu nombre. A las 11:30, al mirar, Norte ya es tuya.
+- **Un comando aparte.** Misma espera. A las 11:30 lanzas `esperas` y responde `Norte lun 10:00-12:00: libre ahora`. `libres` sigue como hoy.
+
+La diferencia es quién da el paso final de reservar (tú o la herramienta) y dónde te enteras de que la sala se ha liberado (en `libres`, que ya usas, o en un comando nuevo). Dime qué parte no te ha quedado clara y la aclaro, o dime cuál de las tres encaja mejor con cómo trabajas.
+

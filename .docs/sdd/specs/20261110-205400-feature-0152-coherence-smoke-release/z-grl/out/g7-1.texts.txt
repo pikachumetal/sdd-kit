@@ -1,0 +1,121 @@
+--- [7]
+Esta es la configuración actual. No hay `sdd-kit.local.json` ni `.gitignore`, así que no hay claves personales ni avisos de claves ignoradas.
+
+| Clave | Valor | Origen / valor por defecto |
+| --- | --- | --- |
+| `version` | 3.0.0 | `sdd-kit.json` |
+| `channel` | plugin | `sdd-kit.json` |
+| `release.hasRecipient` | false | `sdd-kit.json` |
+| `ids.mode` | sequence | `sdd-kit.json` |
+| `control.profile` | falta | aplica el defecto del contrato (`control-profiles.md`) |
+| `merge` (`into`, `noFf`, `removeWorktree`) | falta | al cerrar una feature se pregunta |
+| `merge.push` | falta | el cierre no hace push |
+| `control.maxParallelAgents` y `control.silence.*` | falta | 3 agentes; aviso a los 8 min entre pasos y a los 20 en un comando largo |
+| `execution` | falta | `auto` |
+| `validation.mode` | falta | `manual` |
+| `validation.startEnvironment` | falta | `false` |
+| `review.minors` | falta | `defer` |
+| `pricing` | falta | el cierre da «sin precio» |
+
+Faltan casi todas las claves de política. Las voy a preguntar de una en una.
+
+❓ **¿A quién aplica el perfil de control (`pair`, `delegate` o `unattended`)?**
+1️⃣ **Para todo el equipo** (`sdd-kit.json`): queda en git y todos trabajan con el mismo perfil.
+2️⃣ **Solo para ti** (`sdd-kit.local.json`): queda fuera de git y no cambia lo que hacen los demás. Hay que añadir esa línea a `.gitignore`, que hoy no existe.
+➡️ **Recomiendo 1️⃣**, porque la clave no existe en el proyecto y lo normal es fijar primero el perfil base del equipo. A cambio, si luego quieres otro perfil solo para ti, tendrás que sobrescribirlo en el archivo local.
+
+--- [9]
+Entendido. No escribo nada para `control.profile` y se queda el perfil por defecto del kit.
+
+❓ **Al cerrar una feature, ¿la fusiono en `develop` con `--no-ff` y dejo que borre el worktree una persona?**
+El repo tiene `main` como rama estable y `develop` para integración, que es la convención git-flow.
+1️⃣ **Sí**: se escribe `merge` con `into: develop`, `noFf: true` y `removeWorktree: false`.
+2️⃣ **Otra combinación**: me dices cuál, por ejemplo fast-forward o borrado automático del worktree.
+3️⃣ **No / no sé**: no se escribe nada y el cierre de cada feature te lo pregunta.
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` deja la feature en un solo commit que se revierte de golpe. Borrar un worktree con cambios sin commitear no se puede deshacer. A cambio, el historial de `develop` lleva un commit de merge por feature.
+
+--- [10]
+Escribo `merge` en `sdd-kit.json`.
+
+--- [12]
+Ya está escrito. Como `merge` está declarado, toca preguntar el push.
+
+❓ **Después de fusionar en `develop`, ¿hago push de esa rama a su remoto sin preguntar?**
+1️⃣ **Sí**: se escribe `merge.push: true`. El push de `main`, los tags y cualquier otro push siguen siendo decisión de una persona.
+2️⃣ **No**: se escribe `merge.push: false` y el cierre no hace push.
+3️⃣ **No sé**: no se escribe nada y el cierre no hace push.
+➡️ **Recomiendo 1️⃣**, porque `develop` es una rama compartida y un merge sin push no lo ve nadie más. A cambio, un merge malo llega al remoto sin que lo revises antes.
+
+--- [14]
+Escrito: `merge.push: true` y `validation.mode: manual`.
+
+❓ **¿Te valen los frenos por defecto: hasta 3 agentes en paralelo y aviso tras 8 minutos de silencio entre pasos o 20 en un comando largo?**
+1️⃣ **Sí**: se escribe `control.maxParallelAgents: 3`, `control.silence.betweenStepsMinutes: 8` y `control.silence.longCommandMinutes: 20`.
+2️⃣ **Otros números**: me dices cuáles y los escribo.
+3️⃣ **No sé**: no se escribe nada y se aplican los valores por defecto.
+➡️ **Recomiendo 1️⃣**, porque son los valores por defecto del kit y no hay nada en el proyecto que pida otros. A cambio, un comando largo puede pasar 20 minutos sin aviso.
+
+--- [16]
+Escrito `control.maxParallelAgents` y `control.silence`.
+
+❓ **¿Cómo se ejecutan los planes: `auto`, `native` o `subagent`?**
+1️⃣ **`auto`**: cada plan recomienda su método según su peso.
+2️⃣ **`native`**: siempre en la sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3️⃣ **`subagent`**: siempre con subagentes.
+➡️ **Recomiendo 1️⃣**, porque el método más barato depende de cada plan. Native es lo más barato, y los subagentes compensan en planes largos o con revisión por tarea. A cambio, cada plan te pide leer su recomendación.
+
+Además, ¿te vale que esto sea para todo el equipo (`sdd-kit.json`)? Si no contestas, lo escribo ahí, porque la clave no existe en el proyecto.
+
+--- [18]
+Dejo `execution` sin escribir. Con «no sé» sobre el ámbito no lo fijo para el equipo, y `auto` ya es el valor que se aplica por defecto.
+
+❓ **Cuando te toque validar una feature, ¿quieres que arranque el entorno antes de darte el guion de prueba?**
+1️⃣ **No**: se escribe `validation.startEnvironment: false` en `sdd-kit.local.json`, solo para ti. El guion de validación te dice cómo arrancarlo.
+2️⃣ **Sí**: se escribe `validation.startEnvironment: true` en `sdd-kit.local.json` y te lo encuentras ya corriendo.
+3️⃣ **No sé**: no se escribe nada y se aplica el valor por defecto, que es no.
+➡️ **Recomiendo 1️⃣**, porque es el valor por defecto y el proyecto no tiene nada que haga costoso arrancarlo a mano. A cambio, tendrás que arrancar el entorno tú antes de probar.
+
+--- [19]
+Entendido. No escribo `validation.startEnvironment` y no creo `sdd-kit.local.json`. Se aplica el valor por defecto, que es no arrancar el entorno.
+
+❓ **Cuando la revisión final devuelva hallazgos Minor, ¿entran en la pasada de arreglos (`fix`) o van al registro como diferidos (`defer`)?**
+1️⃣ **`defer`**: se escribe `review.minors: defer` y los Minor van al registro.
+2️⃣ **`fix`**: se escribe `review.minors: fix` y los Minor se arreglan en cada feature.
+3️⃣ **No sé**: no se escribe nada y se aplica `defer`.
+➡️ **Recomiendo 1️⃣**, porque un Minor no cambia lo que recibe el usuario del producto y cada arreglo alarga la pasada de arreglos. A cambio, los Minor se acumulan en el registro hasta que alguien los triaje.
+
+--- [21]
+Tampoco escribo `review.minors`; se aplica `defer`. Antes de preguntar por los precios, leo la página de precios.
+
+--- [26]
+Leída la página de precios, a 2026-11-12. Esta es la tabla que propongo, en USD por millón de tokens.
+
+| Modelo (id de API) | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Haiku 5.5 tiene dos tarifas. La tabla usa la de prompts de hasta 100.000 tokens. Por encima de eso cuesta 0.50, 0.625, 1, 0.05 y 2.50.
+
+❓ **¿Escribo esta tabla de precios para que el cierre dé el coste de la sesión?**
+1️⃣ **Sí**: se escribe `pricing.usdPerMillionTokens` con estas tres filas, `pricing.source` con la URL de la página y `pricing.updated: 2026-11-12`.
+2️⃣ **No / no sé**: no se escribe nada y el cierre dice «sin precio».
+➡️ **Recomiendo 1️⃣**, porque sin la tabla ningún cierre puede dar el coste. A cambio, la tabla caduca con cada cambio de tarifa y hay que releer la página para actualizarla.
+
+--- [27]
+Dejo `pricing` sin escribir. El cierre dirá «sin precio» hasta que lo decidas.
+
+La revisión de claves ha terminado.
+
+**Escrito en `.docs/sdd/sdd-kit.json`:**
+- `merge`: `into: develop`, `noFf: true`, `removeWorktree: false`, `push: true`.
+- `validation.mode: manual`.
+- `control.maxParallelAgents: 3` y `control.silence` (8 min entre pasos, 20 min en un comando largo).
+
+**Sin escribir** (respondiste «no sé» o aceptaste el defecto): `control.profile`, `execution`, `validation.startEnvironment`, `review.minors` y `pricing`. No he creado `sdd-kit.local.json` ni `.gitignore`.
+
+**Sin commitear:** los cambios en `sdd-kit.json` siguen en el árbol de trabajo. No he hecho commit porque no me lo has pedido.
+
+**Pendiente:** esta pasada solo ha revisado las claves. No he comprobado si el proyecto está en la versión del kit cargado, porque `sdd-kit.json` dice `3.0.0` y no he mirado las migraciones pendientes. Si quieres ponerlo al día de verdad, pídemelo y lo hago con `sdd-upgrade`.
+

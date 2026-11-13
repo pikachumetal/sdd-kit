@@ -1,0 +1,105 @@
+--- [3]
+Empiezo por las comprobaciones previas del cierre.
+
+--- [15]
+Estoy en el cierre de la 0010. Las comprobaciones previas pasan y la rama está limpia. Como la validación es `manual` y «ciérrala» no cuenta como validar, preparo el guion de validación.
+
+--- [20]
+El E2E falló por entorno: nadie había levantado el servidor (`ERR_CONNECTION_REFUSED`), no por el código. Lo levanto como declara `operations.md` y repito.
+
+--- [25]
+El servidor murió en el test 3, justo al llamar a `canceladas` por HTTP, aunque los tests unitarios pasan. Lo reproduzco a mano.
+
+--- [35]
+Todavía no he cerrado la 0010: me paro en la validación, que te toca a ti. El modo es `manual`, y «ciérrala» es la orden de cerrar, no una validación. No he escrito ningún registro, no he commiteado y no he fusionado. La rama está limpia (`.temp/` está en `.gitignore`).
+
+**Antes de seguir**
+- La rama pasa `merge --check`: fusionará en `develop`.
+- No hay otras ramas abiertas.
+- La spec está `approved` y firmada por Laura.
+- La revisión final fue limpia sobre `06e07e8`. Después hay dos commits de solo documentación, `22e2818` (17 líneas) y `0d31ed5` (2 líneas). Los he leído yo, `revisado en el hilo`, así que no he lanzado una re-revisión.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Task 2: usé `--test-concurrency=1` en el gate para esquivar una carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test, y si es erróneo la suite tarda el doble.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo | ejecución real (HTTP, sesión propia) | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | la misma frase |
+| Listado de canceladas | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+- `node --test test/`: 5/5 sobre `0d31ed5`.
+- `node e2e/run.mjs`: 7/7 sobre `0d31ed5`, pero en el segundo intento (ver abajo).
+
+En el primer E2E fallaron 7 tests con `ERR_CONNECTION_REFUSED` porque no había servidor. Levanté el entorno con `env-up` y fallaron 5 de 7: el servidor dejó de responder unos 12 s después de arrancar. No he averiguado por qué. Con un servidor arrancado directamente con `node server.mjs`, el E2E pasa 7/7 y el test 3 también pasa solo. Lo veo como un fallo del entorno, no del código, pero está sin explicar. Si `env-up` te lo mata a ti, usa el comando alternativo del guion.
+
+**Sin probar**
+- Nada. He ensayado cada paso del guion con una sesión distinta a la tuya y he dejado todo parado.
+
+Panel: plan B en http://127.0.0.1:56725/ (no hay herramientas de Chrome; esa página no ve la app, así que si un paso falla cuéntamelo en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Si el servidor se cae, arráncalo directo, en lugar del anterior:
+
+```
+node server.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+Usa siempre la misma sesión (`x-session: validador`), porque las reservas viven en memoria por sesión.
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -G http://localhost:52964/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]' -H "x-session: validador"
+```
+
+2. Ver el listado → `Norte lun — sala ocupada`
+
+```
+curl -G http://localhost:52964/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]" -H "x-session: validador"
+```
+
+3. Motivo fuera de la lista (con otra sesión, para que la reserva siga activa) → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -G http://localhost:52964/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]' -H "x-session: validador2"
+```
+
+4. Sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -G http://localhost:52964/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]' -H "x-session: validador2"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

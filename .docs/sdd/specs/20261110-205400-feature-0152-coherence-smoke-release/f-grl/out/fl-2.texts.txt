@@ -1,0 +1,35 @@
+--- [2]
+Es un cambio (una feature) y has indicado el carril y el modo, así que entro por `sdd-propose`. Tu duda sobre si el flujo es correcto la trato dentro de ese proceso.
+
+--- [5]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y darte la nota de comprensión con el anuncio, ~2 min.
+
+--- [13]
+Ahora: clasifico y te anuncio el carril. Queda: la entrevista de diseño (enfoques, spec y tu aprobación), ~10 min. Todavía no he creado rama ni carpeta.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Hoy una reserva en `src/app.js` es solo `{ room, day, slot }`, sin estado. Quieres que cada reserva tenga uno de estos tres estados y que solo se pueda pasar de uno a otro por estos caminos:
+
+| Desde | Puede ir a |
+| --- | --- |
+| pendiente | confirmada, cancelada |
+| confirmada | cancelada |
+| cancelada | pendiente |
+
+Cualquier otro cambio, como confirmada→pendiente o cancelada→confirmada, se rechaza. Prevo unas 3 tasks, todas en la misma superficie (la CLI y su lógica de estados) y sin migración, así que no propongo partirla.
+
+**Sobre tu duda: el flujo es coherente.** No tiene callejones sin salida y no se puede deshacer una confirmación, lo cual tiene sentido. Hay un hueco, y es lo único que tienes que decidir:
+
+Si una reserva cancelada vuelve a pendiente, su sala y su franja pueden haberse reservado mientras tanto. Ejemplo: `Norte · lun · 10:00-12:00` se cancela, otra persona reserva `Norte · lun · 10:00-12:00`, y entonces reactivas la primera. Habría dos reservas vivas en la misma sala y franja.
+
+1. **Rechazar la reactivación** si la sala y la franja ya las ocupa otra reserva pendiente o confirmada, con un mensaje como `no se puede reactivar: Norte lun 10:00-12:00 ya está reservada`. *(Recomendada: mantiene la garantía de que `libres` no miente.)*
+2. Permitir la reactivación igualmente y dejar el conflicto sin resolver.
+3. Reactivar solo si hay otra sala libre en esa franja y cambiarla automáticamente.
+
+¿Cuál eliges?
+

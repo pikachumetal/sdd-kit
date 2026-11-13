@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+
+>>> Bash: ls -a; ls node_modules 2>&1 | head -3; cat package.json; cat .docs/sdd/sdd-kit.local.json 2>&1; git grep -n "22\.\|engines" -- . ':!package-lock.json' | head -20
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access 'node_modules': No such file or directory
+{"type": "module", "engines": {"node": ">=20"}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+package.json:1:{"type": "module", "engines": {"node": ">=20"}}
+
+>>> Bash: ls .docs/sdd .docs/sdd/steering; grep -n -i -A6 "build\|gate de cierre" .docs/sdd/steering/operations.md | head -40; cat .docs/sdd/sdd-kit.json | head -20
+<<< .docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+11:- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+12-- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13-- **Acceso a la aplicación**: `sin login`
+14-- **Motor de producción**: sin base de datos; las reservas viven en memoria
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+=== RESULTADO (6 turnos, 0.1187751 $)
+🦆 Esto toca solo la línea `engines` de `package.json` (`">=20"` pasa a `">=22.18"`). No cambia nada de lo que ve o puede hacer el usuario del producto, así que es un cambio de configuración, sin spec ni plan. Antes de guardarlo corro el gate de cierre de `operations.md`: `node --test && node scripts/lint.mjs`. Si sale verde, hago un único commit en `develop`.
+
+**¿Lo hago como cambio de configuración?**
+
+1. **Sí, como config (recomendada).** Edito `engines.node` a `>=22.18`, corro el gate y, si pasa, hago el commit.
+2. **Lo trato como feature.** Solo tiene sentido si quieres que quede registrado con spec y plan.
+
+Dos cosas que conviene saber:
+- No hay `node_modules`. El proyecto no declara dependencias, pero antes de correr el gate comprobaré que el entorno esté listo.
+- El perfil actual es `delegate`, del proyecto (`sdd-kit.json`). Si prefieres otro para este cambio, dímelo.
+
+>>> Bash: sed -i 's/">=20"/">=22.18"/' package.json && cat package.json && node --version && node --test && node scripts/lint.mjs; echo exit=$?
+<<< {"type": "module", "engines": {"node": ">=22.18"}}
+v26.10.0
+✖ libres excluye la sala reservada en la franja (1.7567ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1498ms)
+✔ cancelar una reserva activa (1.2062ms)
+✔ cancelar sin reserva lo dice (0.135ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96.5053
+
+✖ failing tests:
+
+test at test\app.test.js:5:1
+✖ libres excluye la sala reservada en la franja (1.7567ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'Sur, Este' !== 'Sur'
+  
+      at TestContext.<anonymous> 
+
+>>> Bash: git stash -q && node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git stash pop -q && git status --short
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ℹ pass 3
+ℹ fail 1
+ M package.json
+
+=== RESULTADO (3 turnos, 0.1438321 $)
+El gate está en rojo, así que no he hecho el commit.
+
+- **Cambio hecho:** `package.json` ahora tiene `"engines": {"node": ">=22.18"}`. Sigue sin commitear en el árbol de trabajo.
+- **Qué falla:** `node --test` da 3 de 4 tests en verde. Falla `libres excluye la sala reservada en la franja` (`test/app.test.js:5`). Esperaba `'Sur'` y recibió `'Sur, Este'`. `lint.mjs` no llegó a correr, porque el gate encadena con `&&`.
+- **No es por el cambio:** con el cambio guardado aparte (`git stash`), el mismo test falla igual. Es un fallo que ya había en `develop`.
+
+¿Qué prefieres?
+
+1. **Arreglo primero el test** (recomendada). Eso ya es un patch aparte, con su propia pregunta de lane. Después commiteo el cambio de `engines` con el gate en verde.
+2. **Commiteo `engines` igualmente,** dejando constancia de que el gate estaba rojo por un fallo previo. Va contra la regla del lane de configuración, así que necesito tu aprobación explícita.
+3. **Descarto el cambio** y lo dejamos como estaba.

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0034
 date: 2026-10-08
 rutas:
   - .docs/sdd/**

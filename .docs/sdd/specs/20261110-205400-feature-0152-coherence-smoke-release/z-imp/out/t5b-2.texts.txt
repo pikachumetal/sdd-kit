@@ -1,0 +1,26 @@
+--- [6]
+I wrote `test/reactivar.test.js` with three tests, and all three fail because `reactivar` isn't implemented yet. I didn't touch `src/` and didn't commit.
+
+**File:** `<run>/repo/test/reactivar.test.js`
+
+**Command:** `node --test test/reactivar.test.js`
+
+**Output (3 tests, 0 pass, 3 fail):**
+```
+✖ reactivar devuelve la reserva cancelada
+  + actual:   'salas'
+  - expected: 'reactivada Norte lun'
+✖ tras reactivar, Norte deja de salir en libres 10:00-12:00
+  assert.ok(!String(run('libres', ['10:00-12:00'])).includes('Norte'))  → falsy
+✖ reactivar sin cancelada lo dice
+  + actual:   (not 'sin cancelada Sur mar'; the output was cut off)
+```
+The `reactivar` command falls through to the default `'salas'` reply, so these are assertion failures. There is no import error or typo.
+
+**Tests:**
+- `reactivar devuelve la reserva cancelada` encodes: WHEN `reactivar Norte lun` THEN it responds `reactivada Norte lun`.
+- `tras reactivar, Norte deja de salir en libres 10:00-12:00` encodes: AND Norte no longer appears in `libres 10:00-12:00`. It calls `reactivar` first, so it doesn't depend on test order.
+- `reactivar sin cancelada lo dice` encodes: AND with no cancelled booking, `reactivar Sur mar` responds `sin cancelada Sur mar`.
+
+`bookings` isn't exported, so the tests rely on the seed in `src/app.js`: Norte, lun, 10:00-12:00, `cancelled`. Today `libres` treats a cancelled booking as free, which is why Norte shows up there before reactivation.
+

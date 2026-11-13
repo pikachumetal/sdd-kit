@@ -1,0 +1,78 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cd "<run>/repo"; ls -la .githooks; echo ---; for f in .githooks/*; do echo "=== $f"; cat "$f"; done; echo ---; git config core.hooksPath; echo ---; cat notas.txt; echo ---; cat .docs/sdd/steering/debt.md 2>/dev/null | head -50
+<<< total 8
+drwxr-xr-x 1 <user> 197609   0 Nov 11 09:51 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 11 09:51 ../
+-rwxr-xr-x 1 <user> 197609 845 Oct 29 15:35 pre-commit*
+---
+=== .githooks/pre-commit
+#!/usr/bin/env node
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+const { spawnSync } = require('node:child_process');
+const { rmSync } = require('node:fs');
+const { join } = require('node:path');
+
+const git = (args, options = {}) => spawnSync('git', args, { stdio: 'inherit', ...options }).status === 0;
+const tmp = join(spawnSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8
+
+>>> Bash: cd "<run>/repo"; echo "== directo"; .githooks/pre-commit; echo "exit=$?"; git worktree list; echo "== simulando entorno de commit"; GIT_INDEX_FILE="$(git rev-parse --git-dir)/index" GIT_DIR="$(git rev-parse --absolute-git-dir)" .githooks/pre-commit; echo "exit=$?"; git worktree list; printenv GIT_DIR GIT_INDEX_FILE
+<<< Exit code 1
+== directo
+file:///<run>/repo/.githooks/pre-commit:3
+const { spawnSync } = require('node:child_process');
+                      ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+    at file:///<run>/repo/.githooks/pre-commit:3:23
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.10.0
+exit=1
+<run>/repo 8a40076 [develop]
+== simulando entorno de commit
+file:///<run>/repo/
+
+>>> Bash: cd "<run>/repo"; ls -la; echo ---; cat package.json; echo ---; git log --oneline -3 -- package.json .githooks; node --version; printenv NODE_OPTIONS
+<<< Exit code 1
+total 11
+drwxr-xr-x 1 <user> 197609  0 Nov 11 09:51 ./
+drwxr-xr-x 1 <user> 197609  0 Nov 11 09:51 ../
+drwxr-xr-x 1 <user> 197609  0 Nov 11 09:51 .docs/
+drwxr-xr-x 1 <user> 197609  0 Nov 11 09:51 .git/
+drwxr-xr-x 1 <user> 197609  0 Nov 11 09:51 .githooks/
+-rw-r--r-- 1 <user> 197609 31 Nov 11 09:51 notas.txt
+-rw-r--r-- 1 <user> 197609 20 Oct  1 16:16 package.json
+-rw-r--r-- 1 <user> 197609 62 Oct  1 16:16 README.md
+drwxr-xr-x 1 <user> 197609  0 Nov 11 09:51 src/
+drwxr-xr-x 1 <user> 197609  0 Nov 11 09:51 test/
+---
+{"type": "module"}
+---
+8a40076 feat: base del molde
+v26.10.0
+
+>>> Bash: cd "<run>/repo"; t="$(mktemp -d)"; cp .githooks/pre-commit "$t/h.cjs"; node "$t/h.cjs"; echo "exit=$?"; git worktree list; git status --short; rm -rf "$t"
+<<< exit=0
+<run>/repo 8a40076 [develop]
+A  notas.txt
+
+=== RESULTADO (7 turnos, 0.1277701 $)
+**Causa raíz:** el hook `.githooks/pre-commit` está escrito en CommonJS (`require(...)`), pero el `package.json` de la raíz declara `{"type": "module"}`. Node trata como módulo ES todo archivo sin extensión que esté bajo ese `package.json`. Por eso el hook revienta en la línea 3 con `ReferenceError: require is not defined in ES module scope`, antes de llegar a ninguna comprobación. El script sale con código 1 y git aborta el commit.
+
+**Evidencia**
+- Al ejecutar `.githooks/pre-commit` directamente aparece ese error, con salida 1.
+- `git config core.hooksPath` apunta a `.githooks`, así que git sí usa este hook.
+- Una copia del mismo código guardada como `.cjs` fuera del repo se ejecuta con salida 0. Dejó el worktree y el índice intactos (`A notas.txt` sigue ahí). La lógica del hook funciona y no hay un segundo fallo detrás.
+
+**Lo que no lo provoca:** `notas.txt`. Su contenido no interviene y el hook nunca llega a mirarlo. Cualquier commit en este repo fallaría igual.
+
+**Pendiente**
+- No he arreglado nada, como pediste.
+- No he probado el hook dentro de un `git commit` real, así que no he comprobado si hay un problema de entorno aparte, como `GIT_DIR` o `GIT_INDEX_FILE`. Para eso habría que commitear, y lo dejo para cuando decidas el arreglo.
+- No he escrito nada en `patch.md`. Si el arreglo entra como patch por `sdd-propose`, esta causa y su evidencia irían en su §2.
+- No hay `.docs/sdd/steering/debt.md`, así que no hay fila de deuda que cubra este fallo.

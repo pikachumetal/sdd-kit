@@ -1,0 +1,2 @@
+# SDD ledger — plan: .docs/sdd/specs/20261012-100000-feature-0021-keep-note/plan.md
+Task 1: Ruling: REFACTOR tras h1 FALLA (aviso tras escribir, nota pisada) — la skill comprueba la existencia antes de escribir y pide confirmación; AND añadido a la spec como enmienda sin aprobar, aplicando literalmente la decisión del dev-lead — si el dev-lead no la aprueba, se revierte el AND y el paso de confirmación

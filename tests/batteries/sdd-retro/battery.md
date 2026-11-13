@@ -2,7 +2,7 @@
 
 La mejora del entorno del proyecto: las señales del cierre y el repaso por causa de cada corte. Nace en la feature 0277.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=close`, `check` o `release`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Sobre el molde `tests/batteries/using-sdd/mold-salas`: `cierre` añade la carpeta de la feature 0081 con su walkthrough, `.docs/sdd/steering/operations.md` y unas `notas-sesion.md` por escenario; `corte` monta la forma 3.0.0 con `debt.md` y la retro de la 1.3.0; `corte-vacio`, la misma sin filas triadas ni retro, con `estimation-log.md`.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=close`, `check` o `release`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Sobre el molde `tests/batteries/using-sdd/mold-salas`: `cierre` añade la carpeta de la feature 0081 con su walkthrough, `.docs/sdd/steering/operations.md` y unas `notas-sesion.md` por escenario; `corte` completa `ROADMAP.md`, `CHANGELOG.md`, `debt.md` y la retro de la 1.3.0 sobre la forma 3.0.0 del molde; `corte-vacio`, la misma sin filas triadas ni retro, con `steering/estimation-log.md`.
 
 **Petición por fase.** En el RED la skill no existe: `subject.mjs` deja la petición tal cual, que pide el paso de `sdd-archive`. Fuera del RED, en `close` y `check`, antepone «Invoca la skill sdd-kit:sdd-retro con `cierre` y ». `r4` y `r6` piden el corte, y `sdd-end-release` la invoca.
 

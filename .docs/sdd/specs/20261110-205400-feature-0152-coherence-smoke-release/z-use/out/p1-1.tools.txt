@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -2; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+ls: cannot access 'node_modules': No such file or directory
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md .docs/sdd/sdd-kit.json package.json src/app.js .docs/sdd/specs/*cancel/patch.md
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills" && sed -n 1,60p sdd-propose/references/control-profiles.md; echo ======; cat sdd-propose/references/spec-writing.md | head -80; echo =====; cat sdd-grilling/SKILL.md | head -60
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+=== RESULTADO (8 turnos, 0.19393780000000002 $)
+Ahora: clasifico el cambio y arranco la entrevista de la spec. Queda: unas 2 o 3 preguntas, la spec con su revisión y tu aprobación, ~20 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Qué he entendido.** `cancelar` responde «cancelada …» sin mirar si la reserva existe. Hoy `src/app.js:12` solo repite los argumentos, así que `cancelar vie 09:00` dice «cancelada vie 09:00» aunque no haya nada ese día.
+
+**Por qué es feature y no patch.** El fallo es determinista, pero el arreglo exige decidir un texto que nadie ha fijado (qué dice cuando no existe) y qué cuenta como «existe». Esas decisiones son tuyas. Toco `src/app.js` y `test/app.test.js`, unas 2 tasks, así que no propongo dividirla.
+
+**Lo que he visto en el código.**
+- Las reservas guardan la franja entera: `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`.
+- `cancelar` recibe día y hora suelta (`lun 10:00`), sin sala ni franja.
+- Las reservas viven en memoria y no se borra nada. Por eso «cancelada» solo puede significar «esa reserva está en la lista».
+- El test actual, `cancelar respeta el día`, espera `cancelada mar 10:00` sin que exista ninguna reserva el martes. Tendrá que cambiar.
+
+❓ **¿Cuándo existe la reserva que `cancelar <día> <hora>` pretende cancelar?**
+1️⃣ **Por día y hora de inicio de la franja.** `cancelar lun 10:00` encuentra `Norte lun 10:00-12:00` y responde «cancelada lun 10:00». `cancelar mar 10:00` no encuentra nada. No cambia el formato del comando.
+2️⃣ **Por día y franja completa.** `cancelar lun 10:00-12:00` es lo único que encuentra la reserva. El comando es más preciso, pero `cancelar lun 10:00` deja de valer.
+➡️ **Recomiendo 1️⃣**, porque conserva el formato que ya usas y el test actual. A cambio, si algún día hay dos reservas que empiecen a la misma hora en salas distintas, `cancelar` no sabrá cuál es. Eso lo trataríamos entonces.
+
+Cuando me contestes, creo la rama `feature/<id>` con `sdd id claim`, antes de la carpeta. Después te pregunto el texto del aviso para el caso «no existe».

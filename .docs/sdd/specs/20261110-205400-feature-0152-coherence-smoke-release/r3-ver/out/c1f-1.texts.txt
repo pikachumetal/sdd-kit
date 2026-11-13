@@ -1,0 +1,83 @@
+--- [3]
+Ahora: leer el estado de la 0010 (tasks, plan, ledger y los dos informes de revisión). Queda: cerrar la revisión con `sdd-verify` y parar en el ✋, ~3 min.
+
+--- [18]
+Ahora: añadir el test RED de los espacios, que no llegó a escribirse. Queda: arreglo, suite y cierre de la revisión, ~3 min.
+
+--- [21]
+RED confirmado, y el test de `canceladas` ya pasa solo. Ahora el arreglo.
+
+--- [27]
+Ahora: despachar la única re-revisión del commit `db6a9bd` (opus + high). Queda: su veredicto y el ✋, ~5 min.
+
+--- [37]
+La revisión final de la 0010 está cerrada salvo la re-revisión, que sigue en marcha. Todavía no hay ✋ ni cierre.
+
+**Informes de los ejes**
+- **Spec:** sin Critical ni Important. Un Minor: el test de `canceladas` dependía de que antes hubiera corrido el de `cancelar`.
+- **Código:** un Important: `reasonOf` en `src/app.js` conservaba los espacios alrededor del motivo, así que `"sala ocupada "` daba «motivo no válido».
+- **Arquitectura:** no sale. El plan dice `no`, y el diff no trae módulo nuevo, dependencia, contrato ni datos. Lo dejé en el ledger.
+
+**Pasada de fix** (commit `db6a9bd`)
+- Escribí primero el test `cancelar ignora los espacios alrededor del motivo`: falló antes del arreglo y pasa después. Hice el arreglo con `?.trim()` en `reasonOf`.
+- El test de `canceladas` ahora cancela por sí mismo. Pasa solo y dentro de la suite.
+- `node --test` da 6/6. Lo corrí tras el arreglo y no volví a correr nada después del commit.
+
+**Registros**
+- Anoté `Revisión final:` y `Pasada de fix:` en `tasks.md`. Corregí también el commit de la Task 1 (`db6d5d9`, no `2cf474c`). Ese archivo sigue sin commitear.
+- Lancé la única re-revisión (opus + high) sobre `2cf474c..db6a9bd`, con su vigilancia de silencio. No hay veredicto todavía, así que no marco la feature como limpia ni escribo la línea `Re-revisión:`.
+
+Cuando vuelva la re-revisión, la leeré. Si deja algún Important o Minor abierto, lo resolveré como ruling o como `sin revisar`. Después retiro el worktree `review-0010-db6a9bd` y sigo con los borradores de cierre.
+
+--- [42]
+### Finding Verdicts
+
+1. **[Código · Important] `reasonOf` keeps the spaces around the reason: ADDRESSED.**
+   - The fix is at `src/app.js:16`: `return index === -1 ? undefined : params[index + 1]?.trim();`. A reason of `"sala ocupada "` is now trimmed before `cancelBooking` checks it against `reasons` (`src/app.js:20`).
+   - It is covered by the new test at `test/cancel.test.js:13-15`. That test passes `' sala ocupada '` for Sur mar and expects `'sin reserva Sur mar'`. Before the fix, the same input returned «motivo no válido…», so the test tells the old behaviour from the new one.
+   - The test only proves the fix indirectly: Sur mar has no booking, so the success path with a padded reason (Norte lun → «cancelada Norte lun (sala ocupada)») is still not tested. That is a test-quality note, not a blocker.
+
+2. **[Spec · Minor] `canceladas` test depended on test order: ADDRESSED.**
+   - `test/cancel.test.js:18` now sets up its own GIVEN with `run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']);` before the assertion at `:19`.
+   - Run on its own, the test cancels Norte lun and the listing returns «Norte lun — sala ocupada».
+   - Run after the other tests, the extra cancel finds no active booking and returns «sin reserva», which has no side effect. The listing is the same either way.
+   - The THEN «El listado de canceladas enseña el motivo» still has its test, and the test's name, assertion and data are unchanged. Adding a setup line is not a modification of a RED test under the brief's definition.
+
+### New Breakage in the Fix Diff
+
+None.
+- **`--motivo` as the last argument with no value:** `params[index + 1]` is `undefined`, and `?.trim()` short-circuits to `undefined`. `reasons.includes(undefined)` is false, so the command answers «motivo no válido: cambio de planes, sala ocupada, otro» without crashing (`src/app.js:16,20`).
+- **Without `--motivo`:** the path is unchanged (`index === -1` → `undefined`).
+- **Conventions:** the interface text stays in Spanish, and the new test name is in Spanish.
+- **Scope:** trimming the reason stays inside `cancelar <sala> <día> --motivo <motivo>`, so nothing in the spec's Scope changed.
+
+### Out-of-Scope Observations
+
+- The spec AND «sin `--motivo` responde lo mismo: «motivo no válido…»» (spec.md:54) has no test in `test/cancel.test.js`. This file was not touched by the fix in that respect; it comes from earlier commits.
+- The tests still share the module-level `bookings` array (`src/app.js:4`). The canceladas test no longer depends on order, but any later test that expects Norte lun to be active would.
+- `voidBooking` / `anular` (`src/app.js:28-33`) is the 0011 area, which the spec leaves out of scope. It comes from the base commit `bcbb265`, not from this feature.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [45]
+La re-revisión de la 0010 volvió limpia. Todavía no he cerrado nada: faltan los borradores de cierre y la validación, y ahí paro en ✋.
+
+**Re-revisión** (`2cf474c..db6a9bd`, opus + high)
+- Los dos hallazgos quedan resueltos: el `trim` del motivo (`src/app.js:16`) y el test de `canceladas`, que ya no depende del orden.
+- No encontró rotura nueva. Comprobó además que `--motivo` como último argumento, sin valor, no se cae.
+- Dejé la línea `Re-revisión:` en `tasks.md`. Esa es la única re-revisión: no habrá otra.
+
+**Observaciones fuera de alcance** (en el ledger como `Final: Ruling:`)
+- El AND «sin `--motivo` responde “motivo no válido…”» de la spec no tiene test propio. El código ya lo cumple. Si alguien lo rompe más adelante, ningún test lo cazaría.
+- Los tests comparten el array `bookings` del módulo. Hoy ninguno depende del orden, pero uno futuro que espere `Norte lun` activa sí lo haría.
+
+**Estado**
+- El worktree `review-0010-db6a9bd` ya está retirado. En git solo queda `tasks.md` sin commitear.
+- No hay commits `sin revisar` ni hallazgos «no verificado». No hay Minors diferidos: con `review.minors: fix`, el Minor entró en la pasada de fix.
+
+**Lo que viene**
+- Escribo en su sitio, sin commitear, el `walkthrough.md` sin la verificación y el delta mezclado en `capabilities/`.
+- Después pasa a `sdd-archive` para la validación y el cierre. El perfil es `delegate`, así que para ahí con 🦆 y ✋.
+

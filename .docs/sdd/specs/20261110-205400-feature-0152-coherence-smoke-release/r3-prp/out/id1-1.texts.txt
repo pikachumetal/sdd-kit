@@ -1,0 +1,71 @@
+--- [4]
+Ahora: leo el contexto del proyecto (producto, roadmap, steering, capabilities). Queda: clasificar y anunciar el carril, ~2 min.
+
+--- [25]
+Estoy escribiendo la spec de la 0013 (el heredoc falló, la creo con Write) y luego paso a la pasada de coherencia.
+
+--- [27]
+Ahora: pasada de coherencia (delta sobre una copia). Queda: revisor de la spec y presentártela para aprobar, ~5 min.
+
+--- [33]
+Revisor de la spec lanzado (uno, sonnet). Espero su informe para incorporar los hallazgos antes de presentarte la spec.
+
+--- [38]
+1. Importante · Delta, «Sin reservas solo sale la cabecera» · El GIVEN «ninguna reserva» no se puede dar con las reservas que hay hoy (las salas y reservas viven en memoria y `src/app.js` las inicializa). Solo se logra con el truco de `splice` sobre `bookings` exportado. Ese truco aparece en «Dónde se prueba» y en «Partes que fija A», pero no en las Decisiones. · Declarar en las Decisiones que `bookings` se exporta para los tests. Reescribir el GIVEN para que diga cómo se llega a «ninguna reserva».
+
+2. Importante · Delta, «Las canceladas y las anuladas también se exportan» · Un solo escenario cubre dos comportamientos distintos, cancelada y anulada. El AND «con la reserva anulada…» no tiene ni su propio GIVEN ni su WHEN. Además, el escenario nunca fija que la reserva sigue en la lista tras cancelarla, que es justo el comportamiento prometido. · Partirlo en dos escenarios, cada uno con su GIVEN, WHEN y THEN completos. Ejemplo: tras `cancelar Norte lun`, `exportar` produce la fila `cancelada`, y la fila sigue contando en `filas: n`.
+
+3. Importante · Delta, «Si no se puede escribir…» · «No se crea ningún fichero» pasa aunque se escriba a medias y se borre después, o aunque el export ignore el error. Con `writeFileSync` sobre una carpeta inexistente nunca queda fichero, así que el escenario no distingue nada. El Intent promete «sin que el fichero salga a medias» cuando la ruta sí existe, y eso no tiene ningún escenario. · Añadir un escenario de fallo con una ruta que sí existe, por ejemplo un directorio como destino. Decidir si el fichero previo se conserva o se borra, y escribirlo en el THEN.
+
+4. Importante · Decisiones 3 y 4 / PRODUCT.md · El término «Reserva» no tiene estados en PRODUCT.md. Sí define Cancelación (la cancela el cliente) y Anulación (la anula el responsable) como cosas distintas, con «Evitar: baja». La spec mapea los estados `activa`, `cancelada` y `anulada` a la cabecera, pero ese mapeo no está validado contra los términos. Los nombres de las columnas, `sala` `dia` `franja`, son decisión nueva. · Citar en la spec el término de PRODUCT.md que cubre cada estado. Si `cancelada` y `anulada` no coinciden con los estados reales de `src/app.js`, corregirlos. Anotar los nombres de columna como decisión.
+
+5. Importante · Reglas de la capacidad, Límites · Pone «no aplica», pero la Decisión 3 dice que ningún campo puede llevar comas «hoy». Es un límite implícito: salas fijas y franjas `HH:MM-HH:MM`. Sin comillas ni escapes, si mañana se añade una sala con coma el CSV sale corrupto sin aviso. · Declarar el límite en la regla: «los campos no llevan comas ni saltos; las salas son fijas». Añadir qué pasa si algún día se rompe, o fijar que la 0013 queda sujeta a esa invariante.
+
+6. Importante · Reglas de la capacidad, Regla ante conflicto · Pone «no aplica», pero el export sí tiene un conflicto: la ruta ya existe y se sobrescribe, y ni siquiera hay un escenario de sobrescritura. La regla de `Dónde viven los datos` lo menciona, pero ningún THEN lo prueba. · Escribir la regla ante conflicto: «gana lo último que se exporta; se sobrescribe sin avisar». Añadir el escenario de sobrescritura.
+
+7. Menor · Scope / Intent · El Intent promete «el fichero salga a medias» como fracaso, y el Scope lista «error de escritura». Aun así, la ruta con espacios, o con coma en el nombre, y el `exportar` con más de un argumento (`exportar a b`) no aparecen ni en el Scope ni en «No entra». · Fijar el comportamiento ante más de un argumento (error o ignorar el sobrante). Añadirlo a No entra, o convertirlo en escenario.
+
+8. Menor · Decisiones, punto 8 y «Dónde se prueba» · La decisión 8 afirma haber probado el delta con `sdd capability merge`, pero el artefacto no deja rastro verificable y `capabilities/` no existe. El punto 1 de las Decisiones, sobre el claim del id, es historia de proceso y no una decisión de diseño. · Quitar o aportar evidencia de la prueba del merge. Mover el id 0013 a una nota de proceso.
+
+9. Menor · Reglas, «Idioma de los nombres» y Decisión 3 · Cita «constitución 4», que cubre el texto de la interfaz. Pero el comportamiento de `.ics`, la cabecera del CSV y el nombre `reservas.csv` quedan en castellano sin ninguna regla sobre acentos. La Validación, que depende de «acentos» en la hoja, no tiene ningún escenario con acento. Todas las salas de los ejemplos (Norte) y los días (lun) están sin tildes. · Añadir un escenario con sala o día con tilde (p. ej. `miércoles`, si existe), y fijar que el CSV va en UTF-8 sin BOM, o con BOM si Excel lo necesita. La Decisión 9 admite que el separador `;` queda sin resolver para Excel con configuración regional española.
+
+10. Menor · Cabecera de «Decisiones» y «Dónde se prueba» · La línea de Review declara que se revisa «si cada THEN se puede probar sin romper la costura de `run`», pero «Dónde se prueba» habla de `process.chdir` y de escribir en un directorio temporal. Eso cambia el estado global del proceso y puede romper otros tests de `node --test`, que es el gate de cierre. · Probar la ruta por defecto con una ruta inyectable, o restaurar el `cwd` en un `finally`. Anotarlo en «Dónde se prueba».
+
+--- [42]
+Ahora: spec lista y revisada; espero tu aprobación. Queda: cuando apruebes, escribo el plan y paso a implementar sin más paradas hasta la validación, ~15 min.
+
+## Spec 0013 — Exportar las reservas a CSV
+
+🦆 Hoy las reservas solo se ven una a una desde la terminal. Con `node src/app.js exportar reservas.csv` se crea un fichero con una fila por reserva, p. ej. `Norte,lun,10:00-12:00,activa`, que se abre en una hoja de cálculo. Entran también las canceladas y las anuladas, con su estado. Por dentro es un comando nuevo en `src/app.js` que escribe el fichero.
+
+Está en `.docs/sdd/changes/20261111-190557-feature-0013-export-csv/spec.md`. Antes de nada, lo que más importa:
+
+**El id ya no es 0012.** La 0012 estaba reservada en `origin/develop` para «Informe de ocupación». `sdd id claim` movió esta feature a la **0013**, renombró la rama a `feature/0013-export-csv` y dejó la fila del roadmap como 0013. `develop` no se publica (sin `merge.push`). Para tu `sdd merge --push`, lo tengo anotado para el cierre.
+
+### ✋ Decisiones que he tomado yo — valida estas
+
+1. Comando `exportar [ruta]`; sin ruta, `reservas.csv` en el directorio actual; si el fichero existe, se sobrescribe.
+2. Columnas `sala,dia,franja,estado` con cabecera, coma como separador, UTF-8 sin BOM, `\n` y salto final. Sin comillas ni escapes: hoy ningún campo lleva comas.
+3. Entran **todas** las reservas, también canceladas y anuladas. Estados: `activa`, `cancelada`, `anulada`. `cancelada` y `anulada` salen de PRODUCT.md; `activa` y los nombres de columna son míos.
+4. Salidas: `exportado <ruta> · filas: <n>` (sin contar la cabecera), `no se pudo escribir <ruta>` y `uso: exportar [ruta]` si se dan dos o más rutas.
+5. Capacidad nueva `booking-export`. Enfoque A: una función pura que genera el CSV y `run` que lo escribe; descartados B (todo dentro de `run`) y C (sacarlo por pantalla).
+6. Validación: **dev-lead**. En Excel con configuración regional española el separador por defecto es `;`, y es lo primero que habría que mirar al abrirlo.
+7. `bookings` se exporta para que los tests puedan vaciarlo, y la ruta por defecto se prueba con `process.chdir` restaurado en un `finally`.
+
+### Review
+
+Un revisor (sonnet) dio 10 hallazgos y no hubo ningún Crítico. Acepté 9 y rechacé 1, el de mover la decisión del id a una nota de proceso. Los cambios principales:
+
+- El escenario de canceladas y anuladas pasó a dos.
+- Añadí escenarios de sobrescritura, de destino que es una carpeta y de más de una ruta.
+- Los Límites y la regla ante conflicto ya no están en «no aplica».
+
+El delta se probó en una copia con `sdd capability merge`, sin errores.
+
+### Decisión
+
+1. **Apruebo (Recomendada)**: escribo el plan e implemento hasta la validación.
+2. **Cambios**: dime qué cambiar y reviso la spec.
+
+La spec queda en pausa hasta que respondas. Una elección de alcance o un «sigue» sin más no cuentan como aprobación.
+

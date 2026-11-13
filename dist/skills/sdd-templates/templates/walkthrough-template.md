@@ -19,7 +19,7 @@ created: <YYYY-MM-DD>
 
 - Resumen por área, con ficheros clave y commit hash.
 
-## 2. Tiempo y coste: estimado vs real *(OBLIGATORIO si existe `.docs/sdd/estimation.md` — no borrar)*
+## 2. Tiempo y coste: estimado vs real *(OBLIGATORIO si existe `.docs/sdd/steering/estimation.md` — no borrar)*
 
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Estimación de implementación (del plan): <Yh>

@@ -1,4 +1,4 @@
-// Sujeto de la batería de sdd-upgrade: una petición de battery.md sobre el molde salas de using-sdd, con migraciones pendientes.
+// Sujeto de la batería de sdd-upgrade: una petición de battery.md sobre el molde salas-2x de using-sdd (la forma 2.x), con migraciones pendientes.
 // Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -31,7 +31,7 @@ const V2X = MOLD.startsWith('v2x');
 const SALAS3 = MOLD.startsWith('salas3');
 const moldSource = () => {
   if (V2X) return join(HERE, 'mold-v2x');
-  return join(HERE, '..', SALAS3 ? 'sdd-roadmap/mold-salas-3' : 'using-sdd/mold-salas');
+  return join(HERE, '..', SALAS3 ? 'sdd-roadmap/mold-salas-3' : 'using-sdd/mold-salas-2x');
 };
 s.copy(moldSource());
 // Lo que entra en develop tras la etiqueta de la release: la migración decide lo publicado por ella.
@@ -39,8 +39,6 @@ const AFTER_RELEASE = {};
 const SUPERPOWERS_MARKETPLACE = { source: { source: 'github', repo: 'obra/superpowers-marketplace' }, autoUpdate: true };
 // Ya en la estructura de la 3.0.0: los pasos 1 a 6 se saltan, y el sujeto llega barato al paso de superpowers.
 function salas3WithSuperpowers(enabledPlugins) {
-  // La fila B1 no valida en `sdd roadmap check`, y el sujeto paraba antes del marcador.
-  edit('ROADMAP.md', (text) => text.split('\n').filter((line) => !line.startsWith('| B1 ')).join('\n'));
   s.put('.docs/sdd/sdd-kit.json', `{"version": "2.3.4", ${MARKER}}\n`);
   s.put('.claude/settings.json', `${JSON.stringify({ extraKnownMarketplaces: { 'superpowers-marketplace': SUPERPOWERS_MARKETPLACE }, enabledPlugins }, null, 2)}\n`);
 }
