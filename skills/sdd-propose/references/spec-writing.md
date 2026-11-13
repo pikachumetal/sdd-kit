@@ -2,16 +2,16 @@
 
 Inspired by superpowers `brainstorming` (MIT).
 
-You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
 
 ## What the spec covers
 
-The interview covers goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: never read them out as questions; anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what you guess goes to ✋.
+The interview covers first what they want it for, open, if neither the request nor its row says it; then goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what they left unanswered, to «Pendiente de ti». An answer they keep after your challenge is theirs, also when it asks for something that already exists: it goes to «Decisiones tomadas con el dev-lead», and the interview goes on about what they asked for.
 
 
 Write it so a builder could plan from it without going back to the user:
 
-- **Intent**: what happens today, why it matters, what success looks like, measurable where it can be (what would make it a failure even if it technically works).
+- **Intent**: what happens today, why it matters, what success looks like, measurable where it can be, and the anti-goals.
 - **Scope**: «Entra» and «No entra», the goals and the non-goals.
 - **Approach**: the approaches of «Approaches» below, what each costs, the one chosen and why, then the parts of the how it fixes. What's left to the builder belongs to the plan.
 - **✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN. A default the user never heard is one they couldn't reject.

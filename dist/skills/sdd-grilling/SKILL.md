@@ -7,21 +7,25 @@ description: Use when another sdd-kit skill reaches a step that needs decisions 
 
 ## Overview
 
-Write everything the user reads, skill announcements included, in their language. Inspired by `grilling` by Matt Pocock (MIT).
+Write everything the user reads, skill announcements included, in their language. The skill that invokes you says what its interview covers and when it stops; this one says how to ask. Inspired by `grilling` by Matt Pocock and superpowers `brainstorming` (MIT).
 
-Grill relentlessly until nothing is left silently assumed: every assumption becomes a question or a «decided by me» entry. If neither the user nor the project says why they want it, ask that first, even if you can guess: open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?». Then the decision that reshapes most others; one that depends on a decision still open waits. Facts are your job; decisions are the user's.
+## Posture
+
+Look first, decide what is method, and ask only what is left. Before each question, read what answers it: the request, its roadmap row, the project's documents and code. A method or technical question that a fact of this case settles, you decide, with that fact; one with several defensible paths is asked. Ask the user what only they know or own: who it is for, what for, scope, level and money. First the decision that reshapes most others; one that depends on an open decision waits.
+
+Every choice you make goes in as your call, never as something the user agreed to: «decided by me», with its reason. An assumption is labeled as one; what the user didn't answer stays pending.
 
 ## One decision per turn
 
-End each turn with exactly one decision: one question mark in the message. «Three things, together in one question» is three; a question after ➡️ or «also tell me…» is a second one. If the user asks for everything at once, do so this session. Skip what the request says or delegates, or the project shows.
+Each turn ends with exactly one decision: one question mark in the message. Three things in one question are three; a question after ➡️ is a second one. Also when asked for everything at once.
 
-## Look it up before asking
+## Look it up
 
-If a decision depends on a fact that changes with versions or time (a tool's behavior in the project's version, its docs, a license), look it up first: the repo, the session's documentation MCP within the user's limits, then `WebSearch` or `WebFetch`. Cite the source. If it needs a web search, use a subagent and keep asking what doesn't depend on it. «I remember it, haven't checked» or trying another version than the project's means you skipped this. «Unverified» only when the session has neither the MCP nor the web.
+A fact that changes with versions or time (a tool's behavior in the project's version, its docs, a license): check the repo, the session's documentation MCP within the user's limits, then `WebSearch` or `WebFetch`, and cite the source. When the decision needs the web, launch the search in a subagent before your first question and ask while it runs. «Unverified» only without MCP and web.
 
 ## Shape of a question
 
-Before you propose anything, think wide privately: come up with several ideas, drop the weak ones, including any that fight what the user has told you about why. Show the comparison only when it helps them decide.
+Think wide privately: several ideas; drop the weak ones and those that fight the user's why.
 
 A design decision (an alternative needs over a line to explain its cost) goes in text:
 
@@ -34,25 +38,25 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 ➡️ **I recommend 1️⃣**, because <a fact, cost or evidence from this case>. In exchange, <its cost>.
 ```
 
-- The decision sets the count: one defensible path: say it, confirm it; 🔀 marks a mix defensible alone. A habitual mix is filler, like one you say «I don't think you want».
-- «They're the defaults» or «it's simpler» is not a reason. With no reason to prefer one, say «tie, it depends on X» and ask X.
-- A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`. Tell limits by their effect, not their cause.
-- For how a screen looks or feels, show it instead of asking: if the screen exists, on the running app with what `§Frontend` declares (the live detector, or a screenshot of the current screen next to the variant); if it doesn't, or without `§Frontend`, an Artifact with the options. Without the app or the Artifact tool, describe each option's scene in text and say why you can't show it. «I haven't started the app» is not a reason: start it as `§Frontend` says, and stop what you started.
-- **A flow** (states, a process) or a structure easier to see than read (a timeline, a map) is drawn before asking, never a list or a table: a diagram skill if the session has one (`archify` preferred), else an Artifact; without either, an ASCII or Mermaid block, saying why it isn't drawn.
-- Icons mark only this question's alternatives; name earlier ones. If the user answers with an icon this question doesn't have, ask which one they meant.
-- An operational decision (options clear in one line: approve, continue) goes in numbered prose, recommended first, ending the turn.
+- The decision sets the count: one defensible path is decided if it's method, else said and confirmed; 🔀 marks a mix you'd defend alone.
+- The reason is a fact, cost or evidence from this case; with none, say «tie, it depends on X» and ask X.
+- What the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`; a limit, by its effect.
+- How a screen looks is shown: an existing one on the running app as `§Frontend` declares (live detector, or a screenshot next to the variant), started by you and stopped by PID or port; a new one, or without `§Frontend`, an Artifact; with neither, each option's scene in text and why.
+- A flow or a structure easier to see than read is drawn before asking: a diagram skill (`archify` preferred), else an Artifact, else ASCII or Mermaid saying why.
+- Icons mark only this question's alternatives; an answer with an icon the question doesn't have gets asked which one they meant.
+- An operational decision (approve, continue) goes in numbered prose, recommended first, ending the turn.
 
-## Discovery
+## What only the user knows
 
-What only the user knows (who uses it, what problem it solves) is asked open: no recommendation, hypothesis or example menu («por ejemplo…»). A fact you found (`roles.ts` has `clinic_admin`): show it with its source and ask to confirm. A user's word under _Evitar_ in «Terminology» of `PRODUCT.md`, or fitting two of its terms: name them and ask which they mean, before the why.
+Ask it open, in one sentence that asks for a case, with no recommendation, hypothesis or examples: «¿qué harás con el CSV el próximo lunes?». A fact you found goes the same way, with its source, to confirm: «`roles.ts` tiene `clinic_admin`: ¿es quien lo usa?». A word under _Evitar_ in «Terminology» of `PRODUCT.md`, or fitting two of its terms: name them and ask which.
 
 ## Answers
 
-- **Challenge once.** If an answer contradicts a fact or you see something better, say so once, with argument and alternative. If the user keeps it, accept it.
-- **«Decide for me»**: decide method and technical questions with your reason; keep asking only what is the user's (scope, level, money). Discovery stays **pending**: proposing «small clinics with paper agendas» for approval is inventing it.
-- **Rejected to clarify** («no, wait, explain»): explain in prose, with one case and its data, no options or recommendation; their answer closes it.
-- **No user present**: follow the caller's no-user rule; else don't ask, decide method, leave the rest pending.
+- **Challenge once**, with argument and alternative, an answer that contradicts a fact or has a better option. If the user keeps it, it's their decision: record it with their words and go on with it.
+- **«Decide for me»**: decide method with your reason; keep asking what is theirs. Discovery stays pending.
+- **Rejected to clarify** («no, wait, explain»): explain in prose, with one case and its data; their answer closes it.
+- **No user present**: follow the caller's rule; without one, decide method and leave the rest pending.
 
 ## Ending
 
-Stop when no decision is left. Return to the caller: decided by the user, decided by me (with reason), pending. The caller's gate is the confirmation; from `sdd-explore`, confirm with one question.
+Stop where the caller says; without a stop of its own, when each user decision is answered or pending (they said they don't know, or left it unanswered once asked). Return: decided by the user, decided by me (with reason), pending. The caller's gate is the confirmation.

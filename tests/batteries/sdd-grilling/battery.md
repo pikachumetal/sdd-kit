@@ -71,19 +71,21 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra) | RED R1 4 de 16; GREEN g9-2 | g1, g2, g3, g8, g9; p3 (W4: «Skip what the request says…», RED limpio en la 0314) |
-| Buscar fuera antes de preguntar; probarlo en otra versión no cuenta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; GREEN 2 de 2 antes del contra; dev-lead 2026-10-02 | g9 + micro-test m3 |
+| Postura: mirar primero; lo de método que zanja un hecho del caso lo decide el agente, lo que tiene varias alternativas se pregunta, y lo del usuario siempre; primero la que más cambia el resto, la dependiente espera | spike 0341 (`look-decide-ask`, research §4); el orden, de `grilling` de Matt; feature 0342 | interviewer (E0, E4, E3); g1, g3, g9; p2, p3 (W4) |
+| Lo que elige el agente va como suyo, nunca como algo que el usuario aceptó; la suposición, marcada; lo no contestado, pendiente | `brainstorming` de superpowers (regla de E0: spike 0341, 28 de 28); feature 0342: RED E0 20 de 20, se mide como no regresión | interviewer (E0); p1, p2, p3 (W5) |
+| Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra), también si lo pide todo de golpe | RED R1 4 de 16; GREEN g9-2; dev-lead, feature 0342: «lo habitual es decir sí a todo» | interviewer (E5); g1, g2, g3, g8, g9; p3; «todo de golpe», sin escenario |
+| Buscar fuera antes de preguntar; si la decisión necesita la web, la búsqueda sale antes de la primera pregunta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; dev-lead 2026-10-02; spike 0341 (E4w 0 de 12); feature 0342: RED E4w 0 de 5 | interviewer g9 (E4w, E4); g9 + micro-test m3 |
 | Formato fijo en texto para el diseño; diálogo para lo operativo | dev-lead 2026-10-02; RED R2 | todos |
-| Alternativas reales; «no creo que la quieras» es relleno | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1 | g3, g9 (g1 no, desde la 0314: su turno 1 pregunta el porqué) |
+| Alternativas reales; «no creo que la quieras» es relleno; con una sola defendible, la de método la decide el agente y la del usuario se confirma | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1; feature 0342 | g3, g9 |
 | La recomendada con razón del caso; empate → preguntar de qué depende | RED R4 («son los defaults del kit») | g3, g7, g8, g9 (g1 no, desde la 0314) |
 | Escena con datos en las decisiones de producto | RED R6 2 de 2; ticket de la feature 0035 de document-manager | g3, g6 |
-| Descubrimiento abierto, sin recomendación, hipótesis ni menú; con hecho, el hecho y su fuente | RED R5 4 de 4; micro-test m2 5 de 5 sin guía | g2, g5, g8 |
-| Rebatir una vez | dev-lead 2026-10-01 (abogado del diablo); RED limpio por una regla de `sdd-roadmap` | g4 (control) |
+| Lo que solo sabe el usuario, abierto en una frase que pide un caso, sin recomendación, hipótesis ni ejemplos; un hecho encontrado, igual, con su fuente para confirmarlo | RED R5 4 de 4; micro-test m2 5 de 5 sin guía; spike 0341 (research §4); feature 0342: RED E6 `g8` 4 de 5 («por ejemplo que alguien más la use») | interviewer (E6); g2, g5, g8 |
+| Rebatir una vez; si el usuario lo mantiene, es su decisión: se apunta con sus palabras y se sigue | dev-lead 2026-10-01 (abogado del diablo); feature 0342: RED E1 `fp` 2 de 5, dev-lead «1» | interviewer fp (E1); g4 |
 | «Decide tú»: decide método, el descubrimiento queda pendiente | RED R8 2 de 2 («Esta es mi propuesta») | g5 |
 | Rechazo: prosa hasta que conteste, sin volver a las opciones | RED R9 1 de 2; ticket de la feature 0115 §10 | g6 |
-| Cierre en tres listas; la confirmación es el gate del llamante | RED R10 2 de 2 | g7 |
+| Cierre en tres listas; la confirmación es el gate del llamante; la parada la fija el llamante, y sin ella, cada decisión del usuario contestada o pendiente | RED R10 2 de 2; feature 0342 | interviewer pe (E7); g7 |
 | Todo en el idioma del usuario, también los anuncios | RED R12 3 de 17 | todos |
-| Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill); p2, p3 (W2 y W3: RED limpio de brainstorming 7.0.2 en la feature 0314, frases sin cambio) |
-| El porqué primero, abierto, si ni el dev ni el proyecto lo dicen; después la que más cambia el resto | `brainstorming` 7.0.2 de superpowers; feature 0314: RED W1 2 de 2 («¿Adónde va el CSV?» sin el porqué); GREEN 1 de 2 por un menú de ejemplos, que corrige el contraejemplo literal tras dos rondas | p1 (W1); p2, p3 (no lo pregunta si ya está) |
+| Pensar varias ideas en privado antes de proponer, y quitar las que chocan con el porqué del usuario | `brainstorming` de superpowers | g3 |
 | El número de alternativas lo pone la decisión; «dos más una 🔀» por costumbre es relleno | dev-lead 2026-10-03: «estás cayendo mucho en presentar 2 soluciones y una híbrida» (5 de 7 preguntas del agente en la sesión de la 0128) | g3 (g1 no, desde la 0314; no regresión: la batería no reproduce el fallo) + micro-test m4; «una sola alternativa», sin escenario |
 | Boceto: si la pantalla existe, sobre la app real con `§Frontend`; si no, un Artifact; sin app ni Artifact, en texto con su escena y el motivo; «no he arrancado la app» no es motivo; parar por PID o puerto | feature 0168: RED `sk` 2/2 maqueta aparte; GREEN `sk-3` falla por el motivo, REFACTOR con contraejemplo, `sk-4` y `sk-5` pasan; parada por nombre vista en `sk-4` | sk, sk-c |
+| El porqué primero, abierto, si ni el dev ni el proyecto lo dicen: baja a `sdd-propose/references/spec-writing.md` y a `sdd-explore` (paso 2), feature 0342 | `brainstorming` 7.0.2 de superpowers; feature 0314: RED W1 2 de 2 («¿Adónde va el CSV?» sin el porqué) | p1 (W1); p2, p3 (no lo pregunta si ya está) |
