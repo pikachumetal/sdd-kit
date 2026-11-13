@@ -23,7 +23,7 @@ Worktree `D:\code\.worktrees\sdd-kit\feature-0152-coherence-smoke-release`, rama
 
 ## En curso
 
-- Tanda `meas-0152.sh` (scratchpad de la sesión), kit d5dc6963: GREEN 2 de `sdd-implement:u1 h1 h2` y `sdd-verify:c1` (n = 3), mediciones nuevas `sdd-implement:p4 p4o cs1 ml1`, `sdd-debugging:dp1`, `sdd-archive:rn1`, `sdd-propose:d1` (n = 4), `sdd-upgrade:v5` (n = 2). Fases `g2-*` y `m-*` en la carpeta de la spec. Al acabar: un lector sonnet juzga la prosa y añade sección a `tests/release-3.0.0.md`; commit de las salidas.
+- **Lista para cerrar con lo hecho** (dev-lead, 2026-11-13: «la podemos mergear y cerrar de momento, ponernos con grilling, y luego seguir»). Medida final con la n de cada batería (fases `z-…`, 1696 sujetos, 731,48 $) y GREEN de sus arreglos (fases `y-…`, `x-…`, `w-…`): lectores en `tests/release-3.0.0.md`, sección «Medida final». Arreglos de la medida: d030e7e4, 2e6a36e0, 436bdcdd, 9d54b57f, 080be564 (`sdd-implement-native` y `sdd-implement-subagent` fuera de la lista del modelo por un «: » en su description), 97694256, 36638dcf. Lo que queda pasa a filas propias en `develop` (e3839c10): 0341 (spike del entrevistador: `sdd-grilling` dio 8 rojos de 19), 0342 (su reescritura) y 0343 (rojos repetidos `m1` `m3` `v5` `g5`, los de 1 de 2 como bugs, batería final y corte de la 3.0.0). Siguiente paso de esta rama: `sdd-archive` (revisión final, walkthrough, CI, `sdd merge --push`, ticket), sin cortar la versión.
 
 ## Siguiente
 
