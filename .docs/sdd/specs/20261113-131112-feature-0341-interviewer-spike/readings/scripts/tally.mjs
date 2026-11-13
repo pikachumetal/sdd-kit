@@ -17,10 +17,17 @@ for (const line of readFileSync(join(dir, 'key.md'), 'utf8').split(/\r?\n/)) {
 }
 
 const cell = () => ({ pasa: 0, falla: 0, 'no aplica': 0, 'no cargó': 0, 'sin veredicto': 0 });
+// Literal reading of the load rule: only a `Skill` call loads the core. These subjects read SKILL.md with cat or Read,
+// and p2 and pe fall under 80 % of control subjects loading it, so they leave the recommendation.
+const SKILL_ONLY_UNLOADED = new Set(['matt:g3-2', 'matt:p3-1', 'brainstorming:p1-1', 'brainstorming:p1-2', 'openspec:g3-1', 'openspec:p1-2', 'look-decide-ask:g3-1']);
+const SKILL_ONLY_DROPPED = new Set(['p2', 'pe']);
+
 const byArm = {}; // row -> arm -> counts
+const byArmSkillOnly = {};
 const bySite = {}; // site -> row -> arm -> counts
 const byScenario = {}; // scenario -> row -> arm -> counts
 for (const r of ROWS) byArm[r] = Object.fromEntries(ARMS.map((a) => [a, cell()]));
+for (const r of ROWS) byArmSkillOnly[r] = Object.fromEntries(ARMS.map((a) => [a, cell()]));
 
 for (const [file, scenario] of [['g1'], ['g9'], ['rq'], ['g2'], ['g8'], ['g3'], ['p1'], ['p2'], ['p3'], ['fp-a', 'fp'], ['fp-b', 'fp'], ['pe-a', 'pe'], ['pe-b', 'pe']].map(([f, s]) => [f, s ?? f])) {
   for (const line of readFileSync(join(dir, `${file}.md`), 'utf8').split(/\r?\n/)) {
@@ -32,6 +39,9 @@ for (const [file, scenario] of [['g1'], ['g9'], ['rq'], ['g2'], ['g8'], ['g3'], 
     if (!arm || !ROWS.includes(row)) throw new Error(`línea sin brazo o fila: ${line}`);
     if (!(verdict in cell())) throw new Error(`veredicto desconocido: ${line}`);
     byArm[row][arm][verdict]++;
+    if (!SKILL_ONLY_DROPPED.has(scenario)) {
+      byArmSkillOnly[row][arm][SKILL_ONLY_UNLOADED.has(`${arm}:${scenario}-${m[2]}`) ? 'no cargó' : verdict]++;
+    }
     const site = SITE[scenario];
     bySite[site] ??= {};
     bySite[site][row] ??= Object.fromEntries(ARMS.map((a) => [a, cell()]));
@@ -54,6 +64,7 @@ const table = (rows, data) => [
 ].join('\n');
 
 const out = ['# Recuentos de la lectura', '', 'Pasa/(pasa + falla) por fila y brazo; «no aplica» fuera del denominador; nc = no cargó, sv = sin veredicto. Sale de `readings/*.md` con `key.md`.', '', '## Por fila y brazo', '', table(ROWS, byArm), ''];
+out.push('## Por fila y brazo, solo con `Skill` como carga', '', 'Sin `p2` ni `pe` (el control carga el núcleo con `Skill` en 1 de 4 y en 6 de 10 sujetos), y con «no cargó» los sujetos que lo leen con `cat` o `Read`.', '', table(ROWS, byArmSkillOnly), '');
 for (const site of ['explore', 'init', 'propose']) out.push(`## Sitio: ${site}`, '', table(ROWS, bySite[site]), '');
 for (const s of Object.keys(SITE)) out.push(`## Escenario: ${s}`, '', table(ROWS, byScenario[s]), '');
 writeFileSync(join(dir, 'totales.md'), out.join('\n'));
