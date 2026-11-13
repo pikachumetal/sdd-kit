@@ -4,9 +4,12 @@ import { join } from 'node:path';
 import { readDecisions } from '../../src/decisions/document.ts';
 import { globToRegExp } from '../../src/decisions/glob.ts';
 import { repoRoot } from './kit-files.ts';
+import { cleanGitEnv } from './process.ts';
 
 // Un glob de `rutas` que no casa con ningún fichero deja la ADR sin lectores: `sdd decision index --files` no la ofrece.
-const files = execFileSync('git', ['-C', repoRoot, 'ls-files'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).split('\n').filter(Boolean);
+const files = execFileSync('git', ['-C', repoRoot, 'ls-files'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: cleanGitEnv })
+  .split('\n')
+  .filter(Boolean);
 const live = readDecisions(join(repoRoot, '.docs', 'sdd')).filter((decision) => /^(accepted|proposed)$/.test(decision.status ?? ''));
 
 describe('rutas de las ADR vigentes', () => {
