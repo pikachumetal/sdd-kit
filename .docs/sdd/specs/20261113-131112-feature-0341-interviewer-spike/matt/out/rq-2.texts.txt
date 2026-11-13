@@ -1,0 +1,13 @@
+--- [9]
+Esto es lo que he encontrado en el código y los documentos, antes de preguntarte nada:
+
+- **Hoy** las reservas son un array en memoria en `src/app.js:3`, con una reserva fija de ejemplo. `reservar` no añade nada y `cancelar` solo devuelve un texto. Es una herramienta de línea de comandos, así que cada invocación es un proceso nuevo y ya "se reinicia" en cada comando.
+- **Restricciones** (`PRODUCT.md`, `operations.md`): la usas solo tú, en tu servidor, con Node 22 y sin dependencias externas. Los tests se hacen con `node --test`.
+- **Roadmap:** no hay ninguna fila sobre persistencia. La 0008 (avisos por correo) y la 0009 (exportar a `.ics`) leerían las reservas, así que dependerán de lo que decidamos aquí.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un fichero JSON local** (por ejemplo `reservas.json`), que se lee y se escribe con `node:fs`. No añade dependencias, se puede abrir y editar a mano, y para un usuario y pocas reservas basta. A cambio no tiene transacciones ni control de concurrencia, y dos comandos a la vez podrían pisarse.
+2️⃣ **SQLite con `node:sqlite`**, que viene con Node 22 pero sigue siendo experimental. Ofrece consultas y atomicidad. A cambio añade una API experimental y no se puede leer a mano.
+3️⃣ **Un servicio externo** (base de datos o API). Es excesivo para un solo usuario y rompe el "sin dependencias externas".
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y no hay riesgo real de concurrencia. Además mantiene el criterio de no tener dependencias y hace trivial leer los datos desde 0008 y 0009. A cambio, si algún día hay escrituras simultáneas, habría que migrar a 2️⃣.
+

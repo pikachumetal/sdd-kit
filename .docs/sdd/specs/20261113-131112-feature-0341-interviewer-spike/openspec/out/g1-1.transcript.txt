@@ -1,0 +1,63 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -80; ls .docs/sdd 2>/dev/null
+> Bash: cat PRODUCT.md ROADMAP.md src/app.js package.json; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/specs/*weekly/spec.md .docs/sdd/specs/*free/spec.md .docs/sdd/specs
+## agente
+Todavía no he tocado nada. Esto es lo que he visto y la primera decisión que hay que tomar.
+
+**Lo que dicen los documentos y el código**
+- `PRODUCT.md`: es una CLI personal con un solo usuario. No hay datos que migrar ni compatibilidad que mantener con nadie.
+- `src/app.js`: una franja es un texto libre, como `"10:00-12:00"`. `libres` y la reserva comparan por **igualdad de texto** (`b.slot === slot`).
+- Las reservas están en memoria y escritas a mano en el código. No hay almacenamiento real.
+- `reservar` solo tiene la rama `--cada-semana`, que devuelve un texto fijo. No existe una reserva puntual de verdad.
+- `steering/debt.md` tiene pendiente de triar «sin validación del formato de franja horaria». Está justo debajo de lo que quieres tocar.
+
+**Lo que deduzco**
+- Hoy `10:00-10:30` ya cabe como texto, así que "permitir medias horas" no necesita un campo nuevo.
+- El problema es que `10:00-10:30` y `10:00-12:00` se consideran franjas distintas y **no chocan**, aunque se solapen. Con medias horas aparecerían dobles reservas.
+- Es el mismo tipo de fallo que corrigió el patch 0007, que comparaba solo por hora.
+- Lo que hay que enfocar es pasar de comparar texto a comparar intervalos. Dejar que el usuario escriba `:30` es lo de menos.
+
+```text
+hoy:     "10:00-12:00" == "10:00-12:00"      (texto)
+medias:  [10:00,10:30) solapa [10:00,12:00)  (intervalo)  <- hace falta esto
+```
+
+❓ **¿Qué significa "reservar media hora"?**
+Esto decide el modelo de datos y cuánto hay que validar.
+1️⃣ **Duración libre en múltiplos de 30 min**: `10:00-11:30`, `14:30-15:00`. La franja pasa a ser un intervalo validado (inicio < fin, minutos 00 o 30) y la disponibilidad se calcula por solape. Cuesta un parser y validación, y de paso cubre la deuda del formato.
+2️⃣ **Bloques fijos de 30 min**: la agenda es una rejilla y una reserva de 2 h son 4 bloques. La comparación sigue siendo por igualdad, pero cambia la representación de las reservas existentes y hay que expandir los rangos.
+3️⃣ **Solo permitir `:30` en el texto actual**, sin tocar la comparación. Es lo más barato, pero deja pasar las dobles reservas.
+
+➡️ **Recomiendo 1️⃣**, porque el código ya trabaja con rangos y solo hay un usuario, así que no hay migración. A cambio, el cuerpo de la tarea es el parser de intervalos y la validación. Yo trataría la deuda del formato como parte de este trabajo.
+
+Antes de seguir necesito saber cuál de las tres opciones es la tuya. Después quedarían por decidir tres cosas: si el solape también afecta a `--cada-semana`, cómo se muestra `libres` con franjas de distinto tamaño, y si esto va con la deuda en una sola fila del roadmap o en dos.
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Con eso queda claro el problema. Hoy una reunión de 30 minutos ocupa la sala dos horas, y lo que quieres es que el resto de la franja quede libre.
+
+Eso encaja con 1️⃣ y con 2️⃣. Lo que ayuda a elegir es cuántas duraciones distintas usas de verdad.
+
+```text
+sala Norte, 10:00-12:00
+
+hoy:       [########## 2h bloqueadas ##########]
+deseado:   [reunion 30'][ libre ][ libre ][ libre ]
+                10:00    10:30    11:00    11:30
+```
+
+❓ **¿Qué duraciones reservas en la práctica?**
+Es lo que decide si hace falta una rejilla o intervalos.
+1️⃣ **Cualquier múltiplo de 30 min** (30', 1 h, 1 h 30, 2 h…): es el modelo de intervalos de antes. Una reunión de 1 h 30 entra sin trucos y las de 2 h de hoy siguen siendo válidas tal cual. Cuesta el parser y la validación.
+2️⃣ **Solo 30 min o las 2 h de siempre**: basta con partir la franja en 4 bloques de 30 min. Es más simple, pero cualquier duración intermedia, como 1 h, queda sin resolver y habría que volver a tocarlo.
+
+➡️ **Sigo recomendando 1️⃣**, porque no sé si algún día necesitarás una reunión de 1 h o de 1 h 30, y con intervalos no hay que volver a tocarlo. A cambio, pagas el parser y la validación desde el principio. Si me dices que nunca será otra cosa que 30 min o 2 h, 2️⃣ sale más barata y también es defendible.
+
+Hasta ahora **solo tengo confirmado** el motivo: las reuniones de 30 min bloquean 2 h. El modelo todavía es una propuesta mía, no una decisión tuya.

@@ -1,0 +1,71 @@
+--- [13]
+Ya sé el porqué (cuadrar los lunes en la hoja de cálculo), así que voy con la decisión que más condiciona las demás: el formato del CSV. Hoy cada reserva tiene sala, día y franja (`{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`) y vive en memoria en `src/app.js`.
+
+❓ **¿Con qué separador sale el CSV?**
+Una hoja de cálculo configurada en castellano suele esperar `;` (la coma es el separador decimal) y abre mal un CSV con comas: lo mete todo en una sola columna. Lo que sale con `salas exportar Norte`:
+
+1️⃣ **Punto y coma (`;`)**: se abre en columnas directamente en una hoja en castellano.
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+2️⃣ **Coma (`,`)**: el CSV estándar. Cualquier programa lo lee, pero una hoja en castellano lo abre en una sola columna salvo que lo importes a mano.
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+
+➡️ **Recomiendo 1️⃣**, porque tu hoja de cálculo es la que decide cómo se abre el fichero y lo normal en castellano es `;`. A cambio, otra herramienta que espere comas tendría que ajustarlo.
+
+¿Cuál usa tu hoja de cálculo: 1️⃣ o 2️⃣?
+
+--- [24]
+Ahora: escribo la spec de la exportación (aún sin plan ni código). Queda: repaso de coherencia, revisión de la spec y tu aprobación, ~8 min.
+
+--- [28]
+Nada se escribió; uso la herramienta de escritura.
+
+--- [30]
+Ahora: repaso de coherencia, probando el delta sobre una copia fuera del repo.
+
+--- [41]
+Aquí paro, en el gate de aprobación. La spec está escrita en `.docs/sdd/changes/20261113-155619-feature-0010-exportar-reservas-csv/spec.md`, sin plan ni código todavía.
+
+🦆 Con `salas exportar Norte` saldrá una tabla para la hoja de cálculo, con una línea por reserva (`Norte;lun;10:00-12:00`) y separada por `;` para que tu Excel en castellano la abra ya en columnas. Se redirige con `salas exportar Norte > norte.csv`. Una sala sin reservas da solo la cabecera `sala;dia;franja`. Una sala que no existe da `sala desconocida: Oeste`, para que no parezca un CSV vacío. Por dentro es una función pura en `src/app.js` y una rama nueva en `run`.
+
+**✋ Decisiones que he tomado yo, valida estas** (todas están en la spec):
+1. El comando se llama `exportar <sala>`, como `reservar`, `cancelar` y `libres`.
+2. Sale por pantalla, sin flag `--salida`; se redirige con `>`.
+3. Columnas `sala;dia;franja`, con cabecera siempre y `dia` sin tilde.
+4. Orden por día de la semana (`lun`…`dom`, con `mie` sin tilde, que es grafía mía) y luego por franja. La franja se ordena como texto, así que solo vale con horas de dos cifras.
+5. Una sala sin reservas da solo la cabecera.
+6. Una sala desconocida da `sala desconocida: Oeste`, y `exportar` sin sala da `uso: exportar <sala>`.
+7. Salto de línea `\n` y sin BOM, para no ensuciar la redirección. Si algún día una sala lleva tilde en el nombre, Excel la abriría mal.
+8. Un campo con `;` o `"` sale entre comillas dobles.
+9. El nombre de la sala se compara exacto, como en `libres`: `exportar norte` da `sala desconocida: norte`.
+10. Capacidad nueva `room-bookings`: es la primera del proyecto.
+11. Enfoque A (función `reservasCsv` y una rama en `run`), frente a un módulo nuevo (B) o un flag `--salida` (C).
+
+**Qué no he podido hacer:**
+- No pude despachar los dos revisores que pide la rúbrica. Esta sesión no tiene herramienta de subagentes, así que hice yo las dos lentes con los siete puntos. Eso no equivale a dos revisores independientes y queda dicho en la spec.
+- Salieron dos cambios aceptados: lo del orden por franja y la comparación exacta de la sala. Rechacé añadir una fecha a cada reserva, porque hoy solo se guarda día de la semana y franja. Queda en «No entra».
+- El delta lo probé sobre una copia de `.docs/sdd` con `sdd capability merge`, sin rechazos.
+
+**No entra:** exportar todas las salas, filtrar por fecha, escribir a fichero, las reservas semanales y el `.ics` (fila 0009).
+
+La rama `feature/0010-exportar-reservas-csv` está creada. En el roadmap no hay fila para la 0010 y la añadiré al cerrar.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué ajustar.
+
+--- [42]
+Vale, lo dejamos aquí. La spec queda en espera, sin aprobar.
+
+- **Spec:** `.docs/sdd/changes/20261113-155619-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft`.
+- **Rama:** `feature/0010-exportar-reservas-csv`. El id 0010 está reservado.
+- **Sin commitear:** la carpeta de la spec está sin añadir a git. No he escrito plan ni código.
+- **Pendiente en el roadmap:** la 0010 no tiene fila en `ROADMAP.md`. La añadiré al cerrar, o antes si prefieres.
+
+Para retomarlo, di «retoma la feature» y te vuelvo a presentar la spec para aprobarla o pedir cambios.
+

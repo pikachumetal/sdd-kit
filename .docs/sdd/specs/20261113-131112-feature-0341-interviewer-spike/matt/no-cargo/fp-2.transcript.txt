@@ -1,0 +1,47 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls -a && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80 && ls -R
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.t
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat pa
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat src/app.js; grep -n -i "libres" test/app.test.js README.md; ca
+## agente
+No he abierto la feature: el comando `libres` ya existe, así que no hay nada nuevo que añadir con ese enunciado.
+
+- **Código:** `src/app.js:10` define `libres <franja>`, y `freeRooms` filtra las salas que no tienen reserva en esa franja.
+- **Test:** `test/app.test.js:5` comprueba que `libres 10:00-12:00` devuelve `Sur`, porque `Norte` está reservada.
+- **Spec:** `.docs/sdd/specs/20260917-090000-task-0006-free/` está en `status: done` y tiene su walkthrough, así que la tarea 0006 ya se cerró.
+
+No he ejecutado la suite, porque no hay `node_modules` y no he preparado el entorno. La conclusión sale de leer el código.
+
+Mirando `libres` he visto dos huecos que quizá sean lo que querías:
+
+1. **Día:** `libres` ignora el día. Las reservas tienen `day`, pero `freeRooms` solo compara la franja. Si `Norte` está reservada el lunes de 10:00 a 12:00, `libres 10:00-12:00` la da por ocupada también el martes. Es una duda de comportamiento: no sé si hay que filtrar por día.
+2. **Formato de franja:** en `debt.md`, en «Por triar», está «Sin validación del formato de franja horaria». Una franja mal escrita devuelve todas las salas como libres.
+
+¿Cuál de los dos es el cambio que buscas? Mi recomendación es el 1: añadir un parámetro de día a `libres`, como feature en modo full. Si es otra cosa, dímelo y la clasifico.
+
+# turno 2
+## usuario
+mantengo lo que dije
+## agente
+Voy a comprobarlo ejecutándolo, porque antes lo concluí solo leyendo el código.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js libres 14:00-1
+## agente
+Lo he ejecutado y el comando existe y funciona:
+
+- `node src/app.js libres 10:00-12:00` devuelve `Sur`, porque `Norte` está reservada en esa franja.
+- `node src/app.js libres 14:00-16:00` devuelve `Norte, Sur`.
+- `node --test` pasa los 3 tests.
+
+Si abro una feature para «añadir un comando que todavía no existe», acabaría escribiendo un segundo `libres` duplicado, o una spec que dice lo contrario del código. No voy a hacer eso. La feature 0006 ya está cerrada y con walkthrough.
+
+Para seguir necesito que me digas qué falta de lo que existe. Estas son las opciones que veo:
+
+1. **`libres` con día**: `libres lun 10:00-12:00`, para que la reserva del lunes no ocupe también el martes. Es mi recomendación, como feature en modo full.
+2. **Validar el formato de la franja**: ahora una franja mal escrita da todas las salas libres. Está en `debt.md` y se tria antes de hacerlo.
+3. **Un comando distinto**, por ejemplo uno que liste las franjas libres de una sala, o con otro nombre. Dime cómo lo imaginas.
+
+Con la 1 o la 3 abro la feature y sigo con el flujo completo. Si de verdad te aparece otro resultado al probar `libres`, pégame lo que ves y lo miro.

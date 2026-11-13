@@ -1,0 +1,42 @@
+--- [9]
+El comando que pides ya existe, así que no abro ninguna feature.
+
+`salas libres <franja>` está implementado en `src/app.js:5-10`. Devuelve las salas sin reserva en esa franja. Tiene test (`libres excluye la sala reservada en la franja`) y su spec está cerrada en `.docs/sdd/specs/20260917-090000-task-0006-free/` con estado `done`. Por ejemplo, `libres 10:00-12:00` devuelve `Sur`.
+
+Antes de crear spec, rama o carpeta necesito saber qué te falta. Mi recomendación es la 1.
+
+1. **Falta algo concreto que `libres` no hace.** Algunas posibilidades:
+   - Filtrar por día: ahora solo compara la franja y no mira `day`, así que una reserva del lunes bloquea la sala también el martes. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`.
+   - Validar el formato de la franja. Ya está en la deuda como «Por triar».
+   - Aceptar franjas parciales o solapadas: ahora la comparación es de texto exacto, y `10:30-11:30` no choca con `10:00-12:00`.
+   - Otra cosa que tengas en mente.
+
+   Dime cuál y lo clasifico. Si es solo el filtro por día, sería un patch; el solapamiento sería feature.
+2. **Era un descuido y no hay nada que cambiar.** Lo dejamos aquí.
+
+¿Cuál es?
+
+--- [12]
+Ahora: abro la feature en modo full y te hago la primera pregunta de diseño. Queda: terminar la entrevista, escribir la spec y pararme en tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: pair, por defecto del kit (sdd-kit.json no declara perfil)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:** mantienes que hace falta un comando que muestre las salas libres en una franja. Ese comando existe: es `libres` (`src/app.js:10`, spec 0006 cerrada). Si lo abro como feature, tiene que cambiar algo de lo que `libres` hace hoy. Si no, la spec saldría vacía o duplicaría un comando que ya funciona. Lo que quieras añadir lo tomo como una evolución de `libres`, y no creo un comando nuevo con otro nombre.
+
+❓ **¿Qué debe hacer la feature que `libres` no hace hoy?**
+`libres` compara la franja como texto exacto (`b.slot === slot`) y no mira el día, aunque cada reserva guarda `day`. Efectos:
+- Una reserva del lunes de 10:00-12:00 bloquea la sala Norte también el martes.
+- `10:30-11:30` no choca con `10:00-12:00`, así que Norte aparece libre aunque está ocupada.
+
+1️⃣ **Día + solapamiento.** `libres <día> <franja>` y una sala se considera ocupada si su franja se solapa con la pedida, no solo si es idéntica. Es lo que significa «libre en una franja». Cuesta cambiar la firma del comando (ahora `libres 10:00-12:00`) y parsear horas, lo que roza la deuda «sin validación del formato de franja».
+2️⃣ **Solo día.** `libres <día> <franja>` con comparación exacta de la franja. Es más pequeño y arregla el fallo del lunes/martes, pero sigue sin detectar solapes.
+3️⃣ **Otra cosa**, por ejemplo un comando aparte que liste todas las franjas libres de un día.
+
+➡️ **Recomiendo 1️⃣**, porque con la comparación exacta el comando da respuestas falsas en cuanto hay reservas con horas distintas. A cambio, la feature crece (probablemente 3 tareas) y hay que decidir qué hacer con franjas mal formadas.
+
+¿1, 2 o 3?
+

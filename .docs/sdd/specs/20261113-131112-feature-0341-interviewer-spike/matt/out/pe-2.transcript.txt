@@ -1,0 +1,128 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.j
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat .docs/sdd/steering/*.md; cat package.json; ls -R src test .doc
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references/control-profiles.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat src/app.js; cat test/app.test.js | head -40; cat README.md; ca
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references/nombrado.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.t
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git checkout -b feature/0010-exportar-csv develop && node "D:/code
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references/spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+**Lo que he entendido (corrígeme si algo no cuadra):**
+
+- Hoy `src/app.js` tiene reservas en memoria, con campos `room`, `day` y `slot`, y comandos `libres`, `reservar` y `cancelar`. No hay ningún comando que las liste.
+- Quieres un comando nuevo que, dada una sala, saque sus reservas en CSV. El responsable de la sala lo abre los lunes en su hoja de cálculo para cuadrarlas.
+- La prueba de que funciona es que el CSV se abre en la hoja de cálculo sin tocarlo: columnas separadas, sin caracteres rotos.
+- Queda fuera de esta feature el `.ics` (ya está como 0009 en Later) y cualquier cambio en cómo se reserva o cancela.
+
+Rama `feature/0010-exportar-csv` creada desde `develop`. El id 0010 ya está reservado.
+
+Ahora hay que decidir cómo se usa el comando. Empiezo por dónde sale el CSV, porque de eso cuelga el resto:
+
+❓ **¿Dónde sale el CSV?**
+Hoy `run()` devuelve un texto y `app.js` lo imprime con `console.log`. Todos los comandos funcionan así.
+1️⃣ **Por pantalla (stdout)**: `node src/app.js exportar Norte > norte.csv`. Es coherente con los demás comandos y no necesita código para escribir ficheros. Tú redirigirías la salida a un fichero.
+2️⃣ **A un fichero que el comando crea**: `exportar Norte` escribe `norte.csv`. Es más cómodo de usar, pero obliga a decidir el nombre y la carpeta, y qué pasa si el fichero ya existe.
+➡️ **Recomiendo 1️⃣**, porque es la forma en que ya trabajan los comandos y el CSV sigue siendo fácil de guardar. A cambio, tienes que escribir la redirección tú.
+
+# turno 2
+## persona
+Por la salida estándar: 1️⃣. Yo redirijo a un fichero.
+## agente
+Decidido: el CSV sale por stdout y tú redirigirás a un fichero.
+
+Ahora el separador, que decide si la hoja de cálculo reparte bien las columnas:
+
+❓ **¿Qué separador usa el CSV?**
+Las hojas de cálculo con configuración regional española (Excel en castellano, por ejemplo) esperan `;` entre columnas. Si reciben `,`, suelen abrir todo el contenido en una sola columna. Los campos de una reserva (`Norte`, `lun`, `10:00-12:00`) no llevan comas ni puntos y coma, así que no hace falta entrecomillar nada.
+1️⃣ **Punto y coma (`;`)**: `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. Se abre bien en una hoja en castellano. En una configurada en inglés, quizá haya que importarlo indicando el separador.
+2️⃣ **Coma (`,`)**: es el CSV estándar y lo lee cualquier herramienta. En una hoja en castellano, lo más probable es que se abra en una sola columna.
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra las reservas en su hoja de cálculo y lo más probable es que la tenga en castellano. A cambio, el fichero no es CSV «de libro» y otra herramienta que espere comas no lo leería bien.
+
+# turno 3
+## persona
+Punto y coma (opción 1): el Excel del responsable está en castellano.
+## agente
+Decidido: separador `;`, porque el Excel del responsable está en castellano.
+
+Queda por decidir qué pasa cuando la sala no tiene reservas, o cuando el nombre no existe. Es lo que más cambia lo que ve quien lo usa:
+
+❓ **¿Qué sale si la sala no existe o no tiene reservas?**
+Hoy las salas son `Norte` y `Sur`. Si alguien escribe `exportar Este`, o `exportar Sur` (que ahora mismo no tiene reservas), hay que decidir qué recibe.
+1️⃣ **Sala inexistente: mensaje de error. Sala sin reservas: solo la cabecera.**
+   - `exportar Este` imprime `no existe la sala Este`, y no un CSV.
+   - `exportar Sur` imprime `sala;dia;franja` y nada más, que es un CSV válido y vacío.
+   - Así un error de escritura no se confunde con una semana sin reservas.
+2️⃣ **Ambos casos: solo la cabecera.** Es más simple, pero `exportar Nrote` daría un CSV vacío y parecería que la sala no tiene reservas.
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra reservas, y que una errata le dé un fichero vacío sin avisar le haría dar por buena una sala sin reservas. A cambio, hay un caso más que probar.
+
+# turno 4
+## persona
+No sé, decide tú.
+## agente
+Decidido por mí, y lo anoto en «✋ Decisiones que he tomado yo» de la spec: sala inexistente da error, y sala sin reservas da solo la cabecera.
+
+Con eso el árbol de decisiones está agotado. El resto son detalles que fijo yo y que irán en la spec para que los valides:
+
+- **Comando:** `exportar <sala>`. Sin sala, error `uso: exportar <sala>`.
+- **Columnas:** `sala;dia;franja`, con cabecera. Va `dia` sin tilde porque Excel en castellano abre mal los acentos de un UTF-8 sin BOM.
+- **Orden:** el de las reservas guardadas.
+
+Ahora leo las plantillas y escribo la spec.
+> Skill: sdd-kit:sdd-templates
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references/coherence-pass.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references/review-spec.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-templates/templates/spec-template.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md; cat 
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt" && sed -n 1,60p skills/sdd-templates/templates/capability-template.md; git -C "D
+> Write: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo/.docs/sdd/changes/20261113-144909-feature-0010-exportar-csv/spec.md
+> Bash: R="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo"; cd "$R" && git grep -n "0010\|exportar\|csv" -- . ':!.docs' | head; T
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo/.docs/sdd/changes/20261113-144909-feature-0010-exportar-csv" && python
+## agente
+Ahora: la spec está escrita y pasó el repaso de coherencia, y espera tu aprobación. Queda: tu respuesta, y después el plan y la implementación (~15 min).
+
+🦆 Hasta ahora no hay forma de sacar las reservas de una sala. Con esto, `node src/app.js exportar Norte > norte.csv` deja un fichero que el responsable abre en su hoja de cálculo en castellano. Tiene tres columnas, `sala;dia;franja`, y debajo `Norte;lun;10:00-12:00`. Si la sala no existe, avisa con un error en vez de dar un fichero vacío. Por dentro es una función más en `src/app.js`.
+
+La spec está en `.docs/sdd/changes/20261113-144909-feature-0010-exportar-csv/spec.md`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+1. Capacidad nueva `booking-export`, porque el proyecto aún no tiene `capabilities/`.
+2. Comando `exportar <sala>`.
+3. Columnas `sala;dia;franja` con cabecera y una fila por reserva.
+4. `dia` sin tilde: un UTF-8 sin BOM con acento se abre mal en Excel en castellano.
+5. Sala inexistente: `no existe la sala Este`, sin CSV.
+6. Sala existente sin reservas: solo la cabecera.
+7. Sin sala: `uso: exportar <sala>`.
+8. Las filas salen en el orden en que están guardadas las reservas.
+9. No hay entrecomillado ni escape, porque hoy ningún campo lleva `;`.
+10. Líneas separadas por `\n`, sin salto final extra.
+11. La sala se compara tal cual está guardada (`Norte`, no `norte`).
+12. Enfoque: función pura en `src/app.js`, frente a un módulo nuevo o a escribir el fichero desde el comando.
+13. Una línea de uso en el README.
+
+**Decidido contigo:** salida estándar, separador `;`. El caso de sala inexistente o vacía lo decidí yo por tu «decide tú».
+
+**La review no se hizo con revisores independientes.** La rúbrica pedía dos revisores, por el formato de fichero y la capacidad nueva. En esta sesión no tengo herramienta para lanzar subagentes, así que pasé yo los siete puntos y corregí tres erratas en la propia spec. Si quieres una revisión aparte, dímelo y la dejo anotada.
+
+**Comprobado:** `sdd capability merge` sobre una copia fusiona sin errores y `capability check` da «Capacidades válidas: 1». No hay otras referencias a `exportar` ni a CSV fuera de `.docs/`.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada).** Escribo el plan y paso a implementar.
+2. **Cambios.** Dime qué cambiar.
+
+# turno 5
+## persona
+Déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+Vale, la spec se queda en espera y no he escrito el plan ni código.
+
+- **Dónde está:** rama `feature/0010-exportar-csv`, con la spec en `.docs/sdd/changes/20261113-144909-feature-0010-exportar-csv/spec.md`. Está en `status: draft` y sin aprobaciones.
+- **Sin commitear:** la spec es un fichero nuevo sin commit. No he añadido fila al `ROADMAP.md`, así que el id 0010 está reservado solo en el contador local.
+- **Para retomar:** dime «retoma la feature 0010». Puedes aprobarla, pedir cambios o decir que se haga la review con revisores independientes. Después escribo el plan y paso a implementar.

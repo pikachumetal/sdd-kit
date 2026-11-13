@@ -1,0 +1,46 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar y arrancar la entrevista de diseño, ~3 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.j
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md 2>&1 | head -80; cat .docs/sdd/steer
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat src/app.js; ls src test; cat .docs/sdd/specs/20260917-0900
+## agente
+Lo que me pides ya existe, así que no he abierto ninguna feature todavía.
+
+`src/app.js:4-10` tiene el comando `libres <franja>`. Devuelve las salas sin reserva en esa franja, por ejemplo `libres 10:00-12:00` devuelve `Sur`. Está hecho en la feature 0006 (`.docs/sdd/specs/20260917-090000-task-0006-free/`, estado `done`). Abrir otra feature con el mismo nombre duplicaría el comando.
+
+Lo único que le falta a `libres` es el día. Las reservas guardan `day`, pero `freeRooms` solo compara la franja, y `libres` solo recibe `params[0]`. Con la reserva de Norte el lunes de 10:00 a 12:00, `libres 10:00-12:00` da `Sur` aunque estemos hablando de un martes.
+
+¿Qué querías?
+
+1. **Añadir el día a `libres`** (recomendada), por ejemplo `libres lun 10:00-12:00`. Es una feature pequeña, en carril feature, modo full. Hay que decidir qué pasa con la forma actual sin día y qué se responde con un día o una franja mal escritos. Esto último enlaza con la deuda «Sin validación del formato de franja horaria» que está por triar.
+2. **Algo distinto**, por ejemplo listar las franjas libres de una sala, o que ya tuvieras otra cosa en mente. Dímelo y la planteo.
+3. **Nada**: `libres` ya te vale. Cierro aquí sin crear nada.
+
+# turno 2
+## usuario
+mantengo lo que dije
+## agente
+Entendido: carril feature, modo full. Como `libres` ya existe, trato la feature como lo que realmente falta, que es hacerlo sensible al día. Leo las referencias que necesito para anunciar y entrevistar.
+> Skill: sdd-kit:sdd-grilling
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-openspec/skills/sdd-propose/references/control-profiles.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-openspec/skills/sdd-propose/references/spec-writing.md
+## agente
+Ahora: anuncio la feature y planteo la primera decisión de diseño. Queda: entrevista corta, enfoque, spec y su aprobación (la parada de `delegate`), ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json` no fija `control.profile`, rige el defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido, corrígeme.** Quieres poder ver qué salas están libres en una franja. Ese comando ya existe (`libres <franja>`, feature 0006), así que la feature es lo que le falta. Hoy `freeRooms` en `src/app.js:4` compara solo la franja, aunque las reservas guardan el día. Con la reserva de Norte el lunes de 10:00 a 12:00, `libres 10:00-12:00` devuelve `Sur` también para un martes, y eso es falso. Cuento unas 2 o 3 tasks, todas sobre la misma superficie y sin migración, así que no propongo dividirla.
+
+❓ **¿Cómo se indica el día en `libres`?**
+`libres` hoy recibe solo `params[0]` (la franja). La entrada actual es `libres 10:00-12:00`. Hay un test de la 0006 que la usa, y hay que decidir qué pasa con él.
+1️⃣ **Día obligatorio:** `libres lun 10:00-12:00`. La forma antigua sin día deja de valer y responde con un mensaje de uso. Es lo más simple y no deja respuestas falsas, pero hay que actualizar el test de la 0006.
+2️⃣ **Día opcional:** `libres 10:00-12:00` sigue funcionando como hoy, o sea ignorando el día, y `libres lun 10:00-12:00` filtra por día. No rompe nada, pero mantiene la respuesta falsa por defecto.
+3️⃣ **Día opcional con «hoy» por defecto:** sin día, se usa el día actual del sistema. La salida cambia según el día en que se ejecute y es más difícil de probar.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y no hay nadie que dependa de la forma antigua. La respuesta falsa es justo el fallo que quieres arreglar. A cambio, hay que tocar el test existente y la forma antigua deja de funcionar.

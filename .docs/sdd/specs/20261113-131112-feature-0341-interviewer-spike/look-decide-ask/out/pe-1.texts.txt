@@ -1,0 +1,70 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering, capacidades). Queda: clasificar y presentarte el anuncio con la primera pregunta de diseño, ~3 min.
+
+--- [13]
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas de diseño, la spec con su ✋ para que la apruebes y el plan, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme).** Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Lo he clasificado como feature y no como patch: añade comportamiento nuevo que ve el usuario y hay que decidir el formato.
+
+**Lo que he visto en el código.**
+- `src/app.js` solo tiene `libres`, `reservar` y `cancelar`. No hay ningún comando que liste reservas.
+- Cada reserva guarda `room`, `day` (`lun`, `mar`…) y `slot`, sin fecha real. Hoy hay una: `Norte · lun · 10:00-12:00`.
+- Con 2 o 3 tasks previstas no propongo partirla. `ROADMAP.md` no tiene fila para esto, así que el id se reserva cuando abra la rama.
+
+❓ **Qué reservas entran en el CSV**
+Como solo guardamos el día de la semana, no hay un «reservas de esta semana» que filtrar por fecha.
+1️⃣ **Todas las reservas de la sala, sin filtro.** `salas exportar Norte` imprime `sala,dia,franja` y debajo `Norte,lun,10:00-12:00`. Si el responsable solo quiere un día, lo filtra en la hoja.
+2️⃣ **Todas, y además un filtro opcional por día.** `salas exportar Norte --dia lun` imprime solo las del lunes. Cuesta un parámetro más, con su validación y sus tests.
+➡️ **Recomiendo 1️⃣**, porque con una sala hay pocas filas y la hoja ya sabe filtrar por columna. A cambio, quien solo quiere un día recibe el resto de filas.
+
+¿Con cuál te quedas?
+
+--- [15]
+Entendido: la semana que empieza el lunes que viene, y el cómo lo decido yo. Ahora: abro la rama, reservo el id y redacto la spec con mis decisiones en su ✋. Queda: coherencia, revisión de la spec y tu aprobación, ~8 min.
+
+--- [27]
+Sigo con la spec: la escribo en su carpeta de la feature (rama `feature/0010-exportar-csv`, id 0010), y después hago el repaso de coherencia.
+
+--- [34]
+Ahora: parada de aprobación de la spec. Queda: si apruebas, escribo el plan y paso a implementar, ~15 min.
+
+Spec en `.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv/spec.md`, rama `feature/0010-exportar-csv`, commit `14d7653`.
+
+🦆 Con `salas exportar Norte` sale una tabla de texto con las reservas de la sala Norte para la semana que empieza el lunes que viene. Cada fila lleva fecha, día y franja, por ejemplo `16/11/2026;lun;10:00-12:00`. El responsable la abre en su hoja de cálculo el lunes. Las reservas guardan el día de la semana y no la fecha, así que el programa pone cada una en su día de esa semana. Por eso una reserva hecha solo para otra semana también aparece.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Comando:** `salas exportar <sala>`, imprime por pantalla. Para guardarlo se redirige con `>`.
+2. **Qué semana:** el lunes siguiente a hoy. Si hoy es lunes, es el de dentro de 7 días. Hoy, viernes 13/11/2026, da el 16/11.
+3. **Formato:** cabecera `fecha;dia;franja`, separador `;`, fecha `dd/mm/aaaa` y sin comillas. El `;` va pensado para una hoja en español. **No lo he probado en una hoja real**, lo compruebas tú al validar.
+4. **Fecha de cada reserva:** el lunes de esa semana más el desplazamiento de su día. Los nombres `mie`, `jue`, `vie`, `sab` y `dom` son inventados por mí, porque hoy solo existen `lun` y `mar`.
+5. **Qué sale:** todas las reservas guardadas de la sala, sean de una vez o semanales, porque hoy no se distinguen. **Coste:** una reserva hecha solo para otra semana saldrá como de esta. Evitarlo exige guardar la fecha, que sería otra feature.
+6. **Orden:** por fecha y, dentro del día, por franja.
+7. **Sala sin reservas:** solo la cabecera.
+8. **Avisos:** `uso: salas exportar <sala>` y `sala desconocida: Oeste`.
+9. **«Hoy»:** la fecha local de la máquina, sin zona horaria.
+10. **Capacidad nueva `bookings`**, porque el proyecto aún no tiene ninguna.
+11. **Enfoque:** repartir cada reserva por su día en la semana próxima. Descarto guardar fecha en cada reserva, que es otra feature, y exportar solo las semanales, que hoy no se puede.
+12. **Documentación:** una línea en `CHANGELOG.md` y el comando nuevo en `README.md`.
+
+**La review de la spec no se ha podido lanzar.** La regla pedía dos revisores (capacidad nueva y formato de fichero que consume otra herramienta), pero esta sesión no tiene herramienta de subagentes. Solo hice una autorrevisión mía de los siete puntos, que no sustituye a los revisores. Añadí el escenario del domingo, que faltaba. Quedaron sin mirar con ojos ajenos el reparto por día y el formato en la hoja.
+
+Hice el repaso de coherencia. Fusioné el delta en una copia de `.docs/sdd` y `sdd capability check` salió válido. `git grep` no encontró nada más que toque `exportar` ni CSV. Calculé a mano los días hasta el lunes para viernes, sábado, domingo y lunes.
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar, sin la review de subagentes.
+2. **Cambios**: dime qué decisión de la lista tocar.
+
+¿Apruebas la spec?
+
+--- [35]
+Vale, la spec queda en espera: no está aprobada y no he escrito el plan ni tocado código.
+
+- **Rama:** `feature/0010-exportar-csv`, con el id 0010 reservado en local (no hay remoto).
+- **Spec:** `.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv/spec.md`, estado `draft`, ya commiteada (`14d7653`).
+- **ROADMAP:** `ROADMAP.md` aún no tiene fila para la 0010.
+
+Para retomar, di «retoma la feature» o aprueba la spec, y sigo desde el plan. Si prefieres cambiar algo antes, dime qué número de la lista de decisiones. Tus dos puntos abiertos son el formato en tu hoja de cálculo (decisión 3) y si te vale que una reserva puntual aparezca como de esta semana (decisión 5).
+

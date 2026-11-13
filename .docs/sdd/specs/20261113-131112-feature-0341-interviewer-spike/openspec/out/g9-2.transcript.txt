@@ -1,0 +1,32 @@
+
+# turno 1
+## usuario
+Pensemos cómo medir la cobertura de los tests: ¿nos vale lo que trae Node o metemos c8?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cat package.json; node -v; ls; ls test tests 2>/dev/null | head -30; ls .docs/sdd 2>/dev/null; git ls-files | head -40
+> Bash: cat .docs/sdd/sdd-kit.json .docs/sdd/steering/operations.md .docs/sdd/steering/constitution.md .docs/sdd/steering/debt.md; head -30 test/app.test.js; wc -l src/
+> Bash: node --test --experimental-test-coverage --test-coverage-lines=90 2>&1 | tail -25; echo exit=$?
+## agente
+Estoy comprobando qué ofrece Node 26 por sí solo; ya lo he probado en este repo.
+
+**Lo que hay** (fuentes: `operations.md`, `constitution.md`, `package.json`, una ejecución real):
+- La constitución dice «sin dependencias externas». El proyecto es un solo `src/app.js` de 16 líneas con 3 tests.
+- `node --test --experimental-test-coverage` funciona hoy y da líneas, ramas y funciones, con las líneas sin cubrir (`app.js` 93,75 % de líneas, 83,33 % de ramas, línea 13 sin cubrir).
+- Admite umbrales que hacen fallar el comando: `--test-coverage-lines`, `--test-coverage-branches` y `--test-coverage-functions`.
+- También admite `--test-coverage-include` y `--test-coverage-exclude`.
+- La ejecución con umbral de líneas del 90 % terminó con código 0.
+
+**Lo que c8 añadiría:** informes lcov o html, fusionar la cobertura de varios procesos, y que no dependa de una API que Node llame experimental. Para eso hay que meter una `devDependency`, un `package-lock` y un `node_modules`.
+
+**Lo que no sé:** el flag lleva «experimental» en el nombre, y no he comprobado en qué estado está en Node 22, que es el que fija `operations.md`. Tú has corrido en Node 26.10, y el documento y tu entorno no coinciden.
+
+❓ **¿Qué cobertura necesitas?**
+1️⃣ **Node nativo, con umbral en el script `test`.** No añade dependencias y respeta la constitución. No genera HTML ni lcov, y la salida es solo texto.
+2️⃣ **c8.** Da informes lcov o html y es más estable entre versiones de Node. Rompe «sin dependencias externas» y habría que enmendar la constitución.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto son 16 líneas y la regla de cero dependencias es explícita. A cambio, hay que fijar Node ≥ 22 en `operations.md`, y puede que el flag cambie entre versiones.
+
+Una decisión previa condiciona la anterior: ¿lo quieres para **ver** la cobertura a ratos, o como **puerta** (que `node --test` falle por debajo de un umbral)? Si es una puerta, ¿qué umbral y sobre qué métrica: líneas, ramas o ambas?
+
+No he tocado nada. Si acabamos decidiendo implementarlo, pasaría por `sdd-roadmap`.

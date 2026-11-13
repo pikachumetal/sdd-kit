@@ -1,0 +1,32 @@
+--- [5]
+Antes de preguntar nada, miro qué hay en el proyecto.
+
+--- [10]
+Esto es lo que he encontrado, separando lo que dicen los documentos de lo que deduzco.
+
+**Lo que dicen los documentos**
+- `operations.md`: «Node 22, sin dependencias externas». `package.json` es solo `{"type": "module"}`, sin `node_modules` ni lockfile.
+- La constitución (punto 2) exige `node --test` en verde antes de cada commit.
+- El producto es una CLI personal de un solo fichero (`src/app.js`) y un solo test (`test/app.test.js`). Solo la usa y la mantiene una persona.
+
+**Lo que he comprobado**
+- Tu Node local es 26.10. Ahí `node --test --experimental-test-coverage` existe y trae los umbrales `--test-coverage-lines/branches/functions`, además de `--test-coverage-include` y `--test-coverage-exclude`.
+
+**Lo que deduzco**
+- Los umbrales y los filtros de ficheros llegaron a la rama 22 en versiones posteriores a la 22.0. Antes de fijar un umbral, habría que confirmar la versión mínima de Node 22 que usas en el servidor. Esto no lo he verificado.
+- `c8` mide con el mismo motor (V8 coverage). Aporta reporters (lcov, html) y la configuración en `.c8rc`. Para un fichero y una persona, casi nada de eso se aprovecha.
+
+❓ **¿Qué quieres que haga la cobertura?**
+1️⃣ **Solo informar** (ver el % al ejecutar los tests, sin bloquear nada): basta lo nativo, con `node --test --experimental-test-coverage`. No añade dependencias y no cuesta nada mantenerlo.
+2️⃣ **Puerta con umbral** (que el commit falle por debajo de X %): también se puede con lo nativo (`--test-coverage-lines=80`, con la salvedad de la versión de Node 22). Añade una regla nueva a la constitución, que hoy solo exige tests en verde.
+3️⃣ **Informes ricos** (HTML o lcov para ver línea a línea, o para subirlo a un servicio): aquí sí compensa `c8`. Rompe la regla de «sin dependencias externas», y habría que decidir si va como devDependency.
+
+➡️ **Recomiendo 1️⃣** y, si luego quieres un umbral, pasar a 2️⃣ con lo nativo. Con un solo usuario, un solo fichero y la regla de cero dependencias, `c8` pagaría su coste (un `node_modules`, un lockfile y una excepción en `operations.md`) sin darte nada que lo nativo no dé. A cambio, el informe nativo es solo de consola, sin HTML. Si algún día lo echas en falta, añadir `c8` es un cambio pequeño.
+
+**Estado de la decisión**
+- **Decidido por ti:** nada todavía.
+- **Decidido por mí, con motivo:** descartar `c8` como punto de partida, por la regla de cero dependencias.
+- **Pendiente:** el objetivo (informar o poner umbral) y la versión exacta de Node 22 en el servidor.
+
+¿Te vale 1️⃣ (solo informar con lo nativo), o quieres umbral o informes HTML? Si queda en trabajo, lo paso al roadmap. No he tocado nada.
+

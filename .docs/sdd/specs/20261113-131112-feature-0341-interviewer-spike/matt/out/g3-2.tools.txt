@@ -1,0 +1,584 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"h
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md; ls -R src test; cat package.json
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references"; cat control-profiles.md; cat nombrado.md | head -80
+<<< <persisted-output>
+Output too large (30.3KB). Full output saved to: <home>\.claude-gco\projects\D--code--worktrees-sdd-kit-feature-0341-interviewer-spike--temp-i-runs-matt-g3-2-repo\778d5cbe-5bc7-430c-a00f-46686c28f01f\tool-results\blzs3e64t.txt
+
+Preview (first 2KB):
+# Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at th
+
+>>> Bash: cd "<run>/repo" && pwd && git status --short | head; K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; cat $K/sdd-propose/references/spec-writing.md; echo ======; cat $K/sdd-grilling/SKILL.md
+<<< <run>/repo
+# Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The intervi
+
+=== RESULTADO (9 turnos, 0.17368730000000002 $)
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas de diseño, la spec para que la apruebes, y luego el plan y la implementación, ~10 min hasta tu aprobación.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** cuando intentas reservar una sala y ya está ocupada en esa franja, en vez de quedarte sin nada quieres apuntarte a una lista de espera de esa sala y esa franja. Es una feature nueva (no toca ninguna capacidad documentada) y la prevé en unas 2-3 tareas, así que no propongo dividirla.
+
+Dos hechos del código que condicionan el diseño:
+- `src/app.js` guarda las reservas en memoria (`bookings`) y cada comando es un proceso nuevo, así que hoy nada sobrevive entre ejecuciones.
+- `reservar` solo reconoce `--cada-semana` y `cancelar` solo devuelve un texto: aún no hay reserva ni cancelación reales sobre las que colgar la lista.
+
+❓ **¿Qué pasa cuando la sala se libera?**
+Es la decisión de la que cuelga todo lo demás (si hace falta guardar datos, qué hace `cancelar`, qué texto ves).
+1️⃣ **Se te reserva sola:** al cancelarse la reserva que la ocupaba, la primera persona apuntada en la lista pasa a tener la sala. Coste: `cancelar` pasa a tener efectos más allá de borrar.
+2️⃣ **Solo se te avisa:** la lista queda registrada y `libres` o un comando nuevo (p. ej. `espera`) te muestra que tu sala ya está libre. Tú reservas a mano. Coste: un paso más para ti, pero no se reserva nada sin que lo decidas.
+3️⃣ **Solo la lista, sin automatismo:** `reservar` te apunta y `espera` enseña quién espera qué. No pasa nada al liberarse. Es lo mínimo.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y apuntarte a la lista significa que quieres esa sala: reservarla sola es lo que esperas de una lista de espera. A cambio, `cancelar` deja de ser solo un borrado y la spec tendrá que fijar el orden y qué pasa si la reserva automática choca con otra.
+
+¿Qué opción prefieres?
+
+>>> Bash: cd "<run>/repo" && K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; git branch --show-current; git remote -v; sed -n 1,200p $K/sdd-propose/references/nombrado.md
+<<< develop
+## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js"; node $S id next --project-root "$PWD" --reserve; git status --short; git branch -a
+<<< 0010
+* develop
+  main
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js"; git checkout -b feature/0010-lista-espera && node $S id claim --project-root "$PWD"; git status --short; date -u +%Y%m%d-%H%M%S
+<<< Switched to a new branch 'feature/0010-lista-espera'
+sin remoto: la 0010 vale (contador local)
+20261113-144756
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; cat $K/sdd-templates/SKILL.md | head -40; ls $K/sdd-templates/ $K/sdd-templates/templates 2>/dev/null; 
+<<< ---
+name: sdd-templates
+description: Use when an SDD artifact must be created (spec, plan, tasks, walkthrough, patch, proposal, data-model, research, release retro, release notes) or a project document (PRODUCT, constitution, operations, architecture, roadmap, estimation, changelog, ADR) — the template is traced from here. Templates live ONLY in the kit; projects do NOT carry a templates/ folder.
+user-invocable: false
+---
+
+# sdd-templates
+
+## Overview
+
+The SDD kit's canonical templates. **They live only here**: projects don't carry a `templates/` folder — to create an artifact, invoke this ski
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; cat $K/sdd-propose/references/coherence-pass.md; echo =====; cat $K/sdd-propose/references/review-spec.md
+<<< ## Coherence pass
+
+Its message opens with the phase notice. In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+
+**Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —the literal
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; cat $K/sdd-templates/templates/spec-template.md; cat $K/sdd-templates/templates/capability-template.md; cd "<run>/repo"; cat .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (changes/<ts>-proposal-<id>-<slug>/)
+title: <título corto descriptivo>
+mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la releas
+
+>>> Bash: cd "<run>/repo"; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; cat .docs/sdd/specs/*/walkthrough.md | head -30; cat CHANGELOG.md README.md; git log --oneline | head
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+# Walkthrough — weekly
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+# Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`)
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt"; ls; grep -rn "sdd/specs" --include=*.md --include=*.ts --include=*.js --include=*.mjs -l . 2>/dev/null | grep -v node_modules | head; ls migrations 2>/dev/null | tail -5
+<<< agents/
+cli/
+hooks/
+LICENSE
+skills/
+THIRD_PARTY_NOTICES.md
+./cli/src/comments/verbs.ts
+./skills/add-to-changelog/SKILL.md
+./skills/sdd-propose/references/coherence-pass.md
+./skills/sdd-upgrade/references/migrations/v3.0.0.md
+./THIRD_PARTY_NOTICES.md
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt"; grep -n "specs" skills/sdd-upgrade/references/migrations/v3.0.0.md | head -8
+<<< 5:**What doesn't move**: `capabilities/`, `decisions/`, `specs/`, `releases/`, `kit-feedback/`, `sources/`, `sdd-kit.json`, `sdd-kit.local.json` and `client-changelog.md`. New changes are born in `changes/`; the folders of `specs/` stay and are still read.
+21:   | `changelog.md` | `git mv .docs/sdd/changelog.md CHANGELOG.md` (at the root). Its text doesn't change, except the relative links that break when going up two levels: `specs/0016-…` becomes `.docs/sdd/specs/0016-…`. With a `CHANGELOG.md` already at the root, the table proposes how they merge |
+103:   git grep --untracked -nE '\]\(([^)]
+
+>>> Write: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && python - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');const p='.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md';let s=fs.readFileSync(p,'utf8');
+s=s.replace('Los tests inyectan un almacén en memoria.','Los tests inyectan un almacén en memoria.');
+s=s.replace('por defecto el del fichero, en los tests uno en memoria.','por defecto el del fichero; los tests, incluidos los tres actuales (cambio de firma, no de comportamiento), pasan uno en memoria y ninguno escribe `salas.json` en el repositorio.');
+fs.writeFileSync(p,s);"
+E
+grep -n "cambio de firma" .docs/sdd/changes/*/spec.md | head -2
+S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node $S capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md"; node $S capability index --path "$T/sdd"; git grep -n 0010 -- ROADMAP.md .docs/sdd/steering; echo "grep=$?"; git status --short
+<<< waitlist.md: añadido «Apuntarse a la lista de espera si la sala está ocupada»
+waitlist.md: añadido «Reservar la sala si está libre»
+waitlist.md: añadido «No se duplica la entrada de la lista»
+waitlist.md: añadido «Sala desconocida»
+waitlist.md: añadido «La sala se reserva sola al cancelarse la reserva»
+waitlist.md: añadido «Cancelar sin lista de espera»
+waitlist.md: añadido «La lista se conserva entre comandos»
+waitlist.md: añadido «Ver la lista de espera»
+waitlist.md: añadido «Fichero de estado ilegible»
+waitlist.md: regla «Dónde viven los datos» añadida
+waitlist.md: regla «Idioma de los nomb
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Skill: sdd-kit:sdd-parallel-agents
+<<< Launching skill: sdd-kit:sdd-parallel-agents
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=opus · Revisión spec lente dominio
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a56982af2047b1ce0 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< 1	---
+2	id: 20261113-144756-feature-0010-lista-espera
+3	feature: 0010
+4	title: Lista de espera para una sala ocupada
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-13
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Lista de espera para una sala ocupada
+16	
+17	🦆 Hoy, si Norte está ocupada el lunes de 10:00 a 12:00, tienes que volver a mirar `libres` cada rato hasta que alguien cancele. Con esta feature, `reservar Norte lun 10:00-12:00` te apunta en una lista de espera cuando la sala está ocupada, y en cuanto se cancele esa r
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión spec lente técnica
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a761a4b72745141b5 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< 1	---
+2	id: 20261113-144756-feature-0010-lista-espera
+3	feature: 0010
+4	title: Lista de espera para una sala ocupada
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-13
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Lista de espera para una sala ocupada
+16	
+17	🦆 Hoy, si Norte está ocupada el lunes de 10:00 a 12:00, tienes que volver a mirar `libres` cada rato hasta que alguien cancele. Con esta feature, `reservar Norte lun 10:00-12:00` te apunta en una lista de espera cuando la sala está ocupada, y en cuanto se cancele esa r
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/steering/operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+8	## Testing
+9	
+10	- Tests: `node --test` (carpeta `test/`).
+11	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>/repo/test/app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Write: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node $S capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md" | sed 's/ añadido.*//' | sort | uniq -c; node $S capability index --path "$T/sdd"; node $S capability check --path "$T/sdd" 2>&1 | tail -5; ls .docs/sdd/capabilities 2>&1 | head -2
+<<<       2 spec.md: «Reglas de la capacidad» cita la spec («decisión 13»): reescríbelo en el delta sin la referencia y vuelve a ejecutar
+Sin capacidades
+Sin capacidades que validar
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+
+>>> Bash: cd "<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md && sed -i 's/claves del fichero en inglés (decisión 13)\./claves internas del fichero en inglés (`bookings`, `waiting`, `room`, `day`, `slot`), como los nombres del código./' $F && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node $S capability merge --path "$T/sdd" --artifact "$PWD/$F" | cut -c1-80; node $S capability index --path "$T/sdd"; node $S capability check --path "$T/sdd" 2>&1 | tail -5
+<<< bookings.md: añadido «Reservar la sala si está libre»
+bookings.md: añadido «Reservar otro día de una sala ocupada otro día»
+bookings.md: añadido «Sala desconocida»
+bookings.md: añadido «Reservar con argumentos incompletos»
+bookings.md: añadido «Cancelar quita la reserva de ese día y hora»
+bookings.md: añadido «Cancelar sin reserva que coincida»
+bookings.md: añadido «Fichero de estado ilegible»
+bookings.md: regla «Dónde viven los datos» añadida
+bookings.md: regla «Idioma de los nombres» añadida
+bookings.md: regla «Límites» añadida
+bookings.md: regla «Avisos» añadida
+bookings.md: regla «Regla an
+
+>>> Bash: cd "<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md && node -e "
+const fs=require('fs');let s=fs.readFileSync('$F','utf8');
+s=s.replace(/14\. \*\*Delta probado[^\n]*\n/,'14. **Delta probado sobre una copia de \`.docs/sdd\`**: \`sdd capability merge\` crea \`bookings.md\` (7 requisitos) y \`waitlist.md\` (7 requisitos), cada uno con sus 5 reglas, sin rechazos; \`sdd capability check\` da «Capacidades válidas: 2». \`capabilities/\` del repositorio no cambia.\n');
+fs.writeFileSync('$F',s)"; grep -n "^14\." $F | cut -c1-120
+<<< 48:14. **Delta probado sobre una copia de `.docs/sdd`**: `sdd capability merge` crea `bookings.md` (7 requisitos) y `wai
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Segunda ronda revisión spec
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a2b70052164f383ea (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< 1	---
+2	id: 20261113-144756-feature-0010-lista-espera
+3	feature: 0010
+4	title: Lista de espera para una sala ocupada
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-13
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Lista de espera para una sala ocupada
+16	
+17	🦆 Hoy, si Norte está ocupada el lunes de 10:00 a 12:00, tienes que volver a mirar `libres` cada rato hasta que esa reserva se cancele. Con esta feature, `reservar Norte lun 10:00-12:00` te apunta en una lista de espera si la sala está ocupada, y cuando se haga `cancela
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>/repo/test/app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+<<< 28	## ✋ Decisiones que he tomado yo — valida estas
+29	
+30	Review de spec propuesta: dos revisores — señales: capacidades nuevas (`bookings`, `waitlist`), datos (fichero de estado nuevo, `salas.json`) · tamaño: ~120 líneas en 2 ficheros (`src/app.js`, `test/app.test.js`)
+31	- Dominio (opus): si «al cancelar, la sala pasa a la lista» cubre el borde de dos reservas liberadas a la vez y el de apuntarse dos veces a la misma sala y franja (señal: capacidad nueva)
+32	- Técnica (sonnet): si pasar el estado de memoria a fichero deja verdes los tres tests actuales y si un `salas.json` ilegible o ausente
+
+>>> Bash: cd "<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md && cat > /tmp/fold.js <<'EOF'
+const fs=require('fs');const f=process.argv[2];let s=fs.readFileSync(f,'utf8');
+function rep(a,b){ if(!s.includes(a)) throw new Error('falta: '+a.slice(0,50)); s=s.replace(a,b); }
+rep("Con menos de tres argumentos y sin `--cada-semana`, sigue respondiendo `salas` como hoy.","Con `--cada-semana` en cualquier posición gana la rama semanal; sin él, con menos de tres argumentos sigue respondiendo `salas` como hoy y con más de tres usa los tres primeros. `cancelar` con menos de dos argumentos queda como hoy (fuera).");
+rep("`salas.json` ilegible** (JSON roto, vacío, o sin `bookings` o `waiting`):","`salas.json` ilegible** (JSON roto, vacío, con `bookings` o `waiting` que no sean listas, o con entradas sin `room`, `day` y `slot` de texto) al ejecutar un comando que carga el estado — `libres`, `reservar <sala> <día> <franja>`, `cancelar` y `espera`; `salas`, `reservar --cada-semana` y un comando desconocido no lo leen —:");
+rep("los tres tests actuales se editan para pasar uno en memoria.","los tres tests actuales se editan para pasar uno en memoria. Forma del almacén: `fileStore(dir)` para el fichero, `memoryStore(state)` para los tests (con un contador `saves` de las llamadas a `save`) y `initialState` exportado con la reserva de serie.");
+rep("según la constitución (regla 4).\n14.","la constitución solo exige castellano en la interfaz y los documentos, así que los nombres en inglés son decisión mía y no tienen su respaldo.\n14.");
+rep("- **Rechazado** — Menor (técnica): normalizar","- **Aceptado** — Importante (ronda 2): faltaba probar que reservas y promoción sobreviven entre comandos, y un requisito para `libres` → escenarios «Las reservas y la promoción se conservan entre comandos» y «Libres lee el estado guardado».\n- **Aceptado** — Importante (ronda 2): el orden de promoción con dos liberadas no salía de ninguna regla → sigue el orden de `bookings` (el de registro), con las dos líneas literales en el escenario.\n- **Aceptado** — Importante (ronda 2): forma del almacén y comandos que cargan el estado → decisiones 11 y 10; forma inválida ampliada.\n- **Aceptado** — Menor (ronda 2): contador `saves` para «no se escribe»; argumentos de más o de menos (decisión 5); Scope «Entra» con tests, firma y manejo de errores; decisión 13 sin citar la constitución como respaldo; la limitación del día de `libres`, fijada por escrito en un escenario.\n- **Rechazado** — Menor (técnica): normalizar");
+rep("`libres` leyendo el fichero · sustituir el estado en memoria de `src/app.js` por el almacén.","`libres` leyendo el fichero · sustituir el estado en memoria de `src/app.js` por el almacén · cambio de firma de `run` y edición de los tres tests actuales · en el punto de entrada, error de estado ilegible a stderr con código 1.");
+rep("Al cancelar: se quitan","Al cancelar (en el orden de `bookings`): se quitan");
+rep("- Reservar libre, ocupada, repetida y de otro día;","- Reservar libre, ocupada, repetida y de otro día (el «no se escribe» de cancelar sin coincidencia, con el contador `saves` del almacén en memoria);");
+rep("después responde `cancelada lun 10:00` y después una línea `reservada desde la lista de espera` por cada sala, Norte primero y Sur después","x"); 
+EOF
+node /tmp/fold.js $F 2>&1 | head -3
+<<< <home>\AppData\Local\Temp\fold.js:2
+function rep(a,b){ if(!s.includes(a)) throw new Error('falta: '+a.slice(0,50)); s=s.replace(a,b); }
+                                      ^
+
+>>> Bash: cd "<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md && sed -i '$d' /tmp/fold.js && cat >> /tmp/fold.js <<'EOF'
+rep("- THEN responde `cancelada lun 10:00` y después una línea `reservada desde la lista de espera` por cada sala, Norte primero y Sur después","- THEN responde `cancelada lun 10:00` y después, en este orden, `Norte lun 10:00-12:00 reservada desde la lista de espera` y `Sur lun 10:00-12:00 reservada desde la lista de espera`");
+rep("- GIVEN Norte y Sur ocupadas el lun 10:00-12:00, con","- GIVEN `bookings` con Norte y después Sur, ambas el lun 10:00-12:00, con");
+rep("#### ADDED — Cancelar sin reserva que coincida","#### ADDED — Libres lee el estado guardado\n\n- GIVEN `reservar Sur mar 14:00-16:00` ejecutado en un comando que ya terminó\n- WHEN `libres 14:00-16:00` en un comando nuevo\n- THEN responde `Norte`\n- AND `libres` solo mira la franja y no el día: con Norte reservada el lun 10:00-12:00, `libres 10:00-12:00` responde `Sur`, como hoy\n\n#### ADDED — Cancelar sin reserva que coincida");
+rep("#### ADDED — Ver la lista de espera vacía","#### ADDED — Las reservas y la promoción se conservan entre comandos\n\n- GIVEN Norte ocupada el lun 10:00-12:00 y `Norte lun 10:00-12:00` en la lista, todo guardado por comandos que ya terminaron\n- WHEN `cancelar lun 10:00` en un comando y, después, `libres 10:00-12:00` y `espera` en comandos nuevos\n- THEN `libres 10:00-12:00` responde `Sur` y `espera` responde `lista de espera vacía`\n\n#### ADDED — Ver la lista de espera vacía");
+rep("- **Regla ante conflicto**: sin bloqueo","- **Regla ante conflicto**: `libres` compara solo la franja; sin bloqueo");
+rep("una por reserva quitada y solo","una por reserva quitada, en el orden de `bookings`, y solo");
+fs.writeFileSync(f,s);
+EOF
+node /tmp/fold.js $F && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node $S capability merge --path "$T/sdd" --artifact "$PWD/$F" | grep -c añadido; node $S capability check --path "$T/sdd" | tail -2
+<<< 16
+Capacidades válidas: 2
+[This command modified 1 file you've previously read: .docs\sdd\changes\20261113-144756-feature-0010-lista-espera\spec.md. Call Read before editing.]
+
+>>> Bash: cd "<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md && sed -i 's/`bookings.md` (7 requisitos) y `waitlist.md` (7 requisitos)/`bookings.md` (8 requisitos) y `waitlist.md` (8 requisitos)/' $F && grep -c "8 requisitos" $F; git status --short
+<<< 1
+?? .docs/sdd/changes/
+[This command modified 1 file you've previously read: .docs\sdd\changes\20261113-144756-feature-0010-lista-espera\spec.md. Call Read before editing.]
+
+=== RESULTADO (18 turnos, 1.4905869999999999 $)
+Los dos revisores siguen trabajando; espero sus resultados antes de presentarte la spec.
+
+=== RESULTADO (1 turnos, 1.4905869999999999 $)
+El revisor técnico ya ha terminado; falta el de dominio. Espero su resultado para integrar los hallazgos de los dos a la vez.
+
+=== RESULTADO (6 turnos, 1.4905869999999999 $)
+La segunda ronda de revisión está en marcha. Cuando termine, integro lo que salga y te presento la spec para aprobar.
+
+=== RESULTADO (5 turnos, 1.4905869999999999 $)
+La spec de la lista de espera está escrita y revisada, y espera tu aprobación. No he escrito el plan ni código.
+
+Está en `.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. Todavía no la he commiteado: la commiteo junto con el plan cuando la apruebes.
+
+🦆 Si Norte está ocupada el lunes de 10:00 a 12:00, `reservar Norte lun 10:00-12:00` te apunta en una lista de espera. Cuando se ejecute `cancelar lun 10:00`, la sala pasa a ser tuya sin que hagas nada más. Para que funcione entre comandos, las reservas y la lista se guardan en `salas.json`, porque hoy viven en memoria y se pierden al acabar cada comando. `espera` te muestra en qué listas estás.
+
+## Lo que necesito que valides
+
+1. **Asunción importante (✋ 12).** La herramienta solo conoce las reservas de su propio fichero. Si la reserva que ocupa Norte la cancela otra persona en el coworking, `salas` no se entera y tu entrada sigue esperando. Asumo que registras tú las reservas ajenas con `reservar` y las quitas con `cancelar`. Si no es así, falta importar o sincronizar reservas, y eso sería otra feature.
+2. **Persistencia (✋ 1).** Paso las reservas y la lista a `salas.json`, en la carpeta desde la que ejecutas el comando. Sin esto la lista moriría con cada comando. Descarté dejarlo todo en memoria y guardar solo la lista en fichero.
+3. **Ocupada es franja exacta (✋ 2).** Misma sala, día y franja. Los solapes quedan fuera.
+4. **Textos nuevos (✋ 4).** Por ejemplo `Norte ocupada lun 10:00-12:00: apuntado en la lista de espera`.
+5. **Sin comando para salir de la lista (✋ 8).** Una entrada se borra editando `salas.json`.
+6. **Cancelar de verdad (✋ 6).** `cancelar` hoy solo devuelve un texto. Pasa a quitar de verdad las reservas de ese día y hora, y a promover después a quien espera.
+
+El resto de decisiones mías está en el ✋ de la spec.
+
+## Alcance y revisión
+
+- **Capacidades nuevas:** `bookings` (reservar libre, cancelar, `libres`) y `waitlist`. Entre las dos hay 16 requisitos, y la fusión de prueba sobre una copia de `.docs/sdd` no dio rechazos.
+- **Revisión:** dos revisores independientes (dominio y técnica) y una segunda ronda con un tercero. Los hallazgos están integrados en la spec, salvo uno que rechacé (normalizar mayúsculas, con su motivo).
+- **Plan previsto:** unas 3 tareas, así que no la divido.
+
+## Aprobación
+
+1. **Apruebo (Recomendada):** escribo el plan y sigo con la implementación.
+2. **Cambios:** dime qué ajustar, por ejemplo la asunción del punto 1.

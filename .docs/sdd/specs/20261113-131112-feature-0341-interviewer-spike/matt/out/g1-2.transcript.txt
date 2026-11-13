@@ -1,0 +1,48 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/PRODUCT.md 2>/dev/null | 
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js; cat .docs/sdd/steering/const
+## agente
+Antes de preguntar he mirado `PRODUCT.md`, `ROADMAP.md`, `src/app.js` y la deuda. Esto es lo que dicen los documentos y lo que deduzco yo.
+
+**Lo que dicen los documentos**
+- Hoy la franja es un texto libre, como `10:00-12:00`.
+- `freeRooms` decide si una sala está libre comparando ese texto con igualdad exacta (`b.slot === slot`).
+- La deuda `Por triar` ya recoge que no hay validación del formato de franja.
+
+**Lo que deduzco**
+- Con la comparación actual, una reserva `10:00-10:30` no choca con otra `10:00-12:00` en la misma sala.
+- Es decir, en cuanto existan medias horas, aparecerán solapes que hoy no se detectan.
+
+Esto condiciona todo lo demás, así que la primera decisión es qué significa «reservar medias horas»:
+
+❓ **¿Qué es una franja a partir de ahora?**
+1️⃣ **Rejilla de 30 min y duración en múltiplos.** La franja sigue siendo `HH:MM-HH:MM`, pero se valida que empiece y acabe en `:00` o `:30` y que dure al menos 30 min. La disponibilidad pasa a comparar intervalos (solape) en lugar de igualdad. Esto salda de paso la deuda de validación del formato. Cuesta tocar `freeRooms` y definir bien el solape.
+2️⃣ **Franjas fijas de 30 min.** Para reservar 2 h hay que pedir 4 franjas. La comparación por igualdad sigue valiendo, pero reservar, cancelar y las reservas semanales se vuelven más incómodos. Además, el formato actual `10:00-12:00` dejaría de ser válido.
+3️⃣ **Solo permitir `:30` sin validar nada más.** Es lo más barato, pero deja los solapes sin detectar y la deuda sin saldar.
+
+➡️ **Recomiendo 1️⃣**, porque el código ya compara franjas como intervalos de texto y la rejilla de 30 min cubre las reservas actuales (`10:00-12:00` sigue siendo válida). A cambio, hay que tocar la lógica de disponibilidad y revisar `cancelar` y `--cada-semana`, que dependen de la franja.
+
+¿Te vale 1️⃣?
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Entendido. Es la motivación que encaja con 1️⃣, así que la doy por decidida: rejilla de 30 min, duración en múltiplos y disponibilidad por solape de intervalos.
+
+Un matiz de hecho: el código no impone franjas de 2 h. `slot` es texto libre y solo se compara por igualdad, así que ese bloqueo viene de cómo reservas hoy (`10:00-12:00`) y no de una regla del código. Reservar `10:00-10:30` ya es posible, pero hoy no bloquearía a `10:00-12:00`. Es un fallo de solape, y por eso hay que cambiar la disponibilidad.
+
+La siguiente decisión es el alcance:
+
+❓ **¿La validación del formato de franja entra en este cambio?**
+1️⃣ **Sí, entra.** Para que la rejilla de 30 min se cumpla hay que rechazar `10:15-10:40` o `abc`. Eso es justo la deuda «sin validación del formato de franja», que quedaría saldada y se quitaría de `Por triar`. Es un cambio algo mayor (M), pero con una sola regla de franja válida.
+2️⃣ **No, solo solape.** El cambio es menor (S), pero la rejilla no se hace cumplir y se podrían reservar franjas como `10:15-10:40`. La deuda sigue abierta.
+
+➡️ **Recomiendo 1️⃣**, porque la rejilla de 30 min no significa nada sin validar la franja, y la deuda ya está anotada. A cambio, el cambio crece y hay que decidir qué responde la herramienta ante una franja inválida.
+
+¿Te vale 1️⃣?

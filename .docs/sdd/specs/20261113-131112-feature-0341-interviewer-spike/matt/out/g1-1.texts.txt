@@ -1,0 +1,28 @@
+--- [9]
+Lo que he leído en el repo, para anclar la pregunta:
+
+- `src/app.js`: una franja es un texto libre (`'10:00-12:00'`) y `freeRooms` solo mira igualdad exacta. `reservar` todavía no guarda nada (solo responde si lleva `--cada-semana`). Las reservas están fijas en memoria.
+- `PRODUCT.md`: solo usas tú la herramienta.
+- `debt.md`: ya hay una deuda por triar, «sin validación del formato de franja horaria».
+- `ROADMAP.md`: no hay ninguna fila sobre medias horas.
+
+Esto es lo que condiciona todo lo demás. Con igualdad de texto, una reserva `10:00-10:30` no chocaría con `10:00-12:00`, aunque se solapen. Dejar reservar medias horas no es solo aceptar otro texto, es decidir cómo se entiende una franja.
+
+❓ **¿Cómo modelamos la franja?**
+1️⃣ **Intervalos con solape.** Una franja es inicio y fin, en múltiplos de 30 min. Dos reservas chocan si sus intervalos se solapan. Hay que parsear y validar el formato, lo que de paso salda la deuda «sin validación del formato». Cuesta tocar `freeRooms`, `reservar` y `cancelar`, que hoy comparan texto.
+2️⃣ **Rejilla fija de bloques de 30 min.** Una reserva es una lista de bloques (`10:00`, `10:30`…). La igualdad por bloque sigue funcionando, pero `10:00-12:00` pasa a ser 4 bloques. Es más simple de comparar, pero cambia cómo se escribe y se muestra una reserva.
+3️⃣ **Mantener el texto libre y solo documentar que vale `10:00-10:30`.** No cuesta nada, pero el solape queda sin detectar y se puede doble-reservar una sala.
+➡️ **Recomiendo 1️⃣**, porque la igualdad exacta ya es un fallo latente en el código y las medias horas lo convierten en doble reserva real. A cambio, es un cambio de tamaño M que toca los tres comandos y que debería ir con tests de solape primero, como dice tu constitución.
+
+--- [11]
+Gracias, eso descarta la opción 3️⃣. Si una reunión de media hora tiene que dejar libre el resto de las dos horas, el solape se tiene que detectar. Con texto libre se podría doble-reservar la sala.
+
+Todavía no has elegido entre 1️⃣ y 2️⃣, y las dos encajan con lo que cuentas. La diferencia es cómo describes una reserva:
+
+❓ **¿Intervalos o bloques?**
+1️⃣ **Intervalos con solape.** Escribes `reservar Norte lun 10:30-11:00`, y las reservas de 2 horas siguen escribiéndose igual (`10:00-12:00`). Lo que tienes hoy sigue funcionando y solo cambia cómo se comparan.
+2️⃣ **Bloques de 30 min.** Una reserva de 2 horas pasa a ser 4 bloques. Se compara más fácil, pero cambia cómo escribes y ves todas las reservas, también las de dos horas.
+➡️ **Recomiendo 1️⃣**, porque tus reservas de dos horas siguen igual y las de media hora son un caso más del mismo formato. A cambio, `freeRooms` pasa de comparar texto a comparar intervalos.
+
+¿Vamos con 1️⃣?
+

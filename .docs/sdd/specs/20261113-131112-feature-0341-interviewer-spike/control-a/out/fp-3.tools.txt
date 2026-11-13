@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"has
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json src/app.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; ls .docs/sdd; git branch -a
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md README.md CHANGELOG.md
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+# Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-l
+
+=== RESULTADO (6 turnos, 0.1089283 $)
+Antes de abrir una spec: el comando que pides ya existe, así que no la he abierto.
+
+- **Ya está implementado:** `salas libres <franja>` (por ejemplo `salas libres 10:00-12:00`) devuelve las salas sin reserva en esa franja. Está en `src/app.js` (`freeRooms`), tiene su test en `test/app.test.js` y consta en `CHANGELOG.md` como la task 0006, con spec y walkthrough en `.docs/sdd/specs/20260917-090000-task-0006-free/`.
+- **Lo que no cubre hoy:**
+  - Compara la franja como texto exacto: `10:00-11:00` no detecta el solape con una reserva de `10:00-12:00`.
+  - Ignora el día: `bookings` guarda `day`, pero `libres` no lo recibe.
+  - No valida el formato de la franja. Ese punto ya está en `steering/debt.md`, en «Por triar».
+
+¿Qué quieres exactamente?
+
+1. **Mejorar `libres`** (recomendada): que detecte solapes parciales entre franjas y/o que acepte un día. Sería una feature en modo full y arrancaría con la nota de comprensión y las preguntas de diseño.
+2. **Otro comando distinto:** dime qué haría que `libres` no haga.
+3. **Era un descuido:** no hago nada y seguimos con la 0008 del roadmap, que está pendiente.
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-propose/references" && cat control-profiles.md | head -60; ls ..
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (4 turnos, 0.1520985 $)
+Ahora: aclaro con qué me quedo antes de crear la rama y la spec. Queda: unas pocas preguntas de diseño, la spec para tu aprobación y el plan, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+- Quieres una feature nueva, con su spec, plan y tests, que te deje ver qué salas están libres en una franja.
+- Mantienes que ese comando todavía no existe. En el repo `salas libres <franja>` ya está hecho (task 0006, hecha y validada), y `libres` de hoy:
+  - Compara la franja como texto exacto.
+  - Ignora el día.
+  - No valida el formato.
+- No voy a crear un segundo comando con el mismo cometido, ni voy a darle otro nombre sin saber para qué lo quieres. Cuenta con 3 tasks o menos, así que no propongo dividirla.
+
+Para qué lo vas a usar tú que `salas libres 10:00-12:00` no te dé hoy, ¿qué te falta o qué te falla?
