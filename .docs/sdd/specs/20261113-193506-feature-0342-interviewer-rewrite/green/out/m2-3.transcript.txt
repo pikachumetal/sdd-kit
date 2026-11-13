@@ -1,0 +1,88 @@
+
+# turno 1
+## usuario
+El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Decide tú los detalles. Apúntalo en el roadmap, no lo arranques.
+> Skill: sdd-kit:sdd-roadmap
+## agente
+Empiezo por el estado real del roadmap.
+> Bash: ls -a; cat .docs/sdd/sdd-kit.json; echo ---; cat ROADMAP.md; echo ---; cat .docs/sdd/steering/debt.md | head -30; git branch --all; ls .docs/sdd .docs/sdd/changes 2>&1 | head -30
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit\skills\sdd-roadmap\references\proposal.md
+> Bash: cd D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-templates/templates; cat proposal-template.md; echo ----; cat now-next-later-template.md; echo ----; cat launch-prompt-template.md; cd - >/dev/null; cat PRODUCT.md package.json; ls src test; head -40 src/app.js; cat src/correo.js 2>&1 | head
+> Bash: ls -R .docs | head -30; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -20; cat CHANGELOG.md | head -15
+> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md | head -60; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" id next --project-root . --reserve --count 4
+> Bash: d=".docs/sdd/changes/20261113-120000-proposal-0010-informes"; mkdir -p "$d"; cat > "$d/proposal.md" <<'EOF' --- id: 20261113-120000-proposal-0010-informes proposal: 0010 title: Módulo de informes source: interview created: 2026-11-13 --- # Propuesta — Módulo de informes ## Por qué El cliente quiere saber cuánto se usa cada sala, sacar esos datos a Excel y que los responsables reciban un aviso cada semana sin tener que pedirlo. Hoy solo se puede reservar, cancelar y listar salas libres. El cliente dejó los detalles a nuestro criterio: las decisiones de abajo las tomó el desarrollador (delegadas) y conviene confirmarlas con el cliente antes de la feature 0013. ## Reglas de negocio - **Ocupación por sala y semana** = horas reservadas ÷ horas disponibles de la semana. La semana va de lunes a viernes, de 08:00 a 20:00 (60 h por sala). Ejemplo: Norte con una sola reserva, lun 10:00-12:00 → 2 h / 60 h = 3,3 %; Sur sin reservas → 0 %. - **Una reserva semanal cuenta en cada semana** en que está activa. Ejemplo: Sur reservada «cada semana» los mié 09:00-10:00 → 1 h / 60 h = 1,7 % en cualquier semana. - **Una reserva cancelada no cuenta.** Ejemplo: Norte reservó lun 10:00-12:00 y la canceló → Norte 0 %. - **El informe es de una semana completa**; sin indicarla, la última semana terminada. Ejemplo: se pide el viernes 13-nov sin semana → informe del 2 al 6 de nov. - **El Excel es un `.xlsx` con una hoja y una fila por sala**: Sala, Horas reservadas, Horas disponibles, Ocupación (%). Ejemplo: Norte 2 / 60 / 3,3; Sur 0 / 60 / 0,0. - **El aviso semanal lo recibe cada responsable de una lista en un fichero de configuración**, los lunes, con la ocupación de la semana anterior en el cuerpo. Ejemplo: lunes 16-nov, responsables ana@ejemplo.com y luis@ejemplo.com → cada uno recibe el correo «Ocupación 9–13 nov: Norte 3,3 %, Sur 0,0 %». - **El envío usa el mismo mecanismo de correo que los avisos de la 0008.** La periodicidad la da una tarea programada (cron) del servidor, no el programa. ## Capacidades que toca - `ocupacion-de-salas` — nueva: el cálculo y el comando. - `exportacion-excel` — nueva: el fichero `.xlsx`. - `aviso-semanal` — nueva: lista de responsables y envío. ## Reparto | Orden | Id | Feature | Tras | | --- | --- | --- | --- | | 1 | 0011 | Ocupación por sala | — | | 2 | 0012 | Exportar la ocupación a Excel | 0011 | | 3 | 0013 | Aviso semanal a los responsables | 0011, 0008 | ## Acta No aplica: entrevista. ## Enmiendas Ninguna. EOF python3 - <<'EOF' 2>/dev/null || node -e ' const fs=require("fs");let t=fs.readFileSync("ROADMAP.md","utf8"); const P=".docs/sdd/changes/20261113-120000-proposal-0010-informes/proposal.md"; const row=(id,title,one,brief,tras,size)=>`| ${id} | — | **${title}**<br>*${one}*<details><summary>Brief</summary>${brief}</details> | ⏳ | ${tras} | ${size} |`; const b=(dec,toca)=>`**Carril:** feature<br>**Requisitos:** \`${P}\`<br>**Decisiones ya tomadas:** ${dec}<br>**Salda:** nada<br>**Toca:** ${toca}`; const rows=[ row("0011","Ocupación por sala","Comando que da la ocupación semanal de cada sala",b("semana lun-vie 08:00-20:00 (60 h por sala); la reserva semanal cuenta cada semana; la cancelada no cuenta; sin semana, la última terminada; ver reglas de la propuesta","`src/app.js`"),"—","S"), row("0012","Exportar la ocupación a Excel","Fichero .xlsx con una fila por sala",b("`.xlsx` generado a mano, sin dependencias, porque `operations.md` prohíbe librerías externas; una hoja con Sala, Horas reservadas, Horas disponibles, Ocupación (%)","`src/app.js`, `src/xlsx.js`"),"0011","M"), row("0013","Aviso semanal a los responsables","Correo de los lunes con la ocupación de la semana anterior",b("responsables en un fichero de configuración; reutiliza el envío de la 0008; la periodicidad la da cron, no el programa; confirmar con el cliente la lista y el horario","`src/app.js`, `src/correo.js`"),"0011, 0008","M")]; t=t.replace(/(## Next\n\n\| Id[^\n]*\n\| ---[^\n]*\n)/,"$1"+rows.join("\n")+"\n"); fs.writeFileSync("ROADMAP.md",t);' S="node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" $S roadmap check --path .docs/sdd; git status --short
+> Bash: git status --short; sed -n 12,20p ROADMAP.md | cut -c1-120
+## agente
+Estoy escribiendo las tres filas en el roadmap. La propuesta ya está creada, pero mi primer intento de editar `ROADMAP.md` se rompió. Lo rehago con un script aparte.
+> Write: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\edit-roadmap.mjs
+> Bash: node ../edit-roadmap.mjs && S="node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js"; $S roadmap check --path .docs/sdd; echo rc=$?; git status --short
+> Bash: pwd; grep -c "0011" ROADMAP.md; git diff --stat
+> Bash: file ROADMAP.md; sed -i 's#/(\#\# Next\\n\\n\\| Id\[^\\n\]\*\\n\\| ---\[^\\n\]\*\\n)/#/(\#\# Next\\r?\\n\\r?\\n\\| Id[^\\n]*\\n\\| ---[^\\n]*\\n)/#' ../edit-roadmap.mjs; grep -n "replace" ../edit-roadmap.mjs
+## agente
+CRLF confirmado. Cambio la expresión regular y uso saltos CRLF para mantener el formato del fichero.
+> Bash: cat > ../edit2.mjs <<'EOF' import fs from 'node:fs'; const src = fs.readFileSync('../edit-roadmap.mjs', 'utf8') .replace(/t = t\.replace\(.*\n/, "t = t.replace(/(## Next\\r\\n\\r\\n\\| Id[^\\r\\n]*\\r\\n\\| ---[^\\r\\n]*\\r\\n)/, (m) => m + rows.join('\\r\\n') + '\\r\\n');\n"); fs.writeFileSync('../edit-roadmap.mjs', src); EOF node ../edit2.mjs && node ../edit-roadmap.mjs; grep -c 0011 ROADMAP.md; S="node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js"; $S roadmap check --path .docs/sdd; git diff --stat
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\edit-roadmap.mjs · offset=13
+> Write: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\edit-roadmap.mjs
+> Bash: node ../edit-roadmap.mjs && grep -c "| 001[123] " ROADMAP.md; S="node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js"; $S roadmap check --path .docs/sdd; git diff --stat
+> Bash: sed -i 's#| ⏳ | 0011, 0008 | M |#| ⏳ | 0012, 0008 | M |#' ROADMAP.md sed -i 's#| 3 | 0013 | Aviso semanal a los responsables | 0011, 0008 |#| 3 | 0013 | Aviso semanal a los responsables | 0012, 0008 |#' .docs/sdd/changes/*/proposal.md S="node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js"; $S roadmap check --path .docs/sdd; grep -n "0012, 0008" ROADMAP.md .docs/sdd/changes/*/proposal.md | cut -c1-80 $S roadmap publish --project-root . --message "docs(roadmap): módulo de informes (0010) en 0011, 0012 y 0013 Decisiones tomadas por el desarrollador (delegadas): semana lun-vie 08-20 h, .xlsx sin dependencias, responsables en fichero de configuración, periodicidad por cron. 0013 va tras 0012 (comparten src/app.js) y tras 0008 (envío de correo)." ROADMAP.md .docs/sdd/changes/20261113-120000-proposal-0010-informes/proposal.md; git log --oneline | head -3; git status --short
+> Bash: git add ROADMAP.md .docs/sdd/changes && git commit -q -F - <<'EOF' docs(roadmap): módulo de informes (0010) en 0011, 0012 y 0013 Decisiones tomadas por el desarrollador (delegadas): semana lun-vie 08-20 h, .xlsx sin dependencias, responsables en fichero de configuración, periodicidad por cron. La 0013 va tras la 0012 (comparten src/app.js) y tras la 0008 (envío de correo). Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com> EOF git log --oneline | head -2; git status --short
+## agente
+Dejé el módulo de informes apuntado en el roadmap y no arranqué nada: no hay rama ni código. Lo confirmé en `develop` (commit `20f4617`) y `sdd roadmap check` da el roadmap válido.
+
+Es algo grande, así que lo partí en tres features dentro de la propuesta 0010. Las reglas de negocio llevan un ejemplo con datos cada una. Las filas están en Next:
+
+| Id | Feature | Tras | Tamaño |
+| --- | --- | --- | --- |
+| 0011 | Ocupación por sala | — | S |
+| 0012 | Exportar la ocupación a Excel | 0011 | M |
+| 0013 | Aviso semanal a los responsables | 0012, 0008 | M |
+
+La 0013 va tras la 0012 porque las dos tocan `src/app.js`. Va tras la 0008 porque reutiliza el envío de correo de los avisos que ya estaban planificados. No toqué la 0008.
+
+Como me dijiste que decidiera yo, estas son las decisiones que tomé. Están en la propuesta y conviene confirmarlas con el cliente, sobre todo la primera y la última:
+- **Ocupación:** horas reservadas entre horas disponibles, de lunes a viernes de 08:00 a 20:00 (60 h por sala). Esas horas de apertura son una suposición mía.
+- **Cómo cuenta cada reserva:** la reserva semanal cuenta en cada semana y la cancelada no cuenta. Sin indicar semana, el informe es de la última semana terminada.
+- **Excel:** un `.xlsx` generado a mano, sin dependencias, porque `operations.md` prohíbe librerías externas. Lleva una hoja con una fila por sala.
+- **Aviso:** lo reciben los responsables de una lista en un fichero de configuración, con la ocupación de la semana anterior en el cuerpo. Los lunes lo dispara cron, no el programa.
+
+Dos cosas más:
+- **Commit a mano:** `sdd roadmap publish` se negó, porque `develop` es este mismo árbol y tenía los cambios sin confirmar. Hice el commit con git.
+- **Script suelto:** dejé `edit-roadmap.mjs` en el directorio padre del repo (`..\edit-roadmap.mjs`). Lo usé para escribir las filas y se puede borrar.
+
+La primera en salir es la 0011. Este es su prompt de arranque:
+
+### *✨ 0011 — Ocupación por sala*
+***Nombre:*** `feature/0011-room-occupancy`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0011 con sdd-propose, carril feature: un comando que da la ocupación semanal de cada sala.
+
+Alcance:
+- src/app.js: cálculo de la ocupación por sala y comando para pedirla, con tests en test/app.test.js
+
+Fuera de alcance:
+- la exportación a Excel: 0012
+- el aviso por correo a los responsables: 0013
+
+Decisiones ya tomadas:
+- La semana va de lunes a viernes, de 08:00 a 20:00 (60 h por sala), porque el cliente no dio horario y es la suposición razonable; confirmarla con él.
+- Ocupación = horas reservadas ÷ horas disponibles. Norte con lun 10:00-12:00 → 2/60 = 3,3 %; Sur sin reservas → 0 %.
+- Una reserva semanal cuenta en cada semana (Sur, mié 09:00-10:00 cada semana → 1/60 = 1,7 %); una cancelada no cuenta.
+- Sin semana indicada, el informe es de la última semana terminada (pedido el vie 13-nov → 2 al 6 de nov).
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261113-120000-proposal-0010-informes/proposal.md, §Reglas de negocio
+- .docs/sdd/steering/operations.md: Node 22, sin dependencias externas
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y el comando da, con los datos del ejemplo, Norte 3,3 % y Sur 0,0 %.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

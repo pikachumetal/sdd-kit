@@ -1,0 +1,51 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: que una reserva pase por pendiente, confirmada y cancelada; desde pendiente se confirma o se cancela, desde confirmada solo se cancela, y una cancelada puede volver a pendiente. Lo que no tengo claro es si el flujo está bien.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; ls node_modules 2>&1 | head -3
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat PRODUCT.md ROADMAP.md package.json; cat .docs/sdd/steering/*.md; ls -R src test .docs/sdd/specs; git branch
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references/nombrado.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references/control-profiles.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve 2>&1
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references/spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; git checkout -b feature/0010-estados-reserva 2>&1; node "$S" id claim --project-root "$PWD" 2>&1; git branch --show-current
+## agente
+Ahora: dejo clasificada la feature y abro la entrevista con un resumen de lo que he entendido y la primera pregunta. Queda: tus respuestas, spec, revisión y tu aprobación, ~15 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+He creado la rama `feature/0010-estados-reserva` (id 0010, sin fila en el roadmap). Hay 3 tasks o menos previstas, así que no propongo dividirla.
+
+**Lo que he entendido**
+
+Una reserva tiene un estado: `pendiente`, `confirmada` o `cancelada`. Las transiciones que me das son:
+
+```text
+pendiente  → confirmada
+pendiente  → cancelada
+confirmada → cancelada
+cancelada  → pendiente
+```
+
+Lo que he visto en el código: hoy `bookings` en `src/app.js` no tiene estado. `cancelar` solo devuelve un texto y no cambia nada. `libres` trata cualquier reserva como ocupada. No hay persistencia, todo está en memoria.
+
+**Sobre si el flujo está bien**
+
+Tal como lo describes es coherente. El ciclo `cancelada → pendiente` es lo único inusual, y no es un error, pero abre estos huecos:
+
+- Una cancelada que vuelve a pendiente puede chocar con otra reserva hecha mientras tanto en la misma sala y franja.
+- No hay vuelta de `confirmada` a `pendiente`, ni salto directo de `cancelada` a `confirmada`. Para confirmar una cancelada hay que pasar por pendiente. Me parece bien, pero es decisión tuya.
+- Falta saber cuáles de los tres estados ocupan sala en `libres`.
+
+Empiezo por el hueco que más condiciona el resto.
+
+❓ **¿Qué pasa al reabrir una cancelada si la sala ya está ocupada?**
+Hoy `libres 10:00-12:00` da `Sur` porque Norte está reservada de 10:00 a 12:00. Supón que esa reserva se cancela, alguien reserva Norte en esa franja, y luego se reabre la cancelada.
+1️⃣ **Rechazar la reapertura**: `reabrir 1` → `No se puede reabrir: Norte ya está ocupada de 10:00 a 12:00`. La reserva sigue cancelada. Es lo que evita dos reservas activas a la vez, y cuesta tener que comprobar la ocupación en esa transición.
+2️⃣ **Permitirla y dejar el choque**: `reabrir 1` → `reabierta (pendiente)`. Queda doble reserva en Norte. Es más simple, pero produce justo el estado que la herramienta existe para evitar.
+➡️ **Recomiendo 1️⃣**, porque `libres` ya parte de que una sala ocupada en una franja no está libre, y 2️⃣ lo contradice. A cambio, la transición `cancelada → pendiente` deja de ser incondicional.

@@ -1,0 +1,151 @@
+
+# turno 1
+## usuario
+Revisa la configuración del kit y ponla al día.
+> Skill: sdd-kit:sdd-config
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a . .docs/sdd 2>&1; echo ---; cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/sdd-kit.local.json 2>&1; echo ---; cat .gitignore 2>&1
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-r1\skills\sdd-propose\references\control-profiles.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+❓ **Perfil de control**
+El proyecto no declara `control.profile`, así que rige `delegate`. Tampoco hay `sdd-kit.local.json`. Hay tres perfiles:
+1️⃣ **`delegate`**: para en la spec, en las desviaciones y en la validación. No tiene parada en el plan.
+2️⃣ **`pair`**: para en todas las puertas, incluidos el plan y cada tarea.
+3️⃣ **`unattended`**: no para hasta el final de la release. El merge a `main`, el tag y cualquier acción hacia fuera siguen siendo decisión de una persona.
+➡️ **Recomiendo 1️⃣**, porque ahorra la puerta del plan y es el perfil que ya rige. En la 0.6.0, con menos paradas, se cerraron tres tareas en un día. A cambio, el plan se aprueba sin que lo veas.
+
+¿Qué perfil quieres?
+
+Después te preguntaré si va para todo el equipo (`sdd-kit.json`) o solo para ti (`sdd-kit.local.json`).
+
+# turno 2
+## persona
+Perfil `delegate` (1️⃣), que es el que ya rige por defecto.
+## agente
+Anotado: `delegate`.
+
+❓ **¿Dónde se guarda `control.profile`?**
+La clave falta en el proyecto, así que no hay valor previo que sobrescribir.
+1️⃣ **Para todo el equipo** (`sdd-kit.json`, en git): queda declarado y no depende del valor por defecto del kit.
+2️⃣ **Solo para ti** (`sdd-kit.local.json`, fuera de git): no cambia nada para el resto.
+➡️ **Recomiendo 1️⃣**, porque la clave falta en el proyecto y declararla fija el perfil aunque cambie el valor por defecto del kit. A cambio, queda en git y cualquiera que quiera otro perfil tendrá que usar su archivo local.
+
+¿Lo guardo para el equipo o solo para ti?
+
+# turno 3
+## persona
+No sé dónde quiero que se guarde. Para el perfil de control, usa el que venga por defecto.
+## agente
+Entendido: no escribo nada para el perfil y rige `delegate` por defecto.
+
+❓ **Merge al cerrar una feature**
+El repo tiene `main` como rama estable y `develop` como rama de integración, y `sdd-kit.json` no declara `merge`. Hoy, al cerrar, el kit pregunta cada vez.
+1️⃣ **Declararlo completo**: se mezcla en `develop` con `--no-ff` y la limpieza del worktree la hace una persona. Queda escrito `merge: {into: develop, noFf: true, removeWorktree: false}`.
+2️⃣ **No declararlo**: el cierre sigue preguntando en cada feature.
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` deja la feature en un solo commit que se revierte de golpe, y borrar un worktree con cambios sin commitear es irreversible. A cambio, no podrás elegir otra política al cerrar sin editar `sdd-kit.json`.
+
+¿Declaro el `merge` completo?
+
+# turno 4
+## persona
+Sí, declara el `merge` completo: `merge: {into: develop, noFf: true, removeWorktree: false}`. El worktree lo borro yo.
+## agente
+Anotado: `merge` completo hacia `develop`.
+
+❓ **Push de `develop` tras el merge**
+`merge` queda declarado y la convención es git-flow: `main` estable y `develop` para integración.
+1️⃣ **Sí**: tras el merge del cierre se hace push de `develop` sin preguntar (`merge.push: true`). El tag, `main` y cualquier otro push siguen siendo tuyos.
+2️⃣ **No**: el cierre no hace push (`merge.push: false`) y lo haces tú.
+➡️ **Recomiendo 1️⃣**, porque `develop` es una rama compartida y un merge sin push no lo ve nadie más. A cambio, si el merge sale mal ya está en el remoto.
+
+¿Hace push el cierre?
+
+# turno 5
+## persona
+Sí, haz push de `develop` tras el merge (opción 1). Y lo de quién valida: manual.
+## agente
+Anotado: `merge.push: true` y `validation.mode: manual`.
+
+❓ **Frenos por defecto**
+Ahora rigen: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo.
+1️⃣ **Dejarlos así**: `control.maxParallelAgents: 3`, `silence.betweenStepsMinutes: 8` y `silence.longCommandMinutes: 20`, escritos en `sdd-kit.json`.
+2️⃣ **Cambiar algún número**: me dices cuáles.
+➡️ **Recomiendo 1️⃣**, porque son los valores por defecto del kit y nada del proyecto pide otros. A cambio, fijarlos en el archivo los congela aunque el kit cambie sus valores.
+
+¿Te valen los frenos por defecto?
+
+# turno 6
+## persona
+Sí, déjalos por defecto: opción 1, `control.maxParallelAgents: 3`, `silence.betweenStepsMinutes: 8` y `silence.longCommandMinutes: 20`, escritos en `sdd-kit.json`.
+## agente
+Anotado: frenos por defecto, escritos en `sdd-kit.json`.
+
+❓ **Método de ejecución de los planes (`execution`)**
+Hoy rige `auto`, y `sdd-kit.json` no declara la clave.
+1️⃣ **`auto`**: cada plan recomienda su método. Native es lo más barato, y los subagentes se recomiendan para planes largos o con revisión por tarea.
+2️⃣ **`native`**: siempre en la sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3️⃣ **`subagent`**: siempre con subagentes.
+➡️ **Recomiendo 1️⃣**, porque cada plan se pesa por separado y no hay motivo en este proyecto para fijar uno. A cambio, cada plan te presenta su recomendación en vez de salir ya decidido.
+
+¿Qué método fijo?
+
+# turno 7
+## persona
+Lo que recomiendes.
+## agente
+Decido yo `execution: auto`, porque cada plan se pesa por separado y nada del proyecto pide fijar uno. Lo escribo en `sdd-kit.json`.
+
+❓ **Hallazgos Minor de la revisión final**
+La clave `review.minors` no está declarada; hoy rige `defer`.
+1️⃣ **`defer`**: los Minor van al ledger como diferidos.
+2️⃣ **`fix`**: entran en la pasada de fix y se cierran en cada feature.
+➡️ **Recomiendo 1️⃣**, porque un Minor no cambia lo que recibe el usuario del producto y cada arreglo alarga la pasada de fix. A cambio, los Minor se acumulan en el ledger hasta que alguien los triage.
+
+¿Los Minor se difieren o se arreglan?
+
+# turno 8
+## persona
+No sé.
+## agente
+Anotado: no escribo nada y rige `defer`.
+
+Para la pregunta del precio necesito leer antes la página de tarifas.
+> ToolSearch: select:WebFetch
+> WebFetch: https://platform.claude.com/docs/en/about-claude/pricing
+> Grep: ^\| Claude (Opus|Sonnet|Haiku) [0-9]
+> Grep: <sup>[123]</sup>[^|]{20,}|^[123]\. 
+> Read: <home>\.claude-gco\projects\D--code--worktrees-sdd-kit-feature-0342-interviewer-rewrite--temp-i-runs-refactor-1-g7-1-repo\8e5c7af4-d800-40b4-85c2-554d0dc850aa\tool-results\toolu_01SdQ2jNt3E1RaFgBgAnXxfx.txt · offset=39 · limit=12
+## agente
+Anotado: `execution` queda decidido y los Minor se quedan en `defer`. Ya he leído la página de precios (https://platform.claude.com/docs/en/about-claude/pricing).
+
+❓ **Tabla de precios para el coste de la sesión**
+Hoy `pricing` no está declarada y el cierre diría «sin precio». Propongo una fila por modelo actual, en USD por millón de tokens:
+
+| Modelo | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` (prompts hasta 100k tokens) | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Haiku 5.5 sube a 0.50 / 0.625 / 1 / 0.05 / 2.50 en prompts de más de 100k tokens. La tabla guardaría solo la tarifa de hasta 100k.
+
+Se escribiría `pricing.source` con la URL de la página y `pricing.updated: 2026-11-13`, todo en `sdd-kit.json`.
+1️⃣ **Sí, escribir la tabla**: el cierre da el coste de la sesión.
+2️⃣ **No**: el cierre sigue diciendo «sin precio».
+➡️ **Recomiendo 1️⃣**, porque son los precios que publica la página hoy y el coste sale en cada cierre sin que lo calcules. A cambio, hay que releer la página cuando cambien las tarifas, y Haiku queda subestimado en prompts de más de 100k tokens.
+
+¿Escribo la tabla de precios?
+
+# turno 9
+## persona
+No sé.
+## agente
+Anotado: no escribo `pricing` y el cierre dará «sin precio».
+
+❓ **Entorno antes de validar**
+Cuando te toque validar una feature, hoy el guion de pruebas te dice cómo arrancar el entorno. La clave `validation.startEnvironment` es personal y se guardaría en `sdd-kit.local.json`, fuera de git.
+1️⃣ **No**, el valor por defecto: la validación te dice cómo arrancarlo.
+2️⃣ **Sí**: arranco el entorno antes de darte el guion y lo encuentras en marcha.
+➡️ **Recomiendo 1️⃣**, porque es el valor por defecto y no hace falta crear el archivo local para nada más. A cambio, arrancarlo lo haces tú.
+
+¿Arranco el entorno antes de validar?

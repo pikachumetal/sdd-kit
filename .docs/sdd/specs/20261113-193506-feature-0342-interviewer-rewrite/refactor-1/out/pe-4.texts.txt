@@ -1,0 +1,57 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y presentar el anuncio con la primera pregunta de diseño, ~3 min.
+
+--- [16]
+Ahora: te cuento lo que he entendido y abro la entrevista de la spec. Queda: 2-3 preguntas, escribir la spec, revisarla y pararme en tu aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto, `sdd-kit.json` no fija `control.profile`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+He creado la rama `feature/0010-exportar-csv-sala`. Prevé 2-3 tasks sobre una sola superficie (CLI), así que no propongo dividirla.
+
+**Lo que he entendido:** quieres un comando de `salas` que, dado el nombre de una sala, escriba sus reservas en CSV. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas.
+
+**Lo que he visto en el código:** una reserva hoy solo tiene `sala`, `día` y `franja` (`{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`). No guarda quién reserva ni una fecha concreta. Tampoco hay aún ninguna salida a fichero. El único precedente de exportación es la idea 0009 (.ics) en Later, que es otra cosa.
+
+¿Qué hace el responsable de la sala con ese CSV el lunes, cuando lo tiene en su hoja de cálculo?
+
+--- [18]
+Tomo nota: el CSV es para cuadrar a mano las reservas de una sala en su hoja. Lo apunto como respuesta tuya.
+
+Con lo que hay en el código decido yo el resto del contenido y lo dejaré en la spec como decisión mía. Las columnas serán las tres que existen en una reserva: `sala`, `día` y `franja`. El comando recibirá el nombre de la sala y escribirá el CSV por la salida estándar, para que puedas redirigirlo a un fichero con `>`. Una sala sin reservas dará solo la cabecera. Quién reserva y la fecha concreta no existen en los datos, así que no entran.
+
+Lo que cambia según tu respuesta es el separador. Excel con configuración regional española espera `;` y un CSV con `,` se le abre todo en una sola columna. Google Sheets y LibreOffice aceptan ambos.
+
+¿En qué programa abre el responsable de la sala el fichero los lunes?
+
+--- [20]
+Ahora: escribo la spec con lo decidido, paso la revisión de coherencia y la revisión de la spec. Queda: parar en tu aprobación de la spec, ~8 min.
+
+--- [29]
+Nada se escribió; uso Write.
+
+--- [42]
+Ahora: parado en la aprobación de la spec. Queda, tras tu «apruebo»: plan, implementación por tasks y validación tuya en Excel, ~15 min.
+
+**Spec:** `.docs/sdd/specs/20261113-221758-feature-0010-exportar-csv-sala/spec.md` (rama `feature/0010-exportar-csv-sala`)
+
+🦆 Hoy no hay forma de sacar las reservas de una sala fuera de la herramienta. Con esto, `node src/app.js exportar Norte > norte.csv` deja un fichero que Excel en castellano abre ya en tres columnas: `sala`, `día` y `franja` (`Norte;lun;10:00-12:00`). El responsable de la sala lo abre los lunes y cuadra las reservas con su hoja. Por dentro es un comando nuevo `exportar` en `src/app.js` que construye el texto del CSV con `;` como separador.
+
+**✋ Decisiones que he tomado yo — valida estas** (completas en la spec):
+- Comando `exportar <sala>`, con salida por la salida estándar (se redirige con `>`), sin escribir ficheros.
+- Tres columnas: `sala`, `día`, `franja`. Quién reserva y la fecha concreta no existen en los datos y quedan fuera.
+- Formato para Excel en castellano: separador `;`, UTF-8 con BOM, líneas separadas por CRLF.
+- Sala sin reservas: solo la cabecera. Sala inexistente: `sala desconocida: Este`. Sin argumento: `uso: exportar <sala>`.
+- Las reservas semanales no se distinguen, porque hoy no se guardan como dato.
+- Escape de comillas y `;` en los campos.
+- Capacidad nueva `booking-export`.
+- Asumo shell POSIX para `>`. En PowerShell 5 el fichero saldría en UTF-16 y el BOM no serviría.
+
+**Revisión de la spec:** los subagentes revisores no se pudieron lanzar, porque esta sesión no tiene herramienta para ello. La hice yo en línea y está registrada en la spec. Acepté 2 hallazgos importantes. El primero: el CSV acababa en `\r\n\n` porque `console.log` añade un salto, así que quité el CRLF final. El segundo: la función de exportación ahora admite datos de prueba. Rechacé 1 menor (fórmulas en Excel), con motivo. Si prefieres revisores independientes, dímelo y los dejo pendientes para otra sesión.
+
+**Validación:** la haces tú, abriendo el CSV en tu Excel.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

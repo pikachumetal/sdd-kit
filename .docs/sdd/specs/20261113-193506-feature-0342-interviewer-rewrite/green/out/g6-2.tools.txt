@@ -1,0 +1,147 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md 2>&1 | head -300
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/*.js package.json; ls test; cat test/* | head -60; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references"; sed -n 1,60p control-profiles.md
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references"; cat nombrado.md; echo =======; cat spec-writing.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.1749481 $)
+Ahora: abro la feature y empiezo la entrevista. Queda: unas pocas preguntas, los enfoques, la spec con su aprobación, el plan y la implementación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija otro)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+
+- Hoy `reservar <sala>` no avisa de nada cuando la sala está ocupada. Quieres poder apuntarte a una lista de espera de esa sala y franja.
+- No existe una fila de roadmap para esto. Será una feature nueva, y la rama y el id los reservo antes de crear la carpeta.
+- Con lo que veo en el código, calculo 3 tareas o menos, así que no propongo dividirla.
+- `src/app.js` guarda las reservas en memoria y no persiste nada. Esto condiciona qué puede significar «lista de espera». Lo pregunto más adelante, si hace falta.
+- La fila 0008 (avisos por correo) está en curso. Si la espera se apoya en ella, lo decidimos en la spec.
+
+❓ Para empezar, necesito saber qué quieres conseguir con esto. Imagina que apuntas a la lista de `Norte` el lunes de 10:00 a 12:00 y alguien cancela esa reserva: ¿qué quieres que pase en ese momento?
+
+=== RESULTADO (1 turnos, 0.1954003 $)
+Entendido. Lo que quieres es dejar de vigilar `libres`. Eso cambia lo que más pesa en el diseño: qué hace la herramienta cuando la sala se libera.
+
+❓ **Qué pasa cuando se libera la sala**
+La cancelación está en `src/app.js` (`cancelar <día> <hora>`). Un aviso por correo depende de la 0008, que sigue pendiente. Sin esa fila, un aviso no tiene por dónde salir.
+
+1️⃣ **Reserva automática.** Al cancelarse la reserva, la primera de la lista pasa a ser reserva.
+   `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   Luego alguien cancela y `libres 10:00-12:00` → `Norte, Sur`. La lista ya tiene la reserva puesta, sin que hagas nada.
+   Coste: puede reservarte una franja que ya no quieres, y tendrás que cancelarla.
+
+2️⃣ **Solo aviso en pantalla.** La próxima vez que ejecutes cualquier comando, te dice que se liberó la sala.
+   `libres` → `Sur · aviso: Norte 10:00-12:00 se ha liberado (estabas en espera)`
+   Coste: sigues teniendo que ejecutar algo para enterarte, que es justo lo que quieres evitar.
+
+3️⃣ **Aviso por correo.** Esperaría a que exista la 0008.
+   Coste: queda bloqueada por otra feature y no se puede cerrar hasta entonces.
+
+➡️ **Recomiendo 1️⃣**, porque la 2️⃣ no te quita el sondeo y la 3️⃣ depende de la 0008, que ni está implementada. A cambio, puede reservar de más. Lo acotamos en la spec: por ejemplo, la reserva automática solo si sigues en la lista.
+
+¿Con cuál vas?
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+=== RESULTADO (3 turnos, 0.223857 $)
+Voy por partes. Estamos decidiendo qué hace la lista de espera cuando alguien cancela la sala que querías.
+
+**El caso.** Es lunes. Quieres Norte de 10:00 a 12:00. Norte ya tiene una reserva en esa franja.
+
+Hoy no puedes hacer nada. Tienes que ejecutar `libres 10:00-12:00` una y otra vez hasta que Norte aparezca.
+
+Con la lista de espera, lo primero es igual para las tres opciones. Pides `reservar Norte` y la herramienta te contesta: «Norte ocupada; en espera (1.º)». Desde ahí, tú ya no haces nada.
+
+Después, alguien cancela la reserva de Norte. Las tres opciones difieren en lo que pasa entonces:
+
+1. **Reserva automática.** La herramienta reserva Norte para ti en ese momento. Cuando vuelvas, ya la tienes. El riesgo es que te reserve una sala que a esas alturas ya no necesitabas. Entonces la cancelas tú.
+2. **Aviso en pantalla.** La herramienta no reserva nada. Te lo cuenta la próxima vez que ejecutes algo: «Norte 10:00-12:00 se ha liberado». Después reservas tú a mano. Es lo más seguro, pero tienes que ejecutar algo para enterarte. Es casi lo mismo que mirar `libres`.
+3. **Aviso por correo.** Te llega un correo cuando se libera. Es lo más cómodo, pero el envío de correos es otra tarea (la 0008) que todavía no está hecha. Esta lista tendría que esperarla.
+
+Tú dijiste que lo que te molesta es mirar a mano cada rato. Por eso recomiendo la 1: es la única que de verdad lo evita ya, sin esperar a otra tarea.
+
+¿Con cuál vas: 1, 2 o 3?

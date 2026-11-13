@@ -1,0 +1,45 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; git ls-files | head -50
+> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; cat src/app.js; cat test/app.test.js | head -60; ls node_modules 2>&1 | head -2
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references"; cat spec-writing.md; sed -n 1,60p control-profiles.md
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && sed -n 1,80p "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references/nombrado.md"; git branch -a
+## agente
+Estoy reservando el id de la feature y creando su rama antes de seguir con la entrevista.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; git switch -c feature/0010-lista-espera && node "$S" id claim --project-root "$PWD"; git status --short
+## agente
+Ahora: te cuento lo que he entendido y te hago la primera pregunta del diseño. Queda: la entrevista, los enfoques y la spec para que la apruebes, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+He creado la rama `feature/0010-lista-espera` con el id 0010, que no tiene fila en el roadmap. No hay remoto, así que el id vale con el contador local.
+
+**Lo que he entendido, corrígeme.** Hoy `reservar Norte` sobre una franja ya ocupada no te ofrece nada. Quieres apuntarte a una lista de espera de esa sala y esa franja, para quedar en cola cuando esté ocupada. El proyecto lo usas solo tú, así que esto es para ti.
+
+Todavía no sé qué debe pasar cuando la sala se libere. Es lo que más condiciona el resto del diseño, y solo lo sabes tú.
+
+¿Qué quieres que ocurra en el momento en que la sala que esperas queda libre?
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Entendido: tu problema es tener que mirar `libres` a mano, así que la lista tiene que ahorrarte esa consulta. Lo que falta decidir es qué hace cuando la sala se libera.
+
+Ahora mismo el estado vive en memoria y `cancelar` solo devuelve un texto. Cuando cancelar libere de verdad una reserva, la lista de espera tiene que reaccionar. Escenas con datos:
+
+❓ **Qué pasa cuando se libera la sala**
+1️⃣ **Reserva automática.** `espera Norte lun 10:00-12:00` responde `Norte ocupada; en espera (1.º)`. Al cancelar la reserva de Norte, la primera de la cola se convierte en reserva y sale `cancelada lun 10:00 · Norte reservada para ti (estabas en espera)`. No vuelves a mirar nada. Si ya no la querías, tienes que cancelarla.
+2️⃣ **Aviso al liberarse.** El mismo `espera`, pero al cancelar sale `Norte libre en lun 10:00-12:00 (hay 1 en espera)` y la reserva la haces tú con `reservar`. Alguien más puede reservarla antes, y tienes que mirar el aviso.
+3️⃣ **Solo apuntarse y consultar.** `espera` apunta y `espera --ver` lista la cola. No avisa ni reserva: sigues mirando a mano, pero al menos ves tu posición.
+
+➡️ **Recomiendo 1️⃣**, porque eres la única persona que usa la herramienta y tu queja es no tener que volver a mirar. Con 2️⃣ y 3️⃣ sigues mirando tú. A cambio, puede quedarte una reserva que ya no quieres, y se arregla con `cancelar`.
+
+¿Cuál eliges?

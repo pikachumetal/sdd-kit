@@ -1,0 +1,74 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar el cambio y hacerte las preguntas de diseño, ~3 min.
+
+--- [14]
+Ahora: ya tengo la rama `feature/0010-lista-espera` (id 0010, sin remoto, así que el contador local vale). Queda: entender qué quieres y hacerte las preguntas de diseño una a una, antes de escribir la spec, ~5 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no comprueba si la sala está ocupada. Quieres que, si la sala que pides ya está reservada en esa franja, te apuntes en una lista de espera en vez de quedarte sin nada. El proyecto es una CLI de uso personal, en Node 22 y sin dependencias. No hay una fila de roadmap para esto, así que la feature es nueva. Corrígeme si algo no cuadra.
+
+Por ahora son pocas tasks (la reserva, la lista de espera y su consulta), así que no propongo dividirla.
+
+Una cosa que solo sabes tú:
+
+¿Qué quieres que pase, en un caso real, cuando la sala por la que esperas se libere, por ejemplo porque alguien cancela?
+
+--- [16]
+Entendido: lo que te molesta es tener que mirar `libres` cada rato. Eso me da el criterio de éxito: **no tener que volver a mirar**.
+
+Tu respuesta me dice para qué la quieres, pero no qué debe pasar cuando la sala se libere. Es la decisión que más condiciona el resto, así que la pregunto yo.
+
+Hay un dato del código que la afecta. Ahora mismo `src/app.js` no guarda nada entre ejecuciones: las reservas son un array fijo en memoria. Una lista de espera solo tiene sentido si sobrevive entre comandos, así que habrá que añadir persistencia. Esa decisión la tomo después, según lo que elijas aquí.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+1️⃣ **Se te reserva sola.** Quien está primero en la lista recibe la reserva al cancelarse la anterior.
+   `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   Después, `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu nombre`
+   Cuesta que puedes acabar con una reserva que ya no quieres. Hay que decidir cómo la sueltas.
+2️⃣ **Te avisa, pero reservas tú.** Cualquier comando te dice que ya está libre.
+   `libres 10:00-12:00` → `Sur, Norte (libre: estabas en espera)`
+   Cuesta que sigues teniendo que ejecutar algo para enterarte. Es justo el problema que quieres quitar, aunque la lista sí te guarda el sitio.
+3️⃣ **Un comando que espera por ti.** `reservar Norte ... --espera` se queda abierto y reserva en cuanto se libera.
+   Cuesta que necesita una terminal abierta. Con el estado en memoria no funcionaría, y con persistencia habría que sondear el fichero.
+
+➡️ **Recomiendo 1️⃣**, porque es la única opción que cumple lo que me has dicho, no volver a mirar. La 2️⃣ solo cambia mirar `libres` por mirar un aviso. A cambio, hay que definir cómo renuncias a una reserva que llega sola.
+
+¿Cuál eliges?
+
+--- [19]
+Empiezo por el contexto. Estamos diseñando la lista de espera. Falta decidir qué pasa cuando la sala por la que esperas se libera.
+
+Te lo cuento con un caso. Hoy Norte está reservada el lunes de 10:00 a 12:00. Tú quieres esa franja.
+
+**Hoy, sin lista de espera.** Pides Norte y la herramienta no te apunta en ningún sitio. Tienes que volver a mirar `libres` cada rato, para ver si alguien la ha cancelado. Eso es lo que te molesta.
+
+**Con lista de espera, hay tres maneras de enterarte de que se libera:**
+
+1. **Se reserva sola.**
+   - Pides Norte y te contesta: «Norte ocupada; en espera (1.º)».
+   - Te olvidas del tema.
+   - Más tarde alguien cancela la reserva de Norte.
+   - En ese momento Norte pasa a tu nombre, sin que hagas nada.
+   - Ya no tienes que mirar nada. A cambio, puede que te quede una reserva que ya no necesitas. Tendrías que poder soltarla.
+
+2. **Te avisa, pero reservas tú.**
+   - Pides Norte y quedas en espera.
+   - Alguien cancela.
+   - La sala no pasa a tu nombre. La próxima vez que ejecutes cualquier comando, te dice: «Norte está libre, estabas en espera».
+   - Tienes que ejecutar algo para enterarte. Es casi lo mismo que mirar `libres`, con la ventaja de que la lista te guarda el sitio.
+
+3. **Un comando que se queda esperando.**
+   - Pides Norte con una opción de espera.
+   - La terminal se queda abierta.
+   - En cuanto Norte se libera, reserva.
+   - Si cierras la terminal, se acaba la espera.
+
+Un dato más. Hoy la herramienta no recuerda nada entre una ejecución y la siguiente. Para cualquiera de las tres, la lista de espera tiene que guardarse en algún sitio. Eso lo decido después.
+
+Ahora falta decidir cuál de las tres quieres.
+

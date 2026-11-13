@@ -1,0 +1,64 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: cancel|cancela|anula
+
+>>> Glob: **/*
+<<< CHANGELOG.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](.docs/sdd/specs/20260918-090000-patch-0007-cancel/)
+CHANGELOG.md:20:- Cancelar una reserva propia.
+ROADMAP.md:8:| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/app.js`</details> | ✅ | — | S |
+test\app.test.js:13:test('cancelar respeta el día', () => 
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+src\app.js
+test\app.test.js
+.docs\sdd\sdd-kit.json
+package.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+=== RESULTADO (6 turnos, 0.1017133 $)
+Las reservas se cancelan en `src/app.js:12`, dentro de `run()`:
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+Se invoca como `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`. Lo que dice el código es poco: solo devuelve el texto `cancelada mar 10:00`. No toca el array `bookings` (línea 3), así que ahora mismo no borra nada.
+
+Lo que dicen los documentos:
+- `CHANGELOG.md:14` y la fila 0007 de `ROADMAP.md` registran el patch 0007, que arregló que la cancelación borrara reservas de otro día con la misma hora. Está marcado como hecho (✅) y tocaba `src/app.js`.
+- `test/app.test.js:13` tiene el test «cancelar respeta el día», que comprueba solo ese mensaje de salida.
+
+Lo que deduzco: el código actual no coincide con lo que describe el patch 0007, porque no hay lógica de borrado ni de comparación por día. Puede que el molde lo simplifique a propósito. No he mirado `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`; si quieres, lo leo para confirmarlo.

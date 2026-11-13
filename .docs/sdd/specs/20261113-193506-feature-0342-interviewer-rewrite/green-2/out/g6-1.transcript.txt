@@ -1,0 +1,73 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: cat PRODUCT.md ROADMAP.md 2>&1 | head -80; ls -a .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; ls; ls node_modules 2>&1 | head -2
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+> Bash: cat .docs/sdd/steering/*.md | head -120; cat package.json; ls src test; wc -l src/*; cat src/app.js
+> Bash: K="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references"; cat "$K/nombrado.md" | head -80; cat "$K/control-profiles.md" | head -40
+> Bash: S='node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js'; $S id next --project-root . --reserve 2>&1
+> Bash: git checkout -b feature/0010-lista-espera 2>&1; node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js id claim --project-root . 2>&1
+## agente
+Ahora: leer cómo se escribe la spec y abrir la entrevista de diseño. Queda: unas preguntas tuyas, la spec para aprobar y el plan, ~10 min.
+> Skill: sdd-kit:sdd-grilling
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references/spec-writing.md
+## agente
+Ahora: abrir la entrevista de la feature. Queda: unas pocas preguntas tuyas, luego la spec para que la apruebes (el plan y la implementación siguen solos), ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija otro)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `reservar` no te dice nada útil cuando la sala que quieres ya está cogida en esa franja. Quieres poder apuntarte a una lista de espera de esa sala y esa franja. Ahora mismo no sé qué debería pasar después: si la sala se libera, si te avisa o si te reserva sola. He creado la rama `feature/0010-lista-espera` (id 0010) y todavía no hay spec.
+
+❓ **Para qué la quieres**
+Tengo una sola pregunta abierta, porque de tu respuesta dependen casi todas las demás decisiones (avisar, reservar sola, cuánto dura la espera). Cuéntame el último caso real en el que la sala que querías estaba ocupada: ¿qué hiciste y qué te habría gustado que pasara?
+
+# turno 2
+## usuario
+no, espera, explícamelo mejor
+> Bash: cat README.md test/app.test.js; git log --oneline | head
+## agente
+Entendido: quieres dejar de consultar `libres` a mano. Eso me deja claro el objetivo, que es enterarte sin mirar. Ahora falta decidir qué pasa cuando la sala se libera.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+Hoy `cancelar` solo imprime «cancelada …» y no hay avisos. Hay un aviso por correo en el roadmap (0008), pero aún no está hecho, así que no puedo apoyarme en él.
+
+1️⃣ **Pasa a ti la reserva automáticamente.** Es lo que más se acerca a «no tener que mirar»:
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   - Alguien cancela esa franja → la reserva pasa a la primera persona en espera y `cancelar` imprime `cancelada lun 10:00; Norte pasa a <quien esté 1.º>`
+   - Coste: reservas algo que quizá ya no quieras. Hay que poder salir de la lista, o cancelar la reserva recién creada.
+2️⃣ **Solo te apunta y te lo dice al consultar.** La reserva sigue siendo manual:
+   - `espera` → `Norte lun 10:00-12:00: 1.º (tú)`
+   - Cuando se libera, `libres` ya muestra Norte y tú reservas.
+   - Coste: sigues teniendo que consultar. Resuelve poco de lo que me has contado.
+3️⃣ **Te lo avisa cuando se libera, sin reservar.** Es parecido al aviso del 0008:
+   - Alguien cancela → se imprime `Norte libre lun 10:00-12:00 (te tocaba 1.º)`
+   - Coste: necesita un canal de aviso que hoy no existe, y con un programa que corre y termina en cada comando no hay quien lo envíe.
+
+➡️ **Recomiendo 1️⃣**, porque es la única opción que cumple lo que me has dicho, que es no volver a mirar a mano. Las otras dos te dejan el trabajo a ti o dependen de algo que no está construido. A cambio, reservas por ti, y por eso incluiría una forma de salir de la lista.
+
+¿Con cuál te quedas?
+## agente
+Te lo cuento con un caso, sin opciones todavía.
+
+Ahora mismo Norte está reservada el lunes de 10:00 a 12:00. Tú quieres esa franja, así que lanzas `reservar Norte lun 10:00-12:00` y te sale que está ocupada. Lo único que puedes hacer es volver a lanzar `libres` cada rato, por si alguien ha cancelado. Eso es lo que me has contado.
+
+La lista de espera cambia eso en dos momentos:
+
+1. **Cuando pides la sala ocupada.** En vez de quedarte sin nada, el programa apunta tu petición y te contesta algo como `Norte ocupada; en espera (1.º)`. Eres el primero de la cola de esa sala y esa franja.
+2. **Cuando alguien cancela esa reserva.** Aquí hay que decidir qué hace el programa con tu puesto en la cola. Esa es la pregunta que te hacía.
+
+Esa decisión importa por una limitación de `salas`: es una herramienta de terminal que arranca, hace un comando y termina. No se queda funcionando en segundo plano esperando a que alguien cancele. Por eso, en el momento exacto de la cancelación, el único código que corre es el del propio `cancelar`.
+
+Así que lo que puede ocurrir en ese momento es una de estas tres cosas. Las enuncio para que veas la pregunta, sin recomendar ninguna todavía:
+
+- El programa te pone la reserva, y tú lo ves la próxima vez que mires.
+- El programa solo te deja apuntado en la cola, y te toca a ti reservar cuando consultes.
+- El programa te avisa de algún modo, y eso necesita un canal que hoy no existe.
+
+Entonces, en una frase: cuando alguien cancela la franja que esperas, ¿quieres que el programa te la reserve por ti, o prefieres decidirlo tú al enterarte?

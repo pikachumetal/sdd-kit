@@ -1,0 +1,85 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar el carril y empezar la entrevista de la spec, ~3 min.
+> Bash: ls -a; ls -R .docs 2>/dev/null | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cat PRODUCT.md ROADMAP.md package.json README.md .docs/sdd/steering/*.md; ls -R src test; git branch -a
+> Bash: cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md | head -30
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references"; cat control-profiles.md | head -80; echo ------; cat nombrado.md
+> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references/spec-writing.md"
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git status --short && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" id next --project-root "$PWD" --reserve
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git switch -c feature/0010-exportar-csv develop && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" id claim --project-root "$PWD"; git branch --show-current
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: abrir la entrevista de la spec de la feature 0010 (rama `feature/0010-exportar-csv` creada, id reservado). Queda: unas pocas preguntas, los enfoques y la spec con su parada de aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** quieres un comando de `salas` que, dada una sala, saque sus reservas en CSV, para que el responsable de esa sala las pegue o abra en su hoja de cálculo cada lunes y las cuadre.
+
+Dos hechos del código que he visto:
+- Hoy las reservas son una lista en memoria de `src/app.js` (ahora hay una sola: `Norte lun 10:00-12:00`), y cada reserva tiene `room`, `day` y `slot`.
+- El comando se añadiría junto a `libres`, `reservar` y `cancelar` en `run()`.
+
+Corrígeme si algo no es así. Mi pregunta, abierta, porque solo la sabes tú:
+
+¿Qué reservas cuadra el responsable cada lunes: todas las de la sala, o solo las de una semana concreta?
+
+# turno 2
+## persona
+Solo las de la semana que empieza el lunes que viene, de esa sala.
+## agente
+❓ **Las reservas no tienen fecha, solo día de la semana**
+
+En `src/app.js` cada reserva es `{ room, day, slot }` con `day` = `lun`, `mar`… Ninguna guarda una fecha de calendario. La semana que empieza el lunes que viene (hoy es vie 2026-11-13, así que sería la del 2026-11-16) no puede filtrar nada: toda reserva cae en todas las semanas. Hay tres maneras de seguir:
+
+1️⃣ **Fechar cada reserva en esa semana.** Sin tocar el modelo, el comando calcula la fecha que corresponde a cada `day` dentro de la semana pedida.
+`exportar Norte` →
+```
+sala,dia,fecha,franja
+Norte,lun,2026-11-16,10:00-12:00
+```
+Coste: trata toda reserva como si se repitiera cada semana. Una puntual de otra semana saldría igual, porque hoy no se distingue.
+
+2️⃣ **Añadir fecha a las reservas.** Así `reservar` y `cancelar` pasan a trabajar con fechas, y el export filtra de verdad. Coste: es otra feature, con cambios en tres comandos y en las specs ya cerradas.
+
+3️⃣ **Exportar todas las de la sala, sin fecha.**
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Coste: no cumple lo que has pedido, la semana que viene. La hoja queda igual cada lunes.
+
+➡️ **Recomiendo 1️⃣**, porque con el modelo actual es lo único que da la hoja por semana sin rehacer `reservar` y `cancelar`. A cambio, el CSV no distingue una reserva puntual de una semanal hasta que exista la 2️⃣.
+
+¿Con cuál sigo?
+
+# turno 3
+## persona
+Déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+Lo dejamos aquí. No he escrito spec ni plan, y no he tocado el código.
+
+**Estado actual**
+- Estoy en la rama `feature/0010-exportar-csv`, creada desde `develop`. El id 0010 está reservado en local, porque el repo no tiene remoto.
+- Todavía no hay carpeta en `.docs/sdd/specs/` ni fila en `ROADMAP.md`.
+- Lo decidido por ti: el comando exporta las reservas de una sala, solo las de la semana que empieza el lunes que viene.
+
+**Pendiente de ti**
+- Cómo tratar que las reservas solo guardan el día de la semana, sin fecha (`src/app.js`). Las opciones eran:
+  1. Calcular la fecha de cada día dentro de la semana pedida. Es la que recomendé.
+  2. Añadir fecha a las reservas, que es otra feature.
+  3. Exportar todas sin fecha, que no cumple lo de la semana.
+
+**Para retomar**
+- Dime la opción y seguimos desde esta rama.
+- Si prefieres la 2️⃣, conviene apuntarla en el roadmap como feature aparte y dejar esta para después.
+- Si no sigues con ella, hay que borrar la rama y liberar el 0010. Dímelo y lo hago.

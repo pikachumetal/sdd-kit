@@ -1,0 +1,68 @@
+--- [4]
+Ahora: leer el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y lanzar la entrevista de la spec, ~5 min.
+
+--- [29]
+Ahora: repaso de coherencia de la spec (fusión del delta sobre una copia) antes de lanzar la revisión. Queda: revisor, aprobación, plan, ~8 min.
+
+--- [37]
+Ahora: esperando al revisor de la spec (opus, un solo revisor). Queda: integrar hallazgos y parar en la aprobación de la spec.
+
+La spec de la feature 0010 está escrita y el revisor sigue trabajando. En cuanto vuelva, integro sus hallazgos y te presento la spec para aprobar. Aún no hay plan ni código.
+
+--- [43]
+1. Crítico · Delta «Cancelar da la sala a quien esperaba» + ✋ 4/6/7 · Según `PRODUCT.md`, la herramienta tiene un único usuario, así que la reserva que se cancela y la espera que se promueve son de la misma persona. Con eso, `cancelar jue 10:00-12:00` deja la Norte reservada igual que estaba: el usuario cancela y la sala no se libera. El escenario da por bueno ese no-op · Decir qué significa cancelar cuando el que espera eres tú mismo. La opción más clara es prohibir apuntarse en espera de una sala que ya tienes reservada en esa franja, y añadir un escenario para ese caso. Si no, la feature no tiene sentido con un solo usuario.
+2. Crítico · Intent «Éxito» + ✋ 8 + Validación dev-lead · El estado vive en memoria y cada ejecución del CLI parte de cero. Por eso el criterio de éxito (`reservar` con la sala ocupada y después `cancelar`) nunca puede ocurrir en dos ejecuciones reales. El dev-lead no puede validar «lo que ve y teclea», porque solo lo reproducen los tests dentro de un mismo proceso · Hay dos salidas: redactar el éxito como alcanzable solo dentro de un proceso y que la validación sea sobre los tests, o sacar la persistencia de «Pendiente de ti» y meterla en Scope antes de aprobar.
+3. Importante · Reglas de la capacidad «Regla ante conflicto: no aplica» · Hay una condición de conflicto, «sala ocupada», y la spec no dice cómo se detecta. ¿Basta con que las franjas se solapen (`lun 10:00-12:00` frente a `lun 11:00-13:00`) o tienen que ser idénticas? ¿Ocupa una reserva `--cada-semana`? · Declarar la regla con su valor: igualdad exacta o solape, y si cuentan las reservas semanales. Añadir un escenario de franja solapada.
+4. Importante · Delta «No se duplica una espera» y «Cancelar…» (THEN/AND) · «Sigue habiendo una sola espera», «la espera desaparece», «la Norte sigue ocupada» y «la Sur queda libre» no se ven a través de `run`, porque no se exporta el estado y no hay un comando que liste las esperas. El escenario pasa aunque falte el comportamiento · Expresar cada efecto con un WHEN observable más. Por ejemplo: después de cancelar, `reservar Sur mié 09:00-10:00` responde `reservada …`; después de duplicar, un `cancelar` produce una sola promoción.
+5. Importante · ✋ 7 / Scope «cancelar quita de verdad» · Faltan tres complementos. (a) `cancelar` sobre una franja sin ninguna reserva: no se dice qué responde ni si sigue diciendo `cancelada …`. (b) Cancelar una franja con varias salas reservadas, varias de ellas con espera: no está fijado el texto (¿una línea por sala? ¿en qué orden?). (c) Si `cancelar` borra también las reservas `--cada-semana` · Añadir un escenario por cada caso, con su literal exacto.
+6. Importante · Anti-metas vs ✋ 7 · La anti-meta dice que no cambia «la salida de `cancelar` cuando nadie espera», pero `cancelar` pasa a borrar reservas. Eso altera lo que luego responden `reservar` y posiblemente `libres` tras cancelar, lo que contradice «no cambiar `libres`» · Reconocer en Scope y en «Lo que se retira» que `libres` muestra la franja liberada después de cancelar. Si no es así, explicar por qué no.
+7. Importante · Approach, párrafo final («Los tests de `run` comparten el estado… sin exportar un `reset`») · Es una decisión de diseño de pruebas que crea un acoplamiento frágil entre tests, y no aparece en «✋ Decisiones que he tomado yo» · Llevarla a ✋ como una decisión más, o exportar un `reset` (o una fábrica de estado) para aislar los tests.
+8. Importante · Scope / Reglas «Límites» · La spec no dice qué pasa con una sala inexistente (`reservar Marte lun …`) ni con un día fuera de `lun..dom` (incluido `mié` con tilde frente a `mie`). La lista de salas válidas no aparece como dato ni como «no entra» · Declarar en Límites la lista de salas y días aceptados con su aviso, o ponerlo explícitamente en «No entra» junto a la deuda de formato de franja.
+9. Menor · Reglas «Idioma de los nombres» vs ✋ 1 y Approach A · La regla dice «castellano (constitución, art. 4)», pero el slug `bookings` y la lista `waitlist` son nombres en inglés. Además, el art. 4 habla del texto de la interfaz y de los documentos, no de los identificadores · Poner como valor de la regla lo que de verdad se aplica (interfaz en castellano; slug e identificadores en inglés, según convención del proyecto) y citar la fuente correcta.
+10. Menor · ✋ 3 «sala ocupada» · `Norte ocupada; en espera` es el único texto que omite día y franja; el resto los incluye · Unificar a `Norte ocupada lun 10:00-12:00; en espera`, o justificar la diferencia, antes de congelar los literales.
+
+--- [49]
+Ahora: segunda ronda de revisión (un revisor sonnet, porque acepté dos críticos). Queda: integrar sus hallazgos y parar en la aprobación de la spec.
+
+La spec está corregida con los hallazgos de la primera ronda: `capability merge` y `check` pasan sobre la copia. La segunda revisión está en marcha. No hay plan ni código todavía, y la spec sigue pendiente de tu aprobación.
+
+--- [57]
+1. Crítico · ✋ 11, ✋ 4, Intent · `PRODUCT.md` dice «no hay más usuarios» y ✋ 4 dice que la usa una sola persona. ✋ 11 supone que otra persona del coworking figura en la herramienta, así que la espera solo tiene sentido contra uno mismo y la premisa de valor contradice la verdad del producto. · Replantear qué se espera con un solo usuario (p. ej. esperar tu propia reserva y cancelarla) o escalar al dev-lead que la feature no tiene destinatario. Quitar la suposición ✋ 11 si contradice PRODUCT.
+2. Importante · ✋ 8 vs ✋ 12 / Approach · ✋ 8 dice «estado en memoria, como `bookings` hoy», pero ✋ 12 y la tabla dicen que `reservar` hoy solo devuelve texto. No se sabe si existe una estructura `bookings` ni su forma, que es un dato tocado sin declararlo. · Decir qué existe hoy en `bookings` (forma, quién lo lee) y declararlo como dato modificado en el cuerpo y en la tabla de cambios.
+3. Importante · Intent / ✋ 7 / Scope · El Intent promete que `libres` no cambia, pero no dice si `libres` lee las reservas. Si las lee, `reservar` ya cambia su salida (hoy no hay reserva real) y no solo `cancelar`. Hay un `libres` afectado no listado, y la excepción solo cubre la franja liberada tras cancelar. · Declarar si `libres` lee `bookings` y añadir un escenario o un «No entra» que cubra `libres` tras `reservar`.
+4. Importante · Delta, escenarios · Falta el escenario de cancelar con varias salas reservadas y solo una con espera: una sala se promociona y la otra queda libre. Es justo donde «sala reservada dos veces» (anti-meta) o «liberada pero promocionada» pueden fallar. El de varias salas solo cubre el caso en que todas tienen espera. · Añadir el escenario: Norte y Sur reservadas, espera solo de Norte, y comprobar con `reservar` posterior que Norte queda ocupada y Sur libre.
+5. Importante · ✋ 3 / Reglas · El orden «Norte, Sur» da por hecho que solo hay dos salas y que el nombre es sensible a mayúsculas o tildes. Sin validación de sala (`Marte` entra), el orden de una sala desconocida queda sin definir. Esa decisión vive en el cuerpo y no en ✋. · Poner en ✋ la lista de salas y el orden (alfabético o el de `libres`), y la sensibilidad a mayúsculas y tildes (`mié`, `sáb`).
+6. Importante · ✋ 7 / Intent · El Intent dice que `cancelar` sin espera no cambia, pero ✋ 7 lo cambia en efecto: ahora borra reservas y libera todas las salas de la franja. «Cancelar libera todas las salas» es una decisión de comportamiento fuerte; el propio revisor mínimo la marcó como un choque posible. No se contrasta con el `cancelar` actual, que no lleva sala, ni se pide al dev-lead que lo confirme. · Subir ✋ 7 a «Pendiente de ti» para confirmación explícita y matizar el Intent: el texto no cambia, el efecto sí.
+7. Menor · Delta, «Cancelar una franja sin reservas» · El escenario pasa sin el comportamiento nuevo, porque el `cancelar` actual ya devuelve ese texto (✋ 13). No protege nada de esta feature. · Marcarlo como regresión de comportamiento existente, o combinarlo con un caso que sí requiera el estado.
+8. Menor · Scope / tabla de cambios · `reservar <sala> <día> <franja> --cada-semana` combina los dos modos y no se dice qué pasa. La tabla afirma que `--cada-semana` se evalúa primero, pero eso no aparece como decisión en ✋ ni como escenario. · Añadir a ✋ la decisión de evaluar `--cada-semana` primero (ignora sala ocupada y espera) y un «No entra» o escenario que la fije.
+9. Menor · ✋ 10 / Approach · ✋ 10 afirma resultados de comandos (`merge` rc 0, `Capacidades válidas: 1`) y «se repetirá con el delta corregido», que es una afirmación no verificable desde la spec. Approach A dice «~20 líneas» y ✋ cabecera «~50 líneas»; las cifras no cuadran. · Repetir la comprobación antes de aprobar y quitar el «se repetirá». Unificar la estimación de tamaño.
+10. Menor · Delta, escenarios 1 y 4 · Los AND dejan estado residual compartido: espera `Sur mar` y espera `Norte jue` quedan apuntadas. Hoy no choca porque cada escenario usa día y franja distintos, pero depende de que el orden y los datos no se reutilicen. · Declarar en ✋ 14 la tabla de día y franja por escenario como obligatoria y avisar de que reutilizarlos rompe la promoción.
+
+--- [68]
+**Spec de la feature 0010 escrita y revisada. Está en espera de tu aprobación.** No he escrito plan ni código.
+
+Está en `.docs/sdd/changes/20261113-214345-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. Es una feature en modo full, con el perfil `delegate` por defecto. Ejecuté `capability merge` y `check` sobre una copia de `.docs/sdd` con la spec final y pasan (8 requisitos añadidos, 1 capacidad válida).
+
+🦆 Hoy, si pides una sala ocupada, no queda rastro de que la querías. Con esto, `reservar Norte lun 10:00-12:00` con la Norte ocupada responde `Norte ocupada lun 10:00-12:00; en espera` y apunta tu petición. Cuando esa reserva se cancela, la sala pasa a ser tuya y `cancelar` lo dice: `cancelada lun 10:00-12:00; Norte reservada desde la espera`. Por dentro es una lista en memoria junto a la de reservas, en `src/app.js`.
+
+**✋ Decisiones que he tomado yo, las más importantes (la spec lleva 17):**
+- **Sintaxis y textos:** `reservar <sala> <día> <franja>`. Los literales de respuesta están fijados en la spec.
+- **Sin cola con orden:** no hay «1.º», porque la herramienta la usa una sola persona. Una espera es una petición por (sala, día, franja), y repetirla no la duplica.
+- **`cancelar <día> <franja>` ahora quita reservas de verdad.** Hoy solo devuelve texto. Libera todas las salas de esa franja y promueve las que tenían espera.
+- **Capacidad nueva `bookings`:** no existe ninguna capacidad en el proyecto.
+- **Enfoque A:** una lista `waitlist` en `src/app.js`, frente a un módulo aparte o a persistir en fichero.
+
+**Pendiente de ti:**
+- **Persistencia:** el estado vive en memoria, así que una espera apuntada en un comando no existe en el siguiente. Por eso la validación es con tests y un script que encadene llamadas a `run`, no tecleando comandos sueltos.
+- **Suposición de las reservas ajenas:** la feature solo tiene sentido si una sala ocupada puede ser de otra persona del coworking. El segundo revisor lo marcó como crítico, porque `PRODUCT.md` dice que no hay más usuarios. Lo rechacé con motivo escrito: eso habla de la herramienta, no de quién usa las salas. Confírmalo; si no es así, la feature no tiene destinatario y se cancela.
+- **Efecto de `cancelar`:** confirma que debe liberar todas las salas de la franja, no una concreta.
+- **Fuera de alcance:** darse de baja de la espera, salas inexistentes y días fuera de `lun..dom` no entran.
+
+La revisión fue de un revisor opus y una segunda ronda con uno sonnet, porque acepté dos hallazgos críticos en la primera. Todos los hallazgos aceptados están en la spec.
+
+Opciones:
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajustar.
+
+También puedes decir «apruebo la spec por delegación, nos vemos en la validación».
+

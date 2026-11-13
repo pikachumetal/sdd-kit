@@ -1,0 +1,93 @@
+--- [13]
+Voy por el paso de la rama: ya tengo el id 0010 reservado, así que creo la rama y lo confirmo con `id claim` antes de crear la carpeta.
+
+--- [15]
+Ahora: te dejo lo que he entendido y la primera pregunta de diseño. Queda: la entrevista (unas pocas preguntas), la spec con su aprobación, el plan y la implementación; unos 15 min hasta tu próxima parada, que es la aprobación de la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en formato CSV. Quien responde de cada sala lo abre los lunes en su hoja de cálculo para cuadrar las reservas. Hoy `src/app.js` tiene las reservas en memoria (`{ room, day, slot }`) y no hay ningún comando que las liste. Ya he creado la rama `feature/0010-exportar-reservas-csv` (id 0010 confirmado, sin remoto) y no he tocado código. Esta feature va como una sola unidad: prevé 1 o 2 tareas, así que no propongo dividirla.
+
+Una pregunta antes de nada, porque es lo único que solo sabes tú y condiciona el formato:
+
+¿Qué haces con el CSV el lunes, desde que lo tienes hasta que la reserva queda cuadrada en tu hoja?
+
+--- [17]
+Anoto lo que has dicho: el CSV sale solo por la salida estándar, para que la redirección lo guarde tal cual, y cómo cuadras cada reserva queda pendiente, porque no lo sabes todavía. Eso significa que el CSV no puede llevar mensajes mezclados, y que un fichero vacío o con un error en medio sería un fallo grave.
+
+De la hoja de cálculo depende el separador. Un Excel en español abre bien el `;` y deja el `,` todo en una sola columna, mientras que LibreOffice y Google Sheets suelen aguantar los dos. Por eso necesito saber esto:
+
+¿Qué programa de hoja de cálculo usas y en qué idioma lo tienes configurado?
+
+--- [19]
+Queda decidido, y es tuyo: el separador es `;` porque el responsable usa Excel en castellano. Que tú no sepas qué programa usas no cambia nada, ya que el fichero es para esa persona.
+
+Esto lo decido yo, con mi razón, y queda en la spec como decisión mía:
+- **Acentos:** el fichero lleva la marca BOM de UTF-8 al principio. Excel en castellano la necesita para no estropear acentos como los de «miércoles» o «Pérez» al abrirlo.
+- **Columnas:** `sala;dia;franja`, con fila de cabecera, que son los tres datos que tiene hoy cada reserva.
+- **Salas sin reservas:** sale solo la cabecera.
+- **Sala que no existe:** error por la salida de errores y código de salida distinto de 0, sin escribir nada en la salida estándar. Así la redirección no deja un fichero que parezca bueno pero sea basura.
+
+Los comandos de hoy son verbos en castellano (`libres`, `reservar`, `cancelar`). Mi propuesta es que el nuevo sea `exportar`, con la sala como argumento:
+
+```text
+salas exportar Norte > norte.csv
+→ norte.csv:
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+
+¿Te vale `exportar <sala>` como nombre del comando, o prefieres otro?
+
+--- [21]
+Ahora: escribir la spec (carpeta, `spec.md`, pasada de coherencia y revisión), que es lo que te presento para aprobar. Queda: la spec en sí y su revisión, ~8 min, y después tu aprobación.
+
+Anotado como tuyo: `exportar <sala>` (tu frase: «Sí, `exportar <sala>` es lo que propuse»). Con eso la entrevista queda cerrada; lo único pendiente es cómo cuadras cada reserva en la hoja, que no sabes todavía y no condiciona el diseño. Tengo prevista una sola tarea, así que no hay diseño por secciones, y los enfoques van al apartado Approach de la spec.
+
+--- [30]
+El heredoc ha fallado por el entrecomillado; escribo la spec con la herramienta de ficheros.
+
+--- [33]
+Ahora: pasada de coherencia (prueba del delta en una copia temporal). Queda: la review con dos revisores y presentarte la spec, ~8 min.
+
+--- [43]
+Ahora: parada de aprobación de la spec. Queda: tu aprobación; después escribo el plan, implemento (1 tarea, ~10 min) y te paso a la validación.
+
+🦆 Hoy no hay forma de sacar las reservas de una sala fuera de la terminal. Con `salas exportar Norte > norte.csv` te queda un fichero con una fila por reserva (`Norte;lun;10:00-12:00`), separado por `;` para que el Excel en castellano del responsable lo abra ya en columnas. Si la sala no existe, no se crea nada que parezca bueno: sale un error y el fichero queda vacío. Por dentro es un comando más junto a `libres` y `reservar`, que escribe el CSV por la salida normal y los errores por la de errores.
+
+La spec está en `.docs/sdd/changes/20261113-220847-feature-0010-exportar-reservas-csv/spec.md` (sin commitear todavía; rama `feature/0010-exportar-reservas-csv`).
+
+**✋ Decisiones que he tomado yo — valida estas:**
+1. Función `exportar` dentro de `src/app.js`, frente a un módulo nuevo o a escribir directo en la salida.
+2. La capacidad nueva se llama `room-export`.
+3. Cabecera `sala;día;franja`, con acento.
+4. El fichero empieza por la marca BOM de UTF-8, para que Excel no estropee los acentos.
+5. Saltos de línea `\n`.
+6. Una sala sin reservas sale solo con la cabecera.
+7. «Las reservas de la semana» se exporta como todas las reservas de la sala, porque hoy no tienen fecha, solo día de la semana.
+8. Sala que no existe: `sala desconocida: Zzz` por la salida de errores, código 1, nada en la salida normal.
+9. Sin argumento: `falta la sala: uso: salas exportar <sala>`, con el mismo tratamiento.
+10. El nombre de la sala distingue mayúsculas, como `libres`.
+11. Sin escapado de comillas ni de `;` dentro de los campos.
+
+**Tuyas (con tu frase):** CSV solo por la salida estándar, separador `;` y comando `exportar <sala>`. **Pendiente de ti:** cómo cuadras cada reserva en la hoja. No cambia el formato, pero si necesitas otra columna será otra feature.
+
+**⚠️ No ha habido review adversarial.** La rúbrica pedía dos revisores (capacidad nueva y un fichero que consume otro programa), pero esta sesión no tiene herramienta de subagentes. Solo se ha hecho la pasada de coherencia: el delta se fusiona sin rechazos en una copia temporal y `capability check` sale válido. La spec lo dice en su apartado ✋.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada):** escribo el plan y sigo con la implementación, asumiendo que no hay review.
+2. **Cambios:** dime qué ajustar, por ejemplo una decisión de la lista.
+
+--- [45]
+Vale, la spec queda en pausa sin aprobar y no escribo plan ni código.
+
+- **Rama:** `feature/0010-exportar-reservas-csv`, con el id 0010 reservado.
+- **Spec:** `.docs/sdd/changes/20261113-220847-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft`. No está commiteada, así que sigue ahí aunque cierres la sesión.
+- **Review:** no se ha hecho, porque esta sesión no tiene subagentes. Está dicho en el apartado ✋ de la spec. Si quieres esa revisión antes de aprobar, tendrá que hacerse desde una sesión que los tenga.
+
+Para retomarlo, di «retoma la feature» en esta rama. Entonces solo falta tu «apruebo» o los cambios que quieras, y sigo con el plan y la implementación.
+

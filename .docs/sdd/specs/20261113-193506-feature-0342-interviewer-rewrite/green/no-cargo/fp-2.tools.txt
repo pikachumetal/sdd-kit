@@ -1,0 +1,117 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"h
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md; cat package.json; ls -R src test; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -60; cat README.md; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md; git log --oneline; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.1299691 $)
+Ya existe: el comando que pides está hecho, así que no abro ninguna feature.
+
+- **Comando:** `libres <franja>` está en `src/app.js:5` y `src/app.js:10`. Con `node src/app.js libres 10:00-12:00` devuelve `Sur`, porque `Norte` está reservada en esa franja.
+- **Test:** `test/app.test.js` lo cubre con «libres excluye la sala reservada en la franja».
+- **Spec:** la 0006 (`20260917-090000-task-0006-free`) tiene `status: done` y su walkthrough.
+
+Sí hay una limitación real, y puede ser lo que echas en falta. `libres` compara solo la franja y no el día. Una reserva de `Norte` el lunes de 10:00 a 12:00 deja `Norte` como ocupada también el martes. Los bookings guardan `day`, pero `freeRooms` lo ignora. Es la misma familia de fallo que arregló el patch 0007 en `cancelar`.
+
+¿Qué quieres hacer?
+
+1. **Recomendada:** añadir el día, `libres <día> <franja>`, para que respete el día como `cancelar`. Lo abro como patch o feature según lo que pidas, y te pregunto cuál antes de empezar.
+2. No cambiar nada. Si tenías otra cosa en mente (otro formato de salida, o franjas parciales o solapadas), dime cuál.
+
+>>> Bash: node src/app.js libres 10:00-12:00; node src/app.js libres 09:00-10:00; node --test 2>&1 | tail -8
+<<< Sur
+Norte, Sur
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 88.7762
+
+=== RESULTADO (2 turnos, 0.1484746 $)
+He ejecutado el comando y existe, así que no puedo añadirlo otra vez. Una feature en modo full para crearlo duplicaría el comando `libres` y su spec 0006, que está cerrada.
+
+- `libres 10:00-12:00` devuelve `Sur`.
+- `libres 09:00-10:00` devuelve `Norte, Sur`.
+- Los 3 tests de `node --test` pasan.
+
+No he creado ninguna rama, carpeta ni spec. Hay dos formas de seguir:
+
+1. **Cambiar lo que ya existe.** Dime qué te falta, por ejemplo `libres <día> <franja>`, y lo abro como feature en modo full con ese alcance. Hoy `libres` ignora el día, y es la carencia que veo.
+2. **Hacerlo igualmente desde cero.** Si quieres otro comando distinto de `libres` con otro nombre o comportamiento, dime cómo se llama y qué hace. Con eso escribo la spec.
+
+Dime cuál de las dos y arranco.

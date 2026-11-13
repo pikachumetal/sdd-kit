@@ -1,0 +1,23 @@
+
+# turno 1
+## usuario
+Pensemos cómo medir la cobertura de los tests: ¿nos vale lo que trae Node o metemos c8?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: node --version; cat package.json 2>/dev/null; ls; ls .docs/sdd 2>/dev/null; find . -name "*.test.*" -not -path "./node_modules/*" | head
+> Bash: cat PRODUCT.md README.md | head -60; ls .docs/sdd/steering; head -20 test/app.test.js; ls src
+> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md | head -80; node --test --experimental-test-coverage 2>&1 | tail -15
+## agente
+Estoy comparando la cobertura nativa de Node con c8, según lo que ya hay en el repo. Ya he ejecutado la nativa y funciona.
+
+**Lo que he encontrado**
+- `operations.md` dice «Node 22, sin dependencias externas». `package.json` no tiene dependencias.
+- Aquí corre Node v26.10.0. Ahí `node --test --experimental-test-coverage` funciona sin instalar nada. Da 93,75 % de líneas, 83,33 % de ramas y 100 % de funciones. La única línea sin cubrir es la 13 de `src/app.js`.
+- Es una inferencia mía, sin comprobar: en Node 22 el flag también existe y también es experimental. Los umbrales (`--test-coverage-lines` y similares) los recuerdo de 22.8 en adelante, pero no los he verificado.
+
+❓ **¿Qué usamos para medir la cobertura?**
+1️⃣ **Cobertura nativa de Node** (`node --test --experimental-test-coverage`). No añade dependencias y respeta `operations.md`. Hay dos costes. El flag lleva «experimental» en el nombre y su salida puede cambiar entre versiones. No genera informes HTML ni lcov sin pasos extra.
+2️⃣ **c8** como devDependency. Da informes HTML y lcov, umbrales estables y `.c8rc`. Cuesta romper la regla de «sin dependencias externas», meter `node_modules` y mantener el paquete.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y desarrollador, no hay CI que consuma lcov y la regla de cero dependencias ya está escrita en `operations.md`. A cambio, si algún día quieres un informe HTML o un formato estable para una herramienta externa, habrá que reconsiderar c8.
+
+¿Vas por 1️⃣, por 2️⃣ o prefieres otra cosa?

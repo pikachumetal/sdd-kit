@@ -1,0 +1,65 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y arrancar la spec, ~3 min.
+
+--- [24]
+Estoy escribiendo la spec de la lista de espera (ya tengo rama e id 0010); después hago el repaso de coherencia y la revisión.
+
+--- [26]
+Ahora: repaso de coherencia (delta sobre una copia) y revisor de la spec. Queda: presentar la spec en su puerta de aprobación, ~5 min.
+
+--- [31]
+Tengo la spec escrita y la revisión de un revisor (sonnet) en marcha. Espero su resultado antes de presentarte la spec.
+
+--- [36]
+1. Importante · Delta «La espera pasa a reserva al cancelar» y Approach · El `cancelar` de la espera solo emparejaría bien si la franja se saca de la reserva cancelada. El spec dice que empareja por «hora de inicio» y por día, pero la espera no lleva día (decisión 5). Si hay dos reservas en Norte con inicio 10:00 y franjas distintas (10:00-11:00 y 10:00-12:00), la espera 10:00-12:00 se ligaría a la reserva equivocada. No hay escenario que lo cubra. · Añadir un escenario con la misma hora de inicio y franja distinta, y fijar que la espera pasa a reserva solo si sala y franja completas coinciden con la reserva cancelada.
+
+2. Importante · Delta «La espera pasa a reserva al cancelar» (3.er escenario) · El escenario `cancelar mar 10:00` da por hecho que no existe reserva el martes. Si no la hay, `cancelada mar 10:00` contradice el comportamiento actual de cancelar sin coincidencia, que el spec no describe. El escenario también pasaría si la implementación nunca atendiera la espera. · Declarar en el GIVEN que no hay reserva el martes y decir qué responde `cancelar` cuando no encuentra nada. Si se trata de una reserva del martes, añadir un escenario que sí pase a reserva en ese día.
+
+3. Importante · Delta «Apuntarse a la espera» · Faltan dos casos. El primero es `reservar` sobre sala ocupada con `--cada-semana`, que el Scope deja fuera pero el delta no acota. El segundo es qué hace `reservar` si la sala está ocupada en otro día: la espera «no lleva día» (decisión 5) y la ocupación sí, así que «ocupada» no queda definida. · Definir «ocupada» (sala, franja y día) en el GIVEN y añadir un escenario de `reservar --cada-semana` sobre sala ocupada que muestre que no apunta o que sigue como hoy.
+
+4. Importante · Decisiones 5 y 6, y Delta · Decisión tomada en el cuerpo y mal cerrada: una espera sin día pasa a reserva «cualquier día que cancelar libere», pero ni `reservar` ni la reserva resultante dicen en qué día queda. Si se crea la reserva a nombre de un día concreto, ese día es el de la cancelada, y eso no está en la regla ni en ningún THEN. · Añadir al THEN el día de la reserva creada (por ejemplo, «reservada lun»), o quitar la ambigüedad de la decisión 5.
+
+5. Importante · «Lo que se retira o cambia de forma» y Scope · El spec cambia la rama final de `run` y el contrato de salida de `reservar` y `cancelar`, pero no lo dice como cambio de contrato. El comando `espera` es nuevo y no figura en la tabla. Hay una dependencia con `libres`, que debe leer la reserva nueva, y no está declarada. · Añadir a la tabla la fila del comando `espera` y la de `libres` (solo lectura, sin cambios), y declarar que cambia la salida de texto de `reservar`.
+
+6. Menor · «Reglas de la capacidad», regla «Límites» · «ninguno» contradice la decisión 3 (una persona) y la decisión 4 (una entrada por sala y franja). Son límites reales. · Escribir «una entrada por sala y franja; una sola persona; sin tope de entradas».
+
+7. Menor · «Reglas de la capacidad», regla «Avisos» · Dice «sin correo», pero no dice qué pasa cuando la sala se asigna desde la espera. El único aviso es la respuesta de `cancelar`, así que si la persona no cancela no se entera. · Aclarar que el aviso solo llega en la salida de `cancelar` y que no hay otro canal.
+
+8. Menor · Bloque «✋ Decisiones» · La política de revisión y los modelos (la línea «Review de spec propuesta» y la «Política de modelos») se mezclan con las decisiones de dominio, y hay una decisión tomada en el cuerpo que no aparece. Es la respuesta de `reservar` cuando la sala está libre pero la franja es inválida, y el cuerpo la deja sin decir. · Mover esa política a una sección propia y listar en las decisiones el caso de sala libre con argumentos inválidos.
+
+9. Menor · Decisión 12 · Dice que el delta se probó con `sdd capability merge` sobre una copia, pero no hay `capabilities/` ni evidencia en el spec. Se presenta como hecho verificado algo que el revisor no puede comprobar. · Quitar la afirmación o enlazar la salida del comando.
+
+10. Menor · Ejemplos y constitución · No hay clientes ni personas reales: «Norte» y «Sur» son salas genéricas, y los textos van en castellano (art. 4). No hay contradicción. Sí hay una incoherencia con el art. 2, porque «Dónde se prueba» no dice que cada THEN se escriba antes del código. · Añadir a «Dónde se prueba» que cada escenario se convierte primero en un test que falla.
+
+--- [38]
+Revisión de un revisor: 10 hallazgos, ninguno Crítico, así que no hay segunda ronda. Los incorporo a la spec.
+
+--- [44]
+Rehago el merge de prueba con el delta corregido y actualizo la decisión 12.
+
+--- [47]
+Ahora: presento la spec en su puerta de aprobación. Queda: tu respuesta; con ella escribo el plan y sigo con la implementación.
+
+🦆 **Qué cambia para ti:** hoy, si pides una sala ocupada, la herramienta no te dice nada útil. Con esto, `reservar Norte 10:00-12:00` con Norte ocupada te contesta `Norte ocupada en 10:00-12:00; te apunto en la espera`. Con `espera` ves a qué salas esperas, y si no hay ninguna responde `sin esperas`. Cuando cancelas la reserva que ocupaba esa sala (`cancelar lun 10:00`), la sala pasa a ti sola y la respuesta dice `cancelada lun 10:00; Norte 10:00-12:00 reservada desde la espera`. Por dentro es una lista en memoria junto a la de reservas, en `src/app.js`.
+
+La spec está en `.docs/sdd/changes/20261113-225355-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. La revisó un revisor y salieron 10 hallazgos, ninguno crítico. Acepté 7 y rechacé 3, con el motivo escrito en la spec.
+
+**✋ Decisiones que he tomado yo — valida estas**
+- **Capacidad nueva:** `waitlist`.
+- **Textos:** los cuatro mensajes literales de arriba, más `ya estabas en la espera de Norte en 10:00-12:00`.
+- **Sin posiciones («1.º»):** usas la herramienta solo tú, así que en una sala y franja nunca esperan dos personas.
+- **Una entrada por sala y franja:** pedir lo mismo dos veces no duplica.
+- **«Ocupada»:** existe una reserva con esa sala y franja, de cualquier día, igual que `libres`. La espera no lleva día.
+- **Al cancelar:** `cancelar` busca la reserva de ese día cuya franja empieza a esa hora. La espera pasa a reserva solo si coinciden sala y franja completas, y la reserva nueva queda en el día cancelado.
+- **Sin persistencia entre ejecuciones:** las reservas tampoco la tienen hoy.
+- **Sin tope y sin forma de salirse de la espera.**
+- **Sin cambios:** `reservar` sobre sala libre y `--cada-semana`.
+- **Enfoque:** todo en `src/app.js`, frente a un fichero nuevo o a guardar en disco.
+
+**Pendiente de ti:** si quieres que la espera sobreviva entre ejecuciones, y si quieres poder salirte de una espera sin cancelar nada.
+
+La spec sigue en espera hasta que me contestes:
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

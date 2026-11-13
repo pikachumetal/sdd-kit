@@ -1,0 +1,66 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar el cambio y abrir la entrevista, ~3 min.
+
+--- [7]
+Ahora: miro el código mínimo para clasificar. Queda: anuncio y primera pregunta.
+
+--- [15]
+Ahora: abro la feature y empiezo la entrevista. Queda: unas pocas preguntas, los enfoques, la spec con su aprobación, el plan y la implementación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija otro)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+
+- Hoy `reservar <sala>` no avisa de nada cuando la sala está ocupada. Quieres poder apuntarte a una lista de espera de esa sala y franja.
+- No existe una fila de roadmap para esto. Será una feature nueva, y la rama y el id los reservo antes de crear la carpeta.
+- Con lo que veo en el código, calculo 3 tareas o menos, así que no propongo dividirla.
+- `src/app.js` guarda las reservas en memoria y no persiste nada. Esto condiciona qué puede significar «lista de espera». Lo pregunto más adelante, si hace falta.
+- La fila 0008 (avisos por correo) está en curso. Si la espera se apoya en ella, lo decidimos en la spec.
+
+❓ Para empezar, necesito saber qué quieres conseguir con esto. Imagina que apuntas a la lista de `Norte` el lunes de 10:00 a 12:00 y alguien cancela esa reserva: ¿qué quieres que pase en ese momento?
+
+--- [17]
+Entendido. Lo que quieres es dejar de vigilar `libres`. Eso cambia lo que más pesa en el diseño: qué hace la herramienta cuando la sala se libera.
+
+❓ **Qué pasa cuando se libera la sala**
+La cancelación está en `src/app.js` (`cancelar <día> <hora>`). Un aviso por correo depende de la 0008, que sigue pendiente. Sin esa fila, un aviso no tiene por dónde salir.
+
+1️⃣ **Reserva automática.** Al cancelarse la reserva, la primera de la lista pasa a ser reserva.
+   `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   Luego alguien cancela y `libres 10:00-12:00` → `Norte, Sur`. La lista ya tiene la reserva puesta, sin que hagas nada.
+   Coste: puede reservarte una franja que ya no quieres, y tendrás que cancelarla.
+
+2️⃣ **Solo aviso en pantalla.** La próxima vez que ejecutes cualquier comando, te dice que se liberó la sala.
+   `libres` → `Sur · aviso: Norte 10:00-12:00 se ha liberado (estabas en espera)`
+   Coste: sigues teniendo que ejecutar algo para enterarte, que es justo lo que quieres evitar.
+
+3️⃣ **Aviso por correo.** Esperaría a que exista la 0008.
+   Coste: queda bloqueada por otra feature y no se puede cerrar hasta entonces.
+
+➡️ **Recomiendo 1️⃣**, porque la 2️⃣ no te quita el sondeo y la 3️⃣ depende de la 0008, que ni está implementada. A cambio, puede reservar de más. Lo acotamos en la spec: por ejemplo, la reserva automática solo si sigues en la lista.
+
+¿Con cuál vas?
+
+--- [21]
+Voy por partes. Estamos decidiendo qué hace la lista de espera cuando alguien cancela la sala que querías.
+
+**El caso.** Es lunes. Quieres Norte de 10:00 a 12:00. Norte ya tiene una reserva en esa franja.
+
+Hoy no puedes hacer nada. Tienes que ejecutar `libres 10:00-12:00` una y otra vez hasta que Norte aparezca.
+
+Con la lista de espera, lo primero es igual para las tres opciones. Pides `reservar Norte` y la herramienta te contesta: «Norte ocupada; en espera (1.º)». Desde ahí, tú ya no haces nada.
+
+Después, alguien cancela la reserva de Norte. Las tres opciones difieren en lo que pasa entonces:
+
+1. **Reserva automática.** La herramienta reserva Norte para ti en ese momento. Cuando vuelvas, ya la tienes. El riesgo es que te reserve una sala que a esas alturas ya no necesitabas. Entonces la cancelas tú.
+2. **Aviso en pantalla.** La herramienta no reserva nada. Te lo cuenta la próxima vez que ejecutes algo: «Norte 10:00-12:00 se ha liberado». Después reservas tú a mano. Es lo más seguro, pero tienes que ejecutar algo para enterarte. Es casi lo mismo que mirar `libres`.
+3. **Aviso por correo.** Te llega un correo cuando se libera. Es lo más cómodo, pero el envío de correos es otra tarea (la 0008) que todavía no está hecha. Esta lista tendría que esperarla.
+
+Tú dijiste que lo que te molesta es mirar a mano cada rato. Por eso recomiendo la 1: es la única que de verdad lo evita ya, sin esperar a otra tarea.
+
+¿Con cuál vas: 1, 2 o 3?
+
