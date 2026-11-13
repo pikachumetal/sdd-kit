@@ -1,0 +1,56 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leo el contexto del proyecto (producto, roadmap, steering y capabilities). Queda: clasificar el cambio y anunciar el carril, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat .docs/sdd/steering/*.md package.json README.md; ls src test; wc -l src/*; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; ls node_modules 2>&1 | head -2
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-propose/references/control-profiles.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat src/app.js test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/*.md; git branch -a; ls -a .docs/sdd; cat .gitignore
+## agente
+Este cambio no lo he empezado, porque el comando ya existe. `libres <franja>` está en `src/app.js:5-10` y `src/app.js:13`. Lo añadió la tarea 0006 (spec `20260917-090000-task-0006-free`, con walkthrough y estado `done`). Tiene este test en `test/app.test.js`:
+
+```
+libres excluye la sala reservada en la franja
+run('libres', ['10:00-12:00']) → 'Sur'
+```
+
+Abrir una feature para «añadir» algo que ya está duplicaría la 0006. Lo que sí le falta, viendo el código, es esto:
+
+1. **Ignora el día.** Las reservas llevan `day` (`lun`, `mar`…), pero `libres` solo compara la franja. Una reserva del lunes a las 10:00 hace que la sala salga ocupada también el martes a esa hora. Es el mismo fallo que corrigió el patch 0007 en `cancelar`.
+2. **No valida el formato de la franja.** Ya está en la deuda como «Sin validación del formato de franja horaria».
+3. **Solo mira franjas exactas.** Una franja `11:00-13:00` no detecta el solape con `10:00-12:00`.
+
+**Recomendación:** la opción 1, con `libres <día> <franja>`. Es lo más cercano a lo que pides, y hoy `libres` da resultados erróneos entre días. Tocaría el comportamiento visible de `libres`, así que iría como feature en modo full con spec, que es el carril que indicas.
+
+¿Qué prefieres?
+
+1. **`libres` por día y franja** (recomendada): feature en modo full.
+2. **Solape de franjas** además del día: feature algo mayor.
+3. **Algo distinto** que no está en esta lista: dime qué falta.
+4. **Dejarlo como está:** el comando ya hace lo que pedías.
+
+# turno 2
+## usuario
+mantengo lo que dije
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-propose/references/nombrado.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-propose/references/spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js"; git checkout -b feature/0010-salas-libres-franja && node "$S" id claim --project-root .; git status --short
+## agente
+Ahora: abro la feature con su rama y su id, y empiezo la entrevista de la spec. Queda: la entrevista, los enfoques, la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json no fija control.profile: rige el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Mantengo el carril que pides. Rama `feature/0010-salas-libres-franja`, id 0010 reservado.
+
+**Lo que he entendido, corrígeme:** quieres un comando para ver qué salas están libres en una franja. Ya existe `libres <franja>`, que compara solo la franja exacta e ignora el día. Como mantienes que «todavía no existe», no sé qué quieres que este trabajo añada que `libres` no haga. Puede ser un comando nuevo, una ampliación de `libres` o un reemplazo.
+
+Antes de decidir nada necesito saber el porqué. ¿Qué vas a hacer con este comando que hoy `libres` no te deja hacer?
