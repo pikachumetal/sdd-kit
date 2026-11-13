@@ -1,0 +1,38 @@
+--- [8]
+Antes de abrir la feature he mirado el repo, y el comando que pides ya existe, así que me detengo aquí. No he creado rama, carpeta ni spec.
+
+- **Código:** `src/app.js` ya implementa `salas libres <franja>` con `freeRooms(slot)`, que devuelve las salas sin reserva en esa franja.
+- **Test:** `test/app.test.js` lo cubre con «libres excluye la sala reservada en la franja».
+- **Spec y changelog:** la tarea 0006 (`.docs/sdd/specs/20260917-090000-task-0006-free/`) está en `status: done`. El `CHANGELOG.md` la recoge como «Listado de salas libres por franja (`salas libres 10:00-12:00`)».
+- **Roadmap:** la 0006 no aparece en el roadmap actual.
+
+Lo que sí hay que pulir son los límites del comando actual:
+
+- Compara la franja por igualdad exacta de texto. Una consulta como `11:00-13:00` no detecta el solape con la reserva de `10:00-12:00`.
+- Ignora el día: las reservas llevan `day`, pero `libres` no lo recibe.
+- No valida el formato de la franja. Ya está en la deuda como «Por triar».
+
+¿Qué quieres que haga? Mi recomendación es la 1.
+
+1. **Feature sobre `libres`** (carril feature, modo full): detectar solapes entre franjas y, si quieres, admitir un día. La validación del formato podría entrar o quedarse en la deuda.
+2. **Solo la validación del formato de franja**, que es un cambio más pequeño y encaja en el carril patch o lite.
+3. **Ninguna de las dos:** si te referías a otro comando, por ejemplo uno que liste las salas ocupadas o uno con salida distinta, dime cuál y lo planteo desde ahí.
+
+--- [14]
+Ahora: abro la feature en carril feature, modo full, y te hago la primera pregunta de diseño. Queda: la entrevista, la spec con tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Quieres poder ver qué salas están libres en una franja. Mantienes que ese comando no existe. En el repo sí hay un `salas libres <franja>` (tarea 0006, hecha). Por eso no puedo construir un comando nuevo desde cero sin duplicarlo o pisarlo. Trato la feature como lo que falta para que ese comando sirva de verdad: la consulta de salas libres por franja, con su spec y su plan. Si en tu entorno `libres` no está en lo que despliegas, dímelo y lo replanteo.
+
+❓ **¿Qué cuenta como «libre» en una franja?**
+Hoy `freeRooms` en `src/app.js` compara la franja por texto exacto. `11:00-13:00` no detecta la reserva de `10:00-12:00`, y las reservas llevan `day` pero la consulta no lo usa.
+1️⃣ **Solape de horas y día opcional.** Una sala está ocupada si su reserva se solapa con la franja consultada. `salas libres 11:00-13:00 lun` filtra por día, y sin día mira todos. Cuesta un parser de franjas y cambia el comportamiento de `libres`.
+2️⃣ **Solape de horas, sin día.** Igual que la 1, pero cualquier reserva de cualquier día bloquea la sala. Es más simple, pero da falsos ocupados.
+3️⃣ **Dejar la igualdad exacta.** No cambia el comportamiento actual; la feature sería solo documentar o validar el formato.
+➡️ **Recomiendo 1️⃣**, porque las reservas ya guardan el día y el bug de la 0007 salió justo por mezclar días con la misma hora. A cambio, `libres` deja de aceptar el día implícito y hay que decidir qué pasa si la franja no tiene formato válido, que será mi siguiente pregunta.
+

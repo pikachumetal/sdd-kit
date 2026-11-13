@@ -1,0 +1,47 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y darte el aviso, ~2 min.
+
+--- [19]
+Ahora: te cuento cómo lo he clasificado y empiezo la entrevista de la spec. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Ya he creado la rama `feature/0010-exportar-reservas-csv` y reservado el id 0010. Aún no hay carpeta ni spec.
+
+**Lo que he entendido, corrígeme:**
+- Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV.
+- El uso real es que el responsable de cada sala lo abra los lunes en su hoja de cálculo para cuadrar las reservas.
+- Hoy `src/app.js` guarda las reservas como `{ room, day, slot }`. No hay comando que las liste.
+- Son unas 2 tareas previstas, así que no propongo partirla.
+
+❓ **¿Qué reservas salen en cada exportación?**
+El responsable las cuadra los lunes. Eso sugiere que mira un periodo, pero hoy las reservas solo llevan día de la semana y franja (`lun`, `10:00-12:00`), sin fecha concreta.
+1️⃣ **Todas las reservas de la sala, sin filtro.** Ejemplo: `salas exportar Norte` da `sala,dia,franja` y debajo `Norte,lun,10:00-12:00`. Es lo más simple, y el responsable filtra en su hoja.
+2️⃣ **Con filtro opcional por día.** Ejemplo: `salas exportar Norte --dia lun`. Añade una opción y su validación.
+3️⃣ **Otro criterio** que tengas en mente, por ejemplo la semana pasada.
+➡️ **Recomiendo 1️⃣**, porque sin fechas reales en los datos no hay una «semana pasada» que filtrar, y el filtro se puede añadir después. A cambio, el responsable recibe todas las reservas de la sala y filtra él.
+
+--- [21]
+Entendido: solo la semana que empieza el lunes que viene. Hay un detalle de los datos que cambia cómo se hace.
+
+Las reservas de `src/app.js` no llevan fecha, solo día de la semana y franja (`lun`, `10:00-12:00`). Con eso el programa no puede saber qué reservas caen en una semana concreta. Hoy es viernes 13/11/2026, así que «el lunes que viene» sería el 16/11.
+
+❓ **¿Cómo cuento las reservas de esa semana si no tienen fecha?**
+1️⃣ **Cada reserva vale para todas las semanas, y el CSV le pone la fecha concreta de esa semana.** Ejemplo, ejecutado hoy: `salas exportar Norte` da `sala,fecha,dia,franja` y debajo `Norte,2026-11-16,lun,10:00-12:00`. No cambia el modelo de datos. A cambio, el CSV no distingue una reserva puntual de una semanal, porque hoy no se guarda esa diferencia.
+2️⃣ **Primero añadir fecha a las reservas y exportar solo las que caen en esa semana.** Es más fiel, pero cambia cómo se guardan y se crean las reservas y los comandos `reservar` y `cancelar`. Eso ya es otra feature, y esta crecería bastante.
+➡️ **Recomiendo 1️⃣**, porque con los datos actuales es lo único que se puede hacer sin tocar `reservar` ni `cancelar`. Si luego quieres reservas con fecha, 2️⃣ queda como feature aparte. A cambio, una reserva puntual de otra semana saldría igual en el CSV.
+
+--- [23]
+De acuerdo, lo dejamos aquí. No he escrito ninguna spec ni he tocado código.
+
+- **Rama:** `feature/0010-exportar-reservas-csv`, creada desde `develop`, sin commits. El id 0010 está reservado en local.
+- **Roadmap:** no he añadido fila. Si quieres que quede apuntada, dímelo y la registro.
+- **Decidido contigo:** el comando exporta solo las reservas de la sala para la semana que empieza el lunes que viene.
+- **Pendiente:** si cada reserva vale para todas las semanas (1️⃣) o si primero hay que añadir fecha a las reservas (2️⃣).
+
+Para retomar, di «retoma la feature» o responde 1️⃣ o 2️⃣. Seguiré con las preguntas que queden, como el formato del CSV, el separador para tu hoja de cálculo, el nombre del comando y qué hacer si la sala no existe. Después escribiré la spec.
+

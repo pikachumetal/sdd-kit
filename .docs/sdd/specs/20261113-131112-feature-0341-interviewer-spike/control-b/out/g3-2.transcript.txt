@@ -1,0 +1,45 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat PRODUCT.md ROADMAP
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat .docs/sdd/steering/*.md; ls src test; wc -l src/*; cat pa
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat src/app.js test/app.test.js; cat .docs/sdd/specs/20260917
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-propose/references" && sed -n 1,60p control-profiles.md
+> Skill: sdd-kit:sdd-grilling
+> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-propose/references/spec-writing.md" | head -80
+## agente
+Ahora: leo el contexto y clasifico tu petición; ya he leído PRODUCT, ROADMAP, steering y el código, y lo siguiente es la entrevista para la spec. Queda: la entrevista (una pregunta por turno), la spec y su aprobación, ~10 min.
+
+**Clasificación:** es una feature nueva (cambia lo que ves al reservar y hay comportamiento nuevo con varios tests), así que va por el carril feature, en modo full. No es patch ni lite. No hay fila de roadmap para esto (la 0008 son los avisos por correo, otra cosa), así que será una feature nueva con id propio. No hace falta instalar dependencias: el proyecto no tiene ninguna.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no tiene noción de «sala ocupada». `src/app.js` solo guarda una reserva fija y `libres` filtra por franja. Quieres que, al pedir una sala que ya está ocupada en esa franja, tu petición quede apuntada en una lista de espera en lugar de perderse. Dime si me equivoco en algo.
+
+❓ **¿Qué harás con esta lista de espera?** Cuéntame con tus palabras qué situación te lleva a pedirla y qué esperas que pase cuando la sala se libere.
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+❓ **¿Qué debe pasar cuando Norte se libera?**
+Hoy `cancelar` es la única forma de liberar una sala (`src/app.js`). Tu problema es volver a mirar `libres` a mano, así que la lista debe quitarte ese paso.
+
+1️⃣ **Reserva automática al liberarse.** Apuntado en la lista, la reserva se hace sola cuando la sala queda libre.
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   - `cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte pasa a tu reserva (1.º en espera)`
+   - Coste: reservas sin confirmar. Si ya no la querías, tienes que cancelarla.
+
+2️⃣ **Aviso al liberarse, y reservas tú.** La sala queda apuntada y, al liberarse, el programa te avisa.
+   - `cancelar lun 10:00-12:00` → `cancelada; Norte libre, 1 en espera: reservar Norte lun 10:00-12:00`
+   - Coste: sigues haciendo la reserva a mano. Y el aviso solo se ve si lo disparas con tu propio `cancelar`.
+
+3️⃣ **Solo la lista.** Un comando `espera` muestra qué tienes apuntado. Es lo más simple, pero sigues mirando a mano, así que no resuelve tu problema.
+
+➡️ **Recomiendo 1️⃣**, porque lo que quieres es no volver a mirar `libres`, y solo la 1️⃣ elimina ese paso. A cambio, aceptas una reserva automática que quizá ya no te haga falta.

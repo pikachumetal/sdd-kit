@@ -1,0 +1,85 @@
+--- [15]
+Ahora: abro la feature con su anuncio y mi lectura de lo que pides, y te hago la primera pregunta de diseño. Queda: la entrevista, la spec con su aprobación, el plan y la implementación; unos ~10 min hasta la aprobación de la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, sin control.profile: es el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He reservado el id **0010** y creado la rama `feature/0010-exportar-csv` desde `develop`. Aún no hay carpeta ni spec.
+
+**Lo que he entendido (corrígeme):**
+- Un comando nuevo de `salas` que, dado el nombre de una sala, saca sus reservas en CSV.
+- El motivo: el responsable de cada sala las cuadra los lunes en su hoja de cálculo. El CSV tiene que abrirse bien ahí, sin retoques a mano.
+- Hoy `src/app.js` guarda cada reserva como `{ room, day, slot }`, por ejemplo `Norte · lun · 10:00-12:00`. Es lo que saldría en las columnas.
+- Cuenta como 2 o 3 tareas, así que no propongo dividirla.
+
+❓ ¿Cómo le llega ese CSV al responsable de la sala: lo ejecuta él mismo en el servidor, se lo mandas tú por algún canal, o va por otra vía? Cuéntamelo con tus palabras, porque de eso depende si el comando escribe a pantalla o a un fichero.
+
+--- [17]
+Anotado: salida estándar y tú rrediriges. Cómo llega el fichero al responsable queda **fuera de la feature**, lo decido yo y irá a «No entra» y a ✋ de la spec.
+
+❓ **Separador del CSV**
+Una hoja de cálculo en castellano (Excel o LibreOffice con configuración regional de España) espera `;` como separador, porque la coma es el separador decimal. Con `,` suele abrir todo el CSV en una sola columna.
+
+1️⃣ **`;` como separador**
+`dia;franja` y `lun;10:00-12:00` se abren cada uno en su columna con doble clic. En cambio, una hoja con configuración en inglés lo vería en una sola columna.
+
+2️⃣ **`,` como separador**
+Es el estándar RFC 4180, y vale para herramientas y hojas en inglés. Con la hoja en castellano, el responsable tendría que usar «Datos → Texto en columnas» cada lunes.
+
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra los lunes en una hoja de cálculo y el castellano es el idioma del proyecto (constitución, art. 4). A cambio, el CSV no sirve tal cual para herramientas que esperen comas.
+
+¿Vas con el `;`?
+
+--- [19]
+Anotado: `;` como separador.
+
+❓ **Qué pasa si la sala no existe**
+Hoy `rooms` solo tiene `Norte` y `Sur`. Como rediriges la salida a un fichero, esto se nota mucho:
+
+1️⃣ **Error, sin CSV**
+`salas exportar Nrote > nrote.csv` escribe «Sala desconocida: Nrote. Salas: Norte, Sur» en la pantalla (salida de errores) y termina con código de error 1. El fichero queda vacío, así que el fallo se ve en el momento.
+
+2️⃣ **CSV solo con la cabecera**
+El mismo comando deja `nrote.csv` con `dia;franja` y nada más. Se parece a una sala sin reservas, así que un error de escritura pasaría por «no hay reservas».
+
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra a partir del fichero. Un fichero vacío por una errata se tomaría por una sala sin reservas. A cambio, el comando necesita un camino de error que hoy `src/app.js` no tiene: todo lo que devuelve `run` va a la salida estándar.
+
+Una sala que existe y no tiene reservas, como `Sur`, sí da el CSV con solo la cabecera. ¿Vas con el error para la sala desconocida?
+
+--- [21]
+Ahora: escribo la spec de la 0010 con todo lo decidido, la repaso y la dejo lista para tu aprobación. Queda: la spec en su parada, y luego el plan y la implementación; ~5 min hasta la parada.
+
+--- [34]
+Sigo con la 0010: la spec está redactada, pero el comando que la guardaba falló antes de crear nada. La escribo con otra herramienta y paso el repaso de coherencia.
+
+--- [36]
+Ahora el delta sobre una copia, fuera del repo.
+
+--- [40]
+Ahora: la spec está lista y espera tu aprobación. Queda: tu respuesta, y luego el plan y la implementación (~10 min).
+
+🦆 Podrás escribir `salas exportar Norte > norte.csv` y obtener un fichero que la hoja de cálculo abre en dos columnas, `dia` y `franja`, con una fila por reserva: `lun;10:00-12:00`. Si escribes mal la sala (`Nrote`), el aviso sale por la pantalla, el comando termina con error y el fichero queda vacío, así que no se confunde con una sala sin reservas. Por dentro, `run` lanza un error y el punto de entrada lo escribe en la salida de errores.
+
+Spec en `.docs/sdd/changes/20261113-155936-feature-0010-exportar-reservas-csv/spec.md`, rama `feature/0010-exportar-csv`. Aún no hay commit ni código.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Comando `exportar <sala>`.
+2. Capacidad nueva `booking-export`.
+3. Columnas `dia;franja`, sin columna de sala, en el orden guardado. Siempre sale la cabecera, también para `Sur` sin reservas.
+4. Saltos de línea `\n`, sin BOM y sin comillas. Hoy día y franja son ASCII y no llevan `;`.
+5. La sala se compara con mayúsculas exactas: `norte` es desconocida.
+6. Textos de error, por la salida de errores y con código 1:
+   - `Sala desconocida: Nrote. Salas: Norte, Sur`
+   - `Falta la sala. Uso: exportar <sala>`
+7. Enfoque: `run` lanza un `Error` y el punto de entrada lo captura. Descarto devolver `{ salida, error, codigo }` en todos los comandos y descarto un módulo aparte.
+8. Entregar el fichero al responsable queda fuera de la feature.
+9. Las reservas solo guardan el día de la semana, así que el CSV no puede dar fechas.
+
+**Review de la spec:** no la ha hecho ningún revisor independiente. En esta sesión no tengo herramienta para lanzar subagentes, así que la repasé yo con los siete puntos. El repaso de coherencia sí está hecho: el delta se fusiona y valida sobre una copia fuera del repo. Si quieres una review independiente, dímelo antes de aprobar.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

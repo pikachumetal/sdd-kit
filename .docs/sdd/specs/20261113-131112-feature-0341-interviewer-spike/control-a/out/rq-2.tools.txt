@@ -1,0 +1,78 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -50; cat package.json 2>/dev/null | head -30; ls .docs/sdd 2>/dev/null
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+{"type": "module"}
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat src/app.js PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md; head -40 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: node -v; node -e "import('node:sqlite').then(m=>console.log('ok',Object.keys(m)),e=>console.log('err',e.message))" 2>&1 | head -5
+<<< v26.10.0
+ok [
+  'DatabaseSync',
+  'Session',
+  'StatementSync',
+  'backup',
+
+=== RESULTADO (8 turnos, 0.1055645 $)
+Estoy leyendo el repo para anclar la pregunta. Esto es lo que he encontrado.
+
+**Lo que dice el proyecto**
+- `PRODUCT.md` dice que eres el único usuario y que despliegas en tu propio servidor.
+- `operations.md` fija Node 22 y **sin dependencias externas**.
+- La constitución exige tests con `node --test` antes de cada commit.
+
+**Lo que infiero del código (`src/app.js`)**
+- `bookings` es un array en memoria con una reserva fija escrita a mano. Por eso se pierde al reiniciar.
+- Hoy `reservar` ni siquiera añade nada a `bookings`, solo devuelve un texto. `cancelar` tampoco borra nada.
+- Así que, antes de guardar nada, hay que decidir si esta tarea también hace que `reservar` y `cancelar` modifiquen los datos. Si no, no habría nada que persistir.
+
+**Lo que no he podido verificar**
+- Mi Node local es el 26, no el 22 de `operations.md`. Ahí `node:sqlite` carga, pero no he comprobado cómo se comporta en Node 22: creo que era experimental o necesitaba un flag, y no lo he mirado. Si decides usarlo, lo compruebo antes.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un fichero JSON** (`reservas.json`) que se lee al arrancar y se reescribe en cada `reservar` o `cancelar`. No añade dependencias y se puede abrir y editar a mano. Si el proceso se corta justo mientras escribe, el fichero puede quedar corrupto, aunque con un solo usuario es improbable.
+2️⃣ **SQLite con `node:sqlite`**. Las escrituras son transaccionales, así que no hay corrupción a medias. A cambio, depende de un módulo cuyo estado en Node 22 no he verificado, y los datos no se editan a mano.
+
+➡️ **Recomiendo 1️⃣**: eres el único usuario, no hay escrituras concurrentes y la constitución pide cero dependencias. A cambio, aceptas el riesgo de corrupción en un corte, que se puede mitigar escribiendo a un fichero temporal y renombrándolo.
+
+¿Cuál eliges?

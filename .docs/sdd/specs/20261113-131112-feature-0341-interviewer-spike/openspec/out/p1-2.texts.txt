@@ -1,0 +1,30 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar y anunciar la feature, ~2 min.
+
+--- [13]
+Ahora: te anuncio el carril y te devuelvo lo que he entendido, antes de la primera pregunta de diseño. Queda: entrevista corta, spec y tu aprobación (~10 min); después plan e implementación.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (valor por defecto del kit; sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Prevé 2 o 3 tasks, todas en la misma superficie (CLI) y sin migración, así que no propongo dividirla. Tampoco necesita instalar dependencias: `package.json` no declara ninguna.
+
+**Lo que he entendido (corrígeme):**
+- Hoy `src/app.js` tiene un único fichero con las reservas en memoria (`{ room, day, slot }`) y los comandos `libres`, `reservar` y `cancelar`. No hay ningún comando que las liste ni las exporte.
+- Quieres un comando nuevo, por ejemplo `exportar <sala>`, que escriba en CSV las reservas de esa sala. Ejemplo con los datos actuales: `exportar Norte` daría `dia,franja` y `lun,10:00-12:00`.
+- Es una feature distinta de la 0009 (exportar a calendario `.ics`, en Later) y de la 0008 (avisos por correo). No toca ninguna de las dos.
+- La constitución exige texto en castellano, tests primero y `node --test` en verde.
+
+❓ **¿Dónde sale el CSV?**
+Es lo primero que decide la forma del comando: de ello dependen los tests, el manejo de errores y si hay que escribir ficheros.
+1️⃣ **Por la salida estándar** (`salas exportar Norte > norte.csv`). Es lo que ya hacen los demás comandos, que devuelven una cadena en `run()`. No hay rutas, ni sobrescrituras, ni permisos que probar. Si quieres fichero, lo redirige el shell.
+2️⃣ **A un fichero** (`salas exportar Norte --salida norte.csv`). Lo deja guardado sin redirigir. Obliga a decidir qué pasa si el fichero ya existe y a probar escritura en disco.
+3️⃣ **Ambas.** Stdout por defecto y `--salida` opcional. Es más superficie para un uso que hoy es solo tuyo.
+
+➡️ **Recomiendo 1️⃣**, porque encaja con cómo trabaja `run()` y deja el comando como una función pura fácil de probar. A cambio, tienes que redirigir tú la salida si quieres un fichero.
+
+Después te preguntaré por las columnas del CSV (¿incluir la sala?) y por la sala inexistente. Si prefieres que las decida yo, dilo y irán a «✋ Decisiones que he tomado yo» para que las valides en la spec.
+

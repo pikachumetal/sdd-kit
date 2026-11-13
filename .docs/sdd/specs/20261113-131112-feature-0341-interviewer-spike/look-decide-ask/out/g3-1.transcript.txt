@@ -1,0 +1,45 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; 
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0341-interview
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md packa
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-propose/references" && cat control-profiles.md spec-writing
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-grilling/SKILL.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-propose/references/spec-writing.md
+## agente
+Estoy clasificando el cambio (feature, modo full) y voy a reservar la rama con su id antes de abrir la spec. Primero miro cómo se calcula el id.
+> Grep: sequence|id (claim|next|reserve)
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0341-interviewe
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0341-interviewe
+## agente
+Ahora: he clasificado el cambio y reservado la rama `feature/0010-lista-espera`. Queda: entender qué quieres, la spec (con tu aprobación), el plan y la implementación, ~20 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido (corrígeme):** hoy `reservar` no sabe qué hacer cuando la sala y la franja que pides ya están ocupadas. Quieres que, en ese caso, quede constancia de que esperas esa sala, para poder cogerla si se libera. Por ahora no sé nada más: ni cuándo debe saltar la espera, ni qué pasa al cancelar la reserva que la bloqueaba. Tampoco veo en el repo un sitio donde guardar datos entre ejecuciones: `src/app.js` mantiene las reservas en memoria.
+
+Antes de decidir nada del diseño, necesito saber el para qué:
+
+❓ **¿Qué vas a hacer con esa lista de espera?** Cuéntame, con tus palabras, qué situación te ha llevado a pedirla y qué quieres que pase cuando la sala se libere.
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Entendido: ahora tienes que repetir `libres` a mano hasta que Norte se libera, y quieres que eso deje de ser cosa tuya. Eso decide casi todo lo demás, y te lo planteo así.
+
+Un dato que he comprobado: `src/app.js` guarda las reservas en memoria, así que cada ejecución empieza de cero. Para que una espera sobreviva entre ejecuciones habrá que guardarla en un fichero. Eso lo resuelvo yo en el diseño, porque es método, no decisión tuya.
+
+❓ **¿Qué pasa cuando la sala por la que esperas se libera?**
+Un ejemplo con datos. Norte está ocupada el lunes de 10:00 a 12:00 y tú pides esa franja:
+`reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera`
+
+1️⃣ **Se reserva sola para ti.** Al cancelar la reserva que la bloqueaba, la espera se convierte en reserva: `cancelada lun 10:00; Norte lun 10:00-12:00 pasa a ser tuya`. No vuelves a mirar nada. A cambio, te quedas con una reserva que no confirmaste en ese momento. Si ya no la quieres, la cancelas.
+2️⃣ **Solo te avisa.** La espera queda anotada y, al liberarse, `libres` o un comando `espera` te dice `Norte lun 10:00-12:00 libre (la esperabas)`. Tú reservas después. Sigue siendo un paso manual: tienes que acordarte de ejecutar algo para enterarte.
+
+➡️ **Recomiendo 1️⃣**, porque lo que quieres evitar es justo tener que mirar a mano. En esa opción la espera hace el trabajo y tú no tienes que volver a preguntar. A cambio, puedes acabar con una reserva que ya no necesitas.

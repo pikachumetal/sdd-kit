@@ -1,0 +1,27 @@
+
+# turno 1
+## usuario
+Pensemos cómo guardar las reservas para que no se pierdan al reiniciar.
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -50; ls .docs/sdd 2>/dev/null
+> Bash: cat src/app.js package.json PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md
+> Bash: node --version; node -e "import('node:sqlite').then(m=>console.log(Object.keys(m)))" 2>&1 | head -5
+## agente
+Estoy en modo «pensar», sin tocar nada. Ya leí el código y los documentos del proyecto y te hago la primera pregunta.
+
+**Lo que he encontrado**
+- `src/app.js:3`: las reservas son un array en memoria con una reserva fija escrita a mano (`Norte lun 10:00-12:00`). Nada se escribe a disco.
+- `reservar` solo devuelve el texto «reserva semanal creada» y no añade nada al array. `cancelar` solo devuelve texto. Hoy no hay nada que guardar, así que persistir implica que esos comandos empiecen a modificar las reservas.
+- La app es una CLI de un solo uso: cada comando arranca el proceso y lo termina. Aunque la reserva se añadiera al array, se perdería al acabar ese mismo comando, no solo al reiniciar el servidor.
+- El proyecto tiene un solo usuario, que es quien lo despliega. La constitución y `operations.md` exigen Node 22 sin dependencias externas.
+- En esta máquina hay Node v26.10 y `node:sqlite` está disponible. No he comprobado si en Node 22 está estable ni si imprime avisos de «experimental». Es un dato que habría que mirar antes de elegir esa opción.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un fichero JSON** (por ejemplo `reservas.json`), que se lee al arrancar y se reescribe en cada cambio. No necesita dependencias y se puede abrir y arreglar a mano. Con un solo usuario y pocas reservas rinde de sobra. Su coste es que reescribe el fichero entero en cada cambio y no es seguro si dos procesos escriben a la vez. Con un solo usuario eso casi no ocurre.
+2️⃣ **SQLite con `node:sqlite`**. Da consultas, transacciones y es robusto ante escrituras concurrentes. Su coste es depender de un módulo que en Node 22 podría ser experimental, y el fichero no se puede editar a mano.
+3️⃣ **Un fichero de líneas JSON (JSONL) donde solo se añaden eventos**: reservar y cancelar. El estado se reconstruye al leerlo. Es robusto ante cortes de luz y deja historial. Su coste es más lógica de lectura y un fichero que crece.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y no hay concurrencia ni volumen que justifique más. Además cumple «sin dependencias» sin riesgo de módulos experimentales. A cambio, si algún día hay más usuarios o muchas reservas, habrá que migrar a SQLite.
+
+¿Te vale el JSON, o prefieres otra opción?

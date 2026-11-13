@@ -1,0 +1,70 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -80; ls .docs/sdd 2>/dev/null
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat PRODUCT.md package.json src/app.js; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md ROADMAP.md
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+{"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd
+
+>>> Bash: node -v; node -e "import('node:sqlite').then(m=>console.log(Object.keys(m)))" 2>&1 | head -5
+<<< v26.10.0
+[
+  'DatabaseSync',
+  'Session',
+  'StatementSync',
+  'backup',
+
+=== RESULTADO (8 turnos, 0.10079529999999999 $)
+Estoy en modo explorar: he leído el repo y todavía no he tocado nada. Esto es lo que hay y la decisión que más condiciona el resto.
+
+**Lo que dice el proyecto**
+- En `src/app.js` las reservas son un array en memoria con una reserva fija de ejemplo (`bookings`). Por eso se pierden al reiniciar.
+- `PRODUCT.md` dice que solo lo usas tú, en tu propio servidor.
+- `operations.md` fija Node 22, sin dependencias externas y un solo fichero de entrada.
+- El roadmap tiene la 0008 (avisos por correo) en curso y la 0009 (exportar a `.ics`) en Later. Las dos van a leer las reservas, así que conviene que el formato sea fácil de leer.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un fichero JSON** (`reservas.json`) que se lee al arrancar y se reescribe en cada cambio. No añade dependencias y se puede abrir y editar a mano. Si se corta la escritura a medias, el fichero puede quedar corrupto, aunque se evita escribiendo a un temporal y renombrando.
+2️⃣ **SQLite con `node:sqlite`**, que viene con Node. Es más robusto si crecen los datos o si hay escrituras concurrentes. No he comprobado en la documentación de Node 22 si ya no pide flag ni avisa de que es experimental, así que de momento no puedo afirmarlo. Tampoco se puede editar a mano.
+
+➡️ **Recomiendo 1️⃣**, porque solo hay un usuario, los datos son unas pocas reservas y la constitución pide cero dependencias. A cambio, si algún día hay concurrencia o muchísimos datos, habrá que migrar.
+
+¿Vas con el JSON o prefieres SQLite?

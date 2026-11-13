@@ -1,0 +1,32 @@
+--- [4]
+Voy a leer el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities).
+
+--- [13]
+Ahora: clasificar el cambio y abrir la entrevista de la feature. Queda: unas pocas preguntas, luego la spec para tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `reservar` no comprueba si la sala está ocupada. `libres` sí sabe qué salas están ocupadas en una franja. Quieres que, al pedir una sala que ya está reservada, quedes apuntado en una lista de espera en vez de recibir un simple «no». Es una feature, no un patch: hay decisiones de comportamiento sin fijar. Aún no sé qué pasa cuando la sala se libera. Tampoco sé si la lista se limita a apuntarte o si también tiene que avisarte o reservar por ti.
+
+Es una herramienta de línea de comandos que solo usas tú, y no hay capacidades documentadas todavía.
+
+❓ Cuéntame el último momento en que fuiste a reservar una sala y estaba ocupada: ¿qué hiciste entonces y qué te habría gustado que la herramienta hiciera por ti?
+
+--- [15]
+Entendido: feature full con `delegate`, sin cambios de perfil. Lo que cuentas es que el problema es tener que vigilar `libres` a mano. Mi apuesta es que no te importa tanto la lista como no tener que estar pendiente. Corrígeme si no es así.
+
+Una cosa del código que condiciona el diseño: las reservas viven en memoria en `src/app.js`, y cada comando arranca y termina. Hoy nada sobrevive entre una ejecución y la siguiente, así que una lista de espera tiene que poder guardarse y que algo detecte cuándo se libera la sala.
+
+❓ **¿Qué debe pasar cuando Norte se libere?**
+Es la decisión que más cambia el diseño.
+1️⃣ **Se te reserva sola.** Al cancelar la reserva, la primera persona de la lista pasa a tener la sala sin que hagas nada. Es lo que más te quita de encima, pero reserva en tu nombre sin que lo confirmes.
+2️⃣ **Te avisa y tú reservas.** Al liberarse la sala, el aviso sale en el momento (por ejemplo, al ejecutar cualquier comando) y tú confirmas con `reservar`. Es más seguro, pero sigues teniendo que actuar.
+3️⃣ **Solo consultas la lista.** Un comando te dice si Norte ya se ha liberado, sin esperas activas ni avisos. Es lo más sencillo, pero sigues preguntando tú.
+➡️ **Recomiendo 1️⃣**, porque tu queja es tener que volver a mirar. A cambio, hay que decidir qué pasa si ya no quieres la sala cuando se libera (se podría cancelar con `cancelar`, que ya existe).
+
+Dime cuál prefieres, o descríbeme otra cosa si ninguna encaja.
+

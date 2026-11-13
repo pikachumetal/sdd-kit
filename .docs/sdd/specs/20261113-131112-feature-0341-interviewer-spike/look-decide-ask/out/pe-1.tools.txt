@@ -1,0 +1,241 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test; git branch -a; ls node_modules 2>&1 | head -2
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat README.md; cat .docs/sdd/specs/*free/spec.md | head -60
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-propose/references" && sed -n 1,60p control-profiles.md; echo ======; cat spec-writing.md
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+=== RESULTADO (9 turnos, 0.17431570000000002 $)
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas de diseño, la spec con su ✋ para que la apruebes y el plan, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme).** Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Lo he clasificado como feature y no como patch: añade comportamiento nuevo que ve el usuario y hay que decidir el formato.
+
+**Lo que he visto en el código.**
+- `src/app.js` solo tiene `libres`, `reservar` y `cancelar`. No hay ningún comando que liste reservas.
+- Cada reserva guarda `room`, `day` (`lun`, `mar`…) y `slot`, sin fecha real. Hoy hay una: `Norte · lun · 10:00-12:00`.
+- Con 2 o 3 tasks previstas no propongo partirla. `ROADMAP.md` no tiene fila para esto, así que el id se reserva cuando abra la rama.
+
+❓ **Qué reservas entran en el CSV**
+Como solo guardamos el día de la semana, no hay un «reservas de esta semana» que filtrar por fecha.
+1️⃣ **Todas las reservas de la sala, sin filtro.** `salas exportar Norte` imprime `sala,dia,franja` y debajo `Norte,lun,10:00-12:00`. Si el responsable solo quiere un día, lo filtra en la hoja.
+2️⃣ **Todas, y además un filtro opcional por día.** `salas exportar Norte --dia lun` imprime solo las del lunes. Cuesta un parámetro más, con su validación y sus tests.
+➡️ **Recomiendo 1️⃣**, porque con una sala hay pocas filas y la hoja ya sabe filtrar por columna. A cambio, quien solo quiere un día recibe el resto de filas.
+
+¿Con cuál te quedas?
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-propose/references" && cat nombrado.md | head -80; echo =====; cat coherence-pass.md; echo =====; cat review-spec.md
+
+>>> Skill: sdd-kit:sdd-templates
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-templates/templates/spec-template.md"; cd "<run>/repo" && git remote -v; git status --short; cat .docs/sdd/specs/*0007*/patch.md | head -30
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (changes/<ts>-proposal-<id>-<slug>/)
+title: <título corto descriptivo>
+mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la releas
+
+>>> Bash: cd "<run>/repo" && S='D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/cli/bin/sdd.js'; node "$S" id next --project-root "$PWD" --reserve
+<<< 0010
+
+>>> Bash: cd "<run>/repo" && S='D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/cli/bin/sdd.js'; git checkout -b feature/0010-exportar-csv develop && node "$S" id claim --project-root "$PWD"; echo rc=$?; date -u +%Y%m%d-%H%M%S; git config user.name; ls .docs/sdd
+<<< Switched to a new branch 'feature/0010-exportar-csv'
+sin remoto: la 0010 vale (contador local)
+rc=0
+20261113-153446
+Fixture
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-templates/templates/capability-template.md"; cd "<run>/repo"; cat .docs/sdd/specs/*0006*/spec.md .docs/sdd/specs/*0006*/walkthrough.md | head -40; cat CHANGELOG.md
+<<< # Capacidad — <nombre>
+
+> **Reglas anti-proliferación**:
+> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+> 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
+>    la crea `sdd-archive` por su cuenta.
+> 3. `sdd-archive` fusiona el delta de la spec o el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
+>    requisito que tiene ese mismo t
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Write: <run>/repo/.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv/spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && S='D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/cli/bin/sdd.js'; git grep -n -i "exportar\|csv" -- . ':!.docs/sdd/changes'; echo "--grep rc=$?"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv/spec.md"; echo merge rc=$?; node "$S" capability check --path "$T/sdd"; echo check rc=$?; node -e "for (const d of ['2026-11-13','2026-11-16','2026-11-15','2026-11-14']){const x=new Date(d+'T12:00:00');const g=x.getDay();console.log(d,g,((8-g)%7)||7)}"
+<<< ROADMAP.md:19:| 0009 | — | **Exportar reservas a calendario (.ics)**<br>*Idea propia* | ⏳ | — | — |
+--grep rc=0
+bookings.md: añadido «Exportar a CSV las reservas de una sala»
+bookings.md: añadido «La semana exportada empieza el lunes siguiente»
+bookings.md: añadido «Cada día de la semana tiene su fecha»
+bookings.md: añadido «Orden dentro de un día»
+bookings.md: añadido «Sala sin reservas»
+bookings.md: añadido «Sala desconocida o sin nombre»
+bookings.md: regla «Dónde viven los datos» añadida
+bookings.md: regla «Idioma de los nombres» añadida
+bookings.md: regla «Límites» añadida
+bookings.md: re
+
+>>> Bash: cd "<run>/repo/.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv" && python - <<'EOF'
+p='spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("- **Aceptado** — (3) hay un caso sin escenario: reserva en `dom` con hoy `lun` → los 7 días de la semana tienen su desplazamiento → añadido a la decisión 4, falta escenario del domingo; se cubre en el escenario «Cada día de la semana».",
+"- **Aceptado** — (2) el desplazamiento del domingo (6) no tenía escenario → escenario «Cada día de la semana» con `dom` → `22/11/2026`.")
+s=s.replace("11. **Enfoque**: A, frente a B y C (ver Approach).",
+"11. **Enfoque**: A, frente a B y C (ver Approach).\n12. **Documentación**: una línea en `CHANGELOG.md` (Added) y el comando nuevo en `README.md`. — la constitución pide castellano y el changelog ya recoge cada comando.\n13. **Delta probado en una copia** de `.docs/sdd`: `sdd capability merge` → añade 6 requisitos y las 5 reglas de `bookings.md`; `sdd capability check` → «Capacidades válidas: 1».")
+s=s.replace("el lunes siguiente es `hoy + (8 − díaSemana) mod 7`, con 7 si hoy es lunes (es decir, 1–7 días).",
+"los días hasta el lunes siguiente son `(8 − d) mod 7`, y 7 si da 0, con `d` = día de la semana (domingo 0, lunes 1): viernes 13/11 → 3 (lunes 16/11), lunes 16/11 → 7, domingo → 1.")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+grep -n "^12\.\|^13\.\|(2) el\|los días hasta" spec.md | cut -c1-80; cd ../../../.. && git add -A && git commit -q -m "docs: spec de la feature 0010 (exportar reservas a CSV), pendiente de aprobación
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+<<< 42:12. **Documentación**: una línea en `CHANGELOG.md` (Added) y el comando nue
+43:13. **Delta probado en una copia** de `.docs/sdd`: `sdd capability merge` →
+50:- **Aceptado** — (2) el desplazamiento del domingo (6) no tenía escenario 
+83:Partes del cómo: los días hasta el lunes siguiente son `(8 − d) mod 7`, y
+14d7653 docs: spec de la feature 0010 (exportar reservas a CSV), pendiente de aprobación
+2138795 feat: base del molde
+
+=== RESULTADO (13 turnos, 0.5160043000000001 $)
+Ahora: parada de aprobación de la spec. Queda: si apruebas, escribo el plan y paso a implementar, ~15 min.
+
+Spec en `.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv/spec.md`, rama `feature/0010-exportar-csv`, commit `14d7653`.
+
+🦆 Con `salas exportar Norte` sale una tabla de texto con las reservas de la sala Norte para la semana que empieza el lunes que viene. Cada fila lleva fecha, día y franja, por ejemplo `16/11/2026;lun;10:00-12:00`. El responsable la abre en su hoja de cálculo el lunes. Las reservas guardan el día de la semana y no la fecha, así que el programa pone cada una en su día de esa semana. Por eso una reserva hecha solo para otra semana también aparece.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Comando:** `salas exportar <sala>`, imprime por pantalla. Para guardarlo se redirige con `>`.
+2. **Qué semana:** el lunes siguiente a hoy. Si hoy es lunes, es el de dentro de 7 días. Hoy, viernes 13/11/2026, da el 16/11.
+3. **Formato:** cabecera `fecha;dia;franja`, separador `;`, fecha `dd/mm/aaaa` y sin comillas. El `;` va pensado para una hoja en español. **No lo he probado en una hoja real**, lo compruebas tú al validar.
+4. **Fecha de cada reserva:** el lunes de esa semana más el desplazamiento de su día. Los nombres `mie`, `jue`, `vie`, `sab` y `dom` son inventados por mí, porque hoy solo existen `lun` y `mar`.
+5. **Qué sale:** todas las reservas guardadas de la sala, sean de una vez o semanales, porque hoy no se distinguen. **Coste:** una reserva hecha solo para otra semana saldrá como de esta. Evitarlo exige guardar la fecha, que sería otra feature.
+6. **Orden:** por fecha y, dentro del día, por franja.
+7. **Sala sin reservas:** solo la cabecera.
+8. **Avisos:** `uso: salas exportar <sala>` y `sala desconocida: Oeste`.
+9. **«Hoy»:** la fecha local de la máquina, sin zona horaria.
+10. **Capacidad nueva `bookings`**, porque el proyecto aún no tiene ninguna.
+11. **Enfoque:** repartir cada reserva por su día en la semana próxima. Descarto guardar fecha en cada reserva, que es otra feature, y exportar solo las semanales, que hoy no se puede.
+12. **Documentación:** una línea en `CHANGELOG.md` y el comando nuevo en `README.md`.
+
+**La review de la spec no se ha podido lanzar.** La regla pedía dos revisores (capacidad nueva y formato de fichero que consume otra herramienta), pero esta sesión no tiene herramienta de subagentes. Solo hice una autorrevisión mía de los siete puntos, que no sustituye a los revisores. Añadí el escenario del domingo, que faltaba. Quedaron sin mirar con ojos ajenos el reparto por día y el formato en la hoja.
+
+Hice el repaso de coherencia. Fusioné el delta en una copia de `.docs/sdd` y `sdd capability check` salió válido. `git grep` no encontró nada más que toque `exportar` ni CSV. Calculé a mano los días hasta el lunes para viernes, sábado, domingo y lunes.
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar, sin la review de subagentes.
+2. **Cambios**: dime qué decisión de la lista tocar.
+
+¿Apruebas la spec?
+
+=== RESULTADO (1 turnos, 0.5332493 $)
+Vale, la spec queda en espera: no está aprobada y no he escrito el plan ni tocado código.
+
+- **Rama:** `feature/0010-exportar-csv`, con el id 0010 reservado en local (no hay remoto).
+- **Spec:** `.docs/sdd/changes/20261113-153446-feature-0010-exportar-csv/spec.md`, estado `draft`, ya commiteada (`14d7653`).
+- **ROADMAP:** `ROADMAP.md` aún no tiene fila para la 0010.
+
+Para retomar, di «retoma la feature» o aprueba la spec, y sigo desde el plan. Si prefieres cambiar algo antes, dime qué número de la lista de decisiones. Tus dos puntos abiertos son el formato en tu hoja de cálculo (decisión 3) y si te vale que una reserva puntual aparezca como de esta semana (decisión 5).
+
+=== RESULTADO (2 turnos, 0.53705802 $)
+conversación con persona: 2 respuestas

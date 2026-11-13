@@ -1,0 +1,130 @@
+--- [7]
+Empiezo por el contexto: documentos, perfil local y comprobación de dependencias.
+
+--- [30]
+Ahora: lanzo los dos revisores de la spec en paralelo. Queda: integrar sus hallazgos y presentarte la spec para aprobar (~5 min, ~0,5 $).
+
+--- [38]
+Los dos revisores de la spec están en marcha. Te cuento lo que digan en cuanto vuelvan, sin adelantar nada. Después integro sus hallazgos y te presento la spec para que la apruebes.
+
+--- [48]
+Hallazgos de dominio sobre la spec 0002. No he editado nada. Los he ordenado de más a menos grave.
+
+1. **Importante. Varias reservas y orden de filas.**
+   - Cita la decisión 3 («orden de alta») y el Delta de `booking-export`.
+   - Todos los GIVEN usan una sola reserva (`Norte lun 10:00-12:00`). El filtro por sala y el orden no se comprueban con datos que lo distingan.
+   - Propongo un GIVEN con Norte con `lun 10:00-12:00` y `mar 09:00-10:00`, más una reserva de Sur dada de alta entre medias. El THEN sería la cabecera y las dos filas de Norte en ese orden, sin la fila de Sur.
+   - Hay que decir si el orden de alta basta para cuadrar los lunes. En `app.js`, `bookings` es un array y su orden es el de inserción, así que la decisión es coherente. Conviene confirmarla con el dev-lead en lugar de dejarla como «no hay otro criterio dicho».
+
+2. **Importante. Mayúsculas y minúsculas del nombre de sala.**
+   - Cita las decisiones 5 y 6 y el GIVEN de `Oeste`.
+   - `rooms` es `['Norte','Sur']` y la comparación sería exacta. Con `exportar norte` saldría «sala desconocida: norte», aunque para el responsable es la misma sala. La spec no lo decide ni lo cubre.
+   - Propongo añadir una decisión ✋: o bien exacto (y un GIVEN `exportar norte` con error `sala desconocida: norte`), o bien insensible a mayúsculas.
+   - Si es insensible, la columna `sala` debe salir con el nombre canónico (`Norte`), no con lo que escribió el usuario.
+
+3. **Importante. Qué no debe salir por stdout.**
+   - Cita el Delta, THEN de la sala Sur y de la sala inexistente.
+   - Dice qué sale, pero no que no salga nada más. Ejemplos: un `salas` por defecto, un resumen tipo «0 reservas», una línea en blanco final o un aviso mezclado.
+   - `run` hoy devuelve `'salas'` para cualquier comando desconocido.
+   - Propongo un AND en el primer GIVEN/WHEN/THEN: «la salida estándar contiene exactamente estas dos líneas, sin líneas en blanco ni texto adicional, y nada por stderr».
+   - Un segundo AND diría que el comando solo lee: no modifica ni crea reservas ni escribe ficheros. Esto es consistente con el «No entra».
+
+4. **Menor. Argumentos sobrantes o vacíos.**
+   - Cita la decisión 6.
+   - `exportar Norte Sur` y `exportar ""` no están cubiertos.
+   - Propongo decidir una de dos: se ignora lo que sobra, o se trata como error. La cadena vacía debería caer en `falta la sala`.
+
+5. **Menor. Mensaje de sala desconocida.**
+   - Cita la decisión 5.
+   - Sería más útil para quien teclea mal el nombre añadir las salas válidas: `sala desconocida: Oeste (salas: Norte, Sur)`.
+   - Es opcional. Si se hace, hay que reflejarlo literal en el THEN.
+
+6. **Menor. Formato y Excel castellano.**
+   - Cita la decisión 7 y el Intent.
+   - `;`, `\n`, cabecera `sala;dia;franja` y sin comillas cuadran con Excel castellano. `10:00-12:00` y `lun` se quedan como texto y no se reinterpretan.
+   - El riesgo está en el «sin BOM porque no hay acentos». Es cierto hoy. Pero la cabecera `dia` va sin tilde por la misma razón, y quizá el responsable espere `día`. Hay que dejarlo explícito para que nadie lo «corrija» después.
+   - Excel castellano abre los UTF-8 sin BOM con los acentos rotos. Propongo escribir en el Intent o en la decisión 7 un criterio de reapertura: «si aparece una sala o un día con tilde, se añade BOM o se cambia la codificación».
+   - El Delta tampoco fija si el último salto de línea existe. Con `console.log` sí lo hay. Propongo decirlo: «cada línea termina en `\n`, incluida la última».
+
+El Scope y los «No entra» cubren lo que exige la fila 0002: CSV, `;`, stdout y una sala. No he visto contradicciones entre las decisiones ✋ y el Delta.
+
+--- [49]
+Hallazgos (lente técnica). No he editado nada.
+
+**1. Importante. «Dónde se prueba», segunda viñeta, y el Delta (THEN de sala inexistente).**
+La spec no dice cómo se lanza el proceso hijo, y de eso depende que el THEN se pueda comprobar.
+- Tal como está, `node src/app.js exportar Oeste` es ejecutable: `process.argv.slice(2)` da `['exportar','Oeste']` y el arranque `if (command)` se ejecuta.
+- Importar `app.js` desde el test no dispara el arranque. En `node --test`, `process.argv` es `[node, ruta-del-test]` y el runner no pasa más argumentos. Con `argv.slice(2)` vacío, `command` es `undefined`. Los tests actuales ya lo demuestran.
+- Falta decir que el test usa `child_process.spawnSync(process.execPath, ['src/app.js','exportar','Oeste'], {encoding:'utf8'})`. Con él se comprueba `stdout === ''`, `stderr` y `status === 1`.
+- Hay que fijar `cwd` o resolver la ruta con `import.meta.url`. Si no, el test depende del directorio desde donde se lance.
+- Propuesta: añadir esa línea a «Dónde se prueba». Mejor aún, dar un test por THEN: sala desconocida, falta de sala y exit 0 del caso feliz.
+
+**2. Importante. Cobertura de THEN en «Dónde se prueba».**
+- El `AND código de salida 0` del primer escenario y los dos casos de salida estándar con `run` quedan cubiertos solo a medias. `run('exportar', ['Norte'])` prueba el texto, pero no que stdout sea exactamente ese texto más `\n`, ni el exit 0.
+- Propuesta: un test por proceso del caso feliz (`stdout === 'sala;dia;franja\nNorte;lun;10:00-12:00\n'`, `status 0`). Es lo que de verdad fija el contrato de redirección. Se justifica porque la spec dice que el fichero lo abre Excel.
+- Falta también un test por proceso de `exportar` sin sala. El texto «`salas exportar <sala>`» solo se ve en stderr.
+
+**3. Importante. Approach A, «cambia 3 líneas del arranque» y la captura de errores.**
+- Hoy el arranque es una sola línea. Hay que envolverlo en `try/catch` y usar `console.error(e.message)`. Decir que el `catch` captura cualquier error. Si no, un fallo de otro comando saldría con código 1 y sin traza.
+- Propuesta: acotarlo, por ejemplo con una clase `UsageError` o comprobando el tipo. Si se quiere dejar como está, decirlo expresamente.
+- El `console.error` añade `\n` al mensaje. Es inocuo, pero conviene que el test de stderr use `trim()` o `===` con `\n` final, y que la spec lo diga.
+
+**4. Importante. Salto de línea final y `console.log` (decisión 7 y el THEN del Delta).**
+- `console.log(run(...))` añade `\n`. Si `run` devuelve `'sala;dia;franja\nNorte;lun;10:00-12:00'` sin `\n` final, el fichero redirigido acaba en exactamente un `\n`. Es lo correcto.
+- La spec no fija si el texto devuelto por `run` lleva `\n` final. Si lo lleva, el fichero acaba con una línea en blanco y el test por proceso fallaría.
+- Propuesta: añadir a la decisión 7 o al Approach: «`run` devuelve las líneas unidas con `\n`, sin `\n` final; el `\n` final lo pone `console.log`». Los tests de `run` comparan sin `\n` final, y los de proceso con uno.
+- Un caso relacionado: la sala sin reservas devuelve solo la cabecera. El test de proceso vería `sala;dia;franja\n`.
+
+**5. Importante. Nombres de sala con distinto caso (decisión 5 y Delta).**
+- `rooms` y `bookings` usan comparación exacta, igual que `freeRooms`. Entonces `exportar norte` daría `sala desconocida: norte`, aunque el usuario lo escriba a mano.
+- La spec no dice si es lo esperado. Si es solo una cuestión de implementación (no de lo que quiere el responsable), decídelo: comparación exacta, coherente con `libres`. Si lo ve el otro revisor, se deja.
+- Propuesta: añadir un test `exportar norte` → error, o una línea en las decisiones, para que no sea implícito.
+
+**6. Menor. Estado compartido de `bookings` (Approach, última línea).**
+- `bookings` es un array de módulo con una sola reserva y no hay comando que lo cambie, así que no hay riesgo hoy. `reservar` y `cancelar` devuelven texto sin tocarlo.
+- Pero «Sur sin reservas» y «Oeste» dependen de los datos semilla. Si otro cambio añade reservas a `Sur`, el test se rompe.
+- Propuesta: dejarlo como está y anotar en la spec que los tests dependen de los datos semilla de `app.js`. Es opcional.
+
+**7. Menor. Escenario Norte, GIVEN.**
+Los GIVEN describen datos que son semilla fija de `app.js`, no algo que el test pueda preparar. Está bien con la costura actual, pero conviene que la spec lo diga en «Dónde se prueba», para que el implementador no busque una forma de inyectar datos.
+
+**8. Menor. Fila 5 y 6, mismo tratamiento.**
+- «`falta la sala`» debe salir cuando `params[0]` es `undefined`. También con `''`, si alguien pasa `""` desde el shell.
+- Propuesta: usar `!params[0]`. Un test `run('exportar', [])` lanza error con ese mensaje.
+
+Sin hallazgos críticos. El Approach A es implementable con el arranque actual. Lo que falta es concretar cómo se lanza el proceso hijo, el `\n` final y la acotación del `catch`.
+
+--- [51]
+Ha vuelto el revisor de dominio. Sus hallazgos principales son varias reservas con orden de filas, mayúsculas del nombre de sala y qué no debe salir por stdout. Espero al técnico para integrar los dos a la vez.
+
+--- [53]
+Integro los hallazgos de los dos revisores en la spec.
+
+--- [65]
+Ahora: te presento la spec para que la apruebes. Queda: tu aprobación, y después el plan y la implementación (~15 min).
+
+**Spec 0002 — Exportar a CSV las reservas de una sala.** Está en `.docs/sdd/changes/20261113-153737-feature-0002-exportar-csv-reservas/spec.md`, en la rama `feature/0002-exportar-csv`.
+
+🦆 Hoy el responsable de salas no puede sacar las reservas de la herramienta. Con `salas exportar Norte` verá `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. Lo redirige a su fichero y su Excel en castellano lo abre en tres columnas. Si la sala no existe, el aviso sale por la salida de error con código 1 y no ensucia su fichero. Por dentro, una función `exportarCsv` en `src/app.js` y un `catch` acotado en el arranque.
+
+**✋ Decisiones que he tomado yo — valida estas**
+- **Comando y columnas:** `exportar <sala>`, columnas `sala;dia;franja` con cabecera, filas en orden de alta.
+- **Sin reservas:** una sala sin reservas devuelve solo la cabecera.
+- **Errores:** `sala desconocida: Oeste` y `falta la sala: salas exportar <sala>` salen por stderr con código 1 y stdout vacío.
+- **Nombre de sala:** se compara exacto, como `libres`. `exportar norte` es error.
+- **Argumentos:** los sobrantes se ignoran y `""` cuenta como sin sala.
+- **Formato:** sin comillas y sin BOM. Cada línea acaba en `\n`, la última incluida. La cabecera es `dia` sin tilde. Si aparece una tilde en una sala o un día, se añade BOM.
+- **Solo lee:** no crea ni cambia reservas ni escribe ficheros.
+- **Capacidad nueva:** `booking-export`.
+- **Testabilidad:** `exportarCsv(sala, lista)` se exporta para probar varias reservas sin tocar la semilla.
+- **Validación:** la hace el dev-lead, con su Excel.
+- El delta pasa `sdd capability merge` en una copia sin rechazos.
+
+**Review:** dos revisores (dominio y técnico, sonnet). Acepté todos los hallazgos salvo uno, listar las salas válidas en el error. Quedan apuntados en la spec.
+
+**Qué hacer ahora:**
+1. **Apruebo (Recomendada).** Escribo el plan y sigo con la implementación.
+2. **Cambios.** Dime cuáles.
+
+¿Apruebas la spec?
+

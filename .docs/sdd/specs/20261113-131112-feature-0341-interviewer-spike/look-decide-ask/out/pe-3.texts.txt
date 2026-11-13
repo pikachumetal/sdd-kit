@@ -1,0 +1,89 @@
+--- [3]
+Empiezo leyendo el contexto SDD, que son los docs y no el código.
+
+--- [18]
+Ahora: te presento el carril y lo que he entendido, y te hago la primera pregunta de diseño. Queda: la entrevista (2 o 3 preguntas), la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No hace falta partirla: prevé 2 o 3 tareas.
+
+**Lo que he entendido (corrígeme):** quieres un comando que, dada una sala (`Norte`, `Sur`), saque sus reservas en CSV. Cada responsable lo abre los lunes en su hoja de cálculo para cuadrarlas. Hoy una reserva solo tiene `room`, `day` (`lun`) y `slot` (`10:00-12:00`), sin fecha concreta, y el CSV partirá de eso.
+
+Lo que decida el formato depende de un dato que solo sabes tú. Un CSV con `;` y otro con `,` se comportan distinto según el programa:
+
+```text
+Norte;lun;10:00-12:00   → columnas separadas en Excel con configuración regional en castellano
+Norte,lun,10:00-12:00   → todo en una sola celda en ese mismo Excel
+```
+
+❓ **¿Con qué programa abren la hoja de cálculo los responsables de las salas, por ejemplo Excel, LibreOffice o Google Sheets, y en qué idioma lo tienen configurado?**
+
+--- [20]
+Con Excel en castellano lo decido yo, sin preguntarte más:
+
+- **Separador `;`**, porque con la configuración regional en castellano Excel usa `;` y con `,` metería cada fila en una sola celda.
+- **UTF-8 con BOM**, para que Excel lea bien las tildes si algún día una sala se llama `Reunión`.
+
+Queda una decisión que sí es tuya: dónde sale el CSV.
+
+❓ **Salida del comando**
+1️⃣ **Escribe un fichero** `node src/app.js exportar Norte` crea `norte.csv` en la carpeta actual y responde `exportadas 1 reservas de Norte en norte.csv`. El fichero sale ya con el BOM y se abre con doble clic en Excel. Cuesta que el comando escriba en disco y que `norte.csv` se pise si ya existía.
+2️⃣ **Imprime por pantalla** `node src/app.js exportar Norte` muestra `Norte;lun;10:00-12:00`, y tú o quien lo use redirige con `> norte.csv`. Es más sencillo y encaja con `libres`, que ya imprime. Cuesta que en PowerShell `>` recodifica el fichero y puede estropear el BOM y las tildes, justo lo que Excel necesita.
+
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra en Excel y el fichero ya sale en el formato que Excel espera, sin depender de cómo redirija cada uno. A cambio, un `norte.csv` anterior se sobrescribe.
+
+¿Quieres que el comando escriba el fichero (1️⃣) o que imprima por pantalla (2️⃣)?
+
+--- [22]
+Entendido: el comando imprime por la salida estándar y tú redirigís. Ya no queda ninguna decisión tuya, así que paso a la rama, la carpeta y la spec. Primero leo las convenciones de nombres.
+
+--- [25]
+Sin fila en el roadmap y con ids en `sequence`, reservo el id, creo la rama y lo confirmo con `claim`.
+
+--- [33]
+Ya tengo la rama `feature/0010-exportar-csv` y el id 0010. Escribo la spec en su carpeta.
+
+--- [37]
+Repaso de coherencia: pruebo el delta sobre una copia de `.docs/sdd` fuera del repo.
+
+--- [40]
+El merge pasa, pero avisa de que el primer requisito es largo (595 caracteres). Saco el orden de las filas a su propio requisito y anoto el resultado del merge.
+
+--- [50]
+Ahora: te presento la spec para que la apruebes. Queda: tu aprobación, y después el plan y la implementación (~2 tareas, ~15 min).
+
+Está en `.docs/sdd/changes/20261113-154121-feature-0010-exportar-csv/spec.md`, en la rama `feature/0010-exportar-csv`. Aún no hay commit.
+
+🦆 Hoy no hay forma de sacar las reservas de una sala para cuadrarlas en una hoja de cálculo. Con esto, `node src/app.js exportar Norte > norte.csv` imprime las reservas de `Norte`, y Excel en castellano abre el fichero ya repartido en columnas: `Norte;lun;10:00-12:00` son la sala, el día y la franja en tres celdas. Si la sala no existe, no se imprime ningún CSV y el comando falla con un aviso por el canal de errores, así que el aviso no acaba dentro del fichero.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+1. Capacidad nueva `booking-export`.
+2. Comando `exportar <sala>`.
+3. Cabecera `sala;dia;franja`, sin tildes.
+4. Separador `;`, UTF-8 con BOM y saltos de línea `\n`.
+5. Las filas salen en el orden en que están guardadas las reservas.
+6. Una sala sin reservas exporta solo la cabecera.
+7. El nombre de la sala se compara tal cual, distinguiendo mayúsculas (`norte` no vale).
+8. Sala desconocida o ausente: nada por la salida estándar, aviso por el canal de errores y código 1. Los textos son `sala desconocida: Oeste` y `falta la sala: uso exportar <sala>`.
+9. Un campo con `;`, `"` o salto de línea va entre comillas dobles. La franja no se valida hoy (está en la deuda técnica) y un `;` dentro movería las columnas.
+10. Enfoque: dos funciones en `src/app.js`, frente a un módulo `src/csv.js`.
+11. Son 2 tareas, así que no la parto.
+12. No he añadido fila al roadmap. El id 0010 está reservado en local, porque no hay remoto.
+
+Fuera de alcance: escribir el fichero desde el comando, filtrar por semana (la reserva no tiene fecha), exportar todas las salas a la vez y el `.ics` (fila 0009).
+
+**Avisos que debes saber:**
+- **No se hizo la review de spec con revisores.** La rúbrica pedía dos (el CSV es un formato que consume Excel), pero esta sesión no tiene herramienta para lanzar subagentes. Hay una autorrevisión mía de los siete puntos, que no es independiente, y está registrada así en la spec.
+- **PowerShell 5.1:** con él, `>` guarda el fichero en UTF-16 y estropea el BOM, justo lo que Excel necesita. Ya te lo dije al elegir la salida estándar, y lo mantengo como lo decidiste. Si lo redirigís desde PowerShell 7 o desde bash, no pasa.
+- El delta lo probé sobre una copia de `.docs/sdd`: `sdd capability merge` y `sdd capability check` salen limpios.
+
+Opciones:
+1. **Apruebo (Recomendada).** Escribo el plan y paso a implementar.
+2. **Cambios.** Dime qué ajusto en la spec.
+

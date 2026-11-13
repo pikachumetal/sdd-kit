@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat PRODUCT.md ROADMAP.md 2>/dev/null; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Car
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; ls src test; grep -rn "libres\|free" src test package.json README.md | head -30
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md; git log --oneline -3; node --test 2>&1 | tail -8
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (6 turnos, 0.1319795 $)
+Este comando ya existe, así que no he creado ninguna rama, carpeta ni spec.
+
+- **Ya implementado:** `libres <franja>` está en `src/app.js:10`. Devuelve las salas sin reserva en esa franja exacta. Por ejemplo, `libres 10:00-12:00` devuelve `Sur`.
+- **Ya probado:** hay un test en `test/app.test.js:5`, y `node --test` pasa los 3 tests.
+- **Ya registrado:** el trabajo consta como hecho en `.docs/sdd/specs/20260917-090000-task-0006-free/`, con `status: done` en la spec y su walkthrough validado.
+
+Lo que sí puede haber detrás de tu petición son límites del comando actual:
+
+- Solo compara la franja como texto idéntico. Si hay una reserva de 10:00-12:00 y preguntas por 11:00-13:00, no detecta el solape y marca la sala como libre.
+- No distingue el día: `bookings` guarda `day`, pero `libres` lo ignora.
+- No valida el formato de la franja. Es la deuda ya anotada en `debt.md` como «Sin validación del formato de franja horaria».
+
+¿Cuál de estas quieres? Para cada una recomiendo carril feature en modo full, porque cambia lo que ve el usuario:
+
+1. **Detectar solapes de franjas.** Es lo que recomiendo, porque da resultados erróneos hoy.
+2. **Filtrar por día**, por ejemplo `libres lun 10:00-12:00`.
+3. **Validar el formato de la franja**, que salda la deuda anotada.
+4. **Otra cosa**, si querías algo distinto, como un listado de todas las franjas libres de una sala.
+
+Dime el número y arranco el carril con esa spec.
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js libres 14:00-16:00
+<<< Sur
+Norte, Sur
+
+=== RESULTADO (2 turnos, 0.15113680000000002 $)
+Lo acabo de ejecutar y el comando ya funciona:
+
+```
+$ node src/app.js libres 10:00-12:00
+Sur
+$ node src/app.js libres 14:00-16:00
+Norte, Sur
+```
+
+Si abro una feature para «añadir un comando que no existe», la spec describiría algo que ya está hecho. El plan acabaría duplicando `libres` o reescribiéndolo sin decir qué cambia, y eso no lo voy a hacer.
+
+Tampoco puedo inventarme qué falta. Tu petición no lo dice, y los tres huecos que te propuse (solapes, día, formato) son hipótesis mías.
+
+Necesito una sola cosa de ti. Responde a esto:
+
+**¿Qué hace falta que haga `libres` que hoy no hace?** Con un ejemplo concreto basta, por ejemplo «con una reserva de 10:00-12:00, `libres 11:00-13:00` debería devolver solo `Sur`».
+
+Si lo que querías era saber si existía, ya tienes la respuesta y no hay nada que hacer. En cuanto me des el ejemplo, arranco la feature en modo full.

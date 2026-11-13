@@ -1,0 +1,21 @@
+
+# turno 1
+## usuario
+Pensemos cómo medir la cobertura de los tests: ¿nos vale lo que trae Node o metemos c8?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cat package.json; node -v; ls; ls test tests 2>/dev/null | head -30; ls .github/workflows 2>/dev/null
+> Bash: head -c 600 test/app.test.js; ls src; node --help | grep -i coverage
+## agente
+Lo que he visto en el proyecto: ESM puro, sin dependencias (`package.json` solo tiene `"type": "module"`), un único `src/app.js`, tests con `node:test` y Node v26. El ejecutor de Node ya trae cobertura (`--experimental-test-coverage`, umbrales `--test-coverage-lines/branches/functions`, `--test-coverage-include/exclude`). Eso sale de mirar el repo y `node --help`; lo que sigue es mi inferencia.
+
+❓ **¿Qué motor de cobertura usamos?**
+Ahora mismo el proyecto no tiene dependencias ni `devDependencies`. Node 26 mide con V8 (el mismo motor que usa c8) y ya cubre lo que necesitamos para un repo así: informe en consola, umbrales que hacen fallar el proceso y filtros de archivos. c8 añade reportes lcov/html/cobertura y un fichero de configuración propio.
+
+1️⃣ **Node nativo** — Cero dependencias; `node --test --experimental-test-coverage --test-coverage-lines=80`. Cuesta que el flag sigue llevando "experimental" en el nombre, y que los reportes son solo consola (y lcov con `--test-reporter=lcov`).
+2️⃣ **c8** — Reportes html/lcov/cobertura maduros, config en `.c8rc`, estable entre versiones. Cuesta una devDependency y un paso más de instalación en un proyecto que hoy no tiene ninguna.
+3️⃣ **Nativo ahora, c8 si lo necesitamos** — Igual que 1️⃣ pero dejando anotado el criterio para pasar a c8 (p. ej. si CI o un panel externo exige cobertura/lcov con html).
+
+➡️ **Recomiendo 1️⃣**, porque el repo no tiene dependencias, hay un solo módulo y Node ya da el informe y el umbral. A cambio, dependemos de un flag que Node todavía marca como experimental, y si más adelante hace falta un informe html habrá que cambiar.
+
+¿Vas con 1️⃣? Después queda decidir qué umbral exigimos y dónde se ejecuta (script `npm test` o CI).

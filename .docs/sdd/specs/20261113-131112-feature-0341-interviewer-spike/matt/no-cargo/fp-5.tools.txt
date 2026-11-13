@@ -1,0 +1,143 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md 2>&1 | head -120
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat package.json && ls -R src test && cat .docs/sdd/steering/*.md && cat .docs/sdd/specs/*free/spec.md && git branch -a && grep -rn "libres\|free" src README.md | head -20
+<<< {"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del f
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/app.test.js; cat README.md; cat .docs/sdd/specs/*free/walkthrough.md; git log --oneline
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.13199120000000003 $)
+No hay nada que construir: el comando que describes ya existe, así que no abro carril.
+
+- **Qué hay ahora:** `salas libres <franja>` está en `src/app.js:10`. Devuelve las salas sin reserva en esa franja y lo cubre un test (`test/app.test.js`, «libres excluye la sala reservada en la franja»). Por ejemplo, `libres 10:00-12:00` devuelve `Sur`.
+- **Dónde consta:** la spec `20260917-090000-task-0006-free` está en `status: done`, con su walkthrough validado.
+
+Lo que no cubre hoy, por si te referías a esto:
+1. **El día.** `libres` solo mira la franja, no el día. Con una reserva de `lun 10:00-12:00`, el comando dice que Norte está ocupada también el martes. Es un fallo de comportamiento y, por el estilo de `patch-0007-cancel`, probablemente carril patch.
+2. **La validación del formato de franja.** Ya consta en `debt.md` como «Por triar».
+3. **Más salas o reservas.** Hoy son datos fijos en el código (`Norte` y `Sur`, con una sola reserva de ejemplo).
+
+Dime si buscabas algo de esto, o qué echas en falta del `libres` actual. Con eso lo clasifico y lo arranco por `sdd-propose`. Si prefieres entender primero cómo funciona, puedo explicártelo con `sdd-explore`.
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js libres 14:00-16:00; node --test 2>&1 | tail -8
+<<< Sur
+Norte, Sur
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.4935
+
+=== RESULTADO (2 turnos, 0.15213900000000002 $)
+Lo acabo de ejecutar en este repo y el comando ya funciona:
+
+```
+$ node src/app.js libres 10:00-12:00
+Sur
+$ node src/app.js libres 14:00-16:00
+Norte, Sur
+```
+
+Los 3 tests pasan, incluido el de `libres`. Si abro una feature para «añadir» ese comando, acabaría duplicando `libres` o reescribiéndolo sin motivo. No lo hago sin que me digas qué le falta al actual.
+
+Para seguir en carril feature, modo full, necesito una sola cosa. ¿Qué debe hacer el comando nuevo que no haga ya `libres`?
+
+1. **Que `libres` entienda el día** (recomendada): `libres lun 10:00-12:00`. Hoy ignora el día, así que una reserva del lunes deja Norte ocupada también el martes. Podría ser una feature (cambia la sintaxis del comando) o un patch (es un fallo), y lo decidiría al clasificarlo.
+2. **Un comando aparte con otro nombre**, por ejemplo `disponibles`. Dime cómo se llama y en qué se diferencia de `libres`.
+3. **Otra cosa**: salas con capacidad, un rango de franjas, reservas reales en vez de datos fijos… Cuéntame cuál.
+
+Mientras no me respondas, no creo rama, carpeta ni spec.

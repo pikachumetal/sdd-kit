@@ -1,0 +1,32 @@
+
+# turno 1
+## usuario
+Pensemos cómo guardar las reservas para que no se pierdan al reiniciar.
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Glob: **/*
+> Grep: reserva|booking|reservation
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\src\app.js
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\PRODUCT.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\ROADMAP.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\package.json
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\steering\constitution.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\steering\debt.md
+## agente
+Antes de proponer nada he mirado el código y los documentos.
+
+**Lo que encontré**
+- `src/app.js:3` guarda las reservas en un array en memoria, con una reserva fija de ejemplo (Norte, lun, 10:00-12:00).
+- Es una CLI, así que cada comando es un proceso nuevo y la memoria se pierde al terminar el comando, no solo al reiniciar el servidor.
+- `reservar` solo funciona con `--cada-semana` y devuelve un texto fijo (`src/app.js:11`). `cancelar` tampoco toca ninguna lista (`src/app.js:12`). Hoy ninguna reserva se crea ni se borra de verdad.
+- `PRODUCT.md` dice que lo usas solo tú y que lo despliegas en tu propio servidor, sin más usuarios ni desarrolladores. No aparece ninguna base de datos ni dependencia (`package.json` solo declara `"type": "module"`).
+- Lo que sigo es una inferencia mía: sin concurrencia, sin migraciones y con pocos datos, el almacén puede ser muy simple.
+
+❓ **¿Dónde guardamos las reservas?**
+1️⃣ **Fichero JSON** (por ejemplo `data/reservas.json`). Se lee al arrancar y se escribe tras cada cambio. No añade dependencias, se puede abrir y editar a mano, y es fácil de respaldar. Su coste es que no es transaccional: si el proceso muere a mitad de la escritura, el fichero puede quedar corrupto. Se evita escribiendo a un temporal y renombrando.
+2️⃣ **SQLite**. Da escrituras atómicas y consultas por sala, día y franja. Su coste es una dependencia nueva (o `node:sqlite`, según la versión de Node de tu servidor), un esquema que mantener y un fichero binario que no se lee a mano.
+3️⃣ **Servidor de base de datos** (Postgres o similar). Aguanta crecimiento y varios usuarios, pero es otro servicio que operar. No encaja con un único usuario que despliega en su propio servidor.
+
+➡️ **Recomiendo 1️⃣**, porque con un usuario, dos salas y una CLI que arranca un proceso por comando no hay concurrencia ni volumen que justifiquen más. A cambio, si algún día quieres consultas complejas o varios usuarios simultáneos, habrá que migrar. Aislando la lectura y escritura en un módulo pequeño, ese cambio no tocaría el resto del código.
+
+¿Vas con el fichero JSON (1️⃣) o prefieres otra opción?

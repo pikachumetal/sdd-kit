@@ -1,0 +1,48 @@
+--- [3]
+Empiezo leyendo el contexto SDD (docs, no código).
+
+--- [9]
+Antes de seguir: el comando que pides **ya existe**, así que no he creado rama ni carpeta.
+
+- `src/app.js:10` implementa `libres <franja>`, que devuelve las salas sin reserva en esa franja.
+- `test/app.test.js:5` lo cubre: `run('libres', ['10:00-12:00'])` devuelve `Sur`.
+- Hay una spec cerrada de esa tarea: `.docs/sdd/specs/20260917-090000-task-0006-free/` (tiene `walkthrough.md`, estado `done`, validada por el dev-lead).
+
+Abrir una feature nueva con el mismo enunciado duplicaría esa spec y chocaría con el comando actual. ¿Qué querías hacer?
+
+1. **Ampliar `libres` (recomendada).** Hay huecos reales, y los dos primeros vienen de la deuda de «Por triar»:
+   - Validar el formato de la franja. Hoy `libres foo` devuelve las dos salas.
+   - Que `libres` tenga en cuenta el día. Hoy ignora `day` y compara solo la franja.
+   - Solapes parciales. `09:00-11:00` no choca con `10:00-12:00` porque la comparación es de igualdad exacta.
+   - Salida cuando no queda ninguna sala libre. Hoy es una cadena vacía.
+
+   Dime cuáles quieres y sigo en carril feature, modo full, con ese enunciado.
+2. **Otro comando distinto**, por ejemplo uno que liste las ocupadas, o las libres de un día entero. Dime cuál.
+3. **Fue un olvido.** Si no sabías que `libres` existía, no hay nada que hacer y paramos aquí.
+
+--- [18]
+Ahora: dejo la rama `feature/0010` creada y te planteo la primera decisión de diseño. Queda: la entrevista, la spec (te paro para aprobarla), el plan y la implementación, ~25 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido.** Mantienes el enunciado: un comando de la CLI que diga qué salas están libres en una franja. Ya te avisé de que `libres <franja>` existe (`src/app.js:10`, tarea 0006, cerrada). Sigo en carril feature, modo full, en la rama `feature/0010` (id 0010, sin remoto, contador local). Como el comando ya existe, tengo que saber qué falta, porque no voy a especificar algo que ya está.
+
+❓ **¿Qué cambia respecto a `libres`?**
+Lo que he visto en `src/app.js` y `test/app.test.js`:
+- `libres` compara la franja por igualdad exacta de texto. `09:00-11:00` no choca con `10:00-12:00`.
+- Ignora el día (`day`). Una reserva del lunes bloquea la franja el martes.
+- No valida el formato. `libres foo` devuelve `Norte, Sur`.
+- Si no queda ninguna sala libre, imprime una cadena vacía.
+
+1️⃣ **Corregir `libres` (franja con día, solapes, validación y mensaje de «ninguna libre»).** Es el único camino que no duplica el comando. Cuesta un cambio de comportamiento visible, y la validación de formato cierra el ítem «Por triar» de la deuda.
+2️⃣ **Añadir un comando nuevo con otro nombre** (por ejemplo `disponibles <día> <franja>`) y dejar `libres` como está. Los dos comandos hacen casi lo mismo y quedan dos fuentes de verdad.
+3️⃣ **Reescribir `libres` desde cero con la misma firma.** Es lo mismo que 1️⃣ con más riesgo, sin ganar nada.
+
+➡️ **Recomiendo 1️⃣**, porque dos comandos para la misma pregunta se acabarían desincronizando y la CLI la usas solo tú. A cambio, `libres` deja de devolver lo que devuelve hoy en los casos de día, solape y formato.
+
+Dime 1, 2 o 3. Con 1, dime también qué huecos de la lista entran.
+

@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -2
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-brainstorming/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"h
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md package.json README.md .docs/sdd/steering/*.md; ls -R src test; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md; git log --oneline --all | head; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.135123 $)
+Ese comando ya existe, así que no he abierto la feature: no hay nada que añadir tal como lo pides.
+
+- **Dónde está:** `libres <franja>` en `src/app.js:4-10`. Devuelve las salas sin reserva en esa franja, por ejemplo `libres 10:00-12:00` da `Sur`.
+- **Test:** lo cubre `libres excluye la sala reservada en la franja` en `test/app.test.js`.
+- **Historia:** hay una spec cerrada, `task-0006-free`, con su walkthrough, que dice que se implementó y validó.
+
+Lo que sí le falta al comando son los huecos que he visto leyendo el código. Hay tres:
+1. **Día:** `libres` ignora el día, aunque cada reserva guarda el suyo (`lun`, `mar`…). Una reserva del lunes de 10:00-12:00 hace que la sala salga ocupada también el martes. Es el mismo tipo de fallo que arregló el patch 0007 con `cancelar`.
+2. **Franja parcial:** compara la franja como texto exacto, así que `11:00-13:00` no detecta el solape con `10:00-12:00`.
+3. **Formato de franja:** no se valida. Está apuntado en la deuda como «Sin validación del formato de franja horaria».
+
+**¿Qué quieres hacer?** Mi recomendación es la 1, porque es el fallo más claro y probablemente el que te importa:
+1. Feature para que `libres` acepte un día (`libres lun 10:00-12:00`) y solo cuente las reservas de ese día. Lo más probable es que salga como patch, por ser un fallo determinista.
+2. Feature para que `libres` detecte solapes de franjas parciales, con o sin día.
+3. Algo distinto que tenías en mente: dime qué ves que no hace el comando actual.
+
+Cuando elijas, clasifico el carril y arranco con el anuncio de la feature, en modo full si insistes en ese carril.
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (3 turnos, 0.1628655 $)
+Ahora: anuncio la feature y planteo la primera pregunta de diseño. Queda: tu respuesta, y después rama, spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:** mantienes la feature en modo full y quieres poder ver qué salas están libres en una franja. Esa función ya la hace `libres <franja>`, que pasó por la spec `task-0006-free`. Si abro una feature para «crear» ese comando, saldría un duplicado. Así que la feature tiene que ser sobre algo que `libres` hoy no te da, y todavía no sé qué es. No he creado rama ni carpeta.
+
+Cuéntame un caso real: la última vez que quisiste saber qué sala estaba libre, ¿qué escribiste y qué te faltó en la respuesta?

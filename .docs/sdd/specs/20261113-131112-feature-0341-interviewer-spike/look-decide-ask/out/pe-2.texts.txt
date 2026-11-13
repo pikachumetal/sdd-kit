@@ -1,0 +1,76 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y abrir la entrevista de la spec, ~3 min.
+
+--- [12]
+Ahora: te cuento lo que he entendido y abro la entrevista de la spec. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile y no hay sdd-kit.local.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido.** Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV. El motivo: el responsable de cada sala las cuadra los lunes en su hoja de cálculo, así que el CSV tiene que abrirse bien ahí. No está en el roadmap (hay 0008 y 0009 abiertas), así que le reservaré id propio. Con 3 tareas o menos previstas no propongo partirla.
+
+**Un hecho que he visto en el código.** En `src/app.js` cada reserva es solo `{ room, day, slot }`, por ejemplo `Norte · lun · 10:00-12:00`. El día es un nombre de día de la semana y no una fecha, así que no puedo filtrar por «esta semana» ni por rango de fechas. El export será de todas las reservas de la sala.
+
+❓ **¿Dónde sale el CSV?**
+Con `salas exportar Norte`:
+1️⃣ **Por pantalla (stdout)**: imprime `sala,dia,franja` y una línea por reserva. Para guardarlo, `salas exportar Norte > norte.csv`. Encaja con el resto de la herramienta, que ya imprime con `console.log`, y no toca el disco. El coste es que quien cuadra la hoja tiene que saber redirigir.
+2️⃣ **A un fichero**: crea `norte.csv` en la carpeta actual y dice `exportadas 1 reservas a norte.csv`. Es cómodo para abrir directo, pero hay que decidir qué pasa si el fichero ya existe, y la herramienta nunca escribe en disco hoy.
+➡️ **Recomiendo 1️⃣**, porque `run()` devuelve texto y lo imprime, y así se prueba con un simple `assert` sobre el texto. A cambio, hay que redirigir a mano.
+
+¿Cuál eliges?
+
+--- [14]
+Anotado: sale por stdout y tú lo rediriges.
+
+Ahora hay una decisión que depende de tu hoja de cálculo. Excel con configuración regional en español usa `;` como separador de lista. Un CSV con comas se abre ahí con todo apiñado en la primera columna. Google Sheets y LibreOffice suelen aceptar los dos.
+
+❓ **¿Qué separador usa el CSV?**
+Para la reserva de Norte del lunes:
+1️⃣ **Punto y coma**: sale `Norte;lun;10:00-12:00`. Se abre en columnas en Excel en español. En un programa configurado para comas saldría todo en una columna, aunque casi todos permiten elegir el separador al importar.
+2️⃣ **Coma**: sale `Norte,lun,10:00-12:00`. Es el CSV «estándar» y vale para Sheets o LibreOffice. En Excel en español se abre en una sola columna, salvo que importes eligiendo la coma.
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra en «su hoja de cálculo» y trabajáis en castellano, que es el caso donde Excel espera `;`. A cambio, si algún día lo lees desde un script, tendrás que decirle que el separador es `;`.
+
+¿Qué hoja de cálculo usa quien las cuadra, y cuál eliges?
+
+--- [16]
+Decidido: stdout con `;` como separador. El resto (cabecera, sala sin reservas, sala que no existe) lo decido yo y lo dejo marcado en ✋ de la spec para que lo valides.
+
+Ahora: reservo id y rama, y leo la plantilla de spec y el repaso de coherencia. Queda: escribir la spec, revisarla y pararme en tu aprobación, ~6 min.
+
+--- [27]
+Ahora: repaso de coherencia, con el delta probado en una copia fuera del repo. Queda: presentarte la spec y esperar tu aprobación.
+
+--- [31]
+**Spec lista para tu aprobación** (`.docs/sdd/specs/20261113-153851-feature-0010-exportar-csv/spec.md`, rama `feature/0010-exportar-csv`, perfil `delegate`).
+
+🦆 Con `salas exportar Norte` salen por pantalla las reservas de esa sala, una por línea y con cabecera: `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. Redirigido a un fichero (`salas exportar Norte > norte.csv`), Excel en español lo abre en tres columnas, porque el separador es el punto y coma. Una sala sin reservas da solo la cabecera, y una sala que no existe da un aviso en lugar de un CSV vacío. Por dentro es una función más junto a `libres`, que devuelve texto como el resto de comandos.
+
+**Review de la spec sin lanzar.** La rúbrica pide dos revisores (dominio en Opus y técnica en Sonnet), porque hay capacidad nueva y un formato de fichero que consume una hoja ajena. Esta sesión no tiene herramienta para despachar subagentes, así que no se han lanzado. La spec lo dice en su bloque de ✋ y no hay hallazgos que plegar. Las dos lentes quedan para tu lectura. Si prefieres, puedo lanzarlos desde una sesión que los permita antes de aprobar.
+
+**✋ Decisiones que he tomado yo — valida estas:**
+1. Comando `salas exportar <sala>`.
+2. Cabecera `sala;dia;franja`.
+3. Saltos `\n` y sin línea final extra.
+4. Filas en el orden en que están guardadas.
+5. Sala sin reservas: solo la cabecera.
+6. Sala desconocida, también con otra capitalización: `sala desconocida: Este`, sin CSV.
+7. Sin sala: `uso: salas exportar <sala>`.
+8. Sin BOM ni escape de `;`, porque ninguna sala ni franja guardada los lleva. Si una sala con acento sale rota en Excel, haría falta BOM y queda fuera.
+9. Todas las reservas de la sala, sin filtro por fecha: se guarda `lun`, no una fecha.
+10. Capacidad nueva `booking-export`.
+11. Enfoque: función en `src/app.js`, frente a un módulo aparte o a una librería de CSV (descartada: Node 22 sin dependencias).
+12. Validación a cargo del dev-lead, porque solo una persona ve el fichero abierto en Excel.
+13. El repaso de coherencia está hecho. El delta probado en una copia da `capability merge` correcto, con 4 requisitos añadidos.
+
+Las decisiones tuyas (stdout y `;`) van con tu frase literal en «Decisiones tomadas con el dev-lead».
+
+Esta feature no tiene fila en `ROADMAP.md`, y la 0009 (`.ics`) es otra cosa que no toco.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+Elige una; sin un «apruebo» expreso la spec queda en espera y no escribo el plan.
+

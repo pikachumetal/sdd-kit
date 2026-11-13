@@ -1,0 +1,52 @@
+--- [11]
+Estoy leyendo el contexto del proyecto (ya lo he hecho) y clasificando: es una feature en modo full. Ahora reservo el id y creo la rama.
+
+--- [18]
+Ahora: dejo la rama `feature/0010-lista-espera` creada y te cuento qué he entendido. Queda: una entrevista corta (unas pocas preguntas), el enfoque, la spec y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** cuando intentas reservar una sala y está ocupada en esa franja, en vez de limitarte a ver que no hay hueco, quieres apuntarte a una lista de espera para esa sala.
+
+**Lo que he visto en el código:**
+- `reservar` solo sabe crear la reserva semanal (`--cada-semana`). Hoy no comprueba si la sala está ocupada, así que "sala ocupada" todavía no existe como respuesta.
+- Las reservas son una lista fija en memoria (`bookings` en `src/app.js`) y no se guardan entre ejecuciones.
+- `cancelar <día> <hora>` es lo que libera una sala. Es el único momento en que la lista de espera podría avanzar.
+
+Calculo unas 3 tareas o menos, así que no propongo dividirla.
+
+Corrígeme lo que no encaje. Antes de decidir nada del diseño necesito una cosa que solo sabes tú:
+
+❓ **¿Qué quieres poder hacer con la lista de espera que hoy no puedes?**
+
+--- [20]
+Entendido: lo que te molesta es tener que preguntar por `libres` una y otra vez, así que la lista tiene que avisarte, o actuar por ti, cuando la sala se libere.
+
+Hay un hecho que condiciona todo. Hoy las reservas viven en memoria y se pierden al acabar cada comando. Una lista de espera necesita guardarse en algún sitio, y eso lo decidimos justo después. Antes necesito saber qué pasa cuando la sala se libera.
+
+❓ **¿Qué debe ocurrir cuando se libera Norte?**
+Se libera con `cancelar`. Es lo único que hoy libera una sala.
+
+1️⃣ **Te la reserva sola.**
+- `reservar Norte lun 10:00-12:00` responde `Norte ocupada; en espera (1.º)`.
+- Cuando alguien ejecuta `cancelar lun 10:00`, la reserva pasa a ti: `cancelada lun 10:00; Norte reservada para ti (1.º en espera)`.
+- No tienes que mirar nada más.
+- Coste: reservas sin confirmar. Si ya no la querías, tienes que cancelar.
+
+2️⃣ **Te avisa y reservas tú.**
+- La primera respuesta es la misma.
+- Al cancelar sale `Norte libre lun 10:00-12:00; avisado el 1.º en espera`.
+- Tienes que ver ese aviso y ejecutar `reservar` tú.
+- Coste: sigues teniendo que enterarte. Si no estás delante, otro puede quitártela.
+
+3️⃣ **Un comando que se queda esperando.**
+- `esperar Norte lun 10:00-12:00` se queda abierto en la terminal y termina con `Norte libre` cuando se libera.
+- No es una lista, es una espera en vivo.
+- Coste: requiere la terminal abierta, y no hay cola si hay más de una persona.
+
+➡️ **Recomiendo 1️⃣**, porque es la que elimina del todo el ir mirando `libres`, que es lo que describes. A cambio, puedes acabar con reservas que no querías y tendrás que cancelarlas.
+
