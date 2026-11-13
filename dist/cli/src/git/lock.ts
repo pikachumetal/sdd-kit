@@ -85,12 +85,16 @@ function isAlive(pid: number): boolean {
   }
 }
 
-// La hora de arranque de un proceso, o null si el sistema no la da (sin permiso, ya salió).
+// Un PowerShell que tarda en arrancar no congela la espera del cerrojo: sin respuesta, no se rompe.
+const PROCESS_START_TIMEOUT_MILLISECONDS = 5000;
+
+// La hora de arranque de un proceso, o null si el sistema no la da (sin permiso, ya salió, sin PowerShell o sin `ps`).
 function processStart(pid: number): number | null {
+  const options = { encoding: 'utf8' as const, windowsHide: true, timeout: PROCESS_START_TIMEOUT_MILLISECONDS };
   const run =
     process.platform === 'win32'
-      ? spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString('o')`], { encoding: 'utf8' })
-      : spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' } });
+      ? spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString('o')`], options)
+      : spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { ...options, env: { ...process.env, LC_ALL: 'C' } });
   const start = Date.parse(run.stdout?.trim() ?? '');
   return Number.isNaN(start) ? null : start;
 }

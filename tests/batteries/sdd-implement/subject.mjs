@@ -39,7 +39,7 @@ const F31 = '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load';
 const F32 = '.docs/sdd/specs/20261015-120000-feature-0032-free-rooms-fast';
 const F33 = '.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates';
 const F34 = '.docs/sdd/specs/20261015-140000-feature-0034-tags-max-two';
-// Las features nuevas de la 0152 nacen en changes/, la carpeta de los cambios de la 3.0.0.
+// Las features nuevas del molde nacen en changes/, la carpeta de los cambios de la 3.0.0.
 const F35 = '.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs';
 const F36 = '.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations';
 const NOTE_PROMPT = 'skills/guardar-nota/references/note-prompt.md';

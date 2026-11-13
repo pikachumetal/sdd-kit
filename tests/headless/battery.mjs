@@ -15,7 +15,7 @@
 // Lo que hace fallar el primer lanzamiento: KIT_DIR es una copia sin .docs/ ni tests/, sacada con git archive <commit>:dist;
 // SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda, y la previsión de la spec manda sobre él (cabecera de run.mjs); y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CampaignError, campaignSpent, hasResult, labelTaken, lastCost, readConfig, runCampaign } from './campaign.mjs';
 
@@ -379,8 +379,9 @@ const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.
 export function scenarioPrices(rows, specsRoot, fs) {
   const askById = new Map(rows.map((row) => [row.Id, row['Petición'].replaceAll('\\|', '|').trim()]));
   const byId = new Map();
-  if (fs.exists(specsRoot)) {
-    for (const output of savedOutputs(specsRoot, fs)) {
+  // las campañas de antes de la 3.0.0 viven en specs/; las nuevas, en changes/, a su lado
+  for (const root of [specsRoot, join(dirname(specsRoot), 'changes')].filter((root) => fs.exists(root))) {
+    for (const output of savedOutputs(root, fs)) {
       const subject = measuredSubject(output, askById, fs);
       if (subject) byId.set(subject.id, [...(byId.get(subject.id) ?? []), subject]);
     }

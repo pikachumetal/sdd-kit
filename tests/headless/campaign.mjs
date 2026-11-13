@@ -284,7 +284,7 @@ export async function stopCampaign(config, deps, pids) {
   await sweepCut(config, deps);
 }
 
-// Un nieto que el sujeto deja vivo (el `find /` de la 0152, que retuvo la salida de la tanda casi 5 h) no nombra su
+// Un nieto que el sujeto deja vivo (un `find /` que retiene la salida de la tanda durante horas) no nombra su
 // carpeta y su padre ya murió: sus descendientes se apuntan mientras corre, con la hora de arranque, que descarta un
 // PID reutilizado. ponytail: un huérfano de un PID muerto y ya reutilizado se cuela como hijo; si pasa, comparar arranques.
 const DESCENDANTS_EVERY_MS = 15_000;

@@ -85,10 +85,11 @@ it.concurrent.each(closing)('el molde de cierre $mold ($id) lleva la versión de
 const MIGRATING = new Set(['sdd-upgrade/salas3', 'sdd-upgrade/salas3-shared']);
 const current = (moldCase: MoldCase): boolean => !is2x(moldCase) && moldCase.battery !== 'sdd-init' && !MIGRATING.has(`${moldCase.battery}/${moldCase.mold}`);
 
-// Con el marcador por debajo de la última migración, el hook de inicio avisa de migrar y el sujeto lo atiende en vez de su petición (fila 63 de debt.md).
+// Con el marcador por debajo de la última migración, el hook de inicio avisa de migrar y el sujeto lo atiende en vez de su petición.
 it.concurrent.each(cases.filter(current))('el molde $mold de $battery ($id) no queda por debajo de la última migración', async (moldCase) => {
   const { output } = await buildMold(moldCase);
   const marker = join(moldCase.runs, 'red', `${moldCase.id}-1`, 'repo', '.docs', 'sdd', 'sdd-kit.json');
+  // sin sdd-kit.json el hook no compara versiones ni avisa de migrar: no hay nada que mirar
   if (!existsSync(marker)) return;
 
   expect(JSON.parse(readFileSync(marker, 'utf8')).version, output).toBe(kitVersion(kit));

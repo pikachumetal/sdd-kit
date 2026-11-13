@@ -433,7 +433,7 @@ describe('procesos del sujeto', () => {
     expect(fake.log).toContain(`[a-1] paro 2 procesos de ${folder}`);
   });
 
-  it('para al acabar el nieto que el sujeto dejó vivo sin nombrar su carpeta, y no un PID reutilizado (find / de la 0152)', async () => {
+  it('para al acabar el nieto que el sujeto dejó vivo sin nombrar su carpeta, y no un PID reutilizado', async () => {
     const fs = kitFs();
     const processes: ProcessInfo[] = [
       { pid: 2001, ppid: 1000, created: 'a', commandLine: 'claude.exe -p' },

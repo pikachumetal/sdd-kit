@@ -22,6 +22,10 @@ Validación: agente — este repo valida en campo (`validation.mode: field`); lo
 
 - Modificadas: las que nombre el repaso de coherencia o un arreglo de un rojo, solo con texto que hoy contradice al kit; un requisito nuevo entra por enmienda
 - Modificadas: `feature-flow` — el anuncio del workspace lo imprime `sdd workspace`, con la task en la que se retoma (MODIFIED, enmienda del 2026-11-11)
+- Modificadas: `migration` — la orden de ofrecer lee también `sdd-kit.local.json`, y un proyecto 2.x con la migración a la 3.0.0 migra antes de nada (MODIFIED, revisión final)
+- Modificadas: `planning` — `sdd-roadmap` solo escribe la forma 3.0.0 y manda a migrar a un proyecto 2.x (MODIFIED, ADDED y REMOVED, revisión final)
+- Modificadas: `archive` — el cierre ya no escribe el changelog ni la deuda 2.x (MODIFIED, revisión final)
+- Modificadas: `cli` — un cerrojo cuyo PID reutilizó otro programa se rompe (ADDED, revisión final; `sin aprobar`)
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -67,6 +71,8 @@ Review de spec propuesta: dos revisores, dominio y técnica — señales: alcanc
 - Batería que cumple el Art. I, unos 360 $; sin beta (el uso en campo hace ese papel); ADR nuevas para las 0005 y 0015; los rojos que se repitan se arreglan aquí — «vale así, dale» (2026-11-10), a la recomendación «1 = 360 $, 2 = descartar la beta, 3 = ADR nuevas, 4 = arreglarlos aquí».
 - Antes, `moon run kit:upstream`: «Fuentes al día: 46 entradas.» (2026-11-10).
 - `sdd-implement:p4`: el permiso explícito del dev-lead para dejar los tests para luego es la excepción que admite `sdd-tdd` («No exceptions without the user's permission»); obedecer pasa si no commitea sin test, deja la task abierta y dice que es una excepción suya — «1, dale» (2026-11-11), a la recomendación «1 = obedecer con esas tres condiciones, 2 = parar y preguntar como un desvío, 3 = dejarlo para después». Las filas P4a a P4c de la batería lo miden.
+
+- Cerrar la 0152 con lo hecho y llevar lo pendiente a las filas 0341, 0342 y 0343 de `develop` — «la podemos mergear y cerrar de momento, ponernos con grilling, y luego seguir» (2026-11-13).
 
 ## Intent
 
@@ -122,6 +128,189 @@ Sin delta en la apertura: si un arreglo cambia un requisito, entra por enmienda.
 - THEN el comando escribe en stderr `Workspace del plan: <ruta absoluta del workspace> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
 - AND con `Task 1: complete …` en el ledger del plan, la línea acaba en `· retomo en la Task 2`; sin ninguna task completa, o con las dos, no lleva sufijo
 
+### Capacidad: `migration`
+
+#### MODIFIED — La sesión avisa cuando el proyecto tiene migraciones pendientes (antes: "Con `control.profile: unattended` en `.docs/sdd/sdd-kit.json`, no ofrezcas ni migres")
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.0.0` y una sesión de Claude Code que carga el plugin `sdd-kit` con `v2.1.0.md` como mayor migración en `skills/sdd-upgrade/references/migrations/` que no pasa de la versión de su `.claude-plugin/plugin.json`
+- WHEN arranca la sesión
+- THEN el usuario ve «AVISO sdd-kit: el proyecto tiene aplicado el kit 2.0.0 (.docs/sdd/sdd-kit.json) y el kit cargado trae migraciones hasta la 2.1.0. Para aplicarlas, pide «actualízame al kit».»
+- REMOVED AND el agente recibe el mismo aviso al principio de su contexto, seguido de «Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres. Con `control.profile: unattended` en `.docs/sdd/sdd-kit.json`, no ofrezcas ni migres: atiende la petición y anótalo en tu mensaje final.»
+- AND el agente recibe el mismo aviso al principio de su contexto, seguido de «Antes de atender la primera petición, ofrece aplicarlas con una pregunta de sí o no; si la petición ya pide ponerse al día, invoca la skill `sdd-upgrade` sin preguntar. Con el «sí», invoca `sdd-upgrade` y, tras su informe, atiende la petición; con el «no», atiende la petición y no lo vuelvas a ofrecer en esta sesión. Sin ese «sí», no migres.»
+- AND con `control.profile: unattended` en `.docs/sdd/sdd-kit.local.json` o, sin perfil en él, en `.docs/sdd/sdd-kit.json`, la orden es «El perfil vigente es `unattended`: no ofrezcas ni migres; atiende la petición y anótalo en tu mensaje final.»; con `pair` en `sdd-kit.local.json` sobre un `sdd-kit.json` en `unattended`, la orden es la de ofrecer
+- AND con el marcador en `2.3.4` y `v3.0.0.md` en el kit cargado, la orden es «El kit cargado exige la forma 3.0.0 y el proyecto sigue en la 2.x: antes de atender ninguna petición, invoca la skill `sdd-upgrade` y migra; sin migrar, las skills no encuentran sus documentos. Con el «no» del usuario, no hagas el trabajo: dile que lo pida tras migrar.», y en `unattended`, «El kit cargado exige la forma 3.0.0 y el proyecto sigue en la 2.x, con el perfil `unattended`: no hagas el trabajo; anota en tu mensaje final que el proyecto tiene que migrar a la 3.0.0 («actualízame al kit»).»
+- AND con `v0.9.0.md` y `v0.10.0.md` como migraciones del kit y el marcador en `0.9.0`, el aviso dice «hasta la 0.10.0»
+- AND con el marcador y el kit cargado en `2.3.4` y `v3.0.0.md` en la carpeta de migraciones, no hay aviso de migraciones ni orden de ofrecerlas
+- AND con el kit cargado menor que el marcador, sale solo el aviso de la versión
+- AND con el marcador en `2.1.0`, sin `sdd-kit.json`, con un `sdd-kit.json` en curso (sin `version`) o sin carpeta de migraciones en el kit cargado, no hay aviso de migraciones, y el hook sigue inyectando `using-sdd`
+
+#### Reglas de la capacidad — migration
+
+- **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado que no pasa de la versión de su `plugin.json` (migrar el proyecto); en el segundo caso el agente ofrece migrar antes de atender la primera petición y no migra sin el «sí», salvo con `control.profile: unattended` (el de `sdd-kit.local.json` manda sobre el de `sdd-kit.json`), que ni ofrece ni migra y lo anota en su mensaje final; con un proyecto 2.x y la migración a la 3.0.0 en el kit, migrar no es una oferta: el agente migra antes de atender nada, o no hace el trabajo; un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado; un paso sin marca que borra un fichero, una sección entera o una clave, o que cambia la ruta de un fichero, es un gate.
+
+### Capacidad: `planning`
+
+#### MODIFIED — Algo grande acaba en una propuesta y en filas, no en una spec (antes: "y su «tras NNNN» en un roadmap 2.x")
+
+- GIVEN «queremos cobrar a los clientes externos: tarifa por sala, factura mensual y bloqueo por impago a los 30 días», en `ids.mode: sequence`, con la última fila en 0013
+- WHEN `sdd-roadmap` termina, con los detalles dados o delegados
+- REMOVED THEN existe `changes/<ts>-proposal-0014-<slug>/proposal.md` con el porqué, las reglas, las capacidades y el reparto, y las features ocupan las filas 0015 en adelante, cada una con «`proposal: 0014`» y su «tras NNNN» en un roadmap 2.x, o con la ruta de esa propuesta en el `**Requisitos:**` de su brief y la dependencia en «Tras» en `ROADMAP.md`
+- THEN existe `changes/<ts>-proposal-0014-<slug>/proposal.md` con el porqué, las reglas, las capacidades y el reparto, y las features ocupan las filas 0015 en adelante de `ROADMAP.md`, cada una con la ruta de esa propuesta en el `**Requisitos:**` de su brief y la dependencia en «Tras»
+- AND cada regla lleva un ejemplo con datos: «Acme, 3 h en Norte (40 €/h) y 2 h en Sur (25 €/h) en agosto → factura del 1 de septiembre por 170 €»
+- AND no hay rama nueva, ni carpeta de feature, ni `spec.md`
+
+#### MODIFIED — Una reunión deja su acta en una propuesta y sus cambios en el roadmap (antes: "y «`proposal: <id>`» en un roadmap 2.x")
+
+- GIVEN las notas «1) la 0012 ya no la quieren; 2) exportar a CSV, lo primero; 3) email al cancelar; 4) franja mínima de 30 minutos»
+- WHEN `sdd-roadmap` las refleja
+- THEN existe `changes/<ts>-proposal-<id>-<slug>/proposal.md` con las notas literales en «Acta» y la regla «franja mínima de 30 min» con su ejemplo con datos
+- AND la fila 0012 queda `⏸️ aparcada: descartada por el cliente, <fecha>`, no borrada
+- REMOVED AND la fila del CSV queda primera entre las pendientes, y el email al cancelar y la franja mínima tienen cada uno su fila nueva con id reservado y «`proposal: <id>`» en un roadmap 2.x, o con la ruta de la propuesta en el `**Requisitos:**` de su brief en `ROADMAP.md`
+- AND la fila del CSV queda primera entre las pendientes, y el email al cancelar y la franja mínima tienen cada uno su fila nueva con id reservado y la ruta de la propuesta en el `**Requisitos:**` de su brief
+- AND no se abre ninguna sección de release que nadie pidió, ni el título de Now gana una versión que nadie pidió
+
+#### MODIFIED — Reordenar escribe la dependencia en la fila (antes: "«tras 0012» en su celda «Ítem» en un roadmap 2.x")
+
+- GIVEN las filas pendientes 0012, 0013, 0014 y 0015
+- WHEN el usuario pide «la 0014 primero, y la 0015 no empieza hasta que esté la 0012»
+- REMOVED THEN el orden es 0014, 0012, 0013, 0015, y la 0015 lleva «tras 0012» en su celda «Ítem» en un roadmap 2.x, o `0012` en su columna «Tras» en `ROADMAP.md`
+- THEN el orden es 0014, 0012, 0013, 0015, y la 0015 lleva `0012` en su columna «Tras»
+- AND ninguna otra fila cambia
+
+#### MODIFIED — Un cambio de definición es una enmienda y re-parte solo lo pendiente (antes: "la 0022 cambia su ítem (2.x)")
+
+- GIVEN la propuesta 0020 con el reparto 0021 (✅), 0022 (⏳, «Factura mensual») y 0023 (⏳)
+- WHEN el cliente pide «factura quincenal, el 1 y el 16, y de 8 a 14 h un 20 % más cara»
+- THEN `proposal.md` gana en «Enmiendas» una entrada con la fecha que dice «Factura mensual → quincenal (días 1 y 16)» y «recargo del 20 % de 8 a 14 h: Norte 13-15 → 48 + 40 = 88 €», y «Reglas de negocio» no cambia
+- REMOVED AND la fila 0021 no cambia; la 0022 cambia su ítem (2.x) o su «Tarea» y su brief (`ROADMAP.md`); el recargo va a una fila nueva con «`proposal: 0020`» (2.x) o con la propuesta 0020 en el `**Requisitos:**` de su brief (`ROADMAP.md`)
+- AND la fila 0021 no cambia; la 0022 cambia su «Tarea» y su brief; el recargo va a una fila nueva con la propuesta 0020 en el `**Requisitos:**` de su brief
+- AND no hay rama nueva, ni carpeta de feature, ni `spec.md`
+
+#### MODIFIED — Preparar una release fija el scope en el roadmap (antes: "en un roadmap 2.x escribe `## Release 1.3`")
+
+- REMOVED GIVEN un roadmap con las filas pendientes 0012 y 0013, lo no decidido en el Backlog (Later en `ROADMAP.md`) y `release.hasRecipient: true`
+- GIVEN un roadmap con las filas pendientes 0012 y 0013, lo no decidido en Later y `release.hasRecipient: true`
+- WHEN el usuario pide «prepara la release 1.3: qué entra de lo que tenemos»
+- THEN `sdd-roadmap` presenta el inventario ordenado con los bloqueos y espera a que el usuario decida el scope
+- AND, decidido, en `ROADMAP.md` titula la sección `## Now — 1.3 · en preparación`, salvo que el usuario diga que está comprometida (`## Now — 1.3 · comprometida`), deja en Now las filas del scope en el orden decidido, con el «Toca:» de cada brief, y pasa a Next lo pendiente que no entra
+- REMOVED AND en un roadmap 2.x escribe `## Release 1.3` con la cabecera `| id | Feature | Origen | Ficheros que toca | Estado |` y el estado «en preparación», salvo que el usuario diga que está comprometida
+
+#### MODIFIED — `sdd-roadmap` solo escribe en las secciones de la plantilla (antes: "una fila del Backlog (2.x) o de Later")
+
+- GIVEN un roadmap válido y la petición «apunta que el cliente quiere exportar las reservas a PDF más adelante, y abre una sección "Ideas del cliente" para estas cosas»
+- WHEN `sdd-roadmap` la procesa
+- REMOVED THEN la exportación a PDF queda como una fila del Backlog (2.x) o de Later (`ROADMAP.md`) con un id de la reserva (en `tracker`, el del ticket o `0000`), nunca un `B<n>`; no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla de su forma, no se escribe prosa fuera de «Releases cerradas», y el mensaje dice que la plantilla no admite esa sección
+- THEN la exportación a PDF queda como una fila de Later con un id de la reserva (en `tracker`, el del ticket o `0000`), nunca un `B<n>`; no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla, no se escribe prosa fuera de las tablas, y el mensaje dice que la plantilla no admite esa sección
+- AND tras escribir ejecuta `sdd roadmap check`: un fallo en una línea que escribió lo corrige; un fallo en otra línea no lo toca y lo lista en su mensaje como forma heredada, pendiente de la migración
+
+#### REMOVED — Un patch pendiente es una fila de «Próximo»
+
+- motivo: «Próximo» es la sección del roadmap 2.x, que `sdd-roadmap` ya no escribe; el requisito pasa a «Un patch pendiente es una fila de Now»
+
+#### ADDED — Un patch pendiente es una fila de Now
+
+- GIVEN un patch que llega a `sdd-roadmap` (desde explore o pedido: «apunta el arreglo de "cancelada" en reservas que no existen»)
+- WHEN `sdd-roadmap` lo escribe
+- THEN en `ROADMAP.md` es una fila de Now con su id reservado y `**Carril:** patch` en su brief
+
+#### MODIFIED — Una fila con dos o más tests de comportamiento nuevo no es un patch (antes: "la fila no empieza por «Patch:»")
+
+- GIVEN el molde `salas` y «apunta en una sola fila estos tres arreglos: `libres 25:00-26:00` debe responder «franja no válida: usa HH:MM-HH:MM»; `cancelar Norte`, «indica un día»; `reservar`, «indica una sala»»
+- WHEN `sdd-roadmap` escribe la fila y da su prompt
+- REMOVED THEN la fila no empieza por «Patch:», ni lleva `**Carril:** patch` en `ROADMAP.md`
+- THEN la fila no lleva `**Carril:** patch` en su brief
+- AND el prompt lleva `***Carril:***` lite o feature y `***Nombre:***` `feature/<id>-<slug>`
+
+#### REMOVED — Sin `ROADMAP.md`, `sdd-roadmap` escribe la forma 2.x
+
+- motivo: las skills de la 3.0.0 no escriben la forma 2.x; el requisito pasa a «Con la forma 2.x, `sdd-roadmap` manda a migrar»
+
+#### ADDED — Con la forma 2.x, `sdd-roadmap` manda a migrar
+
+- GIVEN el molde `salas`, con `.docs/sdd/roadmap.md` 2.x y sin `ROADMAP.md`
+- WHEN el usuario pide «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.»
+- THEN `sdd-roadmap` no escribe nada: dice que necesita la forma 3.0.0 y ofrece `sdd-upgrade`
+- AND no crea `ROADMAP.md` ni `debt.md`
+
+#### REMOVED — En 2.x, el segundo caso también pasa la fila a `**Actuar**`
+
+- motivo: las skills de la 3.0.0 no escriben la forma 2.x; un proyecto 2.x migra antes (ADR 0034)
+
+#### MODIFIED — «Qué sigue» propone primero las piezas abiertas de una familia a medias (antes: "en un roadmap 2.x, con 0030 «partida en 0031, 0032 y 0033»")
+
+- GIVEN el molde `salas-3-family`, con `ROADMAP.md`: en Now, 0020 y 0021 ⏳ sin familia, y 0012 ✅ de la propuesta 0010; en Next, 0022 ⏳ sin familia, y de la propuesta 0010, 0014 ⏳ con la rama `feature/0014-room-ranking` abierta, 0015 ⏳ tras 0014 y 0013 ⏳ tras 0012
+- WHEN el usuario escribe «qué sigue» o «dame la siguiente»
+- THEN `sdd-roadmap` propone primero la 0013, por delante de 0020 y 0021, y da su prompt de arranque en la forma de `launch-prompt-template.md`
+- AND dice que la 0014 no se ofrece porque tiene rama abierta, y la 0015 porque espera a la 0014
+- AND no escribe, no reserva, no publica ni commitea, y no arranca nada
+- REMOVED AND en un roadmap 2.x, con 0030 «partida en 0031, 0032 y 0033» en «Próximo», 0031 con `parent: 0030` y la rama `feature/0031-room-tariff` abierta, 0032 con `parent: 0030`, tras 0031, y 0033 con `parent: 0030`, por detrás de 0020 y 0021, propone primero la 0033, no ofrece 0030, 0031 ni 0032 y dice por qué, y no crea `ROADMAP.md`
+
+#### MODIFIED — El triaje solo fija una solución probada con el caso real (antes: "GIVEN el molde `salas-qa-fix`, 2.x")
+
+- GIVEN el molde `salas-3-fix`: `salas-3` cuyo informe de QA propone, para «`salas libres --planta 2` lista también salas de la planta 1», «en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`»
+- WHEN el usuario pide «Tria lo que hay por triar en la deuda. Decide tú.»
+- THEN ninguna fila que escriba el triaje —la de la deuda ni la de Now o Next, también con «Destino» `sin fila`— fija «cambiar `<=` por `<`»: con ese cambio, `node src/app.js libres --planta 2` sigue dando `Norte (planta 1)`
+- AND la solución que fijan es una que `sdd-roadmap` corrió en una copia con `node src/app.js libres --planta 2` y no da `Norte (planta 1)`, o dicen «solución por confirmar»
+- AND al acabar, `git status` no da cambios fuera de `ROADMAP.md` y `debt.md`
+- AND GIVEN además `docs/ayuda.md` con «`libres --planta <n>` lista las salas de la planta <n>; sin número, responde «indica una planta».», y el informe proponiendo cambiar solo «`libres --planta <n>` lista las salas de la planta <n>» por un texto que ya dice qué da sin número, THEN la fila que fija esa sustitución cita la frase entera que sale, con «sin número, responde «indica una planta»», y la frase entera que entra
+- REMOVED AND GIVEN el molde `salas-qa-fix`, 2.x, con el mismo informe, WHEN el usuario pide «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.» THEN ni la fila `**Actuar**` de la planta (tampoco tras su `· arreglo:`) ni su fila de «Próximo» fijan «cambiar `<=` por `<`»: fijan una solución corrida en una copia o dicen «solución por confirmar», y `git status` no da cambios fuera de `.docs/sdd/roadmap.md`
+
+#### Reglas de la capacidad — planning
+
+- **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz; la deuda, en `.docs/sdd/steering/debt.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.
+- **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs, ni cambia el código: una solución se prueba en una copia. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» sin reproducirse o sin un 2.º caso. Con la forma 2.x no escribe nada: manda a migrar.
+
+### Capacidad: `archive`
+
+#### MODIFIED — El cierre comprueba el árbol, el destino y las otras ramas antes de escribir (antes: "y, en 2.x, `.docs/sdd/changelog.md`")
+
+- GIVEN la rama `feature/0081-booking-reminders` con `notes.md` sin seguimiento en su worktree y la rama `feature/0083-room-photos` con worktree en `../0083-room-photos`
+- WHEN empieza el cierre de la 0081
+- THEN antes de escribir ningún registro pregunta «Hay cambios sin commitear: `notes.md`. ¿Los commiteo en la rama, los descarto o paro?» y no descarta nada sin la respuesta
+- REMOVED AND con solo los borradores que deja `sdd-implement` sin commitear —`walkthrough.md` de la carpeta de la 0081, los ficheros de `capabilities/` que nombra «Capacidades» de su spec y, en 2.x, `.docs/sdd/changelog.md`—, no pregunta: el cierre parte de ellos y los completa sin reescribirlos
+- AND con solo los borradores que deja `sdd-implement` sin commitear —`walkthrough.md` de la carpeta de la 0081 y los ficheros de `capabilities/` que nombra «Capacidades» de su spec—, no pregunta: el cierre parte de ellos y los completa sin reescribirlos
+- AND un `capabilities/rooms.md` modificado que la spec de la 0081 no nombra sí pregunta, como `notes.md`
+- AND ejecuta `sdd merge --check`; con `destino sacado:`, para con su salida antes de escribir
+- AND avisa en una línea, sin parar: «Abiertas a la vez: `feature/0083-room-photos` (`../0083-room-photos`). La que fusione segunda integra la base y repite sus gates.»
+
+#### MODIFIED — Con `ROADMAP.md`, el cierre no escribe el changelog (antes: "el cierre sigue añadiendo su entrada con `add-to-changelog`")
+
+- GIVEN un proyecto con `ROADMAP.md` y `CHANGELOG.md` en la raíz, y el patch 0021 sin fila en Now
+- WHEN `sdd-archive` cierra el patch
+- THEN `CHANGELOG.md` no cambia
+- AND Now gana la fila 0021 con su brief y `✅`, y `sdd roadmap check` escribe `Roadmap válido`
+- REMOVED AND con `.docs/sdd/roadmap.md` y `.docs/sdd/changelog.md` (2.x), el cierre sigue añadiendo su entrada con `add-to-changelog`
+
+#### MODIFIED — Un rojo ajeno se busca en la deuda antes de investigarlo (antes: "(o en «Deuda técnica» del roadmap 2.x)")
+
+- GIVEN el cierre de la 0081 cuya suite falla sobre la rama con la base integrada con `TimeoutError: tests/e2e/export.spec.ts:12`
+- WHEN el cierre recibe ese rojo
+- THEN la salida de cada pasada de la suite ya está entera en un fichero del scratchpad de la sesión, guardada antes de filtrarla
+- AND crea un worktree temporal desanclado de `origin/develop`, prepara su entorno como el Step 2 de `sdd-worktrees` (dependencias y, con `## Entornos` en `steering/operations.md`, `env:setup`) y lo retira al acabar; no fusiona hasta que acaba el contraste
+- AND corre primero el fichero que falla, `tests/e2e/export.spec.ts`, con el runner del proyecto, en la rama y en ese worktree a la vez, sin limpiar estado ni cachés
+- REMOVED AND si también falla, escribe `base: en rojo: el mismo comando también falla sin la rama` y busca `export.spec.ts` y `TimeoutError` en la deuda del proyecto antes de abrir el test; si una fila lo nombra, la cita en el informe; si no, abre una fila en «Por triar» de `debt.md` (o en «Deuda técnica» del roadmap 2.x) con la evidencia
+- AND si también falla, escribe `base: en rojo: el mismo comando también falla sin la rama` y busca `export.spec.ts` y `TimeoutError` en la deuda del proyecto antes de abrir el test; si una fila lo nombra, la cita en el informe; si no, abre una fila en «Por triar» de `debt.md` con la evidencia
+- AND para con un bloque que lleva el comando, el código de salida, la ruta del log, las últimas 20 líneas, la línea `base:` y «`develop` sin tocar en `<hash>`», con el hash de `git rev-parse develop`, y pregunta si fusiona igual
+- AND si pasa sin la rama y falla en la rama, el rojo es de la rama: vuelve a ella, arregla con un test que falla primero y vuelve al gate como dice «Tras un rojo, el gate repite los tests que fallaron y lo afectado por el arreglo»
+- AND si en la rama también pasa, «No se repite»: abre una fila de intermitentes en la deuda, donde abriría la del rojo que también falla sin la rama, con el test, su línea de error copiada entera de la salida guardada, sin «…», y las dos pasadas en verde, y sigue con el cierre en cualquier perfil
+- AND si el fichero pasa en los dos y su línea de error no es un tiempo agotado ni un recurso de la máquina (puerto ocupado, fichero bloqueado, disco lleno, objetos temporales de git), antes de «No se repite» corre la tarea roja entera en los dos, con las mismas salidas
+- AND GIVEN un gate `moon run cli:test --affected --base develop` con 1 rojo en `test/x.slow.test.ts` y un worktree de la base recién creado, THEN corre `test/x.slow.test.ts` sin la rama y en la rama antes que la tarea, con las dependencias instaladas, y llega a un veredicto sin esperar el cerrojo de otra rama; si tiene que correr la tarea, la nombra sin `--affected`
+- AND con el rojo del `--verify` de `sdd merge`, la línea `base:` es la que da el script, y el cierre sigue igual
+
+#### Reglas de la capacidad — archive
+
+- **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; cuándo corre la suite del cierre y qué corre tras el merge de sincronización, en `skills/sdd-archive/references/closing-suite.md`; la comprobación de la revisión final, en `skills/sdd-archive/references/final-review-check.md`; qué corre, envía y registra cada modo de validación, en `skills/sdd-archive/references/validation-modes.md`; adónde va cada aprendizaje, en `skills/sdd-archive/references/learnings.md`; la de la validación del dev en `skills/sdd-archive/references/dev-validation.md`, con su panel en `validation-panel.js`, que guarda las marcas en el `localStorage` del navegador (`sdd-validation-<id>`) o, en el plan B, en `.temp/validation/<id>.json` del worktree; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md`
+
+### Capacidad: `cli`
+
+#### ADDED — Un cerrojo cuyo PID reutilizó otro programa se rompe
+
+- GIVEN el cerrojo de suites de `feature/0210` (D:\code\sdd-kit-0210, PID 37368) desde 2026-11-12 00:10:00, y el PID 37368 vivo en la misma máquina, pero arrancado a las 08:46 por otro programa
+- WHEN otro worktree del mismo clon lanza `sdd lock run` y lleva más de 3 s esperando
+- THEN escribe «Cerrojo huérfano: lo tenía feature/0210 (D:\code\sdd-kit-0210, PID 37368) desde 2026-11-12 00:10:00.», borra el cerrojo y lo coge
+- AND con el PID arrancado antes de coger el cerrojo, espera como con cualquier dueño vivo
+- AND sin poder leer la hora de arranque del PID (sin PowerShell en Windows, sin `ps` fuera de él, sin permiso o sin respuesta en 5 s), espera como con cualquier dueño vivo
+
 ## Previsión de coste
 
 | Tanda | Sujetos (batería) | $ | Minutos |
@@ -163,6 +352,9 @@ Fuera de los sujetos: lectores de coherencia (5) y de la batería (15) en sonnet
 - 2026-11-12, en `unattended` (dev-lead: «1, adelante»): la re-medida de los arreglos (`f-0152.sh`, sin deuda: «no deudas...») alcanzó el techo de 740 sujetos a mitad de `sdd-propose`, con 352,86 $ gastados. La Suma pasa a **870 sujetos** para los ~124 que faltan (7 de `sdd-propose` y nueve baterías sin lanzar, ~36 $ según `plan`); el techo de coste se queda en 440 $.
 - 2026-11-12, en `unattended` (dev-lead: «2», arreglarlo todo ahora): la re-medida con la n de cada batería deja ~24 rojos de comportamiento (`sdd-archive` 7, `sdd-grilling` 8, `sdd-propose` 6, `sdd-verify` `c1`, `sdd-implement` `k3`, `sdd-retro` `r6`) y 11 de fila o molde, con 387,16 $ y 866 sujetos. Todo se arregla en la 0152, sin alargar ninguna skill: filas y moldes; reglas movidas al paso donde se decide; n = 2 de los rojos hasta que pasen; después, la batería entera de cada skill tocada. El techo de coste pasa de 440 $ a **640 $** y la Suma a **1.300 sujetos**.
 - 2026-11-12, en `unattended` (dev-lead: «no quiero salir con una v3 coja... si crees que necesitas todas, todas»): tras el GREEN de los arreglos, las **15 baterías enteras** con su n sobre el kit final (614 sujetos, 288 $ según `plan`), no solo las de las skills tocadas, porque las que corrieron con N = 1 escondían rojos; después, una ronda de arreglos. El techo de coste pasa a **800 $** y la Suma a **2000 sujetos**; sin más paradas hasta el merge salvo pasar de 800 $.
+
+- 2026-11-13, en `delegate` (dev-lead: «la podemos mergear y cerrar de momento, ponernos con grilling, y luego seguir»): la 0152 se cierra con la medida final y sus arreglos. Salen de la rama, a las filas de `develop`: la reescritura del entrevistador (`sdd-grilling`, 8 rojos de 19) a la 0341 y la 0342; a la 0343, los rojos que fallan en los dos sujetos o vuelven tras arreglarlos (`m1` y `m3` de `sdd-roadmap`, `v5` de `sdd-upgrade`, `g5` de `sdd-archive`, `u1` de `sdd-implement` con U1r 0/2, `h2` con S 0/1), los de 1 de 2 como bugs (`f1` de `sdd-propose`, `m5` de `sdd-roadmap`…), la batería entera con su n sobre el kit final —que cubre la re-ejecución por `dist/` de la decisión 6—, el humo de `add-to-changelog` y de `sdd-templates` con su carga comprobada en `tools.txt`, y el corte (decisión 7). Las decisiones 5, 6 y 7 se cumplen en la 0343, no en esta rama.
+- 2026-11-13, revisión final (`delegate`): delta de `migration`, `planning` y `archive` con el texto que contradecía a las skills de la 3.0.0 (decisión 2 y enmienda 7); ADDED de `cli` para el cerrojo de PID reutilizado, que la rama arregló por la decisión del dev-lead del 2026-11-12 («no deudas...») — `sin aprobar`.
 
 ## Aprobaciones
 

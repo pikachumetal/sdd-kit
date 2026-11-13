@@ -165,7 +165,7 @@ interface ReviewSection {
 
 const REVIEW_DIRS = ['.docs/sdd/specs', '.docs/sdd/changes'];
 const SECTION_TITLE = /^## (.+) `([^`]+)` → `([^`]+)`$/;
-// Solo las secciones que abren con `git diff --stat`: las revisiones de la 0181 y la 0289, sin él, son historia y no se reescriben.
+// Solo las secciones que abren con `git diff --stat`: una revisión sin él es historia y no se reescribe.
 const STAT_COMMAND = /^`git -C \S+ diff (?:-\S+ )*--stat (?:-\S+ )*\S+ -- ([^`]+)`/;
 
 const backticked = (line: string): string[] => [...line.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
@@ -175,8 +175,10 @@ function parseSection(review: string, chunk: string): ReviewSection | null {
   const title = SECTION_TITLE.exec(heading);
   const stat = STAT_COMMAND.exec(body.find((line) => line.trim() !== '') ?? '');
   if (!title || !stat) return null;
-  const tokens = (start: string): string[] => body.filter((line) => line.startsWith(start)).flatMap(backticked);
-  return { review, source: title[1], from: title[2], to: title[3], scope: stat[1].trim().split(/\s+/), named: tokens('|'), unread: tokens('Sin leer') };
+  const lines = (start: string): string[] => body.filter((line) => line.startsWith(start));
+  // una fila nombra su fichero en la primera celda; las demás citan otros de pasada
+  const named = lines('|').flatMap((row) => backticked(row.split('|')[1]));
+  return { review, source: title[1], from: title[2], to: title[3], scope: stat[1].trim().split(/\s+/), named, unread: lines('Sin leer').flatMap(backticked) };
 }
 
 function reviewSections(repoRoot: string): ReviewSection[] {

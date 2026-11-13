@@ -343,6 +343,14 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN escribe en stderr `Task <n> NOT recorded: vitest corre <ficheros> sin --test-timeout: añade --test-timeout 120000`, sale con 1 y no ejecuta el comando
 - AND con `--test-timeout <ms>`, o sin ningún lento entre los filtros, lo lanza como hasta ahora
 
+### Un cerrojo cuyo PID reutilizó otro programa se rompe
+
+- GIVEN el cerrojo de suites de `feature/0210` (D:\code\sdd-kit-0210, PID 37368) desde 2026-11-12 00:10:00, y el PID 37368 vivo en la misma máquina, pero arrancado a las 08:46 por otro programa
+- WHEN otro worktree del mismo clon lanza `sdd lock run` y lleva más de 3 s esperando
+- THEN escribe «Cerrojo huérfano: lo tenía feature/0210 (D:\code\sdd-kit-0210, PID 37368) desde 2026-11-12 00:10:00.», borra el cerrojo y lo coge
+- AND con el PID arrancado antes de coger el cerrojo, espera como con cualquier dueño vivo
+- AND sin poder leer la hora de arranque del PID (sin PowerShell en Windows, sin `ps` fuera de él, sin permiso o sin respuesta en 5 s), espera como con cualquier dueño vivo
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.claude/hooks/sdd-kit-loaded.mjs`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`, y el hook, de `hooks/project/` del kit. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe `.docs/sdd/sdd-kit.json`, o, con `--project-hook`, el hook y su entrada en settings. `sdd validation serve` lee los pasos de `--steps` y el panel de `skills/sdd-archive/references/validation-panel.js` del kit cargado, y escribe solo el fichero de `--out`. `sdd hook session-start` escribe la marca de la sesión en la carpeta temporal del sistema. `sdd hook session-end` lee el JSON de stdin, `CLAUDE_CODE_TMPDIR` y `CLAUDE_PROJECT_DIR`, borra esa marca y su `.warned`, y solo borra subcarpetas de `<CLAUDE_CODE_TMPDIR o la carpeta temporal del sistema>/claude/<carpeta del proyecto>/`.
