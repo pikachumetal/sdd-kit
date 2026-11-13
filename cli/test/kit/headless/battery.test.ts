@@ -919,3 +919,50 @@ describe('main', () => {
     await expect(main(args)).rejects.toThrow(new BatteryError(usage));
   });
 });
+
+// La celda real: una copia de la regex aquí probaría otra que la que corre la batería.
+describe('fila K de la batería del entrevistador', () => {
+  const interviewer = readFileSync(join(import.meta.dirname, '../../../../tests/batteries/interviewer/battery.md'), 'utf8');
+  const kCell = interviewer.match(/^\| K Carga \| [^|]+ \| (.+) \|$/m)?.[1] ?? '';
+  const SCENARIO = `| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| k1 | x | Pensemos. | salas | \`cualquiera\` | 1 | 1/1 | sonnet | toy |
+`;
+  const loads = (toolsTxt: string) => {
+    const fs = memoryFs();
+    fs.write(TABLE, `${SCENARIO}\n## Rúbrica\n\n| Fila | Escenarios | Falla si… |\n| --- | --- | --- |\n| K Carga | k1 | ${kCell} |\n`);
+    tools(fs, 'k1-1', toolsTxt);
+    return !verdict(TABLE, OUT, [], fs).lines[0].includes('K falla en');
+  };
+
+  it.each([
+    ['Skill', '>>> Skill: sdd-kit:sdd-grilling\n<<< ok'],
+    ['Read entero', '>>> Read: D:/k/skills/sdd-grilling/SKILL.md\n<<< ok'],
+    ['Read con barras de Windows', '>>> Read: D:\\k\\skills\\sdd-grilling\\SKILL.md\n<<< ok'],
+    ['cat seguido de otro comando', '>>> Bash: cd x && cat $K/skills/sdd-grilling/SKILL.md; head -40 test/app.test.js\n<<< ok'],
+    ['cat al final, tras otro cat', '>>> Bash: K=x; cat $K/skills/sdd-propose/references/spec-writing.md; cat $K/skills/sdd-grilling/SKILL.md\n<<< ok'],
+    ['Get-Content entero', '>>> PowerShell: Get-Content D:\\k\\skills\\sdd-grilling\\SKILL.md\n<<< ok'],
+    ['carga en una llamada que no es la primera', '>>> Read: a.md\n<<< x\n>>> Grep: y\n<<< z\n>>> Skill: sdd-kit:sdd-grilling\n<<< ok'],
+  ])('K: %s casa', (_name, call) => {
+    expect(loads(finished(call))).toBe(true);
+  });
+
+  it('K: Read en la última línea, sin salto, casa', () => {
+    expect(loads('>>> Read: D:/k/skills/sdd-grilling/SKILL.md')).toBe(true);
+  });
+
+  it.each([
+    ['Read con limit', '>>> Read: D:/k/skills/sdd-grilling/SKILL.md · offset=1 · limit=80\n<<< ok'],
+    ['cat con head', '>>> Bash: cat $K/skills/sdd-grilling/SKILL.md | head -80\n<<< ok'],
+    ['cat de dos ficheros con head', '>>> Bash: cat $K/skills/sdd-grilling/SKILL.md $K/x.md | head -80\n<<< ok'],
+    ['otro fichero que nombra sdd-grilling en su resultado', '>>> Bash: cat $K/skills/sdd-propose/references/spec-writing.md\n<<< Ask with `sdd-grilling` and its SKILL.md'],
+    ['Grep', '>>> Grep: sdd-grilling\n<<< ok'],
+    ['Get-Content -TotalCount', '>>> PowerShell: Get-Content D:\\k\\skills\\sdd-grilling\\SKILL.md -TotalCount 20\n<<< ok'],
+    ['Get-Content -Tail', '>>> PowerShell: Get-Content -Tail 5 D:\\k\\skills\\sdd-grilling\\SKILL.md\n<<< ok'],
+    ['cat redirigido', '>>> Bash: cat $K/skills/sdd-grilling/SKILL.md > x.txt\n<<< ok'],
+    ['otro fichero con el mismo prefijo', '>>> Bash: cat $K/skills/sdd-grilling/SKILL.md.bak\n<<< ok'],
+    ['otra skill con el mismo prefijo', '>>> Skill: sdd-kit:sdd-grilling-x\n<<< ok'],
+  ])('K: %s no casa', (_name, call) => {
+    expect(loads(finished(call))).toBe(false);
+  });
+});

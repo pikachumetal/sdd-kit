@@ -89,6 +89,8 @@ const describe = (block) => {
     const headings = String(input.prompt ?? '').split(/\r?\n/).filter((line) => line.startsWith('## ')).map((line) => `\n    ${line}`);
     return `subagent_type=${input.subagent_type ?? '(sin tipo)'} model=${input.model ?? '(sin modelo)'} · ${input.description ?? ''}${headings.join('')}`;
   }
+  // El rango de un Read dice si el sujeto leyó el fichero entero: la fila K del entrevistador lo distingue por él.
+  if (block.name === 'Read') return `${input.file_path}${['offset', 'limit'].filter((key) => input[key] !== undefined).map((key) => ` · ${key}=${input[key]}`).join('')}`;
   return input.command ?? input.skill ?? input.file_path ?? input.pattern ?? input.description ?? JSON.stringify(input);
 };
 const resultText = (block) => (Array.isArray(block.content) ? block.content.map((c) => c.text ?? '').join('') : String(block.content ?? ''));
