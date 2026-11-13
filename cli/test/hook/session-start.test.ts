@@ -129,6 +129,16 @@ describe('sdd hook session-start', () => {
     expect(context).not.toContain('ofrece aplicarlas');
   });
 
+  it('stops the work without migrating for a 2.x unattended project with a kit that carries v3.0.0', () => {
+    const plugin = pluginWith('3.0.0', ['v2.3.4.md', 'v3.0.0.md']);
+    const project = projectAt('2.3.4');
+    writeFileSync(join(project, '.docs', 'sdd', 'sdd-kit.local.json'), JSON.stringify({ control: { profile: 'unattended' } }));
+    const context = JSON.parse(sessionStartOutput(project, plugin, '26.10.0')).hookSpecificOutput.additionalContext;
+    expect(context).toContain('con el perfil `unattended`: no hagas el trabajo');
+    expect(context).not.toContain('invoca la skill `sdd-upgrade` y migra');
+    expect(context).not.toContain('no ofrezcas ni migres');
+  });
+
   it('keeps the offer for a migration that does not reach 3.0.0', () => {
     const plugin = pluginWith('2.3.4', ['v2.3.3.md', 'v2.3.4.md']);
     const context = JSON.parse(sessionStartOutput(projectAt('2.3.3'), plugin, '26.10.0')).hookSpecificOutput.additionalContext;

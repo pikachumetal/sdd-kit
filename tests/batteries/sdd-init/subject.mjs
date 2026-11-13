@@ -62,7 +62,7 @@ function claudeOld() {
   doc('Architecture', 'Una SPA con Vite.', '.docs/sdd/architecture.md');
   s.put('.docs/sdd/roadmap.md', '# Roadmap — Reservas\n\n## Próximo\n');
 }
-// Un template recién instanciado, en la forma del kit que se prueba: con la 3.0.0, uno 2.x tiene que migrar antes de nada (ADR 0034).
+// Un template recién instanciado, en la forma del kit que se prueba: con la 3.0.0, uno 2.x tiene que migrar antes de nada.
 function moldTemplate() {
   s.put('package.json', '{\n  "name": "nuevo-proyecto",\n  "scripts": { "dev": "ng serve", "test": "ng test" }\n}\n');
   s.put('src/login.ts', 'export function login(user: string): boolean {\n  return user.length > 0;\n}\n');
@@ -119,7 +119,7 @@ s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');
 
 // Una pregunta por turno: si n7 para en una, el segundo turno la contesta para que llegue a proponer ## Testing entero.
-// n3 y n6 también (feature 0152): con una pregunta por turno, los dos sujetos de n3 preguntan antes de proponer el `## Testing`.
+// n3 y n6 también: con una pregunta por turno, los dos sujetos de n3 preguntan antes de proponer el `## Testing`.
 if (['n3', 'n6', 'n7'].includes(s.SC)) s.env.TURN2 = 'La que recomiendas. Sigue con el resto de operations.md.';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);

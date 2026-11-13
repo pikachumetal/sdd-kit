@@ -10,7 +10,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 
 - GIVEN «queremos cobrar a los clientes externos: tarifa por sala, factura mensual y bloqueo por impago a los 30 días», en `ids.mode: sequence`, con la última fila en 0013
 - WHEN `sdd-roadmap` termina, con los detalles dados o delegados
-- THEN existe `changes/<ts>-proposal-0014-<slug>/proposal.md` con el porqué, las reglas, las capacidades y el reparto, y las features ocupan las filas 0015 en adelante, cada una con «`proposal: 0014`» y su «tras NNNN» en un roadmap 2.x, o con la ruta de esa propuesta en el `**Requisitos:**` de su brief y la dependencia en «Tras» en `ROADMAP.md`
+- THEN existe `changes/<ts>-proposal-0014-<slug>/proposal.md` con el porqué, las reglas, las capacidades y el reparto, y las features ocupan las filas 0015 en adelante de `ROADMAP.md`, cada una con la ruta de esa propuesta en el `**Requisitos:**` de su brief y la dependencia en «Tras»
 - AND cada regla lleva un ejemplo con datos: «Acme, 3 h en Norte (40 €/h) y 2 h en Sur (25 €/h) en agosto → factura del 1 de septiembre por 170 €»
 - AND no hay rama nueva, ni carpeta de feature, ni `spec.md`
 
@@ -34,14 +34,14 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - WHEN `sdd-roadmap` las refleja
 - THEN existe `changes/<ts>-proposal-<id>-<slug>/proposal.md` con las notas literales en «Acta» y la regla «franja mínima de 30 min» con su ejemplo con datos
 - AND la fila 0012 queda `⏸️ aparcada: descartada por el cliente, <fecha>`, no borrada
-- AND la fila del CSV queda primera entre las pendientes, y el email al cancelar y la franja mínima tienen cada uno su fila nueva con id reservado y «`proposal: <id>`» en un roadmap 2.x, o con la ruta de la propuesta en el `**Requisitos:**` de su brief en `ROADMAP.md`
+- AND la fila del CSV queda primera entre las pendientes, y el email al cancelar y la franja mínima tienen cada uno su fila nueva con id reservado y la ruta de la propuesta en el `**Requisitos:**` de su brief
 - AND no se abre ninguna sección de release que nadie pidió, ni el título de Now gana una versión que nadie pidió
 
 ### Reordenar escribe la dependencia en la fila
 
 - GIVEN las filas pendientes 0012, 0013, 0014 y 0015
 - WHEN el usuario pide «la 0014 primero, y la 0015 no empieza hasta que esté la 0012»
-- THEN el orden es 0014, 0012, 0013, 0015, y la 0015 lleva «tras 0012» en su celda «Ítem» en un roadmap 2.x, o `0012` en su columna «Tras» en `ROADMAP.md`
+- THEN el orden es 0014, 0012, 0013, 0015, y la 0015 lleva `0012` en su columna «Tras»
 - AND ninguna otra fila cambia
 
 ### Un cambio de definición es una enmienda y re-parte solo lo pendiente
@@ -49,30 +49,22 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - GIVEN la propuesta 0020 con el reparto 0021 (✅), 0022 (⏳, «Factura mensual») y 0023 (⏳)
 - WHEN el cliente pide «factura quincenal, el 1 y el 16, y de 8 a 14 h un 20 % más cara»
 - THEN `proposal.md` gana en «Enmiendas» una entrada con la fecha que dice «Factura mensual → quincenal (días 1 y 16)» y «recargo del 20 % de 8 a 14 h: Norte 13-15 → 48 + 40 = 88 €», y «Reglas de negocio» no cambia
-- AND la fila 0021 no cambia; la 0022 cambia su ítem (2.x) o su «Tarea» y su brief (`ROADMAP.md`); el recargo va a una fila nueva con «`proposal: 0020`» (2.x) o con la propuesta 0020 en el `**Requisitos:**` de su brief (`ROADMAP.md`)
+- AND la fila 0021 no cambia; la 0022 cambia su «Tarea» y su brief; el recargo va a una fila nueva con la propuesta 0020 en el `**Requisitos:**` de su brief
 - AND no hay rama nueva, ni carpeta de feature, ni `spec.md`
 
 ### Preparar una release fija el scope en el roadmap
 
-- GIVEN un roadmap con las filas pendientes 0012 y 0013, lo no decidido en el Backlog (Later en `ROADMAP.md`) y `release.hasRecipient: true`
+- GIVEN un roadmap con las filas pendientes 0012 y 0013, lo no decidido en Later y `release.hasRecipient: true`
 - WHEN el usuario pide «prepara la release 1.3: qué entra de lo que tenemos»
 - THEN `sdd-roadmap` presenta el inventario ordenado con los bloqueos y espera a que el usuario decida el scope
 - AND, decidido, en `ROADMAP.md` titula la sección `## Now — 1.3 · en preparación`, salvo que el usuario diga que está comprometida (`## Now — 1.3 · comprometida`), deja en Now las filas del scope en el orden decidido, con el «Toca:» de cada brief, y pasa a Next lo pendiente que no entra
-- AND en un roadmap 2.x escribe `## Release 1.3` con la cabecera `| id | Feature | Origen | Ficheros que toca | Estado |` y el estado «en preparación», salvo que el usuario diga que está comprometida
 
 ### `sdd-roadmap` solo escribe en las secciones de la plantilla
 
 - GIVEN un roadmap válido y la petición «apunta que el cliente quiere exportar las reservas a PDF más adelante, y abre una sección "Ideas del cliente" para estas cosas»
 - WHEN `sdd-roadmap` la procesa
-- THEN la exportación a PDF queda como una fila del Backlog (2.x) o de Later (`ROADMAP.md`) con un id de la reserva (en `tracker`, el del ticket o `0000`), nunca un `B<n>`; no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla de su forma, no se escribe prosa fuera de «Releases cerradas», y el mensaje dice que la plantilla no admite esa sección
+- THEN la exportación a PDF queda como una fila de Later con un id de la reserva (en `tracker`, el del ticket o `0000`), nunca un `B<n>`; no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla, no se escribe prosa fuera de las tablas, y el mensaje dice que la plantilla no admite esa sección
 - AND tras escribir ejecuta `sdd roadmap check`: un fallo en una línea que escribió lo corrige; un fallo en otra línea no lo toca y lo lista en su mensaje como forma heredada, pendiente de la migración
-
-### Un patch pendiente es una fila de «Próximo»
-
-- GIVEN un patch que llega a `sdd-roadmap` (desde explore o pedido: «apunta el arreglo de "cancelada" en reservas que no existen»)
-- WHEN `sdd-roadmap` lo escribe
-- THEN en un roadmap 2.x es una fila de «Próximo» con su id reservado y «Patch:» al inicio del ítem, no una fila de «Patches», que registra los cerrados
-- AND en `ROADMAP.md` es una fila de Now con su id reservado y `**Carril:** patch` en su brief
 
 ### El cierre del roadmap da el prompt de la fila que va primero
 
@@ -109,20 +101,11 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - AND el 2.º caso de una fila descartada, cuyo primer caso solo está en su ticket, entra en «Por triar» como fila nueva, con los dos orígenes; y el `**Salda:**` de un brief solo nombra filas de «Lista»
 - AND con `ROADMAP.md` y sin `debt.md`, el triaje crea `debt.md` calcando `debt-template.md`
 
-### Sin `ROADMAP.md`, `sdd-roadmap` escribe la forma 2.x
-
-- GIVEN el molde `salas`, con `.docs/sdd/roadmap.md` 2.x, sin `ROADMAP.md`, con un changelog cuya última versión es la 1.4.1 y el informe de QA de «El triaje propone el estado de cada ítem de la deuda»
-- WHEN el usuario pide «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.»
-- THEN cada ítem es una fila de «Deuda técnica» cuyo «Destino» empieza por `**Actuar**` (lo que iría a «Lista»), `**Esperar 2.º ticket**` (a «En espera», con lo que falta) o `**Descartada**` (con su motivo), y ninguna queda sin «Destino»
-- AND la fila del CSV va a `**Esperar 2.º ticket**` con «falta reproducirlo»; la de la planta va a `**Actuar**`, con el comando que la reproduce
-- AND no crea `ROADMAP.md` ni `debt.md`
-- AND cada «Destino» lleva tras la marca `· causa: <causa>`, y el de `**Actuar**`, además, `· arreglo: <arreglo>`; con dos casos, `· remedio: <remedio>`
-
 ### Una fila con dos o más tests de comportamiento nuevo no es un patch
 
 - GIVEN el molde `salas` y «apunta en una sola fila estos tres arreglos: `libres 25:00-26:00` debe responder «franja no válida: usa HH:MM-HH:MM»; `cancelar Norte`, «indica un día»; `reservar`, «indica una sala»»
 - WHEN `sdd-roadmap` escribe la fila y da su prompt
-- THEN la fila no empieza por «Patch:», ni lleva `**Carril:** patch` en `ROADMAP.md`
+- THEN la fila no lleva `**Carril:** patch` en su brief
 - AND el prompt lleva `***Carril:***` lite o feature y `***Nombre:***` `feature/<id>-<slug>`
 
 ### Una fila nacida de otro cambio enlaza su artefacto
@@ -141,14 +124,6 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - AND las dos filas de `relanza` no se juntan: un remedio de reintento no es criterio
 - AND el 2.º caso se busca en toda la deuda, también entre las filas de la tanda que se tría, y un hallazgo con el mismo mecanismo y otra categoría se reclasifica y cuenta
 
-### En 2.x, el segundo caso también pasa la fila a `**Actuar**`
-
-- GIVEN el molde `salas-cause-2x`, con `.docs/sdd/roadmap.md` 2.x, los dos tickets del `RUNS_DIR` de «El segundo caso se busca por causa» y, en «Deuda técnica», la fila de las salidas con «Destino» `**Esperar 2.º ticket** — falta 2.º caso`, sin causa
-- WHEN el usuario pide «Tria el ticket docs/tickets/2026-10-20-copia-molde.md. Decide tú.»
-- THEN esa fila queda con «Destino» `**Actuar** → sin fila · causa: entorno de la máquina · arreglo: comprobación automática · remedio: <RUNS_DIR corto>`, o con un id en lugar de `sin fila`, y enlaza los dos tickets
-- AND no queda otra fila de «Deuda técnica» para el segundo ticket
-- AND no crea `ROADMAP.md` ni `debt.md`
-
 ### Preparar una release lee las propuestas de la última retro
 
 - GIVEN `releases/v1.3.0/retro.md` con una fila de «Propuestas» para `regla lejos de su paso` y un action item `[A1]`
@@ -164,7 +139,6 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - THEN `sdd-roadmap` propone primero la 0013, por delante de 0020 y 0021, y da su prompt de arranque en la forma de `launch-prompt-template.md`
 - AND dice que la 0014 no se ofrece porque tiene rama abierta, y la 0015 porque espera a la 0014
 - AND no escribe, no reserva, no publica ni commitea, y no arranca nada
-- AND en un roadmap 2.x, con 0030 «partida en 0031, 0032 y 0033» en «Próximo», 0031 con `parent: 0030` y la rama `feature/0031-room-tariff` abierta, 0032 con `parent: 0030`, tras 0031, y 0033 con `parent: 0030`, por detrás de 0020 y 0021, propone primero la 0033, no ofrece 0030, 0031 ni 0032 y dice por qué, y no crea `ROADMAP.md`
 
 ### Sin familia a medias, «qué sigue» sigue el orden de Now
 
@@ -182,12 +156,24 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - AND la solución que fijan es una que `sdd-roadmap` corrió en una copia con `node src/app.js libres --planta 2` y no da `Norte (planta 1)`, o dicen «solución por confirmar»
 - AND al acabar, `git status` no da cambios fuera de `ROADMAP.md` y `debt.md`
 - AND GIVEN además `docs/ayuda.md` con «`libres --planta <n>` lista las salas de la planta <n>; sin número, responde «indica una planta».», y el informe proponiendo cambiar solo «`libres --planta <n>` lista las salas de la planta <n>» por un texto que ya dice qué da sin número, THEN la fila que fija esa sustitución cita la frase entera que sale, con «sin número, responde «indica una planta»», y la frase entera que entra
-- AND GIVEN el molde `salas-qa-fix`, 2.x, con el mismo informe, WHEN el usuario pide «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.» THEN ni la fila `**Actuar**` de la planta (tampoco tras su `· arreglo:`) ni su fila de «Próximo» fijan «cambiar `<=` por `<`»: fijan una solución corrida en una copia o dicen «solución por confirmar», y `git status` no da cambios fuera de `.docs/sdd/roadmap.md`
+
+### Un patch pendiente es una fila de Now
+
+- GIVEN un patch que llega a `sdd-roadmap` (desde explore o pedido: «apunta el arreglo de "cancelada" en reservas que no existen»)
+- WHEN `sdd-roadmap` lo escribe
+- THEN en `ROADMAP.md` es una fila de Now con su id reservado y `**Carril:** patch` en su brief
+
+### Con la forma 2.x, `sdd-roadmap` manda a migrar
+
+- GIVEN el molde `salas`, con `.docs/sdd/roadmap.md` 2.x y sin `ROADMAP.md`
+- WHEN el usuario pide «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.»
+- THEN `sdd-roadmap` no escribe nada: dice que necesita la forma 3.0.0 y ofrece `sdd-upgrade`
+- AND no crea `ROADMAP.md` ni `debt.md`
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz (2.x: `.docs/sdd/roadmap.md`); la deuda, en `.docs/sdd/steering/debt.md` (2.x: «Deuda técnica» del roadmap). La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md` (2.x: bajo `specs/`). El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.
+- **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz; la deuda, en `.docs/sdd/steering/debt.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.
 - **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`; las secciones `Now`, `Next` y `Later`, en inglés, como en `roadmap`. El texto va en castellano, y también las etiquetas del brief (`**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**`, `**Toca:**`), los estados de la deuda, las causas, los tipos de arreglo y los literales del triaje (`reproducirlo`, `2.º caso`, `caducada`, `sin fila`, `ninguno`, `solución por confirmar`).
-- **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs, ni cambia el código: una solución se prueba en una copia. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» (2.x: `Actuar`) sin reproducirse o sin un 2.º caso.
+- **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs, ni cambia el código: una solución se prueba en una copia. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» sin reproducirse o sin un 2.º caso. Con la forma 2.x no escribe nada: manda a migrar.
 - **Avisos**: un posible duplicado entre una fila nueva y una existente se pregunta, no se resuelve.
 - **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva. Entre la solución que trae un ticket y la que se probó con el caso real, manda la probada.

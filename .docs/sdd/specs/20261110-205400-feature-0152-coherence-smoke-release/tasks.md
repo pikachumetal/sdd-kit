@@ -5,11 +5,15 @@ Worktree `D:\code\.worktrees\sdd-kit\feature-0152-coherence-smoke-release`, rama
 | Task | Estado | Commits |
 | --- | --- | --- |
 | 1 — Coherencia de documentos | hecha | a3cf177a, 94806cb4 |
-| 2 — Deuda de la fila | en parte: líneas 9 (ADR 0027-0034) y 58 (oferta de migración con `sdd-kit.local.json`) hechas; 10, 60, 62, 63 y las 27 «En espera» pendientes | 13468e88, a3cf177a |
-| 3 — Mediciones y rojos de develop | en curso | 47a91cc6, 86d510ee, d5dc6963 |
-| 4 — Batería de release | pendiente | — |
-| 5 — Cierre (`sdd-archive`, revisión final Spec opus, Código sonnet, Arquitectura opus) | pendiente | — |
-| 6 — Corte (`sdd-end-release` pasos 1-6; paso 7 pendiente del dev-lead) | pendiente | — |
+| 2 — Deuda de la fila | hecha: líneas 9, 10, 58, 60, 62 y 63, y las 27 «En espera» leídas (0 descartadas) | 13468e88, a3cf177a, fe69bf1a, 8a710893, 265ec1f4, eca4b9fb, 9aa7d4ec, 85905542 |
+| 3 — Mediciones y rojos de develop | hecha | 47a91cc6, 86d510ee, d5dc6963, c95a2691, 5d7ad733, 9ea15191, 0e7ccfc5, fd5677d6 |
+| 4 — Batería de release | en parte: batería de release, re-medida y medida final con la n de cada batería, con sus arreglos; la batería final sobre el kit final y los rojos que siguen, a la 0343 (enmienda 2026-11-13) | 1534bf7c, fcf1fcc1, b95092ec, 232bc35c, 17f7ffb2, 7ef969e6, 7a6b6027, bca0e00e, d030e7e4, 2e6a36e0, 436bdcdd, 9d54b57f, 080be564, 97694256, 36638dcf, 512d8c3d |
+| 5 — Cierre (`sdd-archive`, revisión final Spec opus, Código sonnet, Arquitectura opus) | hecha | commit de cierre |
+| 6 — Corte (`sdd-end-release` pasos 1-6; paso 7 pendiente del dev-lead) | a la 0343 (enmienda 2026-11-13) | — |
+
+Revisión final: Spec opus+high, con arreglos, 5 sin verificar · Código sonnet+high, con arreglos · Arquitectura opus+high, con arreglos, sobre 512d8c3d
+Pasada de fix: juntada en el cierre, 4 hallazgos RED→GREEN
+Re-revisión: 512d8c3d..commit de cierre (la pasada de fix, juntada en él), sdd-kit:effort-high + opus, hallazgos resueltos; 1 Important nuevo y 1 Minor, arreglados en el hilo (sin revisar)
 
 ## Hecho (resumen)
 

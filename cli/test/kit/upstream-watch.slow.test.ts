@@ -333,6 +333,13 @@ describe('Una revisión nombra cada fichero que cambia en su ámbito (tests/upst
     expect(runCheck(newRegistry(root, [{ version: 'v2.0.0' }]), source.upstream)).toEqual(upToDate);
   });
 
+  it('does not count a file named only outside the first cell of a row', () => {
+    const root = newRoot();
+    const source = bumped(root);
+    withReview(root, source.clone, ['v1.0.0', 'v2.0.0'], [ROW_B, '| `docs/x.md`: nuevo | — | como `docs/c.md` | — |']);
+    expect(runCheck(newRegistry(root, [{ version: 'v2.0.0' }]), source.upstream).code).toBe(1);
+  });
+
   it('fails when the seen version passes the last reviewed jump', () => {
     const root = newRoot();
     const source = bumped(root);

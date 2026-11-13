@@ -60,7 +60,7 @@ describe.each(skills)('skill %s', (skill) => {
     expect(fields.description.length).toBeLessThanOrEqual(1024);
   });
 
-  // Sin comillas, «: » o « #» rompen el YAML y Claude Code deja la skill fuera de la lista del modelo (feature 0152: sdd-implement-native y sdd-implement-subagent).
+  // Sin comillas, «: » o « #» rompen el YAML y Claude Code deja la skill fuera de la lista del modelo.
   it('tiene una description que YAML lee sin comillas', () => {
     expect(fields.description).not.toMatch(/: | #/);
   });

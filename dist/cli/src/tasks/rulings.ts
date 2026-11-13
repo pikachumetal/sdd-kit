@@ -13,7 +13,7 @@ export function listRulings(workspace: string): string[] {
 }
 
 // La primera task del plan sin `Task <id>: complete`; null sin ninguna completa o con todas.
-// shortcut: no comprueba que la primera línea del ledger nombre este plan (el directorio ya es del plan por `plan-path`); si un workspace hereda el ledger de otro plan, compararla.
+// ponytail: no comprueba que la primera línea del ledger nombre este plan (el directorio ya es del plan por `plan-path`); si un workspace hereda el ledger de otro plan, compararla.
 export function resumeTask(workspace: string, plan: string): string | null {
   const ledger = join(workspace, 'progress.md');
   if (!existsSync(ledger)) return null;

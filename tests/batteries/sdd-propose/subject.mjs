@@ -412,7 +412,7 @@ steps.co7 = reviewSpec(F20, 'spec-0020-export-dir.md');
 steps.co8 = reviewSpec(F21, 'spec-0021-slot-check.md');
 steps[s.SC]?.();
 
-// r1 pasó de 15 a 30 en la 0152: r1-2 se cortó tras la pasada de coherencia, antes de decidir la review.
+// r1 necesita 30: con 15, el sujeto se corta tras la pasada de coherencia, antes de decidir la review.
 const turns = { g1: '40', r1: '30', d1: '60', p3: '60', pr1: '70' };
 for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-p', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';

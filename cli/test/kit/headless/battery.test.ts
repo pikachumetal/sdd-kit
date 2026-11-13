@@ -332,7 +332,7 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
   });
 });
 
-describe('filas de escenario incompletas o con umbral incoherente (fila 63 de debt.md)', () => {
+describe('filas de escenario incompletas o con umbral incoherente', () => {
   const withRow = (row: string) => {
     const fs = toyFs();
     fs.write(TABLE, TOY.replace(/^\| r2 .*$/m, row));
@@ -685,6 +685,14 @@ describe('plan', () => {
 
   it('con SCENARIOS=a1, suma: 2 sujetos · coste previsto: 1.00 $', () => {
     expect(plan(planFs(), { SCENARIOS: 'a1' })).toEqual(['a1 sonnet 2', 'suma: 2 sujetos · coste previsto: 1.00 $']);
+  });
+
+  it('lee también las campañas de changes/, junto a specs/', () => {
+    const fs = planFs();
+    const out = join(CWD, 'changes', '20261103-000000-feature-0003-z', 'red', 'out');
+    fs.write(join(out, 'a1-1.tools.txt'), '>>> Read: x\n=== RESULTADO (3 turnos, 2.00 $)\n');
+    fs.write(join(out, 'a1-1.state.txt'), '## petición\nHaz A.\n## git status\n');
+    expect(plan(fs).at(-1)).toBe('suma: 3 sujetos · coste previsto: 6.00 $ · sin precio medido: b1 (a 2.00 $, la media de los escenarios medidos)');
   });
 
   it('salta ficheros sueltos de specs/', () => {

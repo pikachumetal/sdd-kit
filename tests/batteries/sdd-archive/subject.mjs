@@ -54,7 +54,7 @@ function addTableRow(path, section, row) {
 const manualValidation = () => (MARKER = MARKER.replace('"mode": "field"', '"mode": "manual"'));
 
 // La 0010 implementada en Native y revisada: spec y plan aprobados, dos tasks, tasks.md con la revisión final limpia.
-// Las reservas viven en la memoria del proceso: sin decirlo, un smoke que llama a `canceladas` aparte la ve vacía y para (m1, m4 y a3n de la 0152).
+// Las reservas viven en la memoria del proceso: sin decirlo, un smoke que llama a `canceladas` aparte la ve vacía y para.
 const approved0010 = () => readLf(join(IMPL, 'fixtures', 'spec-0010.md'))
   .replace('`canceladas` lista las reservas con estado cancelada.', '`canceladas` lista las reservas con estado cancelada. Las reservas viven en la memoria del proceso hasta la 0014: `canceladas` enseña lo cancelado en el mismo proceso.')
   .replaceAll(' y quién canceló', '')
@@ -308,7 +308,7 @@ function buildChange0010() {
   s.commit('chore: script cancelar en package.json');
 }
 // La validación en campo de la 0010 ya se hizo sobre el último commit: el borrador del walkthrough, sin commitear,
-// con una fila por THEN (validation-modes.md); con un solo smoke, el sujeto la rehacía (re-medida de la 0152, g5).
+// con una fila por THEN; con un solo smoke, el sujeto la rehace.
 function validated0010() {
   const head = short('HEAD');
   const row = (then, command, output) => `| ${then} | ejecución real | \`${command}\` → «${output}» |`;
@@ -344,7 +344,7 @@ const STACK_CHANGES = {
   clash: { branch: '- Node 20, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.', base: '- Node 24, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.' },
 };
 // El cambio de la rama entra en el Scope de la 0010 y en su revisión final: sin eso, la re-revisión lo marcaba fuera
-// de alcance y el sujeto lo revertía o paraba antes del conflicto (re-medida de la 0152, m2 y m4).
+// de alcance y el sujeto lo revierte o para antes del conflicto.
 function lineConflict(file, line, { branch: ours, base }) {
   edit(file, [line, ours]);
   edit(`${F10}/spec.md`, [/^(- Entra: .*)$/m, `$1 La línea de \`${file}\` pasa a «${ours.replaceAll('$', '$$$$')}».`]);
