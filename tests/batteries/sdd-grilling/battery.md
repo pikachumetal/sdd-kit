@@ -72,7 +72,7 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
 | Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); el porqué baja a los llamantes en la feature 0342; dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill); p2, p3 (W2 y W3: RED limpio de brainstorming 7.0.2 en la feature 0314, frases sin cambio) |
-| Lo que elige el agente va como suyo, nunca como algo que el usuario aceptó; la suposición, marcada; lo no contestado, pendiente | `brainstorming` de superpowers (regla de E0: spike 0341, 28 de 28); feature 0342: RED E0 20 de 20, se mide como no regresión | interviewer (E0); p1, p2, p3 (W5) |
+| Lo que elige el agente va como suyo, nunca como algo que el usuario aceptó; lo no contestado, pendiente | `brainstorming` de superpowers (regla de E0: spike 0341, 28 de 28); feature 0342: RED E0 20 de 20, se mide como no regresión | interviewer (E0); p1, p2, p3 (W5) |
 | Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra), también si lo pide todo de golpe | RED R1 4 de 16; GREEN g9-2; dev-lead, feature 0342: «lo habitual es decir sí a todo» | interviewer (E5); g1, g2, g3, g8, g9; p3; «todo de golpe», sin escenario |
 | Buscar fuera antes de preguntar; probarlo en otra versión no cuenta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; GREEN 2 de 2 antes del contra; dev-lead 2026-10-02 | g9 + micro-test m3; la búsqueda autónoma, fuera de la entrevista desde la feature 0342 (decisión del dev-lead) |
 | Formato fijo en texto para el diseño; diálogo para lo operativo | dev-lead 2026-10-02; RED R2 | todos |
