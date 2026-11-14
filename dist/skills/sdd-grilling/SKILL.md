@@ -22,6 +22,7 @@ If a decision depends on a fact that changes with versions or time (a tool's beh
 ## Shape of a question
 
 Before you propose anything, think wide privately: several ideas, drop the weak ones, including any that fight what the user has told you about why.
+
 A design decision (an alternative needs over a line to explain its cost) goes in text:
 
 ```text

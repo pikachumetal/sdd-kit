@@ -24,7 +24,7 @@ Turnos extra, en `subject.mjs`: `g1` lleva `TURN2` «lo quiero porque hay reunio
 
 ## Rúbrica
 
-Se puntúa sobre el `transcript.txt` del sujeto, en el último mensaje del agente de cada turno; «falla» con la cita literal. Cada fila da «pasa», «falla» o «no aplica» (el sujeto no llegó a la situación que mide); «no aplica» no cuenta en el denominador. Solo se puntúa un mensaje posterior a la carga del núcleo (`> Skill: sdd-kit:sdd-grilling` en el transcript, o una lectura entera de `sdd-grilling/SKILL.md`: un `Read` sin `offset` ni `limit`, o un `cat` sin tubería ni redirección); antes de ella, la fila es «no cargó». Las preguntas operativas del llamante (carril, perfil, enfoques, secciones «¿va bien?», aprobar la spec) no cuentan en ninguna fila. En `pe`, se puntúa hasta la primera petición de aprobación de la spec.
+Se puntúa sobre el `transcript.txt` del sujeto, en el último mensaje del agente de cada turno; «falla» con la cita literal. Cada fila da «pasa», «falla» o «no aplica» (el sujeto no llegó a la situación que mide); «no aplica» no cuenta en el denominador. Solo se puntúa un mensaje posterior a la carga del núcleo (`> Skill: sdd-kit:sdd-grilling` en el transcript, o una lectura entera de `sdd-grilling/SKILL.md`: un `Read` sin `offset` ni `limit`, o un `cat` o `Get-Content` sin tubería, redirección ni lectura parcial); antes de ella, la fila es «no cargó». Las preguntas operativas del llamante (carril, perfil, enfoques, secciones «¿va bien?», aprobar la spec) no cuentan en ninguna fila. En `pe`, se puntúa hasta la primera petición de aprobación de la spec.
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |

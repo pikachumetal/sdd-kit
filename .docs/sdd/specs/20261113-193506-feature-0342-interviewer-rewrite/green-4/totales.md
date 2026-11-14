@@ -13,22 +13,22 @@ Base (decisión 5): el RED en `g9 fp g8 pe`; `control-a` y `control-b` del spike
 | g8 | E6 | 4/5 (RED) | 4/5 (`g8-2` con recomendada) | igual |
 | g8 | resto | en verde | en verde | igual |
 | fp | E1 | 2/5 (RED) | 3/5 | mejor |
-| fp | E5 | 5/5 (RED) · 5/5 · 4/5 | 4/5 | dentro del núcleo de antes |
+| fp | E5 | 5/5 (RED) · 5/5 · 4/5 | 4/5 | igual por la tolerancia de la decisión 5 (un sujeto, el mismo fallo en `control-b`) |
 | pe | E0, E3 | 5/5, 3/5 (RED) | 5/5, 5/5 | igual o mejor |
 | pe | E5 | 3/5 (RED) · 4/5 · 5/5 | 3/5 | igual que el RED |
 | pe | E7 | 4/4 | 4/4, 1 sin veredicto | igual |
 | K | todos | — | en verde tras relanzar una vez | igual |
-| g7 (forma) | R4, R10 | 1/2, 1/2 (control) | 1/2 (`g7-1`), 0/1 | igual; `g7-2` entra por `sdd-upgrade` en los dos intentos |
+| g7 (forma) | R4, R10 | 1/2, 1/2 (control, `readings/hilo.md` de `control-forma/`) | 0/1, 0/1 (`g7-1`; `g7-2` entra por `sdd-upgrade` en los dos intentos) | igual por la tolerancia de la decisión 5 (el mismo fallo en el control: «porque son los valores del kit») |
 | g7 (forma) | C1 | 2/2 (control) | 1/1 | igual |
 | sk (forma) | B1 | 1/2 (control) | 1/2 | igual |
 | resto de la de forma | — | umbral | en verde | igual |
 | m2, e1 | — | umbral | 3/3, 2/2 | igual |
-| n4 | S2 | sin base | 0/1 (pregunta doble) | sin base: a deuda |
+| n4 | S2 | 0/1 (`control-n4/`) | 0/1 (pregunta doble) | igual |
 
 ## Lo que queda por debajo del verde, a deuda
 
 - E6 de `g8`, E1 y E5 de `fp`, E5 de `pe`: iguales o mejores que el núcleo de antes, con sus citas en `readings/`.
 - La puerta de `g7` en el molde 3.0.0: `g7-2` entra por `sdd-upgrade` en los dos intentos; R4 y R10, como el control.
 - B1 de `sk`: igual que el control (`sk-2` deja la maqueta aparte).
-- S2 de `n4`: «¿Qué problema resuelve «Reservas de salas» y para quién?», sin base del núcleo de antes.
+- S2 de `n4`: pregunta doble en los dos núcleos («¿Qué problema resuelve «Reservas de salas» y para quién?»).
 - La carga del núcleo en los llamantes: 6 «no cargó» en `green-3` y `green-4` que cargan al relanzar (`sdd-propose` en `fp`, `g3`; `sdd-init` en `g8`), como en el RED.

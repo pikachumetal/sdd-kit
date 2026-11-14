@@ -953,6 +953,9 @@ describe('fila K de la batería del entrevistador', () => {
 
   it.each([
     ['Read con limit', '>>> Read: D:/k/skills/sdd-grilling/SKILL.md · offset=1 · limit=80\n<<< ok'],
+    ['Read con solo limit, aunque cubra el fichero', '>>> Read: D:/k/skills/sdd-grilling/SKILL.md · limit=2000\n<<< ok'],
+    ['Get-Content -Head', '>>> PowerShell: Get-Content D:\\k\\skills\\sdd-grilling\\SKILL.md -Head 30\n<<< ok'],
+    ['Get-Content -First', '>>> PowerShell: Get-Content D:\\k\\skills\\sdd-grilling\\SKILL.md -First 30\n<<< ok'],
     ['cat con head', '>>> Bash: cat $K/skills/sdd-grilling/SKILL.md | head -80\n<<< ok'],
     ['cat de dos ficheros con head', '>>> Bash: cat $K/skills/sdd-grilling/SKILL.md $K/x.md | head -80\n<<< ok'],
     ['otro fichero que nombra sdd-grilling en su resultado', '>>> Bash: cat $K/skills/sdd-propose/references/spec-writing.md\n<<< Ask with `sdd-grilling` and its SKILL.md'],

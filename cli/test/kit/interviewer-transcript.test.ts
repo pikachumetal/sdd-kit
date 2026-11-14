@@ -24,7 +24,7 @@ describe('transcript.mjs de la batería del entrevistador', () => {
   });
 
   it('un Read sin rango lleva solo la ruta', () => {
-    expect(transcriptOf(toolUse('Read', { file_path: SKILL }))).toMatch(new RegExp(`> Read: ${SKILL}\\n`));
+    expect(transcriptOf(toolUse('Read', { file_path: SKILL }))).toContain(`> Read: ${SKILL}\n`);
   });
 
   it('corta a 160 el volcado JSON de una herramienta sin argumento conocido', () => {
@@ -49,5 +49,13 @@ describe('extract.mjs tools', () => {
 
   it('un Read sin rango lleva solo la ruta', () => {
     expect(toolsOf(toolUse('Read', { file_path: SKILL }))).toContain(`>>> Read: ${SKILL}\n`);
+  });
+
+  it('escribe el rango de un Read igual que transcript.mjs', () => {
+    const read = toolUse('Read', { file_path: SKILL, limit: 2000 });
+    const fromExtract = toolsOf(read).match(/>>> Read: (.*)\n/)?.[1];
+    const fromTranscript = transcriptOf(read).match(/> Read: (.*)\n/)?.[1];
+    expect(fromExtract).toBe(`${SKILL} · limit=2000`);
+    expect(fromTranscript).toBe(fromExtract);
   });
 });

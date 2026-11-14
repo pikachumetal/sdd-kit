@@ -39,8 +39,8 @@ created: 2026-11-13
 - Fila K, literal: `` `tools: /^>>> (Skill: \S*sdd-grilling(\s\|$)\|Read: [^\n]*sdd-grilling[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*sdd-grilling[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$))/` ausente ``.
 - Línea de `Read` con rango: `<ruta> · offset=<n> · limit=<n>`, solo con los campos presentes.
 - `transcript.mjs`: `ARG_MAX = 160` solo para el volcado JSON; `Bash`, `PowerShell` y `Read` sin cortar.
-- Núcleo: menos de 887 palabras (`wc -w` sobre `skills/sdd-grilling/SKILL.md`), reglas en positivo, una prohibición solo como guardarraíl junto a su positivo; lo traído sustituye una regla, nunca se suma.
-- Topes: `sdd-grilling` 817; los demás sin cambio salvo subida justa, con la suma de subidas ≤ 83 palabras; saldo de las siete skills tocadas ≤ 0.
+- Núcleo: el de `50317a64` sin territorio, con las tres piezas medidas de la decisión 15 de la spec (enmiendas del 2026-11-14); menos de 887 palabras (`wc -w` sobre `skills/sdd-grilling/SKILL.md`); lo traído sustituye una regla, nunca se suma.
+- Topes: `sdd-grilling` 886; los demás sin cambio; saldo de las skills tocadas ≤ 0. `proposal.md`, `sdd-config` y `spec-template.md` sin cambio frente a `50317a64`; `spec-writing.md` lleva literal la frase del porqué del núcleo de antes.
 - Art. X de la constitution: sin comentarios que repitan el código ni que citen documentos (constitution, spec, task, capacidad); clean code.
 - Skills en inglés; lo que ve el usuario, en su idioma. Al editar una skill, cargar antes `sdd-agent-writing`.
 
@@ -252,15 +252,15 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 - «Una decisión por turno» THEN y AND de dependencia → Task 4, E5 en todos los escenarios. ✓
 - AND «pregúntamelo todo de golpe» → sin observar: ninguna batería pide rondas (spec, Hallazgos). ⚠
-- AND «lee lo que la contesta… decide lo que zanja un hecho… pregunta lo que tiene varias alternativas… y lo del usuario» → Task 4, E3 (`p2 p3 fp pe`), E4 (`g1 g3 g9 rq`), E0. ✓
-- «Alternativas reales» AND de alternativa única → Task 4, E4 y la de forma (`g4`–`g7`). ✓
-- ADDED: el para qué pendiente, el separador preguntado o pendiente, lo zanjado como «decidido por mí», la suposición pendiente → Task 2 y Task 4, E0 en `g8` y `pe`. ✓
+- AND «no termina con nada supuesto en silencio» → Task 4, E0 en todos los escenarios. ✓
+- ADDED: el para qué pendiente y el separador preguntado o pendiente → Task 2 y Task 4, E0 en `g8` y `pe`. ✓
 - «El descubrimiento no se ancla» THEN y AND → Task 4, E6 (`g2 p1 g8`). ✓
-- «Rebatir una vez» THEN, AND y AND de `sdd-propose` → Task 2 y Task 4, E1 en `fp`. ✓
+- «Rebatir una vez» THEN y AND de seguir con lo que mantiene → Task 2 y Task 4, E1 en `fp`. ✓
+- AND de `sdd-propose` (lo mantenido va a «Decisiones tomadas con el dev-lead») → sin observar: E1 mide que no vuelva a rebatir, no dónde lo apunta. ⚠
 - «Cuándo para» GIVEN por defecto y listas → Task 4, E7 en `pe`; `g7` en la de forma. ✓
 - AND gate y `sdd-explore` confirma con una pregunta → Task 4, `u1` y `g1 g9 rq`. ✓
-- AND paradas de `sdd-init`, `sdd-roadmap`, `sdd-config` → Task 4, `g2 g8 n4`, `m2`, `g7`; sin fila de parada propia (spec, decisión 4). ⚠
-- «Busca fuera» THEN y AND de la búsqueda antes de la primera pregunta → Task 2 y Task 4, E4w y E4 en `g9`. ✓
-- Reglas (Idioma, Límites, Regla ante conflicto) → Task 3, texto del núcleo; Idioma, reparo de la rúbrica. ✓
+- AND paradas de `sdd-roadmap` y `sdd-config` (por defecto) y de `sdd-init` → Task 4, `m2`, `g7`, `g2 g8 n4`; sin fila de parada propia (spec, decisión 4). ⚠
+- Reglas (Límites, Regla ante conflicto) → Task 3, texto del núcleo. ✓
+- «Busca fuera» y E4w: fuera de la feature desde la primera enmienda del 2026-11-14. N/A ✓
 - Tabla «Lo que se retira»: cada frase del núcleo de hoy → Task 3 Step 1 (el núcleo no la lleva; `git grep` de cada frase en `skills/` vacío en Task 5); ARG_MAX y `extract.mjs` → Task 1; K → Task 1; README, word-budget, notices, procedencia → Task 3; `debt.md:58` → Task 5. ✓
 - Review Focus → Task 1, tests de la K y `git grep` del Step 5. ✓

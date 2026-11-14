@@ -12,7 +12,8 @@ Write it so a builder could plan from it without going back to the user:
 
 - **Intent**: what happens today, why it matters, what success looks like, measurable where it can be, and the anti-goals.
 - **Scope**: «Entra» and «No entra», the goals and the non-goals.
-- **Approach**: the approaches of «Approaches» below, what each costs, the one chosen and why, then the parts of the how it fixes.- **✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN. A default the user never heard is one they couldn't reject.
+- **Approach**: the approaches of «Approaches» below, what each costs, the one chosen and why, then the parts of the how it fixes.
+- **✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN. A default the user never heard is one they couldn't reject.
 - **Decisiones tomadas con el dev-lead**: what the user decided, with their literal phrase.
 
 Three things the spec carries when they apply:

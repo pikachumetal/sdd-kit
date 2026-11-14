@@ -11,7 +11,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - GIVEN una entrevista de `sdd-grilling` con el porqué ya dicho y tres decisiones abiertas sin dependencia entre ellas (nombre del comando, formato de salida, si admite filtro)
 - WHEN el agente pregunta
 - THEN el turno termina con una sola decisión, la que más cambia el resto (la que reabre otras ramas va primero)
-- AND si el usuario pide en la sesión «pregúntamelo todo de golpe», en esa sesión pregunta por rondas
+- AND si el usuario pide «pregúntamelo todo de golpe», sigue con una decisión por turno
 - AND en otra entrevista, una decisión que depende de otra todavía abierta espera a que esa se cierre (enmienda 2026-10-03)
 - AND no termina con nada supuesto en silencio: cada suposición del agente es una pregunta o una entrada de «decidido por mí» (enmienda 2026-10-03)
 
@@ -36,7 +36,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - GIVEN una pregunta sobre lo que solo sabe el usuario («¿quién usa el producto?») en un proyecto sin código
 - WHEN el agente la pregunta
 - THEN la hace abierta, sin recomendación ni hipótesis
-- AND en un proyecto con código donde encontró `roles.ts` con `clinic_admin` y `patient`, enseña ese hecho con su fuente y pide confirmarlo, sin recomendar
+- AND en un proyecto con código donde encontró `roles.ts` con `clinic_admin` y `patient`, enseña ese hecho con su fuente y una pregunta que acaba en él, sin recomendar ni añadir ejemplos («por ejemplo si lo usa alguien más»)
 
 ### Escena concreta en las decisiones de producto
 
@@ -52,7 +52,8 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - GIVEN una respuesta del usuario que choca con un hecho del proyecto, o una premisa floja en lo que pide
 - WHEN el agente la recibe
 - THEN la rebate una vez, con el argumento y la alternativa concreta
-- AND si el usuario mantiene su respuesta, la acepta y sigue, sin volver a rebatirla
+- AND si el usuario mantiene su respuesta, es decisión suya: la apunta con sus palabras y sigue con lo que pidió, tal como lo pidió, también cuando repite algo que existe («mantengo lo que dije» tras saber que `libres` ya está en `src/app.js`), sin volver a rebatirla ni reconvertirla en un cambio de lo que existe
+- AND en `sdd-propose`, lo que el usuario mantiene va a «Decisiones tomadas con el dev-lead»
 
 ### «Decide tú»
 
@@ -72,12 +73,14 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 
 ### Cuándo para la entrevista
 
-- GIVEN una entrevista en la que no queda ninguna decisión por preguntar
+- GIVEN una entrevista que llega a la parada que fija la skill que la invoca o, sin parada propia, a la de por defecto: cada decisión del usuario contestada o pendiente (el usuario dijo no saberla, o la dejó sin contestar tras preguntarla una vez)
 - WHEN el agente termina
 - THEN devuelve a la skill que la invocó dos listas: lo que decidió el usuario y lo que decidió el agente (con su motivo), más lo pendiente
 - AND si la skill que invoca tiene gate (spec, documento de la init, propuesta), la confirmación es ese gate: no pide una confirmación propia antes
 - AND invocada desde `sdd-explore`, que no tiene gate, confirma con una sola pregunta
 - AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
+- AND `sdd-explore`, `sdd-propose`, `sdd-roadmap` y `sdd-config` paran con la de por defecto; en `sdd-propose`, lo de método que queda va a «Decisiones que he tomado yo» como «decidido por mí», y lo no contestado, al mismo bloque marcado «pendiente»
+- AND `sdd-init` fija su parada: cuando cada tema de su tabla está contestado, pendiente o «no aplica»
 
 ### Busca fuera del repo antes de preguntar lo que depende de un hecho externo
 
@@ -117,10 +120,17 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - THEN pregunta para qué lo quiere, abierta: sin alternativas, recomendación, hipótesis ni ejemplos de respuesta, aunque pueda adivinarlo
 - AND con el porqué en la petición o en la fila del roadmap («para que el responsable las cuadre los lunes en su hoja de cálculo»), no lo pregunta
 
+### Lo que decide el agente va como suyo
+
+- GIVEN una entrevista de `sdd-propose` para exportar a CSV en la que el usuario no ha contestado para qué lo quiere ni ha dicho qué hoja de cálculo usa
+- WHEN el agente sigue
+- THEN el para qué queda pendiente, no «lo tomo como confirmado y lo uso como base»
+- AND el separador, que depende de la hoja que el usuario no ha dicho, se pregunta o queda pendiente; no sale «**Separador:** coma» como hecho
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `sdd-grilling` no escribe ficheros del proyecto, y lo que devuelve lo escribe quien la invoca, en sus documentos de siempre; un boceto vive en un Artifact privado del usuario, y una captura de la pantalla actual, fuera de git (el scratchpad de la sesión), como las de la verificación visual.
 - **Idioma de los nombres**: el texto que ve el usuario (preguntas, listas «decidido por ti», «decidido por mí», «pendiente») va en su idioma; la skill, en inglés.
-- **Límites**: una decisión por turno; sin tope de preguntas por entrevista (para con la frontera vacía); rebatir, una vez por respuesta.
+- **Límites**: una decisión por turno, también si el usuario pide todo de golpe; sin tope de preguntas por entrevista (para donde fija la skill que la invoca, o con cada decisión del usuario contestada o pendiente); rebatir, una vez por respuesta.
 - **Avisos**: no aplica.
-- **Regla ante conflicto**: si el usuario pide rondas en la sesión, gana su petición en esa sesión; las paradas de `control-profiles` mandan sobre la entrevista.
+- **Regla ante conflicto**: si el usuario pide rondas, gana una decisión por turno (dev-lead); las paradas de `control-profiles` mandan sobre la entrevista.
