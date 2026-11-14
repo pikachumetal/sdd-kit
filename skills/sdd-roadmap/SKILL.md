@@ -22,8 +22,8 @@ The project is on the **3.0.0 form** when it has `ROADMAP.md` at the root: Now, 
 
 Look at what the request brings, in this order:
 
-1. **Give a row's prompt** — «dame el prompt de la <id>»: read the row, its proposal with its amendments and `.docs/sdd/sdd-kit.json`, check with step 1 whether its branch is open, and give the launch prompt traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md). Nothing else: you don't write, reserve, publish or commit. If the row is closed or in flight (checklist step 1), say so instead of giving the prompt (`tests/sdd-explore-0161-red.md`, m1). A Later row gives no prompt: say it is in Later and that raising it to Next writes its brief. An open «Tras» doesn't stop it: give the prompt.
-2. **What comes next** — «qué sigue», «dame la siguiente». After checklist step 1, offer first, in roadmap order, the open rows carrying the `parent:` or `proposal:` (its path in `**Requisitos:**`) of something started (a piece closed or in flight), then Now's other open rows in order, then Next's. Never offer, and say why: in flight, blocked («Tras» open or 🔒), a split mother (pieces carry its `parent:`), Later. Give the first one's prompt as in entry 1, the template's exact form, title included, without waiting; naming another gives that one's. Nothing to offer: say so. You write nothing.
+1. **Give a row's prompt** — «dame el prompt de la <id>»: read the row, its proposal with its amendments and `.docs/sdd/sdd-kit.json`, check with step 1 whether its branch is open, and give the launch prompt in the exact form of [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md), title included: `### *<emoji> <id> — <name>*`, in italics. Nothing else: you don't write, reserve, publish or commit. If the row is closed or in flight (checklist step 1), say so instead of giving the prompt. A Later row gives no prompt: say it is in Later and that raising it to Next writes its brief. An open «Tras» doesn't stop it: give the prompt.
+2. **What comes next** — «qué sigue», «dame la siguiente». After checklist step 1, offer first, in roadmap order, the open rows carrying the `parent:` or `proposal:` (its path in `**Requisitos:**`) of something started (a piece closed or in flight), then Now's other open rows in order, then Next's. Never offer, and say why: in flight, blocked («Tras» open or 🔒), a split mother (pieces carry its `parent:`), Later. Give the first one's prompt as in entry 1, without waiting; naming another gives that one's. Nothing to offer: say so. You write nothing.
 3. **Tracker items** — `ids.mode: tracker` in `.docs/sdd/sdd-kit.json` and ticket ids in the request.
 4. **A meeting** — notes or minutes of a meeting with the client.
 5. **Prepare a release** — «prepara la release N», «qué entra en la siguiente entrega».
@@ -87,22 +87,21 @@ First thing in this entry: read [references/prepare-release.md](references/prepa
 
 ### Triage
 
-Triage decides the state of each item of the technical debt (`debt.md`). Each item of «Por triar» gets exactly one of three outcomes. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
+Triage decides the state of each item of the technical debt (`debt.md`). First, run `sdd roadmap check`: each «En espera» row it warns expires is proposed for discarding, with reason `caducada`; its count of releases decides, not yours. Each item of «Por triar» gets exactly one of three outcomes. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
 
-- **«En espera»** — with «Falta» `reproducirlo` or `2.º caso`.
-- **«Lista»** — with «Evidencia» and «Destino».
+- **«En espera»** — with «Causa» and «Falta» `reproducirlo` or `2.º caso`.
+- **«Lista»** — with «Causa», «Evidencia» and «Destino».
 - **Discarded** — the row leaves `debt.md`, its reason in the commit body.
 
 The rules:
 
 - **Second case, before choosing the state**: open the tickets of every debt row and of the batch; the rows' words don't decide. The same concrete change or concrete remedy makes one problem; sharing only the cause, `ninguno` or a retry (`relanza`) doesn't. Merge them into one «Lista» row, a link per case in «Origen» and «Evidencia».
-- **«Causa»**, per row out of `Por triar`, the root that vanishes with the remedy (`debt-template.md` defines them): `entorno de la máquina`, `carga o paralelismo`, `herramienta del kit`, `regla lejos de su paso`, `decisión que no era del agente`, `fusión de registros`, `prueba o molde`, `defecto del producto`, `sin determinar` (never in «Lista»). Same mechanism under another cause: reclassify it. A row without one gets it when touched.
+- **«Causa»**, the root that vanishes with the remedy (`debt-template.md` defines them): `entorno de la máquina`, `carga o paralelismo`, `herramienta del kit`, `regla lejos de su paso`, `decisión que no era del agente`, `fusión de registros`, `prueba o molde`, `defecto del producto`, `sin determinar` (never in «Lista»). Same mechanism under another cause: reclassify it. A row without one gets it when touched.
 - **«Remedio temporal»**: with two cases, what solved it, from the tickets; `ninguno` only if you looked.
 - **«Arreglo»**, the first that works, in order: `comprobación automática`, `conectar comprobación`, `mover regla`, and only last `línea nueva`; `—` only with `defecto del producto`.
-- Nothing goes to «Lista» without being reproduced or without a second case: an item you could not reproduce goes to «En espera», with «Falta» `reproducirlo` (`tests/sdd-roadmap-0150-red.md`, m3).
-- The «Evidencia» of a «Lista» row is the command that reproduces it, with its output, or the links to the two cases; the report or the line of code is not enough (m3).
+- Nothing goes to «Lista» without being reproduced or without a second case: an item you could not reproduce goes to «En espera», with «Falta» `reproducirlo`.
+- The «Evidencia» of a «Lista» row is the command that reproduces it, with its output, or the links to the two cases; the report or the line of code is not enough.
 - The «Destino» of a «Lista» row is the id of a row of Now or Next, new or existing, or `sin fila`; never empty. A new row is written like any concrete thing. A solution that row fixes —in its brief's «Decisiones ya tomadas»— is one you ran, on a copy outside the tree, with the real case the tickets cite (a command, a file:line, a sha) up to where the failure shows, the row's WHEN: yours as well as the ticket's; if you didn't, the row says «solución por confirmar». A solution that replaces a sentence quotes, literally from the file, the whole sentence that leaves and the whole sentence that enters, never a fragment or a description of the new text. The `**Salda:**` of a brief names only «Lista» rows.
-- A row of «En espera» that `sdd roadmap check` warns expires is proposed for discarding, with reason `caducada`. A release is a version `X.Y.0` of the changelog: patches don't count (m3).
 - «Origen» links the ticket; «Fecha» is the day (`AAAA-MM-DD`) the row enters its state and is kept while it stays there, so expiry doesn't restart.
 - A discarded row's first case lives only in its ticket: its second case enters «Por triar» as a new row, with both origins.
 - In `unattended`, what you can't decide stays in «Por triar», and the rest is registered in the commit.
