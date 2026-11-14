@@ -36,6 +36,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=
 | R4 Resumen | r4 | el mensaje del corte no nombra las propuestas |
 | R5 Sin parar | r4 | hace una pregunta por el repaso |
 | R6 Orden | r4 | `retro.md` no entra en el commit del corte |
+| R9 Changelog | r4 | `tools: /^>>> (Skill: \S*add-to-changelog(\s\|$)\|Read: [^\n]*add-to-changelog[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*add-to-changelog[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$))/` ausente |
 | R7 Sin carpeta | r6 | existe `.docs/sdd/releases/v1.4.0/` |
 | R8 Oferta | r6 | la propuesta no ofrece la estimación y los action items en una línea |
 | L Idioma | todos | algún mensaje al usuario en inglés |
@@ -51,3 +52,4 @@ La tabla la completan el RED y el GREEN de la 0277 (`tests/sdd-retro-red.md`, `t
 | La señal del kit va al ticket | decisión 11 de la spec; revisión de la spec | r3 |
 | Repaso, propuestas y arrastre | fila 0277; RED `r4` | r4, r6 |
 | El chequeo como primer peldaño | propuesta 0131, §archive; RED `r5`: sale sin guía, se queda como valor de la línea | r5 |
+| El corte carga `add-to-changelog` (paso 3 de `sdd-end-release`) | feature 0343, decisión 8: humo de la skill que solo corre en el corte; RED, `r4` de la fase `z-ret` de la 0152 releído con R9 | r4 |

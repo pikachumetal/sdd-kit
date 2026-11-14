@@ -175,6 +175,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | F1-C Aviso de fase | f1 | los mensajes no abren con `Ahora: … Queda: …` al cambiar de paso |
 | F1-A Sin skill intermedia | f1 | `tools: /Skill: sdd-kit:sdd-start-/` presente |
 | F1-B Entrega a implement | f1 | `tools: /Skill: sdd-kit:sdd-implement/` ausente |
+| TP Plantillas | sp1, co4, p2 | `tools: /^>>> (Skill: \S*sdd-templates(\s\|$)\|Read: [^\n]*sdd-templates[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*sdd-templates[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$))/` ausente |
 
 ## Procedencia de las reglas
 
@@ -182,6 +183,7 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 
 
 | Regla | Origen | Escenarios |
+| Spec y plan cargan `sdd-templates` (paso 4 y paso 5: «traced from `spec-template.md` / `plan-template.md` of the `sdd-templates` skill») | feature 0343, decisión 8: carga de la skill de plantillas en la batería del corte; RED, `sp1`, `co4` y `p2` de la fase `z-prp` de la 0152 releídos con TP | sp1, co4, p2 |
 | --- | --- | --- |
 | `coherence-pass.md` (antes, paso 4): al retirar algo con pasos numerados, `grep` de esos pasos | ticket de la feature 0206 §4 (feature 0281): RED `co6` 1/3; GREEN y REFACTOR 1 1/2, buscando solo el nombre; REFACTOR 2, la orden con su `grep`, 2/2 (`tests/coherence-pass-0281-green.md`) | co6 |
 | Paso 4 (sin regla propia): lo que el Scope añade y una capacidad describe entra en el delta | ticket de la feature 0116 §1 (feature 0281): RED `co5` limpio 6/6 en dos moldes (`tests/coherence-pass-0281-red.md`); el caso de campo fue en una sesión larga | co5 (control) |
