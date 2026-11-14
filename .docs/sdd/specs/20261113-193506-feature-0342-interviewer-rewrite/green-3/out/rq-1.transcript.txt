@@ -1,0 +1,33 @@
+
+# turno 1
+## usuario
+Pensemos cómo guardar las reservas para que no se pierdan al reiniciar.
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -100; ls .docs/sdd 2>/dev/null
+> Grep: reserva|reservation|booking
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\src\app.js
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\PRODUCT.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\ROADMAP.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\package.json
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\.docs\sdd\steering\constitution.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\.docs\sdd\steering\operations.md
+> Bash: node --version; node -e "import('node:sqlite').then(m=>console.log('ok',Object.keys(m))).catch(e=>console.log('err',e.message))" 2>&1 | head -5
+## agente
+Ya he leído el código y los documentos del proyecto. Esto es lo que encontré antes de preguntarte nada.
+
+- **Dónde viven hoy las reservas:** en `src/app.js:3`, un array en memoria con una reserva de ejemplo. Al terminar el proceso desaparece todo.
+- **Reservar y cancelar no escriben nada:** `reservar --cada-semana` solo devuelve el texto «reserva semanal creada» y `cancelar` solo devuelve «cancelada…». Ninguno toca `bookings`. Solo `libres` lee el array.
+- **Es una CLI:** cada comando arranca un proceso nuevo. Así que las reservas se pierden después de cada comando, no solo al reiniciar el servidor.
+- **Restricciones del proyecto** (`PRODUCT.md` y `operations.md`):
+  - Eres el único usuario y desarrollador.
+  - Node 22 y sin dependencias externas.
+  - Un solo fichero de entrada.
+- **Lo que sé del entorno:** en esta máquina hay Node 26 y `node:sqlite` carga. No he verificado cómo se comporta en Node 22, que es lo que declara el proyecto.
+
+❓ **¿Qué formato de almacenamiento usamos?**
+1️⃣ **Un fichero JSON** (`reservas.json`). Se lee entero al arrancar y se reescribe en cada cambio. Es legible a mano y no necesita dependencias. Su coste es que no hay transacciones: un fallo a mitad de escritura puede corromper el fichero. Dos comandos a la vez pueden pisarse, aunque con un solo usuario es poco probable.
+2️⃣ **`node:sqlite`** (módulo integrado). Tiene transacciones y consultas por día y sala. Su coste es que depende de que Node 22 lo tenga estable, y no lo he comprobado. El fichero no se lee a mano.
+3️⃣ **Fichero de líneas JSON (JSONL), solo añadiendo.** Cada reserva o cancelación es una línea nueva. Una escritura cortada solo estropea la última línea. Su coste es que hay que recorrer todo el historial para saber qué reservas siguen vivas.
+
+➡️ **Recomiendo 1️⃣**, porque con un único usuario, una CLI y sin dependencias es lo más simple que cumple, y puedes abrir y corregir las reservas a mano. A cambio, hay que escribir el fichero de forma atómica (a un temporal y luego renombrar) para no perderlo por un corte.

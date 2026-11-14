@@ -13,13 +13,13 @@ approvers:
 
 # Spec — Reescribir el entrevistador del kit
 
-🦆 Cuando el kit te entrevista (al pensar algo en `sdd-explore`, al preparar un proyecto en `sdd-init` o al especificar en `sdd-propose`), hoy a veces da por hecho lo que no le has dicho: «lo tomo como confirmado y lo uso como base». Tampoco busca en la web antes de preguntarte, y vuelve a discutirte lo que ya mantuviste. Con esta feature, lo que decide él va marcado como suyo y lo que no contestaste queda pendiente. Si la decisión depende de la web, lanza la búsqueda antes de su primera pregunta. Y si insistes en «mantengo lo que dije», lo apunta como decisión tuya y sigue. Por dentro, `sdd-grilling` se reescribe de cero y dice solo cómo se pregunta; qué cubre cada entrevista y cuándo para pasa a la skill que pregunta, y la batería del entrevistador lo mide antes y después.
+🦆 Cuando el kit te entrevista (al pensar algo en `sdd-explore`, al preparar un proyecto en `sdd-init` o al especificar en `sdd-propose`), hoy a veces da por hecho lo que no le has dicho: «lo tomo como confirmado y lo uso como base». Además, vuelve a discutirte lo que ya mantuviste. Con esta feature, lo que decide él va marcado como suyo y lo que no contestaste queda pendiente; y si insistes en «mantengo lo que dije», lo apunta como decisión tuya y sigue con lo que pediste. Por dentro, `sdd-grilling` parte del núcleo de antes, aligerado, y dice solo cómo se pregunta; qué cubre cada entrevista y cuándo para pasa a la skill que pregunta, y la batería del entrevistador lo mide antes y después.
 
 Validación: agente — `validation.mode: field` del repo: la medida es la batería del entrevistador y la de forma; el uso real llega por los tickets de `sdd-feedback`.
 
 ## Capacidades
 
-- Modificadas: `interviewing` — la postura (mirar, decidir el método que zanja un hecho del caso, preguntar lo que queda), la alternativa única de método, lo que decide el agente va como suyo, nunca por rondas, rebatir una vez y apuntar la insistencia, la búsqueda web antes de la primera pregunta, la pregunta abierta de una frase y cuándo para cada entrevista.
+- Modificadas: `interviewing` — lo que decide el agente va como suyo, nunca por rondas, rebatir una vez y seguir con lo que el usuario mantiene, confirmar un hecho sin ejemplos y cuándo para cada entrevista.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -31,31 +31,30 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (seis requisitos 
 ```
 
 1. **Enfoque: B (núcleo sin territorio y territorio medido en cada llamante), frente a A y C** (ver Approach).
-2. **La n de la batería del entrevistador**: `g9`, `g8`, `fp` y `pe` pasan a n = 5 (umbral 5/5); el resto se queda en 2 (umbral 2/2). `g8` y `pe` son los escenarios donde falló E0 del control en el spike (`readings/totales.md`: `g8` 1/2 en cada tanda, `pe` 3/5 y 4/5); `g9`, el de E4w (0/4). Un «falla» aislado (4/5) es rojo solo si la relectura del hilo lo confirma (decisión 7); confirmado, va al REFACTOR, porque esos fallos son justo los que la feature quiere quitar.
+2. **La n de la batería del entrevistador**: `g9`, `g8`, `fp` y `pe` pasan a n = 5 (umbral 5/5); el resto se queda en 2 (umbral 2/2). `g8` y `pe` son los escenarios donde falló E0 del control en el spike (`readings/totales.md`: `g8` 1/2 en cada tanda, `pe` 3/5 y 4/5); `g9`, el de la búsqueda web, que sigue a n = 5 para E0, E2 y E5 aunque E4w sale de la batería (enmienda del 2026-11-14). Un «falla» aislado (4/5) es rojo solo si la relectura del hilo lo confirma (decisión 7); confirmado, va al REFACTOR, porque esos fallos son justo los que la feature quiere quitar.
 3. **RED**: el kit de `HEAD` tras la Task 1 (el núcleo actual con la batería arreglada) en `g9`, `fp`, `g8` y `pe` a n = 5, 20 sujetos. Es el RED de las cuatro piezas y de la regla de `fp`.
 4. **GREEN**: la batería del entrevistador entera con su n (34 sujetos); la de forma, `tests/batteries/sdd-grilling/`, en los escenarios que la del entrevistador no repite (`g4 g5 g6 g7 t1 sk sk-c fl ag k1 u1`, 19 sujetos), como pasada por las skills que invocan la entrevista y no regresión de las reglas que se reescriben; `m2` de `tests/batteries/sdd-roadmap/` (n = 3, umbral 2/3), que cubre la entrevista de una propuesta; y el tramo de las dos skills de entrada que se tocan (Art. I): `e1` de `sdd-explore` (n = 2) y el humo `n4` de `sdd-init` (n = 1). Cada paso tocado, con su escenario: `sdd-explore` paso 2 → `g1 g9 rq` y `e1`, `u1`; `sdd-init` paso 3 → `g2 g8` y `n4`; `spec-writing.md` → `g3 p1 p2 p3 fp pe`; `proposal.md` → `m2`; `sdd-config` paso 2 → `g7`; núcleo → todos. Las paradas de `sdd-init`, `sdd-roadmap` y `sdd-config` no tienen fila de parada propia: dicen con palabras lo que hoy hace cada paso (`g7`, «cuándo para y las dos listas», ya lo mide en `sdd-config`), y escribir una fila nueva por cada una no cabe en esta feature; si una entrevista de esas no para, su escenario lo enseña como pregunta de más (E3, E5).
-5. **Verde** es cada fila de fondo de la rúbrica (K, E0–E7, E4w) con todos sus sujetos en «pasa» o «no aplica»; los reparos no cuentan. En la de forma, su umbral por escenario.
+5. **Verde** es cada fila de fondo de la rúbrica (K, E0–E7) con todos sus sujetos en «pasa» o «no aplica»; los reparos no cuentan. En la de forma, su umbral por escenario. Una fila que no llega se compara con el núcleo de antes por su tasa de «pasa»: en `g9 fp g8 pe`, el RED (`red/totales.md`); en los escenarios de n = 2 del entrevistador, `control-a` y `control-b` del spike 0341 (`readings/totales.md` de su carpeta, el mismo núcleo); en la de forma, el control de `g7` y `sk` (`control-forma/`) y, sin control, su umbral. Igual o mejor tasa, va a deuda con su cita; peor, es rojo y para (enmienda del 2026-11-14).
 6. **Un sujeto que no carga el núcleo se relanza una vez**, como en el spike (su decisión 10), también el que cae por un `Read` con `limit` explícito sobre el fichero entero, y el relanzamiento se cuenta en el walkthrough; un segundo «no cargó» es rojo de K.
 7. **Lectores**: Sonnet con effort medium, uno por escenario y tanda, con el encargo del spike (`readings/encargo.md`) adaptado a la rúbrica de esta batería; el hilo relee cada «falla» y la fija con la regla de `readings/relectura.md`.
 8. **REFACTOR**: como mucho dos rondas, cada una sobre los escenarios en rojo; tras la última, el GREEN entero otra vez (las tres baterías), para que el recorte no rompa lo que ya pasaba. Si siguen en rojo, paro y te lo enseño (desvío de la spec).
-9. **Tope de gasto**: `COST_CAP=44` (dólares), el techo de toda la campaña de sujetos que suma `battery.mjs` con el precio de plan: el peor caso de la previsión (42,76 $) cabe; paro antes de pasarlo.
+9. **Tope de gasto**: `COST_CAP=58` (dólares), el techo de toda la campaña de sujetos que suma `battery.mjs` con el precio de plan; paro antes de pasarlo. Lo sube de 44 a 58 la enmienda del 2026-11-14, para el GREEN del núcleo aligerado (~14 $: 41,38 + 14,36 = 55,74 $). Las dos rondas de REFACTOR de la decisión 8 ya se gastaron: tras este GREEN no hay otra ronda, y lo que no llegue lo decide el dev-lead (Art. I).
 10. **La fila K de máquina**: `tools: /^>>> (Skill: \S*sdd-grilling(\s\|$)\|Read: [^\n]*sdd-grilling[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*sdd-grilling[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$))/` ausente (la fila falla si ninguna llamada la casa): `Skill`, `Read` sin `limit` ni `offset`, o `cat` y `Get-Content` en un tramo sin tubería, redirección ni parámetro de lectura parcial. `battery.mjs` la aplica a cada llamada (`>>>` hasta la siguiente), no a la primera línea del fichero. Probada en 18 llamadas de muestra (8 casan, 10 no).
 11. **`Read` con `offset` o `limit` se ve en el `tools.txt` y en el transcript**: `tests/headless/extract.mjs` y `describeCall` de `transcript.mjs`, que no sale de `extract.mjs`, lo añaden tras la ruta (`<ruta> · offset=<n> · limit=<n>`), para que la K y el lector distingan la lectura entera. El cambio de `extract.mjs` vale para todas las baterías: la Task 1 comprueba con `git grep` que ninguna comprobación existente casa con lo que va tras la ruta de un `Read`.
 12. **`transcript.mjs` no corta ninguna llamada de `Bash`, `PowerShell` ni `Read`**; corta solo el volcado JSON de las herramientas sin argumento conocido, a 160 caracteres. Con test en `cli/test/kit/`.
 13. **Territorio en cada llamante** (lo confirma el RED-GREEN de la batería; en `sdd-roadmap` y `sdd-config`, que la batería del entrevistador no cubre, `m2` y `g7`):
     - `sdd-explore`, paso 2 «Think»: cubre el porqué, si ni el usuario ni el proyecto lo dicen, y la dirección que se piensa; para con la parada por defecto del núcleo (cada decisión del usuario contestada o pendiente) y confirma la dirección con una sola pregunta.
-    - `spec-writing.md`: cubre primero para qué lo quiere, abierto, si ni la petición ni la fila lo dicen; después objetivos, no objetivos y antiobjetivos; para con la parada por defecto, y lo de método que queda va a ✋ como «decidido por mí»; lo no contestado, a la línea nueva «Pendiente de ti» del ✋ de `spec-template.md`, que el dev-lead lee en el gate. La prueba de parada de Addy Osmani (research §7, «puedes predecir su respuesta») se descarta: no es un predicado observable (Art. II) y ninguna fila la mide; la parada por defecto la mide E7 en `pe`.
+    - `spec-writing.md`: cubre primero para qué lo quiere, abierto, si ni la petición ni la fila lo dicen; después objetivos, no objetivos y antiobjetivos; para con la parada por defecto, y lo de método que queda va a ✋ como «decidido por mí»; lo no contestado, como una entrada más de «✋ Decisiones que he tomado yo» con la etiqueta «pendiente», que el dev-lead lee en el gate (sin hueco nuevo en la plantilla); lo mide E0 en `pe` y `p1`–`p3`: falla si lo no contestado se da por confirmado. La prueba de parada de Addy Osmani (research §7, «puedes predecir su respuesta») se descarta: no es un predicado observable (Art. II) y ninguna fila la mide; la parada por defecto la mide E7 en `pe`.
     - `sdd-init` paso 3: cubre la tabla, «Problem it solves» primero; para cuando cada tema está contestado, pendiente («no sé») o cerrado («no aplica»).
-    - `proposal.md`: cubre cada regla de negocio con su ejemplo y el reparto; para cuando cada regla tiene su ejemplo y cada feature su orden y su dependencia.
-    - `sdd-config` paso 2: para cuando no queda clave sin valor ni clave que el usuario pidió cambiar.
-14. **La regla de `fp`**: en `spec-writing.md`, la respuesta que el usuario mantiene tras el rebate va a «Decisiones tomadas con el dev-lead» con su frase literal, también cuando pide algo que ya existe, y la entrevista sigue sobre lo que pidió.
-15. **El núcleo, de cero**: un borrador mide 797 palabras con `wc -w`, frente a 887 del núcleo de hoy con el mismo conteo (888 con el de `word-budget` sobre `dist/`). La postura acota «decidir el método» de research §4: decide lo que un hecho del caso zanja y pregunta lo que tiene varias alternativas defendibles, para no chocar con «Alternativas reales» ni con las preguntas de diseño de método (hallazgo de la review). Las piezas de research §4 sustituyen cada una su frase («Grill relentlessly…», «Facts are your job…», la búsqueda web «keep asking what doesn't depend on it», la pregunta abierta); «If neither the user nor the project says why…, ask that first» y «Stop when no decision is left… from `sdd-explore`, confirm with one question» bajan a sus llamantes.
+    - `proposal.md` y `sdd-config` paso 2: su texto no cambia. Ya dicen qué cubre su entrevista (cada regla con su ejemplo y el reparto; las claves sin valor y las que el usuario pide cambiar) y paran con la parada por defecto del núcleo.
+14. **La regla de `fp`**: el núcleo dice que lo que el usuario mantiene tras el rebate es decisión suya y se sigue con lo que pidió, también cuando repite algo que existe; su destino en la spec ya lo da el bullet «Decisiones tomadas con el dev-lead» de `spec-writing.md` (lo que decidió el usuario, con su frase literal), sin frase nueva.
+15. **El núcleo, el de antes aligerado** (enmienda del 2026-11-14): parte de `skills/sdd-grilling/SKILL.md` de `50317a64`, sin el territorio («If neither the user nor the project says why…, ask that first» y «from `sdd-explore`, confirm with one question» bajan a sus llamantes; «Stop when no decision is left» pasa a la parada del llamante o la de por defecto), y entran solo las tres piezas que el GREEN midió igual o mejor: lo que elige el agente va como suyo (sustituye a «Facts are your job; decisions are the user's»), seguir con lo que el usuario mantiene (sustituye a «If the user keeps it, accept it») y confirmar un hecho con una pregunta que acaba en él, sin ejemplos. «If the user asks for everything at once, do so this session» pasa a «also if asked for everything at once» (dev-lead, brief). Las demás frases del núcleo de antes se quedan, también las de buscar fuera, que sostienen el requisito «Busca fuera», sin cambio. Mide 884 palabras con `wc -w`, frente a 887.
 16. **`upstream.json`**: se quedan las dos entradas `concept` de `sdd-grilling` (de Matt queda el orden por dependencias; de `brainstorming`, pensar varias ideas y la regla de E0). La nota de `brainstorming` dice eso, y el porqué primero pasa a la entrada de `spec-writing.md`.
 17. **La tabla «Procedencia de las reglas» de `tests/batteries/sdd-grilling/battery.md` se reescribe** con las reglas del núcleo nuevo, su origen (spike 0341 y esta feature) y sus escenarios; las que bajan a un llamante dicen a cuál.
 18. **La fila de `README.md`** de `sdd-grilling` dice lo que hace el núcleo nuevo, con sus dos fuentes.
 19. **La carpeta va en `.docs/sdd/specs/`**, como la 0341: `changes/` empieza con el corte de la 3.0.0 (fila 0343), y `battery.mjs plan` busca los precios en `specs/`.
-20. **El delta, probado en una copia de `.docs/sdd`**: `sdd capability merge` → siete requisitos sustituidos o añadidos y las tres reglas sustituidas, sin rechazos.
-21. **Topes de palabras**: los de la tabla de abajo; cada territorio se compensa en su mismo paso, y si uno no cabe, su tope sube lo justo, con un techo: la suma de las subidas no pasa de 83 palabras, lo que baja el tope del núcleo (900 → 817). Subir un tope es decisión del dev-lead (Art. I): al aprobar la spec apruebas ese techo. El saldo de las skills tocadas, contadas juntas, queda en 0 o menos.
+20. **El delta, probado en una copia de `.docs/sdd`**: `sdd capability merge` → cinco requisitos sustituidos o añadidos y dos reglas sustituidas, sin rechazos (con la enmienda del 2026-11-14).
+21. **Topes de palabras**: el del núcleo baja de 900 a 886 (menos de 887, como pide el brief); los demás, sin cambio. Saldo de las skills tocadas, con `wc -w` frente a `50317a64`: −7 (núcleo −3, `sdd-explore` −1, `spec-writing.md` −3; `sdd-init`, `proposal.md`, `sdd-config` y la plantilla de spec, 0).
 22. **`THIRD_PARTY_NOTICES.md`** sale de `upstream.json` (`moon run kit:notices`): la nota de `brainstorming` cambia con la decisión 16, sin editarlo a mano.
 - Política de modelos: revisores de la spec, dos Sonnet (sin reglas de negocio ni roles) · revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · sujetos Sonnet por tandas de 5 (`MAX_PARALLEL` de `run.mjs`), la persona de `pe` Haiku, lectores Sonnet effort medium de 3 en 3 · en paralelo hasta `control.maxParallelAgents` (3) — al aprobar la spec, esta línea es la confirmación de paralelizar que piden tus instrucciones
 
@@ -104,36 +103,38 @@ Segunda ronda (un revisor Sonnet con los siete puntos, por el Crítico aceptado 
 - Una pregunta por turno, nunca por rondas — «lo habitual es decir sí a todo» (2026-11-13, brief)
 - La plantilla de la pregunta se queda (título, opciones con su coste, «➡️ recomiendo X, porque…») — «me gusta ver las cosas bonitas» (brief)
 - Lo que solo sabe el usuario, abierto, sin recomendación ni menú; lo que decide el agente, marcado como suyo — brief de la 0342, research §4 y §8: «Sí, con esa versión»
+- Aligerar el entrevistador y sacar la búsqueda en internet de la entrevista (enmienda del 2026-11-14), opción 1️⃣ — «lo de buscar en internet a mi me gustaria mucho qu elo hicieras autionomo, pero es algo qu eme sirve mas en spikes en tenams nuevos... Quizas no deberiamos buscarlo en la entrevista» y «tendriamos qu ebuscar un buen entrevistador? y aligerar?», y «1» (2026-11-14)
 
 ## Intent
 
-Hoy el núcleo de `sdd-grilling` mezcla cómo se pregunta con qué cubre cada entrevista, y la batería del spike 0341 lo deja en rojo en tres sitios: da por confirmado lo que el usuario no contestó (E0: `g8` y `pe`), no busca en la web antes de preguntar (E4w, `g9` 0/4) y vuelve a rebatir tras «mantengo lo que dije» (E1, `fp` 2/10). El éxito: la batería del entrevistador en verde con su n en todas sus filas de fondo, la de forma sin regresión, un núcleo de menos de 887 palabras en positivo y el saldo de palabras de las skills tocadas en 0 o menos. Fracasa aunque funcione si el núcleo nuevo pasa la batería sumando reglas a las de hoy, o si una entrevista pierde su parada al bajar el territorio a su llamante.
+Hoy el núcleo de `sdd-grilling` mezcla cómo se pregunta con qué cubre cada entrevista, y la batería del spike 0341 lo deja en rojo: da por confirmado lo que el usuario no contestó (E0: `g8` y `pe`) y vuelve a rebatir tras «mantengo lo que dije» (E1, `fp` 2/10). El éxito: la batería del entrevistador en verde con su n en todas sus filas de fondo o, la fila que no llegue, sin regresión frente al núcleo de antes (decisión 5), la de forma sin regresión, un núcleo de menos de 887 palabras en positivo y el saldo de palabras de las skills tocadas en 0 o menos. Fracasa aunque funcione si el núcleo nuevo pasa la batería sumando reglas a las de hoy, o si una entrevista pierde su parada al bajar el territorio a su llamante.
 
 ## Scope
 
 - Entra:
-  - `skills/sdd-grilling/SKILL.md`, de cero.
-  - El territorio (qué cubre, cuándo para) en `skills/sdd-explore/SKILL.md`, `skills/sdd-init/SKILL.md` paso 3, `skills/sdd-propose/references/spec-writing.md`, `skills/sdd-roadmap/references/proposal.md` y `skills/sdd-config/SKILL.md` paso 2, con la regla de `fp` en `spec-writing.md`.
-  - Batería: la fila K y la n en `tests/batteries/interviewer/battery.md`; `tests/batteries/interviewer/transcript.mjs` sin cortar las llamadas que leen ficheros y con `offset` y `limit` de `Read`; `tests/headless/extract.mjs` con `offset` y `limit` de `Read`; tests en `cli/test/kit/`.
+  - `skills/sdd-grilling/SKILL.md`, el de antes aligerado (decisión 15).
+  - El territorio (qué cubre, cuándo para) en `skills/sdd-explore/SKILL.md`, `skills/sdd-init/SKILL.md` paso 3 y `skills/sdd-propose/references/spec-writing.md`, con el destino de la regla de `fp` en `spec-writing.md`; `proposal.md` y `sdd-config` se quedan como están (decisión 13).
+  - Batería: la fila K y la n en `tests/batteries/interviewer/battery.md`, y la fila E4w fuera, con la cláusula de la web de E4; `tests/batteries/interviewer/transcript.mjs` sin cortar las llamadas que leen ficheros y con `offset` y `limit` de `Read`; `tests/headless/extract.mjs` con `offset` y `limit` de `Read`; tests en `cli/test/kit/`.
   - `tests/batteries/sdd-grilling/battery.md`, tabla de procedencia; `.docs/sdd/capabilities/interviewing.md` (al fusionar); `upstream.json` y `THIRD_PARTY_NOTICES.md`, que sale de él; `README.md`; `cli/test/kit/word-budget.test.ts`.
-  - `skills/sdd-templates/templates/spec-template.md`: la línea «Pendiente de ti» en el ✋ (decisión 13).
-  - Saldar la fila de `.docs/sdd/steering/debt.md` del transcript que corta a 160 caracteres, y la 0342 de `ROADMAP.md`.
+  - Saldar la fila de `.docs/sdd/steering/debt.md` del transcript que corta a 160 caracteres, y la 0342 de `ROADMAP.md`; abrir al cierre la fila de la búsqueda autónoma (No entra).
+  - `skills/sdd-init/SKILL.md` paso 3 se edita (el territorio, con saldo 0); `readings/encargo.md` de esta carpeta, sin E4w.
 - No entra:
   - El cierre y el corte de la 3.0.0 (fila 0343).
-  - Reglas nuevas para no preguntar lo que la petición ya dice (E3): la postura del núcleo ya lo pide («read what answers it: the request, its roadmap row…»), sin regla de `sdd-propose` aparte.
+  - Reglas nuevas para no preguntar lo que la petición ya dice (E3): el núcleo ya lo pide («Skip what the request says or delegates, or the project shows»), sin regla de `sdd-propose` aparte.
   - Otras baterías de las skills llamantes, salvo `m2` de `sdd-roadmap`.
+  - La búsqueda autónoma en internet (buscar soluciones, presentarlas o decir que lo nuestro es igual o mejor): sale de la entrevista a una fila de roadmap para `sdd-explore` en modo probar o un spike (dev-lead, enmienda del 2026-11-14).
 
 ## Lo que se retira o cambia de forma
 
 | Qué | Dónde aparece | Destino |
 | --- | --- | --- |
-| «Grill relentlessly until nothing is left silently assumed…» | `skills/sdd-grilling/SKILL.md:12`; `interviewing.md`, «Una decisión por turno», última AND; `tests/batteries/sdd-grilling/battery.md:86` | sustituida por la postura (decisión 15); delta `MODIFIED`; procedencia reescrita (decisión 17) |
 | «Facts are your job; decisions are the user's.» | `skills/sdd-grilling/SKILL.md:12` | sustituida por la regla de E0; delta `ADDED` |
 | «If the user asks for everything at once, do so this session» | `skills/sdd-grilling/SKILL.md:16`; `interviewing.md`, «Una decisión por turno» y «Regla ante conflicto» | retirada: nunca por rondas (dev-lead); delta `MODIFIED` |
 | «If neither the user nor the project says why…, ask that first» | `skills/sdd-grilling/SKILL.md:12`; `tests/batteries/sdd-grilling/battery.md:87`; `upstream.json`, nota de `brainstorming`; `THIRD_PARTY_NOTICES.md:49` | baja a `spec-writing.md` y a `sdd-explore` (decisión 13); procedencia y nota (decisiones 16, 17 y 22) |
-| «one defensible path: say it, confirm it» | `skills/sdd-grilling/SKILL.md:37`; `interviewing.md`, «Alternativas reales», última AND | la de método la decide el agente; la del usuario se dice y se confirma; delta `MODIFIED` |
-| «If it needs a web search, use a subagent and keep asking what doesn't depend on it» | `skills/sdd-grilling/SKILL.md:20`; `interviewing.md`, «Busca fuera», segunda AND | sustituida: la búsqueda se lanza antes de la primera pregunta; delta `MODIFIED` |
+| «If the user keeps it, accept it.» | `skills/sdd-grilling/SKILL.md:51` | sustituida: es su decisión y se sigue con lo pedido; delta `MODIFIED` |
+| «A fact you found…: show it with its source and ask to confirm.» | `skills/sdd-grilling/SKILL.md:47` | sustituida: una pregunta que acaba en el hecho, sin ejemplos; delta `MODIFIED` |
 | «Stop when no decision is left… from `sdd-explore`, confirm with one question» | `skills/sdd-grilling/SKILL.md:58`; `interviewing.md`, «Cuándo para la entrevista» | la parada pasa a cada llamante (decisión 13); delta `MODIFIED` |
+| `\| E4w Busca en la web \| g9 \| …` y «en `g9`, pregunta sin buscar en la web…» de E4 | `tests/batteries/interviewer/battery.md:37-38` (en `a1c6fb18`); `readings/encargo.md` | fuera de la batería del entrevistador; la búsqueda autónoma, a su fila (No entra) |
 | «sin tope de preguntas por entrevista (para con la frontera vacía)» | `interviewing.md`, «Límites» | para donde fija la skill que la invoca; delta, Reglas de la capacidad |
 | `const ARG_MAX = 160;` | `tests/batteries/interviewer/transcript.mjs:10` y `:30`; `debt.md:58` | solo para el volcado JSON (decisión 12); la fila de `debt.md` se salda |
 | `tools: /sdd-grilling/` presente (fila K) | `tests/batteries/interviewer/battery.md:31` | regex de la decisión 10 |
@@ -151,7 +152,7 @@ Hoy el núcleo de `sdd-grilling` mezcla cómo se pregunta con qué cubre cada en
 - **Elegido: B**, porque es el único que pone a prueba la hipótesis que pide el brief («la confirma un RED») y el único que puede bajar el saldo de palabras con datos: una frase de territorio que no cambia ninguna fila no se queda.
 
 Partes que fija B:
-- El núcleo se ordena así: postura (mirar, decidir el método, preguntar lo que queda, y lo decidido por el agente como suyo), una decisión por turno, buscar, forma de la pregunta, lo que solo sabe el usuario, respuestas y final. Cada regla va en positivo; una prohibición va solo como guardarraíl, junto a su positivo.
+- El núcleo conserva las secciones del de antes (una decisión por turno, buscar, forma de la pregunta, descubrimiento, respuestas y final) y cambia solo las frases de la decisión 15: lo que funciona no se toca (Art. IX).
 - Orden de las tasks: arreglos de la batería → RED con el núcleo actual → núcleo y territorios → GREEN con REFACTOR → pasada por las skills llamantes, topes y cierre.
 - El kit de cada tanda sale de `dist/` construido (`moon run kit:build`), copiado a `.temp/i/kit` sin `.docs/` ni `tests/`; `RUNS_DIR` en `.temp/i/runs` (operations.md, ruta corta).
 
@@ -181,17 +182,7 @@ Partes que fija B:
 - REMOVED AND si el usuario pide en la sesión «pregúntamelo todo de golpe», en esa sesión pregunta por rondas
 - AND si el usuario pide «pregúntamelo todo de golpe», sigue con una decisión por turno
 - AND en otra entrevista, una decisión que depende de otra todavía abierta espera a que esa se cierre (enmienda 2026-10-03)
-- REMOVED AND no termina con nada supuesto en silencio: cada suposición del agente es una pregunta o una entrada de «decidido por mí» (enmienda 2026-10-03)
-- AND antes de cada pregunta lee lo que la contesta (la petición, su fila del roadmap, los documentos y el código del proyecto); lo de método o técnica que zanja un hecho de este caso lo decide él, con ese hecho; lo que tiene varias alternativas defendibles lo pregunta; y pregunta siempre lo que es del usuario: para quién, para qué, alcance, nivel y dinero
-
-#### MODIFIED — Alternativas reales, mezclas incluidas
-
-- GIVEN una decisión con dos alternativas defendibles y una tercera que nadie elegiría («ni clave ni salida en sesión»)
-- WHEN el agente la pregunta
-- THEN ofrece solo las dos defendibles, y la mezcla de ambas si combinarlas es defendible
-- AND con cinco alternativas defendibles ofrece las cinco: no hay número fijo
-- REMOVED AND con una sola alternativa defendible la dice y pide confirmarla, y no añade una mezcla 🔀 que no defendería sola (enmienda 2026-10-03)
-- AND con una sola alternativa defendible, si es de método la decide y la anota en «decidido por mí» con su motivo; si es del usuario, la dice y pide confirmarla; y no añade una mezcla 🔀 que no defendería sola
+- AND no termina con nada supuesto en silencio: cada suposición del agente es una pregunta o una entrada de «decidido por mí» (enmienda 2026-10-03)
 
 #### ADDED — Lo que decide el agente va como suyo
 
@@ -199,24 +190,22 @@ Partes que fija B:
 - WHEN el agente sigue
 - THEN el para qué queda pendiente, no «lo tomo como confirmado y lo uso como base»
 - AND el separador, que depende de la hoja que el usuario no ha dicho, se pregunta o queda pendiente; no sale «**Separador:** coma» como hecho
-- AND lo que zanja un hecho del proyecto (la codificación UTF-8, porque los ficheros de `data/` ya la usan) va como «decidido por mí» con ese hecho, nunca como algo que el usuario aceptó
-- AND si para seguir supone algo que ningún hecho zanja, lo dice como suposición y lo deja pendiente de confirmar
-
 #### MODIFIED — El descubrimiento no se ancla
 
 - GIVEN una pregunta sobre lo que solo sabe el usuario («¿quién usa el producto?») en un proyecto sin código
 - WHEN el agente la pregunta
-- REMOVED THEN la hace abierta, sin recomendación ni hipótesis
-- THEN la hace abierta, en una sola frase que pide un caso, sin recomendación, hipótesis ni ejemplos de respuesta
-- AND en un proyecto con código donde encontró `roles.ts` con `clinic_admin` y `patient`, enseña ese hecho con su fuente y pide confirmarlo, sin recomendar
+- THEN la hace abierta, sin recomendación ni hipótesis
+- REMOVED AND en un proyecto con código donde encontró `roles.ts` con `clinic_admin` y `patient`, enseña ese hecho con su fuente y pide confirmarlo, sin recomendar
+- AND en un proyecto con código donde encontró `roles.ts` con `clinic_admin` y `patient`, enseña ese hecho con su fuente y una pregunta que acaba en él, sin recomendar ni añadir ejemplos («por ejemplo si lo usa alguien más»)
 
 #### MODIFIED — Rebatir una vez
 
 - GIVEN una respuesta del usuario que choca con un hecho del proyecto, o una premisa floja en lo que pide
 - WHEN el agente la recibe
 - THEN la rebate una vez, con el argumento y la alternativa concreta
-- AND si el usuario mantiene su respuesta, la acepta y sigue, sin volver a rebatirla
-- AND en `sdd-propose`, lo que el usuario mantiene va a «Decisiones tomadas con el dev-lead» con su frase literal, también cuando pide algo que ya existe («mantengo lo que dije» tras saber que `libres` ya está en `src/app.js`), y la entrevista sigue sobre lo que pidió, sin reconvertirlo en un cambio de lo que existe
+- REMOVED AND si el usuario mantiene su respuesta, la acepta y sigue, sin volver a rebatirla
+- AND si el usuario mantiene su respuesta, es decisión suya: la apunta con sus palabras y sigue con lo que pidió, tal como lo pidió, también cuando repite algo que existe («mantengo lo que dije» tras saber que `libres` ya está en `src/app.js`), sin volver a rebatirla ni reconvertirla en un cambio de lo que existe
+- AND en `sdd-propose`, lo que el usuario mantiene va a «Decisiones tomadas con el dev-lead»
 
 #### MODIFIED — Cuándo para la entrevista
 
@@ -227,39 +216,27 @@ Partes que fija B:
 - AND si la skill que invoca tiene gate (spec, documento de la init, propuesta), la confirmación es ese gate: no pide una confirmación propia antes
 - AND invocada desde `sdd-explore`, que no tiene gate, confirma con una sola pregunta
 - AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
-- AND `sdd-explore` y `sdd-propose` paran con la de por defecto; en `sdd-propose`, lo de método que queda va a «Decisiones que he tomado yo» como «decidido por mí», y lo no contestado, a su línea «Pendiente de ti»
-- AND fijan su parada: `sdd-init`, cuando cada tema de su tabla está contestado, pendiente o «no aplica»; `sdd-roadmap`, cuando cada regla de negocio de la propuesta tiene su ejemplo y cada feature del reparto su orden y su dependencia; `sdd-config`, cuando no queda clave sin valor ni clave que el usuario pidió cambiar
-
-#### MODIFIED — Busca fuera del repo antes de preguntar lo que depende de un hecho externo
-
-- GIVEN una decisión que depende de un hecho que el repo no tiene y que cambia con el tiempo: cómo se comporta una librería o herramienta en su versión actual, qué recomienda su documentación oficial, qué hace otro proyecto con el mismo problema o qué exige una licencia
-- WHEN el agente va a preguntarla
-- THEN antes lo busca, sin que el usuario se lo pida: primero en el repo; después en el MCP de documentación que tenga la sesión para esa tecnología (Context7, Microsoft Learn…), respetando los límites de llamadas que fijen las instrucciones del usuario; si no hay, en internet
-- REMOVED AND la pregunta cita lo que encontró con su fuente (enlace o fichero), y solo las decisiones que dependen de esa búsqueda esperan: el resto se pregunta mientras
-- AND si la decisión necesita la web, lanza la búsqueda antes de su primera pregunta, también antes de preguntar el porqué, y pregunta mientras busca; la pregunta que depende de ella cita lo que encontró con su fuente (enlace o fichero)
-- AND «lo sé de memoria» no vale para lo que cambia con las versiones o con el tiempo; sí para lo estable (qué es una licencia MIT, cómo funciona git)
+- AND `sdd-explore`, `sdd-propose`, `sdd-roadmap` y `sdd-config` paran con la de por defecto; en `sdd-propose`, lo de método que queda va a «Decisiones que he tomado yo» como «decidido por mí», y lo no contestado, al mismo bloque marcado «pendiente»
+- AND `sdd-init` fija su parada: cuando cada tema de su tabla está contestado, pendiente o «no aplica»
 
 #### Reglas de la capacidad — interviewing
 
-- **Idioma de los nombres**: el texto que ve el usuario (preguntas, listas «decidido por ti», «decidido por mí», «pendiente», la marca de suposición) va en su idioma; la skill, en inglés.
 - **Límites**: una decisión por turno, también si el usuario pide todo de golpe; sin tope de preguntas por entrevista (para donde fija la skill que la invoca, o con cada decisión del usuario contestada o pendiente); rebatir, una vez por respuesta.
 - **Regla ante conflicto**: si el usuario pide rondas, gana una decisión por turno (dev-lead); las paradas de `control-profiles` mandan sobre la entrevista.
 
 ## Topes de palabras
 
-Medido con el conteo de `cli/test/kit/word-budget.test.ts` sobre `dist/skills/` de `HEAD` (`ebfd253b`).
+Antes → ahora con `wc -w` sobre `skills/`, frente a `50317a64`; los topes son los de `cli/test/kit/word-budget.test.ts`, que pasa con ellos.
 
-| Fichero | Medido / tope | Margen | Tope propuesto |
-| --- | --- | --- | --- |
-| `sdd-grilling` (SKILL.md y total) | 888 / 900 | 12 | 797 + 20 = 817 (borrador, `wc -w` → 797) |
-| `sdd-templates` total (con `spec-template.md`) | sin medir | — | sin cambio: la línea «Pendiente de ti» (~+10) sale del mismo bloque ✋ |
-| `sdd-explore` (SKILL.md y total) | 1063 / 1066 | 3 | sin cambio: lo que entra (~+30, sin medir) sale del mismo paso 2 |
-| `sdd-init` (SKILL.md y total) | 2667 / 2667 y 3212 / 3212 | 0 | sin cambio: lo que entra (~+25, sin medir) sale del mismo paso 3 |
-| `sdd-propose` total (con `spec-writing.md`) | 13857 / 13927 | 70 | sin cambio: lo que entra (~+60, sin medir) sale de la misma sección de `spec-writing.md` |
-| `sdd-roadmap` total (con `proposal.md`) | 3267 / 3630 | 363 | sin cambio: lo que entra (~+30, sin medir) sale del mismo apartado |
-| `sdd-config` (SKILL.md y total) | 1435 / 1450 | 15 | sin cambio: lo que entra (~+12, sin medir) sale del mismo paso 2 |
+| Fichero | `wc -w` antes → ahora | Tope |
+| --- | --- | --- |
+| `sdd-grilling/SKILL.md` | 887 → 884 (885 con el conteo de `word-budget` sobre `dist/`) | 886 (era 900) |
+| `sdd-explore/SKILL.md` | 1013 → 1012 | sin cambio (1066) |
+| `sdd-init/SKILL.md` | 2642 → 2642 | sin cambio (2667 y 3212) |
+| `sdd-propose/references/spec-writing.md` | 1060 → 1057 | sin cambio (13927, total de `sdd-propose`) |
+| `sdd-roadmap`, `sdd-config`, `sdd-templates` | sin cambio | sin cambio |
 
-Los territorios se miden con `wc -w` al escribirlos en la Task 3, no antes. El test de `word-budget` va por skill: cada territorio se compensa en su paso; el que no cabe sube su tope lo justo, y la suma de subidas no pasa de 83 (decisión 21). El saldo se cuenta en palabras escritas, no en topes: el núcleo baja 90 (887 → 797, `wc -w`). Saldo previsto de las siete skills: entre −90 (todo compensado en su paso) y 0; si el GREEN lo deja por encima de 0, el REFACTOR recorta antes de cerrar.
+Saldo de las skills tocadas: −7 (decisión 21).
 
 ## Previsión de coste
 
@@ -277,8 +254,12 @@ Los territorios se miden con `wc -w` al escribirlos en la Task 3, no antes. El t
 | Lectores y revisores | sin comando de previsión: ~4 $ de lectores (el spike: 5,39 $ por 168 transcripts y la review; ahora sin cortar las llamadas, algo más largos) y ~1,5 $ de revisores de la spec, con la segunda ronda | 5,50 |
 | Suma, peor caso | | 48,26 |
 | Suma, GREEN a la primera | RED, GREEN, relanzamientos, ~2 $ de lectores y los revisores | 23,04 |
+| GREEN del núcleo aligerado (enmienda del 2026-11-14) | las cinco tandas del GREEN otra vez, 59 sujetos, y ~2 relanzamientos; la campaña llevaba 41,38 $ | 14,36 |
+| Lectores y revisor de la enmienda | ~3 $ de lectores y ~0,5 $ de un revisor | 3,50 |
 
 ## Enmiendas
+
+- 2026-11-14 · aprobada por el dev-lead («1») · El núcleo reescrito de cero no sale en verde tras las dos rondas de la decisión 8 (`green-2/totales.md`), y frente al núcleo de antes empata o pierde un sujeto en varias filas: las regresiones vienen de frases medidas que se perdieron al reescribir (el rechazo sin opciones, el boceto sobre la app real, el orden del paso 2 de `sdd-config`) y de una pieza nueva que hace daño (la pregunta que pide un caso y su ejemplo, que se copiaba). Cambia: el núcleo parte del de antes, sin territorio, con las tres piezas que midieron igual o mejor (decisión 15); la búsqueda web antes de la primera pregunta y la fila E4w salen de esta feature (No entra; el requisito «Busca fuera» no cambia); `proposal.md`, `sdd-config` y la plantilla de spec vuelven a su texto (decisión 13); el criterio de verde admite una fila sin regresión frente al núcleo de antes (decisión 5); `COST_CAP` sube a 58 (decisión 9); topes, decisión 21. El delta pierde los `MODIFIED` de «Alternativas reales» y «Busca fuera» y la regla «Idioma de los nombres», y cambian «Una decisión por turno», «El descubrimiento no se ancla», «Rebatir una vez» y «Cuándo para». La versión aprobada el 2026-11-13 es la de `bdbcefd0`; el bloque de review del ✋ y sus «Hallazgos» se refieren a ella. Revisor de la enmienda (Sonnet, siete puntos): aceptados la base de comparación por fila (decisión 5), la frase de «lo sé de memoria» que se queda en el núcleo (decisión 15), «pendiente» como etiqueta dentro del ✋ (decisión 13), la cláusula de UTF-8 sin fila que la mida (fuera del ADDED), sin más rondas tras este GREEN (decisión 9), el sha de la versión aprobada y el Scope y los topes al día; rechazado el Crítico de que `proposal.md`, `sdd-config` y la plantilla sigan cambiados: su diff frente a `50317a64`, en `skills/` y en `dist/`, es vacío.
 
 ## Aprobaciones
 

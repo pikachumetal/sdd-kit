@@ -1,0 +1,64 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -50; echo ---; cat .docs/sdd/PRODUCT.md 2>/dev/null | head -40
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+---
+
+>>> Bash: cat src/app.js package.json PRODUCT.md; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md; head -40 ROADMAP.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.09634580000000001 $)
+Antes de preguntar, miré el código y los documentos del proyecto. Esto es lo que encontré:
+
+- `src/app.js:3` guarda las reservas en un array en memoria, con una reserva sembrada. Por eso se pierden al reiniciar.
+- `reservar` todavía no añade nada al array. Devuelve el texto «reserva semanal creada» y no guarda la reserva. Ni siquiera dentro de una misma ejecución hay reservas que conservar.
+- `cancelar` también devuelve solo un texto.
+- `operations.md` fija Node 22, sin dependencias externas y un único fichero de entrada.
+- `PRODUCT.md` dice que lo usas tú solo, en tu propio servidor.
+- El roadmap no tiene ninguna fila sobre persistencia.
+
+Cada ejecución del CLI es un proceso nuevo. Cada comando tiene que leer el estado del disco y escribirlo antes de terminar.
+
+❓ **¿En qué formato se guardan las reservas en disco?**
+Un solo usuario y un solo proceso a la vez, y sin dependencias externas.
+
+1️⃣ **Fichero JSON** (`reservas.json`, con `node:fs`). `reservar Norte lun 10:00-12:00` lo lee, añade la reserva y lo reescribe. Puedes abrirlo y editarlo a mano, y los tests lo cubren con un fichero temporal. Cuesta que la escritura no es atómica salvo que escribas a un temporal y renombres. Tampoco aguanta bien dos comandos simultáneos, que con un solo usuario es raro.
+2️⃣ **SQLite con `node:sqlite`**. Da transacciones y consultas, pero en Node 22 el módulo es experimental y según la versión menor exige un flag. No lo he verificado contra tu versión exacta. Es más maquinaria de la que necesitas hoy.
+3️⃣ **Fichero de líneas (JSONL), solo añadir al final**. Cada reserva es una línea y la escritura es más segura ante un corte. Cancelar obliga a reescribir el fichero o a añadir líneas de «tachado».
+
+➡️ **Recomiendo 1️⃣**, porque tu producto es un CLI personal sin dependencias y con pocas reservas. El JSON se lee y se arregla a mano si algo falla. A cambio, tendrás que escribir con cuidado (temporal más renombrado) y asumir que dos comandos a la vez pueden pisarse.

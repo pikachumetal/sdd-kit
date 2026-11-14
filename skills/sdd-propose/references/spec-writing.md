@@ -2,12 +2,11 @@
 
 Inspired by superpowers `brainstorming` (MIT).
 
-You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Before your first question, also one that challenges the request, invoke `sdd-grilling` with `Skill`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
 
 ## What the spec covers
 
-The interview covers first what they want it for, open, if neither the request nor its row says it; then goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what they left unanswered, to «Pendiente de ti». An answer they keep after your challenge is theirs, also when it asks for something that already exists: it goes to «Decisiones tomadas con el dev-lead», and the interview goes on about what they asked for.
-
+The interview covers first what they want it for, open, if neither the request nor its row says it; then goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what they left unanswered, to ✋ marked «pendiente».
 
 Write it so a builder could plan from it without going back to the user:
 

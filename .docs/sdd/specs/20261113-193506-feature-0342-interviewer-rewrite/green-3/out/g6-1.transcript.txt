@@ -1,0 +1,58 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat PRODUCT.md ROADMAP.md 2>/dev/null | head -150; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat .docs/sdd/steering/*.md | head -120; ls src test; wc -l src/*; cat src/app.js; ls node_modules 2>&1 | head -2; cat package.json
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references" && cat control-profiles.md | head -60; echo ======; cat spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: leo el contexto y clasifico el cambio; empiezo la entrevista de la spec. Queda: unas pocas preguntas, la spec para tu aprobación y el plan, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile y no hay sdd-kit.local.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+
+- Hoy `reservar` sobre una sala ocupada en esa franja no tiene nada más que ofrecer. Quieres que, en ese caso, tu petición quede apuntada en una lista de espera.
+- Esto es una funcionalidad nueva con decisiones de producto, no un parche. No hay ninguna fila en el roadmap que la cubra: la más cercana es la 0008, los avisos por correo, que es otra cosa.
+- En el código, `src/app.js` guarda las reservas en memoria, dentro del proceso. No hay fichero ni base de datos. Una lista de espera que sobreviva entre ejecuciones del comando obligaría a decidir dónde se guarda, y eso depende de lo que respondas ahora.
+
+❓ **¿Qué quieres que pase con tu petición apuntada cuando la sala se quede libre?**
+
+Cuéntamelo con tus palabras, por ejemplo qué te gustaría ver en la terminal en ese momento y cómo te enteras. Lo demás (cómo se guarda, el orden, el comando para consultarla) lo planteo después, una decisión por turno.
+
+# turno 2
+## usuario
+no, espera, explícamelo mejor
+## agente
+Entendido, sigo como feature en modo full con perfil delegate.
+
+Ahora: sigo con la entrevista. Queda: unas pocas preguntas, la spec para tu aprobación y el plan, ~12 min.
+
+Lo que cuentas (volver a mirar `libres` a mano cada rato) pide que la herramienta te avise cuando Norte se libere, o que reserve por ti. Para decidir cómo, me falta saber de dónde sale la liberación. Esto es lo que veo en el código:
+
+- `src/app.js` tiene las reservas escritas dentro del propio fichero. Hoy `cancelar` solo imprime «cancelada lun 10:00-12:00» y no borra nada. Entre una ejecución y otra, la herramienta no recuerda nada.
+- Si las cancelaciones se hacen con esta misma herramienta, la lista de espera puede reaccionar en el momento de cancelar.
+- Si se hacen fuera (otro sistema del coworking, otra persona), esta herramienta no se entera. Solo podría volver a comprobar cada cierto tiempo, como haces tú ahora a mano.
+
+❓ **¿Quién o qué libera una sala ocupada: cancelas tú con `cancelar` en esta herramienta, o se libera por fuera, por ejemplo cuando otra persona del coworking cancela en otro sitio?**
+## agente
+Voy con un ejemplo.
+
+Ahora mismo Norte está reservada de 10:00 a 12:00. Tú quieres esa franja y ejecutas `reservar Norte 10:00-12:00`. Como está ocupada, hoy no pasa nada útil. Tú acabas ejecutando `libres 10:00-12:00` una y otra vez hasta que Norte aparece en la lista.
+
+La lista de espera sería esto: la herramienta apunta «quiero Norte 10:00-12:00» y se encarga de avisarte o de reservarla en cuanto se libere.
+
+Para hacerlo, la herramienta tiene que enterarse de que Norte se ha liberado. Una sala se libera cuando alguien cancela la reserva que la ocupaba, y eso puede pasar de dos maneras:
+
+- **Cancelas tú con esta misma herramienta.** Si escribes `cancelar lun 10:00-12:00`, la herramienta está presente en ese momento. Puede mirar la lista de espera y actuar justo entonces, sin vigilar nada.
+- **Cancela otra persona, o se cancela en otro sitio** (el sistema del propio coworking, un compañero). La herramienta no ve esa cancelación. Para notarla tendría que quedarse comprobando cada pocos minutos, que es lo que haces tú a mano.
+
+Cuál de las dos es la tuya cambia casi todo el diseño, porque la primera es muy sencilla y la segunda exige un proceso que se quede en marcha.
+
+Así que, con tus palabras: cuando Norte se libera, ¿quién la libera, tú con `cancelar` o alguien fuera de esta herramienta?

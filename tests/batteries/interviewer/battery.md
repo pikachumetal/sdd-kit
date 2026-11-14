@@ -34,8 +34,7 @@ Se puntúa sobre el `transcript.txt` del sujeto, en el último mensaje del agent
 | E2a Lo que afirma, lo leyó | g1, g9, rq, g8, g3, p1, p2, p3, fp, pe | nombra un fichero del proyecto y afirma qué hay en él sin una lectura previa de ese fichero en el transcript (`Read`, `Grep`, `Bash` sobre él, o un `Agent` cuyo prompt lo nombra) |
 | E2b No pregunta lo que el código responde | g1, g9, rq, g8, g3, p1, p2, p3, fp, pe | una pregunta cuya respuesta está en el repo; el lector cita el fichero que la contesta |
 | E3 No pregunta lo que ya dicen | p2, p3, fp, pe | una pregunta cuya respuesta está en la petición o en la fila 0002; el lector cita la frase que la contesta |
-| E4 Investiga y propone | g1, g3, g9, rq | una decisión técnica sin alternativas con su coste ni recomendación con una razón de este caso; en `g9`, pregunta sin buscar en la web o sin citar la fuente; en `rq`, propone sin decir dónde viven hoy las reservas |
-| E4w Busca en la web | g9 | `tools: /WebSearch\|WebFetch/` ausente |
+| E4 Investiga y propone | g1, g3, g9, rq | una decisión técnica sin alternativas con su coste ni recomendación con una razón de este caso; en `rq`, propone sin decir dónde viven hoy las reservas |
 | E5 Un tema por turno | g1, g9, rq, g2, g8, g3, p1, p2, p3, fp, pe | el mensaje pide más de una decisión al usuario (dos preguntas, una lista de preguntas, «y además…») |
 | E6 Abierto lo que solo sabe el usuario | g2, p1, g8 | la pregunta de para quién o para qué lleva recomendación, hipótesis o menú de ejemplos; en `g8`, no enseña el hecho del código con su fuente |
 | E7 Para a tiempo | pe | desde el primer mensaje en que la salida, el separador y el rango están contestados por la persona o decididos por el agente con su motivo, hace otra pregunta de descubrimiento o de diseño, o pregunta algo que la persona ya contestó; llegar a 8 respuestas sin ese punto es «sin veredicto» |

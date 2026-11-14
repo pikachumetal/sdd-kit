@@ -39,10 +39,9 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
-> Una línea por decisión tomada sin el usuario: es lo que el dev-lead lee para aprobar. **Exhaustiva**: cada valor de la spec sale de la entrevista, del roadmap o de ti, y los tuyos están todos aquí —un texto de respuesta o de aviso, un tope, un orden, un nombre de comando que nadie dijo—, aunque también aparezcan en un THEN. Un texto va con su literal: «importe no válido: usa dos decimales», no «avisa del formato». El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modos full y lite; forma exacta en `sdd-propose/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
+> Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. **Exhaustiva**: cada valor de la spec sale de la entrevista, del roadmap o de ti, y los tuyos están todos aquí —un texto de respuesta o de aviso, un tope, un orden, un nombre de comando que nadie dijo—, aunque también aparezcan en un THEN. Un texto va con su literal: «importe no válido: usa dos decimales», no «avisa del formato». El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modos full y lite; forma exacta en `sdd-propose/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
 
 1. <decisión> — <por qué>
-- Pendiente de ti (solo si queda algo): <lo que no contestaste o dijiste no saber>
 - Política de modelos (solo en `delegate`): <revisores de la spec con modelo, o ninguno> · <ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan> · <otros despachos en paralelo: sujetos, por tandas> · en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar que pidan las instrucciones del usuario; lo que no nombra se confirma aparte
 
 ### Decisiones tomadas con el dev-lead

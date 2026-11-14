@@ -1,0 +1,40 @@
+--- [3]
+Ahora: leo el contexto del proyecto (producto, roadmap, steering y capacidades). Queda: clasificar y darte la nota de comprensión, ~2 min.
+
+--- [9]
+Ahora: parada antes de clasificar. Queda: que me aclares qué falta, ~1 min.
+
+El comando que pides ya existe. `salas libres <franja>` está en `src/app.js` (`freeRooms`). Lo cubre el test «libres excluye la sala reservada en la franja», que espera `Sur` para `10:00-12:00`. Salió en la spec `task-0006-free`, que está en `done`.
+
+Lo que sí le falta es el día. Las reservas guardan `day`, pero `libres` solo compara la franja. Una reserva del lunes a las 10:00-12:00 marca `Norte` como ocupada también para el martes. Es el mismo fallo de fondo que arregló el patch 0007 en `cancelar`.
+
+1. **Hacer que `libres` respete el día (recomendada).** Sería `libres <día> <franja>`. Lo trataría como feature en modo full, como pediste, porque cambia lo que ve el usuario y hay que decidir la sintaxis y qué pasa con la forma actual sin día.
+2. **Algo distinto.** Por ejemplo, listar todas las franjas libres de una sala, o validar el formato de franja (la deuda «Por triar»). Dime cuál y lo abro como feature.
+3. **Se me ha escapado algo y quieres otra cosa.** Cuéntame qué esperabas ver y no ves.
+
+¿Cuál es?
+
+--- [17]
+Ahora: dejo la feature abierta en `feature/0010-libres-por-dia` y te hago la primera pregunta de diseño. Queda: entrevista corta, enfoques, spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Mantienes el encargo: un comando para ver qué salas están libres en una franja. Te lo avisé una vez y es decisión tuya: `libres <franja>` ya hace eso y lo dejo registrado así. La única diferencia que veo con lo que existe es el día, porque hoy `libres` lo ignora.
+
+Hoy, con la reserva `Norte · lun · 10:00-12:00`, estas dos órdenes dan lo mismo:
+- `salas libres 10:00-12:00` → `Sur`
+- el martes a esas horas `Norte` también está libre, pero el comando no lo sabe.
+
+Con eso, la primera decisión es cómo entra el comando:
+
+❓ **¿Dónde va el comando?**
+1️⃣ **Ampliar `libres` para que acepte día.** `libres mar 10:00-12:00` → `Norte, Sur`. `libres lun 10:00-12:00` → `Sur`. Es un solo comando y no hay dos formas de preguntar lo mismo. Cuesta decidir qué pasa con `libres 10:00-12:00`, sin día, que hoy funciona.
+2️⃣ **Comando nuevo, p. ej. `disponibles <día> <franja>`, y `libres` se queda tal cual.** `disponibles mar 10:00-12:00` → `Norte, Sur`. `libres 10:00-12:00` sigue dando `Sur`, así que se mantiene el fallo del día. Cuesta tener dos comandos casi iguales.
+➡️ **Recomiendo 1️⃣**, porque el fallo del día está en el propio `libres` y un comando nuevo lo dejaría ahí. A cambio, hay que fijar qué hace la forma sin día.
+
+¿Cuál eliges?
+

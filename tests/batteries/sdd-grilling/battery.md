@@ -71,15 +71,15 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Postura: mirar primero; lo de método que zanja un hecho del caso lo decide el agente, lo que tiene varias alternativas se pregunta, y lo del usuario siempre; primero la que más cambia el resto, la dependiente espera | spike 0341 (`look-decide-ask`, research §4); el orden, de `grilling` de Matt; feature 0342 | interviewer (E0, E4, E3); g1, g3, g9; p2, p3 (W4) |
+| Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); el porqué baja a los llamantes en la feature 0342; dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill); p2, p3 (W2 y W3: RED limpio de brainstorming 7.0.2 en la feature 0314, frases sin cambio) |
 | Lo que elige el agente va como suyo, nunca como algo que el usuario aceptó; la suposición, marcada; lo no contestado, pendiente | `brainstorming` de superpowers (regla de E0: spike 0341, 28 de 28); feature 0342: RED E0 20 de 20, se mide como no regresión | interviewer (E0); p1, p2, p3 (W5) |
 | Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra), también si lo pide todo de golpe | RED R1 4 de 16; GREEN g9-2; dev-lead, feature 0342: «lo habitual es decir sí a todo» | interviewer (E5); g1, g2, g3, g8, g9; p3; «todo de golpe», sin escenario |
-| Buscar fuera antes de preguntar; si la decisión necesita la web, la búsqueda sale antes de la primera pregunta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; dev-lead 2026-10-02; spike 0341 (E4w 0 de 12); feature 0342: RED E4w 0 de 5 | interviewer g9 (E4w, E4); g9 + micro-test m3 |
+| Buscar fuera antes de preguntar; probarlo en otra versión no cuenta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; GREEN 2 de 2 antes del contra; dev-lead 2026-10-02 | g9 + micro-test m3; la búsqueda autónoma, fuera de la entrevista desde la feature 0342 (decisión del dev-lead) |
 | Formato fijo en texto para el diseño; diálogo para lo operativo | dev-lead 2026-10-02; RED R2 | todos |
-| Alternativas reales; «no creo que la quieras» es relleno; con una sola defendible, la de método la decide el agente y la del usuario se confirma | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1; feature 0342 | g3, g9 |
+| Alternativas reales; «no creo que la quieras» es relleno | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1 | g3, g9 (g1 no, desde la 0314: su turno 1 pregunta el porqué) |
 | La recomendada con razón del caso; empate → preguntar de qué depende | RED R4 («son los defaults del kit») | g3, g7, g8, g9 (g1 no, desde la 0314) |
 | Escena con datos en las decisiones de producto | RED R6 2 de 2; ticket de la feature 0035 de document-manager | g3, g6 |
-| Lo que solo sabe el usuario, abierto en una frase que pide un caso, sin recomendación, hipótesis ni ejemplos; un hecho encontrado, igual, con su fuente para confirmarlo | RED R5 4 de 4; micro-test m2 5 de 5 sin guía; spike 0341 (research §4); feature 0342: RED E6 `g8` 4 de 5 («por ejemplo que alguien más la use») | interviewer (E6); g2, g5, g8 |
+| Descubrimiento abierto, sin recomendación, hipótesis ni menú; con hecho, el hecho y su fuente con una pregunta que acaba en él, sin ejemplos | RED R5 4 de 4; micro-test m2 5 de 5 sin guía; feature 0342: RED E6 `g8` 4 de 5 («por ejemplo que alguien más la use») | interviewer (E6); g2, g5, g8 |
 | Rebatir una vez; si el usuario lo mantiene, es su decisión: se apunta con sus palabras y se sigue | dev-lead 2026-10-01 (abogado del diablo); feature 0342: RED E1 `fp` 2 de 5, dev-lead «1» | interviewer fp (E1); g4 |
 | «Decide tú»: decide método, el descubrimiento queda pendiente | RED R8 2 de 2 («Esta es mi propuesta») | g5 |
 | Rechazo: prosa hasta que conteste, sin volver a las opciones | RED R9 1 de 2; ticket de la feature 0115 §10 | g6 |

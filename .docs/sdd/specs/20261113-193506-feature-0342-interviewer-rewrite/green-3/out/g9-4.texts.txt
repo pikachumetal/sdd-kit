@@ -1,0 +1,24 @@
+--- [9]
+Esto es lo que he encontrado en el proyecto:
+
+- `operations.md` fija **Node 22 y "sin dependencias externas"**. Esa regla es la que más pesa en la decisión.
+- No hay `devDependencies` ni script de test. Los tests se lanzan con `node --test` y el código son 16 líneas en `src/app.js`.
+- Mi Node local es el 26.10, pero el proyecto declara el 22. Los flags de cobertura de Node (`--experimental-test-coverage`, `--test-coverage-lines/branches/functions`, `--test-coverage-include/exclude`) aparecen en el `--help` del 26.10. **No he comprobado desde qué versión 22.x existe cada uno**, sobre todo los umbrales. Lo miraría en la documentación de Node antes de fijar nada.
+
+❓ **¿Qué esperas de la medición de cobertura?**
+1️⃣ **Solo Node nativo**
+   - Comando: `node --test --experimental-test-coverage`.
+   - Da un informe en consola con líneas, ramas y funciones. Con los flags de umbral puede fallar el test si baja del mínimo.
+   - No añade dependencias y respeta `operations.md`.
+   - Coste: el flag sigue siendo experimental, el formato de salida puede cambiar entre versiones, y el HTML y la integración con herramientas externas son limitados.
+2️⃣ **c8**
+   - Usa el mismo motor V8 que Node. Aporta reporters (HTML, lcov, cobertura), `.c8rc` y umbrales más estables entre versiones.
+   - Coste: una devDependency, lo que rompe "sin dependencias externas" y obligaría a cambiar `operations.md`.
+3️⃣ **Nativo ahora, c8 solo si hace falta**
+   - Empiezas con la opción 1 y pasas a c8 cuando aparezca una necesidad concreta, por ejemplo subir el informe a CI o a un servicio.
+   - Esa necesidad no existe hoy.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto es de un solo fichero de 16 líneas sin dependencias, y la única necesidad que c8 cubriría mejor (reporters para CI) no aparece en el repo. A cambio, aceptas que el flag sea experimental y que un cambio de Node pueda alterar el informe.
+
+Para decidir, necesito saber una cosa: **¿este informe es solo para ti en local, o tiene que ir a CI o a otra herramienta?**
+

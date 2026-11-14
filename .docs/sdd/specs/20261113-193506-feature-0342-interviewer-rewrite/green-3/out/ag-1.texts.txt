@@ -1,0 +1,71 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar, anunciar el carril y redactar la spec, hasta la parada de aprobación, ~5 min.
+
+--- [29]
+Ahora: pasada de coherencia (el delta sobre una copia) y despacho del revisor. Queda: plegar hallazgos y presentar la spec en el gate, ~5 min.
+
+--- [34]
+Lanzado el revisor de la spec (uno, en Sonnet). Espero su resultado antes de plegar hallazgos y presentar la spec en el gate; hasta entonces no sigo con nada más.
+
+--- [39]
+1. Crítico · Delta de comportamiento, escenario «Cancelar entrega la sala» · El THEN pasa sin el comportamiento. `src/app.js:12` solo devuelve texto y `cancelar` no toca `bookings`. La decisión 8 y el Scope dicen que no libera nada, pero la salida afirma `Norte reservada desde la lista de espera`. Ninguna aserción de estado comprueba que Norte sea ahora del usuario. Además, el Intent promete «la convierta en mía», y eso lo cumple solo una palabra que escribe el agente. · Decidir entre dos opciones. O bien `cancelar` retira la reserva y crea la nueva en `bookings`, con un THEN que lo verifique (por ejemplo, `libres` antes y después). O bien se cambia el mensaje y el Intent para no prometer lo que no ocurre.
+
+2. Crítico · Decisión 8 y Scope («No entra: que `cancelar` libere de verdad») frente al Intent y la decisión 7 · Hay una contradicción interna. La promoción dice «es lo que hace útil la lista», pero la reserva sigue ocupando la sala. Tras la promoción, `esperar Norte lun 10:00-12:00` seguiría respondiendo «ocupada» a pesar del mensaje de «reservada». · Resolver junto con el punto 1 y reflejarlo en una decisión ✋ explícita.
+
+3. Crítico · Escenario de `cancelar` · No define cómo se casa la reserva ni qué pasa si no existe. `cancelar` ignora hoy `bookings`, y la spec dice que «casa con la reserva cuyo día y hora de inicio coinciden». En el AND, `cancelar mar 10:00` no corresponde a ninguna reserva y responde `cancelada` igualmente, lo cual es incoherente. Tampoco se define qué ocurre si la sala de la entrada no es la de la reserva cancelada. · Añadir escenarios para cancelar una reserva inexistente y para la coincidencia por sala. Separar el AND en un escenario propio, con su GIVEN.
+
+4. Importante · Delta, escenario «Cancelar entrega» · Se declara ADDED, pero cambia el comportamiento de `cancelar` en `src/app.js:12`. Sin `capabilities/`, el contrato de `cancelar` no existe, y la decisión 8 se apoya en un «ya era así» que nadie ha especificado. Es un MODIFIED encubierto de una capacidad de reservas que no existe. · Declarar la capacidad `reservas` o `cancelar` como MODIFIED o ADDED, o documentar que el contrato actual de `cancelar` viene del parche 0007 y citarlo.
+
+5. Importante · Bloque de Review de spec propuesta (mínimo razonable) · Dice «deja sin mirar si la promoción en `cancelar` contradice lo ya entregado en el parche 0007». Es justo el riesgo principal, y se deja sin revisar. Además la spec sugiere que 0007 existe, pero no hay evidencia de él. · Incluir esa comprobación en la revisión, o localizar y citar 0007 y su contrato.
+
+6. Importante · Decisiones 4, 5 y 9 · Se justifican con «solo la usas tú», pero PRODUCT.md solo dice que no hay más usuarios. No dice que no haya varias esperas. La ausencia de tope y de posición no es un hecho del producto. La clave de duplicado (sala, día y franja) tampoco define qué pasa con franjas que se solapan, como `10:00-11:00` frente a `10:00-12:00`. · Declarar el solapamiento en las reglas de conflicto, o marcarlo como fuera de alcance. Corregir las justificaciones para que no atribuyan al producto lo que no dice.
+
+7. Importante · Delta (escenarios `esperar`) · Faltan los complementos de entrada. No hay escenario para una sala inexistente (`esperar Oeste ...`), para parámetros ausentes o para una franja mal formada. `freeRooms` filtra por `slot` pero ignora el día, así que `libres` y `esperar` pueden dar resultados distintos para la misma franja en otro día. El GIVEN de «Sur libre» usa lun, pero el código no distingue día. · Añadir un escenario de error con su aviso en Reglas. Aclarar si la disponibilidad de `esperar` usa el día, y modificar `freeRooms` si hace falta, declarándolo en el Scope.
+
+8. Menor · Decisión 10 («Pendiente de ti») · Se deja una pregunta abierta dentro de la lista de decisiones y no se resuelve. Eso es una decisión tomada por el agente sin respaldo del usuario, que dijo «no me preguntes más». · Fijarla como decisión cerrada (en memoria) y quitar el «Pendiente de ti», o llevarla a una sección de preguntas abiertas.
+
+9. Menor · Decisión 14 · Afirma que `sdd capability merge` se ejecutó y dio «sin rechazos», pero no hay carpeta `capabilities/` ni evidencia de la ejecución. Es una verificación declarada, no comprobada. · Quitarla, o aportar la salida real de la ejecución.
+
+10. Menor · Scope frente a Dónde se prueba · El Scope dice «tests de los cuatro escenarios», pero hay un quinto caso (el AND) que cuenta como cuarto escenario. El ayudante exportado para vaciar la lista añade una API pública en `src/app.js` que el Scope no lista. Además, las decisiones 4 y 5 ponen nombres en negrita, pero no figuran en un contrato. · Listar el ayudante de reinicio en el Scope y alinear el recuento de escenarios tras el punto 3.
+
+--- [52]
+Sigo en la spec de la lista de espera (`feature/0010-lista-espera`). La primera revisión ya está plegada: aceptó tres Críticos y la spec pasó de cuatro a ocho escenarios. Ahora espero a que termine la segunda ronda de un revisor. Después plegaré sus hallazgos y presentaré la spec para tu aprobación, sin escribir el plan ni código antes.
+
+--- [58]
+1. Crítico · Decisión 8, Scope, «Dónde se prueba» · `bookings` es un array de módulo con una reserva sembrada y los tests comparten el módulo. Los escenarios de cancelar retiran `Norte lun 10:00-12:00` de forma permanente. Después fallan `libres` (espera `Sur`), el escenario 1 y el resto cuyo GIVEN supone esa reserva. El ayudante exportado solo vacía la lista. · Que el ayudante restablezca también `bookings` a la semilla (o que cada GIVEN cree su reserva), y decláralo en Scope, en el Approach y en las decisiones.
+2. Crítico · Decisión 7 y escenario «Cancelar entrega la sala» · «Si esa sala tiene entrada en la lista» no dice con qué casa la entrada. Con esa redacción, una entrada `Norte mar 10:00-12:00` o `Norte lun 12:00-14:00` promocionaría al cancelar `Norte lun 10:00`. Ningún escenario lo excluye, y el de «reserva inexistente» no sirve porque ahí no hay reserva que case. · Fija en la decisión 7 que la entrada casa por sala, día y franja exacta de la reserva cancelada. Añade un escenario con reserva casada y entrada de la misma sala en otro día o franja, cuyo THEN sea que se libera y no se promociona.
+3. Importante · Escenario «Cancelar una reserva inexistente» · El GIVEN `Norte mar 10:00-12:00` en la lista no se puede alcanzar con `esperar`, porque con la comprobación por día Norte el mar está libre y no se apunta. Además, la salida `cancelada mar 10:00` sin reserva que case es engañosa, y la decisión 8 la mantiene sin declarar el motivo. · Monta el estado sin entradas imposibles, o declara que el test escribe la lista directamente. Decide en «Decisiones que he tomado yo» si cancelar sin casar debe responder otra cosa. Si no, justifica que se conserva el texto actual y que el test `cancelar respeta el día` sigue pasando.
+4. Importante · Decisión 6 frente a `libres` · `esperar Norte mar 10:00-12:00` responde `Norte libre; no hace falta esperar`, pero `libres 10:00-12:00` (que ignora el día) dice que Norte está ocupada. Las dos salidas de la misma herramienta se contradicen y es fácil pasarlo por alto. · Documéntalo como incoherencia conocida, enlazada a la deuda de `libres`, y añade un escenario `esperar Norte mar` que fije el comportamiento.
+5. Importante · Escenarios 5, 6 y 8 (THEN con `libres`) · `libres` ignora el día. Las aserciones `Sur` y `Norte, Sur` solo valen porque la semilla es un único día. Si un test reserva otro día o la reserva promocionada cambia de día, no prueban nada. Tampoco se comprueba que la reserva promocionada sigue existiendo, solo que Norte sigue ocupada. · Aclara en los THEN que `libres` se usa con ese límite. Añade, o declara que no hay, una aserción directa de que la reserva persiste.
+6. Importante · Decisiones, bloque de review · Dice «los cuatro escenarios» y «sus bordes (sala libre, duplicado, cancelar sin lista)», cuando hay ocho y el alcance de la review cambió con la ronda 1. La decisión 14 afirma una fusión con `sdd capability merge` «sobre una copia» sin dejar rastro verificable. · Actualiza el recuento y el alcance a lo que se revisó de verdad. Cita el comando y su salida, o retira la afirmación.
+7. Menor · Intent frente a Scope · El Intent no menciona que `cancelar` pase a modificar `bookings`. Eso es el cambio más arriesgado y solo aparece en Scope y en las decisiones. Los criterios de éxito y de fracaso tampoco cubren que una cancelación sin lista libere la sala. · Añade al Intent que cancelar sin lista libera la sala, y súmalo a los criterios de éxito y fracaso.
+8. Menor · Reglas de la capacidad, regla «Límites» · Dice «sin tope», pero no cubre la franja con día o formato inválidos ni la entrada con sala o día ausentes (`params` indefinidos). Se declara fuera de alcance solo en la decisión 6, y `esperar` sin argumentos puede romper o apuntar `undefined`. · Añade en las reglas una línea sobre parámetros ausentes («sin validar, ver deuda») o un escenario mínimo.
+9. Menor · Decisión 4, justificación de «sin posición» · El razonamiento «no hay más usuarios, nadie va delante» choca con la propia dinámica de la feature, que permite a una sola persona apuntarse a muchas franjas. No afecta a la cola, pero la premisa de varios usuarios que justifica la lista de espera no la sostiene `PRODUCT.md`, que dice que la usa una sola persona. Eso no está declarado como decisión. · Declara en las decisiones que la lista sirve a la propia persona (por ejemplo, para apuntar una franja que quiere), o justifica la utilidad frente a `PRODUCT.md`.
+
+--- [64]
+La spec de la lista de espera está lista y espera tu aprobación. No he escrito plan ni código, y no he hecho commit.
+
+Está en `.docs/sdd/changes/20261114-162008-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`.
+
+🦆 Hoy, si la sala que quieres está ocupada, no puedes hacer nada. Con esto, `esperar Norte lun 10:00-12:00` responde `Norte ocupada; en espera` y apunta esa franja. Si luego se cancela esa reserva con `cancelar lun 10:00`, la sala sigue reservada pero ahora para ti: `cancelada lun 10:00; Norte reservada desde la lista de espera`. Sin nadie esperando, `cancelar` libera la sala y `libres` la vuelve a ofrecer.
+
+Como pediste empezar ya, no te hice preguntas: lo que decidí yo está en «✋ Decisiones que he tomado yo». Las que más te afectan:
+
+- **`cancelar` ahora cambia las reservas.** Hoy solo devuelve texto. Para que la promoción sea real, retira la reserva que coincide por día y hora de inicio. El texto de salida no cambia, porque el test actual `cancelar respeta el día` lo exige. Fue lo que más pesó en la revisión.
+- **Nombres y mensajes que puse yo.** El comando es `esperar <sala> <día> <franja>`. Los mensajes son `Sur libre; no hace falta esperar`, `ya estás en espera de …` y `sala Oeste desconocida`.
+- **Sin posición en la cola.** Según `PRODUCT.md` no hay más usuarios, así que no hay nadie delante. Tampoco hay tope de entradas, y una franja solo se puede apuntar una vez.
+- **La lista vive en memoria**, como `bookings`, así que no sobrevive entre dos ejecuciones de la línea de comandos. Guardarla en disco queda fuera; si la quieres persistida, es otra feature.
+- **Enfoque.** Elegí un array en memoria, frente a un fichero JSON y a marcar las reservas con un estado `espera`.
+- **Capacidad nueva `waitlist`**, con diez escenarios.
+- **Ayudante de tests `reiniciar`.** Se exporta desde `src/app.js` para que los tests no se contaminen entre sí.
+
+Un fallo conocido que no toco: `libres` ignora el día, así que `esperar Norte mar 10:00-12:00` dice «libre» aunque `libres 10:00-12:00` no ofrezca Norte. Un escenario lo fija.
+
+Pasó dos rondas de revisión (un revisor en Sonnet cada una). Se aceptaron los 20 hallazgos, incluidos cinco Críticos, y están en «Hallazgos de la review». La fusión del delta sobre una copia temporal da 10 requisitos y las 5 reglas, sin rechazos.
+
+La validación final es tuya (`dev-lead`), porque es salida de consola que usa una persona.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a la implementación.
+2. **Cambios**: dime qué ajustar.
+
