@@ -1,0 +1,80 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar y presentarte el anuncio, ~2 min.
+
+--- [24]
+Ahora: añado el resultado de la prueba del delta a la spec y lanzo el revisor. Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~5 min.
+
+--- [29]
+Ya está lanzado el revisor de la spec (uno solo, en sonnet). Espero su resultado para integrar los hallazgos antes de presentarte la spec.
+
+La spec ya está escrita en `.docs/sdd/changes/20261114-170503-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. Como pediste empezar ya, no hice entrevista. Las decisiones que tomé yo están en «✋ Decisiones que he tomado yo». Lo único pendiente que necesita tu respuesta es si quieres que al cancelar una reserva se avise o se pase a la persona en espera. Eso queda fuera de esta feature.
+
+--- [35]
+1. Crítico · Intent / decisión 6 / Delta «Apuntarse en espera» · El almacén es en memoria y no persiste entre ejecuciones del CLI, y el producto es un CLI. Cada invocación empieza vacía, así que `reservar Norte lun 10:00-12:00` nunca encuentra la sala ocupada y `espera` siempre responde `sin esperas`. El éxito del Intent («tras pedirla, `espera` la muestra») solo se cumple dentro de un mismo `run()` de test. · Decir si el proceso del CLI es de larga vida o si cada comando es una ejecución nueva. Si es lo segundo, el Delta tiene que aclarar que solo se verifica por `run()` y el Intent tiene que dejar de prometer un uso real. Mejor aún, decidir la persistencia con el usuario en vez de dejarla fuera de Scope.
+2. Crítico · Delta «Reservar una sala libre» · El THEN solo comprueba el texto `reservada Norte lun 14:00-16:00`. Ese escenario pasa aunque la reserva no se guarde y aunque `reservar` devuelva siempre ese texto. Tampoco prueba el fracaso que declara el Intent («una sala libre acaba en espera»). · Añadir `AND` con una segunda `reservar` a la misma franja que responda `Norte ocupada; en espera`. Añadir `AND espera` responde `sin esperas`.
+3. Crítico · Delta / «Lo que se retira o cambia de forma» · La definición de «ocupada» no se declara. El spec cita `reservar --cada-semana`, que crea una reserva recurrente. No dice si una reserva semanal de Norte los lunes de 10:00-12:00 hace que `reservar Norte lun 10:00-12:00` entre en espera. Tampoco dice qué pasa con `reservar --cada-semana` sobre una sala ocupada: ¿espera o reserva? Es el complemento de la condición «ocupada». · Añadir escenarios para una reserva semanal que ocupa la franja, y para `--cada-semana` sobre una sala ocupada. Añadir la decisión correspondiente en «✋».
+4. Importante · Delta «Reservar una sala libre» y `libres` · La reserva nueva debería afectar a `libres`, pero ningún escenario lo dice. B se descarta porque «`freeRooms` tendría que filtrar», lo que sugiere que A deja `libres` sin reflejar la reserva. Eso contradice «reservada». · Añadir un escenario en el que `libres` ya no muestre Norte en esa franja tras reservar. Si no debe pasar, decirlo en «✋».
+5. Importante · «✋ Decisiones» / Delta · Hay decisiones que están en el cuerpo y no en la lista. Son sala inexistente o con mayúsculas distintas (`norte`), argumentos que faltan o sobran en `reservar` (¿error de uso?), y el orden de las líneas de `espera`, ya que la decisión 5 dice «sin orden» pero el formato de salida lo hace observable. También `espera` con varias peticiones, que no tiene escenario. · Añadir cada decisión a «✋», y un escenario de `espera` con dos peticiones y su orden de salida.
+6. Importante · Delta «No duplicar la espera» · El caso límite no está cerrado. «Misma sala, mismo día y distinta franja» y «misma franja en otro día» tienen que ser peticiones distintas, y ningún escenario lo prueba. Con franja libre en texto arbitral (decisión 12), la clave de igualdad (`room+day+slot`, ¿comparación exacta?) no está declarada. · Añadir un escenario de petición distinta que sí entra como una segunda línea. Declarar la clave de duplicado.
+7. Importante · «Lo que se retira o cambia de forma» / Delta · Se cambia el contrato de `reservar` sin flag (deja de devolver `salas`). Eso es un cambio de comportamiento existente y solo aparece en una tabla, como una decisión suelta. El Delta no tiene un `MODIFIED` ni un escenario que fije la nueva salida. Los tests actuales que esperan `salas` fallarían en el gate. · Declarar en el Delta que el contrato cambia, y listar los tests de `test/app.test.js` que hay que actualizar o retirar en el Scope.
+8. Menor · «✋ Decisiones» cabecera de review · La línea de review habla de «siete puntos» y de un «mínimo razonable: ningún revisor». No es coherente con «un revisor de spec en sonnet», y mezcla política de modelos con decisiones. Además, la lista dice que no hubo entrevista y que todo es del autor. · Aclarar qué revisión se hizo y quitar esa mezcla de «Decisiones».
+9. Menor · Decisión 11 y «Reglas de la capacidad» · Las cinco reglas están declaradas. Pero la decisión 11 dice «sin tope de esperas» como decisión, mientras que la regla «Límites» dice «no aplica». Es una incoherencia: una lista sin tope es una decisión, no «no aplica». · Escribir en «Límites»: «sin tope: una sola persona (PRODUCT.md)».
+10. Menor · Decisión 8 · La pregunta «¿lo quieres como fila siguiente del roadmap?» queda como pendiente sin responsable ni destino. Eso bloquea la aprobación y no consta en el Scope. · Resolverla antes de aprobar o moverla a una nota de roadmap con dueño.
+
+--- [37]
+Ahora: integro los hallazgos del revisor en la spec (tres críticos aceptados), así que después toca una segunda ronda con otro revisor. Queda: esa ronda y presentarte la spec, ~5 min.
+
+--- [46]
+La spec está reescrita con los hallazgos de la primera revisión, y el delta se fusiona sin rechazos en una copia. Falta la segunda ronda: el segundo revisor está leyendo la spec corregida. Cuando termine integro lo que diga y te presento la spec para que la apruebes. Todavía no he tocado código ni he escrito el plan.
+
+--- [50]
+1. Crítico · Delta, «Reservar una sala libre» y decisión 4 · `reservar` pasa de devolver `salas` a reservar de verdad. Es un MODIFIED sobre el comportamiento vivo de `reservar`, y el spec lo declara como `ADDED` de `waitlist` con el argumento de que «no existe capacidad previa». El contrato de `reservar` y `--cada-semana` sí existe, aunque no esté en `.docs/sdd/capabilities`. Con `ADDED` el merge no cambia la verdad viva de la capacidad que ya tiene `reservar`. · Si existe una capacidad de reservas, poner `MODIFIED` ahí. Si no existe, decirlo explícitamente en el spec, con una capacidad `reservas` nueva y un ADDED que incluya `--cada-semana` sin cambios. Además, quitar de la decisión 4 la justificación «al no existir capacidad previa».
+
+2. Crítico · «Apuntarse en espera si la sala está ocupada» y «No duplicar la espera», GIVEN · «Norte reservada el lun 10:00-12:00» solo se cumple con la reserva de ejemplo fija de `bookings`. Con una sala libre, `reservar` ahora escribe en `bookings`. Los GIVEN de «Esperas distintas» (Norte reservada el mar) y de «Reservar una sala libre» (Norte libre el lun 14:00) no dicen cómo se preparan. Un test podría pasar sin el comportamiento si el estado se siembra a mano. · Definir en cada GIVEN que el estado sale de una secuencia de `run()` previa. Para «mar» añadir un `reservar Norte mar 10:00-12:00` libre previo, y declarar el estado de partida de `bookings`.
+
+3. Importante · «Esperas distintas», GIVEN · El escenario exige Norte reservada el mar 10:00-12:00. Según la decisión 6, el CLI no mantiene estado y `bookings` solo trae la reserva del lun 10:00-12:00. Solo se puede reproducir encadenando `run()` en memoria, y la secuencia cambia lo que `espera` lista. · Escribir el GIVEN como secuencia de comandos: `reservar Norte mar 10:00-12:00` (libre, reserva), luego `reservar Norte lun 10:00-12:00` (en espera) y `reservar Norte mar 10:00-12:00` (ocupada).
+
+4. Importante · Decisión 4 y «Reservar una sala libre» · Faltan los escenarios de la reserva libre que ya existe: `reservar` sobre una sala ya reservada por esa vía, que cae en «ocupada» (decisión 7). Tampoco hay escenario para la reserva libre repetida en la misma franja. Falta además el estado de `espera` tras reservar una sala libre que ya estaba en espera. · Añadir un escenario «reservar sala libre dos veces» y fijar si la segunda es ocupada y entra en espera.
+
+5. Importante · Decisión 7 y regla `--cada-semana` · Dice que `--cada-semana` «no ocupa nada y no cambia», pero `reservar Norte lun 10:00-12:00 --cada-semana` con Norte ocupada no tiene comportamiento declarado. No se sabe si cae en espera. La decisión 8 tampoco dice qué pasa con una franja o un día con espacios, ni con argumentos extra. · Añadir un escenario o una frase fuera de alcance: «con `--cada-semana` la rama actual no cambia aunque la sala esté ocupada».
+
+6. Importante · Decisión 8 · «Argumentos que faltan: sin validar, como `libres`» deja sin especificar `reservar Norte` o `reservar` a secas. La implementación podría romper con `undefined`, o meter `Norte undefined undefined` en `waitlist`. Es un escenario ausente. · Declarar el resultado de `reservar` con argumentos incompletos, o excluirlo expresamente en No entra. Si es cualquier salida, que la spec lo diga.
+
+7. Menor · Las cinco reglas y decisión 11 · «Límites: sin tope» y «Avisos: no aplica» cumplen el formato. «Dónde viven los datos» y «Regla ante conflicto» sí están. Falta un criterio de permisos o roles, pero el producto es de una sola persona (n/a), y no se declara. La decisión 11 no lista «roles» ni «permisos» como n/a. · Añadir en la decisión 11 «roles/permisos: n/a, una sola persona».
+
+8. Menor · Dónde se prueba y Scope · Dice «los tres existentes no cambian», pero «`reservar` sin `--cada-semana`» ya existía y se prueba por `run()` con `salas`. La decisión 4 afirma que ningún test espera `salas` de `reservar`, y eso no se verifica en el spec. Si un test lo esperara, el spec contradiría a «los tres existentes no cambian». · Citar la comprobación, por ejemplo el `git grep` concreto, o rebajar la afirmación a «según he mirado, ninguno».
+
+9. Menor · Cabecera de review (línea 26) · Dice «los siete puntos» y la lista tiene el revisor de dominio más el mínimo razonable. Pero la decisión 14 admite que el delta se probó con la versión previa, y el spec afirma «sin rechazos» sin repetir. El estado del merge no está actualizado tras los cambios. · Repetir `sdd capability merge` antes de dar por aprobada la spec y actualizar la decisión 14. Mientras tanto, que no se lea como verificado.
+
+10. Menor · Decisiones 1 y 12 · «Pidieron empezar ya» está en una decisión, pero no se marca como decisión del usuario o mía la exclusión de quitar espera ni la promoción. La 12 declara una pregunta no bloqueante sin dueño de plazo, y `Later` del roadmap puede no existir. · Marcar la pregunta como pendiente del usuario con su dueño, o quitar la referencia a `Later` si no existe el roadmap.
+
+--- [52]
+Ahora: integro la segunda ronda (sin tercera ronda, según la regla) y repito la prueba del delta. Queda: presentarte la spec, ~2 min.
+
+--- [68]
+Ahora: la spec está lista y me paro en tu aprobación. Después escribo el plan, sin parada, y paso a implementar.
+
+La spec está en `.docs/sdd/changes/20261114-170503-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. Todavía no la he commiteado y no he tocado código. Pasó dos rondas de revisión, y el delta se fusiona sin rechazos en una copia (7 requisitos y las 5 reglas).
+
+🦆 Hoy, si pides una sala que ya está reservada, no hay forma de dejarlo apuntado. Con esto, `reservar Norte lun 10:00-12:00` con Norte ocupada responde `Norte ocupada; en espera`, y la petición queda en una lista que consultas con `espera`. Por dentro es una lista en memoria junto a `bookings` en `src/app.js`. Igual que las reservas, solo vive mientras corre el proceso: entre dos ejecuciones del CLI no se recuerda.
+
+**✋ Decisiones que he tomado yo.** Pediste empezar ya, así que no hubo entrevista y todo esto es mío:
+- **Comando:** `reservar <sala> <día> <franja>`. Si la sala está ocupada, entra en espera sin pedir confirmación. Con la sala libre, reserva de verdad. Hoy `reservar` sin `--cada-semana` devuelve `salas`, así que cambia.
+- **Textos:** `Norte ocupada; en espera`, `Norte ya en espera`, `reservada Norte lun 14:00-16:00`, `sin esperas` y `sala desconocida: Oeste`.
+- **Sin posición ni duplicados:** el producto lo usas solo tú, así que no hay `1.º` ni `2.º`. Repetir una petición no la duplica. `espera` lista por orden de llegada.
+- **«Ocupada»** significa que hay una reserva de esa sala con el mismo día y franja. `--cada-semana` no escribe reservas hoy, así que no ocupa nada y no cambia.
+- **Capacidad nueva `waitlist`** (el nombre del fichero va en inglés, el contenido en castellano).
+- **No entra:** promover al cancelar, aviso por correo (es la 0008), quitar una espera, persistencia y validar el formato de franja.
+
+**Dos cosas que debes saber antes de aprobar:**
+- **Memoria entre ejecuciones:** `bookings` es un array fijo con una sola reserva de ejemplo y cada ejecución del CLI arranca de cero. En uso real solo se puede entrar en espera de Norte lun 10:00-12:00, y `espera` no recuerda nada entre ejecuciones. Se verifica por `run()` en los tests. Es el hallazgo crítico de la revisión. Persistir también las reservas sería otra feature.
+- **Sin promoción:** la lista sirve solo como recordatorio mientras `cancelar` no cambie su contrato.
+
+**Revisión:** un revisor en sonnet y una segunda ronda. Rechacé un hallazgo, que pedía tratar `reservar` como `MODIFIED`: `capabilities/` está vacía, así que no hay nada que sustituir. El resto lo acepté. El detalle está en «Hallazgos de la review» dentro de la spec.
+
+**Tu decisión:**
+1. **Apruebo (Recomendada).** Escribo el plan y paso a implementar.
+2. **Cambios.** Dime qué ajusto, por ejemplo si quieres persistencia en esta feature.
+
+Aparte, sin bloquear la aprobación: ¿apunto en `Later` del `ROADMAP.md` una fila para promover al cancelar?
+

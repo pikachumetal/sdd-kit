@@ -6,14 +6,13 @@ You build what you believe the user wants, and that belief is usually thinner th
 
 ## What the spec covers
 
-The interview covers first what they want it for, open, if neither the request nor its row says it; then goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what they left unanswered, to ✋ marked «pendiente».
+If neither the user nor the project says why they want it, ask that first, even if you can guess: open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?». Then cover goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what they left unanswered, to ✋ marked «pendiente».
 
 Write it so a builder could plan from it without going back to the user:
 
 - **Intent**: what happens today, why it matters, what success looks like, measurable where it can be, and the anti-goals.
 - **Scope**: «Entra» and «No entra», the goals and the non-goals.
-- **Approach**: the approaches of «Approaches» below, what each costs, the one chosen and why, then the parts of the how it fixes. What's left to the builder belongs to the plan.
-- **✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN. A default the user never heard is one they couldn't reject.
+- **Approach**: the approaches of «Approaches» below, what each costs, the one chosen and why, then the parts of the how it fixes.- **✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN. A default the user never heard is one they couldn't reject.
 - **Decisiones tomadas con el dev-lead**: what the user decided, with their literal phrase.
 
 Three things the spec carries when they apply:
