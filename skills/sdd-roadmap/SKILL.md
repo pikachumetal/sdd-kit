@@ -35,7 +35,7 @@ Against `sdd-propose` the verb decides: doing it now («añade», «hazme», «a
 
 ## Checklist (create a todo per step)
 
-1. **Real state** — read `ROADMAP.md` of the integration branch (`git show develop:ROADMAP.md`, or the one the constitution sets) and `.docs/sdd/steering/debt.md`, and, **for each `feature/*` branch** that `git branch --all` lists, the same files (`git show <branch>:<path>`): what a branch split or reserved is only in its roadmap. Read `ids.mode` too and, if you are going to write rules or name capabilities, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` and read the ones that, by their purpose, are touched: a file's name doesn't say where a rule lives (`tests/capabilities-index-red.md`, r). A row is in flight with 🔄 or an open `feature/<id>-*` branch, and closed with ✅ or 🧪 in the integration branch. In **any** entry, an in-flight or closed feature is not touched —neither its row nor its spec—, even if the new thing is on its topic: it goes to a new row, «tras» it if in flight.
+1. **Real state** — read `ROADMAP.md` of the integration branch (`git show develop:ROADMAP.md`, or the one the constitution sets) and `.docs/sdd/steering/debt.md`, and, **for each `feature/*` branch** that `git branch --all` lists, the same files (`git show <branch>:<path>`): what a branch split or reserved is only in its roadmap. Read `ids.mode` too and, if you are going to write rules or name capabilities, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` and read the ones that, by their purpose, are touched: a file's name doesn't say where a rule lives. A row is in flight with 🔄 or an open `feature/<id>-*` branch, and closed with ✅ or 🧪 in the integration branch. In **any** entry, an in-flight or closed feature is not touched —neither its row nor its spec—, even if the new thing is on its topic: it goes to a new row, «tras» it if in flight.
 2. **What each entry leaves** — the section below that matches.
 3. **Propose and wait** — in `pair` and `delegate`, present the rows, the proposal and the split before writing them, and wait for the user's decision. A «decide tú» or «no hay nadie a quien preguntar» is a delegated decision: write, and leave the decisions you took in the proposal or in the commit body. In `unattended`, the most conservative option, registered the same way.
 4. **Ids** — in `sequence`, the N new ids (N + 1 if there is a proposal) come from **one** reservation: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" id next --project-root "<root>" --reserve --count N`. Without `--reserve` the script only proposes, and another worktree can take the same one. Later rows enter that reservation too, never `B<n>`. In `tracker`, the tracker sets the id; a Later row without ticket takes `0000`. Never a number by eye.
@@ -55,9 +55,9 @@ First thing in this entry: read [references/proposal.md](references/proposal.md)
 
 One row, without a proposal. It is a row of Now or Next if it will be done, traced from [now-next-later-template.md](../sdd-templates/templates/now-next-later-template.md): id, title, one-liner, the brief's five labels, `⏳` and size; or of Later, with its id, if it is not decided, or in the template section the user names. Raising a Later row to Next keeps its id and writes its brief and size. A pending patch is a row of Now with `**Carril:** patch` in its brief. Before writing `**Carril:** patch`, count the tests of new behavior the row asks for: with two or more it is not a patch but lite or feature, and its prompt opens `feature/<id>-<slug>`. A row born from the measures or conclusions of another change links that artifact (`patch.md` §N, `walkthrough.md`), with the figures it cites added there first, as a dated addendum if it is closed: a scratchpad is deleted. A single-feature epic is a feature.
 
-A new row in 3.0.0 gets a size, with the splitting threshold of `sdd-propose`: `S` — a patch, a lite or 3 tasks or fewer; `M` — 4 or 5 tasks; `L` — more than 5: new work that big is «Something big» and is split now, so `L` only appears on an existing row (from a manager, or after re-estimating), which is split when it starts, with `sdd-propose`. It is required in Now and Next; in Later it may be `—` (`tests/sdd-roadmap-0150-red.md`, m5).
+A new row in 3.0.0 gets a size, with the splitting threshold of `sdd-propose`: `S` — a patch, a lite or 3 tasks or fewer; `M` — 4 or 5 tasks; `L` — more than 5: new work that big is «Something big» and is split now, so `L` only appears on an existing row (from a manager, or after re-estimating), which is split when it starts, with `sdd-propose`. It is required in Now and Next; in Later it may be `—`.
 
-If the user asks for a section that is not in the template («abre una sección "Ideas del cliente"»), you don't create it: the row goes to the equivalent section of the template —what is not yet decided to do, to Later— and your message says the template doesn't admit it and where it went (`tests/release-close-roadmap-red.md`, P1).
+If the user asks for a section that is not in the template («abre una sección "Ideas del cliente"»), you don't create it: the row goes to the equivalent section of the template —what is not yet decided to do, to Later— and your message says the template doesn't admit it and where it went.
 
 ### Tracker items
 
@@ -87,7 +87,7 @@ First thing in this entry: read [references/prepare-release.md](references/prepa
 
 ### Triage
 
-Triage decides the state of each item of the technical debt (`debt.md`). First, run `sdd roadmap check`: each «En espera» row it warns expires is proposed for discarding, with reason `caducada`; its count of releases decides, not yours. Each item of «Por triar» gets exactly one of three outcomes. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
+Triage decides the state of each item of the technical debt (`debt.md`). First, run `sdd roadmap check`: each «En espera» row it warns expires is proposed for discarding, with reason `caducada`; its count decides, not yours. Each item of «Por triar» gets exactly one of three outcomes. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
 
 - **«En espera»** — with «Causa» and «Falta» `reproducirlo` or `2.º caso`.
 - **«Lista»** — with «Causa», «Evidencia» and «Destino».
@@ -118,7 +118,7 @@ The rules:
 
 | Rationalization | Reality |
 | --- | --- |
-| «Each feature gets its spec and plan when it starts; I leave the common decisions in a block of the roadmap» | The roadmap is the index every skill reads. The rules and their why go to `proposal.md`, with examples with data (`tests/sdd-roadmap-red.md`, p1). |
+| «Each feature gets its spec and plan when it starts; I leave the common decisions in a block of the roadmap» | The roadmap is the index every skill reads. The rules and their why go to `proposal.md`, with examples with data. |
 | «The Azure item and the row are the same; I keep one row» | Deleting or replacing a row is the user's decision, not a cleanup (p3). Ask about the duplicate. |
 | «It's an epic; it gets split when it starts» | When it starts nobody looks at the whole roadmap. The split is proposed now, so the PM creates the children (p3). |
 | «The proposal's example was incomplete; I rewrite it» | The proposal is historical: the change goes to «Enmiendas» with its date. Rewriting it erases what was agreed before (p10). |
