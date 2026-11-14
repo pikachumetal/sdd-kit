@@ -1,0 +1,116 @@
+--- [9]
+Empiezo por lo que condiciona el resto: a quién se aplican `control.profile` (cuántas veces me paro) y `execution` (cómo se ejecutan los planes).
+
+1. **Para todo el equipo** (`sdd-kit.json`, en git). Es lo que recomiendo, porque el proyecto aún no tiene ninguna de las dos claves, así que el valor por defecto lo fijaría el equipo.
+2. **Solo para ti** (`sdd-kit.local.json`, fuera de git), sin cambiar lo que ve el resto.
+
+¿Para quién configuro el perfil de control y el método de ejecución?
+
+--- [11]
+❓ **Perfil de control del equipo**
+El proyecto no tiene `control.profile`, así que hoy rige `delegate`, el valor por defecto del kit. Lo he leído en `control-profiles.md`.
+
+1️⃣ **`delegate`**: me paro en el spec, en las desviaciones y en la validación. No hay parada en el plan. Coste: el equipo no revisa el plan antes de que se ejecute.
+2️⃣ **`pair`**: me paro en todas las puertas, también en el plan y tras cada tarea. Coste: más paradas y más lento.
+3️⃣ **`unattended`**: no me paro hasta que acabe la release. Decido yo el spec y la validación se aplaza al smoke de la release. El merge a `main`, el tag y cualquier acción hacia fuera siguen siendo decisión de una persona. Coste: las desviaciones se resuelven con la opción más conservadora y sin aprobar.
+
+➡️ **Recomiendo 1️⃣**, porque ahorra la puerta del plan y sigue parándose donde hay decisiones del equipo: spec, desviaciones y validación. A cambio, el plan se ejecuta sin que nadie lo apruebe.
+
+¿Qué perfil escribo en `sdd-kit.json`?
+
+--- [13]
+❓ **Merge al cerrar una feature**
+El repo tiene `main` y `develop`, con un único commit en `develop`. Tomo `develop` como rama de integración. `merge` no está declarado, así que hoy el cierre pregunta cada vez.
+
+1️⃣ **Sí**: mergeo a `develop` con `--no-ff` y dejo que una persona borre el worktree. Se escribe `merge: {into: develop, noFf: true, removeWorktree: false}`. La feature queda en un solo commit que se revierte de golpe. Coste: los worktrees se acumulan hasta que alguien los borre.
+2️⃣ **No**: no se escribe nada y el cierre sigue preguntando cada vez. Coste: una pregunta más en cada cierre.
+3️⃣ **Otra combinación**: me dices cuál, por ejemplo sin `--no-ff` o borrando el worktree solo.
+
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` deja la feature en un solo commit que se revierte de golpe. Además, borrar un worktree con cambios sin commitear es irreversible. A cambio, hay que limpiar los worktrees a mano.
+
+¿Escribo la política de merge del punto 1️⃣?
+
+--- [14]
+❓ **Push de `develop` tras el merge**
+`merge` queda declarado, así que esta pregunta ya aplica. Hoy `merge.push` no existe y el cierre no hace push.
+
+1️⃣ **Sí**: `merge.push: true`. Tras mergear a `develop`, hago push de esa rama sin preguntar. Coste: un merge defectuoso llega al remoto antes de que nadie lo mire. El push de `main`, los tags y cualquier otro push siguen siendo de una persona.
+2️⃣ **No**: `merge.push: false`. El cierre mergea pero no hace push. Coste: nadie más ve el merge hasta que alguien lo suba a mano.
+
+➡️ **Recomiendo 1️⃣**, porque el repo sigue la convención git-flow, con `main` estable y `develop` para integración. `develop` es una rama compartida, y un merge sin push no lo ve nadie más. A cambio, el merge sale sin revisión previa.
+
+¿Activo `merge.push: true`?
+
+--- [16]
+Anotado: `merge.push: true` y `validation.mode: manual`. Sigo con los frenos.
+
+❓ **Frenos por defecto**
+Hoy no hay ninguno declarado y rigen los valores del kit.
+
+1️⃣ **Dejar los valores por defecto**: hasta 3 agentes en paralelo, aviso tras 8 minutos de silencio entre pasos y tras 20 en un comando largo. No se escribe nada.
+2️⃣ **Números propios**: me dices cuántos agentes y cuántos minutos, y los escribo en `control.maxParallelAgents` y `control.silence.*`.
+
+➡️ **Recomiendo 1️⃣**, porque son los valores por defecto del kit y no hay ningún dato de este proyecto que pida otros. A cambio, si un agente se cuelga, el aviso tarda 8 minutos.
+
+¿Dejo los frenos por defecto?
+
+--- [17]
+❓ **Método de ejecución de los planes (`execution`, en `sdd-kit.json`)**
+Hoy no hay clave y rige `auto`.
+
+1️⃣ **`auto`**: cada plan recomienda su método según su tamaño. Native es lo más barato, y los subagentes se reservan para planes largos o con revisión por tarea. Coste: el método puede cambiar de un plan a otro.
+2️⃣ **`native`**: todo se ejecuta en esta sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes. Coste: en planes largos la sesión se llena de contexto.
+3️⃣ **`subagent`**: siempre con subagentes y revisión por tarea. Coste: más gasto, también en planes pequeños.
+
+➡️ **Recomiendo 1️⃣**, porque el handoff de `plan-writing.md` pesa cada plan y elige el método que le conviene. Con `auto`, un plan pequeño no paga subagentes. A cambio, el método no es predecible de antemano.
+
+¿Dejo `execution` en `auto`?
+
+--- [19]
+Queda `execution: auto`, decidido por mí con la razón de arriba, porque tú me dejaste elegir.
+
+❓ **Hallazgos Minor de la revisión final (`review.minors`)**
+Hoy no hay clave y rige `defer`.
+
+1️⃣ **`defer`**: los Minor van al libro como diferidos. No cambian lo que recibe el usuario del producto. Coste: se acumulan hasta que alguien los triaje.
+2️⃣ **`fix`**: los Minor entran en la pasada de fix de cada feature. Coste: cada arreglo alarga esa pasada.
+
+➡️ **Recomiendo 1️⃣**, porque un Minor no cambia lo que recibe el usuario del producto y cada arreglo alarga la pasada de fix. A cambio, los Minor se acumulan en el libro.
+
+¿Dejo `review.minors` en `defer`?
+
+--- [21]
+Anotado: `review.minors` no se escribe y rige `defer`. Siguen el precio y una pregunta personal. Antes de preguntar por el precio leo la página de precios.
+
+--- [26]
+❓ **Tabla de precios para que el cierre dé el coste de la sesión**
+He leído https://platform.claude.com/docs/en/about-claude/pricing. Hoy no hay `pricing`, así que el cierre diría «sin precio». Esta es la tabla que propongo, en USD por millón de tokens:
+
+| Modelo (id de API) | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` (prompts hasta 100k tokens) | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Haiku 5.5 tiene otra tarifa para prompts de más de 100k tokens: 0.50 / 0.625 / 1 / 0.05 / 2.50. Propongo la de hasta 100k. Se escribiría también `pricing.source` (la página) y `pricing.updated` (2026-11-13).
+
+1️⃣ **Sí**: escribo esta tabla en `sdd-kit.json`. El cierre da el coste de la sesión.
+2️⃣ **No**: no se escribe nada y el cierre dice «sin precio».
+
+➡️ **Recomiendo 1️⃣**, porque la tabla sale de la página oficial leída hoy y sin ella el cierre no puede dar el coste. A cambio, los precios caducan y hay que releer la página al actualizarlos.
+
+¿Escribo la tabla de precios?
+
+--- [28]
+Anotado: `pricing` no se escribe y el cierre dirá «sin precio». Queda una pregunta, que es personal y va a tu `sdd-kit.local.json`.
+
+❓ **Entorno arrancado antes de validar (`validation.startEnvironment`)**
+Hoy la clave no existe y rige `false`.
+
+1️⃣ **No**: la validación te dice cómo arrancar el entorno. No se escribe nada. Coste: tienes que arrancarlo tú antes de probar.
+2️⃣ **Sí**: arranco el entorno antes de darte el guion de prueba, y te lo encuentras funcionando. Se escribe `validation.startEnvironment: true`. Coste: arranco procesos que quizá no uses si validas más tarde.
+
+➡️ **Recomiendo 1️⃣**, porque es el valor por defecto y no he visto en el proyecto ninguna pantalla ni servicio que haya que arrancar para validar. A cambio, el arranque lo haces tú.
+
+¿Dejo `validation.startEnvironment` sin escribir?
+

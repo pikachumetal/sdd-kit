@@ -1,0 +1,130 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null | head -60; ls node_modules 2>/dev/null | head -3
+
+>>> Bash: cat PRODUCT.md ROADMAP.md 2>/dev/null | head -120; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+public/
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat .docs/sdd/steering/*.md | head -150; cat package.json; ls -R src public test | head -50; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references; head -60 control-profiles.md; echo ======; cat spec-writing.md
+
+>>> Bash: cat src/app.js src/server.mjs public/index.html public/styles.css; head -c 600 public/reservas.json; cat README.md
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.16919289999999998 $)
+Ahora: entender cómo quieres ver la página de informes, antes de escribir la spec. Queda: unas pocas preguntas, la spec para tu aprobación y luego plan e implementación, ~10 min hasta la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto del kit; sdd-kit.json no lo fija)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** una página nueva en la web, junto al listado de reservas. Muestra una fila por sala con su % de ocupación de la semana. La ocupación saldría de las reservas (`public/reservas.json`: sala, día, franja, quién, estado). Hoy solo hay dos salas, Norte y Sur, y una tabla simple sin estilos propios.
+
+❓ **¿Cómo se ve cada fila?**
+Con tus datos de ejemplo, la página sería una de estas tres:
+
+1️⃣ **Tabla con número**, igual que el listado actual:
+```text
+Ocupación de la semana
+Sala    Ocupación
+Norte   12 %
+Sur      4 %
+```
+Es lo más simple y no añade estilos. Lo malo es que comparar salas exige leer los números.
+
+2️⃣ **Tabla con número y barra**:
+```text
+Sala    Ocupación
+Norte   ███░░░░░░░░░░░░░░░░░   12 %
+Sur     █░░░░░░░░░░░░░░░░░░░    4 %
+```
+Se compara de un vistazo y el número exacto sigue ahí. Cuesta algo de CSS, y la barra tiene que funcionar también en el móvil (390 px).
+
+3️⃣ **Tabla con número y color por tramo** (por ejemplo verde por debajo del 50 %, ámbar hasta el 80 %, rojo por encima):
+```text
+Norte   12 %  (verde)
+Sur     92 %  (rojo)
+```
+Avisa de las salas saturadas. Pero los tramos serían decisión tuya y todavía no sé cuáles son, y el color solo no basta para quien no lo distingue.
+
+➡️ **Recomiendo 2️⃣**, porque con dos salas la comparación entre ellas es lo que enseña la página, y la barra lo da sin inventar umbrales. A cambio, hay algo de CSS nuevo que mantener.
+
+Después te preguntaré qué cuenta como «ocupada»: el horario de las salas, y si las reservas canceladas y pendientes cuentan.

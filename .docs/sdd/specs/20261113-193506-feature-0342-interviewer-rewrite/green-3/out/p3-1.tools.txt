@@ -1,0 +1,123 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat ROADMAP.md PRODUCT.md; ls -a .docs/sdd .docs/sdd/steering .docs/sdd/changes 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3
+<<< # Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+| 0002 | — | **Exportar a CSV las reservas de una sala**<br>*para que el responsable las cuadre los lunes en su hoja de cálculo; separador punto y coma (su Excel está en castell
+
+>>> Bash: cat .docs/sdd/steering/*.md; ls -a . src .docs/sdd/specs; cat package.json; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -20; git branch
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cat src/app.js; ls test; cat README.md; ls .docs/sdd/specs/*; cat .docs/sdd/specs/*weekly/spec.md | head -60
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/control-profiles.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/nombrado.md
+<<< 1	## Naming of spec folders
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+7	- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no 
+
+>>> Bash: git checkout -b feature/0002-exportar-csv develop && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" id claim --project-root "$(pwd)" 2>&1; git branch --show-current; cat test/app.test.js | head -30
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/spec-writing.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Switched to a new branch 'feature/0002-exportar-csv'
+sin remoto: la 0002 vale (contador local)
+feature/0002-exportar-csv
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The interview covers first what they want it for, open, i
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.217948 $)
+Ahora: abrir la feature 0002 (exportar a CSV), con la rama `feature/0002-exportar-csv` ya creada desde `develop` y el id reservado. Queda: unas pocas preguntas de diseño, la spec para tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+- Un comando que saca por la salida estándar las reservas de una sala, en CSV con `;` como separador, para que el responsable lo redirija a un fichero y lo abra en su Excel en castellano (cita del 2026-11-01: «así me sirve»).
+- Hoy `src/app.js` guarda cada reserva como `{ room, day, slot }`, y las pruebas están en `test/app.test.js`.
+- Prevé 2 o 3 tasks, así que no propongo partirla.
+
+Aún no sé qué columnas necesita el responsable, y de eso dependen el resto de decisiones.
+
+❓ **Columnas de cada fila**
+Con la reserva que hay hoy (`Norte`, `lun`, `10:00-12:00`):
+1️⃣ **Solo `dia;franja`**: `lun;10:00-12:00`. La sala ya la pide el responsable al ejecutar el comando, así que no se repite. Si junta varias salas en una hoja, tendrá que añadir a mano de qué sala es cada fila.
+2️⃣ **`sala;dia;franja`**: `Norte;lun;10:00-12:00`. Cada fila lleva su sala y se pueden juntar los ficheros de varias salas sin perder nada. A cambio, la sala se repite en todas las filas.
+➡️ **Recomiendo 1️⃣**, porque el brief habla de las reservas de *una* sala y de un fichero por sala. A cambio, si más adelante quiere juntar salas, habrá que añadir la columna.
+
+¿Cuál prefieres?

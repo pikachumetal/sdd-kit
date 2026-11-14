@@ -1,0 +1,46 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/PRODUCT.md 2>/dev/null | head -80
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js; cat .docs/sdd/specs/*weekly/spec.md .docs/sdd/specs/*free/spec.md .docs/sdd/steering/constitution.md .docs/sdd/steering/debt.md
+## agente
+Lo que he encontrado en el código, antes de preguntarte nada:
+
+- `src/app.js:2-3`: una reserva es `{ room, day, slot }`, y `slot` es un texto libre como `'10:00-12:00'`. Hoy las franjas son bloques de dos horas.
+- `src/app.js:5-7`: `freeRooms` compara `slot` con `===`. Solo detecta como ocupadas las franjas con el texto idéntico, no las que se solapan. Con ese código, `10:00-12:00` y `10:30-11:00` en la misma sala se pueden reservar a la vez.
+- `.docs/sdd/steering/debt.md`: ya tienes anotado, sin triar, que no se valida el formato de la franja.
+- `PRODUCT.md`: la usas solo tú, en tu coworking.
+- `ROADMAP.md`: no hay ninguna fila sobre medias horas. La 0008 (avisos por correo) es la única feature en curso.
+
+Los documentos no dicen para qué quieres reservar medias horas. Eso cambia el enfoque, porque lo que hay que decidir es el modelo de franja y el solape, y la respuesta depende de tu caso.
+
+❓ ¿Qué te pasa hoy que te hace querer reservar medias horas? Cuéntamelo con una situación real tuya.
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Entendido. Entonces el problema real es que hoy no se detecta el solape, no la duración. Con el `===` de `src/app.js:6`, una reunión de media hora en una sala que tiene `10:00-12:00` reservado se acepta sin avisar, y una de `10:00-12:00` en una sala sin reservas deja la sala bloqueada dos horas. Para arreglarlo hay que decidir cómo se representa la franja.
+
+Las reservas viven en un array en memoria (`src/app.js:3`), así que no hay datos que migrar.
+
+❓ **Modelo de franja**
+Hoy la franja es un texto comparado con `===`. Hay dos formas de que acepte medias horas:
+
+1️⃣ **Intervalo libre con detección de solape.** La franja sigue siendo `HH:MM-HH:MM`, pero se interpreta como inicio y fin, y dos reservas chocan si sus intervalos se pisan.
+- `reservar Norte lun 10:30-11:00` → `Norte ocupada: solapa con 10:00-12:00`
+- `reservar Norte lun 12:00-12:30` → `reservada`
+- `libres lun 11:30-12:30` → `Sur`
+- Coste: hay que leer y validar las horas, lo que de paso salda la deuda anotada «Sin validación del formato de franja horaria». Admite cualquier duración, por ejemplo `10:10-10:55`, salvo que se la limites aparte.
+
+2️⃣ **Parrilla fija de medias horas.** El día se divide en celdas de 30 minutos y una reserva ocupa las celdas que cubre. `10:00-12:00` ocupa 4 celdas.
+- `reservar Norte lun 10:30-11:00` → `Norte ocupada: 10:30 ya reservada`
+- `reservar Norte lun 10:15-10:45` → `franja no válida: usa múltiplos de 30 minutos`
+- Coste: el límite de media hora queda impuesto desde el principio. Si luego quieres reuniones de 15 o 45 minutos, hay que cambiar la parrilla. También hay que validar el formato y convertir cada reserva en celdas.
+
+➡️ **Recomiendo 1️⃣**, porque el defecto que te bloquea, el solape sin detectar, hay que arreglarlo igual con cualquiera de las dos. Con 1️⃣ queda como una comparación de intervalos, sin la capa de celdas. A cambio, tendrás que decidir después si quieres limitar los minutos a `:00` y `:30`.
+
+¿Cuál eliges?

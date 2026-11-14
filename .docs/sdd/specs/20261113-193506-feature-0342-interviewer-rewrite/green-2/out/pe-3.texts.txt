@@ -1,0 +1,104 @@
+--- [10]
+Ahora: creo la rama de la feature con el id reservado (0010) y reclamo el id. Queda: la entrevista de diseño y la spec, que paran en tu aprobación, ~10 min.
+
+--- [16]
+Ahora: te cuento lo que entendí y arranco la entrevista de diseño. Queda: unas pocas preguntas, la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+He creado la rama `feature/0010-exportar-reservas-csv` desde `develop` con el id 0010. Esta feature no está en el roadmap, y el contador local no tiene remoto, así que el claim solo lo ha comprobado en local.
+
+**Lo que he entendido (corrígeme):**
+- Hoy `salas` solo tiene `libres`, `reservar` y `cancelar`. No hay forma de sacar las reservas de una sala.
+- Quieres un comando nuevo, por ejemplo `exportar <sala>`. Imprime en CSV las reservas de esa sala, para abrirlo en la hoja de cálculo.
+- El uso es que el responsable de la sala cuadra sus reservas cada lunes.
+- Cada reserva tiene hoy `sala`, `día` y `franja`. Las reservas viven en memoria en `src/app.js`.
+- Prevé 2 o 3 tasks, así que no propongo dividirla.
+
+❓ ¿Qué mira el responsable de la sala cuando cuadra el lunes: qué reservas necesita ver y qué datos de cada una?
+
+--- [18]
+Dato clave: las reservas de `src/app.js` guardan solo el día de la semana (`lun`) y la franja, sin fecha. No hay forma de filtrar "la semana del lunes que viene": todas las reservas valen para cualquier semana. Falta decidir qué ve el responsable en el CSV.
+
+❓ **¿El CSV lleva la fecha de la semana que viene?**
+Hoy es viernes 13/11/2026, así que el próximo lunes es el 16/11. La sala de ejemplo es `Norte`, que tiene una reserva `lun 10:00-12:00`.
+
+1️⃣ **Solo sala, día y franja, como pides.**
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Es exactamente lo que dijiste. No inventa datos, y el comando no necesita argumento de semana. Si luego quiere fechas, se añade una columna.
+
+2️⃣ **Además una columna `fecha`, calculada desde el próximo lunes.**
+```
+sala,dia,fecha,franja
+Norte,lun,2026-11-16,10:00-12:00
+```
+Es más cómoda para ordenar y cuadrar en la hoja. Pero la fecha sería una proyección: el modelo no guarda fechas, y `cancelar` tampoco las usa.
+
+➡️ **Recomiendo 1️⃣**, porque pediste esos tres datos y el modelo no tiene fechas que exportar. A cambio, el responsable tendrá que ponerse él la fecha en la hoja si la quiere.
+
+Por mi cuenta decido estos detalles de método, que irán a «✋ Decisiones que he tomado yo»:
+- **Sintaxis:** `exportar <sala>`.
+- **Sala desconocida:** devuelve un error claro y no un CSV vacío.
+- **Sala sin reservas:** devuelve solo la cabecera.
+- **Formato:** separador coma, saltos de línea `\n` y cabecera en castellano (`sala,dia,franja`).
+
+--- [20]
+Ahora: escribo la spec con lo decidido, la reviso y te la presento para aprobar. Queda: aprobación tuya, luego plan e implementación, ~8 min.
+
+--- [30]
+Estoy escribiendo la spec en su carpeta. El primer intento por la terminal falló y no dejó nada escrito, así que lo hago con el editor de ficheros.
+
+--- [32]
+Ahora: repaso de coherencia, con el delta probado en una copia fuera del repo. Queda: la review de la spec y el gate de aprobación, ~5 min.
+
+--- [36]
+Ahora: presento la spec para tu aprobación. Queda: tu «apruebo», y después plan e implementación (2-3 tasks), ~15 min.
+
+**🦆 Qué cambia:** hoy no hay forma de sacar las reservas de una sala. Con `salas exportar Norte` sale un CSV con una fila por reserva, para abrirlo en la hoja de cálculo:
+
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+
+Si la sala no existe, el comando falla con un mensaje por stderr y código 1, sin escribir nada por stdout. Así `salas exportar Oeste > norte.csv` no guarda un fichero falso. Por dentro es una función pura nueva en `src/app.js` y un cambio pequeño en la entrada para mandar los errores a stderr.
+
+La spec está en `.docs/sdd/specs/20261113-224354-feature-0010-exportar-reservas-csv/spec.md`, rama `feature/0010-exportar-reservas-csv`, sin commit todavía.
+
+**✋ Decisiones que he tomado yo, valida estas:**
+1. **Capacidad nueva:** `booking-export`, porque el comando añade comportamiento visible y el proyecto no tiene ninguna capacidad.
+2. **Sintaxis:** `exportar <sala>`, con la sala escrita como en `libres` (`Norte`, `Sur`). Distingue mayúsculas.
+3. **Formato:** coma como separador, filas separadas por `\n` y sin línea final extra.
+4. **Sin comillas ni escapes:** ningún campo puede llevar comas.
+5. **Orden:** por día (`lun`, `mar`, `mie`, `jue`, `vie`, `sab`, `dom`) y, dentro del día, por franja. Un día fuera de esa lista va al final. La grafía `mie` es mía: el código solo usa `lun` y `mar`.
+6. **Sala sin reservas:** devuelve solo la cabecera.
+7. **Errores:** sala desconocida o sin argumento da stderr y código 1. Los textos son `sala desconocida: Oeste (salas: Norte, Sur)` y `uso: salas exportar <sala>`.
+8. **Sin semana ni fecha:** las reservas guardan solo día y franja, así que "las de la semana del próximo lunes" son todas las de la sala.
+9. **Enfoque:** función pura `exportCsv` exportada de `src/app.js`, frente a probar solo por `run` o crear un módulo nuevo.
+10. **Validación:** `dev-lead`, porque el CSV lo abre una persona en su hoja de cálculo.
+
+**Review de la spec:** no he podido lanzar los dos revisores que pide la rúbrica, porque en esta sesión no hay herramienta de subagentes. La he hecho yo con los siete puntos, y eso no equivale a dos lentes independientes. Resultado:
+- Dos hallazgos aceptados y ya resueltos en la spec: la grafía `mie` y el cambio de `README.md`.
+- Sin hallazgo en los demás puntos.
+- El delta se probó en una copia fuera del repo con `sdd capability merge` y no se rechazó nada.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+--- [38]
+Vale, la dejamos aquí. La spec queda en espera: no está aprobada, no hay plan y no he tocado código.
+
+Lo que queda en disco:
+- **Rama:** `feature/0010-exportar-reservas-csv`, creada desde `develop` con el id 0010. No hay roadmap row ni remoto, así que el id solo está reservado en local.
+- **Spec:** `.docs/sdd/specs/20261113-224354-feature-0010-exportar-reservas-csv/spec.md`, con `status: draft`. No la he commiteado, porque no me lo pediste.
+
+Cuando quieras seguir, di «retoma la feature» o «apruebo la spec». Si prefieres cambiar algo, dime qué. También puedes pedir revisores reales de la spec en otra sesión que tenga subagentes.
+

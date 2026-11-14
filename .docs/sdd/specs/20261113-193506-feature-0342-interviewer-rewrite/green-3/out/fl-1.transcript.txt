@@ -1,0 +1,45 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: que una reserva pase por pendiente, confirmada y cancelada; desde pendiente se confirma o se cancela, desde confirmada solo se cancela, y una cancelada puede volver a pendiente. Lo que no tengo claro es si el flujo está bien.
+> Skill: sdd-kit:sdd-propose
+> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; git branch -a; ls node_modules 2>&1 | head -2
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cat PRODUCT.md ROADMAP.md package.json; cat .docs/sdd/steering/*.md; ls -R src test .docs/sdd/specs
+> Bash: cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/control-profiles.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/nombrado.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" id next --project-root "$(pwd)" --reserve
+> Bash: git checkout -b feature/0010-estados-reserva develop && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" id claim --project-root "$(pwd)"; git branch --show-current
+## agente
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija `control.profile` y no hay `sdd-kit.local.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+He reservado el id 0010 y creado la rama `feature/0010-estados-reserva`. No hay remoto, así que el id vale como contador local.
+
+**Lo que he entendido, corrígeme si me equivoco.** Una reserva tendría un estado, uno de `pendiente`, `confirmada` o `cancelada`. Las transiciones que me has dado son estas:
+
+```text
+ pendiente ──confirmar──▶ confirmada
+     │                        │
+     └────cancelar────┐       └──cancelar──┐
+                      ▼                    ▼
+                  cancelada ◀──────────────┘
+                      │
+                      └──reabrir──▶ pendiente
+```
+
+Lo dibujo en ASCII porque la sesión no tiene ninguna skill de diagramas.
+
+Hoy `src/app.js` no guarda estado: `reservar` solo devuelve un texto fijo y `cancelar` devuelve `cancelada <día> <hora>`. Los tests de `test/app.test.js` fijan ese comportamiento.
+
+Tu duda sobre si el flujo está bien tiene un punto concreto, el ciclo `cancelada → pendiente`. Con ese ciclo, una cancelada no es un estado final, y la sala queda libre o bloqueada según cómo lo tratemos. Se nota en `libres`, que hoy descarta las salas con reserva en la franja.
+
+❓ **¿Qué pasa con la sala de una reserva cancelada que vuelve a pendiente?**
+Hoy `libres 10:00-12:00` devuelve `Sur`, porque `Norte` tiene una reserva en esa franja.
+1️⃣ **Una cancelada libera la sala, y reabrirla falla si otra reserva la ocupó.** `libres 10:00-12:00` pasa a `Norte, Sur` tras cancelar. Al reabrir, si `Norte` ya está tomada, sale `no se puede reabrir: Norte ocupada en 10:00-12:00`. Cuesta una comprobación de choque al reabrir.
+2️⃣ **Una cancelada sigue bloqueando la sala hasta que alguien la reabra o la borre.** `libres` sigue devolviendo `Sur` aunque la reserva esté cancelada. Reabrir nunca falla. Cuesta que cancelar no libera nada, y eso choca con el sentido de cancelar.
+➡️ **Recomiendo 1️⃣**, porque cancelar sirve para liberar la sala, y es el arreglo que ya hiciste en el patch 0007. A cambio, `reabrir` puede fallar y hay que decidir su mensaje.

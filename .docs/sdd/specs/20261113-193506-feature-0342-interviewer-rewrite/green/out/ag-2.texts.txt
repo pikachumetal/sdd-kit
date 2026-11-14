@@ -1,0 +1,82 @@
+--- [29]
+Ahora: la spec está escrita en la rama `feature/0010-lista-espera` y un revisor la está leyendo. Cuando vuelva, incorporo sus hallazgos y te presento la spec para que la apruebes.
+
+--- [34]
+1. Crítico · Delta, «Consultar la lista» · El escenario no puede pasar: la reserva de `Norte` en `14:00-16:00` solo existe en el GIVEN. La base solo tiene `Norte` `10:00-12:00` y no hay comando para reservar. No dice cómo se prepara el estado, y `reservar` en `run` no añade nada a `bookings`. · Declarar la fixture (cómo se siembra `bookings`) en «Dónde se prueba» o en el GIVEN, y hacer que el THEN no dependa de lo que el agente deduzca.
+
+2. Crítico · Delta (todos los escenarios) y Decisión 4 · La reserva se define por la franja y se ignora el día. `bookings` guarda `day: 'lun'`, pero `espera` y `libres` no reciben día. El escenario «Apuntarse» da `Norte` reservada en `10:00-12:00` sin día, y esa es la fixture por defecto, así que el test puede pasar por casualidad con los datos actuales. · Fijar en el GIVEN el estado exacto de `bookings` (con `day`) y añadir un escenario que pruebe que el día se ignora, o quitar la afirmación.
+
+3. Importante · Delta, «No se repite una entrada» · El GIVEN `Norte 10:00-12:00 ya en la lista` no dice si la sala sigue ocupada. Con el orden de comprobación del Approach (conocida, ocupada, ya apuntada), una entrada duplicada solo se ve si sigue ocupada, y el escenario no lo dice. Además el orden de comprobación solo está en el Approach, sin escenario. · Añadir al GIVEN que `Norte` sigue reservada y un escenario del orden (por ejemplo, sala desconocida y libre a la vez, o entrada apuntada cuya reserva ya no existe).
+
+4. Importante · Delta, «Lista de espera» frente a Términos · El término define la lista como «pares ... que están ocupados». Como `cancelar` no toca `bookings` (devuelve solo texto) ni la lista, la lista puede contener pares ya libres. El requisito no dice qué muestra `lista-espera` en ese caso, y la definición contradice la Decisión 10. · Corregir el término (es el conjunto de pares apuntados) y declarar en el delta que `lista-espera` no filtra por ocupación.
+
+5. Importante · Delta, sala desconocida y argumentos · No hay escenarios para argumentos ausentes (`espera` sin sala o sin franja) ni para franja con formato inválido. `freeRooms(undefined)` marcaría la sala como libre y daría `X está libre en undefined`. La franja se guarda como texto libre, así que `10:00-12:00` y `10:00 - 12:00` serían entradas distintas. · Añadir un escenario de argumentos incompletos con su texto, o declararlos explícitamente fuera de alcance. Declarar en Límites que la franja se compara como texto literal.
+
+6. Importante · «✋ Decisiones», revisión · Se declara «sin revisión» para el mínimo razonable y a la vez un revisor de siete puntos. Es incoherente. Además la decisión 11 afirma que la constitution no trae «Reglas de producto» y que las cinco reglas son del agente, pero la lista del encabezado no recoge como decisión propia el nombre «waiting-list» ni los textos de las reglas. · Aclarar una sola política de revisión y listar las cinco reglas como decisiones propias a validar, cada una con su valor.
+
+7. Importante · Reglas, «Avisos» · «Avisos: los textos de los THEN» no declara nada concreto. No cubre argumentos ausentes ni cuál es el texto de error general. Tampoco se dice qué pasa con la entrada si el proceso se cierra, porque `bookings` se pierde y la lista también. · Enumerar los avisos (apuntada, duplicada, libre, desconocida, vacía) y el formato en caso de argumentos inválidos.
+
+8. Menor · Scope frente a Decisión 3 · El «No entra» omite que `espera` no acepta día, aunque aparece en «Pendiente de ti». Está al revés: la Decisión 4 lo dice y el Scope lo da por supuesto. · Añadir explícitamente en Scope que `espera` no recibe día.
+
+9. Menor · Metadatos y 🦆 · `approvers` queda en `TBD` y la validación es «dev-lead», aunque `PRODUCT.md` dice que no hay más usuarios ni más desarrolladores: el dev-lead es el propio usuario. · Poner como validador a la persona única del producto y quitar la referencia a un rol que no existe.
+
+10. Menor · Decisiones (el 7 y Delta) · Los textos dependen de que `Sur` y `Norte` sean las salas válidas, pero ningún requisito dice cómo se compara el nombre (mayúsculas, `norte` frente a `Norte`). `rooms.filter` es sensible a mayúsculas. · Declarar en Límites que el nombre de sala distingue mayúsculas, con un escenario de `espera norte ...`.
+
+--- [40]
+Ahora: la primera review sacó dos hallazgos Críticos, los acepté y corregí la spec. Un segundo revisor la está releyendo, y es la última ronda. Queda: incorporar lo que encuentre y presentarte la spec para que la apruebes, ~5 min.
+
+--- [45]
+1. Crítico · «Delta» ADDED «No se repite una entrada» y «Consultar la lista» · Los GIVEN exigen `Norte 10:00-12:00` ya apuntada, pero el único modo de llegar ahí es ejecutar antes `espera Norte 10:00-12:00`, y «Dónde se prueba» solo declara la reserva de ejemplo y la lista vacía. El GIVEN de «Consultar la lista» no dice cómo se apunta, así que un test puede dar THEN verde sin pasar por `espera`. · Declarar en «Dónde se prueba» que el GIVEN de entrada apuntada se monta ejecutando `run('espera', ['Norte','10:00-12:00'])`. Repetirlo en cada GIVEN.
+
+2. Crítico · «Dónde se prueba» y decisión 6 · Exige que la lista se pueda reiniciar sin cerrar el proceso y lo deja como «detalle del plan». `src/app.js` no exporta ningún reinicio y `bookings` es `const` a nivel de módulo, así que los tests no son aislados ni ejecutables. La entrega depende de una API de test que no figura en Scope ni en el delta. · Fijar en una decisión de ✋ el mecanismo (por ejemplo, `export function resetEspera()`) o el orden de los tests. Añadirlo a Scope.
+
+3. Crítico · ADDED «Sala desconocida» · El GIVEN «las salas `Norte` y `Sur`» es la constante `rooms`, que no está declarada como fixture. La decisión 11 dice además que `norte` responde `sala desconocida: norte`, y ese caso no tiene escenario. · Citar `rooms` en «Dónde se prueba». Añadir un escenario con `norte` o quitar la afirmación de la decisión 11.
+
+4. Importante · ADDED «Consultar la lista» · El THEN «responde la línea `Norte 10:00-12:00`» pasa también con una salida de dos entradas si contiene esa línea, y con `en lista de espera: Norte 10:00-12:00` si se compara por inclusión. La decisión 7 dice «una línea por entrada» pero no fija el separador. · Cambiar el THEN a «responde exactamente `Norte 10:00-12:00`» y fijar el separador (`\n`) en la decisión 7.
+
+5. Importante · ADDED «No se espera una sala libre» · `Sur está libre en 10:00-12:00` solo prueba el texto, no la regla «ocupada = misma condición que `freeRooms`». Una implementación que compruebe la ocupación por sala sin franja pasa el test. No hay escenario con `Norte` en otra franja, por ejemplo `espera Norte 12:00-14:00`, que debería rechazarse como libre. · Añadir ese escenario, que es el que distingue la franja del resto de la condición.
+
+6. Importante · ADDED «Sala desconocida» y «No se espera una sala libre» · El THEN «la lista de espera no cambia» solo es comprobable con una lectura posterior de `lista-espera`. No se dice si el GIVEN parte de lista vacía, y así la comprobación pasa sin haber verificado nada. · Escribir «WHEN `lista-espera` responde `lista de espera vacía`» como AND, o partir de lista vacía de forma explícita.
+
+7. Importante · Scope y Términos · Hay contradicciones menores. Scope dice «apunta si está ocupada; rechaza si libre, ya apuntada o sala desconocida», y el orden «sala conocida, ocupada, ya apuntada» solo aparece en Approach, no en ✋ ni en el delta. Además «Términos» tiene una frase rota («que apuntados por la persona»). · Corregir la frase. Mover el orden de comprobación a la decisión 7 o a las reglas de la capacidad.
+
+8. Importante · Decisión 4 / Scope «el día de la reserva» · El delta compara solo por franja y dice que el día no cuenta. `espera` devolvería «en lista de espera» para una sala ocupada un `mar`, cuando la reserva de ejemplo es `lun`. Eso contradice «ocupada» en términos de uso real, pero sí es coherente con `freeRooms`. Es una decisión sin validar con consecuencias para el usuario. · Pasarla de nota a pendiente explícito de validación, con un ejemplo concreto en el 🦆.
+
+9. Menor · Decisión 11 y reglas · Las «cinco reglas» se cuentan distinto en la decisión 11 (datos, castellano, sin tope, textos, repetida) y en el delta, donde el bloque «Límites» incluye la comparación literal, que la decisión 11 cita aparte. La decisión 13 habla de «6 requisitos y 5 reglas» sin cruzarlo. · Alinear el recuento y la numeración de las reglas entre decisión 11 y el delta.
+
+10. Menor · Cabecera de ✋ · «Mínimo razonable: no revisar» convive con una review de spec ya ejecutada, con hallazgos. Eso es incoherente con la política de revisión declarada, y esta ronda queda sin registro. · Reformular la política: o es «revisar», o los hallazgos no pertenecen a esta sección.
+
+--- [49]
+Ahora: la spec está lista y pasó la review (dos rondas, sin tercera). Queda: tu aprobación. Con ella escribo el plan y sigo con la implementación, ~15 min.
+
+La spec está en `.docs/sdd/changes/20261113-215001-feature-0010-lista-espera/spec.md`, rama `feature/0010-lista-espera`, perfil `delegate`.
+
+🦆 Hoy, si la sala que quieres está ocupada, no puedes dejar apuntado que la querías. Con esto, `espera Norte 10:00-12:00` responde `en lista de espera: Norte 10:00-12:00`, y `lista-espera` te enseña lo que tienes apuntado. Si la sala está libre en esa franja, no te apunta: te dice `Sur está libre en 10:00-12:00: reserva en vez de esperar`. Por dentro es una lista en memoria en `src/app.js`, como `bookings`, y se pierde al cerrar.
+
+**✋ Decisiones que he tomado yo — valida estas** (me pediste empezar sin preguntas, así que todas son mías):
+
+1. **Enfoque**: lista en memoria en `src/app.js`, frente a un módulo nuevo o a guardarla en un fichero (la persistencia, si la quieres, sería otra feature).
+2. **Capacidad nueva**: `waiting-list`.
+3. **Comandos**: `espera <sala> <franja>` y `lista-espera`.
+4. **Ocupada** es lo que dice `libres` hoy: se mira la franja y no el día. Con la reserva de ejemplo del lunes, `espera Norte 10:00-12:00` te apunta aunque pensaras en un martes.
+5. **Qué se apunta**: un par sala + franja, sin posición ni cola, porque `PRODUCT.md` dice que lo usa una sola persona.
+6. **Orden de la lista**: el de apuntarse. Hoy solo hay una reserva de ejemplo y no hay comando que reserve, así que ningún test lo comprueba.
+7. **Textos**: `en lista de espera: …`, `ya estabas en lista de espera: …`, `<sala> está libre en <franja>: reserva en vez de esperar`, `sala desconocida: <sala>`, `lista de espera vacía`. Las comprobaciones van en este orden: sala conocida, sala ocupada, ya apuntada.
+8. **Sin tope** de entradas.
+9. **Datos en memoria**: se pierden al cerrar.
+10. **Cancelar no toca la lista** ni avisa, y `lista-espera` puede mostrar pares ya libres.
+11. **Reglas de la capacidad**: la constitution no trae «Reglas de producto», así que las cinco las he puesto yo. Sala y franja se comparan como texto literal, y `norte` no es `Norte`.
+12. **`resetEspera()`**: la exporto desde `src/app.js` para aislar los tests. El nombre es mío.
+13. **Fuera de alcance**: argumentos ausentes o franja con formato inválido (ya está en `debt.md`), quitarse de la lista, avisos por correo (0008) y que `espera` reciba un día.
+
+**Pendiente de ti**: si `espera` debe ignorar el día como hace `libres`; si `cancelar` debe mover la lista a reserva o avisar; y si quieres persistencia.
+
+**Review**: dos rondas con un revisor sonnet. La primera dio 2 Críticos y 6 Importantes que acepté. La segunda dio 3 Críticos y 5 Importantes, también aceptados. Rechacé un escenario del orden de comprobaciones, porque con una sola reserva de ejemplo no se puede observar. El detalle está en «Hallazgos de la review» de la spec.
+
+**Validación**: la haces tú, porque es una interfaz que usa una persona.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

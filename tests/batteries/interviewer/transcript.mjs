@@ -24,10 +24,15 @@ export function parseStream(text) {
   return { events, cut: false };
 }
 
+// El rango de un Read dice si el sujeto leyó el fichero entero.
+const readRange = (input) => ['offset', 'limit'].filter((key) => input[key] !== undefined).map((key) => ` · ${key}=${input[key]}`).join('');
+
+// Solo se corta el volcado JSON: la llamada entera dice qué fichero lee el sujeto.
 function describeCall(block) {
   const input = block.input ?? {};
-  const first = input.command ?? input.skill ?? input.file_path ?? input.pattern ?? input.query ?? input.url ?? input.description ?? JSON.stringify(input);
-  return `> ${block.name}: ${String(first).replaceAll(/\s+/g, ' ').slice(0, ARG_MAX)}`;
+  const known = input.command ?? input.skill ?? input.file_path ?? input.pattern ?? input.query ?? input.url ?? input.description;
+  const text = known === undefined ? JSON.stringify(input).replaceAll(/\s+/g, ' ').slice(0, ARG_MAX) : `${known}${block.name === 'Read' ? readRange(input) : ''}`.replaceAll(/\s+/g, ' ');
+  return `> ${block.name}: ${text}`;
 }
 
 function renderAssistant(event) {

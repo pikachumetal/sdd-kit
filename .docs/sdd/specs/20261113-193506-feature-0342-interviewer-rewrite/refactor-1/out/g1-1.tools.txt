@@ -1,0 +1,65 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/PRODUCT.md 2>/dev/null | head -60
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js package.json; cat .docs/sdd/steering/*.md; cat .docs/sdd/specs/*weekly/spec.md .docs/sdd/specs/*free/spec.md .docs/sdd/specs/*cancel/patch.md; head -60 test/app.test.js
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+=== RESULTADO (7 turnos, 0.11608160000000001 $)
+He leído `PRODUCT.md`, `ROADMAP.md`, `src/app.js`, los tests y la deuda. Lo que he encontrado:
+
+- **Las franjas son texto.** Se comparan por igualdad exacta en `freeRooms` (`b.slot === slot`), y la única reserva que existe es `Norte lun 10:00-12:00`.
+- **No hay conflictos por solape.** Con esta comparación, `10:00-10:30` y `10:00-12:00` se considerarían franjas distintas, y Norte aparecería libre dentro de una reserva de dos horas.
+- **No hay una reserva simple.** `reservar` solo existe con `--cada-semana`, y devuelve un texto fijo sin guardar nada.
+- **La deuda ya apunta aquí.** Está anotado «Sin validación del formato de franja horaria».
+- **Nada en la documentación habla de duraciones.** Tampoco dice si el coworking limita las reservas a bloques de una hora o de dos.
+
+Con esto, el enfoque depende de para qué quieres las medias horas. Eso solo lo sabes tú: ¿qué reserva de media hora quisiste hacer y no pudiste?
+
+=== RESULTADO (1 turnos, 0.13397610000000001 $)
+Entendido: el problema real es que una reunión de media hora ocupa hoy dos horas enteras. Eso tiene dos consecuencias para el diseño:
+
+- Hay que comparar franjas por **solape de intervalos** y no por igualdad de texto. Eso lo decido yo: sin ello, `10:00-10:30` y `10:00-12:00` no chocan, y el error contrario es el que describes.
+- La reserva existente `Norte lun 10:00-12:00` no cambia y sigue bloqueando todo ese rato.
+
+Queda por decidir qué horas se aceptan:
+
+❓ **Qué horas se pueden reservar**
+Hoy `src/app.js` acepta cualquier texto como franja, y la deuda «sin validación del formato de franja horaria» sigue sin triar.
+1️⃣ **Rejilla de 30 minutos.** Solo se aceptan inicios y finales en `:00` o `:30`, con una duración que sea múltiplo de 30. `reservar Norte lun 10:00-10:30` funciona, `reservar Norte lun 10:15-10:45` da `Franja no válida: usa tramos de 30 min`. Cuesta una validación de formato, que además salda la deuda anotada. También cuesta que una reunión de 45 minutos haya que reservarla como 1 h.
+2️⃣ **Minutos libres.** Se acepta cualquier `HH:MM-HH:MM` con inicio anterior al final. `10:15-10:45` funciona. Cuesta tener que cubrir más casos límite en las pruebas, y los huecos de 10 o 15 minutos que quedan entre reservas son poco aprovechables.
+➡️ **Recomiendo 1️⃣**, porque tu necesidad son reuniones de media hora, y la rejilla hace que los huecos libres siempre sean reservables. A cambio, las reuniones de 45 minutos se redondean hacia arriba.
+
+¿Cuál eliges?

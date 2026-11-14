@@ -1,0 +1,74 @@
+
+# turno 1
+## usuario
+El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Decide tú los detalles. Apúntalo en el roadmap, no lo arranques.
+> Skill: sdd-kit:sdd-roadmap
+## agente
+Voy a leer el estado real del roadmap y la configuración.
+> Bash: git branch --all; echo ---; git show develop:ROADMAP.md; echo ---; cat .docs/sdd/sdd-kit.json; echo ---; git show develop:.docs/sdd/steering/debt.md | head -30; ls .docs/sdd .docs/sdd/changes 2>/dev/null
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-r2\skills\sdd-roadmap\references\proposal.md
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-templates/templates"; cat proposal-template.md; echo ======; cat launch-prompt-template.md; cd - >/dev/null; ls; ls src; wc -l src/*; cat package.json; ls .docs/sdd/specs .docs/sdd/steering
+> Bash: cat src/app.js PRODUCT.md; head -40 .docs/sdd/steering/constitution.md; ls test
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" id next --project-root "." --reserve --count 4; cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-templates/templates/now-next-later-template.md" | head -60
+> Bash: d=.docs/sdd/changes/20261114-100000-proposal-0010-informes; mkdir -p $d; cat > $d/proposal.md <<'EOF' --- id: 20261114-100000-proposal-0010-informes proposal: 0010 title: Módulo de informes source: interview created: 2026-11-14 --- # Propuesta — Módulo de informes ## Por qué El cliente quiere saber cuánto se usan las salas. Hoy solo hay `libres` (qué sala está libre en una franja) y nadie puede ver la ocupación acumulada, llevársela a una hoja de cálculo ni enterarse sin pedirlo. Se quiere un informe de ocupación por sala, exportable a Excel, y un aviso semanal por correo a los responsables. Los detalles los decidió el agente por delegación («decide tú»): están marcados como *supuesto* y se confirman con el cliente al arrancar la feature que los usa. ## Reglas de negocio - Horario de apertura *(supuesto)*: lunes a viernes, 08:00-20:00, es decir 60 h disponibles por sala y semana: sala Norte con una reserva lun 10:00-12:00 → 2 h reservadas de 60 h. - Ocupación de una sala = horas reservadas / horas disponibles de la semana, en % con un decimal: Norte, 2 h de 60 h → 3,3 %; Sur, sin reservas → 0,0 %. - El informe lista todas las salas, también las que no tienen reservas: con las reservas actuales el informe da `Norte 3,3 %` y `Sur 0,0 %`. - Una reserva semanal (`--cada-semana`) cuenta en cada semana: Norte con una reserva semanal mar 14:00-16:00 y la de lun → 4 h de 60 h → 6,7 %. - Una reserva cancelada no cuenta: cancelar lun 10:00-12:00 en Norte → Norte vuelve a 0,0 %. - El periodo del informe es una semana natural, lunes a domingo; por defecto, la última semana completa. - La exportación a Excel es un fichero `.xlsx` (no un CSV) con una fila por sala y las columnas `Sala`, `Horas reservadas`, `Horas disponibles`, `Ocupación (%)`: para el caso de arriba, `Norte | 2 | 60 | 3,3` y `Sur | 0 | 60 | 0,0`. - El aviso semanal sale los lunes a las 08:00 *(supuesto)* con la ocupación de la semana anterior y el `.xlsx` adjunto: el lunes 16 de noviembre llega el informe del 9 al 15. - Los destinatarios son una lista de correos de responsables en la configuración *(supuesto: no hay un concepto de «responsable» en el producto)*: con `ana@x.com` y `luis@x.com` en la lista, cada uno recibe el mismo correo. - El aviso lo lanza un programador externo (cron del servidor) llamando a un comando; la herramienta no queda residente. ## Capacidades que toca Ninguna existe todavía en `capabilities/`: las nuevas se nombran al declararlas en cada feature. - `informes` — cálculo del informe de ocupación (feature 0011). - `exportacion-informes` — fichero Excel (feature 0012). - `aviso-semanal` — envío periódico a los responsables (feature 0013). ## Reparto | Orden | Id | Feature | Tras | | --- | --- | --- | --- | | 1 | 0011 | Informe de ocupación por sala | — | | 2 | 0012 | Exportar el informe a Excel | 0011 | | 3 | 0013 | Aviso semanal a los responsables | 0011, 0012, 0008 | ## Acta No aplica: entrevista. ## Enmiendas EOF python - <<'EOF' import re p='ROADMAP.md'; s=open(p,encoding='utf-8').read() path='.docs/sdd/changes/20261114-100000-proposal-0010-informes/proposal.md' def row(i,t,one,dec,toca,tras,sz): return f"| {i} | — | **{t}**<br>*{one}*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** `{path}`<br>**Decisiones ya tomadas:** {dec}<br>**Salda:** nada<br>**Toca:** {toca}</details> | ⏳ | {tras} | {sz} |\n" rows=row('0011','Informe de ocupación por sala','Comando que da el % de ocupación semanal de cada sala','horario lun-vie 08:00-20:00 (60 h) y semana natural lun-dom, porque la herramienta no tiene horario propio (supuesto a confirmar con el cliente)','`src/app.js`, `src/informes.js`','—','M') rows+=row('0012','Exportar el informe a Excel','El informe de ocupación en un .xlsx, una fila por sala','fichero .xlsx real, no CSV, porque lo pidió el cliente; la librería se elige en el spec','`src/exportar.js`','0011','S') rows+=row('0013','Aviso semanal a los responsables','Correo los lunes con la ocupación de la semana anterior','lunes 08:00 lanzado por cron externo, lista de responsables en la configuración, porque la herramienta no es residente (supuestos a confirmar)','`src/aviso.js`, `src/correo.js`','0011, 0012, 0008','M') s=s.replace("## Next\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n","## Next\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n"+rows,1) open(p,'w',encoding='utf-8').write(s) EOF node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" roadmap check --path .docs/sdd; git status --short
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" roadmap publish --project-root "." --message "docs(roadmap): módulo de informes (0010) en 0011, 0012 y 0013 Decisiones tomadas por delegación (supuestos a confirmar con el cliente): horario lun-vie 08:00-20:00, semana natural lun-dom, .xlsx real, aviso los lunes 08:00 por cron externo, responsables en la configuración. Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" ROADMAP.md .docs/sdd/changes/20261114-100000-proposal-0010-informes/proposal.md; git status --short; git log --oneline | head -3
+> Bash: git add ROADMAP.md .docs/sdd/changes/20261114-100000-proposal-0010-informes/proposal.md && git commit -q -m "docs(roadmap): módulo de informes (0010) en 0011, 0012 y 0013 Decisiones tomadas por delegación (supuestos a confirmar con el cliente): horario lun-vie 08:00-20:00, semana natural lun-dom, .xlsx real, aviso los lunes 08:00 por cron externo, responsables en la configuración. Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git status --short && git log --oneline | head -2
+## agente
+El módulo de informes está apuntado en el roadmap y no he arrancado nada: ni rama, ni spec, ni código. El commit `5132f86` en `develop` lo recoge, y `sdd roadmap check` da "Roadmap válido".
+
+`sdd roadmap publish` se negó porque `ROADMAP.md` tenía mis cambios sin confirmar en `develop`. Hice el commit de `ROADMAP.md` y `proposal.md` a mano con `git commit`. El efecto es el mismo que con `publish`.
+
+Es algo grande (3 features), así que hay una propuesta, `0010`, en `.docs/sdd/changes/20261114-100000-proposal-0010-informes/proposal.md`. Tiene las reglas con ejemplos con datos, y las filas apuntan a ella. Las tres filas están en Next:
+
+| Orden | Id | Feature | Tras | Tamaño |
+| --- | --- | --- | --- | --- |
+| 1 | 0011 | Informe de ocupación por sala | — | M |
+| 2 | 0012 | Exportar el informe a Excel | 0011 | S |
+| 3 | 0013 | Aviso semanal a los responsables | 0011, 0012, 0008 | M |
+
+La 0013 va detrás de la 0008 porque necesita el envío de correo que esa fila construye.
+
+Como me dijiste "decide tú", decidí yo estos detalles. Los marqué como supuestos en la propuesta para confirmarlos con el cliente:
+- **Horario:** de lunes a viernes, de 08:00 a 20:00, que son 60 h por sala y semana.
+- **Ocupación:** horas reservadas entre horas disponibles de la semana natural (lunes a domingo). Con las reservas actuales, Norte da 3,3 % y Sur 0,0 %.
+- **Excel:** un `.xlsx` real, no un CSV, con una fila por sala. La librería se elige en el spec de la 0012.
+- **Aviso:** los lunes a las 08:00, con la ocupación de la semana anterior y el `.xlsx` adjunto. Lo lanza un cron externo, sin proceso residente.
+- **Responsables:** una lista de correos en la configuración, porque el producto no tiene el concepto de "responsable".
+
+La primera fila es la 0011. Este es su prompt de arranque:
+
+### *✨ 0011 — Informe de ocupación por sala*
+***Nombre:*** `feature/0011-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0011 con sdd-propose, carril feature: un comando que da el porcentaje de ocupación semanal de cada sala.
+
+Alcance:
+- src/app.js (nuevo comando de informe) y src/informes.js (cálculo)
+- Lista todas las salas, también las sin reservas; una reserva semanal cuenta cada semana; una cancelada no cuenta
+
+Fuera de alcance:
+- exportar a Excel: 0012
+- el aviso por correo: 0013
+
+Decisiones ya tomadas:
+- Horario lun-vie 08:00-20:00 (60 h por sala y semana), porque la herramienta no tiene horario propio (supuesto a confirmar con el cliente)
+- Periodo: semana natural lun-dom, por defecto la última completa
+- Ocupación = horas reservadas / 60, en % con un decimal: Norte con lun 10:00-12:00 → 3,3 %; Sur sin reservas → 0,0 %
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261114-100000-proposal-0010-informes/proposal.md, §Reglas de negocio y §Reparto, y la fila 0011 del roadmap
+
+Nada que saldar.
+
+Está hecho cuando el comando del informe, con las reservas de ejemplo, imprime `Norte 3,3 %` y `Sur 0,0 %`, y `node --test` pasa.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

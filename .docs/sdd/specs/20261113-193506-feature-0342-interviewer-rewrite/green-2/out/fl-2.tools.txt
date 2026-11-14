@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cat .docs/sdd/steering/*.md; ls -R src test .docs/sdd/specs; cat package.json; cat src/app.js; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills"; cat "$K/sdd-propose/references/spec-writing.md"; echo ------; cat "$K/sdd-propose/references/control-profiles.md" | head -60; echo -----; cat "$K/sdd-grilling/SKILL.md"
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Before your first question, also one that challenges the request, invoke `sdd-grilling` with `Skill`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+=== RESULTADO (8 turnos, 0.1690606 $)
+Ahora: te dejo claro el carril y lo que entendí, y te planteo la primera decisión del diseño. Queda: terminar la entrevista, escribir la spec y pararme en tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que entendí.** Hoy una reserva (`src/app.js`) es solo `{room, day, slot}`: no tiene estado, y `cancelar` solo imprime un texto. Quieres que cada reserva tenga un estado (`pendiente`, `confirmada`, `cancelada`) con estas transiciones:
+
+```text
+pendiente  → confirmada
+pendiente  → cancelada
+confirmada → cancelada
+cancelada  → pendiente
+```
+
+No hay otra transición. Por ejemplo, `confirmada → pendiente` o `cancelada → confirmada` se rechazan. Prevo unas 2 o 3 tasks, así que no propongo partirla. Dime si algo de esto está mal.
+
+**Sobre tu duda de si el flujo está bien.** La forma general es coherente. `confirmada` solo sale hacia `cancelada`, y `cancelada` no es un estado final. El hueco está en `cancelada → pendiente`. Mientras la reserva estaba cancelada, su sala y franja quedaron libres (`libres` las ofrece), y otra persona pudo reservarlas. Al reactivarla habría dos reservas vivas para la misma sala y franja. Hay que decidir qué pasa en ese caso, porque cambia el resto del diseño.
+
+❓ **Reactivar una cancelada cuando su sala y franja ya las ocupa otra reserva**
+Hoy `libres` filtra por sala y franja. Una cancelada habría que dejar de contarla como ocupada, y una reactivada volvería a contar.
+1️⃣ **Rechazar la reactivación.** `reactivar 3` → `No se puede: Norte lun 10:00-12:00 ya está ocupada`. La reserva sigue cancelada y nunca hay dos reservas vivas en la misma sala y franja. Cuesta una comprobación más y un mensaje de error.
+2️⃣ **Permitirla sin comprobar.** `reactivar 3` → `Reserva 3: pendiente`, aunque Norte lun 10:00-12:00 ya la tenga otra. Es más simple, pero te deja dobles reservas que tendrías que resolver a mano.
+➡️ **Recomiendo 1️⃣**, porque la herramienta existe para que no choquen las salas del coworking, y la opción 2️⃣ rompe justo eso. A cambio, hay un caso de error más que probar y explicar al usuario.
+
+¿Cuál eliges?

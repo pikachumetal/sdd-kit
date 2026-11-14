@@ -1,0 +1,47 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80 && ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>/dev/null && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat .docs/sdd/sdd-kit.json .docs/sdd/steering/*.md; cat package.json; ls -R src test; ls node_modules 2>&1 | head -2; ls .docs/sdd/specs
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat src/app.js; head -50 test/app.test.js; ls .docs/sdd/specs/*; cat .docs/sdd/specs/20260917*/*.md | head -60; cat README.md CHANGELOG.md
+## agente
+Ese comando ya existe, así que no he abierto ninguna spec.
+
+- **Dónde está:** `salas libres 10:00-12:00` devuelve las salas sin reserva en esa franja. Está en `src/app.js:5` y `src/app.js:10`.
+- **Prueba:** `test/app.test.js` tiene el test `libres excluye la sala reservada en la franja`.
+- **Registro:** la tarea 0006 está en `.docs/sdd/specs/20260917-090000-task-0006-free/` con estado `done`. También aparece en el `CHANGELOG.md`, en `[Unreleased]`.
+
+Lo que sí le falta, y puede ser lo que buscas:
+
+1. **Filtrar por día.** Hoy `libres` solo mira la franja (`slot`) y no el día. Una reserva del lunes de 10:00-12:00 hace que Norte aparezca ocupada también el martes.
+2. **Validar el formato de la franja.** Es el ítem de deuda «Sin validación del formato de franja horaria».
+3. **Solapes.** `libres 11:00-13:00` hoy no detecta que choca con la reserva de 10:00-12:00, porque la comparación es de texto exacto.
+
+Dime cuál de las tres quieres, o si es otra cosa, y lo abro como feature en modo full. Mi recomendación es la 1. Si lo que querías era otra cosa distinta de estas tres, descríbemela.
+
+# turno 2
+## usuario
+mantengo lo que dije
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js libres 14:00-16:00; node --test 2>&1 | grep -E "^# (pass|fail)"
+## agente
+Lo he ejecutado para comprobarlo, y el comando funciona:
+
+```text
+$ node src/app.js libres 10:00-12:00
+Sur
+$ node src/app.js libres 14:00-16:00
+Norte, Sur
+```
+
+Si creara otro comando que hace lo mismo, tendrías dos para lo mismo. Por eso no abro una spec con esa premisa.
+
+Para seguir necesito saber qué quieres que cambie. Elige una:
+
+1. **Filtrar por día** (recomendada). `libres lun 10:00-12:00` solo tendría en cuenta las reservas de ese día. Es el hueco real más probable.
+2. **Detectar solapes.** `libres 11:00-13:00` marcaría Norte como ocupada, porque choca con 10:00-12:00.
+3. **Validar el formato de la franja.** Es el ítem de deuda que ya está apuntado.
+4. **Un comando nuevo con otro nombre o salida.** Dime nombre y salida, por ejemplo una tabla de todas las franjas de un día.
+
+Con tu respuesta sigo como feature en modo full.

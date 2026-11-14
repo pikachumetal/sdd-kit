@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; git ls-files | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-0900
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; cat src/app.js; cat test/app.test.js | head -60; ls node_modules 2>&1 | head -2
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references"; cat spec-writing.md; sed -n 1,60p control-profiles.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Before your first question, also one that challenges the request, invoke `sdd-grilling` with `Skill`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && sed -n 1,80p "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references/nombrado.md"; git branch -a
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve
+<<< 0010
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; git switch -c feature/0010-lista-espera && node "$S" id claim --project-root "$PWD"; git status --short
+<<< Switched to a new branch 'feature/0010-lista-espera'
+sin remoto: la 0010 vale (contador local)
+
+=== RESULTADO (11 turnos, 0.1880234 $)
+Ahora: te cuento lo que he entendido y te hago la primera pregunta del diseño. Queda: la entrevista, los enfoques y la spec para que la apruebes, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+He creado la rama `feature/0010-lista-espera` con el id 0010, que no tiene fila en el roadmap. No hay remoto, así que el id vale con el contador local.
+
+**Lo que he entendido, corrígeme.** Hoy `reservar Norte` sobre una franja ya ocupada no te ofrece nada. Quieres apuntarte a una lista de espera de esa sala y esa franja, para quedar en cola cuando esté ocupada. El proyecto lo usas solo tú, así que esto es para ti.
+
+Todavía no sé qué debe pasar cuando la sala se libere. Es lo que más condiciona el resto del diseño, y solo lo sabes tú.
+
+¿Qué quieres que ocurra en el momento en que la sala que esperas queda libre?
+
+=== RESULTADO (1 turnos, 0.2070652 $)
+Entendido: tu problema es tener que mirar `libres` a mano, así que la lista tiene que ahorrarte esa consulta. Lo que falta decidir es qué hace cuando la sala se libera.
+
+Ahora mismo el estado vive en memoria y `cancelar` solo devuelve un texto. Cuando cancelar libere de verdad una reserva, la lista de espera tiene que reaccionar. Escenas con datos:
+
+❓ **Qué pasa cuando se libera la sala**
+1️⃣ **Reserva automática.** `espera Norte lun 10:00-12:00` responde `Norte ocupada; en espera (1.º)`. Al cancelar la reserva de Norte, la primera de la cola se convierte en reserva y sale `cancelada lun 10:00 · Norte reservada para ti (estabas en espera)`. No vuelves a mirar nada. Si ya no la querías, tienes que cancelarla.
+2️⃣ **Aviso al liberarse.** El mismo `espera`, pero al cancelar sale `Norte libre en lun 10:00-12:00 (hay 1 en espera)` y la reserva la haces tú con `reservar`. Alguien más puede reservarla antes, y tienes que mirar el aviso.
+3️⃣ **Solo apuntarse y consultar.** `espera` apunta y `espera --ver` lista la cola. No avisa ni reserva: sigues mirando a mano, pero al menos ves tu posición.
+
+➡️ **Recomiendo 1️⃣**, porque eres la única persona que usa la herramienta y tu queja es no tener que volver a mirar. Con 2️⃣ y 3️⃣ sigues mirando tú. A cambio, puede quedarte una reserva que ya no quieres, y se arregla con `cancelar`.
+
+¿Cuál eliges?

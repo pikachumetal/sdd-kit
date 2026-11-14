@@ -1,0 +1,37 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>/dev/null; cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; ls node_modules 2>&1 | head -2
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat .docs/sdd/steering/*.md package.json; ls -R src test; wc -l src/* ; cat src/*.js; ls .docs/sdd/specs
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references" && cat control-profiles.md | head -60; cat spec-writing.md; sed -n 1,60p nombrado.md; cat ../../sdd-grilling/SKILL.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" id next --project-root . --reserve; git status --short; git branch
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git checkout -b feature/0010-lista-espera && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" id claim --project-root .
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: abro la feature 0010 (rama `feature/0010-lista-espera`) y te pregunto lo que solo tú sabes. Queda: una entrevista corta, la spec para tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile y no hay sdd-kit.local.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Hoy `reservar` no mira si la sala está ocupada, y `libres <franja>` solo lista las salas sin reserva en esa franja. Quieres que, cuando la sala que pides esté ocupada, quedes apuntado en una lista de espera para esa sala y franja. Es una herramienta tuya, de un solo usuario, y `app.js` guarda las reservas en memoria. No lo parto en varias features: calculo unas 3 tasks (la lista, el apuntarse al reservar y el paso a reserva al cancelar).
+
+Lo que no sé y solo tú sabes es para qué la quieres. Cuéntame un caso: ¿qué quieres que pase el día que esa sala ocupada se libere y tú estés en la lista de espera?
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Anotado: feature full, perfil delegate, y tu motivo (no volver a mirar `libres` a mano). Una cosa que he visto en `src/app.js`: cada ejecución del comando arranca de cero, con las reservas fijas en el código. Una lista de espera que se apunte hoy no existiría en la siguiente ejecución, así que tendrá que guardarse en algún sitio. Lo decidimos después, cuando sepamos qué debe hacer la lista.
+
+❓ **¿Qué pasa cuando Norte se libera y tú estás en espera?**
+Hoy no hay ningún proceso en marcha que pueda avisarte, y `cancelar` solo cancela reservas hechas con esta herramienta.
+1️⃣ **Consultar el estado de tu espera.** `reservar Norte lun 10:00-12:00` responde `Norte ocupada; en espera (1.º)`. Un comando nuevo, `espera`, te dice `Norte lun 10:00-12:00: libre ya, reserva cuando quieras` cuando se liberó. Funciona aunque la sala se libere por fuera de la herramienta. Sigues teniendo que ejecutar un comando, pero uno solo y con la respuesta ya dada.
+2️⃣ **Reserva automática al cancelar.** Cuando alguien cancela, el primero de la lista pasa a tener la reserva: `cancelar Norte lun` → `cancelada; Norte lun 10:00-12:00 reservada para el 1.º en espera`. No tienes que volver a mirar. Solo salta si la cancelación se hace con esta herramienta, y puedes encontrarte una reserva que ya no quieres.
+3️⃣ **Solo la lista.** Te apuntas y ves tu posición, pero al liberarse la sala la comprobación sigue siendo manual, como ahora.
+➡️ **Recomiendo 1️⃣**, porque tu problema es tener que mirar a mano cada rato y esta opción lo reduce a un comando con respuesta clara, sin depender de que la liberación pase por esta herramienta. A cambio, no te reserva sola: tienes que ejecutar `espera` y luego `reservar`.

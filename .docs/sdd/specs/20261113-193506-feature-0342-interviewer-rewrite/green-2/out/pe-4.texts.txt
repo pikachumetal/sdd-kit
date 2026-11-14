@@ -1,0 +1,104 @@
+--- [4]
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y arrancar la entrevista de la feature, ~3 min.
+
+--- [12]
+Ahora: presentar el aviso de la feature, lo que he entendido y la primera pregunta. Queda: entrevista corta, aprobar enfoque y spec (tu parada), ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, sin control.profile → valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature» (o `unattended`)
+```
+
+**Lo que he entendido (corrígeme):**
+- Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV, para que quien responde de esa sala las cuadre los lunes en su hoja de cálculo.
+- Hoy `src/app.js` guarda cada reserva como `{ room, day, slot }`, por ejemplo `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`. No hay fechas, solo día de la semana y franja. `run(cmd, params)` devuelve un texto, y los tests de `test/app.test.js` comprueban ese texto.
+- No hay fila en el roadmap para esto. El 0008 y el 0009 ya están cogidos, así que el id lo reservaré con `sdd id next --reserve` antes de crear la rama y la carpeta.
+- Prevo unas 2 tasks (el comando con su CSV y el cableado de la entrada), así que no propongo dividirla. `package.json` no declara dependencias, no hay nada que instalar.
+
+❓ Sobre quién lo usa, una cosa que solo sabes tú:
+
+¿Quién ejecuta el comando los lunes, tú o el responsable de la sala?
+
+--- [14]
+Ahora: reservar el id y crear la rama de la feature. Queda: la pregunta del separador, el enfoque y la spec, ~8 min.
+
+Lo de quién ejecuta el comando queda como pendiente tuyo. Decido yo, por método, que el comando escriba el CSV por salida estándar. Así vale igual si lo lanzas tú o el responsable (`salas exportar Norte > norte.csv`), y no hay que elegir carpeta ni nombre de fichero.
+
+--- [17]
+Rama `feature/0010-exportar-reservas-csv` creada desde `develop`. No hay remoto, así que el id 0010 vale por el contador local.
+
+❓ **Separador del CSV**
+El responsable lo abre en una hoja de cálculo. Con Excel o LibreOffice en castellano, la coma no separa columnas porque se usa para los decimales. Un CSV con comas se abre con todo apelotonado en la columna A. Para una sala con una reserva, el fichero sería:
+
+1️⃣ **Punto y coma (`;`)**: se abre en columnas en una hoja en castellano.
+```
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Si la hoja del responsable está en inglés, saldrá en una sola columna.
+
+2️⃣ **Coma (`,`)**: es el CSV estándar y vale en hojas en inglés.
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+En una hoja en castellano hay que importarlo a mano.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta y los textos están en castellano (constitución, art. 4) y el responsable cuadra en su hoja cada lunes; con `;` se abre a la primera. A cambio, quien use una hoja en inglés tendrá que elegir el separador al importar.
+
+¿Qué separador quieres?
+
+--- [19]
+Ahora: escribir la spec (plantilla, pasada de coherencia y revisión). Queda: parada de aprobación de la spec, ~10 min.
+
+Decidido por ti: separador `;`. Lo demás lo decido yo y irá en «✋ Decisiones que he tomado yo».
+
+--- [32]
+Estoy comprobando el delta de la spec sobre una copia de `.docs/sdd` (pasada de coherencia) antes de presentarla.
+
+--- [36]
+Ahora: aprobación de la spec. Queda: tu «apruebo»; después escribo el plan y paso a implementar, ~15 min.
+
+La spec está en `.docs/sdd/changes/20261113-224725-feature-0010-exportar-reservas-csv/spec.md`, en la rama `feature/0010-exportar-reservas-csv`.
+
+🦆 Hasta ahora no hay forma de sacar las reservas de una sala fuera de la herramienta. Con esto, `salas exportar Norte` imprime `sala;dia;franja` y una línea por reserva (`Norte;lun;10:00-12:00`). Lo guardas con `> norte.csv` y se abre en Excel en castellano con una columna por dato. Por dentro es un comando nuevo en `src/app.js` que filtra por sala y une con `;`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El comando se llama `exportar <sala>`.
+2. La salida va por pantalla, sin fichero. En Windows PowerShell 5, `>` guarda en UTF-16 y la hoja puede no separar bien, así que lo abrirás tal como lo guarde tu consola.
+3. La cabecera es `sala;dia;franja`, en minúsculas y sin tilde.
+4. Cada reserva sale en una línea, en el orden en que está guardada, sin comillas ni escapes.
+5. Una sala sin reservas devuelve solo la cabecera.
+6. Una sala inexistente devuelve `sala desconocida: Este`.
+7. Sin nombre de sala devuelve `uso: exportar <sala>`.
+8. **Las reservas semanales (`--cada-semana`) no salen**, porque hoy no se guardan. Si el responsable cuenta con ellas para cuadrar, el CSV se quedará corto.
+9. La función va en `src/app.js`, sin módulo aparte.
+10. La capacidad nueva se llama `booking-export`.
+
+**Revisión de la spec:** el rubro pedía dos revisores, pero esta sesión no puede lanzar subagentes. Los siete puntos los pasé yo sobre la spec, y eso no es una revisión independiente. Salieron tres cambios, ya aplicados:
+- El filtro por sala se prueba con la sala vacía.
+- Queda anotado el caso de PowerShell 5.
+- Se añadió el bloque de reglas de la capacidad.
+
+**Pendiente de ti:** quién ejecuta el comando los lunes. Dijiste que no lo sabes, y decidirá si hace falta una opción de fichero de salida más adelante.
+
+Las otras tres decisiones del separador y el cuadre ya son tuyas.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+¿Apruebas la spec?
+
+--- [38]
+Vale, lo dejamos aquí. La spec queda en espera: no la he aprobado, no he escrito el plan y no he tocado código.
+
+Dónde queda todo:
+- **Rama:** `feature/0010-exportar-reservas-csv`, creada desde `develop`. El id 0010 está reservado en el contador local, porque no hay remoto.
+- **Spec:** `.docs/sdd/changes/20261113-224725-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft`. Está sin commitear. Sin la aprobación no hay commit de apertura.
+- **Roadmap:** no he añadido ninguna fila para esta feature.
+
+Para retomarla, di «retoma la feature» en esa rama y contesta a la pregunta de aprobación. Si quieres cambios, dime cuáles. Antes de decidir, mira estos dos puntos:
+- **Reservas semanales:** las de `--cada-semana` no salen en el CSV, porque hoy no se guardan.
+- **Quién ejecuta el comando:** sigue pendiente de ti.
+

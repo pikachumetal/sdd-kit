@@ -1,0 +1,77 @@
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -80; ls .docs/sdd 2>/dev/null
+
+>>> Grep: espera|waitlist|cancel|baja|liberar|admin
+<<< PRODUCT.md:13:- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+PRODUCT.md:14:- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+test\cancel.test.js:5:test('cancelar una reserva activa', () => {
+test\cancel.test.js:6:  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+test\cancel.test.js:9:test('cancelar sin reserva lo dice', () => {
+test\cancel.test.js:10:  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+CHANGELOG.md:14:- La cancelación ya no borra reservas de ot
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+test/cancel.test.js
+sdd-kit.json
+specs/
+steering/
+
+>>> Read: <run>\repo\PRODUCT.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+=== RESULTADO (7 turnos, 0.0999901 $)
+Esto es lo que he encontrado antes de preguntar:
+
+- `PRODUCT.md` marca «baja» como término a evitar, porque encaja con dos: **Cancelación** (la anula el cliente) y **Anulación** (la anula el responsable de sala).
+- En `src/app.js`, `voidBooking` ya marca la reserva como `voided`. Ese estado deja la sala libre, porque `freeRooms` solo cuenta las reservas `active`.
+- No existe ninguna lista de espera. Tampoco hay forma de avisar a nadie: la herramienta solo imprime en la terminal.
+
+Con «admin» y «da de baja» te refieres a una de esas dos cosas, o a las dos. Aún no sé a cuál, y de eso depende el resto del diseño.
+
+`PRODUCT.md` dice que la usas solo tú, pero no define «admin». ¿Cuál de las dos es la que dispara la feature (Cancelación, Anulación o ambas), y quién es «admin» en ese caso?

@@ -155,6 +155,21 @@ describe('skills invocadas', () => {
   });
 });
 
+// Quitar la última frase de una viñeta con un Edit puede comerse el salto de línea y fundirla con la siguiente.
+const fusedBullets = (text: string) => text.split('\n').filter((line) => /[^\s-]\.- \*\*/.test(line));
+
+describe('viñetas de las skills', () => {
+  it('reconoce dos viñetas fundidas en una línea', () => {
+    expect(fusedBullets('- **Approach**: the parts it fixes.- **✋ Decisiones**: every value')).toHaveLength(1);
+    expect(fusedBullets('- **Approach**: the parts it fixes.\n- **✋ Decisiones**: every value')).toEqual([]);
+  });
+
+  it('ninguna línea de una skill funde dos viñetas', () => {
+    const fused = markdownFiles(skillsRoot).flatMap((path) => fusedBullets(readFileSync(path, 'utf8')).map((line) => `${relative(repoRoot, path)}: ${line.slice(0, 80)}`));
+    expect(fused).toEqual([]);
+  });
+});
+
 describe('privacidad', () => {
   const texts = filesUnder(skillsRoot, () => true).map((path) => ({ path: relative(repoRoot, path), text: readFileSync(path, 'utf8') }));
 

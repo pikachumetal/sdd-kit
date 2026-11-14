@@ -1,0 +1,64 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -80; cat .docs/sdd/PRODUCT.md 2>/dev/null | head -60
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+
+>>> Bash: cat src/app.js package.json PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md .docs/sdd/sdd-kit.json; head -40 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: node --version; node -e "import('node:sqlite').then(()=>console.log('sqlite ok'),e=>console.log('no',e.code))" 2>&1 | head -5
+<<< v26.10.0
+sqlite ok
+
+=== RESULTADO (8 turnos, 0.1271072 $)
+Estoy en modo explorar: he leído el código y los documentos del proyecto, y no he tocado nada. Esto es lo que he encontrado y la primera decisión.
+
+**Lo que hay hoy** (`src/app.js`):
+- `bookings` es un array en memoria con una reserva fija. Al ser una CLI, cada ejecución es un "reinicio".
+- `reservar` solo devuelve un texto y no añade nada al array. `cancelar` tampoco borra nada. Hoy no se guarda ninguna reserva.
+- `operations.md` dice Node 22, sin dependencias externas y un solo fichero de entrada. `PRODUCT.md` dice que solo lo usas tú, en tu servidor.
+
+**Decidido por mí:**
+- Es persistencia local, sin servidor ni base de datos externa, porque hay un solo usuario y no se admiten dependencias.
+- Se carga al arrancar y se escribe al cambiar.
+
+❓ **¿En qué formato se guardan las reservas?**
+1️⃣ **Fichero JSON** (`node:fs`). Es legible y editable a mano, y no depende de la versión de Node. Reescribe el fichero entero en cada cambio, lo que con tus volúmenes no importa. Si dos comandos escriben a la vez, el último pisa al otro.
+2️⃣ **`node:sqlite`**, integrado en Node. Las escrituras son transaccionales y sirve si luego quieres consultas por día o sala. En Node 22 no tengo verificado si sigue marcado como experimental, y el fichero `.db` no se puede editar a mano.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y el volumen son unas pocas reservas por semana. Además, los carriles de 0008 (avisos) y 0009 (.ics) leerán la lista de reservas y un JSON es lo más simple de leer. A cambio, pierdes la atomicidad de las escrituras. ¿Te encaja el JSON, o prefieres SQLite?

@@ -1,0 +1,72 @@
+--- [3]
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP y steering). Queda: clasificar y presentarte la nota de entendimiento, ~2 min.
+
+--- [16]
+Ahora: te presento lo que he entendido y te hago la primera pregunta de la entrevista. Queda: entrevista, enfoques, spec y tu aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`, sin `control.profile`, así que es el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+He creado la rama `feature/0010-exportar-csv-sala` y reservado el id 0010. No lo he sacado de ninguna fila del roadmap.
+
+**Lo que he entendido (corrígeme):** quieres un comando de `salas` que exporte a CSV las reservas de una sala. El responsable de esa sala lo abre los lunes en su hoja de cálculo para cuadrar las reservas. Hoy `src/app.js` tiene las reservas en memoria (`{ room, day, slot }`) y no hay ningún comando que las liste. No veo más de 3 tasks, así que no propongo partirla.
+
+❓ ¿Qué hará el responsable con el CSV el lunes, paso a paso, desde que lo abre en la hoja hasta que da la sala por cuadrada?
+
+--- [18]
+Entendido: los pasos después de abrirlo quedan en «Pendiente de ti» y no los doy por supuestos.
+
+Lo que sí he visto en el código: cada reserva solo tiene sala, día (`lun`) y franja (`10:00-12:00`). No hay fecha ni semana. Por eso el CSV tendrá esas tres columnas y todas las reservas de la sala.
+
+El separador de columnas depende de la hoja de cálculo y de su configuración regional. Con el separador equivocado, todo el CSV puede caer en una sola columna.
+
+¿Qué hoja de cálculo usa el responsable y con qué idioma o región la tiene configurada?
+
+--- [20]
+Entendido: la región exacta y la versión de Excel quedan pendientes.
+
+Esto es de memoria y no lo he verificado. Excel usa el separador de listas de la región de Windows. En castellano de España es `;`, y en varias regiones latinoamericanas es `,`. Con la región sin confirmar, estas son las opciones:
+
+❓ **Separador de columnas del CSV**
+Un ejemplo de lo que vería el responsable al abrir el fichero en una Excel de España:
+1️⃣ **`;` fijo.** `Norte;lun;10:00-12:00` sale en tres columnas. En una región con `,` saldría todo en la columna A. Coste: nada que mantener.
+2️⃣ **`;` por defecto y `--separador ,` para cambiarlo.** Sale en tres columnas en España. Si su región usa `,`, lo arregla con una opción. Coste: un parámetro más y un test más.
+3️⃣ **`,` fijo.** Es lo estándar del formato. En una Excel de España saldría todo en una columna.
+➡️ **Recomiendo 2️⃣**, porque la región del responsable es justo lo que no sabes, y con `--separador` el comando sigue sirviendo si resulta que es `,`. A cambio, es un poco más de código que con 1️⃣.
+
+¿Cuál eliges?
+
+--- [22]
+Hecho: `;` fijo queda como decisión tuya, con tu frase. El resto lo decido yo y va a «✋ Decisiones que he tomado yo». Ahora: leo la plantilla de la spec y las pautas de coherencia y revisión. Queda: escribir la spec, revisarla y presentártela para aprobar, ~8 min.
+
+--- [34]
+Sigo con la spec: el comando anterior falló por un problema de comillas y no escribió nada. La creo con la herramienta de ficheros.
+
+--- [36]
+Ahora: compruebo el delta de la spec sobre una copia de `.docs/sdd`, como pide la pasada de coherencia. Queda: presentarte la spec para aprobar, ~3 min.
+
+--- [40]
+Ahora: te presento la spec para que la apruebes. Queda: tu aprobación, después el plan y la implementación, ~15 min.
+
+🦆 Hasta ahora no había forma de sacar las reservas de una sala. Ahora `salas exportar Norte` escribe una línea por reserva, `Norte;lun;10:00-12:00`, bajo una cabecera `sala;dia;franja`. El responsable guarda la salida con `salas exportar Norte > norte.csv` y la abre en Excel los lunes. El `;` es el separador que Excel en castellano espera. Si la sala no existe, avisa y no escribe tabla.
+
+La spec está en `.docs/sdd/changes/20261113-221532-feature-0010-exportar-csv-sala/spec.md`. Valida estas decisiones mías:
+
+- **Comando y salida:** `exportar <sala>`, que escribe en pantalla (se guarda con `>`).
+- **Cabecera:** `sala;dia;franja`, sin tilde, para evitar problemas de codificación en PowerShell.
+- **Sala sin reservas:** sale solo la cabecera.
+- **Sala desconocida:** `sala desconocida: Este`.
+- **Falta la sala:** `indica la sala: exportar <sala>`.
+- **Reservas semanales:** no salen, porque hoy no se guardan en ninguna parte.
+- **Enfoque:** una función dentro de `src/app.js`. Descarté un módulo nuevo y una opción `--salida` que escriba el fichero.
+
+Dos avisos antes de aprobar:
+- **Sin revisión independiente.** La rúbrica pedía dos revisores. Esta sesión no tiene herramienta para lanzar subagentes, así que hice yo la lectura de los siete puntos. Está dicho en la spec, en «Hallazgos de la review».
+- **Pendiente de ti.** No sabes qué hace el responsable con el CSV después de abrirlo, ni su región ni su versión de Excel. Si su región usa `,` como separador, todo el CSV saldría en una sola columna. Tu decisión de `;` fijo está en la spec con tu frase.
+
+El delta lo probé sobre una copia de `.docs/sdd` con `sdd capability merge` y salió bien. La spec sigue en borrador y no hay código ni plan. Está en espera hasta que contestes.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

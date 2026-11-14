@@ -1,0 +1,70 @@
+--- [3]
+Empiezo por el estado real del roadmap.
+
+--- [16]
+Estoy escribiendo las tres filas en el roadmap. La propuesta ya está creada, pero mi primer intento de editar `ROADMAP.md` se rompió. Lo rehago con un script aparte.
+
+--- [23]
+CRLF confirmado. Cambio la expresión regular y uso saltos CRLF para mantener el formato del fichero.
+
+--- [34]
+Dejé el módulo de informes apuntado en el roadmap y no arranqué nada: no hay rama ni código. Lo confirmé en `develop` (commit `20f4617`) y `sdd roadmap check` da el roadmap válido.
+
+Es algo grande, así que lo partí en tres features dentro de la propuesta 0010. Las reglas de negocio llevan un ejemplo con datos cada una. Las filas están en Next:
+
+| Id | Feature | Tras | Tamaño |
+| --- | --- | --- | --- |
+| 0011 | Ocupación por sala | — | S |
+| 0012 | Exportar la ocupación a Excel | 0011 | M |
+| 0013 | Aviso semanal a los responsables | 0012, 0008 | M |
+
+La 0013 va tras la 0012 porque las dos tocan `src/app.js`. Va tras la 0008 porque reutiliza el envío de correo de los avisos que ya estaban planificados. No toqué la 0008.
+
+Como me dijiste que decidiera yo, estas son las decisiones que tomé. Están en la propuesta y conviene confirmarlas con el cliente, sobre todo la primera y la última:
+- **Ocupación:** horas reservadas entre horas disponibles, de lunes a viernes de 08:00 a 20:00 (60 h por sala). Esas horas de apertura son una suposición mía.
+- **Cómo cuenta cada reserva:** la reserva semanal cuenta en cada semana y la cancelada no cuenta. Sin indicar semana, el informe es de la última semana terminada.
+- **Excel:** un `.xlsx` generado a mano, sin dependencias, porque `operations.md` prohíbe librerías externas. Lleva una hoja con una fila por sala.
+- **Aviso:** lo reciben los responsables de una lista en un fichero de configuración, con la ocupación de la semana anterior en el cuerpo. Los lunes lo dispara cron, no el programa.
+
+Dos cosas más:
+- **Commit a mano:** `sdd roadmap publish` se negó, porque `develop` es este mismo árbol y tenía los cambios sin confirmar. Hice el commit con git.
+- **Script suelto:** dejé `edit-roadmap.mjs` en el directorio padre del repo (`..\edit-roadmap.mjs`). Lo usé para escribir las filas y se puede borrar.
+
+La primera en salir es la 0011. Este es su prompt de arranque:
+
+### *✨ 0011 — Ocupación por sala*
+***Nombre:*** `feature/0011-room-occupancy`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0011 con sdd-propose, carril feature: un comando que da la ocupación semanal de cada sala.
+
+Alcance:
+- src/app.js: cálculo de la ocupación por sala y comando para pedirla, con tests en test/app.test.js
+
+Fuera de alcance:
+- la exportación a Excel: 0012
+- el aviso por correo a los responsables: 0013
+
+Decisiones ya tomadas:
+- La semana va de lunes a viernes, de 08:00 a 20:00 (60 h por sala), porque el cliente no dio horario y es la suposición razonable; confirmarla con él.
+- Ocupación = horas reservadas ÷ horas disponibles. Norte con lun 10:00-12:00 → 2/60 = 3,3 %; Sur sin reservas → 0 %.
+- Una reserva semanal cuenta en cada semana (Sur, mié 09:00-10:00 cada semana → 1/60 = 1,7 %); una cancelada no cuenta.
+- Sin semana indicada, el informe es de la última semana terminada (pedido el vie 13-nov → 2 al 6 de nov).
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261113-120000-proposal-0010-informes/proposal.md, §Reglas de negocio
+- .docs/sdd/steering/operations.md: Node 22, sin dependencias externas
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y el comando da, con los datos del ejemplo, Norte 3,3 % y Sur 0,0 %.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

@@ -1,0 +1,107 @@
+--- [12]
+Ahora: leo las reglas de redacción de la spec y preparo la entrevista de diseño. Queda: preguntarte lo que la spec no puede decidir sola, escribir la spec y pararme en tu aprobación, ~10 min.
+
+--- [16]
+Ahora: te cuento cómo leo la petición y te hago la primera pregunta de diseño. Queda: unas pocas preguntas, la spec y la parada en tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+
+- Hoy `src/app.js` tiene los comandos `libres`, `reservar` y `cancelar`, y cada uno imprime su resultado por consola. Las reservas son una lista en memoria con `room`, `day` y `slot`.
+- Quieres un comando nuevo, que provisionalmente llamo `exportar <sala>`. Saca las reservas de esa sala en CSV para que quien responde de la sala las cuadre los lunes en su hoja de cálculo.
+- Prevé unas 2–3 tareas, todas en `src/app.js` y `test/`. No propongo dividirla.
+- Hay una roadmap row cercana, la 0009 (exportar a `.ics`). Es otra cosa, un calendario, y no entra aquí.
+- El uso real es abrir ese CSV en una hoja de cálculo. Por eso el formato (separador, tildes, cabecera) puede decidir si funciona o no, y no quiero fijarlo por costumbre.
+
+❓ **¿Qué hoja de cálculo usa quien cuadra las reservas los lunes, y cómo abre el fichero (doble clic sobre el `.csv`, o importándolo desde la propia hoja)?**
+
+--- [18]
+Anoto lo que decides y lo que queda pendiente:
+
+- **Decidido por ti:** Excel en castellano.
+- **Pendiente:** cómo abre el fichero. No lo sabes.
+
+Como no lo sé, el CSV tiene que abrirse bien con doble clic y también importado. Para un Excel en castellano eso implica `;` como separador, porque con `,` todo caería en una sola columna. Implica también UTF-8 con BOM, para que las tildes de los días (`mié`, `sáb`) no salgan rotas. Lo apunto como decisión mía, con su razón.
+
+Lo siguiente cambia más cosas: cómo sale el CSV del comando.
+
+❓ **¿Imprime el CSV por consola o escribe un fichero?**
+1️⃣ **Escribe el fichero.** `exportar Norte` crea `reservas-Norte.csv` en la carpeta actual y responde `1 reserva de Norte exportada a reservas-Norte.csv`. El contenido, ya en UTF-8 con BOM, sería `sala;dia;franja` y `Norte;lun;10:00-12:00`. Cuesta que escribe en disco y sobrescribe el fichero si ya existía.
+2️⃣ **Imprime por consola.** Es lo que hacen `libres` y `cancelar`. `exportar Norte > norte.csv` lo guarda, y el resultado se prueba comparando texto. Cuesta que la redirección `>` de Windows PowerShell 5.1 guarda en UTF-16 y rompe el BOM, y Excel abriría el fichero mal.
+
+➡️ **Recomiendo 1️⃣**, porque trabajas en Windows y el fichero lo escribe el propio comando con la codificación que Excel espera, sin depender de cómo redirija cada consola. A cambio, el comando tiene un efecto en disco y sus tests necesitarán una carpeta temporal.
+
+--- [20]
+Anotado: sale por salida estándar y tú la redirigirás a un fichero. Con eso, lo que queda (columnas, orden, sala que no existe) lo decido yo con su razón y va en «✋ Decisiones que he tomado yo». Pasamos a preparar la spec.
+
+Ahora: reservo el id, creo la rama y escribo la spec. Queda: revisión de la spec y parada en tu aprobación, ~8 min.
+
+--- [34]
+Nada se creó. Escribo la spec con `Write`.
+
+--- [36]
+Ahora el repaso de coherencia: pruebo el delta en una copia fuera del repo.
+
+--- [39]
+La fusión pasa (código 0). Pero en la capacidad el BOM sale como un carácter invisible en lugar del texto `\uFEFF`, y eso no se lee. Lo cambio por una descripción en palabras en toda la spec.
+
+--- [44]
+Los tres sitios tienen el carácter invisible real. Los sustituyo por texto legible con `sed` y reviso las líneas.
+
+--- [47]
+Arreglado. Añado la fila 0010 al roadmap y repito la prueba de fusión sobre la spec corregida.
+
+--- [55]
+Ahora: te presento la spec para que la apruebes. Queda: tu respuesta; con ella escribo el plan y paso a implementar, ~5 min.
+
+## Spec 0010: exportar a CSV las reservas de una sala
+
+Está en `.docs/sdd/changes/20261114-161522-feature-0010-exportar-csv/spec.md`, en la rama `feature/0010-exportar-csv`. Añadí también la fila 0010 al roadmap. Todavía no he commiteado nada.
+
+🦆 Con `salas exportar Norte` sacas por pantalla las reservas de esa sala en CSV, y con `>` las guardas en un fichero que Excel en castellano abre con una columna por dato. Por ejemplo, la reserva de Norte del lunes sale como `Norte;lun;10:00-12:00`, debajo de la cabecera `sala;día;franja`. El comando no escribe ningún fichero: lo haces tú al redirigir. Por dentro es una función que filtra las reservas de la sala y las une con `;`, más un carácter inicial invisible para que Excel respete las tildes.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El comando se llama `exportar <sala>`, como los otros verbos del programa.
+2. El separador es `;` y el fichero lleva BOM UTF-8. No sabes cómo lo abre el responsable, así que sirve para doble clic y para importar.
+3. Las filas van separadas por CRLF.
+4. La cabecera es `sala;día;franja`, las tres únicas columnas que existen en los datos.
+5. Las filas salen en el orden de la lista de reservas, sin reordenar.
+6. Una sala sin reservas da solo la cabecera.
+7. Una sala inexistente da `sala desconocida: Oeste`, y sin sala da `uso: exportar <sala>`. Salen por la salida estándar sin hacer fallar el comando. Con la redirección, ese texto acabaría dentro del fichero.
+8. El nombre de la sala es exacto: `norte` da «sala desconocida».
+9. Un campo con `;`, `"` o salto de línea va entre comillas dobles, y las comillas internas se duplican.
+10. Capacidad nueva `bookings`, con el slug en inglés.
+11. La validación la haces tú, abriendo el CSV en Excel.
+12. Enfoque A: funciones `exportCsv` y `toCsv` dentro de `src/app.js`. Descarté un módulo `csv.js` aparte y escribir el fichero desde el comando.
+13. Los tests van por `run`, y el entrecomillado por una función pura.
+
+**Qué no he hecho.** La review de la spec no se ha lanzado: esta sesión no tiene herramienta para lanzar subagentes. En su lugar pasé yo los siete puntos del revisor, y eso no la sustituye. Si la quieres con dos revisores, hay que lanzarla en una sesión que los permita, antes de aprobar. El delta sí lo probé: fusiona sin errores en una copia de `.docs/sdd`.
+
+**¿Apruebas la spec?**
+1. **Apruebo (Recomendada).** Escribo el plan y paso a implementar.
+2. **Cambios.** Dime qué ajustar.
+
+--- [57]
+Lo dejamos aquí. La spec queda **en espera de aprobación**: no he escrito el plan ni tocado código.
+
+**Cómo queda el repo**
+- Estás en la rama `feature/0010-exportar-csv`, creada desde `develop`.
+- Sin commitear:
+  - la spec, en `.docs/sdd/changes/20261114-161522-feature-0010-exportar-csv/spec.md`;
+  - la fila 0010 en `ROADMAP.md`, con estado «en curso».
+- El id 0010 ya está reservado en el contador local.
+
+**Para retomarla**
+- Con «apruebo la spec», escribo el plan y paso a implementar.
+- Con «cambios», dime qué decisión de la lista ✋ quieres tocar.
+- Si prefieres que el siguiente paso lo des tú sin estar delante, vale «apruebo la spec por delegación, nos vemos en la validación».
+
+**Antes de aprobar**
+- Pendiente, por si te ayuda a decidir: la review de la spec no se pudo lanzar en esta sesión, y la hice yo mismo con los siete puntos, que no es lo mismo.
+- Tampoco sé cómo abre Excel el fichero el responsable. Por eso el formato lleva `;` y BOM, para que valga con doble clic y con importar.
+

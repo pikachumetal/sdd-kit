@@ -1,0 +1,54 @@
+--- [6]
+Antes de preguntar nada, miro qué hay en el proyecto.
+
+--- [10]
+Esto es lo que he encontrado y no he tocado nada.
+
+**Lo que dice el código (`src/app.js`, `test/app.test.js`)**
+- Una franja es un texto libre como `10:00-12:00`. `freeRooms` la compara por **igualdad exacta** con las reservas existentes.
+- Con esa comparación, `10:00-10:30` figuraría como libre aunque `Norte` esté reservada de 10:00 a 12:00. Eso cuela una doble reserva en cuanto existan medias horas.
+- No se valida el formato. Está apuntado en `debt.md` como «Sin validación del formato de franja horaria».
+- `cancelar` recibe `día` y `hora` de inicio (`cancelar mar 10:00`). Con medias horas tendrá que aceptar `10:30`.
+- `reservar` ahora solo responde «reserva semanal creada» con `--cada-semana`. Todavía no crea reservas reales.
+- Las reservas viven en memoria, en un array fijo.
+
+**Lo que infiero:** el tamaño lo decide la franja que se escribe, y la granularidad de 30 minutos no existe todavía en ningún sitio.
+
+**Decidido por mí (método)**
+- Dos franjas chocan si **se solapan**, no solo si son iguales. Es lo único coherente con admitir medias horas y no depende de ninguna preferencia tuya.
+- La validación del formato (`HH:00` o `HH:30`, inicio anterior al fin) entra en esta misma pieza. Sin ella, el solapamiento no se puede calcular de forma fiable. Con eso saldaría la fila de la deuda.
+
+❓ **Cómo se expresa una media hora**
+Hay dos modelos defendibles. Escena con datos: `Norte` está reservada lun 10:00-12:00 y quieres media hora.
+
+1️⃣ **Franja libre en rejilla de 30 min.** Sigues escribiendo `10:00-10:30` o `10:00-12:00`, con inicio y fin en `:00` o `:30`.
+   - `reservar Norte lun 12:00-12:30` → reservada.
+   - `reservar Norte lun 11:30-12:30` → `Norte ocupada de 11:30 a 12:00`.
+   - Casi no cambia lo que ya existe: las reservas de 2 h y los tests actuales siguen valiendo. Cuesta escribir un parser y la comparación por solapamiento.
+
+2️⃣ **Bloques fijos de 30 min.** El día es una lista de bloques y una reserva de 2 h son 4 bloques.
+   - `reservar Norte lun 12:00` → reservada 12:00-12:30.
+   - Para 2 h hay que pedir `12:00 x4` o un rango que se expande.
+   - Cancelar y listar libres se vuelven triviales. Cuesta cambiar el modelo de datos, los tests y la reserva seed, y habría que pensar cómo se escribe una reserva larga.
+
+➡️ **Recomiendo 1️⃣**, porque las franjas actuales (`10:00-12:00`), los tests y el `cancelar` por hora de inicio ya funcionan con rangos. Los bloques fijos obligarían a rehacer todo eso para un solo usuario, que eres tú. A cambio, 1️⃣ exige escribir bien el solapamiento y la validación, y los bloques de 2️⃣ lo evitarían.
+
+Quedan pendientes, para cuando decidas esta: si `cancelar` borra por hora de inicio exacta o por cualquier hora dentro de la reserva, y si tiene sentido apuntar también la reserva real en `reservar`. ¿Te encaja 1️⃣, o prefieres 2️⃣?
+
+--- [12]
+Gracias, ese es el porqué que faltaba. Con él, la dirección queda así.
+
+**Decidido por ti**
+- Lo quieres porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas. El problema es que la unidad de reserva es demasiado grande.
+
+**Decidido por mí**
+- **Franja libre en rejilla de 30 min (1️⃣).** Tu porqué no distingue entre 1️⃣ y 2️⃣, porque las dos arreglan el bloqueo. Me quedo con 1️⃣ por lo que ya vimos en el código: las reservas de 2 h, los tests y `cancelar` siguen valiendo tal cual, y las medias horas se añaden sin rehacer el modelo.
+- Dos franjas chocan si **se solapan**, no solo si son idénticas. Sin esto, una media hora dentro de una reserva de 2 h pasaría como libre.
+- La validación del formato (`HH:00` o `HH:30`, inicio anterior al fin) entra en la misma pieza. Salda la fila de `debt.md`.
+
+**Pendiente (no lo has decidido)**
+- Si `cancelar` borra solo por hora de inicio exacta, como ahora, o por cualquier hora dentro de la reserva.
+- Si esta pieza incluye que `reservar` cree la reserva de verdad. Hoy solo responde con un texto.
+
+Todo eso es una feature, no un cambio de configuración. Si la dirección te vale, la paso al roadmap con lo decidido, para que le dé fila y id. No he escrito nada hasta ahora. ¿Confirmas 1️⃣ con solapamiento y validación como dirección?
+

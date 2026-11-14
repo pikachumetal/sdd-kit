@@ -1,0 +1,52 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: que una reserva pase por pendiente, confirmada y cancelada; desde pendiente se confirma o se cancela, desde confirmada solo se cancela, y una cancelada puede volver a pendiente. Lo que no tengo claro es si el flujo está bien.
+> Skill: sdd-kit:sdd-propose
+> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/changes 2>&1 | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60
+> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; find src test .docs/sdd/specs -type f; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2
+> Bash: cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -40; git branch -a
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-r5\skills\sdd-propose\references\nombrado.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-r5\skills\sdd-propose\references\control-profiles.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-r5\skills\sdd-propose\references\spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: reservo el id y creo la rama de la feature, y después te presento lo que he entendido, con el flujo dibujado. Queda: una pregunta de diseño tuya, ~1 min.
+> Bash: SDD="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/cli/bin/sdd.js"; node "$SDD" id next --project-root "$PWD" --reserve
+> Bash: SDD="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/cli/bin/sdd.js"; git switch -c feature/0010-estados-reserva && node "$SDD" id claim --project-root "$PWD"; git status --short; git branch --show-current
+## agente
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json` no fija `control.profile`, rige el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+Rama creada: `feature/0010-estados-reserva`. Al no haber fila en el roadmap, reservé el id 0010.
+
+**Lo que he entendido**
+
+Hoy una reserva es solo `{ room, day, slot }`, sin estado, y `libres` mira esa lista. Quieres que cada reserva tenga un estado y que las transiciones sean estas:
+
+```mermaid
+stateDiagram-v2
+    [*] --> pendiente: reservar
+    pendiente --> confirmada: confirmar
+    pendiente --> cancelada: cancelar
+    confirmada --> cancelada: cancelar
+    cancelada --> pendiente: reactivar
+```
+
+Sobre si el flujo está bien: en sí es coherente y no tiene estados sin salida, pero veo tres puntos que dependen de decisiones tuyas.
+
+1. **`cancelada → pendiente`** es lo único inusual. Si una cancelada libera la sala y otra reserva ocupa la franja, reactivarla crea un choque. Hay que decidir qué pasa entonces.
+2. **No hay vuelta de `confirmada` a `pendiente`.** Si te equivocas al confirmar, el único camino es cancelar y reactivar. Eso funciona, pero pasa otra vez por el punto 1.
+3. **Falta saber qué estados ocupan sala.** Esto decide cómo cambia `libres`.
+
+Esto último reordena las demás decisiones, así que empiezo por ahí.
+
+❓ **¿Qué estados ocupan la sala en `libres`?**
+Hoy `libres 10:00-12:00` devuelve `Sur`, porque `Norte` tiene una reserva en esa franja.
+1️⃣ **Pendiente y confirmada ocupan; cancelada libera.** Con una pendiente en `Norte`, `libres 10:00-12:00` → `Sur`. Tras cancelarla → `Norte, Sur`. Coste: la reactivación (`cancelada → pendiente`) puede chocar con otra reserva y habrá que rechazarla o avisar.
+2️⃣ **Solo la confirmada ocupa.** Una pendiente no bloquea: `libres` → `Norte, Sur` y dos pendientes pueden coincidir en la misma sala. Coste: dos personas pueden estar pendientes de la misma franja y la segunda confirmación habría que rechazarla.
+3️⃣ **Las tres ocupan, incluida la cancelada.** La cancelación no libera nada, así que no tiene efecto práctico y le quita sentido al estado. Solo tendría sentido como histórico.
+➡️ **Recomiendo 1️⃣**, porque cancelar sirve para liberar la sala y porque con una sola persona usuaria no hay carrera entre pendientes. A cambio, hay que decidir qué hace reactivar cuando la franja ya está tomada.
+
+¿Cuál eliges?

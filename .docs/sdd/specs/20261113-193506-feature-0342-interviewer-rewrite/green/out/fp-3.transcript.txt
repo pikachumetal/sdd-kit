@@ -1,0 +1,58 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y darte la nota de comprensión con las primeras preguntas, ~3 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -3
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat PRODUCT.md ROADMAP.md 2>&1 | head -80; git ls-files | head -40
+## agente
+Hay una spec anterior llamada `free` (0006), y me has dicho que el comando no existe. Lo compruebo antes de seguir.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md | head -30; cat src/app.js; cat README.md; cat .docs/sdd/steering/*.md; cat package.json; grep -n "libres\|free" test/app.test.js CHANGELOG.md
+## agente
+No he abierto ninguna spec ni rama, porque el comando ya existe.
+
+- **Código:** `src/app.js` tiene `libres <franja>`, que devuelve las salas sin reserva en esa franja. Por ejemplo, `libres 10:00-12:00` devuelve `Sur`.
+- **Test:** `test/app.test.js:5` lo cubre.
+- **Spec y entrega:** la spec `20260917-090000-task-0006-free` está en `done`, con su walkthrough. El `CHANGELOG.md` lo registra: «Listado de salas libres por franja (`salas libres 10:00-12:00`)».
+
+Lo que sí he visto, por si era eso lo que querías, es que `libres` tiene huecos:
+
+1. **Ignora el día.** `freeRooms` compara solo sala y franja, no `day`. Una reserva del lunes a las 10:00-12:00 marca la sala como ocupada también el martes. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`.
+2. **No valida el formato de la franja.** Ya está en la deuda como «Por triar».
+3. **Solo compara franjas idénticas.** Una franja `11:00-13:00` no detecta el solape con una reserva de `10:00-12:00`.
+
+¿Qué quieres hacer? Mi recomendación es la primera:
+
+1. **Hacer que `libres` tenga en cuenta el día** (`libres lun 10:00-12:00`), probablemente un patch, o una feature si cambia la sintaxis del comando.
+2. **Detectar solapes entre franjas** (feature).
+3. **Validar el formato de franja** (sale de la deuda, patch o lite).
+4. **Era otra cosa**, y me dices qué comando tenías en mente.
+
+Cuando elijas, clasifico el carril y arranco. Mantengo el carril feature, modo full, solo si tu elección es una feature.
+
+# turno 2
+## usuario
+mantengo lo que dije
+## agente
+Entendido: mantengo el carril, feature en modo full. Lo que no voy a hacer es duplicar `libres`, así que leo las referencias para plantear la feature sobre lo que falta.
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references/spec-writing.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references/control-profiles.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: abro la feature con la nota de comprensión y la primera pregunta de la entrevista. Queda: la entrevista, los enfoques y la spec para tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile y no hay sdd-kit.local.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+- Quieres, como feature en modo full, un comando para ver qué salas están libres en una franja.
+- Ya existe `libres <franja>` (spec 0006, en `done`, con test y entrada en el changelog). Te lo dije y mantienes lo que pediste, así que queda como decisión tuya: «mantengo lo que dije». No lo trato como un error tuyo ni lo ignoro.
+- No voy a crear un segundo comando que haga lo mismo. La feature será lo que tú necesites y `libres` no hace hoy.
+- Veo 1–3 tareas en el mismo fichero (`src/app.js`), sin migración, así que no propongo dividirla. No hay dependencias que instalar: Node 22 sin paquetes.
+
+Una sola pregunta, abierta, sobre lo que solo sabes tú: ¿qué situación concreta te pasó, o te va a pasar esta semana, en la que mirar las salas libres de una franja con `salas libres 10:00-12:00` no te sirvió o no existía para ti?

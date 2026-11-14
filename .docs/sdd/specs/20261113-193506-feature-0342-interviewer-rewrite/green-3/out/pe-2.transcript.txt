@@ -1,0 +1,57 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leer el contexto del proyecto (docs SDD). Queda: clasificar y presentar la comprensión de la feature, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -3
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json src/app.js; head -40 test/app.test.js; cat README.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references" && cat control-profiles.md | head -80; cat spec-writing.md; cat nombrado.md | head -60
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: te presento lo que he entendido y hago la primera pregunta de diseño. Queda: la entrevista, el enfoque, la spec y tu aprobación (la primera parada), ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme si algo no es así):
+
+- Hoy `salas` no tiene ningún comando que saque las reservas de una sala. Las únicas reservas que existen están en `src/app.js` y cada una tiene `room`, `day` y `slot`, por ejemplo `Norte · lun · 10:00-12:00`.
+- Quieres un comando nuevo que, dada una sala, saque sus reservas en CSV. Cada lunes el responsable de esa sala lo abre en su hoja de cálculo para cuadrarlas.
+- Es una feature en modo full. Prevé 2 tasks como mucho y toca un solo fichero y su test, así que no propongo dividirla.
+- El proyecto no tiene dependencias (Node 22, `node --test`), así que no hay nada que instalar y el CSV se generará sin librerías.
+
+❓ **¿Qué necesita ver el responsable en cada fila del CSV para cuadrar las reservas de su sala?**
+
+# turno 2
+## persona
+Sala, día y franja, en ese orden y separados por punto y coma. Es para cuadrar las reservas de la semana que empieza el lunes que viene.
+## agente
+Gracias, eso fija las columnas: `sala;día;franja`.
+
+Lo de la semana tiene un problema. Las reservas de `src/app.js` guardan solo el día de la semana (`lun`) y no una fecha, así que no hay forma de distinguir «la semana que empieza el lunes que viene» de otra. Mirando la forma de los datos veo dos caminos.
+
+❓ **¿Qué reservas salen cuando pides la exportación de una sala?**
+1️⃣ **Todas las de la sala, ordenadas de lunes a domingo y por franja.** El comando es `exportar Norte` y la salida es `Norte;lun;10:00-12:00`. Cada lunes sale lo que haya en ese momento, y como no hay fechas, para ti «esta semana» es lo que hay reservado ahora. No toca el modelo de datos.
+2️⃣ **Pedir una semana concreta.** Por ejemplo `exportar Norte 2026-11-16`. Para que filtre de verdad, cada reserva tendría que guardar una fecha, y eso es otra feature (cambia `reservar`, `cancelar` y los datos).
+
+➡️ **Recomiendo 1️⃣**, porque el modelo actual no puede responder por semanas y el comando que pides no necesita más. A cambio, si algún día hay reservas puntuales de varias semanas, saldrán mezcladas, y eso lo resolvería la opción 2️⃣ en otra feature. ¿Vas con 1️⃣?
+
+# turno 3
+## persona
+Déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+De acuerdo, lo dejamos aquí. No he creado ninguna rama, carpeta ni fichero: el repo sigue limpio en `develop`.
+
+Esto es lo que queda:
+
+- **Decidido por ti:** el CSV lleva `sala;día;franja`, en ese orden y separado por punto y coma. Sirve para cuadrar las reservas de la semana que empieza el lunes que viene.
+- **Pendiente:** qué reservas salen. Con 1️⃣ salen todas las de la sala (`exportar Norte`), porque las reservas guardan solo el día de la semana y no hay fecha. Con 2️⃣ se pide una semana concreta, y eso exige guardar fechas, que es otra feature. Yo recomiendo 1️⃣.
+- **Lo que decidiría yo si sigues:** si la salida lleva fila de cabecera, cómo se ordena (de lunes a domingo y por franja) y qué pasa con una sala que no existe o no tiene reservas.
+
+Cuando quieras retomarlo, dime «1️⃣» o «2️⃣» y sigo con la entrevista.

@@ -7,13 +7,13 @@ description: Use when another sdd-kit skill reaches a step that needs decisions 
 
 ## Overview
 
-Write everything the user reads, skill announcements included, in their language. Inspired by `grilling` by Matt Pocock (MIT).
+Write everything the user reads, announcements included, in their language. Your caller says what the interview covers and when it stops. Inspired by `grilling` by Matt Pocock and superpowers `brainstorming` (MIT).
 
-Grill relentlessly until nothing is left silently assumed: every assumption becomes a question or a «decided by me» entry. If neither the user nor the project says why they want it, ask that first, even if you can guess: open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?». Then the decision that reshapes most others; one that depends on a decision still open waits. Facts are your job; decisions are the user's.
+Grill relentlessly until nothing is left silently assumed: every assumption becomes a question or a «decided by me» entry with its reason, never something the user agreed to; what they didn't answer stays pending. First the decision that reshapes most others; one depending on an open decision waits.
 
 ## One decision per turn
 
-End each turn with exactly one decision: one question mark in the message. «Three things, together in one question» is three; a question after ➡️ or «also tell me…» is a second one. If the user asks for everything at once, do so this session. Skip what the request says or delegates, or the project shows.
+End each turn with exactly one decision: one question mark in the message. «Three things, together in one question» is three; a question after ➡️ or «also tell me…» is a second one. Also if asked for everything at once. Skip what the request says or delegates, or the project shows.
 
 ## Look it up before asking
 
@@ -21,7 +21,7 @@ If a decision depends on a fact that changes with versions or time (a tool's beh
 
 ## Shape of a question
 
-Before you propose anything, think wide privately: come up with several ideas, drop the weak ones, including any that fight what the user has told you about why. Show the comparison only when it helps them decide.
+Before you propose anything, think wide privately: several ideas, drop the weak ones, including any that fight what the user has told you about why.
 
 A design decision (an alternative needs over a line to explain its cost) goes in text:
 
@@ -44,15 +44,15 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 
 ## Discovery
 
-What only the user knows (who uses it, what problem it solves) is asked open: no recommendation, hypothesis or example menu («por ejemplo…»). A fact you found (`roles.ts` has `clinic_admin`): show it with its source and ask to confirm. A user's word under _Evitar_ in «Terminology» of `PRODUCT.md`, or fitting two of its terms: name them and ask which they mean, before the why.
+What only the user knows (who uses it, what problem it solves) is asked open: no recommendation, hypothesis or example menu («por ejemplo…»). A fact you found (`roles.ts` has `clinic_admin`): show it with its source and a question that ends at it, with no examples. A user's word under _Evitar_ in «Terminology» of `PRODUCT.md`, or fitting two of its terms: name them and ask which they mean.
 
 ## Answers
 
-- **Challenge once.** If an answer contradicts a fact or you see something better, say so once, with argument and alternative. If the user keeps it, accept it.
+- **Challenge once.** If an answer contradicts a fact or you see something better, say so once, with argument and alternative. If the user keeps it, it's their decision: record it in their words and go on as asked, even if it repeats what exists.
 - **«Decide for me»**: decide method and technical questions with your reason; keep asking only what is the user's (scope, level, money). Discovery stays **pending**: proposing «small clinics with paper agendas» for approval is inventing it.
 - **Rejected to clarify** («no, wait, explain»): explain in prose, with one case and its data, no options or recommendation; their answer closes it.
 - **No user present**: follow the caller's no-user rule; else don't ask, decide method, leave the rest pending.
 
 ## Ending
 
-Stop when no decision is left. Return to the caller: decided by the user, decided by me (with reason), pending. The caller's gate is the confirmation; from `sdd-explore`, confirm with one question.
+Stop where the caller says; otherwise, when each user decision is answered or pending (they said they don't know, or left it unanswered once asked). Return: decided by the user, decided by me (with reason), pending. The caller's gate is the confirmation.

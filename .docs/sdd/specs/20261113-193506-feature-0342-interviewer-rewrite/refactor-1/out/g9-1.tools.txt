@@ -1,0 +1,83 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cat package.json; node -v; ls -a; ls .docs/sdd 2>/dev/null; grep -rn -i "cobertura\|coverage\|c8" --include=*.md --include=*.json --include=*.yml . -l 2>/dev/null | grep -v node_modules | head
+<<< {"type": "module"}
+v26.10.0
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat PRODUCT.md README.md; ls -R src test .docs/sdd/steering | head -40; cat .docs/sdd/steering/*.md | head -80
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+
+src:
+app.js
+
+test:
+app.test.js
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que 
+
+>>> Bash: node --test --experimental-test-coverage 2>&1 | tail -20; node --help | grep -i coverage
+<<< ✔ reservar --cada-semana crea la reserva semanal (0.1026ms)
+✔ cancelar respeta el día (0.1002ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.3403
+ℹ start of coverage report
+ℹ ----------------------------------------------------------
+ℹ file      | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------
+ℹ src       |        |          |         | 
+ℹ  app.js   |  93.75 |    83.33 |  100.00 | 13
+ℹ ----------------------------------------------------------
+ℹ all files |  93.75 |    83.33 |  100.00 | 
+
+=== RESULTADO (8 turnos, 0.1187134 $)
+Estoy en modo «pensar», así que no he tocado nada. Ya he mirado lo que decide la cuestión y te cuento qué he encontrado.
+
+**Lo que he comprobado**
+- `operations.md` dice «Node 22, sin dependencias externas». El `package.json` solo tiene `"type": "module"`, así que c8 sería la primera dependencia.
+- Con tu Node local (v26.10) funciona `node --test --experimental-test-coverage`. Da líneas, ramas y funciones por fichero, más las líneas sin cubrir. Hoy `src/app.js` tiene 93,75 % de líneas, 83,33 % de ramas y 100 % de funciones, y la línea 13 queda sin cubrir.
+- Node trae también umbrales (`--test-coverage-lines`, `--test-coverage-branches`, `--test-coverage-functions`) que hacen fallar el comando si no se alcanzan.
+- Ese flag sigue siendo experimental en 22 (el `--help` que he leído es el de 26), y la salida puede cambiar entre versiones. No lo he comprobado en 22; en la 26 funciona.
+
+**Lo que decido yo, por tu regla de «sin dependencias»**
+- Partiría de lo que trae Node. c8 solo compensaría si necesitas algo que Node no da, como informes HTML o lcov. De momento nada indica que lo necesites, y tienes un solo fichero de entrada y tres tests.
+
+**Lo que solo sabes tú**
+Cuando tengas el porcentaje, ¿qué harás con él el próximo lunes?

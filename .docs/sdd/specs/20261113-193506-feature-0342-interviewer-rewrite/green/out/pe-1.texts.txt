@@ -1,0 +1,91 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering, capabilities). Queda: clasificar y abrir el diseño de la feature, ~3 min.
+
+--- [16]
+Ahora: te cuento lo que he entendido y te hago la primera pregunta de diseño. Queda: la entrevista (2-3 preguntas), la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He creado la rama `feature/0010-exportar-csv` (id 0010 reservado, sin fila en el roadmap). Calculo unas 2-3 tasks, así que no propongo dividirla. No hay dependencias que instalar: el proyecto no usa paquetes externos.
+
+**Lo que he entendido:** hoy `salas` solo guarda las reservas en memoria (`src/app.js`, con una reserva de ejemplo `Norte · lun · 10:00-12:00`) y no tiene ninguna forma de sacarlas. Quieres un comando que, dada una sala, devuelva sus reservas en CSV, para que el responsable de esa sala lo abra en su hoja de cálculo los lunes y lo cuadre. Corrígeme si me equivoco.
+
+❓ **¿Qué columnas necesita ver el responsable para cuadrar?**
+
+Ahora cada reserva tiene `sala`, `día` y `franja`. Por ejemplo, para `Norte` saldría algo como:
+
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+
+¿Qué comparas en la hoja los lunes, y qué te falta en ese CSV para poder cuadrarlo?
+
+--- [18]
+Anotado: columnas `sala`, `día` y `franja`, separadas por `;`. Lo que compara el responsable los lunes queda como pendiente tuyo en la spec, y no bloquea el diseño.
+
+❓ **¿Dónde sale el CSV?**
+
+Hoy los comandos de `salas` devuelven texto por la terminal (`run` devuelve un string y `app.js` lo imprime). Para sacar el CSV hay dos caminos:
+
+1️⃣ **Por la terminal, y rediriges tú:** `node src/app.js exportar Norte > norte.csv`.
+Escena:
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Encaja con cómo funcionan los demás comandos y no añade nada nuevo. A cambio, el fichero lo creas tú con `>`.
+
+2️⃣ **Escribe un fichero:** `node src/app.js exportar Norte` crea `norte.csv` y responde `exportadas 1 reservas de Norte a norte.csv`. Te deja el fichero listo para abrir. A cambio, hay que decidir el nombre y la carpeta, y qué pasa si el fichero ya existe (¿lo pisa?).
+
+➡️ **Recomiendo 1️⃣**, porque `run` ya devuelve un string y los tests comparan ese string, así que no hace falta tocar el disco. A cambio, el responsable (o tú) tiene que redirigir la salida a un fichero.
+
+--- [20]
+Decidido: salida estándar. Con eso ya tengo lo que es tuyo, y el resto son decisiones de método que tomo yo y te dejo marcadas en la spec. Ahora: leo la plantilla y las reglas de revisión para escribir la spec. Queda: spec, revisión y tu aprobación, ~6 min.
+
+--- [33]
+Ahora: te presento la spec para que la apruebes. Queda: tu respuesta; después el plan y la implementación, ~15 min.
+
+🦆 Hay un comando nuevo, `exportar <sala>`, que escribe por la terminal las reservas de esa sala como CSV con `;`. `exportar Norte` da `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. Tú lo rediriges con `>` a un fichero y el responsable lo abre en su hoja de cálculo los lunes. Por dentro es una función pura `csvDeSala(sala, reservas)` en `src/app.js`, y `run` la llama con las reservas del programa.
+
+La spec está en `.docs/sdd/changes/20261113-212753-feature-0010-exportar-csv/spec.md`, en la rama `feature/0010-exportar-csv`.
+
+**✋ Decisiones que he tomado yo, para que las valides**
+1. Capacidad nueva `bookings`. Valida el nombre.
+2. Comando `exportar <sala>`.
+3. Cabecera `sala;dia;franja`, sin tilde en `dia`.
+4. Una fila por reserva, en el orden guardado, con `\n` y sin línea vacía al final.
+5. Sin comillas ni escapes. Hoy ningún valor puede llevar `;`.
+6. Sala sin reservas: solo la cabecera. Sala inexistente: `sala desconocida: Oeste`. Sin sala: `uso: exportar <sala>`.
+7. El nombre de la sala distingue mayúsculas, como `libres` y `reservar`.
+8. Enfoque: la función pura en `src/app.js`, frente a un `src/csv.js` o al código dentro de `run`.
+9. Las reservas recurrentes (`--cada-semana`) no salen, porque hoy no se guardan.
+10. Añado la fila 0010 a `ROADMAP.md`, porque no tiene.
+11. La 0009 (`.ics`) no se toca.
+
+**Pendiente de ti:** qué compara el responsable los lunes. Si necesita otra columna (quién reserva, fecha concreta), hay que añadirla.
+
+**Dos avisos:**
+- Las reservas viven en un array dentro de `src/app.js`, con una sola reserva de ejemplo. Hasta que se guarden de verdad, el CSV real saldrá casi vacío. Eso es otra feature.
+- La rúbrica pedía dos revisores independientes, pero esta sesión no tiene herramienta para lanzar subagentes. Hice yo la pasada de revisión, y no sustituye a la independiente. Está anotado en la spec.
+
+El delta se probó en una copia con `sdd capability merge` y lo acepta.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios
+
+--- [35]
+Vale, lo dejamos aquí. La spec queda en espera y no hay plan ni código.
+
+Lo que hay ahora mismo:
+- Estás en la rama `feature/0010-exportar-csv`, con el id 0010 reservado.
+- La spec está en `.docs/sdd/changes/20261113-212753-feature-0010-exportar-csv/spec.md`, con `status: draft` y sin aprobar.
+- No he hecho ningún commit. La spec está sin añadir al repositorio. Tampoco he añadido todavía la fila 0010 a `ROADMAP.md`; eso va en el commit de apertura, cuando la apruebes.
+
+Cuando vuelvas, di «retoma la feature» y te dejo en el gate con las dos opciones (aprobar o cambios). Si antes averiguas qué compara el responsable los lunes, tráelo y lo meto en la spec. Puede añadir una columna.
+

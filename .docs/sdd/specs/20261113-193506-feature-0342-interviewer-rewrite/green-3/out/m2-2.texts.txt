@@ -1,0 +1,73 @@
+--- [3]
+Empiezo por el paso 1: leo el estado real del repo.
+
+--- [15]
+Estoy comprobando la forma del roadmap y, si pasa, lo publico en `develop`.
+
+--- [18]
+El validador avisa de que 0012 y 0013 tocan `src/app.js` sin orden entre ellas. Lo arreglo haciendo que 0013 vaya después de 0012.
+
+--- [21]
+`roadmap publish` se ha negado porque `develop` está sacada en este mismo directorio y los ficheros tienen cambios sin confirmar. Miro cómo espera que se use.
+
+--- [31]
+El módulo de informes está apuntado en el roadmap y no he arrancado nada. Salió como una propuesta (la 0010) con tres filas en Next y quedó en un commit en `develop` (`3da83ee`). `roadmap check` pasa.
+
+No pude usar `sdd roadmap publish`, porque se negó al tener `develop` sacada aquí con los ficheros modificados. Hice el commit con git, solo de `ROADMAP.md` y `proposal.md`, así que no se tomó el bloqueo de `sdd merge`. Nadie más trabaja en este repo, así que el riesgo es bajo.
+
+Las reglas y sus ejemplos con datos están en `.docs/sdd/changes/20261114-173405-proposal-0010-informes/proposal.md`.
+
+| Orden | Id | Feature | Tras | Tamaño |
+| --- | --- | --- | --- | --- |
+| 1 | 0011 | Informe de ocupación por sala | — | M |
+| 2 | 0012 | Exportar el informe a Excel | 0011 | S |
+| 3 | 0013 | Aviso semanal a los responsables | 0011, 0012, 0008 | M |
+
+**Decisiones que tomé (puedes cambiarlas con una enmienda):**
+- **Ocupación:** horas reservadas entre horas abiertas de la semana. El horario abierto lo supuse lunes a viernes, 08:00–20:00, porque el repo no lo define. Con la reserva de Norte del lunes de 2 h, Norte da 3,3 % y Sur 0,0 %.
+- **Excel:** un `.xlsx` de verdad, no CSV, con una fila por sala. Hace falta una dependencia nueva, que elegirá la 0012 al diseñarla.
+- **Aviso:** el comando `salas aviso-semanal` lo lanza el cron del servidor los lunes a las 08:00 con la semana anterior. No hay proceso residente.
+- **Responsables:** una lista de correos en un fichero de configuración. Todos reciben el mismo correo con todas las salas. Si la lista está vacía, no envía y sale sin error.
+- **Orden de 0013:** la 0013 va después de la 0008, porque reutiliza el envío de correo que crea esa fila. También va después de la 0012: el validador avisó de que ambas tocan `src/app.js`, y así quedan ordenadas.
+
+**Dos cosas a revisar con el cliente:**
+- `PRODUCT.md` dice que la herramienta la usas solo tú, sin más usuarios. No encaja con «cliente» y «responsables», así que conviene aclarar quiénes son.
+- Las reservas guardan día de la semana y franja, sin fechas. Por eso el informe es del patrón semanal, no de una semana concreta del calendario.
+
+**Primera fila: 0011.** Su prompt de arranque:
+
+### *✨ 0011 — Informe de ocupación por sala*
+***Nombre:*** `feature/0011-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0011 con sdd-propose, carril feature: un comando de informe que da, por sala, el porcentaje de horas reservadas sobre las horas abiertas de la semana.
+
+Alcance:
+- src/app.js (el comando) y src/informe.js (el cálculo)
+
+Fuera de alcance:
+- la exportación a Excel: 0012
+- el aviso semanal por correo: 0013
+
+Decisiones ya tomadas:
+- Horario abierto lunes a viernes, 08:00-20:00 (60 h por sala y semana), en una constante, porque el repo no lo define y así se cambia en un solo sitio
+- El informe lista todas las salas, también las de 0 %, porque quien lo lee debe ver las salas sin uso
+- Las reservas semanales (--cada-semana) cuentan en cada semana, porque se repiten
+- Ocupación en % con un decimal: Norte con 2 h reservadas → 3,3 %; Sur sin reservas → 0,0 %
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261114-173405-proposal-0010-informes/proposal.md, §Reglas de negocio, y la fila 0011 del roadmap
+
+Nada que saldar.
+
+Está hecho cuando el comando de informe, con la reserva `Norte lun 10:00-12:00`, imprime `Norte 3,3 %` y `Sur 0,0 %`, y `node --test` pasa.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

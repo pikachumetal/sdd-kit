@@ -1,0 +1,43 @@
+--- [9]
+Todavía no he tocado nada. Esto es lo que he leído y lo que infiero.
+
+**Lo que dice el repo**
+- `PRODUCT.md` solo dice que es una CLI para ti solo. No habla de franjas.
+- `ROADMAP.md` no tiene ninguna fila para las medias horas. Lo único cercano es 0008 (avisos por correo) y 0009 (.ics, en Later).
+- `.docs/sdd/steering/debt.md` tiene un ítem por triar: «Sin validación del formato de franja horaria».
+
+**Lo que veo en `src/app.js`**
+- Una franja es un texto libre, como `'10:00-12:00'`.
+- `freeRooms` compara franjas con `===`. Con eso `10:30-11:00` no choca con `10:00-12:00`, aunque estén solapadas. Con horas enteras ya tenía este agujero, y las medias horas lo harían mucho más visible.
+- `reservar` solo existe con `--cada-semana`. No hay una reserva puntual que cambiar.
+
+Infiero que el cambio real es cómo se decide que dos franjas chocan, más que dejar escribir `:30`.
+
+❓ **¿Cómo representamos una media hora?**
+1️⃣ **Franja libre con solape.**
+- Se permite cualquier inicio y fin en `:00` o `:30`, y el conflicto se calcula como solape de intervalos.
+- `reservar Norte lun 11:30-12:00` → `Norte ocupada (solapa con 10:00-12:00)`.
+- `libres 11:00-11:30` → `Sur`.
+- Coste: hay que parsear y validar el formato, lo que de paso salda la deuda anotada. También hay que tocar `cancelar`, que hoy compara texto.
+
+2️⃣ **Rejilla de celdas de 30 min.**
+- Cada reserva se guarda como una lista de celdas, así que `10:00-12:00` pasa a ser 4 celdas.
+- El conflicto es que dos reservas compartan celda.
+- Coste: cambia la forma de los datos y `cancelar` tiene que borrar celdas sueltas. La entrada sigue siendo un rango, así que también hay que parsearla.
+
+➡️ **Recomiendo 1️⃣**, porque tus reservas ya son rangos `inicio-fin` y el solape arregla de paso el agujero de la igualdad exacta. A cambio, hay que escribir el parser y la validación, que hoy no existen.
+
+--- [11]
+Gracias, eso aclara el porqué. Una reunión de media hora hoy ocupa lo mismo que una de dos horas, y lo que quieres es poder meter reservas cortas dentro de ese hueco.
+
+**Decidido por ti**
+- El motivo: las reuniones de media hora bloquean una franja entera de dos horas.
+
+**Decidido por mí**
+- Me quedo con la franja libre con solape (1️⃣). Tu motivo no distingue entre las dos opciones, y tus reservas ya son rangos `inicio-fin`, así que la rejilla solo añadiría un cambio en la forma de los datos.
+- Asumo que los inicios y fines van en `:00` o `:30`. Es una suposición mía, no algo que me hayas dicho.
+
+Hay algo que no me cuadra en `src/app.js`. `bookings` es un array fijo en memoria con una sola reserva, y `reservar` solo hace algo con `--cada-semana`, devolviendo un texto sin guardar nada.
+
+¿Cómo reservas hoy una sala?
+

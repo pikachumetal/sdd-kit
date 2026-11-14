@@ -1,0 +1,50 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y darte el anuncio con la primera pregunta de diseño, ~3 min.
+
+--- [16]
+Ahora: reservo la rama `feature/0010-lista-espera` (hecho) y preparo la entrevista de diseño. Queda: el anuncio, mi lectura de lo que pides y la primera pregunta, ~2 min.
+
+--- [19]
+Ahora: te cuento cómo lo encaro y te hago la primera pregunta de diseño. Queda: entrevista corta, spec (te la presento para aprobar), plan e implementación, ~10 min hasta tu aprobación de la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres que, cuando intentas reservar una sala y está ocupada en esa franja, la herramienta te deje apuntarte en una lista de espera en lugar de quedarte sin nada. Rama `feature/0010-lista-espera` reservada (0010, sin fila previa en el roadmap).
+
+**Lo que he visto en el código:**
+- `src/app.js` solo conoce `libres`, `reservar --cada-semana` y `cancelar`. Las reservas están en un array en memoria y se pierden al terminar cada ejecución.
+- `reservar` todavía no comprueba si la sala está ocupada, así que hoy no existe el caso «sala ocupada».
+- `PRODUCT.md` dice que la usas solo tú, así que no hay cola de varias personas.
+- Calculo unas 3 tareas internas, por lo que no propongo dividirla.
+
+Primera decisión, y solo tú la sabes: cuando la sala que quieres se libera, ¿qué esperas que pase en ese momento?
+
+--- [21]
+Anotado: feature en modo full, perfil `delegate` del proyecto, y el motivo es que ahora tienes que mirar `libres` a mano cada rato cuando Norte está ocupada.
+
+❓ **Qué hace la lista de espera cuando la sala se libera**
+Hoy `cancelar` es lo único que libera una franja y `reservar` aún no detecta salas ocupadas (`src/app.js`). Tu queja es no saber cuándo se libera, no no poder reservar. Como usas la herramienta tú solo, no hay cola ni nadie con quien competir.
+
+1️⃣ **Avisar** `esperar Norte lun 10:00-12:00` → `Norte ocupada; en espera`. Al liberarse: `Norte libre lun 10:00-12:00`. La reserva la haces tú con `reservar`. Es lo más simple y no te reserva nada que ya no quieras. A cambio, tienes que estar ahí para ejecutar `reservar`.
+2️⃣ **Reservar sola** Mismo comando, pero al liberarse: `Norte libre; reservada para ti lun 10:00-12:00`. No tienes que hacer nada. A cambio, puede reservarte una sala que ya no necesitas, y necesita una forma de deshacerlo.
+
+➡️ **Recomiendo 1️⃣**, porque lo que me cuentas es que te falta saber cuándo se libera, y con un solo usuario no hay carrera que justifique reservar por ti. A cambio, tienes un paso manual más. Si luego lo quieres automático, se añade encima.
+
+¿Cuál eliges?
+
+--- [23]
+Te lo cuento con un caso.
+
+Hoy Norte está reservada el lunes de 10:00 a 12:00. Tú quieres esa franja. Ahora mismo haces esto: ejecutas `libres 10:00-12:00`, ves solo `Sur`, y vuelves a ejecutarlo un rato después para ver si Norte ha aparecido.
+
+La lista de espera sustituye esas comprobaciones repetidas. Le dices una vez que quieres Norte el lunes de 10:00 a 12:00 y la herramienta se queda mirando por ti. La decisión es qué hace en el momento en que alguien cancela esa reserva y Norte queda libre.
+
+- **Si solo te avisa**, te muestra `Norte libre lun 10:00-12:00`. Tú ejecutas `reservar Norte ...` cuando te venga bien. La reserva sigue siendo cosa tuya, así que no pasa nada que no hayas decidido tú. Sí tienes que estar atento al aviso y escribir ese segundo comando.
+- **Si reserva sola**, en ese mismo momento deja la reserva hecha a tu nombre y te muestra `reservada para ti`. No tienes que hacer nada. Pero si para entonces ya no necesitabas esa sala (porque encontraste otra, o cambió tu plan), tendrías una reserva que no querías y habría que cancelarla.
+
+Lo que necesito saber es cuál de los dos comportamientos encaja con cómo trabajas. Dímelo con tus palabras, o cuéntame qué harías tú cuando Norte se libere.
+

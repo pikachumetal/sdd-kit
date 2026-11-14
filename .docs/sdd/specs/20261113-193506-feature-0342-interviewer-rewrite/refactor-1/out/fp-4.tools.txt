@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs | head -50 && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para r
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md; cat .docs/sdd/specs/*free/spec.md; ls src test node_modules 2>&1 | head -30; cat package.json; grep -n "libres\|free" -ri src | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; grep -n "libres" -B2 -A8 test/app.test.js; cat .docs/sdd/specs/*free/walkthrough.md; git log --oneline
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (6 turnos, 0.124818 $)
+El comando que pides ya existe, así que no abro ninguna feature.
+
+`libres <franja>` está en `src/app.js:10`. Devuelve las salas sin reserva en esa franja, y por ejemplo `libres 10:00-12:00` da `Sur`. Tiene test en `test/app.test.js:5`. Se hizo en la tarea 0006, cuyo spec (`.docs/sdd/specs/20260917-090000-task-0006-free/`) está en `status: done` y ya tiene walkthrough.
+
+Si quieres algo distinto, dime qué falta y lo clasifico. Estas son las lagunas que veo, ordenadas por lo que me parece más probable:
+
+1. **Filtrar por día.** Ahora `libres` solo compara la franja y ignora el día. Una reserva del lunes de 10:00-12:00 hace que Norte salga ocupada también el martes. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`. Si es lo que buscas, probablemente sea un patch: `libres <día> <franja>`.
+2. **Validar el formato de la franja.** Está apuntado en `debt.md` como «Sin validación del formato de franja horaria».
+3. **Libres en un rango que solape**, no solo con franja idéntica. Por ejemplo, 11:00-12:00 debería chocar con 10:00-12:00. Sería una feature.
+
+Dime cuál es, o qué esperabas que hiciera `libres` y no hace, y sigo con el carril que corresponda. Si querías el modo full igualmente, lo mantengo.
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js libres 14:00-15:00; node --test 2>&1 | grep -E "^# (pass|fail)"
+<<< Sur
+Norte, Sur
+
+=== RESULTADO (2 turnos, 0.145848 $)
+Acabo de ejecutarlo, y `libres` ya funciona en este repo:
+
+```
+$ node src/app.js libres 10:00-12:00
+Sur
+$ node src/app.js libres 14:00-15:00
+Norte, Sur
+```
+
+Si abro una feature en modo full para «añadir» ese comando, acabaría duplicando o reescribiendo `libres`. No quiero escribir un spec sobre una premisa que el código desmiente.
+
+Mantengo el modo full, que es lo que has pedido. Falta saber qué cambia en `libres`. ¿Qué entra en el spec?
+
+1. **Reserva por día y solape de franjas (recomendada).** `libres <día> <franja>` tendría en cuenta el día, y una franja que solape con una reserva, como 11:00-12:00 frente a 10:00-12:00, contaría como ocupada. Es la laguna real del comando actual, y es feature porque cambia lo que ve el usuario.
+2. **Solo validar el formato de la franja.** Es la deuda que ya está apuntada en `debt.md`.
+3. **Otra cosa.** Dime qué esperabas que hiciera `libres` y no hace.
+
+Cuando elijas, anuncio la feature en modo full y empiezo la entrevista de diseño.

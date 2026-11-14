@@ -1,0 +1,51 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y presentarte el anuncio con la primera pregunta de diseño, ~3 min.
+
+--- [10]
+Ahora: te aviso de que el comando ya existe y te pregunto qué falta de verdad. Queda: tu respuesta, luego la entrevista de diseño y la spec, que es tu primera parada. Son unos ~10 min y no lanzo subagentes.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** quieres poder consultar qué salas están libres en una franja horaria.
+
+**Lo que no cuadra:** ese comando ya existe, así que no hay nada que añadir tal cual.
+
+- `src/app.js:5` define `freeRooms(slot)`, y `run('libres', [franja])` lo expone. `test/app.test.js` lo cubre: `libres 10:00-12:00` devuelve `Sur`.
+- La spec `task-0006-free` está en `status: done` y tiene su walkthrough.
+
+Lo que sí he visto es una carencia en el comportamiento actual. Cada reserva guarda `day` (`lun`, `mar`…), pero `freeRooms` filtra solo por `slot` e ignora el día. Con la reserva de Norte el lunes de 10:00 a 12:00, `libres 10:00-12:00` da `Sur` aunque el martes Norte esté libre a esa hora. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`.
+
+No he creado rama, carpeta ni id. El roadmap tampoco tiene fila para esto.
+
+**¿Qué quieres que cubra esta feature?**
+
+1. **Hacer que `libres` respete el día (recomendada):** `libres <día> <franja>`, como ya hace `cancelar`. Hay que decidir qué pasa si se omite el día. Es lo que en la práctica falta hoy.
+2. **Añadir un comando nuevo** con otro nombre, por ejemplo una vista por franja de todos los días, y dejar `libres` como está.
+3. **Otra cosa** que echas en falta (validar el formato de la franja, que ahora está en la deuda técnica como «Por triar», u otro cambio). Cuéntamela.
+
+Si es la 1, antes de la spec tengo que fijar contigo qué pasa cuando no se da el día.
+
+--- [14]
+Respeto tu decisión, pero he ejecutado el comando para que veas el estado real:
+
+```text
+$ node src/app.js libres 10:00-12:00   →  Sur
+$ node src/app.js libres 14:00-16:00   →  Norte, Sur
+```
+
+`libres <franja>` ya funciona: devuelve las salas libres en esa franja. Una spec para «un comando que ver salas libres en una franja» describiría algo que ya está en `develop`. Por eso no puedo escribirla tal cual sin duplicar el comando.
+
+Sigo adelante con la feature y la entiendo como la opción 1: **un `libres` que mira también el día**. Es el único hueco real que encuentro. No he creado rama ni carpeta, así que si no es lo que querías puedes corregirme ahora sin coste.
+
+**Pregunta de diseño:** `libres <día> <franja>`, como `libres lun 10:00-12:00`. Si se omite el día, ¿qué hace?
+
+1. **Seguir como hoy (recomendada):** `libres 10:00-12:00` sin día sigue ignorándolo. No rompe lo que ya usas ni el test existente.
+2. **Dar error pidiendo el día:** es más estricto, pero rompe el uso actual y obliga a cambiar el test.
+3. **Mostrar la franja de todos los días:** una línea por día con sus salas libres.
+
+Con tu respuesta paso al enfoque y a la spec. Como delegate, me detengo en la spec para que la apruebes.
+

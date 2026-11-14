@@ -1,0 +1,101 @@
+--- [12]
+Ahora: entender qué quieres de la lista de espera (te he reservado la rama `feature/0010-lista-espera`). Queda: una entrevista corta, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no controla si la sala ya está ocupada en esa franja. Quieres que, en ese caso, la reserva pase a una lista de espera para esa sala y esa franja. Todavía no sé qué pasa después, cuando la sala se libere.
+
+Una cosa del proyecto: la cancelación (`cancelar <día> <hora>`) es lo que libera una sala, así que probablemente tendrá que ver con esto.
+
+❓ **¿Qué quieres que ocurra con quien está en la lista cuando se libera la sala?**
+1️⃣ **Pasa a reservada sola:** `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a reservada para quien estaba 1.º en espera`. Es lo más directo, pero reserva sin que te lo pidan.
+2️⃣ **Solo se avisa:** `cancelar lun 10:00` → `cancelada; Norte libre, 1.º en espera: <quien>`. La reserva la haces tú a mano.
+3️⃣ **Otra cosa** que tengas en mente.
+
+➡️ **Recomiendo 1️⃣**, porque una lista de espera sirve para no repetir la reserva a mano. A cambio, hay reservas que se crean sin una orden tuya, y habría que decidir qué pasa si ya no te hace falta.
+
+--- [14]
+Ahora: escribir la spec. Queda: pasada de coherencia, revisión de la spec y tu aprobación, ~8 min.
+
+Tomo tu «adelante» junto con lo que cuentas (no quieres volver a mirar `libres` a mano) como 1️⃣, reserva automática al liberarse. Lo dejo en «✋ Decisiones que he tomado yo» para que lo rechaces si no es lo que querías.
+
+--- [25]
+Ahora: pasada de coherencia (probar el delta sobre una copia). Queda: una revisión de la spec y tu aprobación, ~6 min.
+
+--- [30]
+Revisor de la spec lanzado (uno, dominio, opus). Espero su resultado antes de presentarte la spec.
+
+--- [36]
+1. Crítico · Intent / decisión 9 / Validación · El Intent promete que el usuario no tenga que repetir nada, pero el Scope deja fuera la persistencia. Las reservas y la cola viven en memoria y cada ejecución de `salas` empieza de cero, así que en la terminal real la lista de espera nunca se ve. La validación del dev-lead («lo que ves en la terminal») no puede comprobar el comportamiento. · Hay dos salidas: meter la persistencia en el Scope, o rebajar el Intent y la Validación a «solo dentro de un proceso (tests)». Además, decisión 9 debe dejar de estar pendiente antes de aprobar.
+2. Crítico · Reglas de la capacidad (no existe la sección) · La capacidad nueva trae datos nuevos (la cola), nombres, un límite y una condición de conflicto, pero no declara ninguna de las cinco reglas: dónde viven los datos · idioma de los nombres (`waitlist`/`room`/`slot` y el slug `room-booking` en inglés, con interfaz en castellano según la constitución 4) · límites · avisos · regla ante conflicto. · Añadir «Reglas de la capacidad» con las cinco reglas por nombre, cada una declarada o marcada «no aplica».
+3. Crítico · Delta / decisión 4 · No se define qué es «ocupada». No se sabe si cuenta solo la franja idéntica o también un solape (`reservar Norte lun 11:00-13:00` con `10:00-12:00` reservada). Tampoco qué espera se promueve si la franja de la espera solapa con la cancelada pero no coincide. · Fijar la regla de conflicto (exacta o solape) como decisión y añadir un escenario de solape, tanto en `reservar` como en `cancelar`.
+4. Importante · Delta / Intent anti-objetivo / Dónde se prueba · El anti-objetivo y la decisión 4 incluyen «otra sala», y «Dónde se prueba» la nombra, pero no hay ningún requisito ni escenario para «cancelar no promueve esperas de otra sala». · Añadir un ADDED con GIVEN Norte y Sur reservadas el lunes a las 10:00, espera de Sur, WHEN `cancelar` de Norte, THEN Sur no se promueve.
+5. Importante · Delta «Una misma sala… no se apunta dos veces» / «Cancelar no promueve esperas de otro día» · Los THEN «la cola sigue con una sola entrada» y «la espera del lunes sigue en cola» no se ven por ningún comando, porque «ver la cola» está fuera del Scope. Solo se comprueban mirando dentro del código, o se dan por buenos a ojo. · Expresar el THEN con comportamiento observable: p. ej., después `cancelar lun 10:00` responde `…reservada para la 1.ª en espera`, y un segundo `cancelar lun 10:00` responde sin promoción.
+6. Importante · Delta «Cancelar promueve la primera espera» · El THEN pasa sin el comportamiento. Basta un texto fijo y un `cancelar` que no borre nada para que «Norte sigue sin salir en `libres`» se cumpla. No se comprueba que la reserva promovida sea una reserva nueva ni que la cola quede vacía. · Añadir AND: un segundo `cancelar lun 10:00` responde `cancelada lun 10:00` (sin promoción) y Norte vuelve a salir en `libres`.
+7. Importante · Decisión 5 / decisión 3 / Approach · Con un único usuario (PRODUCT.md) y sin duplicados por sala+día+franja, la cola tiene como mucho una entrada. Entonces la posición siempre es 1.º, el cálculo de posición del Approach nunca se ejercita y «(1.º)» es un valor que el agente acierta a ojo. · Hay que elegir: declarar el límite «una espera por sala+día+franja» y quitar la posición y la cola, o explicar qué caso real produce un 2.º y añadir su escenario.
+8. Importante · Decisión 6 / Delta de `cancelar` · `cancelar <día> <hora>` no dice qué pasa si hay dos salas reservadas el mismo día y a la misma hora (Norte y Sur, lun 10:00). La regla «la sala la saca de la reserva cancelada» es ambigua, y la cancelación puede promover la espera equivocada. · Decidir y declarar el comportamiento con varias coincidencias (error, pedir la sala o cancelar todas) y añadir su escenario.
+9. Importante · Decisión 2 / Scope «reservas semanales con cola» · `reservar --cada-semana` ya existe y ahora `reservar` detecta ocupación, pero no se dice si una reserva semanal ocupa la franja del lunes, ni si cancelar una ocurrencia semanal promueve la espera. Es un contrato existente que se toca sin declararlo. · Declarar en Decisiones y en el Delta cómo interactúan las reservas semanales con la detección de ocupada y con la promoción, o decir explícitamente «no interactúan» con un escenario.
+10. Menor · Decisión 3 / escenarios · Los textos alternan «1.º» (en espera) y «1.ª en espera» (promoción) sin decir que es intencionado. Además, «el fallo de la 0007» (decisión 4) se cita sin decir qué escenario lo cubre. · Unificar el género del ordinal, o declararlo como decisión de texto, y enlazar la 0007 al escenario de otro día que la cubre.
+
+--- [38]
+El aviso anterior es solo la notificación de que terminó el revisor: no es una respuesta tuya, y la spec sigue pendiente de tu aprobación. Incorporo sus hallazgos. Hay tres críticos aceptados, así que la spec pasa por una segunda ronda de revisión antes de presentártela.
+
+--- [42]
+Segunda ronda de revisión lanzada (sonnet). Espero su resultado antes de presentarte la spec para aprobar.
+
+--- [49]
+1. Crítico · Delta de comportamiento, escenarios «Cancelar sin espera libera la sala» y «Cancelar convierte…» · `libres` ignora el día y `bookings` arranca con la semilla Norte lun 10:00-12:00. En «Cancelar sin espera» (Norte el martes) el THEN `libres 10:00-12:00 incluye Norte` falla, porque la reserva del lunes lo sigue excluyendo. El mismo problema afecta al segundo `libres` de «Cancelar convierte» si quedan reservas de otros días a esa hora. · Declarar en Scope y decisiones que `libres` pasa a recibir día (cambio de contrato, con sus tests), o reescribir esos THEN para que no dependan de `libres`.
+
+2. Crítico · Dónde se prueba / Delta · El estado es de módulo y se comparte entre tests: `bookings` y `waitlist` mutan y no hay reinicio. Los GIVEN dependen de una semilla que los propios escenarios consumen. El test actual `libres … === 'Sur'` se rompe según el orden. · Decidir y declarar un mecanismo de reinicio (por ejemplo un `reset()` exportado) como parte del Scope, y escribir cada GIVEN como estado construido y no heredado.
+
+3. Importante · Scope / Delta · Hay comportamiento sin definir y fuera del Scope: `reservar` con sala que no está en `rooms` (`Oeste`), sin día o franja, o con un formato inválido. Tampoco se dice qué responde `cancelar` cuando no hay reserva que coincida. Hoy responde siempre `cancelada …`, y el spec lo usa implícitamente en el «segundo cancelar». · Añadir una decisión y un escenario para sala desconocida y argumentos ausentes. Fijar si `cancelar` sin coincidencia sigue devolviendo `cancelada …` (y que eso es deliberado) o devuelve un error.
+
+4. Importante · Decisiones 3 y 5 / escenarios de espera · Se afirma que no hay más personas que tú, pero los escenarios exigen una espera sobre una sala que ya tienes reservada, es decir, te esperas a ti mismo. «Otra sala» pone además a Sur reservada y en espera por la misma persona. El modelo de quién es el dueño de la reserva que bloquea no está dicho. · Aclarar en las decisiones quién ocupa la sala (otro usuario sin identidad modelada) y que la espera es la tuya, o ajustar los GIVEN para que no sea contradictorio.
+
+5. Importante · Escenario «Cancelar no promueve esperas de otra sala» · El título dice que no se promueve, pero el THEN depende de la decisión 6 (primera por orden). Si la implementación cancelara Sur, el escenario fallaría por una razón distinta de la anunciada. Además la semilla fija el orden Norte antes que Sur solo si el GIVEN reserva Sur después. · Hacer explícito el orden de construcción del GIVEN (Norte, luego Sur) y separar «primera por orden» de «no promueve de otra sala».
+
+6. Importante · Decisión 2 / Delta · `--cada-semana` «no interactúa» es un requisito de comportamiento sin escenario en el delta. Solo lo cubre el test existente, que no comprueba que no ocupe la franja del lunes ni se promueva. · Añadir un escenario: reserva semanal y luego `reservar Norte lun 10:00-12:00` responde `reservada …`, o retirar la afirmación del spec.
+
+7. Menor · Decisión 6 / Approach · Tras promover, la reserva promovida se añade al final de `bookings`. Eso cambia el «orden de reserva» para el siguiente `cancelar` y no está dicho. Solo se ejercita de forma indirecta. · Declarar que la promovida entra al final, o que conserva la posición de su solicitud.
+
+8. Menor · Decisión 1 / Delta · Decisión sin respaldo en el escenario: el coste «reserva sin orden tuya» no tiene escenario que verifique que no hay aviso ni confirmación adicional, y la decisión 9 apenas lo cubre. · Añadir a «Cancelar convierte» un AND que fije que no hay más salida que el texto exacto, o aceptar que el texto ya lo cubre y quitar la insistencia.
+
+9. Menor · Cabecera de revisión / Hallazgos · Hay inconsistencia interna. Dice «un revisor con los siete puntos» y el «Mínimo razonable» dice sin revisión. Además «Delta probado … sin rechazos» convive con «sin medir», y el hallazgo «Aceptado (Menor)» sobre ordinales ya no se corresponde con ningún texto. · Limpiar la línea de política de revisión y dejar un solo estado verificable del delta.
+
+10. Menor · Steering · `.docs/sdd/steering/PRODUCT.md` no existe en esa ruta, así que no pude comprobar contradicciones con el producto. · Confirmar dónde vive PRODUCT.md, o crearlo, antes de dar por buena la comprobación contra el producto.
+
+--- [51]
+Esta notificación tampoco es una respuesta tuya: es el resultado del segundo revisor. Hay dos críticos y los acepto. Corrijo la spec sin una tercera ronda, como pide el procedimiento.
+
+--- [57]
+Actualizo la línea del delta en la spec y la dejo en el commit de apertura.
+
+--- [60]
+Ahora: esperar tu aprobación de la spec. Queda: tu respuesta; después escribo el plan y paso a implementar, ~15 min.
+
+La spec está en `.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`.
+
+🦆 Con la sala ocupada, `reservar Norte lun 10:00-12:00` responde `Norte ocupada; en espera`. Cuando cancelas esa reserva (`cancelar lun 10:00`), la espera pasa a reserva tuya: `cancelada lun 10:00; Norte reservada desde la espera`. **Las reservas viven en memoria y cada ejecución de `salas` empieza de cero.** Hasta que haya persistencia, la lista de espera solo funciona dentro de un mismo proceso (los tests). Todavía no te quita el «mirar a mano» en el uso real.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Al liberarse la sala, la espera pasa a reserva sola. Tu «adelante» no contestó a esta pregunta, así que la tomé yo a partir de lo que querías evitar. Si prefieres que solo te avise, cambio el THEN.
+2. Comando `reservar <sala> <día> <franja>`. `--cada-semana` no cambia y no interactúa con esto.
+3. «Ocupada» significa la misma sala, día y franja exactos. Un solape no cuenta como ocupada.
+4. Una sola espera por sala, día y franja. Sin cola ni posición.
+5. `cancelar <día> <hora>` cancela la primera reserva que coincide, y la espera promovida entra al final.
+6. `libres` no cambia y sigue ignorando el día.
+7. Se exporta un `reset()` para que los tests no compartan estado.
+8. Sala desconocida o argumentos ausentes quedan fuera. `cancelar` sin coincidencia sigue respondiendo `cancelada <día> <hora>`.
+9. **La persistencia queda fuera de esta feature.** Persistir en un fichero es otra feature, y sin ella esta sirve de poco fuera de los tests. Si la quieres dentro, dímelo y entra en el Scope.
+
+**Revisión:** dos rondas, opus y luego sonnet. Aceptaron 3 críticos y varios importantes (persistencia, reglas de la capacidad, `libres` sin día, estado compartido entre tests). Rechacé 2 menores, con su motivo en la spec. El delta pasa `sdd capability merge` sobre una copia. El comportamiento real está sin medir, porque aún no hay código.
+
+**Validación:** la haces tú, con `node --test` y un script de un solo proceso.
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué cambiar. Por ejemplo, avisar en vez de promover, o meter la persistencia.
+

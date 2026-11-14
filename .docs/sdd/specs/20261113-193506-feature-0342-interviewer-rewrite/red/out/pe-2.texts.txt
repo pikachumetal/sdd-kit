@@ -1,0 +1,81 @@
+--- [4]
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y abrir la entrevista de la spec, ~3 min.
+
+--- [13]
+Ahora: reservar el id y crear la rama `feature/<id>` desde `develop` (no hay fila en el roadmap). Queda: anuncio, nota de comprensión y primera pregunta de diseño, ~2 min.
+
+--- [19]
+Ahora: anuncio y nota de comprensión de la feature (rama `feature/0010-exportar-reservas-csv` creada desde `develop`). Queda: entrevista (unas 3-4 preguntas), spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV para que su responsable las abra en la hoja de cálculo y las cuadre los lunes. Hoy `src/app.js` solo tiene `libres`, `reservar` y `cancelar`. Las reservas son una lista en memoria con `room`, `day` y `slot`, por ejemplo `Norte, lun, 10:00-12:00`. Corrígeme si algo no cuadra.
+
+❓ **¿Qué reservas entran en el CSV?**
+Cada reserva solo tiene sala, día de la semana y franja, sin fecha. Eso limita lo que se puede filtrar.
+1️⃣ **Todas las de la sala:** `salas exportar Norte` da `sala,dia,franja` y debajo `Norte,lun,10:00-12:00`. Es simple, y el responsable filtra en la hoja si le sobra algo.
+2️⃣ **Solo un día de la semana:** `salas exportar Norte --dia lun` da solo las del lunes. Añade un parámetro y un caso más de error, como un día inválido.
+➡️ **Recomiendo 1️⃣**, porque sin fecha en los datos no hay "la semana pasada" que filtrar, y la sala tiene pocas reservas. A cambio, si algún día hay muchas, habrá que añadir el filtro.
+
+¿Con cuál te quedas?
+
+--- [21]
+Decidido por mí: 1️⃣, todas las reservas de la sala. Va a «✋ Decisiones que he tomado yo» con ese motivo: los datos no tienen fecha y hay pocas reservas, así que el responsable filtra en su hoja.
+
+Sigo con otra decisión que sí depende de cómo trabaja el responsable. En Excel con configuración regional española, un CSV separado por comas suele abrirse con todo en una sola columna. Con punto y coma se abre bien, pero Google Sheets y LibreOffice suelen preferir la coma. Eso cambia el formato del fichero.
+
+¿Qué hoja de cálculo usa el responsable de cada sala para cuadrar las reservas?
+
+--- [23]
+Decidido por mí, y va a ✋:
+
+- **Formato:** separador `;`, con cabecera `sala;dia;franja`, por ejemplo `Norte;lun;10:00-12:00`. Es el que Excel en español abre bien, y Sheets y LibreOffice lo detectan al importar.
+- **Cabecera sin tilde:** así no hace falta BOM. A cambio, un nombre de sala con tilde podría verse mal en Excel.
+
+Queda una decisión que sí es tuya, sobre cómo llega el fichero al responsable. Tú eres el único que usa la herramienta.
+
+❓ **¿Dónde sale el CSV?**
+1️⃣ **Por pantalla (stdout):** `salas exportar Norte > norte.csv` te deja el fichero para mandarlo. Es lo habitual en terminal y se puede encadenar con otras herramientas, pero tú creas el fichero con la redirección.
+2️⃣ **Fichero directo:** `salas exportar Norte` escribe `norte.csv` en la carpeta actual y avisa `escrito norte.csv`. Es más cómodo, pero sobrescribe uno existente sin preguntar y hay que decidir dónde se guarda.
+➡️ **Recomiendo 1️⃣**, porque `run()` devuelve un texto que `app.js` imprime y así encaja sin tocar nada más. A cambio, el fichero lo creas tú con `>`.
+
+¿Con cuál te quedas?
+
+--- [25]
+Decidido: el CSV sale por stdout y lo rediriges tú con `>`. Ahora: leer la plantilla de spec y el pase de coherencia, y escribir `spec.md`. Queda: revisión de la spec y su aprobación, ~8 min.
+
+--- [38]
+Estoy escribiendo la `spec.md` de la feature 0010. El comando anterior falló por un problema de comillas y no creó nada, así que la escribo con otra herramienta.
+
+--- [40]
+Ahora: repaso de coherencia, con el delta probado sobre una copia de `.docs/sdd`. Queda: presentar la spec y esperar tu aprobación, ~3 min.
+
+--- [44]
+Ahora: la spec está escrita y el repaso de coherencia, hecho. Queda: tu aprobación. Después escribo el plan y paso a implementar, ~2 min.
+
+**Spec:** `.docs/sdd/changes/20261113-210915-feature-0010-exportar-reservas-csv/spec.md`, en la rama `feature/0010-exportar-reservas-csv`.
+
+🦆 Hoy no hay forma de sacar las reservas de una sala para trabajar con ellas fuera de la herramienta. Con `exportar Norte` saldrá una tabla de texto: una cabecera `sala;dia;franja` y una línea por reserva, por ejemplo `Norte;lun;10:00-12:00`. El responsable de la sala abre ese fichero en su hoja de cálculo y cuadra las reservas los lunes. Tú rediriges la salida a un fichero con `>`. Si la sala no existe, sale un aviso por el canal de errores y el fichero queda vacío.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Todas las reservas de la sala, sin filtros (dijiste «decide tú»).
+2. El comando se llama `exportar <sala>`.
+3. Separador `;`, cabecera `sala;dia;franja` y reservas en el orden en que están registradas. No he comprobado el formato en Excel, Sheets ni LibreOffice (dijiste «no sé» sobre la hoja de cálculo).
+4. Sin BOM y sin tilde en la cabecera. Un nombre de sala con tilde podría verse mal en Excel.
+5. Una sala sin reservas da solo la cabecera.
+6. Sala inexistente: `sala desconocida: Este` por el canal de errores, código de salida 1 y salida estándar vacía. Así `> norte.csv` no guarda el aviso dentro del fichero.
+7. Sin sala: `uso: exportar <sala>`, con el mismo tratamiento.
+8. El nombre de la sala se compara tal cual, así que `norte` no es `Norte`.
+9. Enfoque: una función nueva en `src/app.js`, frente a un módulo aparte.
+10. Validación: la haces tú a mano, abriendo `norte.csv` en tu hoja de cálculo.
+11. Capacidad nueva `booking-export`. Sería la primera del proyecto.
+
+**Revisión de la spec:** la rúbrica pedía dos revisores, pero esta sesión no tiene herramienta para lanzar subagentes. No se ha lanzado ninguno. El repaso de coherencia sí está hecho y el delta se fusiona sin errores sobre una copia. Si quieres revisores, hay que lanzarlos desde una sesión que los permita.
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajustar.
+
