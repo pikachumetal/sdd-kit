@@ -1,0 +1,79 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [20]
+No cierro todavía: el modo de validación es `manual` y falta tu validación. «Ciérrala» es la orden de cerrar, no el «he probado esto y funciona». No he escrito ningún registro ni hecho commit; el worktree sigue limpio.
+
+**Pre-checks**
+- El árbol está limpio y `sdd merge --check` da destino listo (`develop`).
+- No hay otras ramas `feature/*` o `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+- La revisión final está limpia, sobre `4982a0e`. `HEAD` solo añadió `tasks.md`, que es documentación, así que no hace falta re-revisión.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista lo cancelado como «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos, y falla si corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo válido | ejecución real (CLI) | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real (CLI) | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real (CLI) | el mismo mensaje |
+| `canceladas` enseña el motivo | ejecución real, mismo proceso | «Norte lun — sala ocupada» |
+
+**Suites**
+- `node --test test/`: 5/5 sobre `391eca6`.
+- E2E: no corrida, porque el entorno no arranca (ver abajo).
+
+**Sin probar**
+- Mediante el servidor HTTP, por el bloqueo de abajo.
+- Por CLI, `canceladas` en un proceso distinto del `cancelar` sale vacío. Es la limitación que declara la spec (memoria del proceso hasta la 0014), no un fallo.
+
+**⚠️ Bloqueo del entorno, ajeno a la 0010**
+`node scripts/env-up.mjs` falla siempre con «no arranca: falta data/seed.json». El commit `d0da02b` («env-up sin la semilla de datos») reemplazó todo el script por un `exit 1`. Por eso `localhost:8950` no responde y no he podido levantar el entorno ni el panel. No lo he tocado: es otro cambio y tú decides cómo arreglarlo. Con `validation.startEnvironment: true` el guion debería abrir con el entorno arriba, y ahora no se puede. Por eso el guion va por CLI, con un comando por proceso.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Panel: no arrancó: no he lanzado `sdd validation serve` porque el entorno de la app no se puede levantar. Dime si lo quieres igualmente.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con motivo válido → «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Listado, en el mismo proceso que la cancelación → «cancelada Norte lun (sala ocupada)» y, en la línea siguiente, «Norte lun — sala ocupada»
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+No hay entorno que parar.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla. Aparte, dime si quieres que arregle `env-up.mjs` antes de cerrar o que lo apunte como deuda.
+

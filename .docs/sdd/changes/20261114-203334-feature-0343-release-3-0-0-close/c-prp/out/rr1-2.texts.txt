@@ -1,0 +1,68 @@
+--- [3]
+Ahora: termino el paso 4 (lectura de la spec y pase de coherencia previo a la puerta de aprobación). Queda: presentarte la spec para aprobar, ~5 min.
+
+--- [25]
+El delta ya pasa en la copia. Anoto el resultado en ✋ y arreglo una errata.
+
+--- [28]
+Ahora: segunda ronda de review (un Crítico aceptado la exige): un revisor sonnet con los siete puntos relee la spec corregida. Queda: plegar sus hallazgos y presentarte la spec, ~4 min, ~0,15 $.
+
+--- [37]
+Sigo esperando a la segunda ronda de review. Hasta que el revisor devuelva sus hallazgos no puedo plegarlos ni presentarte la spec. Lancé el vigilante de silencio un poco tarde, después del despacho y no en el mismo turno.
+
+La spec ya está reescrita. Dos cosas cambian respecto a la versión anterior:
+- **Capacidad nueva:** `bookings` pasa de `MODIFIED` a `ADDED`, y el delta pasa `sdd capability merge` en una copia (exit 0).
+- **Piezas añadidas:** el 🦆, `Validación`, `Approach`, la tabla de lo que cambia de forma y la línea `Política de modelos`. Añadí además cuatro decisiones nuevas a ✋, las 3 a 6.
+
+--- [40]
+1. Crítico · Delta, «Anular una reserva» · Ningún escenario se puede comprobar por la salida del comando. «la reserva queda anulada» y «la reserva sigue activa» no dicen cómo se observa el estado, y el «sigue activa» del cliente pasa aunque la reserva se anule. · Hacer que el escenario compruebe el estado con una segunda orden. Por ejemplo, tras `--como cliente`, `anuladas --como responsable` responde `sin anuladas`. Y tras el anulado del responsable, un nuevo `anular Norte lun --como responsable` responde `sin reserva Norte lun`.
+
+2. Importante · Delta y Approach · Hay comportamientos sin escenario. Faltan: `--como admin` o `--como` sin valor (la regla de Approach «cualquier otro valor es cliente» no la cubre ningún escenario); `anular Sur mar --como cliente` (no se dice si gana el permiso o el «sin reserva»); anular dos veces la misma reserva; y varias anuladas, con su orden. · Añadir un escenario por cada caso, o declarar el orden de comprobación (rol primero, luego existencia) en el cuerpo.
+
+3. Importante · Delta, `bookings` / Reglas · «Idioma de los nombres: castellano» contradice el slug `bookings` en inglés (decisión 7). `PRODUCT.md:11` además dice «Evitar: booking» para «Reserva». · Declarar en las reglas que el slug es la excepción en inglés y por qué, o llamar a la capacidad `reservas`. Mantener la coherencia con la terminología.
+
+4. Importante · Approach vs Scope · Approach A dice «flag `--como` en cada comando». Scope solo incluye `anular` y `anuladas`, y deja fuera `cancelar`. Eso promete más de lo que se entrega, o el parseo común toca `run` para todos los comandos sin decirlo. · Alinear la frase: «`--como` solo en `anular` y `anuladas`», o listar `run` como zona tocada y declarar qué hace `cancelar` con el flag.
+
+5. Importante · Scope / Lo que cambia · Con la decisión 3, `anular` sin rol pasa de anular a negar. Eso rompe los tests existentes y a cualquier llamador. Ni Scope ni «Dónde se prueba» dicen que haya que actualizarlos, y el gate es `node --test` entero en verde. · Añadir a Scope y a «Dónde se prueba» la actualización de los tests que llaman a `anular` sin `--como`. Declarar el cambio como ruptura de contrato en la tabla de cambios.
+
+6. Importante · Reglas, «Avisos» · Solo figura `solo el responsable de sala puede anular`. `sin reserva …` y `sin anuladas` también son mensajes al usuario y el contrato público los incluye. · Listar todos los avisos, o dejar claro que los demás son resultados y no avisos.
+
+7. Importante · Intent / Delta · No se dice si `anuladas` incluye las reservas canceladas con `cancelar`. Tampoco si el cliente ve las anuladas de cualquier sala o solo las suyas. Es el complemento de visibilidad por rol: qué no ve el cliente. · Declarar en el delta que `anuladas` solo lista las anuladas por responsable. Declarar también el alcance de lo que ve el cliente, con un escenario, o añadirlo a las decisiones.
+
+8. Menor · «Decisiones que he tomado yo», cabecera de review · Dice «~60 líneas en 3 ficheros» y Scope solo nombra `src/app.js` y `test/anular.test.js`. El tercer fichero (¿`ROADMAP.md`?) no está dicho. · Nombrar los tres ficheros en Scope.
+
+9. Menor · Frontmatter / PRODUCT.md · El approver es «Laura», una persona con nombre propio. PRODUCT.md dice que hay un único usuario y ningún otro desarrollador, y que la app no tiene usuarios. · Poner un aprobador acorde al producto (el propio autor) o un nombre inventado marcado como tal. Valorar si el propósito del producto sostiene un rol «responsable» que existe solo como flag.
+
+10. Menor · «Hallazgos de la review» · El hallazgo «Aceptado» sobre `anuladas` cita una decisión 2 que cubre solo el cliente. El caso «sin `--como`» (decisión 4) no queda enlazado al Crítico aceptado. · Referenciar también la decisión 4 y su escenario.
+
+--- [55]
+La spec de la 0011 está lista para tu aprobación y todavía no está aprobada.
+
+**🦆 Qué cambia.** Hoy `anular Norte lun` lo puede hacer cualquiera. Después:
+- `anular Norte lun --como responsable` anula y responde `anulada Norte lun`.
+- Con `--como cliente`, o sin `--como`, responde `solo el responsable de sala puede anular` y la reserva sigue activa.
+- El comando nuevo `anuladas` lista `Norte lun — anulada por responsable` para el responsable. El cliente ve solo `Norte lun — anulada`, sin quién anuló.
+
+**Cambios desde la versión que me pasaste**
+- **Capacidad nueva:** `capabilities/` está vacío, así que el `MODIFIED` sobre `bookings` no tenía base y el merge lo rechazaba. Pasó a `ADDED`, con `bookings` declarada como capacidad nueva.
+- **Comprobación del delta:** `sdd capability merge` sobre una copia de `.docs/sdd` termina con exit 0 (tercer intento: el segundo falló porque una regla citaba «decisión 7»).
+- **Segunda ronda de review:** hacía falta porque se había aceptado un Crítico. Un revisor sonnet con los siete puntos devolvió 10 hallazgos. Acepté 9 y rechacé 1: el nombre del aprobador, que fija el proyecto. El Crítico decía que ningún escenario se podía comprobar por la salida. Ahora se comprueban con `anuladas` y repitiendo `anular`. No hay tercera ronda.
+- **Piezas que faltaban:** añadí el 🦆, `Validación: dev-lead`, `Approach` (flag `--como` frente a variable de entorno y fichero de roles), la tabla de lo que cambia de forma y la línea `Política de modelos`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El rol sale de `--como <cliente|responsable>`, porque la app no tiene usuarios.
+2. El cliente ve en `anuladas` la reserva sin quién la anuló.
+3. Sin `--como`, `anular` niega. Esto cambia el comportamiento de hoy, pero ningún test existente llama a `anular`.
+4. `anuladas` sin `--como` lista como al cliente.
+5. Un único rol `responsable`, válido para cualquier sala. El roadmap dice «de cada sala», pero la app no tiene responsables por sala. **Es la decisión que más se aparta del roadmap.**
+6. Sin ninguna anulada, `anuladas` responde `sin anuladas`.
+7. La capacidad nueva se llama `bookings`.
+8. Enfoque A (flag `--como`) frente a B y C.
+9. El rol se comprueba antes que la existencia de la reserva. Cualquier valor de `--como` que no sea `responsable` cuenta como cliente. `anuladas` lista en orden de anulación.
+10. `anuladas` solo lista las anuladas por el responsable, no las canceladas. El cliente ve las de todas las salas.
+
+**Aprobación.** ¿Apruebas la spec? Responde con una de estas opciones:
+1. **Apruebo (Recomendada).** Escribo el plan y paso a la implementación.
+2. **Cambios.** Dime qué decisión tocar. Si prefieres responsables por sala (la 5), es una feature aparte.
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1** para que bajes la sesión a gama media. No te la ofrezco como recomendada: la spec prevé una sola task y reconstruir la caché al cambiar de modelo cuesta más de lo que ahorra.
+

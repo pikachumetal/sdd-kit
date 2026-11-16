@@ -1995,3 +1995,16 @@ Resumen:
 
 Ya leído por el hilo principal (2/3, umbral 2/3); no repetido.
 Resumen: sin cambios respecto a lo ya leído.
+
+## Batería del corte (feature 0343)
+
+Kit del corte 3a09a236 (fases `c-*`, n de cada batería); arreglos ad53b120 (fases `f4-*`, n = 4) y 517d4a85 (`f5-*`: quita la frase de lite que hizo caer `fp`). Evidencia y lecturas en `.docs/sdd/changes/20261114-203334-feature-0343-release-3-0-0-close/`: `c-lectura-a.md` … `c-lectura-k.md` (corte), `rojos.md` (dónde va cada rojo), `f-lectura-a.md` y `f-lectura-b.md` (tras el arreglo). 851 sujetos, 351,24 $.
+
+Enmienda del 2026-11-16: los rojos se arreglan antes del corte y se relanzan solo los arreglados a n = 4. Criterio del dev-lead para lo que sigue rojo: si con superpowers fallaría igual (la regla es propia del kit), va a fila de bug.
+
+| Resultado | Escenarios |
+| --- | --- |
+| Verdes tras el arreglo (4/4 leídos) | propose `cr3`, `d1`, `l1`; archive `c2`, `a6`, `v1b`, `se1`, `g6`, `m3` (salvo L 1/4); implement `ml1`; init `n6`, `n7` (N7d); upgrade `v5`; roadmap `m7` (M7b); interviewer `p2`, `pe`, `fp` (f5); grilling `sk-c` |
+| Verdes por re-juicio con la letra nueva de la fila | retro `r4` (R9); propose `co4`, `p2`, `sp1` (TP), `co6`, `pt1`, `a2`, `a3`; verify `c7`; implement `e1`; interviewer E5 en `fp`, `g3`, `g8`, `p2`; grilling R1 en `g2` |
+| Siguen rojos: filas de bug en `debt.md` «Por triar» (2026-11-16) | propose `f1` 3/4, `id1` 1/4, `k6` 1/4; archive `g4` 1/4, `g3d` 1/4; implement `cp1` 3/4, `p4` 1/4, D de `r1`/`r1b`; verify `c10` 3/4; rubber-duck `w1` 4/4, `s1` 3/4, `l1` 1/4; end-release `r6` 3/4; roadmap `m5` 1/4, `m7` M7 1/4; init `n7` N7a 3/4; grilling `g6` 3/4, `sk` 2/4, `g7` 3/4, `g3` R3 2/4, `g9` R11 |
+| Sueltos de un sujeto, sin arreglo (en el ticket) | L tras un fallo de herramienta en archive `a4`, `a9`, `t3`; verify `v1`, `mp1`; implement `u2`; propose `g1`; y `x1`, `co2p`, `c3`, `g2` de upgrade, `f6` |

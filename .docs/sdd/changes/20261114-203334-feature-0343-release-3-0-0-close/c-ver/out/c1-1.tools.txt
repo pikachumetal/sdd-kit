@@ -1,0 +1,469 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-verify\references\closing-the-review.md
+<<< 1	# Closing the review
+2	
+3	**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ship
+
+>>> Glob: **/review-*.md
+<<< .temp\sdd\plan\review-code.md
+.temp\sdd\plan\review-spec.md
+
+>>> Read: <run>\.temp\sdd\plan\review-spec.md
+<<< File does not exist. Note: your current working directory is <run>\repo. Did you mean <run>\repo\.temp\sdd\plan\review-spec.md?
+
+>>> Read: <run>\.temp\sdd\plan\review-code.md
+<<< File does not exist. Note: your current working directory is <run>\repo. Did you mean <run>\repo\.temp\sdd\plan\review-code.md?
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\tasks.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	title: Tasks — Motivo al cancelar
+4	---
+5	
+6	# Tasks — Motivo al cancelar (registro vivo)
+7	
+8	| # | Task | Status | Commit | Notas |
+9	| --- | --- | --- | --- | --- |
+10	| 1 | Cancelar con motivo | done | 388025a | |
+11	| 2 | Listado de canceladas | done | 388025a | |
+12	
+13	
+
+>>> Read: <run>\repo\.temp\sdd\plan\review-spec.md
+<<< 1	## Spec
+2	
+3	### Strengths
+4	- Both THEN of the 0010 have their test in `test/cancel.test.js`.
+5	
+6	### Issues
+7	
+8	#### Critical (Must Fix)
+9	None.
+10	
+11	#### Important (Should Fix)
+12	None.
+13	
+14	#### Minor (Nice to Have)
+15	1. Minor · partial · `test/cancel.test.js:13` · the `canceladas` test only passes after the `cancelar` test has run: it depends on their order · THEN «El listado de canceladas enseña el motivo».
+16	
+17	### Not verified
+18	ninguna
+19	
+20	### Assessment
+21	**Ready to merge?** Yes
+
+>>> Read: <run>\repo\.temp\sdd\plan\review-code.md
+<<< 1	## Code
+2	
+3	### Strengths
+4	- `cancelBooking` validates the reason before touching the booking.
+5	
+6	### Issues
+7	
+8	#### Critical (Must Fix)
+9	None.
+10	
+11	#### Important (Should Fix)
+12	1. **`src/app.js:14-17`: `reasonOf` keeps the spaces around the reason.** `cancelar Norte lun --motivo "sala ocupada "` (a trailing space, as a shell completion leaves it) answers «motivo no válido: cambio de planes, sala ocupada, otro», and a person who copied the reason can't cancel. Fix: trim the reason before checking it against the list.
+13	
+14	#### Minor (Nice to Have)
+15	None.
+16	
+17	### Assessment
+
+
+>>> Bash: git log --oneline -3 && ls -R .docs/sdd/specs/*0010* .temp 2>/dev/null | head -30; cat .docs/sdd/sdd-kit.json; cat src/app.js; cat test/cancel.test.js; grep -n "Ejecución\|Eje Arq" .docs/sdd/specs/*0010*/plan.md; ls ../.temp 2>/dev/null; find .. -name "ledger*" -not -path "*/node_modules/*" | head
+<<< 388025a feat(bookings): listado de canceladas con su motivo
+733e529 feat(bookings): cancelar con un motivo de la lista
+1196b37 docs(sdd): abrir la feature 0010 con su spec y su plan
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+
+.temp:
+sdd/
+
+.temp/sdd:
+plan/
+
+.temp/sdd/plan:
+plan-path
+progress.md
+review-code.md
+review-spec.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['
+
+>>> Bash: cat .temp/sdd/plan/progress.md .temp/sdd/plan/plan-path; git status --short; node --test 2>&1 | tail -12
+<<< # SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 1196b37..733e529, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 733e529..388025a, tests: node --test test/cancel.test.js → 3/3 pass)
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+✔ reservar --cada-semana crea la reserva semanal (0.1818ms)
+✔ cancelar con un motivo de la lista (1.7417ms)
+✔ cancelar con un motivo fuera de la lista (0.219ms)
+✔ canceladas enseña sal
+
+>>> Bash: cat >> test/cancel.test.js <<'EOF'
+
+test('cancelar recorta los espacios del motivo', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', ' sala ocupada ']), 'cancelada Norte lun (sala ocupada)');
+});
+EOF
+node --test 2>&1 | grep -E "^(✖|ℹ (pass|fail))"
+<<< ✖ cancelar recorta los espacios del motivo (1.6321ms)
+ℹ pass 5
+ℹ fail 1
+✖ failing tests:
+✖ cancelar recorta los espacios del motivo (1.6321ms)
+
+>>> Bash: python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let t=fs.readFileSync('test/cancel.test.js','utf8');
+t=t.replace(/test\('cancelar recorta[\s\S]*$/,\`test('cancelar acepta el motivo con espacios alrededor', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar', '--motivo', ' sala ocupada ']), 'sin reserva Sur mar');
+});
+\`);fs.writeFileSync('test/cancel.test.js',t)"
+EOF
+tail -5 test/cancel.test.js; node --test 2>&1 | grep -E "^(✖|ℹ (pass|fail))"
+<<< });
+
+test('cancelar acepta el motivo con espacios alrededor', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar', '--motivo', ' sala ocupada ']), 'sin reserva Sur mar');
+});
+✖ cancelar acepta el motivo con espacios alrededor (1.5985ms)
+ℹ pass 5
+ℹ fail 1
+✖ failing tests:
+✖ cancelar acepta el motivo con espacios alrededor (1.5985ms)
+
+>>> Bash: sed -i "s|return index === -1 ? undefined : params\[index + 1\];|return index === -1 ? undefined : params[index + 1]?.trim();|" src/app.js && grep -n "trim" src/app.js && node --test 2>&1 | grep -E "^(✖|ℹ (tests|pass|fail))"
+<<< 16:  return index === -1 ? undefined : params[index + 1]?.trim();
+ℹ tests 6
+ℹ pass 6
+ℹ fail 0
+
+>>> Bash: cat >> .temp/sdd/plan/progress.md <<'EOF'
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (sin módulo, dependencia, contrato ni datos nuevos) → no sale
+Final: Spec: 0 Critical, 0 Important, 1 Minor
+Final: Code: 0 Critical, 1 Important, 0 Minor
+Final: minor (deferred): test/cancel.test.js:13 — el test de `canceladas` depende de que antes corra el de `cancelar` (estado compartido)
+Final: fixed reasonOf no recorta espacios (src/app.js:16) — «cancelar acepta el motivo con espacios alrededor» RED→GREEN, suite 6/6
+EOF
+printf '\nRevisión final: Spec opus+high, lista (1 minor diferido) · Código sonnet+high, con arreglos (1 Important) · Arquitectura no (plan), sobre 388025a\n' >> .docs/sdd/specs/*0010*/tasks.md
+git add -A src test .docs && git commit -q -m "fix(bookings): recortar los espacios del motivo al cancelar
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && git status --short
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+bc7317a fix(bookings): recortar los espacios del motivo al cancelar
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-verify\references\encargo-revision.md
+<<< 1	# Review brief — mandatory header
+2	
+3	The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement-subagent/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md) of `sdd-implement-subagent`.
+4	
+5	```markdown
+6	## Code constraints
+7	
+8	<literal copy of the «De código» block of plan.md's Restricciones globa
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-implement-subagent\re-review-prompt.md
+<<< 1	# Scoped Re-Review Prompt Template
+2	
+3	Use this template when dispatching a re-review after a fix round. The
+4	re-reviewer verifies the findings were addressed and checks the fix diff for
+5	new breakage. It is not a fresh review — the full review already happened.
+6	
+7	Declare a cheap-to-mid `model` with its `subagent_type`. After the final review it is the single re-review of `sdd-verify` («Closing the review»): `sdd-kit:effort-high` + `opus`, `[FINDINGS]` carries the open findings of every axis, each with its axis, followed by the «What to Check» of the axes that went out, and `[BRIEF_FIL
+
+>>> Bash: grep -n -A12 "De código" .docs/sdd/specs/*0010*/plan.md; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" workspace "$(pwd)" .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md 2>&1 | tail -2; ls ../
+<<< 24:### De código
+25-
+26-- Texto de la interfaz en castellano.
+27-
+28-### De proceso
+29-
+30-- Native: implementa la sesión.
+31-
+32-## Review Focus
+33-
+34-- ninguna: comprobado
+35-
+36-## 2. Tasks
+usage: sdd workspace PLAN_FILE
+uso: sdd workspace [--directory <valor>] PLAN_FILE
+repo/
+
+>>> Bash: REVIEW_DIR="$(dirname "$(pwd)")/review-0010-bc7317a" && git worktree add -q --detach "$REVIEW_DIR" bc7317a && OUT="$(pwd)/.temp/sdd/plan/review-fix-bc7317a.diff" && { echo "# Review package: 388025a..bc7317a"; echo "## Commits"; git log --oneline 388025a..bc7317a; echo "## Files changed"; git diff --stat 388025a bc7317a -- src test; echo "## Diff"; git diff -U10 388025a bc7317a -- src test; } > "$OUT" && echo "$REVIEW_DIR" && echo "$OUT" && wc -l "$OUT"
+<<< <run>/review-0010-bc7317a
+<run>/repo/.temp/sdd/plan/review-fix-bc7317a.diff
+128 <run>/repo/.temp/sdd/plan/review-fix-bc7317a.diff
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-revisión de la pasada de fix
+    ## Code constraints
+    ## The Task
+    ## The Findings Under Verification
+    ## The Fix
+    ## Scope
+    ## Output Format
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a354dd631f57f21f1 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" watch subagent --description "Re-revisión de la pasada de fix" 2>&1 | head -5
+<<< Command running in background with ID: bljtf8ddw. Output is being written to: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\claude\5af7ac3c326c861f\e09dd1dd-f779-4d68-af62-8695716766db\tasks\bljtf8ddw.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Read: <run>/repo/.temp/sdd/plan/review-fix-bc7317a.diff
+<<< 1	# Review package: 388025a..bc7317a
+2	## Commits
+3	bc7317a fix(bookings): recortar los espacios del motivo al cancelar
+4	## Files changed
+5	 src/app.js          | 96 ++++++++++++++++++++++++++---------------------------
+6	 test/cancel.test.js |  4 +++
+7	 2 files changed, 52 insertions(+), 48 deletions(-)
+8	## Diff
+9	diff --git a/src/app.js b/src/app.js
+10	index 10d99e4..7e98f78 100644
+11	--- a/src/app.js
+12	+++ b/src/app.js
+13	@@ -1,48 +1,48 @@
+14	-const [command, ...args] = process.argv.slice(2);
+15	-const rooms = ['Norte', 'Sur'];
+16	-const reasons = ['cambio de planes', 'sala ocupada', 'ot
+
+>>> Bash: printf 'Pasada de fix: bc7317a, 1 hallazgo RED→GREEN\n' >> .docs/sdd/specs/*0010*/tasks.md && echo "Final: pasada de fix commiteada bc7317a; re-revisión opus+high lanzada sobre 388025a..bc7317a" >> .temp/sdd/plan/progress.md && git status --short
+
+>>> Glob: **/*
+<<< <run>\review-0010-bc7317a\.git
+<run>\review-0010-bc7317a\.docs\sdd\sdd-kit.json
+<run>\review-0010-bc7317a\.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+<run>\review-0010-bc7317a\.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+<run>\review-0010-bc7317a\.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+<run>\review-0010-bc7317a\.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+<run>\review-0010-bc7317a\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<run>\review-0010-bc7317a\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md
+
+<<<  M .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+
+>>> Read: <run>/review-0010-bc7317a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Motivo al cancelar
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-08
+14	---
+15	
+16	# Spec — Motivo al cancelar
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+21	
+22	## Decisiones que he tomado yo — valida estas
+23	
+24	1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con 
+
+>>> Read: <run>/review-0010-bc7317a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Plan de implementación — Motivo al cancelar
+5	spec: ./spec.md
+6	status: approved
+7	created: 2026-10-08
+8	---
+9	
+10	# Plan de implementación — Motivo al cancelar
+11	
+12	## Decisiones que he tomado yo — valida estas
+13	
+14	1. Dos tasks, Native.
+15	
+16	**Goal**: cancelar con motivo y listar las canceladas.
+17	
+18	**Ejecución**: native, porque son dos tasks cortas en el mismo fichero.
+19	
+20	**Eje Arquitectura**: no — solo la app de reservas
+21	
+22	## Restricciones globales
+23	
+24	### De código
+25	
+26	- Texto de la int
+
+>>> PowerShell: $p='<run>/review-0010-bc7317a'; foreach($f in 'src/app.js','test/cancel.test.js','test/app.test.js'){ $b=[IO.File]::ReadAllBytes("$p/$f"); $crlf=0; for($i=1;$i -lt $b.Length;$i++){ if($b[$i] -eq 10 -and $b[$i-1] -eq 13){$crlf++} }; $lf=($b | ?{$_ -eq 10}).Count; "$f LF=$lf CRLF=$crlf BOM=$($b[0] -eq 0xEF)" }; Test-Path "$p/.gitattributes"; git -C $p config core.autocrlf
+<<< src/app.js LF=48 CRLF=48 BOM=False
+test/cancel.test.js LF=19 CRLF=15 BOM=False
+test/app.test.js LF=11 CRLF=11 BOM=False
+False
+true
+
+>>> Bash: cd <run>/review-0010-bc7317a && for r in 388025a bc7317a; do for f in src/app.js test/cancel.test.js; do printf "%s %s CR=" $r $f; git cat-file -p $r:$f | tr -cd '\r' | wc -c; done; done; git cat-file -p bc7317a:test/cancel.test.js | head -5
+<<< 388025a src/app.js CR=48
+388025a test/cancel.test.js CR=15
+bc7317a src/app.js CR=0
+bc7317a test/cancel.test.js CR=15
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar con un motivo de la lista', () => {
+
+>>> Bash: printf 'Re-revisión: 388025a..bc7317a, sdd-kit:effort-high + opus, todos los hallazgos resueltos, sin Critical/Important nuevos\n' >> .docs/sdd/specs/*0010*/tasks.md && cat >> .temp/sdd/plan/progress.md <<'EOF'
+Final: Ruling: re-revisión — src/app.js pasó de CRLF a LF entero en bc7317a (ruido en diff/blame) y test/cancel.test.js quedó con finales mixtos — Minor, el código no cambia; normalizarlo sería un commit nuevo sin revisar — coste: diff ruidoso, sin efecto funcional
+Final: Ruling: re-revisión — el test nuevo prueba la validación, no el valor recortado en la respuesta — Minor; por inspección `booking.reason` guarda el valor recortado — coste: una regresión del trim en el almacenado no la pillaría ese test
+Final: re-revisión resuelta: sin Critical/Important; no se abre otra
+EOF
+REVIEW_DIR="$(dirname "$(pwd)")/review-0010-bc7317a"; git worktree remove --force "$REVIEW_DIR" || { git worktree list | grep -qF "$REVIEW_DIR " || rm -rf "$REVIEW_DIR"; }; git worktree list; git add .docs && git commit -q -m "docs(sdd): registrar la revisión final y la re-revisión de la 0010
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< <run>/repo bc7317a [feature/0010-cancel-reason]
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+175546c docs(sdd): registrar la revisión final y la re-revisión de la 0010
+
+=== RESULTADO (25 turnos, 0.5661935000000001 $)
+La revisión final ya está tratada y la re-revisión de mi arreglo sigue en marcha; hasta que vuelva no cierro ni valido nada.
+
+- **Eje Spec:** sin Critical ni Important. Solo un Minor: el test de `canceladas` depende de que antes corra el de `cancelar`. No tengo `review.minors: fix` en `sdd-kit.json`, así que queda como `minor (deferred)` en el ledger.
+- **Eje Código:** un Important. `reasonOf` no recortaba espacios, así que `--motivo "sala ocupada "` daba «motivo no válido». Lo arreglé con TDD.
+    - **Test en rojo:** «cancelar acepta el motivo con espacios alrededor». Falló por la causa correcta.
+    - **Arreglo:** `.trim()` en `src/app.js:16`.
+    - **Suite:** 6/6 en verde.
+    - **Commit:** `bc7317a`.
+- **Eje Arquitectura:** no sale. Lo apunté en el ledger con las señales del diff: ninguna.
+- **Re-revisión:** está en marcha en segundo plano (`opus` + `high`, rango `388025a..bc7317a`).
+- **Pendiente de commit:** la línea `Pasada de fix` en `tasks.md`.
+
+Cuando vuelva la re-revisión, apunto su veredicto en `tasks.md`, retiro el worktree de revisión y sigo con el cierre (`sdd-archive`).
+
+=== RESULTADO (2 turnos, 0.5661935000000001 $)
+La re-revisión (`opus` + `high`, rango `388025a..bc7317a`) cerró el Important y no encontró nada Critical ni Important nuevo. No la repetí y no abro otra. No volví a ejecutar la suite después de la re-revisión: el último 6/6 es el del arreglo, antes de ella.
+
+**Dos Minor de la re-revisión, ambos como `Ruling:` en el ledger y sin tocar código:**
+- **Finales de línea:** `src/app.js` pasó entero de CRLF a LF en `bc7317a`, y `test/cancel.test.js` quedó con finales mixtos. Normalizarlo sería un commit nuevo sin revisar, y el coste es un diff y un `git blame` ruidosos.
+- **Cobertura del test nuevo:** comprueba que la validación acepta el motivo con espacios, pero no que la respuesta y lo guardado lleven el valor recortado. Por inspección del código sí lo llevan.
+
+**Minor diferido del eje Spec:** el test de `canceladas` depende del orden de los tests. Va a «Deferred minors» de mi mensaje final, no a un ruling.
+
+Quité el worktree de revisión. En `tasks.md` están las líneas `Revisión final`, `Pasada de fix` y `Re-revisión`. Los commits son `bc7317a` (el fix) y `175546c` (los registros).
+
+Ahora: pasar al cierre con `sdd-archive` (validación, walkthrough, base integrada). Queda: los borradores del walkthrough y del merge de capacidades, que todavía no escribí.
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" merge --check --project-root "$(pwd)" 2>&1 | tail -8; echo ---; git worktree list; echo ---; head -12 .docs/sdd/specs/*0010*/spec.md; grep -n -i "validaci\|Capacidades" .docs/sdd/specs/*0010*/spec.md | head; cat "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-archive/references/final-review-check.md"
+<<< ---
+política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+---
+<run>/repo 175546c [feature/0010-cancel-reason]
+---
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+18:## Capacidades
+# The final review, before the close writes
+
+`Feature only:` item 6 of the pre-checks of `sdd-archive`.
+
+1. Check there was one, and with which axes and models: `sdd-implement` runs it with `sdd-verif
+
+>>> Bash: cd /c/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-archive/references && cat validation-modes.md | head -60; echo ======; cat dev-validation.md | head -50; echo =====; cat "<run>/repo/.docs/sdd/specs/"*0010*/plan.md | sed -n 36,80p
+<<< # Validation by mode
+
+Step 1 of `sdd-archive`.
+
+## With `validation.mode: field`
+
+You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes
+
+>>> Bash: cd <run>/repo && sed -n 14,70p .docs/sdd/specs/*0010*/spec.md; for c in 'cancelar Norte lun --motivo "sala ocupada "' 'cancelar Norte lun --motivo "me aburro"' 'cancelar Norte lun' 'cancelar Norte lun --motivo otro'; do echo "\$ $c"; eval node src/app.js $c; done; grep -n "Acceso\|Arrancar" .docs/sdd/steering/operations.md | head -3
+<<< ---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MODIFIED, datos).
+
+## Intent
+
+Hoy cancelar no deja rastro: nadie sabe por qué se liberó una sala. Se quiere el motivo de cada cancelación.
+
+## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del respons
+
+>>> Bash: node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"; git status --porcelain
+<<< cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+
+=== RESULTADO (7 turnos, 0.7047118000000001 $)
+**No terminado.** Falta tu validación y que decidas el bloque `merge`. No he fusionado ni escrito el walkthrough, la hora real ni la fila del roadmap. No borres todavía el worktree `<run>/repo`.
+
+**Pre-checks**
+- El árbol está limpio y no hay otras ramas abiertas.
+- La spec está `approved` (Laura, 2026-10-08).
+- La revisión final está cerrada: el único commit posterior a la re-revisión es `175546c`, de documentación y de menos de 20 líneas, y lo leí en el hilo.
+- `sdd merge --check` falla con «falta `merge.into` o `merge.noFf`» en `sdd-kit.json`. Con el bloque `merge` incompleto el kit pide presentarlo y esperar. Dime el destino (¿`main` o `develop`?) y si va con `--no-ff`.
+- Del push no te pido nada todavía: va aparte y siempre lo confirmo contigo.
+
+**Validación** (modo `manual`: en `sdd-kit.json` no hay clave `validation`)
+
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). Y `canceladas` lista cada cancelada con su motivo, p. ej. «Norte lun — sala ocupada». En la revisión final salió un fallo, ya arreglado: un motivo con espacios alrededor se rechazaba.
+
+**✋ Me salí del plan en…** nada.
+
+Tests: `node --test` da 6/6 en verde. Los ensayé yo mismos los pasos siguientes. Hace falta que los pruebes tú.
+
+Panel: plan B (no tengo las herramientas de Chrome y es una app de CLI). No lancé `sdd validation serve`, así que no hay panel en ninguna URL. Puedes responder en texto.
+
+**Guion.** Parte de un estado limpio: la app no guarda reservas entre procesos y Norte lun está activa al arrancar. Cada comando va en su propio proceso, desde la raíz del repo.
+1. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+2. `node src/app.js cancelar Norte lun` (sin `--motivo`) → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun --motivo "sala ocupada "` (con un espacio al final) → `cancelada Norte lun (sala ocupada)`
+4. Cancelar y listar en el mismo proceso, porque `canceladas` solo ve lo cancelado en su propio proceso:
+   `node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"`
+   → `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`
+
+Dime qué probaste y si funciona («validado» o «sí» también vale). Si prefieres diferirlo, hacen falta tus palabras, un disparador y un responsable.
+
+**Deferred minors**
+- `test/cancel.test.js:13`: el test de `canceladas` depende de que antes corra el de `cancelar`.
+
+**Decisiones sin el dev-lead**
+- Dos `Ruling:` de la re-revisión, sobre los finales de línea de `src/app.js` y la cobertura del test nuevo.

@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd . && ls -a . .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1 | head -60; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -30; git branch --show-current
+
+>>> Bash: node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+.
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+
+.docs/sdd:
+.
+..
+sdd-kit.json
+specs
+steering
+
+.docs/sdd/steering:
+.
+..
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+develop
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md package.json; ls -R src test .docs/sdd/specs | head -40; ls -d node_modules 2>&1
+<<< Exit code 2
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomada
+
+>>> Bash: cat src/app.js; head -60 test/app.test.js; cat .docs/sdd/steering/debt.md; K="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references"; sed -n 1,200p $K/spec-writing.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: K="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references"; grep -n -i "default\|por defecto" $K/control-profiles.md | head -15; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -50
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< 8:- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+18:4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
+30:- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
+222:| Key | Type | Default |
+240:`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied.
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.1706444 $)
+Ahora: te presento lo que he entendido y te hago la primera pregunta de diseño. Queda: terminar la entrevista, escribir la spec y pararme en tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija uno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido**
+
+Hoy una reserva no tiene estado. En `src/app.js`, `bookings` guarda `room`, `day` y `slot`, y `cancelar` solo imprime un texto. Quieres que cada reserva tenga un estado (`pendiente`, `confirmada` o `cancelada`) y que cambie solo por estas transiciones:
+
+```mermaid
+stateDiagram-v2
+    [*] --> pendiente
+    pendiente --> confirmada: confirmar
+    pendiente --> cancelada: cancelar
+    confirmada --> cancelada: cancelar
+    cancelada --> pendiente: reabrir
+```
+
+No he dibujado el flujo con un diagrama renderizado porque la sesión no tiene ninguna skill de diagramas ni Artifact. Cuento 3 tasks (el modelo de estados con sus transiciones, los comandos de la CLI y el efecto en `libres`), así que no propongo dividir.
+
+**Sobre tu duda de si el flujo está bien**
+
+Las transiciones son coherentes: no hay estados sin salida y `confirmada` solo se puede cancelar. Hay un punto que el flujo no resuelve. Mientras una reserva está cancelada, su sala y su franja quedan libres en `libres`, así que otra reserva puede ocuparlas. Si luego reabres la cancelada, hay dos reservas en la misma sala y franja.
+
+❓ **Qué pasa al reabrir una cancelada cuya sala y franja ya están ocupadas**
+
+1️⃣ **Se rechaza la reapertura.** `reabrir Norte lun 10:00-12:00` responde `no se puede reabrir: Norte ocupada lun 10:00-12:00`. La reserva sigue cancelada. Es lo más simple, y a cambio la cancelada no se recupera y hay que crear otra reserva.
+
+2️⃣ **Se reabre aunque haya solape.** Quedan dos reservas vivas en `Norte lun 10:00-12:00`. Es lo más fácil de programar, y a cambio la sala queda doblemente reservada y `libres` deja de ser fiable.
+
+3️⃣ **`reabrir` no existe y se crea una reserva nueva.** Se quita la transición `cancelada → pendiente`, y la cancelada es un estado final. Con eso el flujo no tiene bucle ni caso de solape. A cambio no cumple lo que pediste.
+
+➡️ **Recomiendo 1️⃣**, porque mantiene tu flujo tal como lo describiste y evita la doble reserva, que es lo que más rompería la herramienta para ti. A cambio, hay que escribir la comprobación de solape y su mensaje de error. ¿Cuál eliges?

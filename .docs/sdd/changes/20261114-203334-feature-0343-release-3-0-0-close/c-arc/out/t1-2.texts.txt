@@ -1,0 +1,105 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [19]
+Voy por el paso 1: la validación es `manual` y nadie la ha dado todavía, así que antes de pedírtela corro la suite del cierre y ensayo el guion.
+
+--- [27]
+Suite verde: unit 5/5 y E2E 7/7 en 49 s. Ensayo ahora cada paso del guion con una sesión propia, igual que lo haría la persona.
+
+--- [30]
+Falta la línea `Panel:`. No tengo herramientas de Chrome, así que lanzo el panel plan B antes de presentar.
+
+--- [35]
+La 0010 todavía no está cerrada: falta tu validación, y el cierre espera a que me la des. `validation.mode` es `manual`, y «cierra» o una revisión limpia no cuentan como validar.
+
+**Pre-checks**
+- El árbol está limpio. `sdd merge --check` sale bien: `develop` irá en un worktree temporal.
+- No hay otras ramas abiertas.
+- La spec está `approved`, firmada por Laura. No hay `walkthrough.md` todavía: lo escribo en el cierre.
+- La revisión final fue sobre `1ac5f0b`. Desde entonces solo cambiaron `plan.md` y `tasks.md`, que son documentación, así que no repito la revisión.
+
+🦆 Al cancelar una reserva hay que dar un motivo de la lista: cambio de planes, sala ocupada u otro. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y si corre solo o en otro orden falla. Lo dejo como fila de deuda en el cierre.
+
+**Smoke que he corrido**
+
+Las cuatro filas las probé con una sesión propia (`x-session: ensayo`), sin tocar tus datos.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | el mismo mensaje |
+| `canceladas` enseña el motivo | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/ && node e2e/run.mjs` (gate de cierre, tal como está declarado): unit 5/5 y E2E 7/7 sobre `e05b210`, 49 s.
+- Lo corrí con un entorno que levanté yo. El E2E tardó 48 s frente a un presupuesto de 0,5 min, así que abriré una fila de deuda por el exceso.
+
+**Sin probar**
+
+- Nada.
+
+Panel: plan B en http://127.0.0.1:14621/
+Es una página aparte que no ve la app. Si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Debe responder `entorno arriba: http://localhost:3866 (pid …)`.
+
+Terminal 2:
+
+```
+cd <run>\repo
+```
+
+Usa siempre la misma sesión, `x-session: validacion`. El servidor es la aplicación y guarda las reservas en memoria por sesión.
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -G -H "x-session: validacion" http://localhost:3866/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+2. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`. Hazlo con la sesión recién abierta; si ya cancelaste en el paso 1 el resultado es el mismo, porque el motivo se valida antes de buscar la reserva.
+
+```
+curl -G -H "x-session: validacion" http://localhost:3866/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"vacaciones\"]"
+```
+
+3. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -G -H "x-session: validacion" http://localhost:3866/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+4. Listar las canceladas → `Norte lun — sala ocupada`
+
+```
+curl -G -H "x-session: validacion" http://localhost:3866/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

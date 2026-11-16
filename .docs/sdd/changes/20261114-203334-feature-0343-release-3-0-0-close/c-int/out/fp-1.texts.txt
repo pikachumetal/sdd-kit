@@ -1,0 +1,61 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar y presentarte la nota de comprensión, ~2 min.
+
+--- [10]
+Este comando ya existe, así que no he abierto ninguna feature.
+
+- **Código:** `libres <franja>` está en `src/app.js:5-7` y devuelve las salas sin reserva en esa franja. Por ejemplo, `libres 10:00-12:00` devuelve `Sur`.
+- **Test:** `test/app.test.js` lo cubre con «libres excluye la sala reservada en la franja».
+- **Spec:** se cerró en `specs/20260917-090000-task-0006-free/` con estado `done` y su walkthrough.
+
+Lo que sí le falta es lo que probablemente echas de menos:
+
+- **Día:** `libres` compara solo la franja y no mira el día. Las reservas guardan `day` (`lun`, etc.), así que una reserva del lunes hace que la sala salga ocupada en esa franja cualquier día.
+- **Formato de franja:** no se valida. Es la deuda «Sin validación del formato de franja horaria», que sigue en «Por triar».
+
+**¿Qué quieres que haga?**
+
+1. **Feature: `libres` por día y franja** (`libres <día> <franja>`). Es mi recomendación, porque es el hueco real y encaja con lo que describes. Añadiría el día a la consulta, y la validación de franja podría ir dentro o quedarse como deuda.
+2. **Feature: validar el formato de franja.** Saldaría la deuda pendiente.
+3. **Algo distinto.** Dime qué te falta en el comando actual.
+
+Hasta que respondas no creo rama, carpeta ni spec. Sigo en carril feature, modo full, con la nota de comprensión y el perfil del proyecto en cuanto elijas.
+
+--- [16]
+Ahora: te presento lo que he entendido y la primera pregunta de diseño. Queda: la entrevista, los enfoques, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sin control.profile en sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme**
+
+- Mantienes la feature tal como la pediste: un comando para ver qué salas están libres en una franja.
+- Ya existe `libres <franja>` (spec 0006, `src/app.js:5-7`). Como lo mantienes, lo apunto como decisión tuya: «el comando no existe todavía», aunque el código y el test dicen otra cosa.
+- Esta feature no puede ser un duplicado de `libres`. Tomo como alcance lo que a ese comando le falta hoy. `libres` compara solo la franja, y las reservas guardan `day`. Con la reserva `Norte lun 10:00-12:00`, `libres 10:00-12:00` devuelve `Sur` también para el martes.
+- Las reservas están en memoria, dentro de `src/app.js`. No hay persistencia y no toco eso.
+- Hay un solo fichero de entrada y no hay dependencias, así que no hace falta preparar el entorno.
+
+❓ **¿Cómo se pide el día?**
+Las reservas ya tienen día (`lun`, `mar`…). Ahora mismo `libres` no lo recibe.
+
+1️⃣ **`libres <día> <franja>`, con el día obligatorio.**
+- `libres lun 10:00-12:00` → `Sur`
+- `libres mar 10:00-12:00` → `Norte, Sur`
+- `libres 10:00-12:00` → error de uso: `uso: libres <día> <franja>`
+- Cambia el contrato de `libres` y su test actual hay que reescribirlo.
+
+2️⃣ **`libres [día] <franja>`, con el día opcional.**
+- `libres lun 10:00-12:00` → `Sur`
+- `libres 10:00-12:00` → `Sur`, como hoy: sin día, cualquier día cuenta como ocupado.
+- Mantiene el comportamiento actual, pero conserva el resultado engañoso del martes.
+
+3️⃣ **Comando nuevo (`disponibles <día> <franja>`) y `libres` se queda como está.**
+- Dos comandos que responden casi lo mismo, uno de ellos con el fallo del día.
+
+➡️ **Recomiendo 1️⃣**, porque 2️⃣ conserva el resultado erróneo cuando se omite el día y 3️⃣ deja dos comandos casi iguales. A cambio, rompe `libres <franja>`. Es tu propia herramienta y no tiene más usuarios, y el único test afectado se reescribe.
+
+Aún no he creado rama, carpeta ni spec. Eso viene después de los enfoques.
+

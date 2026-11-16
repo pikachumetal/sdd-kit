@@ -1,0 +1,53 @@
+--- [4]
+The diff only adds a test. Check src/app.js for the mail behavior.
+
+--- [9]
+### Strengths
+- The spec is tightly scoped: one REMOVED requirement, `anular-todas` explicitly left out, and a single «Dónde se prueba» line that names `test/void.test.js`.
+- The new test `test/void.test.js:5-7` covers the dev-lead's decision ✋1, that `anular` still answers «anulada <sala> <día»: `run('anular', ['Norte', 'lun'])` returns `'anulada Norte lun'`.
+- The test text is in Spanish and has no comments, so both code constraints hold.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. Anular still sends the mail warning.**
+- **Where:** `src/app.js:18`.
+- **What's wrong:** `voidBooking` still runs `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`. The branch never changes `src/app.js`; the only file in the diff is `test/void.test.js`, even though the plan's Task 1 lists `src/app.js` under **Ficheros**. Running `anular Norte lun` and then `salida` still prints «responsable: anulada Norte lun».
+- **Why it matters:** this is the whole feature. The REMOVED requirement asks for the behaviour to be gone, and it still runs.
+- **How to fix:** delete the `outbox.push` line in `voidBooking`. Whether `outbox`, `pending()` and the `salida` command are still needed afterwards is for the quality and architecture axes.
+- **Gap:** `contradicts`.
+- **Source:** REMOVED «Avisar por correo», and the dev-lead's decision «El aviso por correo al anular desaparece».
+
+#### Important (Should Fix)
+
+**2. The test does not check that no warning is sent.**
+- **Where:** `test/void.test.js:5-7`.
+- **What's wrong:** the test is named «anular responde sin aviso», but it only checks the returned text. It passes against the unchanged code, so it proves nothing about the warning being gone.
+- **Why it matters:** the «Dónde se prueba» line names this file as the proof for «Anular sin aviso». As written, it can never fail for the reason the spec cares about.
+- **How to fix:** import `outbox` (it is exported at `src/app.js:4`), read its length before calling `anular`, and assert the length is the same afterwards. Alternatively, assert that `run('salida', [])` returns no line for that booking.
+- **Gap:** `partial`.
+- **Source:** the «Dónde se prueba» line «Anular sin aviso: por el comando `anular`, como `test/void.test.js`», and the dev-lead's decision. That decision is only half covered: no rule in the diff removes the mail.
+
+#### Minor (Nice to Have)
+- None.
+
+### Declined to judge
+- **`test/cancel.test.js` is red:** `run('cancelar', …)` returns `'salas'` because `src/app.js` has no `cancelar` command. This predates the branch (patch 0007) and the diff doesn't touch it.
+- **`.docs/sdd/capabilities/bookings.md:15-17` still lists «Avisar por correo»:** matches under `.docs/` don't count for a REMOVED check. Folding the delta into the capability belongs to the archive step.
+- **`anular-todas` doesn't warn:** the spec's Scope leaves it out on purpose, and the code agrees (`voidAll` never touches `outbox`).
+
+### Not verified
+- **Running the suite:** no verificado. The brief tells me not to run it, and no task report with test evidence came with the package.
+- **ADRs:** no verificado, because none were listed for this diff. ADR 0003 (bookings in memory) exists in the repo but wasn't assigned to this review.
+
+### Recommendations
+- Make the test fail first: tighten it as in issue 2, confirm it fails against the current code, then remove the line as in issue 1. That is the order the plan's TDD flow expects.
+- Have the main thread run the whole suite afterwards, and look at the red `cancel.test.js` while it's there.
+
+### Assessment
+
+**Ready to merge?** No.
+
+**Reasoning:** The branch only adds a test. Anular still sends the mail warning at `src/app.js:18`, which is the one behaviour the spec removes. And the test that's meant to prove the warning is gone passes against the old code.
+

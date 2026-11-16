@@ -1,0 +1,126 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, escribir spec y plan y parar antes de implementar, ~10 min.
+
+--- [24]
+Sigo con la spec: el heredoc falló por un problema de comillas, así que escribo el fichero con la herramienta Write y luego pruebo el delta en una copia.
+
+--- [28]
+Delta probado en la copia: fusiona y valida. Anoto el resultado en la spec y lanzo la revisión con dos revisores en paralelo.
+
+--- [32]
+Ahora: dos revisores de la spec en paralelo (dominio y técnica, sonnet). Queda: integrar hallazgos, escribir el plan y parar, ~6 min, ~0,3 $.
+
+--- [38]
+Los dos revisores están en marcha. Espero a que terminen para integrar sus hallazgos, y después escribo el plan.
+
+--- [43]
+1. Importante · Delta de comportamiento, «Listar las salas libres» · Los dos requisitos usan una reserva «el lunes» y la franja sin día. Ni la spec ni el comportamiento dicen cómo se cruza la reserva con la franja, y la capacidad no declara un límite sobre día o franja. Aun así, un `libres 10:00-12:00` sin día debe devolver `Sur`. · Declarar en el GIVEN cómo se compara la franja (solo hora, sin día) o añadir un «Límites» o aviso sobre ello. Si no, anotar que la reserva ocupa esa franja en cualquier día.
+
+2. Importante · Decisión 5 y Delta, «Filtrar por planta» · «Salida vacía» no es observable ni concreta: no dice si es cadena vacía, sin línea o `undefined`. El valor devuelto por `run` es ambiguo y las tres vías de salida (vacía, mensaje, lista) se podrían confundir. · Fijar el valor exacto de la salida de `run` (por ejemplo `''`) en el THEN, igual en las dos reglas que lo usan.
+
+3. Importante · Reglas de la capacidad, «Avisos» · Faltan avisos para casos que el Intent y las decisiones tocan. `--planta x` (decisión 4) tiene un mensaje en la decisión, pero el delta no lo recoge. «Todas ocupadas» queda sin aviso a propósito, aunque el Intent lo cuenta como fracaso si se confunde con «planta inexistente». · Añadir un escenario `--planta x` → `sin salas en la planta x`. En «Avisos», nombrar expresamente que «todas ocupadas» no avisa.
+
+4. Importante · Decisión 2 vs. escenarios · «La planta es un número» pero `--planta x` no se rechaza como valor inválido y se trata como planta sin salas. Es una regla de límites, y las reglas dicen «Límites: no aplica» aunque hay un límite claro (planta numérica, comparación como texto, `01` frente a `1`). · Declarar en «Límites» qué valores vale `--planta` (comparación textual exacta; `01` no coincide con `1`; `x` cae en «sin salas»). O explicar por qué no aplica.
+
+5. Importante · Reglas de la capacidad, «Regla ante conflicto» · Está como «no aplica», pero hay un conflicto posible no resuelto. `--planta` repetido (`--planta 1 --planta 2`), `--planta` seguido de otra opción o de una franja (`libres --planta 14:00-16:00`) hacen que el valor se tome como la franja. · Declarar qué gana si `--planta` se repite. Declarar qué pasa con `libres --planta 14:00-16:00` (¿valor `14:00-16:00` o «falta la planta»?). Añadir escenario.
+
+6. Importante · Delta, «Filtrar por planta» · Falta el escenario de `libres` con `--planta` y sin franja (`libres --planta 1`), que la decisión 3 y la técnica de la opción en cualquier posición dejan sin definir. Y el Scope descarta validar la franja. · Añadir un escenario o dejar escrito que el comportamiento sin franja queda fuera, igual que hoy.
+
+7. Menor · Decisión 1 y Delta, GIVEN · Las plantas Norte=1 y Sur=2 son valores de ejemplo pendientes de confirmar con el dev-lead, y a pesar de eso están en el Delta como requisito ADDED de una capacidad viva. Al archivar se consolidan como verdad. · Marcar en el Delta que las plantas son datos de fixture, o resolver la decisión 1 antes de aprobar. Sin eso, `capability merge` los fija como realidad.
+
+8. Menor · Intent vs. Scope · El Intent promete «una planta llena y una planta que no existe» distintas. El Scope solo lista dos mensajes (decisiones 4 y 6), y la salida vacía de «todas ocupadas» queda fuera del Scope y de las reglas. Además el «porqué» queda como pendiente sin dueño. · Añadir al Scope «todas ocupadas → salida vacía sin cambio» como comportamiento que se conserva. Nombrar quién confirma el porqué.
+
+9. Menor · Delta, «Listar las salas libres» · El requisito que ya existía queda declarado como ADDED, pero la capacidad es nueva y el comportamiento sin planta ya existía. El escenario no cubre la salida con `--planta` ausente y franja inválida, que sigue siendo comportamiento actual. · Dejarlo claro con una nota. Es un cambio de forma, no de comportamiento, así que no debería prometer nada nuevo.
+
+10. Menor · Decisiones, línea de «Delta probado» · Dice «las cinco reglas» y «Capacidades válidas: 1», pero «Límites» y «Regla ante conflicto» son «no aplica» y no hay un motivo que las justifique. Eso se lee como un relleno para pasar el check. · Dar una razón de una línea a cada «no aplica». Por ejemplo, «Límites: no aplica, porque la lista de salas es fija en memoria». Ojo: esa razón choca con el punto 4.
+
+--- [45]
+Llegó el revisor de dominio. Espero al técnico antes de integrar nada.
+
+--- [47]
+Todavía falta el revisor técnico. Termino aquí este turno y sigo cuando llegue su aviso.
+
+--- [48]
+1. Crítico · Delta «Filtrar las salas libres por planta» (escenario) · El requisito tiene un solo WHEN y varios AND con distintos comandos. Un solo caso que falle no se localiza, y una implementación que ignore `--planta` pasa los AND de «sin valor» y de «planta 3» con solo un fragmento de texto. Además, ningún escenario cubre `--planta` repetido, un valor que parece una franja (`libres --planta 10:00-12:00`) ni `--planta` al final con franja previa y ausente. · Separar en escenarios GIVEN/WHEN/THEN independientes, uno por comportamiento. Añadir escenarios para `--planta` repetido, para el valor-franja y para `--planta` sin franja.
+
+2. Crítico · Delta «Filtrar las salas libres por planta» y Approach (`run`) · No hay escenario para `--planta` con valor ausente cuando lo siguiente es la franja (`libres --planta 14:00-16:00`). Según la decisión 2 el valor se compara como texto, así que `14:00-16:00` se tomaría como planta y la franja quedaría sin primer argumento. Salen `sin salas en la planta 14:00-16:00` o un error de franja, y ninguno de los dos está especificado. · Decidir qué pasa cuando el valor tiene forma de franja y escribir su escenario. Como mínimo, decir que se toma como valor y cómo falla la franja ausente.
+
+3. Importante · Delta «Listar las salas libres de una franja» · El escenario no cubre el caso de que `libres` se ejecute sin franja. Tampoco cubre el caso de que la única salida sea vacía. Si el refactor de `run` rompe el primer argumento, el escenario sigue pasando. · Añadir a este requisito un escenario de `libres` sin `--planta` con todas ocupadas (salida vacía), para fijar que no cambió. O declarar el caso fuera de alcance.
+
+4. Importante · «Decisiones que he tomado yo» · No recogen estas decisiones tomadas en el cuerpo. (a) `--planta` repetido: ni aparece en la lista ni tiene regla. (b) Qué pasa con la franja ausente cuando solo hay `--planta <n>`. (c) El valor se compara como texto sin normalizar (`01`, ` 1`, `1.0` dan «sin salas»). (d) `--planta` con valor vacío (`--planta ""`). · Añadir cada una a la lista numerada con su regla, o declararla fuera de alcance con el comportamiento que se espera.
+
+5. Importante · Decisión 4 frente a Delta · La decisión 4 dice «`--planta 3`, o `--planta x`». El escenario solo cubre `3`. El caso `x` no tiene escenario, y la regla «Avisos» dice «si ninguna sala tiene esa planta», lo que no distingue un valor no numérico de uno numérico. Un fallo en la comparación como texto pasa desapercibido. · Añadir un escenario con `--planta x` y la salida `sin salas en la planta x`.
+
+6. Importante · Approach y Delta (contrato de `run` y `params`) · La spec dice que `run` saca `--planta` y su valor de `params`, pero no dice si `params` es un array de cadenas, ni si el valor ausente se detecta por fin de array o por que el siguiente empiece por `--`. La lectura «`--planta` sin valor» al final no distingue de `--planta --otra`. Tampoco dice cómo se devuelve la salida (cadena o impresión), ni si el mensaje de error es la salida normal o una excepción. Los tests llaman a `run('libres', [...])` sin que esté definido el retorno. · Documentar en la spec la forma de `params` y del retorno, y la regla exacta de detección de valor ausente. Citar `src/app.js` para ello.
+
+7. Importante · Delta, requisito «Filtrar» (orden de filtros y mensajes) · Las dos condiciones interactúan sin escenario. Con `--planta 3` y franja inválida, o `--planta` sin valor y franja ocupada, no se dice cuál mensaje manda. El Approach dice que se filtra primero por planta, pero el mensaje «sin salas» depende de si hay salas en la planta, no de la franja. Lo que no se define es la precedencia entre «falta la planta» y «sin salas». · Fijar la precedencia de errores y añadir un escenario con la planta inexistente y la franja ocupada.
+
+8. Menor · Delta «Listar las salas libres de una franja» · El GIVEN dice «una reserva activa de Norte el lunes en `10:00-12:00`», pero el WHEN no dice el día. Si `libres` considera el día, el escenario es ambiguo. Si no lo considera, «el lunes» sobra. · Aclarar si `libres` filtra por día. Quitar «el lunes» o añadir el día al WHEN.
+
+9. Menor · «Decisiones que he tomado yo», punto 1 y Delta · Los datos Norte planta 1 y Sur planta 2 se declaran valores de ejemplo pendientes de confirmar, pero los escenarios los fijan como GIVEN. Si cambian las plantas reales, los escenarios no se actualizan por sí solos. · Hacer que el GIVEN dependa de datos de test inyectados y no de los datos reales, o marcar los escenarios como dependientes de la decisión 1.
+
+10. Menor · «Delta probado… con `sdd capability merge`» · Dice «las cinco reglas», pero la sección «Reglas de la capacidad» lista cinco entradas, y dos de ellas son «no aplica». La afirmación de que el delta se probó no se puede comprobar con lo que la spec cita. · Citar la salida del comando o retirar la afirmación.
+
+--- [50]
+Integro los hallazgos: separo los escenarios, fijo la precedencia y el valor de retorno, y añado a ✋ las decisiones que faltaban.
+
+--- [55]
+Hubo un Crítico aceptado, así que toca una segunda ronda con un solo revisor. Mientras corre, repito la prueba del delta en una copia.
+
+--- [62]
+La segunda ronda está en marcha y el delta sigue fusionando bien. Espero su aviso para integrarla y escribir el plan.
+
+--- [63]
+1. Crítico · Decisión 11 vs decisión 9 y Delta «Planta sin valor» · `--planta ""` se afirma como `sin salas en la planta `, pero la regla de «valor ausente» (decisión 9) solo cubre «ninguno o empieza por `--`». Un valor vacío es un argumento presente, así que cae en «sin salas». Aun así, no hay ningún escenario que lo pruebe, y la decisión 11 lo promete. · Añade un escenario `--planta ""` con THEN `sin salas en la planta ` (con espacio final). Si prefieres tratarlo como valor ausente, cambia la decisión 11 y los avisos.
+
+2. Crítico · Delta «Planta sin valor» vs decisión 12 (precedencia) · `libres --planta` (sin franja y sin valor) y `libres 14:00-16:00 --planta` usan la misma regla, pero la precedencia solo se prueba con franja. Falta el escenario que demuestre que «falta la planta» gana a «sin salas». Por ejemplo, ningún escenario combina un valor inexistente con una franja inválida. Un escenario de «sin salas» con una franja ocupada pasaría igual sin implementar la precedencia. · Añade un escenario de precedencia: por ejemplo, `libres --planta 3 10:00-12:00` da `sin salas en la planta 3`, no la cadena vacía. Si hace falta, añade también `libres --planta` solo.
+
+3. Importante · Delta «Listar las salas libres de una franja» · Escenario ADDED para un requisito que la spec dice que «ya existía». Si ese comportamiento ya está en producción, debería ser parte de la capacidad base y no un delta nuevo. Ese escenario pasa sin implementar nada. · Márcalo como regresión (comportamiento existente, congelado) y no lo presentes como ADDED de esta feature. Alternativa: justifícalo explícitamente en la decisión 7.
+
+4. Importante · Decisión 12 vs Scope y Delta · `libres --planta 1` sin franja «se comporta como hoy sin franja», pero la spec no dice qué hace hoy. Es un comportamiento indefinido que el implementador no puede reproducir ni probar, y la salida podría ser un fallo no controlado. · Describe la salida concreta de hoy (por ejemplo, error o cadena vacía) o deja explícito que queda fuera de contrato. Si es un fallo, anótalo como deuda.
+
+5. Importante · Decisión 3 / Approach / Delta · «Valor con forma de franja» (`libres --planta 14:00-16:00`) deja `libres` sin franja. El THEN `sin salas en la planta 14:00-16:00` pasa por la precedencia, no por el parseo. Pero `libres 14:00-16:00 --planta 1 --planta 2` mezcla dos escenarios en un solo WHEN, que es lo que la review criticó. · Separa en dos escenarios (valor con forma de franja; planta repetida), como pidió la review aceptada.
+
+6. Importante · «✋ Decisiones» · Tamaño y alcance vs Decisión 1 · La planta de Norte y Sur es un valor inventado («Pendiente de confirmar») y aun así la spec está `approved` y alimenta todos los escenarios. Los escenarios fallarían si cambia, y el gate sale verde con datos falsos. · Bloquea la aprobación hasta que el dev-lead confirme, o marca en el plan que la task 1 requiere ese dato antes de implementar.
+
+7. Importante · Decisión 2 vs decisión 11 · «La planta es un número» contradice «`--planta x` da sin salas» y «`01` no coincide con `1`»: la planta es un texto exacto, no un número. Y el mensaje `usa --planta <número>` lo refuerza. · Reformula la decisión 2: «la planta se escribe como número pero se compara como texto». Revisa también que el término «Planta» en Términos diga lo mismo.
+
+8. Menor · Hallazgos de la review · El rechazo de «todas ocupadas sin `--planta`» dice que «no hay una reserva que ocupe ambas salas en los datos», pero eso se arregla añadiendo una reserva a los datos. El motivo es débil y el caso sí es una regresión de comportamiento existente. · Añade la reserva a los datos del delta y el escenario, o justifica el rechazo por tamaño.
+
+9. Menor · Sección «Lo que se retira o cambia de forma» · Cita líneas de `src/app.js` (2, 5, 28) y un `git grep` sin que la spec pueda verificarlos aquí. Si cambian antes de implementar, la tabla queda obsoleta. · Quita los números de línea o fíjalos con el commit.
+
+10. Menor · Cabecera (🦆) y Scope · «Con `--planta 1` solo saldrán las de esa planta: `salas libres 14:00-16:00 --planta 1`» usa `salas libres` como comando; en el resto de la spec se usa `libres` como subcomando de `run`. Es inconsistente con la interfaz descrita. · Unifica: usa la invocación real del CLI en toda la spec.
+
+--- [65]
+Segunda ronda integrada sin tercera: acepto los Críticos y varios Importantes, y rechazo los demás con motivo.
+
+--- [71]
+La última edición apuntaba a un fichero que no existe, así que no cambió nada. Sigo con los cambios que faltan: la decisión 12 y los hallazgos de la segunda ronda.
+
+--- [75]
+Spec lista. Ahora el plan: leo la plantilla de tasks y la regla del commit de apertura.
+
+--- [81]
+Corrijo una contradicción del plan: `src/app.js` aparecía en «NO se tocan» y en «Modificar». Después hago el commit de apertura.
+
+--- [84]
+Dejé la spec y el plan de la feature 0012 escritos y commiteados, y paré antes de implementar. No hay código ni tests nuevos. El delta de la spec fusiona y valida en una copia de `.docs/sdd`.
+
+**Lo que hice**
+- **Lane y rama**: feature en modo full con perfil `delegate`, en la rama `feature/0012-libres-por-planta`, creada desde `develop`.
+- **Spec**: está en `.docs/sdd/changes/20261116-112124-feature-0012-libres-por-planta/spec.md`. La aprobé por delegación con tu frase y quedó registrada en «Aprobaciones».
+- **Capacidad nueva**: la spec declara `room-availability`, porque el comportamiento de `libres` no estaba escrito en ninguna capacidad.
+- **Review**: dos revisores en paralelo y una segunda ronda con uno, porque hubo Críticos. Los hallazgos aceptados y rechazados, con su motivo, están en la spec.
+- **Plan**: `plan.md` y `tasks.md` están en la misma carpeta. Son dos tasks, con ejecución native fijada en `sdd-kit.json`. La 1 hace el filtro por planta y la 2 el caso `--planta` sin valor.
+- **Commit**: `c548d47`, el commit de apertura con spec, plan y tasks.
+
+**Decisiones mías que te pido validar**
+- **Plantas de las salas**: puse Norte en la planta 1 y Sur en la planta 2. Nadie las dijo y el código no las tenía, así que son valores de ejemplo. Los escenarios de la spec las usan, y el plan pide confirmarlas antes de la Task 1.
+- **Casos límite de `--planta`**: la opción vale en cualquier posición y cuenta la última si se repite. Se compara como texto exacto. Una planta sin salas devuelve `sin salas en la planta 3`, y `--planta` sin valor devuelve `falta la planta: usa --planta <número>`. Una planta con todas las salas ocupadas devuelve la cadena vacía, como hoy.
+- **Sin `--planta`**: sigue listando todas las salas, tal como pediste.
+- **Validación**: la dejé en `dev-lead`.
+
+Sigo trabajando con rutas absolutas en el repo del proyecto, aunque el entorno cambiaba el directorio de trabajo hacia otras carpetas.
+
+Cuando valides las plantas y la spec, dime «sigue» y retomo con `sdd-implement` en la Task 1.
+

@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git diff && ls -R .docs/sdd | head -50 && cat sdd-kit.json .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<<  M src/app.js
+diff --git a/src/app.js b/src/app.js
+index 368efdd..deb1db6 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room)
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal 
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/20261009*/spec.md specs/20261009*/plan.md && cat ../../src/app.js && cat steering/constitution.md
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node src/app.js horas Norte && node src/app.js horas Sur && node --test 2>&1 | tail -8
+<<< Norte: 2 h
+Sur: 0 h
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146.5233
+
+>>> Bash: cd "<run>/repo" && git add src/app.js && git commit -q -m "feat(0016): comando horas con las horas activas por sala
+
+Task 1. Sin test/horas.test.js: lo aporta el dev-lead.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log -1 --format='%h %s'
+<<< 799897b feat(0016): comando horas con las horas activas por sala
+
+=== RESULTADO (8 turnos, 0.1383282 $)
+Task 1 de la 0016 está terminada y commiteada (`799897b`), pero sin tests y sin revisión.
+
+**Qué hice.** A tu `roomHours` le faltaba filtrar por estado. Ahora solo cuenta las reservas con `status === 'active'`. Así `horas Norte` da `Norte: 2 h` y `horas Sur` da `Sur: 0 h`, que es lo que pide la spec. El filtro excluye también las anuladas (`voided`), no solo las canceladas. Lo comprobé a mano con `node src/app.js horas …`, y `node --test` pasa con los 4 tests que ya había.
+
+**Lo que no está hecho:**
+- **Tests:** no escribí `test/horas.test.js`, como pediste. La constitución exige tests antes que código y el plan los pone en el hilo principal, así que esto se salta el proceso por decisión tuya. El commit lo dice. Hasta que lo pongas, el comando `horas` no tiene test.
+- **Revisión:** no pasé la revisión final de `sdd-verify`. El commit es de código, de unas 3 líneas, y no entra en la excepción de solo documentación.
+- **Cierre:** no ejecuté `sdd-archive` ni el walkthrough. Faltan para cerrar la feature.
+
+Si quieres, lanzo la revisión ahora, o la dejamos para después de la demo.

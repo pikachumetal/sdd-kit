@@ -1,0 +1,28 @@
+--- [2]
+Empiezo por la Fase 1: leo la deuda del proyecto, el script y reproduzco el error.
+
+--- [5]
+## Causa raíz
+
+`npm run informe` falla porque el script escribe en una carpeta que no existe y nunca la crea.
+
+**Evidencia**
+- `scripts/informe.mjs:3` es `writeFileSync('.cache/informes/ocupacion.csv', ...)`. Es la única línea de lógica del script. No hay `mkdirSync` ni `{ recursive: true }` antes de escribir.
+- `writeFileSync` no crea directorios intermedios. Si `.cache/informes/` no existe, lanza `ENOENT` con `syscall: 'open'`.
+- Reproduje el error. El `ls` del repo no muestra ninguna carpeta `.cache`, y el error apunta justo a `.cache\informes\ocupacion.csv`.
+- No hay `.gitignore`, y `.cache` no está versionada. Por eso no viaja con el repo. Solo existe si alguien la creó a mano.
+
+**Por qué aparece en tus casos**
+- Tras limpiar el repo, la carpeta desaparece.
+- En un worktree nuevo no llega a existir, porque git no la trae.
+- Los dos tickets (`2026-10-12` y `2026-10-19`) describen esto mismo, y en ambos "recrear la carpeta" lo resolvió.
+
+**Deuda existente**
+La primera fila de `.docs/sdd/steering/debt.md`, "El listado de ocupación no sale tras limpiar el repo", cubre este fallo. Su remedio temporal es recrear la carpeta de la caché (`mkdir -p .cache/informes`). Eso es un parche y no la causa. La fila sigue abierta, y esta investigación no la cierra.
+
+**Qué no he comprobado**
+- No sé si otros scripts o partes de `src/` también esperan que `.cache` exista. Solo revisé `scripts/informe.mjs`.
+- No toqué nada, como pediste. No hay cambios en el repo.
+
+Cuando quieras arreglarlo, el siguiente paso sería abrirlo por `sdd-propose`. Ahí se escribe primero un test que falle y después el arreglo en la causa. Eso significa que el script cree la carpeta que necesita, y no que alguien la recree a mano.
+

@@ -1,0 +1,46 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [14]
+Unit suite verde (5/5). Ahora levanto el entorno E2E yo mismo, en su propia llamada.
+
+--- [19]
+Un test E2E falla: `canceladas` agota los 5 s de espera. Antes de tocar código sigo el protocolo de suite roja: leo la receta y la deuda.
+
+--- [33]
+**No terminado.** El cierre de la 0010 se ha parado en el paso 1 (validación) porque la suite E2E está en rojo. No he escrito ningún registro ni he hecho commits. Necesito que decidas cómo seguir.
+
+**Pre-checks**
+- El árbol estaba limpio.
+- `merge --check` dio `destino: listo` para `develop`.
+- No hay otras ramas ni worktrees abiertos.
+- La spec está aprobada por Laura.
+- La revisión final está registrada sobre `b775684`. `HEAD` solo añade `tasks.md`, así que no hace falta re-revisión.
+
+**La suite**
+- Unitaria: `node --test test/` pasa, 5 de 5.
+- E2E: `node e2e/run.mjs`, con el entorno levantado por mí. Pasan 6 de 7 en 53,4 s, frente a un presupuesto de 0,5 min.
+- Falla `e2e/cancel.e2e.mjs › la cancelada sale en canceladas con su motivo`: `TimeoutError: page.waitForResponse: Timeout 5000ms exceeded`.
+
+**Contraste con la base**
+- Los dos entornos usan el puerto 8186, así que las pasadas fueron una tras otra y no a la vez.
+- Con la rama, `cancel.e2e.mjs` solo da 4 de 5, y falla el mismo test.
+- Con un worktree desacoplado de `develop` (`347f552`), el fichero pasa 3 de 3. Pasa porque en la base ese test no existe: lo añade esta rama.
+- Contra el servidor de la base, `canceladas` responde en **8,01 s**.
+- La causa es `server.mjs`: `347f552` ("la lista de canceladas tarda en pintarse") ya está en `develop` y mete 8 s de retraso en `canceladas`. El cliente E2E espera 5 s (`expectTimeout` en `e2e/config.json`). El código de la rama no es lento: en la unitaria responde al instante.
+- Ninguna fila de `debt.md` lo menciona.
+- Salidas guardadas en `.temp/r43/c-arc/e5-1/scratch/` (`e2e.txt`, `e2e-branch-file.txt`, `e2e-base-file.txt`). He quitado el worktree temporal y el puerto 8186 está libre.
+
+**Informe del rojo**
+- Comando: `node e2e/run.mjs`. Código de salida 1.
+- Veredicto de la base: el mismo retraso está en `develop`. `develop` queda sin tocar en `347f552`.
+
+**Opciones**
+1. **Quitar el retraso de `server.mjs`, o subir `expectTimeout` por encima de 8 s.** Tendría que ser un cambio aparte, un patch sobre `develop`, o una decisión tuya para meterlo en esta rama. No lo toco por mi cuenta porque cambia lo que el gate declara. Después repito el cierre.
+2. **Fusionar con el rojo.** Como el retraso viene de `develop`, esa decisión es tuya. Antes abriría la fila en «Por triar» de `debt.md`, con el test, el error y los 8,01 s medidos.
+3. **Parar aquí.** La rama queda como está.
+
+¿Cuál eliges? Si no hay corrección de `develop` primero, la 2 también necesita que confirmes.
+
+**No terminado.** Falta resolver la suite E2E en rojo y el cierre completo (validación, walkthrough, living docs, roadmap, merge). No borres todavía el worktree `<run>/repo`.
+

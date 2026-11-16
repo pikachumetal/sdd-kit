@@ -1,0 +1,118 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -100 && cat PRODUCT.md .docs/PRODUCT.md 2>/dev/null | head -60
+
+>>> Grep: (?i)export|exporta
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+# exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del cowo
+<<< Found 15 files
+test\export.test.js
+src\export\writer.js
+src\export\index.js
+src\export\ics.js
+src\export\filter.js
+src\cli.js
+src\bookings\repository.js
+ROADMAP.md
+README.md
+PRODUCT.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\architecture.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+
+>>> Bash: cd "<run>/repo" && for f in src/cli.js src/export/*.js src/bookings/repository.js data/bookings.json README.md; do echo "=== $f"; cat $f; done; sed -n 1,200p ROADMAP.md
+<<< === src/cli.js
+import { exportMonth } from './export/index.js';
+
+const [command, ...args] = process.argv.slice(2);
+
+if (command === 'exportar') {
+  const month = args[args.indexOf('--mes') + 1];
+  console.log(exportMonth(month));
+}
+=== src/export/filter.js
+export function bookingsBySlot(bookings, month) {
+  return bookings
+    .filter((booking) => booking.day.startsWith(month) && booking.status !== 'cancelled')
+    .sort((a, b) => `${a.day} ${a.slot}`.localeCompare(`${b.day} ${b.slot}`));
+}
+=== src/export/ics.js
+const COWORKING_OFFSET = '+02:00';
+
+function toUtcStamp(day, time) 
+
+=== RESULTADO (6 turnos, 0.1169467 $)
+Sigo una exportación concreta: el socio pide las reservas de marzo de 2026.
+
+En el almacén hay cinco reservas:
+- Norte, 2 de marzo, de 10:00 a 12:00.
+- Sur, 5 de marzo, de 16:00 a 17:00.
+- Norte, 12 de marzo, de 09:00 a 10:00, cancelada.
+- Norte, 19 de marzo, de 12:00 a 13:30.
+- Sur, 1 de abril, de 10:00 a 11:00.
+
+**Los pasos**
+
+1. El socio escribe en la terminal la orden de exportar y el mes `2026-03`. El programa lee ese mes.
+2. El programa abre el almacén y carga las cinco reservas.
+3. El programa elige las reservas del mes y descarta las canceladas.
+   - Se queda con tres: la del 2, la del 5 y la del 19.
+   - La del 12 sale por cancelada y la de abril por ser de otro mes.
+   - Después ordena las tres por día y por franja.
+4. El programa convierte cada reserva en un evento de calendario.
+   - El evento se titula «Sala Norte» o «Sala Sur» y lleva el inicio y el fin de la franja.
+   - El calendario espera la hora en UTC. UTC es un reloj dos horas por detrás del coworking, así que el programa resta dos horas.
+   - La franja del 2 de marzo, de 10:00 a 12:00, pasa a 08:00–10:00.
+5. El programa junta los tres eventos en un solo texto de calendario.
+6. El programa crea la carpeta de exportaciones si no existe. Guarda el texto en un fichero con el nombre del mes. Si ya había una exportación de ese mes, la sobrescribe.
+7. El programa imprime en la terminal dónde ha dejado el fichero.
+
+Después, fuera del programa, el socio abre su Google Calendar o su Outlook e importa ese fichero. Entonces ve sus tres reservas de marzo.
+
+**Dónde mirar**
+
+- Paso 1: `src/cli.js`, que lee la orden y el mes.
+- Pasos 2 a 7, en orden: `src/export/index.js`, que encadena todo.
+- Paso 2: `src/bookings/repository.js` y `data/bookings.json`.
+- Paso 3: `src/export/filter.js`.
+- Pasos 4 y 5: `src/export/ics.js`.
+- Paso 6: `src/export/writer.js`, que guarda el fichero en `exports/2026-03.ics`.
+- Pruebas del recorrido: `test/export.test.js`.
+
+**Dos cosas que he visto al leer el código**
+
+No he ejecutado nada, así que ninguna está probada.
+
+- Las horas salen sin la marca que dice «esto es UTC». Un calendario podría leerlas como hora local y mostrar las reservas con dos horas de desfase.
+- El programa resta siempre dos horas, también en invierno. Esas horas pueden salir desplazadas en las reservas de los meses con hora de invierno, como el 2 de marzo.
+
+La exportación de una sola sala (la 0013) aún está en borrador. No forma parte de este recorrido.
+
+¿Quieres que profundice en algún paso?

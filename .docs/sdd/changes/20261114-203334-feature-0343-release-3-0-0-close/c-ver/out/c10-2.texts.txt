@@ -1,0 +1,77 @@
+--- [3]
+Ahora: cerrar la revisión final con los informes de los ejes ya devueltos. Queda: leer los informes, decidir qué hay que corregir y presentarlo, ~10 min.
+
+--- [25]
+Los dos hallazgos se reproducen: el test viejo de `canceladas`, ejecutado solo, falla, y el motivo con espacios se rechaza. Ahora el fix:
+
+--- [29]
+Verde: 6/6 en la suite, el test de `canceladas` pasa ejecutado solo y la copia RED coincide con el test. Actualizo el ledger y `tasks.md`, y hago el commit de la pasada de fix.
+
+--- [32]
+Ahora: la re-revisión única de la pasada de fix (19f6b00..13e6d78). Queda: lanzarla, esperar su informe y presentarte el cierre, ~10 min, ~$1. Primero leo el encargo y el prompt de re-revisión.
+
+--- [49]
+Mientras revisa, miro si hay algo que preparar para los borradores del cierre.
+
+--- [54]
+Este proyecto no tiene `capabilities/`, así que no hay delta que fusionar. Espero el informe de la re-revisión.
+
+--- [58]
+**`reasonOf` keeps the spaces around the reason (Code · Important)**: ADDRESSED.
+- `src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`.
+- The test `cancelar con espacios alrededor del motivo lo acepta` (`test/cancel.test.js:19-22` at 13e6d78) passes `' sala ocupada '` and expects `'cancelada Norte lun (sala ocupada)'`. That covers both the leading and trailing spaces. The stored reason is the trimmed one, so `canceladas` would show it clean.
+- Edge cases of the changed line hold:
+  - `--motivo` as the last argument: `params[index+1]` is `undefined`, `?.trim()` gives `undefined`, and the answer is «motivo no válido: …». It does not throw.
+  - A reason that is only spaces: it trims to `''`, which is not in `reasons`, so the answer is «motivo no válido: …».
+  - Without `--motivo`: the answer is unchanged.
+- The spec does not contradict trimming.
+
+**The `canceladas` test depended on the order of the tests (Spec · Minor · partial)**: ADDRESSED.
+- `test/cancel.test.js:6-7` defines `freshApp = () => import(\`../src/app.js?test=${++loads}\`)`. Every test loads its own module instance, so the `bookings` array at module level (`src/app.js:4`) is new each time.
+- The `canceladas` test (`test/cancel.test.js:24-28`) now cancels Norte lun itself before it asserts. This matches the spec's GIVEN «la reserva de Norte del lunes cancelada con "sala ocupada"».
+- The THEN «Norte lun — sala ocupada» is still pinned with the same name and the same assertion. Only setup was added, and no RED datum was changed.
+- The fix report says it ran the test alone before the fix (fail 1) and after it (pass 1). I did not rerun it. The code fits the claim.
+
+**The ` — ` of `canceladas` breaks on a cp850 console (Code · Minor)**: RULING HOLDS.
+- In the approved spec, Decision 4 (`spec.md:26`) sets the separator to ` — ` with the example `Norte lun — sala ocupada`. The THEN of «El listado de canceladas enseña el motivo» (`spec.md:60`) expects exactly «Norte lun — sala ocupada».
+- The spec's Enmiendas section says «(ninguna)». Switching to ` - ` would go against an approved THEN. That needs a spec amendment, not a code fix.
+- `src/app.js:36` matches the spec.
+
+### New Breakage in the Fix Diff
+- **Minor** · `test/cancel.test.js` (whole file): the fix commit changed the file from CRLF to LF in the index. `git ls-files --eol` shows `i/lf` for `test/cancel.test.js`, but `i/crlf` for `src/app.js`, `test/app.test.js` and the 19f6b00 version of this same file. That is why the diff rewrites all 15 old lines, not just the edited ones. There is no `.gitattributes` or `.editorconfig` that sets a line ending. It doesn't change behaviour, but it is inconsistent with the rest of the repo and makes the diff noisy.
+
+### Out-of-Scope Observations
+- **Spec axis, existing since 0dd2a9b**: the THEN «sin `--motivo` responde lo mismo: "motivo no válido: …"» (`spec.md:55`) has no test. Neither the old file nor the new one has a call to `cancelar` without `--motivo`. The code handles it correctly (`reasonOf` returns `undefined`). The previous review did not report the gap, and the fix diff did not cause it. I recommend a test such as `run('cancelar', ['Norte', 'lun'])` → «motivo no válido: cambio de planes, sala ocupada, otro». It could sit next to a test for `--motivo` as the last argument.
+- The `.docs/.../tasks.md` file comes in with the fix commit. It is a record and has nothing to review.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. The cp850 dash finding is closed by a ruling that holds. Two things are worth doing before the merge, though neither blocks it:
+- Restore CRLF in `test/cancel.test.js` (Minor).
+- Add the test for the «sin `--motivo`» THEN (existing gap, outside this fix).
+
+--- [60]
+La re-revisión cierra los dos hallazgos y da por buena la decisión del guion. Compruebo a mano el THEN que se quedó sin test (cancelar sin `--motivo`) y que la suite sigue en verde. Después quito el worktree de revisión.
+
+--- [65]
+🦆 He corregido los dos hallazgos de la revisión final de la 0010 en el commit `13e6d78`, y la re-revisión (opus, effort high) los da por resueltos. Un tercer hallazgo, el del guion, no lo he tocado porque la spec aprobada lo fija. Tras la pasada, la suite pasa entera: `node --test` → 6/6.
+
+**Corregido (con su test en rojo antes y en verde después):**
+- **Código, Important**: un motivo con espacios alrededor (por ejemplo `"sala ocupada "`) se rechazaba como no válido. Ahora se recortan los espacios antes de comparar con la lista (`src/app.js:16`). Test nuevo: «cancelar con espacios alrededor del motivo lo acepta».
+- **Spec, Minor**: el test de `canceladas` solo pasaba si antes se había ejecutado el de `cancelar`. Ahora cada test carga su propia copia de la app y el de `canceladas` hace su propia cancelación. Ejecutado solo: antes fallaba (0/1), ahora pasa (1/1).
+
+**No corregido:**
+- **Código, Minor** (cambiar ` — ` por ` - ` porque se vería mal en la consola cp850 de recepción): no lo he cambiado. La spec aprobada fija «Norte lun — sala ocupada» en el THEN y en la decisión 4, así que cambiarlo sería modificar la spec. Además la misma salida ya lleva «á», que se rompería igual en esa consola. La re-revisión está de acuerdo. Si la recepción ve caracteres raros de verdad, es una enmienda que tendría que aprobar Laura.
+- **Re-revisión, Minor**: el commit del fix guardó `test/cancel.test.js` con finales de línea LF en vez de CRLF, como el resto del repo. No cambia el comportamiento, solo hace el diff más ruidoso. Lo dejo así porque cualquier commit nuevo quedaría sin revisar.
+- **Hueco anterior, que la re-revisión vio fuera del fix**: el THEN «sin `--motivo` responde lo mismo» no tiene test. Lo he comprobado a mano: `node src/app.js cancelar Norte lun` responde «motivo no válido: cambio de planes, sala ocupada, otro». Si quieres el test, lo añado, pero saldría como commit sin revisar.
+
+**Otras notas:**
+- La línea del eje de Arquitectura del ledger debía apuntarse antes de lanzar los ejes y la he apuntado ahora. El diff no toca manifiestos, módulos, contratos ni datos, así que el eje no tenía que salir.
+- En `tasks.md`, la Task 1 apuntaba al commit `19f6b00`; la he corregido a `0dd2a9b`.
+- Git ya no tiene registrado el worktree de revisión, pero Windows no deja borrar su carpeta `review-0010-13e6d78` porque está en uso. Puedes borrarla cuando se libere.
+- `tasks.md` tiene sin commit las líneas de la pasada de fix y de la re-revisión. El proyecto no tiene `capabilities/`, así que no había delta que fusionar.
+
+✋ El siguiente paso es cerrar la feature con `sdd-archive`: la validación y el walkthrough. Dime también si añado el test de «sin `--motivo`».
+
+--- [67]
+El vigilante de la re-revisión ha terminado sin avisos de silencio; la re-revisión ya había vuelto completa. No cambia nada de lo anterior: sigo esperando tu respuesta para cerrar la feature con `sdd-archive` y si añado el test de «sin `--motivo`».
+

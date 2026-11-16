@@ -1,0 +1,117 @@
+--- [3]
+Empiezo por los pre-checks del cierre y localizo las specs E2E que toca la rama.
+
+--- [14]
+Solo `cancel.e2e.mjs` cambia frente a `develop`, el destino del merge. `free.e2e.mjs` no entra. Levanto el entorno yo mismo y lo compruebo, cada cosa en su llamada.
+
+--- [18]
+Entorno verde. Lanzo la tanda con el gate tal como está declarado, sin `E2E_TRACE` ni otros interruptores.
+
+--- [21]
+Mi segundo filtro se pasó por un lado y por otro se quedó corto. Repitió «cancela una reserva con su motivo» y se dejó «anular sin reserva avisa». Corro esa que falta con un filtro exacto.
+
+--- [25]
+La tanda ya terminó, así que ahora puedo presentar el guion sin tocar el entorno mientras lo pruebas. Reviso de dónde sale cada paso y lo ensayo yo antes.
+
+--- [32]
+Los cinco pasos dan lo esperado. Paro el entorno, porque no hay `startEnvironment`, y levanto el panel plan B.
+
+--- [34]
+Aún no he cerrado nada: la validación es `manual` y la tienes tú. Las tres tandas E2E sí han pasado.
+
+🦆 Cancelar una reserva ahora exige un motivo de la lista (`cambio de planes`, `sala ocupada`, `otro`). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y si el test corre solo o en otro orden, falla.
+
+**Tanda E2E** (no es el gate de cierre)
+
+- Repetí lo que la rama cambia frente a `develop`. Lo hice con el gate tal cual, sin `E2E_TRACE`, y levanté yo el entorno y comprobé `/health`.
+- `free.e2e.mjs` no cambia frente a `develop`, así que no lo corrí.
+- Tanda: 3 tests cambiados ×3 y los otros 2 de `cancel.e2e.mjs` ×1, 11 ejecuciones.
+- 11/11 en verde, sin ningún fallo, sobre `ded84cf`.
+
+| Test | Ejecuciones | Resultado |
+| --- | --- | --- |
+| cancela una reserva con su motivo | ×3 | 3/3 |
+| rechaza un motivo fuera de la lista | ×3 | 3/3 |
+| la cancelada sale en canceladas con su motivo | ×3 | 3/3 |
+| anula una reserva | ×1 | ✓ |
+| anular sin reserva avisa | ×1 | ✓ |
+
+- Salida guardada en `$TMPDIR/sdd-0010/` (en esta máquina, `C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\sdd-0010\`).
+- Mi primer filtro de la segunda pasada no era exacto. Corrió «con su motivo» una vez de más y se dejó «anular sin reserva avisa». Repetí esa pasada con el filtro correcto y dio ✓.
+- Duración: 72,3 s los tres tests cambiados ×3, más 12,1 s y 6,1 s las otras dos pasadas.
+- El «Presupuesto E2E» es de 0,5 min. La suite completa (`node e2e/run.mjs`) aún no la he corrido, y la medida del presupuesto va con ella en el gate de cierre. Esta tanda ya lo supera, así que abriré fila de deuda con la duración y el presupuesto.
+
+**Smoke que he corrido** (ejecución real, con mi sesión `ensayo-a`)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `--motivo "sala ocupada"` | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | la misma frase |
+| `canceladas` | ejecución real | «Norte lun — sala ocupada» |
+
+**Sin probar**
+
+- El gate de cierre completo, `node --test test/ && node e2e/run.mjs`. Aún no lo he corrido. Lo haré con tu validación, antes de escribir el walkthrough.
+- La revisión final está limpia sobre `37b9a34` y `HEAD` solo añadió `docs(sdd)`, así que no hace falta otra.
+- La spec está `approved`.
+- Hay una sola worktree, sin otras ramas abiertas.
+- `merge --check` da «listo»: irá a `develop` por una worktree temporal.
+
+Panel: plan B en http://127.0.0.1:1640/ (no hay herramientas de Chrome; la página no ve la app, así que cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2 (usa tu propia sesión `validador`; los datos viven en memoria y no se guardan):
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: validador" -G http://localhost:1260/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Ver las canceladas, justo después del paso 1 → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: validador" -G http://localhost:1260/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+3. Un motivo fuera de la lista, con otra sesión para que la reserva siga activa → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: validador2" -G http://localhost:1260/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+4. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: validador2" -G http://localhost:1260/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

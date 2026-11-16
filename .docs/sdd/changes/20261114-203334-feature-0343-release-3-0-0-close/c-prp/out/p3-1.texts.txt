@@ -1,0 +1,27 @@
+--- [2]
+Es un cambio, aunque sea un patch urgente, así que entro por `sdd-kit:sdd-propose`, que es la puerta del kit.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto y localizo el código de cancelación solo para clasificar. Queda: confirmarte el carril, ~2 min.
+
+--- [14]
+Ahora: te confirmo el carril. Queda: tu respuesta y, con ella, abrir el patch y arreglarlo, ~15 min.
+
+🦆 **En llano:** `cancelar Norte mar` mira todas las reservas activas buscando una de Norte, y no mira el día. La única reserva que existe es la de Norte del lunes, así que la encuentra, la cancela y devuelve el día que le escribiste. El orden del array no interviene. Con una sola reserva, buscar desde el final encuentra la misma. Con dos reservas de Norte en días distintos, cogería siempre la última, sea cual sea el día. Solo cambiaría cuál se cancela por error.
+
+**Causa:** `findBooking(room, day)` en `src/app.js:9-11` recibe `day` pero no lo usa. `voidBooking` (`anular`) llama a la misma función y falla igual.
+
+Es un fallo determinista con la causa confirmada, así que cumple el carril **patch**. La solución es comparar también `b.day === day`, con una línea. Antes de tocar nada necesito que lo confirmes.
+
+**Test que falla hoy:** `cancelar Norte mar` debería devolver `sin reserva Norte mar` y la reserva del lunes debería seguir activa. Con el fix pasa a verde.
+
+**Estimación:** 0,5 h, la misma que el patch 0007. El proyecto no tiene medido ningún tiempo de gate de cierre, así que no puedo darte esa parte. Perfil: `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo seguimos?
+
+1. **Patch con el fix en `findBooking` (Recomendada).** Filtra por sala y día. Arregla `cancelar` y `anular` a la vez, con un test de regresión.
+2. **Hacerlo como feature.** Solo tiene sentido si quieres cambiar más reglas, por ejemplo que `bookings` admita varias reservas por sala. Es más ceremonia y no hace falta para este bug.
+3. **Buscar desde el final, como pedías.** No lo recomiendo: no arregla el bug y deja `cancelar Norte mar` cancelando otra reserva en cuanto haya dos de Norte.
+
+Si te vas a ausentar, puedes decirme «apruebo por delegación, nos vemos en la validación». Si prefieres otro perfil, dime «perfil `<otro>` para este patch».
+

@@ -1,0 +1,85 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar y abrir la entrevista de la spec, ~3 min.
+
+--- [15]
+Reservé el id 0010; creo la rama y lo confirmo contra el remoto.
+
+--- [17]
+Ahora: entender el cambio y abrir la entrevista de la spec. Queda: unas pocas preguntas, spec con su 🦆 y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido**
+
+- Hoy `salas` no permite sacar las reservas de una sala. Quieres un comando nuevo que las exporte a CSV.
+- El motivo: el responsable de cada sala las cuadra los lunes en su hoja de cálculo. El CSV tiene que abrirse bien ahí y valer para cuadrar, no solo para verlas.
+- Lo he clasificado como feature en modo full. Es un comportamiento nuevo con decisiones de formato que nadie ha fijado. Calculo unas 2 o 3 tasks, así que no propongo dividirla.
+- He creado la rama `feature/0010-exportar-reservas-csv` con el id 0010. Todavía no hay carpeta ni spec.
+- El proyecto no tiene `architecture.md` ni capabilities, y no necesita instalar dependencias.
+
+Corrígeme lo que no encaje.
+
+❓ **Cuadrar las reservas un lunes**
+
+Para decidir qué columnas lleva el CSV y qué reservas entran, necesito saber cómo es ese cuadre. Hoy cada reserva es `sala · día · franja`, por ejemplo `Norte · lun · 10:00-12:00`.
+
+Cuéntame, con un lunes real: ¿qué compara el responsable de la sala en su hoja, y contra qué lo cuadra?
+
+--- [19]
+Entendido: lo que compara el responsable queda como **pendiente** en la spec, sin inventarlo. Decido yo el formato con una razón por cada elección y lo marco en «✋ Decisiones que he tomado yo». Ahora: leo la plantilla y las reglas de revisión para escribir la spec. Queda: spec, coherencia, revisión y tu aprobación, ~8 min.
+
+--- [28]
+Estoy terminando la spec: añado a ✋ el resultado del delta y la dejo lista para tu aprobación.
+
+--- [30]
+Ahora: la spec está escrita y pasó la coherencia. Queda: tu aprobación. Después escribo el plan y sigo con la implementación, ~2 min.
+
+## 🦆 Qué cambia
+
+Hoy `salas` no deja sacar las reservas de una sala a una hoja de cálculo. Con esta feature, `node src/app.js exportar Norte` escribe una fila por reserva, por ejemplo `Norte;lun;10:00-12:00`. Se guarda con `> norte.csv` y se abre en la hoja. Por dentro, una función `toCsv` en `src/app.js` convierte las reservas en líneas separadas por `;`, y el comando `run` la usa. Lo que el responsable compara cada lunes sigue sin saberse, así que no hay filtros ni columnas de cuadre.
+
+La spec está en `.docs/sdd/changes/20261114-224647-feature-0010-exportar-reservas-csv/spec.md`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Comando `exportar <sala>`**, que escribe por pantalla. Redirigís con `>`. Es como ya responden `libres` y `cancelar`, y no toca ficheros.
+2. **Columnas `sala;dia;franja` con cabecera.** Son los tres campos que tiene hoy una reserva, y no añado ninguno más.
+3. **Separador `;`.** La hoja en castellano suele abrir la coma en una sola columna. **No lo he medido**: no sé qué hoja usa el responsable.
+4. **UTF-8 sin BOM, saltos `\n`.** Hoy los datos no llevan acentos. Si algún nombre de sala los llevara, Excel puede necesitar BOM. **Sin medir.**
+5. **Orden de alta de las reservas.** Nadie pidió otro.
+6. **Entrecomillado:** un valor con `;`, `"` o salto de línea va entre comillas, y las `"` interiores se duplican. Hoy ningún dato lo provoca, porque la franja no se valida (está en la deuda técnica). Por eso se prueba sobre `toCsv`.
+7. **Sala sin reservas:** solo la cabecera.
+8. **Textos de error:** `sala desconocida: Oeste` y `uso: exportar <sala>`.
+9. **Capacidad nueva `bookings-export`.** El proyecto no tiene capacidades y esta no cabe en ninguna.
+10. **Enfoque A:** `toCsv` dentro de `src/app.js`. Descarto un módulo `csv.js` (un fichero para unas 15 líneas) y un `--salida <ruta>` (rutas y sobrescritura que nadie pidió).
+
+**Pendiente, tuyo:** qué compara el responsable cada lunes y contra qué lo cuadra. Hasta saberlo no hay filtro por día ni semana, y tampoco columnas de cuadre. Las reservas semanales (`--cada-semana`) tampoco entran: hoy `run` no las guarda.
+
+**Review de la spec: no se ha hecho.** La regla pedía dos revisores, dominio y técnica, porque el CSV es un formato que consume otra herramienta. Esta sesión no tiene herramienta para lanzar subagentes. Lo dejé escrito en la spec en vez de simular la revisión. Lo que queda sin mirar es si esas columnas sirven al cuadre del lunes y si `;` se abre bien en tu hoja.
+
+**Sí he comprobado** que el delta se fusiona sin rechazos sobre una copia de `.docs/sdd`.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué ajusto.
+
+--- [31]
+De acuerdo. Dejo la spec en espera en `draft`, sin aprobar, y no escribo plan ni código.
+
+**Cómo queda el repo:**
+- Estás en la rama `feature/0010-exportar-reservas-csv`, creada desde `develop`. El id 0010 está reservado en local, porque no hay remoto.
+- La spec está en `.docs/sdd/changes/20261114-224647-feature-0010-exportar-reservas-csv/spec.md`. No está commiteada: el árbol tiene esa carpeta sin seguimiento.
+- `ROADMAP.md` no tiene fila para la 0010. Si quieres que quede registrada, dímelo y lo apunto con `sdd-roadmap`.
+
+**Para retomar:** di «retoma la feature» en esta rama. Volveré a presentar la spec para tu aprobación.
+
+**Mientras lo piensas:**
+- La decisión que más pesa es el separador `;` (3). Está sin medir, porque no sé qué hoja usa el responsable. Si lo averiguas, cambia la 3 y la 4.
+- Sigue pendiente qué compara el responsable cada lunes. Si lo descubres, puede cambiar las columnas y añadir filtros.
+- La spec no ha pasado por revisores, por falta de herramienta de subagentes en esta sesión. Si retomas en una sesión que la tenga, se lanzan antes del gate.
+

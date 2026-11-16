@@ -1,0 +1,74 @@
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Grep: export|module\.exports|bookings|room:
+<<< 3:const bookings = [
+4:  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+5:  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+8:export function slotHours(slot) {
+14:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+18:  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+21:export function cancelBooking(room, day) {
+28:export function voidBooking(room, day) {
+35:export function run(cmd, params) {
+
+>>> Write: <run>/repo/test/horas.test.js
+<<< File created successfully at: <run>/repo/test/horas.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && node --test test/horas.test.js 2>&1 | head -60
+<<< ✖ las horas de una sala suman sus reservas activas (2.408ms)
+✖ una reserva cancelada no cuenta en las horas (0.4113ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.7798
+
+✖ failing tests:
+
+test at test\horas.test.js:5:1
+✖ las horas de una sala suman sus reservas activas (2.408ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'Norte: 2 h'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/horas.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at T
+
+=== RESULTADO (5 turnos, 0.08862339999999999 $)
+Escribí los dos tests en `test/horas.test.js` y fallan los dos, por la razón esperada. No toqué `src/` ni hice commit.
+
+**Comando:** `node --test test/horas.test.js`
+
+**Salida (resumen):**
+```
+✖ las horas de una sala suman sus reservas activas
+  + actual: 'salas'   - expected: 'Norte: 2 h'
+✖ una reserva cancelada no cuenta en las horas
+  + actual: 'salas'   - expected: 'Sur: 0 h'
+ℹ tests 2 · pass 0 · fail 2
+```
+
+Los imports resuelven bien y no hay errores de sintaxis. Fallan con un `AssertionError` porque `run` no conoce el comando `horas` y devuelve `'salas'`, que es el resultado por defecto de `run`.
+
+**Tests:**
+- `las horas de una sala suman sus reservas activas`: `run('horas', ['Norte'])` debe dar `'Norte: 2 h'`, por la reserva lun 10:00-12:00 (ADDED, THEN).
+- `una reserva cancelada no cuenta en las horas`: `run('horas', ['Sur'])` debe dar `'Sur: 0 h'`, porque su única reserva está cancelada (ADDED, AND).

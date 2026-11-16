@@ -1,0 +1,62 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cat .docs/sdd/PRODUCT.md .docs/PRODUCT.md PRODUCT.md 2>/dev/null | head -60; git ls-files | head -40
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta; hace de dev-lead: decide qué entra y aprueba las specs, pero no lee el código.
+- **Dev**: desarrolla la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+-
+
+>>> Bash: cat src/export/ics.js; grep -n -B2 -A12 "hora del usuario" test/export.test.js; head -c 600 data/bookings.json
+<<< const COWORKING_OFFSET = '+02:00';
+
+function toUtcStamp(day, time) {
+  const utc = new Date(`${day}T${time}:00${COWORKING_OFFSET}`).toISOString();
+  return utc.replace(/[-:]/g, '').slice(0, 15);
+}
+
+function toEvent(booking) {
+  const [start, end] = booking.slot.split('-');
+  return [
+    'BEGIN:VEVENT',
+    `SUMMARY:Sala ${booking.room}`,
+    `DTSTART:${toUtcStamp(booking.day, start)}`,
+    `DTEND:${toUtcStamp(booking.day, end)}`,
+    'END:VEVENT',
+  ].join('\r\n');
+}
+
+export function toIcs(bookings) {
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', ...bookings.map(toEvent), 'EN
+
+=== RESULTADO (5 turnos, 0.0951366 $)
+Perdona, me expliqué mal. Te lo cuento otra vez desde el principio.
+
+**Dónde estábamos:** estamos con la exportación, el fichero de calendario con las reservas de un mes. Un test falla. El test comprueba que la reserva de la sala Norte del 2 de marzo, de 10:00 a 12:00, sale en el fichero a las 10:00. Ahora sale a las 08:00.
+
+**Qué pasa con ese ejemplo:**
+1. La reserva está guardada a las 10:00, en la hora del coworking.
+2. Al exportar, el programa pasa esa hora a UTC. UTC es un reloj que va dos horas por detrás del coworking, así que las 10:00 se convierten en las 08:00.
+3. Luego el programa quita la marca que dice «esto está en UTC».
+4. El calendario del socio ve «08:00» sin ninguna marca y lo toma como su hora local. Muestra la reserva a las 08:00 en vez de a las 10:00.
+
+**Qué hay que decidir:** mi frase anterior decía «hay que pasarle la zona del usuario». Eso era impreciso. Hay dos arreglos posibles:
+- **Escribir la hora tal cual, 10:00, en la hora del coworking.** Es lo que pide el test, y es la franja que el socio reservó.
+- **Mantener la hora en UTC, pero con su marca.** Entonces el calendario la convierte solo a la hora del socio.
+
+Recomiendo el segundo. Con él, el fichero queda correcto aunque el socio esté en otra zona. Pero el test dice «hora del usuario» y el código no conoce la zona del usuario. Por eso conviene decidir qué debe significar ese test antes de tocar nada.
+
+Si algo de esto sigue sin quedar claro, pregúntame.

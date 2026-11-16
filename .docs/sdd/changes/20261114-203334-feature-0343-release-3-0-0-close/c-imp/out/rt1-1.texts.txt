@@ -1,0 +1,57 @@
+--- [3]
+Ahora: leer el estado de la feature 0010 (spec, plan, tasks y ledger). Queda: decidir el método y retomar la primera task pendiente, ~2 min.
+
+--- [8]
+Ahora: invocar el método Native de la feature, con Task 2 pendiente. Queda: Task 2 y la revisión final, ~10 min.
+
+--- [11]
+Ahora: preparar workspace y ledger, y leer el código de Task 2. Queda: Task 2 y revisión final, ~10 min.
+
+--- [20]
+Ahora: escribir los tests RED de Task 2 (el THEN del listado) y guardar una copia fuera del repo. Queda: código, commit y revisión final, ~8 min.
+
+--- [23]
+RED correcto: `canceladas` cae en el valor por defecto `salas`. El test de «sin --motivo» pasa de entrada, porque Task 1 ya lo cumplía y le faltaba la cobertura. Ahora la implementación mínima.
+
+--- [25]
+Se coló un salto de línea literal dentro del `join`. Lo arreglo con Edit.
+
+--- [33]
+Ahora: actualizar `tasks.md` (hashes reales) y lanzar la revisión final con `sdd-verify`. Queda: revisión y cierre, ~5 min.
+
+--- [46]
+Ahora: pre-checks del cierre. Queda: presentar la validación, que es tuya porque el kit no fija `validation.mode`, ~2 min.
+
+--- [50]
+Retomé la feature 0010 y está implementada, pero el cierre se queda parado hasta que tú la valides. Los 6 tests de `node --test` pasan.
+
+**Qué hice**
+- **Task 1** ya estaba hecha (`3b448d8`). Sustituí en `tasks.md` el hash que era un marcador por el real.
+- **Task 2** (`bbeb33a`): el comando `canceladas`, que lista «Norte lun — sala ocupada». Escribí el test primero y vi que fallaba, porque `canceladas` caía en el valor por defecto `salas`.
+- **`tasks.md`** quedó cerrado en `e0bd9e7` y `f8ba033`, con la revisión final y los rulings.
+- **Revisión final:** no tengo herramienta de subagentes, así que fue una autorrevisión mía y no la de revisores independientes. Debes decidir si te basta antes de fusionar. No encontré hallazgos Critical ni Important.
+
+**Rulings que tomé**
+1. Añadí el test de «sin `--motivo`». Es un AND del spec que Task 1 cumplía pero no tenía cubierto. Pasó de entrada, y si falla solo se pierde cobertura.
+2. El test de `canceladas` importa `app.js` con estado fresco, para no depender del orden de los tests.
+
+**Menor diferido:** `canceladas` sin canceladas devuelve cadena vacía, y el spec no fija ese texto.
+
+**Por qué no está cerrada**
+1. **Falta tu validación.** `sdd-kit.json` no fija `validation.mode`, así que cuenta como manual y la validación es tuya. «Retoma» no vale como validación.
+2. **No puedo fusionar todavía.** `sdd merge --check` dice que faltan `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Dime la rama de integración (el repo solo tiene `main`) y si quieres `--no-ff`, o configúralo con `sdd-config`.
+
+**Un matiz importante:** la CLI no guarda las reservas entre procesos. Si ejecutas `node src/app.js cancelar …` y luego `node src/app.js canceladas`, el listado sale vacío. Eso no es un fallo del código: el spec prueba el listado por `run()` dentro de un mismo proceso. El guion usa un solo `node -e`.
+
+**Guion de validación** (todos los pasos los ejecuté yo antes, con estos resultados)
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun` → la misma frase de motivo no válido.
+4. `node -e "import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(run('canceladas',[]))})"` → «cancelada Norte lun (sala ocupada)» y, en la línea siguiente, «Norte lun — sala ocupada».
+
+Panel: no lo he levantado. Este entorno es no interactivo y no tengo las herramientas de Chrome. Puedo lanzar `sdd validation serve` si lo prefieres a probar por terminal.
+
+Dime qué probaste y si funciona, o «validado», y sigo con walkthrough, capacidades, roadmap, merge y el ticket del kit. Si prefieres diferir la validación, dime el disparador y quién se encarga.
+
+**No terminado.** Falta tu validación y la configuración del merge. No borres todavía el worktree `<run>/repo`.
+

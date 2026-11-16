@@ -1,0 +1,91 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [16]
+Voy a ensayar el guion de validación contra el servidor real, con una sesión propia, antes de presentárselo.
+
+--- [20]
+🦆 Hasta ahora cancelar no dejaba rastro. Con la 0010, `cancelar` exige un motivo de la lista (cambio de planes, sala ocupada, otro) y `canceladas` lo enseña. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` después da «Norte lun — sala ocupada».
+
+**No he empezado el cierre.** La validación es `manual` y «ciérrala» es la orden de cerrar, no una validación. Hasta que me digas qué has probado y que funciona, no escribo ningún registro ni fusiono.
+
+**Abiertas a la vez:** ninguna. Solo existe este worktree.
+
+**Pre-checks**
+- El árbol está limpio, y `merge --check` da destino `develop` listo.
+- La spec está `approved`, firmada por Laura el 2026-10-08.
+- La revisión final fue limpia sobre `fc6de0f`. Desde entonces `HEAD` solo ha movido `tasks.md` y `plan.md`, que son documentación, así que no relanzo la revisión.
+
+**✋ Me salí del plan en…**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si falla, el test se rompe cuando corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo válido responde «cancelada Norte lun (sala ocupada)» | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista da «motivo no válido…» | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` da lo mismo | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | `ejecución real` | «Norte lun — sala ocupada» |
+
+Lo ensayé contra el servidor con una sesión propia (`x-session: persona`) y luego lo paré. No dejé datos.
+
+**Suites:** todavía no he corrido el gate de cierre (`node --test test/ && node e2e/run.mjs`). Corre en el cierre, sobre el árbol que se fusiona.
+
+**Sin probar:** nada.
+
+Panel: plan B en http://127.0.0.1:7490/ (no tengo las herramientas de Chrome). Esta página no ve la app, así que no tiene consola, red ni captura. Si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+Todos los pasos usan la misma sesión (`x-session: tu-sesion`). Empiezas sin ninguna cancelación.
+
+1. Cancelar con un motivo que no está en la lista → responde «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:8617/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+2. Cancelar sin motivo → responde «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:8617/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+3. Cancelar con un motivo de la lista → responde «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:8617/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+4. Listar las canceladas → responde «Norte lun — sala ocupada»
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:8617/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -1,0 +1,110 @@
+
+>>> Bash: cd <run>/repo; cat .temp/sdd/plan/task-1-brief.md; node --test test/informe.test.js 2>&1 | head -40; git ls-files; cat test/informe.test.js
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> canceladas`; sin `--por`, `
+
+>>> Bash: cd <run>/repo; cat src/app.js; cat .docs/sdd/specs/*0015*/plan.md | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled',
+
+>>> Bash: cd <run>/repo; python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+helpers='''function cancelledBookings() {
+  return bookings
+    .filter((b) => b.status === 'cancelled')
+    .sort((a, b) => rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day));
+}
+
+const reportGroupings = {
+  sala: {
+    keys: () => [...rooms].sort(),
+    keyOf: (b) => b.room,
+    line: (b) => `  ${b.day} ${b.slot} — ${b.reason} (${b.owner})`,
+  },
+  motivo: {
+    keys: () => reasons,
+    keyOf: (b) => b.reason,
+    line: (b) => `  ${b.room} ${b.day} ${b.slot} (${b.owner})`,
+  },
+};
+
+function cancellationReport(grouping) {
+  const cancelled = cancelledBookings();
+  const out = [];
+  for (const key of grouping.keys()) {
+    const group = cancelled.filter((b) => grouping.keyOf(b) === key);
+    if (!group.length) continue;
+    out.push(`${key}: ${group.length} canceladas`, ...group.map(grouping.line));
+  }
+  out.push(`Total: ${cancelled.length} canceladas`);
+  return out.join('\\n');
+}
+
+function informe(params) {
+  const i = params.indexOf('--por');
+  const grouping = i === -1 ? undefined : reportGroupings[params[i + 1]];
+  return grouping ? cancellationReport(grouping) : 'uso: informe --por sala|motivo';
+}
+
+export function run('''
+s=s.replace('export function run(',helpers,1)
+s=s.replace("  if (cmd === 'mias') {","  if (cmd === 'informe') return informe(params);\n  if (cmd === 'mias') {",1)
+open(p,'w',encoding='utf-8').write(s)
+E
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (2.6517ms)
+✖ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (14.4594ms)
+✖ informe sin --por responde con el uso (0.6188ms)
+ℹ pass 0
+ℹ fail 3
+✖ failing tests:
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (2.6517ms)
+✖ informe por motivo agrupa las cance
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd <run>/repo; sed -i "s|const grouping = i === -1 ? undefined : reportGroupings\[params\[i + 1\]\];|const grouping = Object.hasOwn(reportGroupings, params[i + 1]) ? reportGroupings[params[i + 1]] : undefined;|" src/app.js; grep -n "hasOwn" src/app.js; node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe por sala y por motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 report
+Implemented `informe --por sala|motivo` in src/app.js (helpers cancelledBookings, reportGroupings, cancellationReport, informe).
+RED: `node --test test/informe.test.js` → 3 fail (run returned 'salas', command didn't exist) — expected.
+GREEN: same command → 3/3 pass.
+Files: src/app.js, test/informe.test.js.
+Notes: `--por` without a value or with an unknown value returns the usage line. app.js keeps its long `run`; new code lives in its own functions. Full suite not run (main thread's gate).
+E
+<<< 46:  const grouping = Object.hasOwn(reportGroupings, params[i + 1]) ? reportGroupings[params[i + 1]] : undefined;
+ℹ pass 3
+ℹ fail 0
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+b7f502e feat: comando informe por sala y por motivo
+[This command modified 1 file you've previously read: src\app.js. Call Read before editing.]
+
+=== RESULTADO (7 turnos, 0.15612800000000002 $)
+- **Status:** DONE
+- **Commit:** `b7f502e feat: comando informe por sala y por motivo`
+- **Tests:** `node --test test/informe.test.js` pasa 3/3, con la salida limpia. Antes de implementar fallaban los 3 porque `run` devolvía `salas`. No he ejecutado la suite completa.
+- **Concerns:** ninguno que afecte a la corrección. `run` sigue siendo una función larga, con otro `if` más en su cadena. Puse el código nuevo en funciones aparte, como pide el decálogo.
+- **Informe:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

@@ -1,0 +1,114 @@
+--- [3]
+Ahora: leo la spec de la 0021 y las referencias del paso 4 (escritura, pasada de coherencia, revisión). Queda: pasada de coherencia, revisión de la spec y presentártela para aprobar, ~10 min.
+
+--- [25]
+Ahora: despacho el revisor de la spec (uno, sonnet). Queda: integrar sus hallazgos y presentarte la spec, ~5 min, ~0,3 $.
+
+--- [31]
+La spec ya está reescrita y el revisor está trabajando. Todavía no te la presento, porque falta su resultado para integrar los hallazgos. Cuando llegue, los incorporo y te la presento.
+
+Lo que cambié en la pasada de coherencia:
+- **Capacidad `rooms`:** `capabilities/` está vacía, así que el `MODIFIED` no tenía nada que modificar. Ahora es `ADDED` de «Ver las salas libres», con `rooms` declarada como capacidad nueva. El delta se prueba bien sobre una copia: `sdd capability merge` → «rooms.md: añadido».
+- **Caso de conserjería:** `libres 10:00-10:00` no tenía ningún THEN que lo cazara. Le añadí su escenario, junto con `9:00-10:00`.
+- **Approach:** hay tres enfoques y elegí B (pasar las horas a minutos). Comparar cadenas rechazaría `9:00-10:00`.
+- **Franjas mal formadas:** quedan como hoy. Lo dejé como decisión 4 en ✋, porque su validación es la fila de deuda.
+- **Piezas que faltaban:** añadí la línea 🦆, `Validación: dev-lead`, la tabla de «Lo que se retira» (sin cambios), el bloque de review y la línea de Política de modelos.
+
+--- [32]
+1. Crítico · Delta de comportamiento (ADDED «Ver las salas libres») · El escenario de `9:00-10:00` pasa sin el comportamiento. Hoy ya responde `Norte, Sur`, y también pasa con una implementación que compare cadenas (enfoque A) y que acepte `9:00-10:00` por casualidad. Además, la reserva de Norte es de 10:00 a 12:00, así que la franja 9:00-10:00 no se solapa y no distingue conversión a minutos de comparación textual correcta. · Añade un escenario que falle con la comparación de cadenas, por ejemplo `libres 9:00-10:30`, que debe responder `Sur`, o `libres 9:00-11:00`. Convierte el de `9:00-10:00` en el escenario de franja válida con hora de una cifra y que dé un resultado dependiente de la conversión.
+
+2. Crítico · Decisiones 5 y Delta de comportamiento · La decisión 5 dice que entra como ADDED «con sus dos escenarios de hoy y los dos nuevos». Pero los escenarios «de hoy» no se pueden contrastar con `capabilities/`, que está vacía. Un solo escenario de hoy (`10:00-12:00`) está en el delta y el de `9:00-10:00` pasa a ser «nuevo». Los cuatro escenarios no cuadran con «dos de hoy + dos nuevos» (el `9:00-10:00` no está en el comportamiento de la 0006 que se cita). Además, la spec afirma sobre la 0006 sin haberla leído en este contexto. · Aclara cuáles son los dos escenarios heredados de la 0006 y cuáles son los dos nuevos. Si `9:00-10:00` es nuevo, dilo. Si la 0006 tiene más comportamiento (sala libre sin reservas, otro día, sala ocupada), decláralo, porque el requisito ADDED lo recoge entero o queda incompleto.
+
+3. Importante · Delta de comportamiento · El requisito «Ver las salas libres» no tiene escenario para la decisión 4 (franja mal formada, `abc`, `10:00`, sin parámetro «sigue como hoy»). El propio apartado de revisión pregunta si la decisión 4 tiene escenario y no lo tiene. Es un comportamiento prometido en el Intent y en el Approach (“queda como hoy”) pero sin prueba. Además «como hoy» no está definido: no se dice qué responde hoy. · Añade un escenario GIVEN/WHEN/THEN con `libres abc` (y otro sin parámetro) que fije la respuesta actual, o declara en la spec que ese comportamiento queda fuera de la capacidad y no se afirma.
+
+4. Importante · Delta de comportamiento · Los escenarios de rechazo no fijan la forma de la respuesta con precisión. «No lista ninguna sala» es vago, y el texto con comillas «…» no dice si lleva mayúscula, punto final o prefijo. El THEN de `12:00-10:00` y `10:00-10:00` repite el mismo texto sin dejar claro si es la cadena exacta. Un agente puede devolver el texto con otra puntuación y el escenario sigue «pasando» por ojo. · Escribe la respuesta exacta entre comillas de código (`franja no válida: el final va después del inicio`) y di que es igualdad exacta. Sustituye «no lista ninguna sala» por «la respuesta no contiene `Norte` ni `Sur`».
+
+5. Importante · Intent / Scope / Decisiones · Hay decisiones tomadas en el cuerpo que no están en «✋ Decisiones»: (a) que la función se llame `slotError` y sea pura (Approach), (b) que se compruebe en `run` antes de `freeRooms`, que sí es la 6 pero con la nueva forma de la función; (c) que la validación de franjas con formato correcto pero horas imposibles (`25:00-26:00`, `10:75-11:00`) se trate como válida y las compare en minutos. La regla de límites no está cubierta: no se dice qué pasa con `24:00` ni con minutos > 59. · Añade una decisión sobre horas fuera de rango con formato `H:MM` correcto, con un escenario (o decláralas fuera de alcance explícitamente enlazando con la fila de deuda). Registra también el nombre `slotError` si es contrato.
+
+6. Importante · Scope / Dónde se prueba · El test existente «libres excluye la sala reservada en la franja» se cita como modelo, pero Scope dice que entra `test/app.test.js` sin precisar qué tests se añaden ni si se modifica alguno. Con la regla de tests antes que código (constitución 2), no hay un escenario→test explícito, y el escenario `9:00-10:00` y `10:00-12:00` ya existe quizá como test. Además, «Ver las salas libres» incluye el escenario `10:00-12:00` que hoy ya pasa: no puede ir test-first. · Mapea cada escenario a un test nuevo o ya existente y marca cuáles hoy ya pasan. Indica que sólo los dos de rechazo son rojos antes del cambio.
+
+7. Importante · Contratos y datos tocados · La spec no dice nada sobre el contrato de salida de `run('libres', …)`. Se pasa de devolver siempre una lista a devolver a veces un texto de error. No se dice si hay código de salida distinto (¿la CLI sale con 0 o 1?), si el error va a stdout o stderr, ni si algún otro llamador de `run` o el README del comando depende de ello. Tampoco se comprueba que no haya documentación de usuario del comando. · Declara en Scope o en la sección de «cambia de forma» el canal y el código de salida de la respuesta de error, y di si hay otros consumidores de `run('libres')`. Si se mantiene como las demás respuestas de error del producto, di cuáles son.
+
+8. Menor · Frontmatter / Aprobaciones · `status: draft` y aprobación pendiente son correctos para esta fase, pero el perfil `delegate`, con «Validación: dev-lead» y aprobador Laura, no coincide con PRODUCT.md, que dice que no hay más usuarios ni desarrolladores y que la usa una sola persona. Los ejemplos hablan de «conserjería» y de «Laura» como si hubiera personas reales. · Revisa la coherencia con PRODUCT.md. O bien el aprobador y la conserjería son inventados y se dice, o se alinea con el producto. Usa un nombre claramente ficticio o un rol.
+
+9. Menor · Terminología (PRODUCT.md) · El Delta y el Intent usan «franja» y «libres», pero PRODUCT.md define «Reserva» y «Sala» y no «franja» como término. La capacidad se llama `rooms` (inglés), y PRODUCT.md dice «Evitar: room» para Sala. Hay tensión con el glosario del producto. «Términos resueltos: ninguno» no lo contempla. · Justifica el nombre `rooms` en inglés frente a la terminología (o usa `salas`) y añade «franja» al glosario o a «Términos resueltos».
+
+10. Menor · Sección de revisión / Decisiones · La línea «Mínimo razonable: sin revisor — deja sin leer…» y «Política de modelos» mezclan una decisión de proceso con las decisiones de producto, y la numeración 1–6 contiene la decisión 1, que no es una decisión sino la descripción del caso. Dificulta que Laura valide lo que de verdad decide. · Mueve el caso de la decisión 1 al Intent y deja en «✋ Decisiones» solo las que cambian el resultado (2, 3, 4, 5, 6), separadas de la política de revisión.
+
+--- [36]
+Hay dos Críticos. Acepto el 2 y rechazo el 1: `9:00-10:00` sí falla con el enfoque A, porque `"9:00" > "10:00"` como texto. Integro los hallazgos en la spec.
+
+--- [39]
+Python no está instalado y los cambios no se aplicaron. Reescribo el fichero con Write.
+
+--- [44]
+Ahora: segunda ronda de revisión, porque acepté un Crítico (un revisor sonnet, una sola vez). Queda: integrar lo que salga y presentarte la spec, ~3 min.
+
+--- [50]
+La segunda ronda de revisión sigue en marcha. Todavía no te presento la spec para aprobar, porque tengo que integrar lo que devuelva el revisor y cerrar la spec antes del gate.
+
+Estado ahora mismo:
+- **Primera ronda:** hecha, con 10 hallazgos. Acepté 7 y rechacé 3 con motivo escrito en `### Hallazgos de la review`. De los dos Críticos, acepté uno y rechacé el otro.
+- **Spec:** reescrita con esos cambios. El delta se sigue fusionando bien sobre una copia (`rooms.md: añadido «Ver las salas libres»`).
+- **Segunda ronda:** un revisor sonnet relee la spec corregida una sola vez, como pide la regla tras aceptar un Crítico.
+
+Tengo que decirte una cosa para tu decisión. `PRODUCT.md` dice que no hay más usuarios que tú, pero la spec habla de «conserjería» y de «Laura» como aprobadora. Los dejé tal cual, porque son datos tuyos. Lo señalaré otra vez en el gate.
+
+--- [51]
+1. Importante · Delta de comportamiento / Decisión 4 · Los escenarios `libres abc` y `9:00-10:00` están en el delta como comportamiento del requisito, pero `abc` fija un comportamiento defectuoso («Norte, Sur» ante basura) que la propia deuda quiere cambiar. Al quedar en `rooms.md`, el siguiente que valide el formato contradirá la capacidad integrada. · Marcar el escenario `abc` como transitorio (nota en el escenario o en la fila de deuda: «al cerrar la deuda, MODIFIED de este escenario»), o sacarlo del delta y dejarlo solo como test de guarda.
+
+2. Importante · Delta, escenario `libres 10:00-12:00` · El requisito ADDED «Ver las salas libres» solo tiene escenarios de franja. Falta el escenario base de la sala reservada que se excluye con solapamiento parcial. Además, `10:00-12:00` → `Sur` pasa también sin el cambio y solo prueba lo heredado. · Añadir un escenario de borde, por ejemplo `libres 12:00-13:00` → `Norte, Sur` (fin de reserva = inicio de franja) o declarar explícitamente que los solapes son de la 0006.
+
+3. Importante · Decisión 4 / escenarios · Las horas fuera de rango (`25:00-26:00`, `10:75-11:00`) se «comparan en minutos como cualquier otra», pero no hay escenario. Comportamiento de límites sin cubrir: `25:00-24:00` se rechazaría y `24:00-25:00` no. Es un efecto observable nuevo del cambio. · Añadir un escenario o declarar que queda sin garantía; como mínimo, que el test no lo fije.
+
+4. Importante · Decisión 4 · Falta definir la forma exacta de «bien formada». `H:MM-H:MM` o `HH:MM-HH:MM` no dice si se aceptan combinaciones mixtas (`9:00-10:00`, ya lo hace), espacios o varios guiones. El implementador decidirá con una regex propia. · Dar la regex o la regla literal (`^\d{1,2}:\d{2}-\d{1,2}:\d{2}$`) y un escenario para una franja mal formada con guiones, como `10:00-11:00-12:00`.
+
+5. Menor · Decisión 6 / Approach B · «Una función pura pequeña» y «pasar a minutos» son una decisión de diseño, pero el Scope solo nombra `run('libres', …)`. No dice si el helper vive en `src/app.js`. · Añadir al Scope «un helper interno en `src/app.js`, sin exportar».
+
+6. Menor · Dónde se prueba · Dice «rojos» solo para `12:00-10:00` y `10:00-10:00`, pero `12:00-10:00` hoy devuelve `Norte, Sur`, así que el rojo se ve. Falta confirmar que el test del `10:00-12:00` existente no cambia ni se renombra. · Decir que el test existente se mantiene intacto y que los cuatro nuevos son tests aparte.
+
+7. Menor · Decisión 7 / Intent · «El único consumidor de `run('libres', …)` es la CLI» se afirma sin que se mida. Si hubiera otro consumidor, el cambio de contrato (de lista a texto de error) lo rompería. · Citar la búsqueda que lo respalda, por ejemplo `git grep -n "libres"`, igual que se hizo con «0021».
+
+8. Menor · Cabecera / Aprobaciones · El campo `profile: delegate` y «Validación: dev-lead» conviven con un aprobador, Laura, que no figura como dev-lead. No queda claro quién valida el criterio de la decisión 3. · Aclarar si Laura es la dev-lead o nombrar al validador real.
+
+--- [53]
+Sin Críticos en esta ronda, así que no hay tercera. Integro los hallazgos con edits.
+
+--- [65]
+Ahora: presento la spec en el gate de aprobación. Queda: tu respuesta. Después escribo el plan e implemento.
+
+## 🦆 Spec 0021 — Franja no válida en `libres`
+
+Hoy, `libres 10:00-10:00` (el caso de conserjería) contesta `Norte, Sur`, como si hubiera dos salas libres en una franja de cero minutos. Tras el cambio contestará `franja no válida: el final va después del inicio`, igual que `libres 12:00-10:00`. `libres 10:00-12:00` sigue dando `Sur`. Por dentro, `run('libres', …)` comprueba antes de buscar salas que el final sea posterior al inicio.
+
+Spec en `.docs/sdd/specs/20261008-190000-feature-0021-slot-check/spec.md`. Perfil `delegate`, validación `dev-lead`, un solo revisor sonnet en dos rondas.
+
+### ✋ Decisiones que he tomado yo — valida estas
+1. **Caso que cierra:** `libres 10:00-10:00`, con su propio escenario.
+2. **Texto de la respuesta:** `franja no válida: el final va después del inicio`, exacto.
+3. **Criterio:** válida si el final es estrictamente posterior al inicio.
+4. **Franjas mal formadas:** una franja que no cumple `^\d{1,2}:\d{2}-\d{1,2}:\d{2}$` sigue como hoy (`Norte, Sur`, sin fallar) y no va al delta. Solo la fija un test de guarda. Las horas fuera de rango (`25:00-26:00`) se comparan en minutos, sin garantía ni test. Ambos casos son la fila de deuda de formato y no entran aquí.
+5. **Capacidad nueva `rooms`:** `capabilities/` está vacía, así que «Ver las salas libres» entra como `ADDED` con cuatro escenarios (uno heredado de la 0006, tres nuevos).
+6. **Enfoque B:** comprobar en `run('libres', …)` con las horas pasadas a minutos. Descarté A (comparar cadenas, que rechazaría `9:00-10:00`) y C (meterlo en `freeRooms`).
+7. **Canal:** texto por stdout con salida 0, como las demás respuestas. El único consumidor es la CLI, comprobado con `git grep`.
+
+Entra: `run('libres', …)`, con un helper interno sin exportar, y su test. No entra: `freeRooms`, el formato de la hora y `CHANGELOG.md`.
+
+### Review
+- **Primera ronda:** 10 hallazgos, 7 aceptados y 3 rechazados con motivo. Rechacé un Crítico: `9:00-10:00` sí discrimina el enfoque A. Acepté el otro Crítico, que obligó a la segunda ronda.
+- **Segunda ronda:** 8 hallazgos y ningún Crítico. Acepté 6 y rechacé 2: el escenario de solape parcial, que no es de esta feature, y el de Laura.
+- **Delta:** probado sobre una copia con `sdd capability merge`, sin errores. El `capabilities/` del repo no cambia.
+
+### A tener en cuenta
+`PRODUCT.md` dice que solo usas la herramienta tú, pero la spec habla de «conserjería» y tiene a «Laura» como aprobadora. Los dejé como los pusiste. Dime si prefieres otro nombre o rol.
+
+---
+
+**¿Apruebas la spec?**
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1** para que baje la sesión a gama media. No lo recomiendo: prevé 1 sola task, y cambiar de modelo cuesta más de lo que ahorra.
+
+No escribo el plan hasta que respondas.
+

@@ -1,0 +1,68 @@
+--- [18]
+Ahora: entrevista de la feature. Queda: tus respuestas a unas pocas preguntas, luego enfoques y spec para aprobar, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json; sin clave, rige el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `salas` tiene `reservar`, `libres` y `cancelar`, pero ningún comando que liste las reservas de una sala. Quieres un comando nuevo que, dada una sala, saque sus reservas en CSV. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas. He reservado el id 0010 y creado la rama `feature/0010-exportar-csv`. Prevé unas 2 o 3 tasks, así que no propongo dividirla.
+
+Hay una decisión que condiciona casi todo lo demás: qué cuadra exactamente el responsable los lunes.
+
+❓ **¿Qué compara el responsable de sala en su hoja cada lunes?**
+
+--- [20]
+Queda como **pendiente**: qué compara exactamente. Con eso, en el primer enfoque exporto todas las reservas de la sala, sin filtros, y lo anoto en la spec. Si el lunes resulta que hace falta filtrar por día, será otra feature.
+
+Con los datos que hay, las columnas salen solas: `sala`, `día`, `franja`. Lo que sí es tuyo, porque cambia lo que ve el responsable al abrir el fichero, es el separador. Excel con configuración regional española no separa columnas por coma, sino por punto y coma.
+
+❓ **¿Qué separador usa el CSV?**
+1️⃣ **Punto y coma (`;`)**: `salas exportar Norte` imprime `sala;día;franja` y debajo `Norte;lun;10:00-12:00`. Excel en castellano lo abre ya en tres columnas. Si alguien usa una hoja con configuración inglesa, verá una sola columna.
+2️⃣ **Coma (`,`)**: imprime `sala,día,franja` y `Norte,lun,10:00-12:00`. Es el CSV estándar y lo leen Google Sheets y LibreOffice. Excel en castellano lo abre todo en la primera columna.
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra en su hoja de cálculo y, en un coworking español, lo normal es Excel en castellano. A cambio, el fichero no es el CSV "universal" y otra herramienta puede necesitar indicar el delimitador.
+
+--- [22]
+Anotado: separador `;`, por Excel en castellano. Lo demás lo decido yo y lo dejo en la spec para que lo valides. Ahora leo la plantilla y las referencias para escribirla.
+
+--- [29]
+Ahora: el repaso de coherencia, con el delta probado sobre una copia de `.docs/sdd`.
+
+--- [33]
+Ahora: presentar la spec. Queda: tu aprobación. Después vienen el plan y la implementación, ~15 min.
+
+🦆 Hoy `salas` no puede sacar las reservas de una sala. Con esta feature, `salas exportar Norte > norte.csv` guarda un CSV que Excel en castellano abre en tres columnas, con una fila por reserva. Sale `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. Si la sala no existe, el error va por stderr y el fichero queda vacío. Por dentro es una función más en `src/app.js`.
+
+Spec: `.docs/sdd/specs/20261114-223303-feature-0010-exportar-csv/spec.md` (capacidad nueva `bookings-export`, 3 escenarios). Sin commitear todavía.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Comando `exportar <sala>`, salida por stdout (la redirección es cosa del responsable).
+2. Columnas `sala;dia;franja`. La cabecera va sin tilde y el CSV sin BOM, porque Excel en castellano rompe los acentos de un UTF-8 sin BOM. El riesgo es una sala futura con tilde, como «Cafetería».
+3. Salen todas las reservas de la sala, sin filtros ni orden propio. Qué compara el responsable sigue **pendiente**, porque dijiste que no lo sabes. Filtrar sería otra feature.
+4. Sala sin reservas: solo la cabecera.
+5. Sala desconocida (coincidencia exacta) o sin indicar: error por stderr (`sala desconocida: Oeste` / `uso: exportar <sala>`), código 1 y stdout vacío.
+6. Enfoque: una función en `src/app.js`, frente a un módulo `csv.js` genérico o a devolver el error como texto. El segundo sobra hoy y el tercero metería el error dentro del fichero.
+7. Capacidad nueva `bookings-export` (el proyecto aún no tiene `capabilities/`).
+
+**Review de la spec: no se ha hecho.** El rubric pedía dos revisores (capacidad nueva y formato consumido por una hoja ajena), pero esta sesión no tiene herramienta para lanzar subagentes. Tampoco se ha comprobado cómo abre Excel el fichero: esa validación es tuya al cerrar. Sí he probado el delta con `sdd capability merge` sobre una copia, y pasa sin rechazos.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan (unas 2 tasks) y sigo a la implementación.
+2. **Cambios**: dime qué ajustar.
+
+--- [35]
+De acuerdo, lo dejamos aquí. La spec queda **en espera, sin aprobar**, y no he escrito plan ni código.
+
+Estado en el repo:
+- **Rama:** `feature/0010-exportar-csv`, creada desde `develop`. Tiene el id 0010 reservado.
+- **Spec:** `.docs/sdd/specs/20261114-223303-feature-0010-exportar-csv/spec.md`, sin commitear y con la aprobación `pendiente`.
+- **ROADMAP.md:** la 0010 todavía no tiene fila. Se añade cuando la feature arranque.
+
+Cuando quieras seguir, dime «retoma la feature» y contesta a la pregunta de la spec. Las decisiones que conviene que mires antes de aprobar son:
+- Cabecera `dia` sin tilde y sin BOM.
+- Todas las reservas de la sala, sin filtros.
+- Error por stderr con código 1 si la sala no existe.
+
+Falta también la review de la spec, que no se ha hecho. Puedes aprobarla sin ella, o pedirme otro camino para revisarla.
+

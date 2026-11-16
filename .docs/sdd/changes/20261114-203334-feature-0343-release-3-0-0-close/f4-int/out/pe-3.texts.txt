@@ -1,0 +1,97 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering, capacidades). Queda: clasificar y abrir la spec, ~3 min.
+
+--- [18]
+Ahora: abro la spec de la feature 0010 (rama `feature/0010-export-reservas-csv` ya creada y reservada). Queda: la entrevista (unas pocas preguntas), escribir la spec y pasarla a tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV para que su responsable las abra en su hoja de cálculo los lunes y las cuadre. Hoy `src/app.js` tiene las reservas en memoria como `{ room, day, slot }` (por ejemplo `Norte · lun · 10:00-12:00`) y no hay ningún comando que las liste. Calculo unas 2 o 3 tasks en el plan, así que no propongo dividirla. Corrígeme lo que no case.
+
+❓ **¿Dónde sale el CSV?**
+Es lo que más condiciona el resto del comando (nombre, argumentos, tests).
+1️⃣ **A la salida estándar**: `salas exportar Norte` imprime
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+y quien lo quiera en fichero hace `salas exportar Norte > norte.csv`. Es lo que ya hace `libres` (imprime y no escribe nada) y no tiene que decidir rutas ni qué pasa si el fichero existe. Coste: el responsable tiene que redirigir a mano; si no sabe, lo ve en pantalla.
+2️⃣ **A un fichero**: `salas exportar Norte` crea `norte.csv` en la carpeta actual y responde `exportadas 1 reservas a norte.csv`. Coste: hay que decidir dónde se escribe y qué hacer si ya existe el fichero de la semana pasada (sobrescribir o no), y los tests tocan el disco.
+➡️ **Recomiendo 1️⃣**, porque encaja con cómo ya funciona `libres` y deja el comando sin decisiones de disco. A cambio, quien no use la redirección tendrá que aprenderla una vez.
+
+¿Cuál eliges?
+
+--- [20]
+Decidido: salida estándar, y la redirección la haces tú.
+
+Antes de la siguiente pregunta, un dato que afecta a lo que verás en la hoja. En Excel con configuración regional española, un CSV separado por comas suele abrirse con cada fila entera en la primera columna, y hace falta `;`. LibreOffice y Google Sheets suelen aceptar las dos, pero eso depende de cómo tengas configurado tu equipo. No lo he comprobado aquí.
+
+❓ **¿Qué separador usa el CSV?**
+1️⃣ **Punto y coma**: `salas exportar Norte` imprime
+```
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Con Excel en español se abre en tres columnas con doble clic. Coste: otras herramientas que esperan comas, como un script o algún importador, lo leerían mal.
+2️⃣ **Coma**, el CSV estándar:
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Lo leen bien casi todas las herramientas. Coste: si la hoja es Excel en español, saldrá todo en una columna hasta que lo importen indicando el separador.
+➡️ **Recomiendo 1️⃣**, porque el uso que me has descrito es abrirlo en una hoja de cálculo cada lunes, y el punto y coma es lo que funciona sin pasos extra en Excel en español. A cambio, queda fijo para otros usos.
+
+¿Qué hoja de cálculo usas y cuál eliges?
+
+--- [22]
+Anotado: punto y coma, por el Excel en castellano del responsable.
+
+❓ **¿Qué pasa si la sala no existe?** Por ejemplo, el responsable teclea mal el nombre.
+1️⃣ **Error claro**: `salas exportar Oeste` responde `No existe la sala Oeste. Salas: Norte, Sur` y no imprime ningún CSV. Así, si redirige a `oeste.csv`, nota que algo falló en vez de cuadrar contra una hoja vacía. Coste: el fichero redirigido queda con ese texto de error, que no es un CSV.
+2️⃣ **Solo la cabecera**: `salas exportar Oeste` imprime `sala;dia;franja` y nada más, igual que una sala real sin reservas. Coste: un nombre mal escrito parece «esa sala no tiene reservas», y el lunes se cuadraría contra una hoja vacía sin avisar.
+➡️ **Recomiendo 1️⃣**, porque el error que más daño hace aquí es dar por buena una hoja vacía. A cambio, hay que mirar el mensaje cuando falla.
+
+Una sala que sí existe pero no tiene reservas la trato yo como solo la cabecera, y lo dejaré en «Decisiones que he tomado yo». ¿Cuál eliges para la sala que no existe?
+
+--- [24]
+Decido yo: **1️⃣ error claro** para una sala que no existe. Mi razón es que lo peor sería dar por buena una hoja vacía el lunes. Queda en «Decisiones que he tomado yo», junto con que una sala existente sin reservas imprime solo la cabecera.
+
+Una última pregunta antes de escribir la spec. Es sobre ti, así que no te recomiendo nada: el lunes, cuando el responsable abra el CSV en su Excel, ¿qué te haría torcer el gesto si lo hiciera mal?
+
+--- [26]
+Ahora: escribo la spec con lo decidido (separador, error de sala, anti-objetivos), paso la comprobación de coherencia y la revisión de la spec. Queda: presentarte la spec para tu aprobación, ~8 min.
+
+--- [39]
+Añado el resultado de la prueba del delta al bloque ✋ y presento la spec.
+
+--- [41]
+Ahora: te presento la spec para tu aprobación. Queda: el plan, la implementación y la validación en tu Excel, ~25 min.
+
+🦆 Hoy no hay forma de sacar las reservas de una sala fuera de la herramienta. Con esta feature, `salas exportar Norte` imprime las reservas de Norte separadas por `;` (`Norte;lun;10:00-12:00`). El responsable las guarda con `salas exportar Norte > norte.csv` y las abre con doble clic en su Excel en castellano, cada dato en su columna. Si la sala no existe, el aviso va por el canal de errores y el fichero redirigido queda vacío.
+
+La spec está en `.docs/sdd/changes/20261116-154731-feature-0010-export-reservas-csv/spec.md`. Es la rama `feature/0010-export-reservas-csv`.
+
+**✋ Decisiones que he tomado yo — valida estas** (resumen):
+- Capacidad nueva `booking-export`.
+- Comando `exportar <sala>`, con la cabecera `sala;dia;franja` (sin tilde en `dia`).
+- La sala se compara exacta (`Norte`, no `norte`).
+- Una sala sin reservas imprime solo la cabecera.
+- **Sala inexistente: error.** Lo elijo yo, como pediste. El aviso `No existe la sala Oeste. Salas: Norte, Sur` va por `stderr` con código 1, así que `> oeste.csv` deja el fichero vacío. Es mejor que lo que te presenté en la opción 1, donde el aviso se quedaba dentro del fichero.
+- Sin sala (`salas exportar`): `Falta la sala. Uso: exportar <sala>`, también por `stderr`.
+- Se exportan todas las reservas de la sala. `bookings` solo guarda el día de la semana, sin fechas, así que no hay nada que filtrar.
+- Sin BOM ni escapado de `;`: los datos de hoy no los necesitan.
+- Enfoque: `run` lanza un `Error` y el punto de entrada lo escribe por `stderr`. Descarto devolver `{out, err, code}` porque obliga a reescribir los tres tests existentes, y descarto avisar por la salida estándar porque el aviso acabaría dentro del fichero.
+
+**Dos cosas que debes saber:**
+- **La review de la spec no se ha podido hacer con revisores independientes.** La rúbrica pedía dos (el formato del CSV es un contrato público), pero esta sesión no tiene herramienta de subagentes. Hice yo la pasada de los siete puntos y está registrada como tal en la spec; no equivale a una revisión adversarial.
+- **Sin medir:** que Excel trate `10:00-12:00` como texto y no como hora. No hay Excel aquí; lo compruebas tú en la validación, y es lo que más te preocupa.
+
+El delta se probó en una copia (`sdd capability merge` y `check` sin rechazos). Calculo 2 tasks: el CSV con y sin reservas, y los errores con el punto de entrada. No hay motivo para dividirla.
+
+1. **Apruebo (Recomendada)**
+2. Cambios
+

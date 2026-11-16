@@ -1,0 +1,75 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: git show develop:ROADMAP.md | head -80; echo ----; cat .docs/sdd/steering/debt.md; echo ----; cat .docs/sdd/sdd-kit.json; git branch --all
+
+>>> Bash: node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< # Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/sp
+<<< Roadmap válido
+
+>>> Bash: ls -R src test* 2>/dev/null | head -30; cat src/app.js; cat package.json; grep -rn -i "franja\|slot" --include=*.js --include=*.md . 2>/dev/null | grep -v node_modules | head -20
+<<< src:
+app.js
+
+test:
+app.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas
+
+>>> Bash: node src/app.js libres "basura"; echo "exit=$?"; node src/app.js libres; echo "exit=$?"; node src/app.js libres 25:00-99:99; git log --oneline -- .docs | head
+<<< Norte, Sur
+exit=0
+Norte, Sur
+exit=0
+Norte, Sur
+5af265e feat: base del molde salas
+
+=== RESULTADO (7 turnos, 0.12818059999999998 $)
+Hay una sola fila en «Por triar» y ya la he reproducido. No he escrito nada todavía: antes de tocar `debt.md` necesito tu decisión.
+
+**Ítem:** «Sin validación del formato de franja horaria» (origen: roadmap 2.x, 2026-09-18).
+
+**Reproducción**
+```
+$ node src/app.js libres basura      → Norte, Sur   (exit 0)
+$ node src/app.js libres             → Norte, Sur   (exit 0)
+$ node src/app.js libres 25:00-99:99 → Norte, Sur   (exit 0)
+```
+`freeRooms` en `src/app.js:5` compara la franja como texto. Cualquier franja mal formada, o ausente, da todas las salas como libres, sin error.
+
+**Propuesta: pasa a «Lista»**
+
+| Campo | Valor |
+| --- | --- |
+| Causa | `defecto del producto` |
+| Origen | roadmap 2.x, sin ticket enlazado |
+| Impacto | Una franja mal escrita dice que todo está libre, y eso puede llevar a reservar sobre algo ocupado. |
+| Evidencia | El comando `node src/app.js libres basura`, con su salida de arriba. |
+| Remedio temporal | `ninguno`. Lo he buscado: no hay tickets ni otro caso. |
+| Arreglo | `—`, porque con `defecto del producto` no aplica. |
+| Destino | Fila nueva en Now o Next, o `sin fila`. Decídelo tú. |
+
+**Destino:** recomiendo una fila nueva en Next, tamaño `S`. Sería un patch o un lite: validar `HH:MM-HH:MM` en `libres` y devolver un error claro. Todavía no he probado ninguna solución, así que el brief diría «solución por confirmar». Lo ya hecho (0007) está cerrado y 0008 va de avisos por correo, así que no hay ninguna fila existente a la que se pueda agrupar.
+
+**Caducidad:** «En espera» está vacía, así que no hay nada que descartar por `caducada`.
+
+¿Lo apunto así, con la fila nueva en Next? Si prefieres `sin fila` o que lo descarte, dímelo. Con un «decide tú» lo escribo tal cual y dejo las decisiones en el commit.

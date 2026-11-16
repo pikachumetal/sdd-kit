@@ -1,0 +1,68 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering, capacidades). Queda: clasificar el cambio y confirmar el carril patch, ~2 min.
+
+--- [16]
+Ahora: causa raíz del fallo (con `sdd-debugging`). Queda: la carpeta del patch, el test en rojo, el arreglo, el revisor y el cierre, ~15 min.
+
+--- [26]
+RED confirmado. Aplico el arreglo mínimo.
+
+--- [28]
+Se perdieron las barras invertidas del escape (`\d` quedó como `d`). Lo corrijo con Edit.
+
+--- [32]
+Ahora: reviso con un subagente (obligatorio en el patch) antes del commit. Queda: responder sus hallazgos, commit y cierre con `sdd-archive`, ~8 min, ~0,1 $.
+
+--- [38]
+El vigilante de silencio terminó sin avisos. El revisor sigue en marcha; espero su informe antes de hacer el commit.
+
+--- [40]
+Sin hallazgos bloqueantes. `node --test` pasa (5/5) y `node scripts/lint.mjs` da «sin hallazgos».
+
+1. **Causa raíz.** Es la real. `freeRooms` solo compara `slot` como texto con `b.slot` (`src/app.js:7-9`), así que una franja inexistente no coincide con ninguna reserva y salen todas las salas libres.
+2. **Fix.** Es mínimo y correcto (`src/app.js:5` y `:30`).
+   - La regex acota horas a 00-23 y minutos a 00-59, y está anclada con `^…$`.
+   - `params[0] ?? ''` cubre la llamada sin argumento.
+   - El mensaje es literal al pedido.
+   - `10:00-12:00` sigue por `freeRooms` y da «Sur». No lo ejecuté a mano; el test existente `libres excluye la sala reservada en la franja` pasa.
+3. **Test.** `test/app.test.js:13-19` cubre el síntoma (`25:00-26:00`) más `10:60-11:00`, `abc` y sin argumento. Sin el fix, el primer `assert.equal` fallaría, porque el código antiguo devolvía «Norte, Sur». No lo ejecuté sin el fix.
+4. **Casos límite.**
+   - `23:59-00:00` se acepta: el formato es válido y devuelve «Norte, Sur». El patch solo pide validar el formato, así que es coherente.
+   - Una franja con fin anterior al inicio (`12:00-10:00`) también se acepta, por la misma razón.
+   - Con espacios, `" 10:00-12:00"` se rechaza. `10:00 - 12:00` por CLI llega partido en varios argumentos, `params[0]` es `10:00` y se rechaza.
+   - Un salto de línea final tampoco se cuela, porque `$` sin flag `m` no lo admite.
+
+- **Baja** (`patch.md`, front-matter y §4): `status: done` y `commit: <hash>`, pero el caso 1 de §4 sigue «pendiente» y el esfuerzo real también. Hay que rellenarlos en el cierre, sin tocar el código.
+- **Nit** (`src/app.js:30`): la línea con el ternario es larga. Es solo estilo y el lint no lo marca.
+
+--- [47]
+Ahora: cierre en parada. Falta tu validación, y el `merge` del proyecto no está completo. Queda: validación, `patch.md` final, fusión con `sdd merge --push`, ~5 min tras tu respuesta.
+
+🦆 `libres` ya no se traga franjas que no existen. Antes, `libres 25:00-26:00` listaba «Norte, Sur», porque comparaba la franja como texto y ninguna reserva coincidía. Ahora responde «franja no válida: usa HH:MM-HH:MM». `libres 10:00-12:00` sigue dando «Sur».
+
+**Lo que he verificado yo (`ejecución real` y suite):**
+
+| Caso | Evidencia |
+| --- | --- |
+| `libres 25:00-26:00` → «franja no válida: usa HH:MM-HH:MM» | ejecución real |
+| `libres 10:00-12:00` → «Sur» | ejecución real |
+| `libres 09:00-10:00` → «Norte, Sur» | ejecución real |
+| `10:60-11:00`, `abc` y sin franja → mensaje de error | suite (`node --test`, 5/5) |
+| Lint | `node scripts/lint.mjs`: sin hallazgos |
+
+El revisor (sonnet) no encontró nada bloqueante.
+
+**Decisiones sin ti:** ninguna. El mensaje es el literal que pediste. El rango de horas (00-23) y minutos (00-59) sale de que 25:00 no existe.
+
+**Para validar, prueba tú:**
+1. `node src/app.js libres 25:00-26:00` debe imprimir `franja no válida: usa HH:MM-HH:MM`.
+2. `node src/app.js libres 10:00-12:00` debe imprimir `Sur`.
+
+**Qué necesito de ti:**
+1. **Validación.** `sdd-kit.json` no define `validation.mode`, así que cuenta como `manual`. Sin tu «validado» (con lo que probaste) no cierro ni fusiono, aunque el perfil sea `delegate`. Si prefieres que valide yo, dime «valida tú» y lo dejo como `Validación por el agente`.
+2. **Política de fusión.** A `sdd-kit.json` le faltan `merge.into` y `merge.noFf`, y `sdd merge --check` falla por eso. Con tu validación seguiré con `sdd merge --push`. Dime el destino y si va con `--no-ff`; mi propuesta es `develop` y `--no-ff`. El push también te lo confirmo antes de hacerlo.
+
+**Abiertas a la vez:** ninguna otra rama.
+
+**No terminado.** Falta tu validación y la política de fusión. No borres todavía el worktree `<run>/repo`.
+

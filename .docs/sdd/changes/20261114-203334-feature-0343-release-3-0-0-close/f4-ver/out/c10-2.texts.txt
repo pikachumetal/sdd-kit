@@ -1,0 +1,88 @@
+--- [3]
+Ahora: cerrar la revisión final con `sdd-verify`, ya que los ejes han vuelto. Queda: leer los dos informes y decidir el cierre, ~5 min.
+
+--- [22]
+Escribo los tests RED: cada test carga su propia instancia de la app (así no depende del orden) y uno nuevo para el motivo con espacio final.
+
+--- [27]
+RED confirmado en los dos: el test viejo de `canceladas` ejecutado solo da `''`, y el motivo con espacio final responde «motivo no válido». Ahora el GREEN.
+
+--- [31]
+GREEN: 4/4 en el fichero, el de `canceladas` pasa solo, suite 6/6. Hago el commit de la pasada y del registro.
+
+--- [33]
+Las comillas invertidas del heredoc rompieron una línea de `tasks.md`; la corrijo.
+
+--- [39]
+Ahora: la re-revisión única (opus+high) sobre `b883894..4b4edc3`, en su worktree aislado. Queda: después, la corrección de la spec del ` — ` y su revisor, ~10 min, ~$1.
+
+--- [42]
+Escribo el informe de la pasada y lanzo la re-revisión con su vigilancia de silencio.
+
+--- [49]
+Mientras revisa, preparo la desviación del separador: escribo la corrección en `spec.md` sin commit y leo los siete puntos del revisor de spec.
+
+--- [67]
+### Finding Verdicts
+
+1. **[Code, Important] `reasonOf` keeps the spaces around the reason**: ADDRESSED. `src/app.js:16` now returns `params[index + 1]?.trim()`. The optional chain keeps the case where `--motivo` is the last argument returning `undefined`, and that still falls into «motivo no válido…» at `src/app.js:20`. The new test «cancelar con un motivo de la lista con espacios alrededor» (`test/cancel.test.js:16-19`) passes `'sala ocupada '` and asserts «cancelada Norte lun (sala ocupada)». The report shows it RED, then GREEN with 4 of 4 passing.
+
+2. **[Spec, Minor] The `canceladas` test depended on test order**: ADDRESSED. `freshApp()` (`test/cancel.test.js:4-9`) imports `../src/app.js?test=N` with a different query each time. Node ESM caches modules by URL, so each test gets its own `bookings` array. The `canceladas` test (`test/cancel.test.js:26-30`) now does its own cancel before listing. Its assertion «Norte lun — sala ocupada» and its name are unchanged, so it still matches the spec's THEN. The report shows the old test failing when run alone (actual `''`) and the new one passing alone.
+
+3. **[Code, Minor, held for the dev-lead] The ` — ` separator breaks on a cp850 console**: Left untouched, as instructed. `src/app.js:36` still builds `` `${b.room} ${b.day} — ${b.reason}` ``. The report (line 16) and the record in `tasks.md:33` both say it was left out on purpose. It does not count as open.
+
+### New Breakage in the Fix Diff
+
+- Minor, `test/cancel.test.js:16-19`: the test name says «con espacios alrededor» (spaces on both sides), but its input `'sala ocupada '` only has a trailing space. `trim()` also removes leading spaces, so the code is right, but the name promises more than the input checks.
+- No issue, just a note on `test/cancel.test.js` (whole file): the diff rewrites the whole file because its line endings changed from CRLF to LF. `src/app.js` already uses LF, and no assertion, test name or datum in the existing tests changed except the setup line the finding needed. This is not a change to a RED test.
+- No other problems. The comment at `test/cancel.test.js:5` explains why the tests use separate instances (state must not leak between tests). The code alone does not show that, so it is not a comment that repeats the code.
+
+### Out-of-Scope Observations
+
+- `test/cancel.test.js` (and `test/app.test.js`): the spec line «AND sin `--motivo` responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»» has no test. «Dónde se prueba» puts the reason checks in `test/cancel.test.js`, but no test calls `cancelar` without `--motivo`. The code already handles it (`src/app.js:15-16,20`). This gap was in the code before the fix pass and is outside the fix diff.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage. The fix diff has one new Minor, the test name at `test/cancel.test.js:16`.
+
+Checks run: I read the diff package, the fix report and the spec, and ran `cat -n src/app.js` at HEAD. With `od -c` I compared line endings of `test/cancel.test.js` at b883894 and 4b4edc3, and of `src/app.js`. I also grepped `test/app.test.js` for reason or cancel tests. I did not run any tests.
+
+--- [71]
+Me paro aquí: la revisión final está cerrada salvo un punto, el separador de `canceladas`, que necesita tu decisión.
+
+🦆 La revisión final dejó tres hallazgos. Dos ya están arreglados y la re-revisión los da por resueltos. El tercero proponía cambiar ` — ` por ` - ` en el listado de canceladas. Eso cambia una frase que el dev-lead ya aprobó, así que no lo he hecho. Además, el revisor de spec ve un problema: si la consola de recepción rompe la raya, también romperá «válido» y «día».
+
+**Hecho**
+- **Pasada de fix** (`8540b8d`). Primero escribí el test que reproduce cada fallo, lo vi fallar y luego lo arreglé:
+  - **Código (Important):** un motivo con espacios alrededor ya no responde «motivo no válido». Está en `src/app.js:16`.
+  - **Spec (Minor):** el test de `canceladas` ya no depende del orden. Cada test carga su propia copia de la app. Antes, ejecutado solo, devolvía `''`.
+  - La suite completa (`node --test`) pasa 6 de 6.
+- **Re-revisión** (opus+high, `b883894..4b4edc3`): los dos arreglos están bien y no han roto nada importante. Añadí su resultado en `tasks.md`, en el commit `bf8f60b` (una línea de documentación que revisé yo mismo).
+- **Decisiones mías, anotadas en el registro de la feature:**
+  - El nombre del test nuevo dice «con espacios alrededor», pero solo prueba un espacio al final. El código recorta los dos lados, así que lo dejo como está.
+  - La frase de la spec «sin `--motivo` responde lo mismo» no tiene test. El código ya lo cubre, pero un commit de test ahora se quedaría sin revisar. Propongo añadirlo junto con la corrección del separador, si la apruebas, o en la validación.
+- No he podido borrar la carpeta de la revisión, `../review-0010-4b4edc3`, porque Windows la tiene en uso. Git ya no la tiene registrada; se puede borrar cuando se libere.
+
+✋ **Desviación: ` — ` → ` - ` en `canceladas`**
+He dejado escrita la corrección en `spec.md` sin hacer commit: la decisión 4, el resultado esperado `«Norte lun - sala ocupada»` y una nota en «Enmiendas». Un revisor de spec (sonnet, con los siete puntos de comprobación) la ha revisado:
+- **Contra la propia corrección:** en una consola `cp850` se rompen también «válido» y «día». Cambiar solo la raya no arregla la consola. Además, el ` - ` puede confundirse si una sala o un motivo llevan guion.
+- **Contra la spec ya aprobada:**
+  - **Crítico:** cancelar ya existía (patch 0007). Exigir el motivo cambia lo que hacía antes, y la spec no lo declara como modificación.
+  - **Crítico:** no existe `capabilities/bookings`.
+  - **Importante:** la decisión 3 cita «MODIFIED, datos», pero todo el cambio está declarado como «ADDED».
+  - **Importante:** falta la decisión 2, y hay decisiones sin listar, como que cancelar sin `--motivo` sea un error.
+  - **Importante:** faltan las «Reglas de la capacidad».
+  - **Importante:** solo hay escenarios del caso que funciona.
+
+**Mi recomendación:** descartar la corrección (`git checkout -- <spec.md>`) y dejar ` — `. La codificación de la consola de recepción iría como un cambio aparte, con `sdd-propose`. Los hallazgos de la spec aprobada los revisaría el dev-lead antes de cerrar la feature.
+
+La otra opción es aprobar ` - `. En ese caso entraría como Task 3 con su propio commit y su revisión, y llevaría el test de «sin `--motivo`».
+
+¿Cuál de las dos?
+
+--- [73]
+La vigilancia de la re-revisión ha terminado sin avisos; la re-revisión ya había vuelto antes. Sigo parado a la espera de tu decisión sobre el separador:
+
+- **Descartarla (mi recomendación):** se mantiene ` — ` y la codificación de la consola de recepción va aparte.
+- **Aprobar ` - `:** entra como Task 3, con el test de «sin `--motivo`».
+

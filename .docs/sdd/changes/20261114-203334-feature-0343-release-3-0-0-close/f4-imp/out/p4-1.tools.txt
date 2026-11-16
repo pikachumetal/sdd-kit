@@ -1,0 +1,108 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git branch --show-current; ls .docs/sdd/changes/*0016* 2>/dev/null; git diff; cat src/app.js | head -80
+
+>>> Glob: .docs/sdd/**/*0016*/**
+<<< .docs\sdd\specs\20261009-140000-feature-0016-room-hours\plan.md
+.docs\sdd\specs\20261009-140000-feature-0016-room-hours\spec.md
+<<<  M src/app.js
+feature/0016-room-hours
+diff --git a/src/app.js b/src/app.js
+index 368efdd..deb1db6 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room)
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 'reservar' && params.includes('--cada-semana')) 
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261009-140000-feature-0016-room-hours\spec.md
+<<< 1	---
+2	id: 20261009-140000-feature-0016-room-hours
+3	feature: 0016
+4	title: Horas reservadas por sala
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-09
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-09
+14	---
+15	
+16	# Spec — Horas reservadas por sala
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — nace el comando `horas`.
+21	
+22	## Decisiones que he tomado yo — valida estas
+23	
+24	1. Sin decisiones propias.
+25	
+26	## Intent
+27	
+28	El responsable quiere saber cuántas horas tiene reservada cada
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261009-140000-feature-0016-room-hours\plan.md
+<<< 1	---
+2	id: 20261009-140000-feature-0016-room-hours
+3	feature: 0016
+4	title: Plan de implementación — Horas reservadas por sala
+5	spec: ./spec.md
+6	status: approved
+7	created: 2026-10-09
+8	---
+9	
+10	# Plan de implementación — Horas reservadas por sala
+11	
+12	## Decisiones que he tomado yo — valida estas
+13	
+14	1. Una task, Native.
+15	
+16	**Goal**: Comando `horas`.
+17	
+18	**Ejecución**: native, porque es una task en un fichero.
+19	
+20	## Restricciones globales
+21	
+22	### De código
+23	
+24	- Texto de la interfaz en castellano.
+25	- Sin comentarios que repitan el código ni que citen documentos.
+26
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: node src/app.js horas Norte; node src/app.js horas Sur
+<<< Norte: 2 h
+Sur: 0 h
+
+=== RESULTADO (9 turnos, 0.18909319999999996 $)
+`horas` ya cumple la spec. Solo falta el commit de la Task 1.
+
+- `horas Norte` responde `Norte: 2 h`.
+- `horas Sur` responde `Sur: 0 h`, porque la reserva cancelada ya no cuenta. El arreglo fue una línea en `roomHours` de `src/app.js`: filtrar por `status === 'active'`.
+
+Lo comprobé ejecutando el comando a mano, no con tests.
+
+- **Sin tests:** como pediste, no he escrito `test/horas.test.js`. El plan lo lista en la Task 1 y el kit manda que vaya en el commit de la task, así que la Task 1 no queda cerrada del todo hasta que lo pongas.
+- **Sin commit:** `src/app.js` sigue sin commitear. Lo dejo para cuando metas tu test, y así entran juntos en el commit de la Task 1.
+- **Sin revisión:** no he saltado por el flujo `sdd-implement-native` ni he hecho la revisión final. Para la demo no hace falta, pero antes de cerrar la 0016 la pedirá `sdd-archive`.
+
+Para ir más rápido con el test, el caso es `run('horas', ['Norte'])` igual a `'Norte: 2 h'` y `run('horas', ['Sur'])` igual a `'Sur: 0 h'`, siguiendo el estilo de `test/cancel.test.js`.

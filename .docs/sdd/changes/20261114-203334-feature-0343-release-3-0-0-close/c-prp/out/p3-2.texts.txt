@@ -1,0 +1,118 @@
+--- [2]
+Esto es un cambio pedido como patch, así que entro por `sdd-kit:sdd-propose` antes de tocar nada.
+
+--- [5]
+Ahora: leo el contexto del proyecto (docs SDD) y miro el código que toca el fallo, solo para clasificar. Queda: confirmar el carril contigo, ~2 min.
+
+--- [21]
+Ahora: invoco `sdd-debugging` para confirmar la causa raíz con evidencia antes de tocar el código. Queda: abrir el patch, el test en rojo, el fix, el gate y el cierre, ~15 min.
+
+--- [31]
+Sigo trabajando en el repo del patch (`repo/`), no en la carpeta de plantillas del kit. Escribo `patch.md` con síntoma, causa raíz con evidencia y estimación, antes de tocar el código.
+
+--- [34]
+Una frase de §2 sobre el patch 0007 no la he verificado (solo hay un commit en el historial), así que la quito.
+
+--- [36]
+Ahora el test en rojo, antes del fix (`sdd-tdd`).
+
+--- [42]
+El RED falla por la causa esperada: el primer test devuelve `cancelada Norte mar`, y los otros dos fallan en cascada porque el lunes ya estaba cancelado. Ahora el fix mínimo.
+
+--- [46]
+Verde: 6/6 tests y lint sin hallazgos, y el test es idéntico a la copia RED. Registro la verificación en `patch.md` y lanzo el revisor único que exige un patch.
+
+--- [60]
+`patch.md` está al día. Hago el commit del fix, con el código, los tests y `patch.md` juntos.
+
+--- [62]
+Ahora: cierro el patch con `sdd-archive` (validación, registros y merge). Queda: tu validación en `delegate`, ~5 min.
+
+--- [65]
+Ahora: pre-checks del cierre (solo lectura) y preparo el mensaje de validación. Queda: tu validación, y después registros, merge y gate, ~5 min.
+
+--- [78]
+Tu parche está arreglado y commiteado, pero el cierre está parado a la espera de tu validación. No he hecho el merge.
+
+🦆 Antes, `cancelar Norte mar` (sin reserva el martes) respondía «cancelada Norte mar» y cancelaba la reserva del lunes. Ahora responde «sin reserva Norte mar» y deja el lunes intacto. Pasaba lo mismo con `anular`, y también queda arreglado. La causa no era el orden de `bookings`: la búsqueda no miraba el día, solo la sala.
+
+**✋ Me salí del plan en…**
+
+- Nada. Una decisión mía: hice un fichero de test por caso en vez de añadirlos a `test/cancel.test.js`, porque los tests dependían del orden y uno no fallaba por sí solo sin el fix.
+
+**Smoke que he corrido**
+
+| Caso | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` | ejecución real | `sin reserva Norte mar` |
+| `anular Norte mar` | ejecución real | `sin reserva Norte mar` |
+| `cancelar Norte lun` | ejecución real | `cancelada Norte lun` |
+| `anular Norte lun` | ejecución real | `anulada Norte lun` |
+| La reserva del lunes sigue activa tras intentar el martes | `suite` | `libres 10:00-12:00` → `Sur` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre c15ba46, 0,14 s.
+- `node scripts/lint.mjs`: sin hallazgos.
+- Sin el fix, los dos tests nuevos fallaban con `cancelada Norte mar` y `anulada Norte mar`.
+
+**Sin probar**
+
+- Que el lunes siga activo después de un intento del martes no se puede ver desde la línea de comandos. Las reservas viven en memoria y cada comando arranca de cero. Solo lo comprueba la suite.
+
+**Antes de cerrar necesito dos cosas tuyas**
+
+1. **Validación.** El proyecto no tiene `validation.mode` en `sdd-kit.json`, así que valida una persona. Pega los pasos de abajo, o usa el panel.
+2. **Merge.** `sdd merge --check` falla porque a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Te recomiendo `merge.into: develop` y `merge.noFf: true`. ¿Los añado y fusiono `feature/0012-cancelar-dia` en `develop` al validar?
+
+No hay `.gitignore` y el panel escribe en `.temp/`, que ahora sale como no versionado. Te propongo añadirlo en este mismo cierre.
+
+Panel: plan B en http://127.0.0.1:10524/ (no ve la app, así que si algo falla, cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0012-cancelar-dia` · worktree `<run>\repo`
+
+No hay entorno que arrancar: `node src/app.js` es una CLI. Con un solo terminal:
+
+```
+cd <run>\repo
+```
+
+1. Tu caso: reserva de Norte el lunes y cancelas el martes → debe decir «sin reserva Norte mar»; antes decía «cancelada Norte mar».
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Lo mismo con `anular` → «sin reserva Norte mar».
+
+```
+node src/app.js anular Norte mar
+```
+
+3. La del lunes se sigue cancelando → «cancelada Norte lun».
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Y se sigue anulando → «anulada Norte lun».
+
+```
+node src/app.js anular Norte lun
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en el próximo uso de producción, a cargo de ti`
+
+Dime «validado» o qué paso falla.
+
+--- [80]
+El panel de validación (`http://127.0.0.1:10524/`) se ha parado solo porque venció su tiempo límite en segundo plano, así que ese enlace ya no responde. Ese aviso es automático y no es una respuesta tuya, así que sigo sin validación.
+
+El resto sigue igual:
+
+- **Estado del patch:** el fix está commiteado en `feature/0012-cancelar-dia` (c15ba46) y no se ha fusionado nada.
+- **Cómo validar:** usa los 4 pasos de texto del mensaje anterior, que no dependen del panel. Dime «validado» o qué paso falla. Si prefieres el panel, dímelo y lo relanzo.
+- **Merge:** falta que me confirmes si añado `merge.into: develop` y `merge.noFf: true` a `.docs/sdd/sdd-kit.json`, que es lo que recomiendo.
+

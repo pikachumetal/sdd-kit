@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md; ls -R src test .docs/sdd/specs; cat package.json
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js; head -60 test/app.test.js; git branch -a; ls node_modules 2>&1 | head -1
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references"; sed -n 1,60p control-profiles.md; echo ======; cat spec-writing.md; echo =====; sed -n 1,40p nombrado.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.16593790000000003 $)
+Ahora: dejo el contexto leído, he clasificado el cambio y empiezo la entrevista para la spec. Queda: unas pocas preguntas de diseño, la spec con tu aprobación y luego plan e implementación, ~10 min hasta la parada de la spec.
+
+(Mi shell se quedó en la carpeta del kit tras leer sus referencias. Vuelvo a trabajar siempre sobre el repo `salas`.)
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no comprueba nada y no hay forma de saber que una sala está ocupada, salvo `libres <franja>`. Quieres que, cuando la sala que pides ya está reservada en esa franja, puedas quedarte en una lista de espera. Prevo unas 3 tareas sobre la misma superficie (`src/app.js` y sus tests), así que no propongo dividirla. Corrígeme si he entendido mal algo.
+
+Antes de diseñar nada necesito saber qué esperas de ella, porque eso decide casi todo lo demás. Cuéntame con tus palabras: ¿qué haces hoy cuando la sala que quieres está ocupada y qué te gustaría que pasara con la lista de espera?
+
+=== RESULTADO (1 turnos, 0.18710250000000003 $)
+Entendido: lo que quieres es dejar de mirar `libres` a mano, así que lo importante es qué pasa cuando la sala se libera. Un hecho del código condiciona esto. Hoy las reservas viven en memoria dentro de `src/app.js` y cada comando es un proceso que termina. Nada avisa a nadie por sí solo, y la lista de espera tendrá que guardarse en algún sitio (eso lo decido yo y lo dejo en la spec).
+
+❓ **¿Qué pasa cuando alguien cancela y Norte queda libre?**
+
+Escena de partida: Norte está reservada el lunes de 10:00 a 12:00 y tú pides `reservar Norte lun 10:00-12:00`. Sale `Norte ocupada; en espera (1.º)`.
+
+1️⃣ **Se te reserva sola.** Al cancelar la reserva, la primera persona de la lista se queda con la sala. En `cancelar lun 10:00-12:00` verías `cancelada; Norte pasa a quien esperaba`. No tienes que mirar nada, pero te puede llegar una reserva que ya no querías.
+
+2️⃣ **Se te avisa y tú confirmas.** Al cancelar se marca tu turno, y la próxima vez que ejecutes cualquier comando sale `Norte lun 10:00-12:00 libre para ti: reserva con "reservar Norte …"`. No reserva sin ti, pero sigues teniendo que ejecutar algo para enterarte. Es el menor cambio y no usa el correo de 0008.
+
+3️⃣ **Solo el turno, sin aviso.** La lista guarda tu orden y `libres` te dice `Norte (1.º en espera)`. Sigues mirando a mano, así que no resuelve tu problema.
+
+➡️ **Recomiendo 1️⃣**, porque usas la herramienta solo y tu queja es tener que volver a mirar. En 2️⃣ seguirías mirando, solo que con un mensaje más claro. A cambio, 1️⃣ puede reservarte una sala que ya no necesitas, y eso te obliga a poder salir de la lista y cancelar. ¿Cuál eliges?

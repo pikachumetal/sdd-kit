@@ -1,0 +1,61 @@
+--- [3]
+Ahora: leer la spec, el plan y la config del kit para decidir el método. Queda: elegir método e invocarlo, ~1 min.
+
+--- [7]
+Spec aprobada, plan nativo con una sola task. Invoco el método Native.
+
+--- [10]
+Ahora: preparar workspace y ledger y cargar `sdd-worktrees` y `sdd-tdd`. Queda: medir, escribir `research.md`, commit y revisión final, ~10 min.
+
+--- [14]
+Uso `sdd-worktrees`. Compruebo el aislamiento, el código y la línea base.
+
+--- [17]
+Línea base en verde (4/4). Trabajo en la rama `feature/0032…` sin crear worktree, porque no hay preferencia declarada y no es `main`. Ahora el workspace y la task.
+
+--- [24]
+Escribo el script de medida en la carpeta de la spec: 12 repeticiones seguidas, 1.000 reservas activas en la misma franja, con `seed`.
+
+--- [27]
+Resultado: media ≈0,085 ms, por encima del umbral de 0,05 ms. Veo en `freeRooms` un `sort` cuyo resultado se descarta. Mido una copia sin él en `.temp`, solo como dato para la recomendación.
+
+--- [32]
+Task 1 completa. Falta la revisión final, así que invoco `sdd-verify`.
+
+--- [38]
+Vuelvo al repo con rutas absolutas. Compruebo que el spike no deja código de producción y repaso la revisión de Spec contra el diff.
+
+--- [41]
+Revisión de Spec hecha por mí, sin hallazgos. Lo anoto en el ledger, recojo los rulings (no hay) y borro el workspace.
+
+--- [45]
+Ahora: pre-checks del cierre (`merge --check`, ramas abiertas, spec aprobada). Queda: decidir hasta dónde cierro, porque `sdd-kit.json` no trae bloque `merge`.
+
+--- [48]
+El plan está implementado y commiteado. No he cerrado ni fusionado la feature: `sdd-archive` se detuvo en su pre-check.
+
+**Resultado del spike.** O1 no cumple tal como se definió. Con 1.000 reservas activas en la misma franja, `libres` tarda entre 0,070 y 0,108 ms de media por llamada (12 repeticiones de 2.000 llamadas). El umbral era 0,05 ms.
+
+- **Aguante:** el tiempo es estable. El heap sube 0,05 MB en 24.000 llamadas.
+- **Causa:** `freeRooms` en `src/app.js` ordena una copia de las 1.000 reservas en cada llamada (`bookings.slice().sort(...)`) y descarta el resultado.
+- **Dato extra:** una copia sin esa línea, medida aparte, dio unos 0,0002–0,0005 ms. No es un objetivo de la spec ni cuenta como cumplido, y está marcado así en `research.md`.
+- **Salvedad:** con esta carga, `some` encuentra Norte y Sur en las dos primeras reservas, así que no mide el recorrido completo de la lista.
+- **Recomendación:** no abrir una caché por ahora. Quitar el `sort` y volver a medir con una carga que recorra toda la lista.
+
+**Qué hay en la rama** (commit `af39893`, solo en `.docs/sdd/specs/20261015-120000-feature-0032-free-rooms-fast/`):
+- `research.md`
+- `measure-libres.mjs`
+- `libres-salida-bruta.txt`
+- `libres-salida-bruta-sin-sort.txt`
+
+No hay cambios en código de producción. `node --test` da 4/4 en verde.
+
+**Revisión final.** Al ser un spike, solo sale el eje Spec. No tengo herramienta de subagentes, así que la hice yo (self-review, anotada en el ledger). Es más débil que una revisión con contexto fresco, y queda a tu criterio si basta antes de fusionar. No hubo hallazgos. No hubo rulings ni minors diferidos.
+
+**Pendiente.**
+- **Política de fusión:** `merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Hay que declararlos (probablemente `develop`) o que me digas a qué rama y cómo fusionar.
+- **Cierre:** sin eso no sigo con walkthrough, retro, roadmap ni merge. `ROADMAP.md` tampoco tiene fila para la 0032.
+- **Decisión de proceso:** trabajé en la rama `feature/0032-free-rooms-fast` sin crear un worktree aparte.
+
+**No terminado.** Falta la política de fusión y el cierre con `sdd-archive`. No borres nada todavía.
+

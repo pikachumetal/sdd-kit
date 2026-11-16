@@ -1,0 +1,110 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar el cambio y escribir la spec hasta la parada de aprobación, ~5 min.
+
+--- [17]
+Ahora: reservo el id (no hay fila de roadmap), creo la rama y la carpeta. Queda: spec, coherencia, revisión y presentación, ~7 min.
+
+--- [27]
+Ahora: pasada de coherencia (delta probado sobre una copia). Queda: revisión con un revisor y presentación, ~5 min.
+
+--- [32]
+La revisión de la spec está en marcha con un revisor (sonnet). Espero su resultado para incorporar los hallazgos antes de presentarte la spec.
+
+--- [37]
+1. Crítico · Delta de comportamiento, «Libres filtra por planta» · El escenario cubre planta válida y filtro, pero la rama «sala ocupada en la planta pedida» solo se prueba con `Norte` en planta 1, así que el THEN vacío podría darse también si el filtro se aplicara antes de descartar las ocupadas. El orden «ocupadas primero, luego planta» que fija el Approach no queda forzado. · Añadir un caso en el que se distinga el orden, o decir que el orden no es observable y quitarlo del Approach.
+
+2. Crítico · Delta de comportamiento, «Libres por franja» · Es un ADDED que recoge el comportamiento actual de `libres` (decisión 8) y no hay `capabilities/` que lo respalde. Declarar como nuevo algo que ya existe oculta que el código actual quizá no cumple lo escrito, por ejemplo el formato `Norte, Sur` o el hecho de que el lunes sea el día de la reserva. · Verificar el formato de salida real y el día de la reserva contra el test actual de `libres`, y anotarlo como línea base verificada en las decisiones.
+
+3. Importante · Delta, «Planta desconocida» y decisión 5 · `--planta abc` y `--planta 3` dan el mismo aviso, pero no hay escenario de borde para valores como `1.5`, `-1`, ` 2` o `02`. El término dice «número entero» y «Existe = alguna sala tiene esa planta»: no queda dicho si `02` o `2.0` coinciden con la planta 2. · Añadir un THEN con `02` (o declarar que la comparación es por texto exacto) y reflejarlo en la decisión 5.
+
+4. Importante · Delta, «Planta sin número» · Solo se cubre `--planta` como último argumento. Con `libres --planta 10:00-12:00`, el valor sería la franja y daría `planta desconocida: 10:00-12:00`, y la franja quedaría sin informar. La spec no dice qué pasa. · Añadir el escenario y decidir la salida, incluyendo el caso en que falte la franja con `--planta 2` presente.
+
+5. Importante · Decisiones vs. cuerpo · Hay decisiones tomadas en el cuerpo que no están en «✋»: `--planta` repetido, `libres` sin franja (hoy ¿qué da?), que con error de planta no se evalúe la franja (el Approach valida antes de filtrar), y la prioridad entre los dos avisos cuando concurren. · Añadirlas como decisiones o como «no aplica», con su escenario.
+
+6. Importante · Reglas de la capacidad, «Límites» y «Regla ante conflicto» · «Límites: ninguno» y «no aplica» se declaran sin justificar. Hay un límite implícito: las plantas válidas son solo `1` y `2`. «Dónde viven los datos» cita «ADR 0003», que no aparece entre los ficheros leídos, y `architecture.md` no lo menciona. «ADR candidatas: ninguna» tampoco cuadra. · Comprobar que existe el ADR 0003. Si no existe, quitar la cita y citar `architecture.md`. Razonar «Límites» (plantas reconocidas = las de la constante) y «conflicto» (varias salas en una planta no generan conflicto).
+
+7. Importante · Decisiones 1 y 2 vs. Intent/Scope · El reparto de plantas queda como PENDIENTE y aun así es el eje de todos los THEN y del criterio de éxito del Intent. El motivo es un supuesto. Con `status: draft` y perfil `delegate`, el valor puede llegar al código sin confirmar. · Pedir la confirmación antes de aprobar, o bloquear la aprobación mientras sigan pendientes. Marcar en cada THEN que el dato es provisional.
+
+8. Menor · Delta, «Libres sin planta lista todas» · Duplica el segundo AND de «Libres por franja» (`14:00-16:00` → `Norte, Sur`) y no prueba el anti-objetivo: la franja 14:00-16:00 no tiene reservas, así que no demuestra que la salida con `--planta` ausente sea idéntica a la de hoy cuando hay ocupadas. · Cambiar el WHEN a `10:00-12:00` sin `--planta` (THEN `Sur`) o fusionarlo con «Libres por franja».
+
+9. Menor · Terminología, decisión 9 · «Sala» en `PRODUCT.md` dice «_Evitar_: room», pero el código y el Approach usan `rooms` y `freeRooms`; además «planta» se anota como candidata «lo escribe el cierre» sin estar en Scope. · Añadir al Scope la actualización de «Terminology», o dejar en la decisión el identificador del código `floor` como excepción conocida a «idioma de los nombres».
+
+10. Menor · «✋» líneas 27-28 y 41 · La decisión 11 afirma una pasada con `sdd capability merge` exit 0 «5 requisitos y 5 reglas», pero la sección «Reglas» lista 5 puntos como reglas de la capacidad, no 5 reglas añadidas, y el delta tiene 5 ADDED. Es un conteo que no se puede comprobar con lo que hay en la spec. · Reformular el conteo («5 requisitos») o quitar «5 reglas».
+
+--- [39]
+Ahora: incorporo los hallazgos del revisor a la spec. Queda: segunda ronda de revisión (hay dos Críticos aceptados) y presentación, ~5 min.
+
+--- [42]
+No hay Python; reescribo la spec entera con los cambios.
+
+--- [44]
+Ahora: segunda ronda (un revisor sonnet relee la spec corregida) y repaso del delta en copia.
+
+--- [47]
+La segunda revisión sigue en marcha. Espero su resultado antes de presentarte la spec.
+
+--- [53]
+1. Importante · Delta «Libres por franja» y Reglas de la capacidad · `room-availability` dice «qué salas están libres en una franja», pero la decisión 9 admite que `libres` ignora el día. PRODUCT.md define Reserva como «sala en un día y una franja», así que la capacidad nace contradiciendo el producto, y el comportamiento queda solo en una decisión y sin constancia en el contrato · Añadir a las Reglas una línea «Límites: la comparación es solo por franja, sin día», o abrir una entrada en `debt.md`. No dejarlo solo en la decisión 9.
+
+2. Importante · Delta GIVEN de «Libres por franja» y «Libres filtra por planta» · «reserva activa» no está definida. No se dice si una Cancelación o una Anulación libera la sala, y la decisión 13 solo verifica el caso de la reserva viva. Si `freeRooms` no distingue cancelaciones, la capacidad documenta algo falso · Verificar cómo trata `freeRooms` las reservas canceladas o anuladas. Definir «activa» en la capacidad o quitar el adjetivo.
+
+3. Importante · Decisión 3 y Delta · `libres 10:00-12:00 --planta=2` queda fuera de la forma elegida. Con el parseo descrito, `--planta=2` pasa a ser un argumento sobrante y se devuelven todas las salas sin aviso, es decir, un filtro que se ignora en silencio. Ningún THEN ni decisión lo cubre · Decidir el comportamiento (aviso, o aceptar ambas formas) y añadir un THEN. Si se deja sin validar, listarlo en la decisión 8.
+
+4. Importante · Decisión 8 «Bordes que no valido» · Afirma sin escenario que `libres --planta 2` «sale las de la planta». «Repetido vale el último» choca con la regla de la decisión 6, porque `--planta 1 --planta` o `--planta --planta 2` toman como valor el siguiente argumento. Son comportamientos que el implementador tendrá que inventar · Fijar la precedencia entre «valor siguiente» y «último gana» con un caso por escrito. Si no se prueba, decir que el resultado queda sin definir.
+
+5. Importante · Decisión 1 y blockquote del Delta · Todos los THEN dependen de un reparto de plantas sin confirmar. El blockquote «pendiente» está dentro del delta y puede acabar mergeado en `capabilities/`. El gate de aprobación no impide aprobar con el dato sin confirmar · Resolver la decisión 1 antes de aprobar y sacar la nota del delta, para que no llegue a la capacidad. Si no, añadir una condición explícita de aprobación.
+
+6. Menor · «Libres filtra por planta», AND `10:00-12:00 --planta 2` → `Sur` · Pasa sin el filtro, porque `Sur` es la única libre en esa franja, así que no prueba el comportamiento. Los otros THEN sí lo prueban · Quitarlo o cambiarlo por una franja donde ambas estén libres. Así se verifica que el filtro excluye a `Norte`.
+
+7. Menor · «✋ Decisiones» · La cabecera dice «un revisor» y «Revisor único», pero la política de modelos dice «uno, más una segunda ronda sonnet». La lista no declara cuántas rondas hay. El tamaño «~25 líneas en 2 ficheros» tampoco cuenta PRODUCT.md (Terminology), `capabilities/room-availability` ni el posible `debt.md` · Unificar el número de revisores y rondas. Incluir en el tamaño los ficheros de documentación que se tocan.
+
+8. Menor · Decisión 11 y Términos · El término «planta» se añade a Terminology de PRODUCT.md «en el cierre», pero la sección «Lo que se retira o cambia de forma» dice «nada» y el Scope no lo lista. PRODUCT.md es un contrato documental tocado sin declararlo en Entra · Añadir a «Entra» la edición de Terminology (PRODUCT.md) y la creación de `capabilities/room-availability`.
+
+9. Menor · Decisión 3 y cabecera (`dev-lead`) · «El nombre lo decidió el dev-lead» y la validación por «dev-lead» chocan con PRODUCT.md («La uso yo… no hay más desarrolladores»). Mezcla roles que PRODUCT no define, y la decisión 1 pide confirmar «por ti» · Unificar el rol con el único usuario descrito en PRODUCT.md, o definir el rol dev-lead.
+
+10. Menor · Decisión 5 · «Existe = el texto es exactamente la planta de alguna sala» no contempla `--planta ""` (cadena vacía) ni valores con espacios. El primero ya no es «sin número» porque hay argumento, y saldría `planta desconocida: ` con un hueco final · Añadir el caso vacío a la decisión 5 o a la 8 como borde no validado.
+
+--- [55]
+Sin Críticos en la segunda ronda, así que no hay tercera. Incorporo los hallazgos.
+
+--- [63]
+Compruebo que el delta final sigue fusionando y fijo el resultado en la decisión 14.
+
+--- [67]
+Ahora: presento la spec en el punto de aprobación. Queda: tu respuesta; con ella escribo el plan y paso a implementar, ~10 min.
+
+La spec está en `.docs/sdd/changes/20261115-194008-feature-0012-libres-planta/spec.md`, en la rama `feature/0012-libres-planta`. No he hecho commit.
+
+🦆 Hoy `salas libres 10:00-12:00` enseña todas las salas libres de esa franja, estén en la planta que estén. Con el cambio, `salas libres 10:00-12:00 --planta 2` enseña solo las de la planta 2 (`Sur`). Sin `--planta` sigue enseñando todas, como hasta ahora. Para filtrar, cada sala pasa a tener una planta, un dato que hoy no existe.
+
+**Carril y perfil:** feature, modo full, perfil `delegate`. Prevé 2 tasks, así que no propongo dividirla.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Planta de cada sala (pendiente de ti):** `Norte` en la planta 1 y `Sur` en la 2. Es un valor mío, porque la petición no lo dice y el código no lo guarda. Si es otro reparto, solo cambian los valores de los ejemplos. Aprobar sin corregirlo lo confirma.
+2. **Motivo (supuesto mío):** nadie dijo para qué sirve el filtro. Supongo que, al llegar a una planta, quieres ver lo que hay libre en ella.
+3. **Forma de la opción:** `--planta 2`, con el número aparte (no `--planta=2`). El orden de los argumentos es libre.
+4. **Avisos:**
+   - `--planta 3`, `--planta abc` y `--planta 02` dan `planta desconocida: <valor>`.
+   - `--planta` sin número da `falta el número de planta`.
+5. **Sin salas libres en la planta:** la salida queda vacía, como hoy. No añado mensaje nuevo.
+6. **Sin definir:**
+   - `--planta=2` se ignora en silencio.
+   - `--planta ""` y `--planta` repetido no están definidos.
+   - Sin franja, `libres --planta 2` se comporta como hoy sin franja.
+7. **Reglas que ya tenía el código y quedan escritas:** `libres` ignora el día de la reserva, y una reserva cancelada o anulada deja libre la sala.
+8. **Capacidad nueva `room-availability`**, porque el comportamiento de `libres` no está escrito en ningún sitio.
+9. **Término nuevo «planta»** para `PRODUCT.md`; lo escribe el cierre.
+10. **Enfoque:** cada sala pasa a ser `{ name, floor }`, frente a un mapa `floors` aparte. El mapa deja dos listas que mantener a la vez.
+
+**Review:** un revisor sonnet más una segunda ronda. Aceptó los 2 Críticos de la primera ronda y los Importantes. Rechacé dos puntos, con su motivo en la spec. La pasada de coherencia (delta fusionado en una copia de `.docs/sdd`) acabó con exit 0.
+
+**Dos cosas del entorno:**
+- La carpeta de trabajo que me indicó el entorno apuntaba a la del kit, no a este proyecto. Trabajé con rutas absolutas hacia el repo y no escribí nada en la carpeta del kit.
+- Reservé el id 0012 y no hay fila en `ROADMAP.md` para esta feature.
+
+Para aprobar o pedir cambios, elige una opción:
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajusto, por ejemplo el reparto de plantas.
+

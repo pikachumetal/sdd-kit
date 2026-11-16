@@ -1,0 +1,70 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [17]
+Estoy en el paso 1 del cierre (validación). Ya he corrido la suite y el smoke, y ahora compruebo un detalle del ruling del test de `canceladas` antes de pedirte la validación.
+
+--- [21]
+🦆 Hasta ahora, cancelar una reserva no dejaba rastro. Con este cambio, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». Después, `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround. Lo he comprobado: ese test solo, con `--test-name-pattern`, falla con `actual: ''`. En el cierre lo apunto en `debt.md`.
+
+**Smoke que he corrido** (rama `feature/0010-cancel-reason`, `HEAD` 2d16152; `develop` sigue en e17ad0d, el merge-base, así que la base está al día)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` tras cancelar | ejecución real, en el mismo proceso | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test` (el proyecto no tiene script `npm test`): 5/5 sobre 2d16152.
+
+**Sin probar**
+
+- `canceladas` desde otro proceso: las reservas viven en memoria hasta la 0014. Ejecutado como comando aparte devuelve vacío, y la spec lo dice.
+
+Panel: plan B en http://127.0.0.1:10561/ (esta página no ve la app, así que no tiene consola, red ni captura. Si un paso falla, cuéntame el error en el comentario.)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Es una CLI y no hay entorno que arrancar. Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso → `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

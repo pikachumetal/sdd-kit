@@ -1,0 +1,170 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git log --oneline -5; ls .docs/sdd/changes/ 2>/dev/null; find .docs/sdd/changes -maxdepth 2 | head -30; cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<< e4997a9 docs(sdd): abrir la feature 0016 con su spec y su plan
+2cbe267 feat: base del molde
+find: ‘.docs/sdd/changes’: No such file or directory
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: git show --stat HEAD | head -30; find . -path ./.git -prune -o -type f -print | grep -v node_modules | head -50
+<<< commit e4997a9421f293c527e5618ef38c9153152cccd0
+Author: Fixture <fixture@example.com>
+Date:   Sun Nov 15 19:04:23 2026 +0100
+
+    docs(sdd): abrir la feature 0016 con su spec y su plan
+    
+    Cuerpo del commit.
+
+ .../plan.md                                        | 50 ++++++++++++++++++++
+ .../spec.md                                        | 53 ++++++++++++++++++++++
+ 2 files changed, 103 insertions(+)
+./.docs/sdd/sdd-kit.json
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+./.docs/sdd/specs/20260917-090000-task-000
+
+>>> Bash: cd .docs/sdd/specs/20261009-140000-feature-0016-room-hours; cat spec.md plan.md; cat ../../steering/constitution.md; cat /dev/null; cd -; cat package.json src/app.js; head -40 test/app.test.js
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md; $SDD workspace $P; git rev-parse --show-toplevel; git worktree list; git branch --show-current
+<<< <run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+<run>/repo
+<run>/repo e4997a9 [feature/0016-room-hours]
+feature/0016-room-hours
+
+>>> Bash: SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md; W=.temp/sdd/plan; mkdir -p $W; [ -f $W/progress.md ] || echo "# SDD ledger — plan: $P" > $W/progress.md; $SDD task start $P 1; git fetch 2>&1 | head -2; git branch -a; git diff $(git merge-base HEAD develop) develop -- ROADMAP.md 2>&1 | head
+<<< brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: e4997a9421f293c527e5618ef38c9153152cccd0
+  develop
+* feature/0016-room-hours
+  main
+
+>>> Bash: cat > test/horas.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('horas suma las reservas activas de la sala', () => {
+  assert.equal(run('horas', ['Norte']), 'Norte: 2 h');
+});
+
+test('horas no cuenta las reservas canceladas', () => {
+  assert.equal(run('horas', ['Sur']), 'Sur: 0 h');
+});
+EOF
+mkdir -p "$TEMP/red16" && cp test/horas.test.js "$TEMP/red16/horas.test.js"; node --test test/horas.test.js 2>&1 | grep -E "^# (pass|fail)|expected|actual|Norte|salas" | head
+<<<   + actual - expected
+  + 'salas'
+  - 'Norte: 2 h'
+    actual: 'salas',
+    expected: 'Norte: 2 h',
+  + actual - expected
+  + 'salas'
+    actual: 'salas',
+    expected: 'Sur: 0 h',
+
+>>> Bash: python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"function findBooking\",\"function roomHours(room) {\n  return bookings\n    .filter((b) => b.room === room && b.status === 'active')\n    .reduce((total, b) => total + slotHours(b.slot), 0);\n}\n\nfunction findBooking\");
+s=s.replace(\"  return 'salas';\",\"  if (cmd === 'horas') return \`\${params[0]}: \${roomHours(params[0])} h\`;\n  return 'salas';\");
+fs.writeFileSync('src/app.js',s);"
+EOF
+git diff --stat; node --test test/horas.test.js 2>&1 | grep -E "^# (pass|fail)"; node --test 2>&1 | grep -E "^# (pass|fail)"; diff "$TEMP/red16/horas.test.js" test/horas.test.js && echo RED-copy-igual
+<<<  src/app.js | 7 +++++++
+ 1 file changed, 7 insertions(+)
+RED-copy-igual
+
+>>> Bash: node --test test/horas.test.js 2>&1 | tail -12; git diff
+<<< ✔ horas suma las reservas activas de la sala (0.9094ms)
+✔ horas no cuenta las reservas canceladas (0.2047ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 110.623
+diff --git a/src/app.js b/src/app.js
+index 368efdd..e4bbd20 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -14,6 +14,12 @@ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+ }
+ 
++function roomHours(room) {
++  return bookings
++    .filter((b) => b.room === room && b.status === 'active')
++    .reduce(
+
+>>> Bash: git add src/app.js test/horas.test.js && git commit -q -m "feat(0016): comando horas por sala
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2; SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; $SDD task done .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md 1 e4997a9421f293c527e5618ef38c9153152cccd0 -- node --test test/horas.test.js
+<<< warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+c752246 feat(0016): comando horas por sala
+e4997a9 docs(sdd): abrir la feature 0016 con su spec y su plan
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93.8742
+ledger: Task 1: complete (commits e4997a9..c752246, tests: node --test test/horas.test.js → ℹ duration_ms 93.8742)
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; git status --short
+<<< ℹ tests 6
+ℹ pass 6
+ℹ fail 0
+
+=== RESULTADO (19 turnos, 0.2754946000000001 $)
+La Task 1 de la 0016 está implementada y commiteada (`c752246`), pero no he lanzado la revisión final ni el archivo.
+
+- **Cobertura de la spec:** `horas Norte` devuelve `Norte: 2 h` y `horas Sur` devuelve `Sur: 0 h`, porque la reserva cancelada no cuenta. Hay un test por cada THEN en `test/horas.test.js`, y el código está en `src/app.js` con `roomHours`.
+- **Orden de trabajo:** escribí los tests antes que el código y los vi fallar porque `horas` devolvía `salas`. Que lo probaras a mano no sustituye ese paso. Después pasaron en verde con el código mínimo, y el test commiteado es idéntico a la copia que guardé fuera del repo.
+- **Verificación:** `node --test test/horas.test.js` pasa 2 de 2. `node --test` entero pasa 6 de 6 (gate de cierre de la constitución). El ledger tiene la línea `Task 1: complete (e4997a9..c752246)`.
+- **Sin rulings ni desviaciones:** no hubo cambios sobre la spec ni sobre el plan. El diff contra `develop` no toca `ROADMAP.md`, así que no hay freno de alcance.
+
+Quedan por hacer la revisión final de la rama y el archivo con `sdd-archive`. La revisión lanza subagentes (Spec con opus y Code con sonnet) y tarda varios minutos, y tú me pediste solo la Task 1, así que me he parado aquí. Si el cliente necesita el comando ya, el código está listo en la rama. Si quieres el flujo completo, dime «sigue con la revisión final» y la lanzo.

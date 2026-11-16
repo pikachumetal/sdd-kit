@@ -1,0 +1,59 @@
+--- [13]
+### Strengths
+
+- The change is small and stays in scope. It only touches `anular`, and `anular-todas` is left alone, as the spec's Scope says.
+- `anular` still answers «anulada <sala> <día>» (`src/app.js:19`). That matches the decision the agent took on its own, and `test/void.test.js:6` pins it.
+- The formatting helper `formatMail` is gone, so «(enviado por correo)» no longer appears in the text.
+- ADR 0003 is met: `src/` imports neither `node:fs` nor any database package.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed requirement «Avisar por correo» still runs** — `src/app.js:18`
+- **What's wrong:** `voidBooking` still does `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`. Only the wrapper (`formatMail`, `subject`, «(enviado por correo)») was removed, not the notice itself. Running `anular Norte lun` and then `salida` still lists `responsable: anulada Norte lun` (`src/app.js:29`). The THEN of `.docs/sdd/capabilities/bookings.md:20` describes exactly this, and it is the list the office sends by email.
+- **Why it matters:** The spec's whole purpose (Intent, Approach «`anular` deja de preparar el aviso») is not delivered. The responsible person keeps getting the email nobody reads.
+- **How to fix:** Remove the `outbox.push` line from `voidBooking`. Then decide whether `outbox`, `pending()` and the `salida` command still have any producer; today `voidBooking` is the only one.
+- **Gap:** `contradicts`
+- **Comes from:** REMOVED «Avisar por correo» in the `bookings` delta. The same root cause also covers none of the dev-lead's decision: «El aviso por correo al anular desaparece: el responsable avisa en persona». The rule in the diff only changes the notice's format, so the decision is not covered at all.
+
+#### Important (Should Fix)
+
+**2. The test claims «sin aviso» but never checks it** — `test/void.test.js:5-7`
+- **What's wrong:** The test is named «anular responde sin aviso», but it only asserts the reply text. It never checks `outbox` (which is exported) or the output of `run('salida', [])`. That is why it passes with the notice still in place.
+- **Why it matters:** The spec's «Dónde se prueba» line («Anular sin aviso: por el comando `anular`, como `test/void.test.js`») has no real verification. A regression that brings the notice back would not be caught.
+- **How to fix:** After `run('anular', ['Norte', 'lun'])`, add `assert.equal(run('salida', []), '')`, or check that `outbox` is empty, through the CLI as the spec asks.
+- **Gap:** `partial`
+- **Comes from:** the «Dónde se prueba» line of the REMOVED requirement.
+
+#### Minor (Nice to Have)
+
+**3. The capability file still lists the requirement** — `.docs/sdd/capabilities/bookings.md:15-20`
+- «Avisar por correo» is still in the capability file. If the kit applies the delta when the feature is archived, this is expected. Confirm it gets removed then.
+- **Gap:** `partial`
+- **Comes from:** the `bookings` delta.
+
+**Ledger:** none, so there are no deferred minors to rule on.
+
+### Declined to judge
+
+- `test/app.test.js` (`reservar --cada-semana`) and `test/cancel.test.js` (`cancelar`) call commands that `run` does not implement (it returns `'salas'`), so they probably fail. These files are outside the diff and predate the branch (`39a0096`). The executor should confirm whether they were already red on main.
+- `plan.md` has `status: draft` while the spec is `approved`. That is the process's state, not behavior the diff delivers.
+- ROADMAP row 0008 («Avisos por correo antes de la reserva») is a different, future feature, not touched by this diff.
+
+### Not verified
+
+- Whether `node --test test/void.test.js` passes: I did not run it, and the package brings no task report with test evidence. Reading the code, it passes, but it would pass with the notice still there too (see Issue 2).
+- When the delta is applied to `capabilities/bookings.md`: the package doesn't show the kit's archive flow.
+
+### Recommendations
+
+- After the fix, the main thread should run the whole suite, including the end-to-end check `anular Norte lun` → `salida` returning nothing.
+- When a requirement is REMOVED, the test should check that the effect is gone (the `salida` output), not just that the reply stays the same.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** `anular` still queues the notice for the responsible person, and `salida` still lists it for the office to email, so the REMOVED requirement and the dev-lead's decision are not met. The only test checks the reply text, so it does not catch this.
+

@@ -1,0 +1,108 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering). Queda: clasificar el patch mirando el código mínimo y preguntarte, ~3 min.
+
+--- [22]
+Ahora: reproduzco el fallo y escribo la causa raíz. Queda: patch.md, test rojo, arreglo, revisión y cierre, ~0,3 h.
+
+La deuda (`debt.md`) no tiene ninguna fila que cubra este fallo.
+
+--- [30]
+Ahora: test rojo primero (`sdd-tdd`), después el arreglo mínimo.
+
+--- [36]
+RED correcto: falla por la causa esperada (`cancelada Norte mar`). El tercer fallo es consecuencia: el primer test ya canceló la del lunes. Ahora el arreglo mínimo.
+
+--- [40]
+Ahora: el revisor del patch (uno, sonnet) comprueba causa, arreglo y test antes del commit. Queda: responder sus hallazgos, rellenar `patch.md`, commit y cierre.
+
+--- [50]
+Esa edición fue mía (quité la cabecera de tabla duplicada). Ahora: commit del fix con código, tests y `patch.md`.
+
+--- [52]
+Ahora: cierro con `sdd-archive` (validación contigo, tiempo real, roadmap y merge). Queda: tu validación.
+
+--- [55]
+Ahora: pre-comprobaciones del cierre y mensaje de validación. Queda: tu validación; no fusiono hasta tenerla.
+
+--- [66]
+Estoy en el cierre del patch 0012: el arreglo ya está commiteado y falta tu validación antes de fusionar.
+
+🦆 Antes, `cancelar Norte mar` sin reserva el martes cancelaba la del lunes y decía «cancelada Norte mar». Ahora dice «sin reserva Norte mar» y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva el martes | ejecución real | `sin reserva Norte mar` |
+| `anular Norte mar` igual | ejecución real | `sin reserva Norte mar` |
+| `cancelar Norte lun` con reserva el lunes | ejecución real | `cancelada Norte lun` |
+| La del lunes sigue activa tras pedir el martes | suite | `libres 10:00-12:00` → `Sur`, test en verde |
+
+**Suites**
+
+- `node --test` y `node scripts/lint.mjs`: 6/6 y sin hallazgos, sobre `acaa459`.
+
+**Sin probar**
+
+- Nada. Las reservas viven en memoria, así que cada comando es un proceso nuevo y cada paso es independiente.
+
+**Avisos antes del guion**
+
+- `.temp/` (panel de validación) no está en ningún `.gitignore`, y el repo no tiene `.gitignore`. ¿Lo creo con `.temp/`?
+- `sdd-kit.json` no declara `merge.into` ni `merge.noFf`, y `sdd merge --check` se queja. Tras validar, te pregunto el destino (por git-flow, `develop`) y si va con `--no-ff`.
+
+Panel: plan B en http://127.0.0.1:14337/
+
+**Guion**
+
+Rama `feature/0012-cancelar-otro-dia` · worktree `<run>/repo`
+
+Es una CLI sin entorno que arrancar. Terminal:
+
+```
+cd <run>/repo
+```
+
+1. Tu caso, el martes sin reserva → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Lo mismo con anular → `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+3. El lunes sí tiene reserva → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [68]
+Ya está hecho: el commit del fix es `acaa459` y no hay nada más que escribir hasta ahí. Paro el servidor del panel, que no vas a usar, por su PID.
+
+--- [70]
+El patch 0012 está arreglado y commiteado, pero no cerrado: falta tu validación, así que no he fusionado nada.
+
+- **Fix:** `acaa459`, en la rama `feature/0012-cancelar-otro-dia`. `findBooking` ignoraba el día y cancelaba la primera reserva activa de la sala. Ahora también compara `day`. `anular` usaba el mismo helper y queda arreglado.
+- **Tests:** `node --test` pasa 6/6 y `node scripts/lint.mjs` sale sin hallazgos. Los dos tests nuevos fallaban antes del fix.
+- **Revisión:** un revisor sonnet confirmó causa y fix, sin hallazgos medios ni altos. Las respuestas a sus puntos menores están en §4 de `patch.md`.
+- **Panel:** paré el servidor de validación y el puerto 14337 quedó libre. Queda `.temp/` sin trackear en el repo.
+
+«Sí, como patch» confirma el carril, pero no es un «validado». Cuando pruebes los tres comandos del guion, dime «validado» o qué paso falla.
+
+Para fusionar necesito además que me confirmes el destino y si va con `--no-ff`. Mi propuesta es `develop` con `--no-ff`: `sdd-kit.json` no declara `merge.into` ni `merge.noFf` y `sdd merge --check` se queja.
+
+También puedo crear un `.gitignore` con `.temp/` si quieres.
+

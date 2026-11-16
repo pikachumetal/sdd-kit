@@ -1,0 +1,67 @@
+--- [9]
+### Strengths
+
+- `test/void.test.js` is small, goes through `run('anular', …)` as the spec's «Dónde se prueba» says, and pins decision ✋1: `anular` still answers «anulada Norte lun».
+- The diff stays in scope. `anular-todas` (`src/app.js:23-27`) is untouched, as «No entra» asks, and it never pushed to `outbox`.
+- No comments were added, and the UI text stays in Spanish.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed behavior still runs: `anular` still sends the email** — `src/app.js:19`
+- **What's wrong:** `voidBooking` still runs `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`. The branch never touches `src/app.js`, although the plan's Task 1 lists it under **Ficheros**. Running `anular Norte lun` and then `salida` still prints `responsable: anulada Norte lun`.
+- **Why it matters:** the spec's whole delta is the REMOVED requirement «Avisar por correo», and the Approach says «`anular` deja de preparar el aviso». The feature as delivered does nothing.
+- **Fix:** delete line 19 of `voidBooking`.
+- **Gap:** `contradicts`.
+- **Source:** REMOVED «Avisar por correo» (capability `bookings`). This also leaves the dev-lead decision unruled, see finding 2.
+
+#### Important (Should Fix)
+
+**2. Dev-lead decision with no rule in the diff** — `src/app.js:19`
+- **What's wrong:** «decisión del dev-lead cubierta a medias: El aviso por correo al anular desaparece — no rule in the diff covers it; the push to `outbox` is still there.»
+- **Fix:** the same deletion as finding 1.
+- **Gap:** `missing`.
+- **Source:** «Decisiones tomadas con el dev-lead».
+
+**3. The test's name claims something its assertion doesn't check** — `test/void.test.js:5-7`
+- **What's wrong:** the test is called «anular responde sin aviso», but it only asserts the return string. It passes against the unchanged code from before the feature, so it has never been RED.
+- **Why it matters:** the THEN «Anular sin aviso» has no test that pins the absence of the email. If the email comes back, nothing catches it.
+- **Fix:** also assert that nothing is queued, for example `assert.equal(run('salida', []), '')` after the `anular` call, or check that `outbox` (exported) is still empty. Watch the module-level state: `outbox` is shared across tests in the same file.
+- **Gap:** `partial`.
+- **Source:** «Dónde se prueba — Anular sin aviso: … como `test/void.test.js`».
+
+#### Minor (Nice to Have)
+
+- None.
+
+### ADRs
+
+- No ADR covers the diff, per the brief, so there was no `### Confirmación` to apply. `0003-bookings-in-memory.md` exists, but the brief doesn't list it, so I didn't apply it.
+
+### Ledger
+
+- There is no ledger, so there are no rulings and no deferred minors to weigh.
+
+### Declined to judge
+
+- **`.docs/sdd/capabilities/bookings.md:15-17` still lists «Avisar por correo».** Matches in `.docs/` don't count for REMOVED. Updating the capability belongs to archive, not this diff.
+- **`test/cancel.test.js` and `test/app.test.js` (`reservar --cada-semana`) call commands that `run` doesn't implement.** They return «salas», so these tests probably fail. This predates the branch (`5524aac`) and is outside this spec. The main thread's full suite run should confirm it.
+- **The `salida` command and `outbox` are left with no producer once the fix lands.** Whether to remove them is outside the spec, which only removes the email on `anular`, and belongs to the quality and architecture axes.
+- **No test that a voided booking stops counting in `libres`.** That is an existing requirement of the capability and is not in the delta.
+
+### Not verified
+
+- **Test results:** not verified, because the brief tells me not to run the suite and the package carries no task report with test output. By reading the code: the current `void.test.js` passes, and it would also pass before the change.
+
+### Recommendations
+
+- Apply finding 1 together with the strengthened test from finding 3. First, confirm the new assertion fails on the current code (RED), then delete line 19 (GREEN).
+- Ask the executor why Task 1 lists `src/app.js` under **Ficheros** but the commit only adds the test. This is a deviation from the plan.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The only behavior this spec asks for, removing the email when voiding, isn't implemented: `src/app.js:19` still queues it. The new test can't detect that, because it passes with or without the change.
+

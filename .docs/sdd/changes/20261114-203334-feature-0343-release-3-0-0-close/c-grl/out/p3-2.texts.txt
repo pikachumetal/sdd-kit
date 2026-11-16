@@ -1,0 +1,103 @@
+--- [14]
+Ahora: abro la rama de la 0002 y reservo su id. Queda: entrevista corta, spec y parada de aprobación, ~10 min.
+
+--- [34]
+Repito la fusión del delta sobre una copia para comprobar que la spec corregida pasa.
+
+--- [52]
+Los dos revisores de la spec están trabajando en segundo plano, cada uno con su vigilancia de silencio. Espero a que terminen para integrar sus hallazgos; hasta entonces no sé qué van a decir.
+
+--- [55]
+1. Crítico · Decisión 4 / Intent / Delta (`booking-export`) · El Excel en castellano abre un CSV UTF-8 sin BOM con los acentos rotos (Windows-1252). Hoy los valores no llevan tilde (`Norte`, `Sur`, `lun`), así que el defecto no se ve, pero la decisión «sin BOM» no está justificada por la lectura del Excel. El Intent promete «abre en tres columnas sin tocar nada» y el éxito lo decide el Excel, que el agente no puede ver. · Declarar que los valores son ASCII y que la salida lo es a propósito, o decidir BOM/codificación con el dev-lead. Añadir al delta un escenario o restricción que lo fije. Si aparece `mié` o `sáb`, el BOM pasa a ser obligatorio.
+
+2. Importante · Decisión 4 / Delta (ADDED primero) · `10:00-12:00` en una celda de Excel puede interpretarse como hora o fecha, y `lun` puede quedar alterado según la configuración regional. El responsable cuadra por franja, y Excel puede convertir `10:00-12:00` en texto, o `10:00` en hora, según cómo se abra. La spec afirma el resultado sin comprobarlo con el Excel real. · Pedir al dev-lead (que valida) que abra el fichero real en un Excel en castellano y confirme que la franja se conserva como texto. Anotarlo en «Validación», o declarar la franja como texto en la decisión 4.
+
+3. Importante · Decisión 5 / Scope · El orden «el de la lista de reservas, sin ordenar» se declara sin ningún escenario que lo pruebe y deja un comportamiento observable sin contrato. Cuando haya varias reservas, el orden del CSV será arbitrario y el cuadre del lunes necesita uno estable. Además, el Scope dice «No entra ordenar», pero el responsable sí lo necesita. · Añadir a la spec un escenario de varias reservas que fije «orden de inserción», o dejar el orden fuera del contrato de forma explícita. Registrar la decisión de ordenar como deuda o fila del roadmap.
+
+4. Importante · Delta / Intent · El valor `Norte;lun;10:00-12:00` y las salas `Sur` y `Oeste` son los que se muestran como ejemplo, pero «Una sala sin reservas» sobre `Sur` depende de que en el código `Sur` exista y no tenga reservas. La spec no declara dónde vive el conjunto de salas (hoy en memoria en `src/app.js`) como regla de «dónde viven los datos». · Declarar en la spec, para la regla «dónde viven los datos», que las salas y reservas siguen en memoria en `src/app.js` y que la feature no las persiste. O marcarlo «no aplica» con un motivo.
+
+5. Importante · Delta, tercer ADDED / Decisión 7 · «Sala desconocida o sin sala» junta dos condiciones en un requisito, y falta la regla de conflicto de mayúsculas. La decisión 8 («`norte` no es `Norte`») no figura en ningún escenario del delta y se perdería al fusionar la capacidad. En la práctica, el responsable que escriba `exportar norte` recibirá `sala desconocida: norte` y no tendrá pista de que es por la mayúscula. · Añadir un escenario `exportar norte` → error `sala desconocida: norte` con código 1. Valorar si el mensaje debe sugerir las salas válidas.
+
+6. Menor · Decisión 7 / Delta · `sala desconocida: Oeste` y `uso: exportar <sala>` están en castellano, coherente con la constitución 4. Pero el nombre de los encabezados `sala;dia;franja` va sin tilde (`dia`, no `día`) y la spec no dice que sea intencionado. Es la cabecera que ve el responsable en su Excel. · Declarar que `dia` va sin tilde a propósito (coincide con el campo del código) o decidir `día` junto con el BOM del punto 1.
+
+7. Menor · Delta (ADDED segundo) / Decisión 6 · El responsable que cuadra los lunes recibe solo la cabecera de una sala sin reservas y no distingue «no hay reservas» de «sala mal escrita pero válida». Con el criterio de la sala desconocida está bien, pero no hay ningún escenario con una sala existente en mayúsculas distintas. Redundante con el punto 5. · Unificar con el punto 5 en un solo escenario de comparación literal.
+
+8. Menor · Decisiones tomadas con el dev-lead / Revisión de spec (bloque ✋) · Se cita una persona con rol y fecha («responsable de salas, 2026-11-01») y el PRODUCT.md dice que no hay más usuarios que el desarrollador. Hay una contradicción: PRODUCT.md dice que «la uso yo… no hay más usuarios», pero la spec introduce un responsable de salas distinto del desarrollador, lo que hace que la capacidad parezca tener un actor que el producto niega. · Alinear con PRODUCT.md: o el responsable de salas es el propio desarrollador (decirlo) o actualizar PRODUCT.md con el rol. No dejar los dos documentos en conflicto.
+
+9. Menor · Alcance / Delta · El Scope promete «el README si documenta los comandos», pero ningún requisito del delta cubre la documentación y es condicional, lo que deja el cierre ambiguo. · Decidir si el README entra y quitar el «si», o sacarlo del Scope.
+
+--- [57]
+El revisor de dominio ha terminado con 9 hallazgos. Falta el técnico, así que espero antes de tocar la spec y de presentarla. Esto no cuenta como aprobación tuya: la spec sigue sin aprobar.
+
+--- [59]
+Ese aviso es solo el fin de la vigilancia del revisor de dominio, que terminó con normalidad. Sigo esperando al revisor técnico.
+
+--- [60]
+1. Importante · Delta, «Exportar las reservas de una sala» (AND «las reservas de otras salas no aparecen») · Con los datos reales solo hay una reserva, y es de Norte. No existe ninguna reserva de otra sala, así que un `exportar` que no filtrara por sala también pasaría este AND. `bookings` es privado del módulo y no se puede inyectar. · Quitar el AND, o declarar cómo se prueba el filtro (por ejemplo, que `run` acepte las reservas por parámetro). Apoyarse en el escenario «Sur sin reservas», que sí falla sin filtro, y decir que ese es el que cubre el filtrado.
+
+2. Importante · Decisión 4 y Delta (fin de línea `\n`) · No dice si la cadena que devuelve `run` termina en `\n`. El arranque usa `console.log`, que añade uno. Si `run` ya lo incluye, el fichero acaba con una fila vacía. Si no, la comparación con `assert.equal` queda ambigua. «Solo la cabecera» tampoco dice si lleva salto final. · Fijar el texto exacto de `run` sin `\n` final, con `console.log` añadiendo uno. Dar las cadenas literales de los tres escenarios, por ejemplo `'sala;dia;franja\nNorte;lun;10:00-12:00'`.
+
+3. Crítico · Intent, decisión 4 y «Validación: dev-lead» · La entrega real es `node src/app.js exportar Norte > norte.csv`. En PowerShell 5.1, `>` escribe UTF-16 LE con BOM y reescribe los saltos de línea como CRLF. En PowerShell 7 escribe UTF-8 sin BOM, pero también con CRLF. El «`\n`, sin BOM» que se garantiza es solo el de stdout, no el del fichero que abre Excel. El criterio de fracaso («todo en una columna») depende justo de esto y ningún escenario lo cubre. · Declarar el shell del responsable y qué fichero se espera. Documentar en el README `| Out-File -Encoding utf8` o `cmd /c "... > f.csv"`, o decidir si la herramienta escribe el fichero. Si queda fuera de alcance, ponerlo en «No entra» con el riesgo explícito y que el dev-lead lo valide con la redirección real.
+
+4. Importante · Dónde se prueba · Cada escenario de código de salida y de stdout vacío debería tener una prueba por proceso. Solo está prevista la de `exportar Oeste`. Faltan `exportar Sur` (código 0, que además no se puede ver por `run`), `exportar` sin sala (stderr, stdout vacío y código 1) y el caso feliz de Norte por proceso. Dos de los tres escenarios afirman cosas que `run` no puede mostrar. · Listar una prueba por proceso para cada escenario, con cwd y ruta `src/app.js` resueltos desde `import.meta.url`.
+
+5. Importante · Approach, párrafo final y contrato del arranque · El cambio en la línea de arranque (`if (command) console.log(run(...))`) es una modificación de contrato que ni el Scope ni «Lo que cambia de forma» recogen. Falta decir qué escribe exactamente en stderr (`err.message` limpio, sin `Error:` ni traza) y cómo sale. Con `process.exit(1)` justo tras `console.error` hay riesgo de truncado si stderr es una tubería. Un `try/catch` genérico también tragaría errores inesperados de los otros comandos. · Especificar `catch (e) { console.error(e.message); process.exitCode = 1; }`. Limitar el captura a un tipo de error propio o a `exportar`. Reflejarlo en «Lo que cambia de forma» (el arranque cambia, `run` ahora puede lanzar).
+
+6. Importante · «✋ Decisiones…» frente al cuerpo · Hay decisiones tomadas en el cuerpo que no están en la lista: (a) los errores se modelan como excepciones de `run` en vez de devolver un valor, con el efecto de que `run` pasa a poder lanzar (solo aparece como «Coste» en Approach); (b) el arranque pasa a capturar errores; (c) qué pasa con argumentos de más (`exportar Norte Sur`); (d) la validación de sala contra `rooms`, no contra las reservas. · Añadir estas decisiones a la lista numerada, o fijar el comportamiento de (c) en un escenario.
+
+7. Menor · Decisión 7 y Delta, «Sala desconocida o sin sala» · Faltan casos de borde sin cubrir: `exportar ''` (¿«sin sala» o «sala desconocida: »?), `exportar Norte Sur` y `exportar norte` (la decisión 8 lo dice, pero ningún escenario lo prueba, y es la única comparación estricta). · Añadir un escenario o AND para `norte` en minúscula, con `sala desconocida: norte`, y fijar el caso de cadena vacía.
+
+8. Menor · Delta, «Sala desconocida o sin sala» · Mezcla dos escenarios (desconocida y sin sala) en un solo bloque con un AND. Si falla uno, el otro no se identifica, y el GIVEN «salas Norte y Sur» no aplica al segundo. · Separar en dos escenarios ADDED, o en dos requisitos con su propio GIVEN/WHEN/THEN.
+
+9. Menor · Scope («y el README si documenta los comandos») · Condicional sin comprobar. No hay README en lo leído, y no se dice si hay que crearlo. Con el punto 3 hace falta documentar la redirección, así que esto deja de ser opcional. · Comprobar si existe `README.md`. Si no existe, decidir si se crea o dónde se documenta la redirección.
+
+10. Menor · Decisión 4 («valores de un conjunto cerrado… sin `;`») · La afirmación es cierta hoy, porque `bookings` es una constante. Pero `cancelar` y `libres` ya aceptan texto libre, así que el invariante se rompe en cuanto `reservar` guarde datos. Tampoco hay una prueba que lo proteja, por lo que cuando cambie nada avisará de que el CSV se corrompe. · Añadir una prueba que afirme que ningún valor de `rooms` ni de `bookings` contiene `;`, `"` ni salto de línea. Así la decisión queda comprobable en vez de supuesta.
+
+--- [78]
+Ahora: segunda ronda de revisión, con un solo revisor, porque acepté un hallazgo Crítico. Queda: integrar lo que diga y presentar la spec para tu aprobación, ~4 min, ~0,5 $.
+
+--- [83]
+El revisor de la segunda ronda está trabajando con su vigilancia de silencio. Cuando termine, integro lo que encuentre y te presento la spec. Hasta entonces la spec sigue sin aprobar.
+
+--- [90]
+1. Importante · «Repaso de coherencia» (decisiones) frente al «Delta de comportamiento» · Dice que `sdd capability merge` dio «3 requisitos añadidos», pero el delta tiene 4 `ADDED`. Ese repaso se hizo antes de que la ronda 1 añadiera «Sala desconocida» y «Sin sala válida», así que ya no vale · Repetir el merge sobre la copia con el delta actual y poner el número real (4). Revisar también que el texto de «Hallazgos» siga cuadrando.
+2. Importante · «Dónde se prueba» (última viñeta) y decisión 4 · Pide «una prueba sobre los datos» de `rooms` y `bookings`, pero `src/app.js` no los exporta (solo exporta `run`). Hace falta exportarlos o duplicarlos en el test. Eso cambia la superficie del módulo y no está en el Scope ni en las decisiones; duplicarlos haría que la prueba no probara nada · Decidir cómo se accede (exportar `rooms` y `bookings`, o probarlo a través de `run('exportar', …)` con cada sala) y declararlo en Scope y en las decisiones.
+3. Importante · decisión 4, viñeta «Es la regla «dónde viven los datos»» · Presenta como regla de la capacidad una afirmación que ningún requisito ni escenario del delta recoge, así que no pasa por la puerta de las reglas ni se puede comprobar · Quitar «de la capacidad», o añadir un requisito con escenario. Lo más simple es dejarla como contexto del Intent.
+4. Importante · decisión 4, viñeta de PRODUCT.md, y «Decisiones tomadas con el dev-lead» · PRODUCT.md dice «no hay más usuarios» y la spec construye toda la validación sobre un «responsable de salas» sin modificar PRODUCT.md. La confirmación queda como viñeta «pendiente» dentro de una decisión, sin lugar en las aprobaciones. Además la cita «así me sirve» (de ROADMAP.md, atribuida al responsable) está en una sección titulada «con el dev-lead» · Convertir la viñeta en una decisión numerada «pendiente» que bloquee la aprobación, mover la cita a su propia procedencia («fila 0002 del roadmap») y decir si PRODUCT.md se actualiza o no.
+5. Importante · decisión 4, viñeta de errores, y Scope · El `catch` del arranque cubre todos los comandos. Con solo `e.message` y sin traza, un fallo de `libres` o `reservar` pierde su stack. Eso cambia el comportamiento de los tres comandos actuales y no tiene escenario ni prueba: ninguna prueba cubre un comando antiguo que lance · Hacer que el `catch` actúe solo con `exportar`, o relanzar lo que no sea un error esperado (por ejemplo una clase `UsageError`), o declarar la pérdida de traza como decisión numerada.
+6. Importante · decisión 4 (viñeta de la redirección) frente al 🦆 y la validación · El 🦆 y la validación usan `node src/app.js exportar Norte > norte.csv`, pero el README recomendará `cmd /c "…"` o `| Out-File -Encoding utf8`. En PowerShell 5.1 la forma del 🦆 produce UTF-16 con BOM y CRLF. Con `Out-File -Encoding utf8` el fichero lleva BOM y CRLF, que la decisión 4 daba por descartados («sin BOM») · Poner en el 🦆 y en la validación el mismo comando que el README, y decir qué bytes se aceptan (BOM y CRLF puestos por la shell) como válidos en la validación del dev-lead.
+7. Menor · escenarios 3 y 4, y «Dónde se prueba» · Los casos `exportar norte`, `exportar Norte Sur` y `exportar ''` afirman stdout vacío y código 1, pero solo se prueban con `run` y `assert.throws`, no por proceso. Además `''` no llega como argumento vacío desde PowerShell 5.1, así que no se puede reproducir en esa shell · Decir que esos casos se prueban a nivel `run` y que stdout y código quedan cubiertos por el caso `Oeste` y el de sin argumento. Quitar `''` del escenario o marcarlo como «solo por `run`».
+8. Menor · escenario 1, THEN · «con `\n` como fin de línea y una sola vez al final» es ambiguo, porque también hay un `\n` entre cabecera y fila. Se puede leer de una forma que deja pasar `\n\n` al final · Escribir la cadena exacta de stdout, `sala;dia;franja\nNorte;lun;10:00-12:00\n`, y decir que no hay línea vacía final.
+9. Menor · decisión 4 y escenarios, cabecera `dia` · La constitución (4) pide la interfaz en castellano y `dia` va sin tilde. Está justificado como decisión, pero no está marcado como excepción a la constitución · Decir expresamente que es una excepción deliberada a la regla 4 y por qué, para que la revisión final no la marque como fallo.
+10. Menor · decisión 4, viñeta de la validación, y Scope · `exportar Oeste Sur` (sala desconocida con argumentos de más) no está dicho: por la decisión debería ser `uso: exportar <sala>`, pero un implementador puede validar primero la sala · Fijar el orden de comprobación (primero el número de argumentos y la cadena vacía, después la sala contra `rooms`) y poner en «Dónde se prueba» un caso con una sala desconocida más un argumento de sobra.
+
+--- [105]
+La spec de la 0002 está escrita y revisada, pero **no está aprobada**. Está en `.docs/sdd/specs/20261114-225944-feature-0002-exportar-csv/spec.md`, en la rama `feature/0002-exportar-csv` y sin commitear. El plan no lo escribo hasta que la apruebes.
+
+🦆 Hoy el responsable de salas copia las reservas a mano a su hoja. Con esto escribe `node src/app.js exportar Norte > norte.csv` y su Excel en castellano abre `sala;dia;franja` y, debajo, `Norte;lun;10:00-12:00`. Por dentro es un comando nuevo `exportar` en `src/app.js` que filtra por sala y escribe con `;`. Los errores van a stderr, con código 1, para que no acaben dentro del fichero.
+
+**Qué ha pasado en la revisión**
+- Dos revisores (dominio y técnica, en sonnet) dieron 19 hallazgos y acepté todos. Dos eran Críticos: la codificación del fichero depende de la shell y no de la herramienta. Por eso lo he dejado como riesgo declarado, con el comando de redirección en el README y tu validación en un Excel real.
+- Un tercer revisor reviso las correcciones y no encontró ningún Crítico. Los hallazgos están en «Hallazgos de la review», dentro de ✋.
+- El delta, probado sobre una copia con `sdd capability merge`, añade 4 requisitos a `booking-export`. El `capabilities/` del repo no se ha tocado.
+
+**✋ Decisiones que he tomado yo (resumen)**
+- **Comando y columnas:** `exportar <sala>`, columnas `sala;dia;franja`, con fila de cabecera.
+- **Formato:** `\n` al final de línea, sin BOM, sin comillas, solo ASCII; `dia` va sin tilde a propósito.
+- **Orden de las filas:** el de la lista de reservas de la herramienta. Hoy hay una sola reserva, así que ningún escenario lo prueba.
+- **Sala sin reservas:** exporta solo la cabecera.
+- **Errores:**
+  - `exportar Oeste` da `sala desconocida: Oeste`.
+  - `exportar` sin sala, con la cadena vacía o con argumentos de más da `uso: exportar <sala>`.
+  - Los dos salen por stderr, con stdout vacío y código 1.
+  - `norte` no es `Norte`.
+- **Implementación:** el error se lanza como `UsageError` y el arranque captura solo esa clase.
+- **Enfoque:** comando nuevo dentro de `run`, frente a un módulo `csv.js` o a `reservas <sala> --csv`.
+- **README:** entra una línea con el comando y la redirección que sirve.
+
+**Pendiente de ti (decisión 11):** `PRODUCT.md` dice que lo usas solo tú, y la fila 0002 cita a un «responsable de salas». Lo he tomado como tú mismo en ese papel y no he tocado `PRODUCT.md`. Si es otra persona, se actualiza en esta feature.
+
+Qué haces:
+1. **Apruebo (Recomendada):** escribo el plan y sigo con la implementación.
+2. **Cambios:** dime qué ajustar y repaso la spec antes de volver a pedirte aprobación.
+

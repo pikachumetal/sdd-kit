@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+
+>>> Bash: cd "<run>/repo" && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< develop
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugi
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md package.json; ls scripts src test; ls .docs/sdd/sdd-kit.local.json 2>&1 | tail -1
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.1639855 $)
+❓ **¿Qué umbral hace que `libres` «aguante» con 1.000 reservas?**
+Miro `src/app.js`: `libres` filtra las 2 salas y, por cada una, recorre todas las reservas con `some`. El coste es lineal, unas 2.000 comparaciones con 1.000 reservas. La lista `bookings` es privada y ninguna orden añade reservas (`reservar` solo devuelve texto). Por eso el banco de medidas irá en un script fuera de `src/` que cargue el módulo con 1.000 reservas sembradas, sin tocar producción. Eso lo decido yo y quedará anotado en la spec.
+
+1️⃣ **Umbral de 100 ms por llamada.** Es lo que un terminal percibe como instantáneo. La tabla mide 10 / 100 / 1.000 / 10.000 reservas, con mediana y p95. Veredicto claro: «aguanta» si 1.000 queda por debajo de 100 ms. El coste es que fijo yo un número que no sale de ningún requisito tuyo.
+2️⃣ **Umbral de 1 s.** Es más laxo: casi seguro «aguanta», y deja la medida casi sin información.
+3️⃣ **Sin umbral, solo la tabla.** Entrego los tiempos y juzgas tú. No hay veredicto, y el spike no puede cerrarse con un sí o un no.
+
+➡️ **Recomiendo 1️⃣**, porque con 1.000 reservas lo esperable son microsegundos y el umbral de 100 ms deja un veredicto defendible; el arranque de Node (~40 ms) también cabe holgado. A cambio, el número es mío; si tienes otro, dímelo y lo cambio.
+
+¿Cuál eliges?

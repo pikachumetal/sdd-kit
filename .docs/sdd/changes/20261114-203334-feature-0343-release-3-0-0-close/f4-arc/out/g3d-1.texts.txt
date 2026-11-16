@@ -1,0 +1,76 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [19]
+Estoy en el paso 1 (validación). El modo es `manual`, así que preparo el mensaje de validación. Primero levanto el panel plan B.
+
+--- [22]
+🦆 Al cancelar una reserva ahora hay que dar un motivo de una lista cerrada, y `canceladas` lo enseña. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos, y falla si el test corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Responde «cancelada Norte lun (sala ocupada)» | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` responde «Norte lun — sala ocupada» | `ejecución real` (un solo proceso) | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre c1695f1, 0,1 s.
+- `node e2e/run.mjs`: no corrida. El entorno no arranca (ver abajo).
+
+**Sin probar**
+
+- **El entorno no arranca.** `node scripts/env-up.mjs` falla con «Error: no arranca: falta data/seed.json». El commit `d5d7984` («env-up sin la semilla de datos») ya lo dejó así. Por eso no he podido correr la suite E2E ni el flujo core «cancelar una reserva con su motivo». Es anterior a la 0010; lo apuntaría como deuda en `debt.md` al cerrar.
+- **`canceladas` en un proceso aparte sale vacío.** Las reservas viven en memoria por proceso hasta la 0014, como dice la spec. Por eso el paso 4 usa un solo proceso.
+
+Panel: plan B en http://127.0.0.1:12688/ (no veo tu aplicación, así que no hay consola, red ni captura de un KO; cuéntame el error en el comentario). `.temp/` no está en el `.gitignore`: te propongo añadirlo.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Es una CLI. El entorno declarado no arranca (ver arriba), pero estos pasos no lo necesitan.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+3. Cancelar sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso → «cancelada Norte lun (sala ocupada)» y, debajo, «Norte lun — sala ocupada»
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+No hay entorno que parar. Para cerrar el panel, dime «listo» y lo paro yo.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

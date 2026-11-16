@@ -1,0 +1,94 @@
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Grep: export|module\.exports|bookings
+<<< 3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+10:  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+13:export function cancelBooking(room, day) {
+20:export function voidBooking(room, day) {
+27:export function run(cmd, params) {
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin re
+
+>>> Write: <run>/repo/test/reactivar.test.js
+<<< File created successfully at: <run>/repo/test/reactivar.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && node --test test/reactivar.test.js 2>&1 | head -60
+<<< ✖ reactivar devuelve la reserva cancelada (2.8569ms)
+✖ reactivar deja a Norte fuera de libres en su franja (0.5195ms)
+✖ reactivar sin cancelada lo dice (1.6023ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.0135
+
+✖ failing tests:
+
+test at test\reactivar.test.js:5:1
+✖ reactivar devuelve la reserva cancelada (2.8569ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'reactivada Norte lun'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/reactivar.test.js:6:10)
+      at Tes
+
+=== RESULTADO (6 turnos, 0.09942500000000001 $)
+Escribí `test/reactivar.test.js` con 3 tests y los 3 fallan, todos por una aserción y no por un error de import o de sintaxis. No toqué `src/` ni hice commit.
+
+**Comando:** `node --test test/reactivar.test.js` (desde la raíz del repo)
+
+**Salida (recortada, 3 tests, 0 pasan, 3 fallan):**
+```
+✖ reactivar devuelve la reserva cancelada
+  + actual 'salas'   - expected 'reactivada Norte lun'
+✖ reactivar deja a Norte fuera de libres en su franja
+  true !== false   (Norte sigue apareciendo en libres 10:00-12:00)
+✖ reactivar sin cancelada lo dice
+  AssertionError: Expected values to be strictly equal  (el actual es 'salas')
+```
+Corté la salida después de empezar el tercer fallo. Su mensaje completo no lo vi, pero `run('reactivar', …)` devuelve `'salas'` mientras no exista el comando.
+
+**Tests:**
+- `reactivar devuelve la reserva cancelada`: THEN, `reactivar Norte lun` responde `reactivada Norte lun`.
+- `reactivar deja a Norte fuera de libres en su franja`: AND, tras reactivar, Norte ya no sale en `libres 10:00-12:00`.
+- `reactivar sin cancelada lo dice`: AND, `reactivar Sur mar` responde `sin cancelada Sur mar`.
+
+**Notas para quien implemente:**
+- `bookings` no se exporta desde `src/app.js` y su estado inicial ya trae Norte lun 10:00-12:00 como `cancelled`. Por eso los tests solo usan `run`, sin preparar datos.
+- El estado es compartido entre tests. El segundo test llama a `reactivar` antes de `libres`, así que da el mismo resultado se ejecute antes o después del primero.
+- `libres` devuelve una cadena separada por `, `. El test comprueba que `Norte` no esté en esa lista, sin depender del texto exacto.

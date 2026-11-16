@@ -1,0 +1,149 @@
+
+>>> Read: <run>\repo\.temp\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Comando `informe`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/informe.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/informe.test.js`
+7	**Interfaces**:
+8	- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+9	- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> cancelada
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | head -40; git ls-files; cat test/informe.test.js
+<<< ✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.6845ms)
+✖ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (1.0891ms)
+✖ informe sin --por responde con el uso (0.298ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.4168
+
+✖ failing tests:
+
+test at test\informe.test.js:5:1
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.6845ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 's
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+4	const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+5	const bookings = [
+6	  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+7	  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+8	  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+9	  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'c
+
+>>> Bash: cd <run>/repo && cat package.json; cat .docs/sdd/specs/*0015*/plan.md | head -60
+<<< {"type": "module"}
+---
+id: 20261009-130000-feature-0015-report-groupings
+feature: 0015
+title: Plan de implementación — Informe por sala y por motivo
+spec: ./spec.md
+status: approved
+created: 2026-10-09
+---
+
+# Plan de implementación — Informe por sala y por motivo
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: el comando `informe`.
+
+**Ejecución**: native, porque es una task en un fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+- Sin comentarios que repitan el código ni que citen documentos.
+
+##
+
+>>> Bash: cd <run>/repo && python - <<'EOF'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+new='''const reportGroupings = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    belongs: (b, group) => b.room === group,
+    detail: (b) => `${b.day} ${b.slot} — ${b.reason} (${b.owner})`,
+  },
+  motivo: {
+    groups: () => reasons,
+    belongs: (b, group) => b.reason === group,
+    detail: (b) => `${b.room} ${b.day} ${b.slot} (${b.owner})`,
+  },
+};
+
+function byRoomAndDay(a, b) {
+  return rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day);
+}
+
+function cancelledReport(grouping) {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled').sort(byRoomAndDay);
+  const lines = [];
+  for (const group of grouping.groups()) {
+    const members = cancelled.filter((b) => grouping.belongs(b, group));
+    lines.push(`${group}: ${members.length} canceladas`);
+    for (const b of members) lines.push(`  ${grouping.detail(b)}`);
+  }
+  lines.push(`Total: ${cancelled.length} canceladas`);
+  return lines.join('\\n');
+}
+
+export function run('''
+s=s.replace('export function run(',new,1)
+s=s.replace("  return 'salas';","""  if (cmd === 'informe') {
+    const grouping = reportGroupings[params[params.indexOf('--por') + 1]];
+    return grouping ? cancelledReport(grouping) : 'uso: informe --por sala|motivo';
+  }
+  return 'salas';""",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"; node src/app.js informe
+<<< Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.9394ms)
+✖ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (1.2156ms)
+✖ informe sin --por responde con el uso (0.3064ms)
+ℹ pass 0
+ℹ fail 3
+✖ failing tests:
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.9394ms)
+✖ informe por motivo agrupa las cancel
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"; git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de canceladas por sala y por motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1; git status --short
+<<< ℹ pass 3
+ℹ fail 0
+8b22c67 feat: comando informe de canceladas por sala y por motivo
+
+>>> Write: <run>\repo\.temp\sdd\plan\task-1-report.md
+<<< File created successfully at: <run>\repo\.temp\sdd\plan\task-1-report.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (10 turnos, 0.165716 $)
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** `8b22c67 feat: comando informe de canceladas por sala y por motivo`
+- **Tests:** `node --test test/informe.test.js` pasa 3/3 con la salida limpia. Antes de implementar fallaban los 3, porque `run('informe', …)` devolvía `'salas'`. No he ejecutado la suite completa.
+- **Concern:** el plan no dice qué hacer con un grupo sin canceladas. Ahora se imprime como `X: 0 canceladas`, y ningún test lo cubre.
+- **Informe:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

@@ -1,0 +1,52 @@
+--- [3]
+Ahora: leo la spec de la 0010 y la configuración del kit. Queda: comprobar qué pide la revisión y presentarte la spec para aprobar, ~3 min.
+
+--- [26]
+Me corrijo antes de seguir: validar el motivo **antes** de buscar la reserva rompería `test/cancel.test.js:10` (`cancelar Sur mar` → «sin reserva Sur mar», sin motivo). Cambio el orden.
+
+--- [29]
+Ahora: pruebo el delta en una copia de `.docs/sdd` fuera del repo. Queda: la revisión y la presentación, ~8 min, ~1 $.
+
+--- [32]
+Ahora: lanzo la revisión de la spec, un revisor de dominio en Opus. Queda: incorporar lo que encuentre y presentártela, ~6 min, ~1 $.
+
+--- [41]
+Ahora: vuelvo a probar el delta en una copia y lanzo la segunda ronda (Sonnet, siete puntos). Queda: presentártela, ~4 min, ~0,3 $.
+
+--- [49]
+La segunda ronda no trae críticos, así que no hay tercera. Ahora: incorporo sus hallazgos. Queda: presentártela, ~3 min.
+
+--- [70]
+# Spec 0010: Motivo al cancelar, lista para aprobar
+
+No te la he presentado tal cual estaba. Al contrastarla con el código tenía huecos que habrían acabado en enmiendas durante la implementación. Además, la decisión «sin review» no se sostiene: la rúbrica del kit decide cuántos revisores van, no si hay revisión. La he corregido y ha pasado dos rondas de revisión. La spec está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`.
+
+🦆 Al cancelar una reserva hay que decir por qué, eligiendo entre «cambio de planes», «sala ocupada» u «otro». Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, no cancela y te enseña la lista. Un comando nuevo, `canceladas`, lista cada reserva cancelada con su sala, día, motivo y titular: «Norte lun — sala ocupada — Ana». Las anulaciones del responsable de sala no salen en esa lista.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+**Revisión:** un revisor de dominio en Opus. Las señales eran una capacidad nueva y datos nuevos, en unas 50 líneas y 2 ficheros. Sacó 2 críticos, así que hubo una segunda ronda en Sonnet, que no trajo ninguno más.
+
+1. **La capacidad es nueva y se llama `reservas`.** No hay ninguna en `capabilities/`. No la llamo `bookings` porque PRODUCT.md dice que se evite «booking».
+2. **`cancelar` sin motivo deja de cancelar.** Responde «falta el motivo: cambio de planes, sala ocupada, otro». Hoy cancela, así que cambia `test/cancel.test.js:6`.
+3. **Un motivo fuera de la lista tampoco cancela.** Responde «motivo no válido: …». El motivo se compara tal cual está escrito en la lista, y un `--motivo` vacío cuenta como que falta.
+4. **Si no hay reserva activa, «sin reserva <sala> <día>» gana a cualquier motivo.** Así, una reserva ya cancelada no se vuelve a cancelar ni se anula, y su motivo no cambia. `test/cancel.test.js:10` sigue igual.
+5. **La respuesta de cancelar cambia** de «cancelada Norte lun» a «cancelada Norte lun (sala ocupada)».
+6. **La reserva guarda su titular**, y `canceladas` lo enseña. No hay forma de saber quién ejecuta el comando: lo que separa una cancelación de una anulación es usar `cancelar` o `anular`. Riesgo aceptado: si el responsable de sala usa `cancelar`, saldrá como cancelación.
+7. **`reservar` no se toca**, porque hoy es un esbozo que no crea reservas.
+8. **El plazo de 24 h de la Cancelación queda fuera**, porque las reservas no tienen fecha ni reloj. Hasta que exista, `canceladas` incluye también las cancelaciones fuera de plazo.
+9. **Formato de `canceladas`:** una línea por reserva, «<sala> <día> — <motivo> — <titular>», en el orden en que están guardadas. Si no hay ninguna, «sin canceladas».
+10. **Datos de ejemplo:** la reserva de Norte del lunes pasa a ser de Ana, y añado una de Sur del martes a las 16:00-18:00, de Luis. Efecto: `libres 16:00-18:00` deja de dar Sur. Ningún test usa esa franja.
+11. **Cómo se hace:** el motivo se guarda en la propia reserva, en vez de en un registro aparte de cancelaciones que duplicaría datos.
+12. ⚠️ **Pendiente de que lo valides: las reservas no se guardan entre comandos.** Viven en memoria y cada comando arranca de cero. En la terminal, `canceladas` no verá lo que canceló un `cancelar` anterior; solo funciona dentro de un mismo proceso, que es como lo prueban los tests. Ya pasa hoy con `cancelar` y `libres`, porque es como está hecho el proyecto. Guardar en disco sería otra fila del roadmap; si lo quieres dentro de esta feature, dímelo y la amplío.
+
+El resto (los 10 + 10 hallazgos aceptados y la política de modelos) está en la spec. El cambio aplicado sobre una copia de `.docs/sdd` funciona: crea `reservas.md` con 5 requisitos y 5 reglas, y el repo no se ha tocado.
+
+Prevé 2 tasks y el proyecto implementa en Native. En Native, esta misma sesión hace todas las tasks, y va bien con un modelo de gama media (Sonnet, effort medium). Yo no puedo cambiar mi propio modelo, y después de aprobar no hay otra parada donde puedas cambiarlo tú.
+
+¿La apruebas?
+
+1. **Apruebo (Recomendada)**
+2. **Cambios.** Dime cuáles, por ejemplo sobre la decisión 12.
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 2 tasks).**
+

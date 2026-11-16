@@ -1,0 +1,18 @@
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+| El test de `canceladas` depende de la cancelación del primer test de `test/cancel.test.js` (falla si corre solo o en otro orden); falta un test del THEN «sin `--motivo`» | feature 0010 (walkthrough §3 y §4.3) | 2026-11-15 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |

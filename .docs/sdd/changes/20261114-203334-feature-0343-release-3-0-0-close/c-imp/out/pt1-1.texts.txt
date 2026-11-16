@@ -1,0 +1,102 @@
+--- [24]
+RED confirmado por la causa esperada (ambos fallan con `cancelada/anulada Norte mar`). Ahora el arreglo mínimo.
+
+--- [30]
+Ahora: espero la revisión del patch (un revisor). Queda: contestar sus hallazgos, hacer el commit del fix y pasar al cierre, ~5 min.
+
+El arreglo está hecho y la suite pasa 6/6, pero todavía no he commiteado: el flujo del patch exige primero la revisión.
+
+--- [34]
+Sin hallazgos bloqueantes. Dos observaciones menores:
+
+1. **Causa raíz y evidencia: correcta.**
+   - `src/app.js:9-11`: `findBooking` recibía `day` y no lo comparaba.
+   - `git show 3bf340e -- src` confirma que ese commit quitó exactamente `b.day === day`. El fix es la inversa literal de ese cambio.
+
+2. **Fix: mínimo y correcto.**
+   - `src/app.js:10` es el único cambio.
+   - `cancelBooking` (línea 14) y `voidBooking` (línea 21) usan `findBooking`, así que `anular` queda cubierto sin tocar nada más.
+
+3. **Tests: fallan sin el fix y no dependen del orden.**
+   - Copié el repo a un directorio temporal con `src/app.js` de HEAD, es decir sin el fix. Fallan justo los 2 tests nuevos (`cancel-day.test.js` y `void-day.test.js`, línea 5) y pasan los otros 4. Eso coincide con el «RED previo: 2 fallos» de patch.md.
+   - Cada fichero de test corre en su propio proceso, así que el estado de `bookings` no se comparte entre ficheros. Dentro de cada fichero hay un solo test. Orden de ejecución: no influye.
+   - Menor, `test/cancel-day.test.js:5-8` y `test/void-day.test.js:5-8`: cada test muta el módulo y depende de que la reserva de lun siga activa al empezar. Hoy es correcto, pero si alguien añade otro test en el mismo fichero tras ellos, el estado compartido le afectará.
+
+4. **`node --test` con el fix: 6/6 en verde.**
+
+5. **patch.md coherente con el diff.** Una nota menor:
+   - `patch.md` frontmatter línea 10: `commit: pendiente`, con `status: done`. No es un error mientras el patch no se haya commiteado, pero conviene rellenarlo al cerrar.
+   - Las filas 1 y 2 de §4 (líneas 39-40) repiten el mismo resultado «6/6» y el mismo RED. Es verdad para ambas, pero la fila 2 no aporta evidencia separada.
+
+--- [46]
+Ahora: el patch está commiteado y revisado; el cierre se para en la validación, que es tuya. Queda: que pruebes los dos pasos y me digas «validado» (o qué falla); luego cierro (roadmap, historia y merge), ~5 min.
+
+🦆 Antes, `cancelar Norte mar` sin reserva el martes decía «cancelada Norte mar» y te quitaba la del lunes. Ahora dice `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- nada
+
+**Smoke que he corrido**
+
+| Caso | Evidencia | Resultado |
+| --- | --- | --- |
+| cancelar Norte mar, sin reserva ese día | ejecución real | `sin reserva Norte mar` |
+| anular Norte mar, sin reserva ese día | ejecución real | `sin reserva Norte mar` |
+| la reserva de lun sigue cancelable / anulable | suite | `cancel-day.test.js` y `void-day.test.js` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `aa8ca34`.
+
+**Sin probar**
+
+- Nada de lo del patch. Dos cosas del cierre aparte: `sdd merge --check` falla porque `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y el patch no tiene fila en `ROADMAP.md`. No las he tocado.
+
+Panel: plan B en http://127.0.0.1:7308/. Esa página no ve la app, así que si algo falla cuéntamelo en el comentario. Hasta que contestes no lanzo nada más.
+
+**Guion**
+
+Rama `feature/0015-cancel-dia` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. En una terminal:
+
+```
+cd <run>\repo
+```
+
+1. El caso que reportaste, la sala sin reserva el martes → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. La reserva del lunes sigue ahí → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+Cada comando es un proceso nuevo y la reserva de Norte lun se reinicia en cada uno, así que el paso 2 no depende del 1. Para parar el panel, `Stop-Process -Id 5815`.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [49]
+Hecho hasta el commit del fix, y ahí me paro. No lo he cerrado.
+
+- **Causa:** `findBooking` en `src/app.js` recibía `day` pero no lo comparaba, así que devolvía la primera reserva activa de la sala. El commit `3bf340e` había quitado `b.day === day`.
+- **Fix:** vuelvo a exigir `b.day === day`. `anular` tenía el mismo fallo y queda arreglado con el mismo cambio.
+- **Tests:** `test/cancel-day.test.js` y `test/void-day.test.js` fallaban antes del arreglo y pasan ahora. `node --test` da 6/6. Un revisor miró el patch y no puso objeciones que bloqueen.
+- **Commit:** `aa8ca34` en la rama `feature/0015-cancel-dia`. Incluye el registro `.docs/sdd/changes/20261115-142519-patch-0015-cancel-dia/patch.md`, que tiene `commit: pendiente`.
+- **Panel:** el servidor de validación está parado y el árbol de trabajo limpio.
+
+No has dicho «validado» ni has probado los dos pasos del guion, así que no lo registro como validado. Para cerrar con `sdd-archive` faltan:
+- tu validación o un «diferir» con su disparador;
+- `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`, porque sin ellos `sdd merge --check` falla;
+- una fila para el 0015 en `ROADMAP.md`;
+- el hash del fix en `patch.md`.
+
+Dime cuando quieras que siga con el cierre.
+

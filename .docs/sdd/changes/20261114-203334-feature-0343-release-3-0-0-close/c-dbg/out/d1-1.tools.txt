@@ -1,0 +1,72 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md 2>&1 | head -50; echo ---HOOKS; ls -la .githooks; echo ---CFG; git config core.hooksPath; echo ---; for f in .githooks/*; do echo "=== $f"; cat "$f"; done; echo ---NOTAS; cat -A notas.txt | head -30
+<<< # Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+---HOOKS
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov 14 22:58 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 14 22:58 ../
+-rwxr-xr-x 1 <user> 197609 830 Nov 14 19:50 pre-commit*
+-
+
+>>> Bash: .githooks/pre-commit; echo "exit=$?"; echo ---; GIT_INDEX_FILE=.git/index .githooks/pre-commit; echo "exit con GIT_INDEX_FILE=$?"; git worktree list; ls .git | head -30; git log --oneline -3 -- .githooks
+<<< exit=0
+---
+fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+exit con GIT_INDEX_FILE=1
+<run>/repo 2076bef [develop]
+COMMIT_EDITMSG
+config
+description
+HEAD
+hooks/
+index
+info/
+logs/
+objects/
+refs/
+worktrees/
+2076bef feat: base del molde
+
+>>> Bash: d=$(mktemp -d); printf '#!/bin/sh\necho "GIT_INDEX_FILE=${GIT_INDEX_FILE:-UNSET}"\necho "GIT_DIR=${GIT_DIR:-UNSET}"\nexit 1\n' > "$d/pre-commit"; chmod +x "$d/pre-commit"; git -c core.hooksPath="$d" commit -m probe 2>&1; rm -rf "$d"; git status --short; git log --oneline -1
+<<< GIT_INDEX_FILE=.git/index
+GIT_DIR=UNSET
+A  notas.txt
+2076bef feat: base del molde
+
+=== RESULTADO (6 turnos, 0.1189478 $)
+**Causa raíz:** el hook `.githooks/pre-commit` hereda `GIT_INDEX_FILE=.git/index` del `git commit` y lo aplica al git del worktree temporal, que por eso falla.
+
+**Cómo ocurre**
+
+1. `git commit` define `GIT_INDEX_FILE=.git/index` (ruta relativa) en el entorno de los hooks. Lo comprobé con un hook de prueba que solo imprime y aborta. No se creó ningún commit y `notas.txt` sigue en stage.
+2. El hook crea un worktree en `.git/hook-check` y ejecuta `git status --porcelain` con `cwd: tmp`. `spawnSync` pasa el entorno completo, así que ese `git status` también ve `GIT_INDEX_FILE`.
+3. Git resuelve esa ruta relativa desde el worktree temporal. Intenta abrir `.git/hook-check/.git/index.lock`, que no existe, y falla con `fatal: Unable to create '…/.git/hook-check/.git/index.lock': No such file or directory`.
+4. El hook interpreta ese fallo como `el worktree temporal no responde` y sale con código 1.
+
+**Evidencia**
+
+- Ejecutado directamente (`.githooks/pre-commit`) sale con `exit=0`, porque no hay `GIT_INDEX_FILE`. Por eso parece que el hook está bien.
+- Ejecutado con `GIT_INDEX_FILE=.git/index` sale con `exit=1` y el error `fatal: Unable to create …/hook-check/.git/index.lock`.
+- El problema no está en `notas.txt` ni en su contenido. Cualquier commit con algo en stage fallaría igual.
+- La deuda (`debt.md`) no tiene ninguna fila que cubra este fallo.
+
+No he modificado nada. Cuando quieras arreglarlo, el cambio tendría que ir por `sdd-propose`.

@@ -1,0 +1,27 @@
+--- [12]
+Ahora: abro la propuesta de la lista de espera y te hago la primera pregunta de la entrevista. Queda: la entrevista, la spec con su aprobación, el plan y la implementación; la próxima parada tuya es la aprobación de la spec, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija ninguno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no mira si la sala está ocupada. Quieres que, cuando la sala que pides esté ocupada en esa franja, quede constancia de que esperas por ella. Es un cambio visible para ti, no un arreglo, así que va como feature. Calculo unas 2 o 3 tareas y no hay motivo para dividirla. No hay ficheros de capacidades que tocar. Corrígeme si algo de esto no es lo que buscas.
+
+❓ **¿Para qué quieres la lista de espera?** Cuando la sala que quieres está ocupada y te apuntas, ¿qué quieres que pase después, y qué harías tú con esa lista?
+
+--- [14]
+Ahora: sigo la entrevista, con la decisión que más condiciona el resto. Queda: unas 2 o 3 preguntas más, la spec y su aprobación, ~8 min.
+
+Entendido: tu problema es tener que consultar `libres` a mano una y otra vez. Lo que resuelve eso es que el sistema se encargue de avisarte o de reservar cuando la sala se libere.
+
+Encontré esto en el código: en `src/app.js` las reservas están en un array en memoria. `cancelar` solo devuelve un texto y no borra nada, y no hay nada guardado entre ejecuciones. Una lista de espera necesita que alguien se entere de que la sala se libera. Tal como está, esa información no existe.
+
+❓ **¿Qué ocurre cuando la sala se libera?**
+1️⃣ **Reserva automática para el primero de la cola.** `esperar Norte 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Más tarde alguien cancela, y `libres 10:00-12:00` ya muestra `Sur` y `Norte` ocupada por ti. Es lo que más trabajo te quita. Obliga a persistir reservas y cola en un fichero, y a que `cancelar` borre de verdad.
+2️⃣ **Aviso al liberarse, sin reservar.** El mismo `esperar` te apunta. Cuando se cancela esa reserva, el siguiente comando que ejecutes antes de cualquier otra salida imprime `Norte libre 10:00-12:00 (esperabas por ella)`. La reserva sigue siendo manual y otra persona podría cogerla antes. También necesita persistencia.
+3️⃣ **Comando que espera y vigila.** `esperar Norte 10:00-12:00` se queda en marcha y consulta cada cierto tiempo hasta que se libera, y entonces imprime `Norte libre`. Sin cola ni persistencia. Si cierras la terminal, se pierde, y solo tienes un hueco a la vez.
+
+➡️ **Recomiendo 1️⃣**, porque tu objetivo es dejar de volver a mirar, y solo esta opción lo cumple sin que tengas que estar delante. A cambio, es la más grande: tocaría `cancelar` y la persistencia, y puede pasar de las 3 tareas.
+

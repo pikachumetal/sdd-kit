@@ -1,0 +1,43 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs y `gate.json`) para clasificar. Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [16]
+Ahora: compruebo en el repo qué referencia a `slow` y cómo corre el pre-commit, y reservo el id. Queda: escribir la spec, revisarla y presentártela, ~5 min.
+
+--- [36]
+Estoy incorporando los hallazgos del revisor a la spec (no hay Python, así que la reescribo entera) y luego te la presento.
+
+--- [39]
+Ahora: segunda ronda de review (un Crítico aceptado la exige). Queda: presentarte la spec para aprobar, ~2 min.
+
+--- [56]
+Ahora: tienes la spec lista en su carpeta y esperando tu aprobación. Queda: tu respuesta; después escribo el plan (1 task) y paso a la implementación, ~3 min.
+
+**Spec:** `.docs/sdd/changes/20261115-200421-feature-0015-paths-in-fast/spec.md`
+
+Carril: feature, modo full, perfil `delegate` del proyecto (`sdd-kit.json`). La entrevista no se repitió, así que usé tu frase tal cual. El id 0015 ya estaba reservado en la rama; el contador local lo da por válido porque no hay remoto.
+
+🦆 Hoy el pre-commit solo corre `app.test.js`. El test de que ninguna ruta pasa de 140 caracteres está en la tarea lenta y no frena nada. Con el cambio entra en `fast`: una ruta de 141 caracteres hace fallar `fast` y una de 140 pasa. Lo medí: 140 sale con código 0 y 141 con código 1. La tarea `slow` desaparece, porque se queda sin tests.
+
+`gate.json` quedaría así:
+```json
+{ "tasks": { "fast": {
+  "command": "node --test test/app.test.js test/paths.test.js",
+  "inputs": ["**/*", ".docs/**"] } } }
+```
+
+**✋ Decisiones que he tomado yo**
+1. **Los `inputs` de `fast` pasan a `**/*`, más `.docs/**`.** `paths.test.js` lee `git ls-files`, así que su resultado cambia con cualquier fichero. Con los `inputs` actuales, la caché se saltaría `fast` si la ruta larga estuviera en `docs/`. Cuesta unos 0,1 s más en cambios solo de documentos (0,49 s frente a 0,39 s).
+2. **Un solo comando con los dos ficheros.** El pre-commit solo corre `fast`, así que una tarea nueva no se ejecutaría.
+3. **Se borra `slow`.** No tiene otro test, y el gate de cierre sigue corriendo `paths.test.js` con `node --test`.
+4. **Fuera de alcance: `test/cancel.test.js`.** No está en ninguna tarea de `gate.json`, ni antes ni después. Si quieres, va a su propia fila del roadmap.
+5. **Fuera de alcance: el pre-commit.** En el repo no hay hook instalado ni el programa que lee `gate.json`. Asumo lo que dice `operations.md:16`.
+6. **`Validación: agente`, porque es configuración.** Tú pediste la spec en carpeta, así que es feature en modo full y no el carril config.
+7. **Hueco aceptado, que es el que más te conviene mirar.** No sé si el programa de caché hashea solo contenido, ni si mira el índice o el árbol de trabajo. Como no está en el repo, queda `sin medir`, con el dev-lead como dueño del riesgo.
+
+**Review de la spec:** un revisor, y una segunda ronda por un Crítico aceptado. Acepté todo salvo una propuesta de `.*/**` en los `inputs`, porque casaría `.git/` y la caché dejaría de servir. Puse `.docs/**` en su lugar. Los hallazgos están en la spec.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada).**
+2. **Cambios.**
+

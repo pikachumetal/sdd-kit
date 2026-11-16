@@ -1,0 +1,53 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`. Queda: leer los dos informes y decidir si hace falta una ronda de arreglos, ~5 min.
+
+--- [17]
+Estoy aplicando el arreglo del hallazgo Important del eje de código (el motivo con espacios al final). El test ya falla en RED, así que ahora hago el arreglo.
+
+--- [32]
+Estoy esperando la re-revisión única del arreglo, que lanzó en segundo plano. El eje de spec salió limpio. El de código tenía un Important, que ya arreglé con su test en RED→GREEN. La suite está en 6/6 y el commit es `1154e84`. Mientras la re-revisión corre, no toco más código. Aviso en cuanto vuelva.
+
+--- [38]
+### Finding Verdicts
+- **`reasonOf` kept the spaces around the reason, so a reason with a trailing space was rejected** — ADDRESSED. `src/app.js:16` is now `return index === -1 ? undefined : params[index + 1]?.trim();`. The value is trimmed before `cancelBooking` checks it against the list (`src/app.js:20`), and the trimmed value is the one stored (`src/app.js:24`), so `canceladas` won't show the trailing space either. I ran the reported scenario at 1154e84: `node src/app.js cancelar Norte lun --motivo "sala ocupada "` now answers `cancelada Norte lun (sala ocupada)`. The edge cases also hold. `--motivo` with no value still gives `undefined` (thanks to `?.`), and a reason that is only spaces becomes `""`. Both still answer «motivo no válido: …», as the spec requires.
+
+### New Breakage in the Fix Diff
+- **Minor** — `test/cancel.test.js:17-19`: the new test is weak, and its name says more than it checks.
+  - It cancels `Sur mar`, but there is no booking for that room and day (`src/app.js:4`). The real answer is `sin reserva Sur mar`, as I confirmed by running it, not an accepted cancellation.
+  - The negative check `assert.doesNotMatch(..., /motivo no válido/)` passes on any answer except the invalid-reason message. It would stay green if the trim broke in a way that produced some other error.
+  - It was RED before the fix, so it does pin the check itself. But it never proves that "acepta" leads to a successful cancellation.
+  - A stronger version that still works with the shared module state: `assert.equal(..., 'sin reserva Sur mar')`. That shows the reason passed the check. Or test a booking that is still active, so the answer can be `cancelada …`.
+
+### Out-of-Scope Observations
+- `cancelBooking` is exported (`src/app.js:19`) but does not trim on its own. Only the CLI path through `reasonOf` normalises the reason. No other code calls it today.
+- Spaces inside the reason (e.g. `"sala  ocupada"`) are not collapsed. The spec doesn't ask for that.
+- The fix commit adds `tasks.md` with only Tasks 1 and 2, and no row records this fix round. The working tree also has an uncommitted change to that file, which I left alone.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. The only new issue is the Minor weak assertion in `test/cancel.test.js:18`.
+
+--- [41]
+La revisión final de la 0010 está cerrada. Falta la validación y el cierre con `sdd-archive`, que no he empezado.
+
+**Revisión final**
+- **Eje Spec:** limpio. Solo hay un Minor: el test `canceladas` depende de que `cancelar` se haya ejecutado antes.
+- **Eje Código:** un Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Eje Arquitectura:** no salió, porque el plan lo marca `no`.
+
+**Arreglo** (commit `1154e84`)
+- Añadí el test `cancelar acepta el motivo con espacios alrededor` y lo vi fallar.
+- Después puse `.trim()` en `reasonOf` (`src/app.js:16`). La suite está en 6/6.
+
+**Re-revisión** (una sola, opus+high, sobre `87aed6d..1154e84`)
+- Dio el Important por resuelto y no encontró Critical ni Important nuevos.
+- Ejecutó el caso original y ahora responde `cancelada Norte lun (sala ocupada)`.
+- Puso un Minor: mi test nuevo es débil. Cancela `Sur mar`, que no tiene reserva, y solo comprueba que no salga «motivo no válido».
+
+**Pendiente de tu decisión**
+- **Test débil:** lo dejé sin reforzar. Un commit después de la re-revisión no se revisaría y iría a ✋ como `sin revisar`. Queda como `Final: Ruling` en `tasks.md`.
+- **Minor del orden de tests:** queda diferido (`review.minors` no está en `fix`).
+- **`tasks.md`:** tiene cambios sin commitir, con las líneas de revisión y de rulings. Entra en el commit del cierre.
+- **Commit de la Task 1:** corregí la fila de `tasks.md` a `4e19455`. Antes decía `87aed6d`.
+
+Quité el worktree de la re-revisión y no queda ningún proceso mío en marcha.
+

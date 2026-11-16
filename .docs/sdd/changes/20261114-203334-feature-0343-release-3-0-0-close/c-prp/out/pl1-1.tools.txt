@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.local.json 2>&1; git ls-files | head -50; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30; ls node_modules 2>&1 | head -2
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\patch-lane.md
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+
+>>> Bash: cd "<run>/repo" && cat src/app.js PRODUCT.md ROADMAP.md .docs/sdd/sdd-kit.json .docs/sdd/steering/constitution.md .docs/sdd/steering/estimation.md; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (7 turnos, 0.14834930000000002 $)
+Ahora: clasifico el cambio. Queda: tu respuesta sobre el carril, luego la spec, ~1 min.
+
+🦆 En llano: hoy `src/app.js` solo sabe listar salas libres, cancelar y anular. Esto le añade un comando nuevo, `reservas <sala>`, que enseña las reservas activas de una sala, y cambia `libres` para que, sin franja, avise en vez de listar todas las salas.
+
+No lo abro como patch, aunque lo hayas pedido así. Son tres comportamientos nuevos: `reservas` con reservas, `reservas` sin reservas y `libres` sin franja. Cada uno necesita su propio test, y un patch es lo que reproduce un solo test. Tienes los literales cerrados, pero eso no cambia el recuento.
+
+Sí cumple el predicado de **lite**:
+- El flujo ya existe y se lee: `run`, `freeRooms` y `bookings` en `src/app.js`.
+- No cambia contratos públicos: la CLI sigue igual, solo se añade un comando.
+- No cambia el esquema de datos: `bookings` queda como está.
+- Cabe en un solo módulo: `src/app.js` y su test.
+- La estimación es de ~1 h más el gate de cierre, muy por debajo de medio día. `estimation.md` existe, pero no hay un patch medido con gate; lo anotaré como aproximado.
+
+Hay un detalle que deja la spec cerrada: hoy `libres` sin franja devuelve todas las salas (`slot` es `undefined`). Pasaría a responder `indica una franja`, y eso cambia un comportamiento existente.
+
+¿Cómo lo llevamos?
+1. **Lite (recomendada):** spec corta con la estimación dentro, sin plan ni tasks. Mantiene la puerta de aprobación, la revisión de la spec, el smoke y el walkthrough. Perfil `delegate`, el del proyecto (`sdd-kit.json`).
+2. **Feature completa:** spec y plan, con la misma ceremonia que lite pero más pesada, sin ganar nada para tres comportamientos pequeños.
+3. **Patch:** no lo recomiendo, porque no cumple su predicado.
+
+Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».

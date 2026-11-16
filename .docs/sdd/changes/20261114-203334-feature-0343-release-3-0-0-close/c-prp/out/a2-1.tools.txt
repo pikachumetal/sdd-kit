@@ -1,0 +1,558 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a . .docs/sdd .docs/sdd/steering 2>&1 | head -60; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40; ls node_modules 2>&1 | head -3
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cat PRODUCT.md ROADMAP.md package.json .docs/sdd/sdd-kit.json; head -60 .docs/sdd/steering/architecture.md; head -40 .docs/sdd/steering/operations.md; ls -R src test scripts .docs/sdd/specs | head -50
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cat src/app.js; cat test/cancel.test.js; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; cat .docs/sdd/steering/constitution.md | head -40
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status = 'cancelled';
+ 
+
+>>> Bash: cat .docs/sdd/steering/estimation.md; grep -ril "abiert\|open\|pendiente" .docs/sdd/specs/*/walkthrough.md; grep -rn -i "gate\|min\|estado\|status" .docs/sdd/specs/*/walkthrough.md | head -20; git log --oneline | head
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-rubber-duck\SKILL.md
+<<< 1	---
+2	name: sdd-rubber-duck
+3	description: Use when the user asks you to explain how something in their project works or travels, step by step or in plain words («explícame cómo viaja un pedido de punta a punta», «explícamelo en llano»), when your last message didn't land («no te he entendido», «wait, what?»), or when another sdd-kit skill needs the 🦆 paragraph of a stop.
+4	---
+5	
+6	# sdd-rubber-duck
+7	
+8	## Overview
+9	
+10	Explain for a reader who knows the product, not its code or the kit. Write everything they read in the language of their message, skill announcements included: an English
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- L
+
+>>> Bash: node src/app.js cancelar Norte mar
+<<< cancelada Norte mar
+
+=== RESULTADO (10 turnos, 0.17090570000000002 $)
+Ahora: clasifico el fallo y te pregunto antes de abrir nada. Queda: tu respuesta, y luego el fix, ~30 min.
+
+🦆 Hoy, si cancelas Norte el martes sin tener reserva, la herramienta dice «cancelada Norte mar» y te quita la reserva del lunes. El mismo fallo pasa al anular. Al buscar la reserva de una sala, el programa mira solo la sala y que esté activa, y no el día que pides, así que coge la primera que encuentra. Lo he reproducido: `cancelar Norte mar` devuelve «cancelada Norte mar» con la única reserva en lunes.
+
+Es un fallo determinista con causa raíz clara. Encaja en el carril **patch** (el fix y el comportamiento correcto, «sin reserva Norte mar», ya están fijados). La estimación es de 0,5 h, más lo que tarde el gate de cierre (`node --test && node scripts/lint.mjs`, ~1 s de tests). Aún no hay medida de un gate anterior en el repo.
+
+1. **Abrir como patch (Recomendada):** un test de regresión que falla hoy (`cancelar Norte mar` → `sin reserva Norte mar` y la reserva del lunes sigue activa) y el fix. La búsqueda es compartida, así que `anular` queda arreglado a la vez; lo cubro con un segundo test de la misma causa. Perfil `delegate`, el del proyecto.
+2. **Solo cancelar:** dejo `anular` como está y lo apunto en el roadmap. No lo recomiendo: es el mismo fallo en el mismo sitio.
+3. **Prefiero otro carril o perfil:** dime cuál.
+
+¿Cuál eliges?
+
+>>> Bash: cat "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references/nombrado.md" | head -80; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id --help 2>&1 | head -20
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Bash: SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; $SDD id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; git checkout -b feature/0012-cancel-day develop 2>&1; $SDD id claim --project-root . 2>&1; git status --short; git branch --show-current
+<<< Switched to a new branch 'feature/0012-cancel-day'
+sin remoto: la 0012 vale (contador local)
+feature/0012-cancel-day
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-implement\references\patch-flow.md
+<<< 1	# The patch flow
+2	
+3	A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/references/patch-lane.md)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
+4	
+5	One todo per step. Resuming, start at the first step whose output `patch.md` or the branch lacks, never with a second `patch.md`.
+6	
+7	1. **Root cause, MANDATORY in a failure** (the intent, in a visu
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md; git log -3 --format='%h %s' -- src/app.js; ls C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/ C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/references 2>&1 | head -40
+<<< # Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+be8f9f9 feat: base del molde
+ls: cannot access 'C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/references': No such file or
+
+>>> Bash: cat C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/templates/patch-template.md; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md | head -5; date -u +%Y%m%d-%H%M%S
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash d
+
+>>> Bash: D=.docs/sdd/changes/20261115-183746-patch-0012-cancel-day; mkdir -p $D && cat > $D/patch.md <<'EOF'
+---
+id: 20261115-183746-patch-0012-cancel-day
+task: 0012
+title: Patch — cancelar y anular miran el día
+type: patch
+solution: causa raíz
+status: done
+created: 2026-11-15
+branch: feature/0012-cancel-day
+commit: pendiente
+---
+
+# Patch 0012 — cancelar y anular miran el día
+
+Validación: dev-lead — es una herramienta que usa una persona; lo comprueba con su caso (`cancelar Norte mar`).
+
+## Capacidades
+
+- Ninguna, porque ninguna capacidad describe `cancelar` ni `anular` (el proyecto no tiene `capabilities/`).
+
+## 1. Síntoma
+
+«Si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes.»
+
+Reproducido en la base: `node src/app.js cancelar Norte mar` imprime `cancelada Norte mar` con la única reserva activa de Norte en lunes. `anular` comparte el fallo.
+
+## 2. Causa raíz
+
+`findBooking(room, day)` en `src/app.js` recibe `day` y no lo usa: busca la primera reserva activa de la sala (`b.room === room && b.status === 'active'`). `cancelBooking` y `voidBooking` la llaman, así que con una reserva activa de Norte el lunes, pedir cualquier otro día de Norte la encuentra, la marca y responde con el día pedido. Es determinista: pasa siempre que la sala tenga una reserva activa en otro día. Mismo patrón que el patch 0007 (comparación incompleta), que no tocó esta función. Sin fila de deuda que lo cubra.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/app.js`, `test/cancel.test.js`
+- **Cambio**: `findBooking` exige también `b.day === day`. Sin reserva ese día, `cancelar` y `anular` responden `sin reserva <sala> <día>`, como ya hacían sin reserva.
+- **Decisiones**: ninguna; el texto de salida ya existía.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancelar Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa | pendiente |
+| 2 | `anular Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa | pendiente |
+
+## 5. Tiempo (ligero)
+
+- Estimación: 0,5 h + gate de cierre (`node --test && node scripts/lint.mjs`, ~1 s; sin medida previa en el repo)
+- Inicio: 2026-11-15T18:37Z
+- Esfuerzo real: pendiente
+EOF
+git status --short
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< ?? .docs/sdd/changes/
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cat > test/cancel-day.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+// Estado compartido en el fichero: Norte tiene una sola reserva activa, el lunes.
+// Los tres tests van en este orden y solo este fichero toca esa reserva.
+
+test('cancelar Norte un día sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Norte', 'mar']), 'sin reserva Norte mar');
+});
+
+test('anular Norte un día sin reserva lo dice', () => {
+  assert.equal(run('anular', ['Norte', 'mar']), 'sin reserva Norte mar');
+});
+
+test('la reserva del lunes sigue activa tras pedir otro día', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+EOF
+mkdir -p "$TEMP/red-0012" && cp test/cancel-day.test.js "$TEMP/red-0012/"; node --test test/cancel-day.test.js 2>&1 | grep -E "^# (pass|fail)|not ok|expected|actual|\+|\-  " | head -30
+<<<   + actual - expected
+  + 'cancelada Norte mar'
+    actual: 'cancelada Norte mar',
+    expected: 'sin reserva Norte mar',
+  + actual - expected
+  + 'sin reserva Norte lun'
+    actual: 'sin reserva Norte lun',
+    expected: 'cancelada Norte lun',
+
+>>> Bash: cat > test/cancel-day.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+// Estado compartido en el fichero: Norte tiene una sola reserva activa, el lunes.
+// Los dos tests van en este orden y solo este fichero toca esa reserva.
+
+test('cancelar Norte un día sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Norte', 'mar']), 'sin reserva Norte mar');
+});
+
+test('la reserva del lunes sigue activa tras cancelar otro día', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+EOF
+cat > test/void-day.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+// Fichero aparte: parte de la reserva de Norte del lunes sin tocar.
+
+test('anular Norte un día sin reserva lo dice', () => {
+  assert.equal(run('anular', ['Norte', 'mar']), 'sin reserva Norte mar');
+});
+
+test('la reserva del lunes sigue activa tras anular otro día', () => {
+  assert.equal(run('anular', ['Norte', 'lun']), 'anulada Norte lun');
+});
+EOF
+cp test/cancel-day.test.js test/void-day.test.js "$TEMP/red-0012/"; node --test test/cancel-day.test.js test/void-day.test.js 2>&1 | grep -E "^# (pass|fail)|^not ok|^    (actual|expected)|^# Subtest"
+<<<     actual: 'cancelada Norte mar',
+    expected: 'sin reserva Norte mar',
+    actual: 'sin reserva Norte lun',
+    expected: 'cancelada Norte lun',
+    actual: 'anulada Norte mar',
+    expected: 'sin reserva Norte mar',
+    actual: 'sin reserva Norte lun',
+    expected: 'anulada Norte lun',
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: node --test test/cancel-day.test.js test/void-day.test.js 2>&1 | grep -E "^# (tests|pass|fail)"; echo ---GATE; node --test 2>&1 | grep -E "^# (tests|pass|fail)"; node scripts/lint.mjs; echo lint=$?; node src/app.js cancelar Norte mar; git diff --numstat
+<<< ---GATE
+lint: sin hallazgos
+lint=0
+sin reserva Norte mar
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+1	1	src/app.js
+
+>>> Bash: node --test 2>&1 | tail -12
+<<< ✔ cancelar una reserva activa (0.8065ms)
+✔ cancelar sin reserva lo dice (0.1949ms)
+✔ anular Norte un día sin reserva lo dice (0.8735ms)
+✔ la reserva del lunes sigue activa tras anular otro día (0.1488ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 163.2949
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisar patch 0012
+    ## Code constraints
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: aac8a917bb9c3f0ac (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd <run>/repo && cat .docs/sdd/changes/20261115-183746-patch-0012-cancel-day/patch.md; git diff; cat src/app.js; for f in test/*.js; do echo "=== $f"; cat $f; done; ls; cat package.json
+<<< ---
+id: 20261115-183746-patch-0012-cancel-day
+task: 0012
+title: Patch — cancelar y anular miran el día
+type: patch
+solution: causa raíz
+status: done
+created: 2026-11-15
+branch: feature/0012-cancel-day
+commit: pendiente
+---
+
+# Patch 0012 — cancelar y anular miran el día
+
+Validación: dev-lead — es una herramienta que usa una persona; lo comprueba con su caso (`cancelar Norte mar`).
+
+## Capacidades
+
+- Ninguna, porque ninguna capacidad describe `cancelar` ni `anular` (el proyecto no tiene `capabilities/`).
+
+## 1. Síntoma
+
+«Si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Nort
+
+>>> Bash: cd <run>/repo && node --test 2>&1 | grep -E "^# (tests|pass|fail)"; T=$(mktemp -d); cp -r src test package.json $T/; git show HEAD:src/app.js > $T/src/app.js; cd $T && node --test 2>&1 | grep -E "^not ok|^# (pass|fail)|^    not ok|# Subtest"; cd /; node --test $T/test/cancel-day.test.js 2>&1 | grep -E "not ok|expected|actual" | head; node --test --test-isolation=none $T/test 2>&1 | grep -E "^# (pass|fail)"
+<<<   + actual - expected
+    actual: 'cancelada Norte mar',
+    expected: 'sin reserva Norte mar',
+  + actual - expected
+    actual: 'sin reserva Norte lun',
+    expected: 'cancelada Norte lun',
+
+>>> Bash: cd <run>/repo && node --test 2>&1 | tail -12; T=$(mktemp -d); cp -r src test package.json $T/; git show HEAD:src/app.js > $T/src/app.js; cd $T && node --test 2>&1 | grep -E "^ℹ (pass|fail)|✖" | head -20; git -C - status 2>/dev/null; ls <run>/repo/scripts
+<<< ✔ cancelar una reserva activa (0.9633ms)
+✔ cancelar sin reserva lo dice (0.1479ms)
+✔ anular Norte un día sin reserva lo dice (0.7015ms)
+✔ la reserva del lunes sigue activa tras anular otro día (0.1153ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 157.2412
+✖ cancelar Norte un día sin reserva lo dice (2.035ms)
+✖ la reserva del lunes sigue activa tras cancelar otro día (0.3433ms)
+✖ anular Norte un día sin reserva lo dice (1.5956ms)
+✖ la reserva del lunes sigue activa tras anular otro día (0.2883ms)
+ℹ pass 4
+ℹ fail 4
+✖ failing tests:
+✖ cancelar Norte un
+
+>>> Bash: D=.docs/sdd/changes/20261115-183746-patch-0012-cancel-day/patch.md
+sed -i 's#- \*\*Fichero(s)\*\*: `src/app.js`, `test/cancel.test.js`#- **Fichero(s)**: `src/app.js`, `test/cancel-day.test.js` (nuevo), `test/void-day.test.js` (nuevo)#' $D
+python - "$D" <<'EOF'
+import sys
+p=sys.argv[1]; s=open(p,encoding='utf-8').read()
+s=s.replace("| 1 | `cancelar Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa | pendiente |","| 1 | `cancelar Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa (`cancelar Norte lun` → `cancelada Norte lun`) | ✅ RED: 2 fallos con `cancelada Norte mar` y `sin reserva Norte lun`; GREEN tras el fix |")
+s=s.replace("| 2 | `anular Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa | pendiente |","| 2 | `anular Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa (`anular Norte lun` → `anulada Norte lun`) | ✅ RED: 2 fallos con `anulada Norte mar` y `sin reserva Norte lun`; GREEN tras el fix |")
+s=s.replace("## 5. Tiempo","""Gate: `node --test && node scripts/lint.mjs` → 8/8 tests en verde (4 nuevos), lint sin hallazgos. `node src/app.js cancelar Norte mar` → `sin reserva Norte mar`.
+
+Revisión (un revisor, sonnet): causa raíz y fix correctos; el RED se reprodujo en una copia del HEAD (4 fallos).
+- Hallazgo: §3 citaba `test/cancel.test.js` y los tests están en dos ficheros nuevos → corregido.
+- Hallazgo: §4 con casos «pendiente» → rellenado con lo medido.
+- Hallazgo (info): el segundo test de cada fichero depende del orden → rechazado: cada fichero corre en su propio proceso, el orden está comentado en el test y, con el bug, falla de forma explícita.
+
+## 5. Tiempo""",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+grep -n "Fichero\|✅\|Hallazgo" $D | head; git status --short
+<<< Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+33:- **Fichero(s)**: `src/app.js`, `test/cancel-day.test.js` (nuevo), `test/void-day.test.js` (nuevo)
+ M src/app.js
+?? .docs/sdd/changes/
+?? test/cancel-day.test.js
+?? test/void-day.test.js
+
+>>> Read: <run>\repo\.docs\sdd\changes\20261115-183746-patch-0012-cancel-day\patch.md · offset=36
+<<< 36	
+37	## 4. Verificación
+38	
+39	| # | Caso | Resultado |
+40	| --- | --- | --- |
+41	| 1 | `cancelar Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa | pendiente |
+42	| 2 | `anular Norte mar` → `sin reserva Norte mar` y la del lunes sigue activa | pendiente |
+43	
+44	## 5. Tiempo (ligero)
+45	
+46	- Estimación: 0,5 h + gate de cierre (`node --test && node scripts/lint.mjs`, ~1 s; sin medida previa en el repo)
+47	- Inicio: 2026-11-15T18:37Z
+48	- Esfuerzo real: pendiente
+49	
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-183746-patch-0012-cancel-day\patch.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-183746-patch-0012-cancel-day\patch.md has been updated successfully.
+
+>>> Bash: git add src/app.js test/cancel-day.test.js test/void-day.test.js .docs/sdd/changes && git commit -q -F - <<'EOF'
+fix(0012): cancelar y anular buscan la reserva del día pedido
+
+findBooking ignoraba el día y cogía la primera reserva activa de la sala:
+`cancelar Norte mar` sin reserva el martes cancelaba la del lunes.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+
+>>> Skill: sdd-kit:sdd-archive
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/changes/20261115-183746-patch-0012-cancel-day/patch.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel-day.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/void-day.test.js', LF will be replaced by CRLF the next time Git touches it
+5d76d08 fix(0012): cancelar y anular buscan la reserva del día pedido
+be8f9f9 feat: base del molde
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; git status --porcelain; $SDD merge --check --project-root . 2>&1 | tail -8; git worktree list
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-archive\references\validation-modes.md
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo 5d76d08 [feature/0012-cancel-day]
+<<< 1	# Validation by mode
+2	
+3	Step 1 of `sdd-archive`.
+4	
+5	## With `validation.mode: field`
+6	
+7	You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-archive\references\dev-validation.md
+<<< 1	# The dev's validation
+2	
+3	For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`). Form and order: [validation-template.md](../../sdd-templates/templates/validation-template.md). With `validation.mode: field` or `Validación: agente` none of this runs.
+4	
+5	## 1. The script
+6	
+7	Each step is a numbered action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps first**, literal and in the
+
+>>> Bash: for a in "cancelar Norte mar" "anular Norte mar" "cancelar Norte lun" "cancelar Sur mar"; do echo "\$ node src/app.js $a"; node src/app.js $a; done
+V="$TEMP/validation-0012"; mkdir -p "$V"
+cat > "$V/steps.json" <<'EOF'
+[
+ {"id":"1","title":"node src/app.js cancelar Norte mar → sin reserva Norte mar"},
+ {"id":"2","title":"node src/app.js anular Norte mar → sin reserva Norte mar"},
+ {"id":"3","title":"node src/app.js cancelar Norte lun → cancelada Norte lun"},
+ {"id":"4","title":"node src/app.js cancelar Sur mar → sin reserva Sur mar"}
+]
+EOF
+echo "$V"; ls -a | grep -i gitignore || echo "sin .gitignore"
+
+>>> Bash: V="$TEMP/validation-0012"; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" validation serve --steps "$V/steps.json" --out "$V/0012.json"
+<<< $ node src/app.js cancelar Norte mar
+sin reserva Norte mar
+$ node src/app.js anular Norte mar
+sin reserva Norte mar
+$ node src/app.js cancelar Norte lun
+cancelada Norte lun
+$ node src/app.js cancelar Sur mar
+sin reserva Sur mar
+C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp/validation-0012
+sin .gitignore
+<<< Command running in background with ID: byzl5dgh0. Output is being written to: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\claude\087e5a6aa42d5453\1bacef09-4bd1-4ce9-b131-42e5b48b1cca\tasks\byzl5dgh0.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Bash: sleep 2; cat "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/claude/087e5a6aa42d5453/1bacef09-4bd1-4ce9-b131-42e5b48b1cca/tasks/byzl5dgh0.output"
+<<< panel: http://127.0.0.1:5798/
+
+=== RESULTADO (20 turnos, 0.7410973000000002 $)
+Estoy esperando al revisor. Hasta que vuelva no hay commit ni cierre, y no tengo su resultado.
+
+=== RESULTADO (13 turnos, 0.7410973000000002 $)
+🦆 Hoy, si cancelabas Norte un día sin reserva, la herramienta decía «cancelada» y te quitaba la reserva de otro día. Ahora responde «sin reserva Norte mar» y no toca la del lunes. `anular` tenía el mismo fallo y también queda arreglado. El fallo estaba en la búsqueda de la reserva: miraba la sala y que estuviera activa, pero no el día pedido.
+
+**✋ Me salí del plan en…** nada. No hay decisiones tomadas sin ti: los textos de salida ya existían.
+
+Panel: plan B en http://127.0.0.1:5798/
+
+**Guion de validación.** Ejecuta cada comando desde la raíz del repo. Cada uno parte de la misma reserva (Norte, lunes), porque la herramienta no guarda reservas entre ejecuciones. Ensayé los cuatro pasos y salen así.
+
+1. `node src/app.js cancelar Norte mar` → `sin reserva Norte mar`. Es tu caso del informe.
+2. `node src/app.js anular Norte mar` → `sin reserva Norte mar`.
+3. `node src/app.js cancelar Norte lun` → `cancelada Norte lun`. El día con reserva sigue funcionando.
+4. `node src/app.js cancelar Sur mar` → `sin reserva Sur mar`.
+
+Sobre el panel: esta página no ve la aplicación, así que no recoge consola ni capturas. Si algo falla, cuéntalo en el comentario. No lo guarda `.gitignore` porque el repo no tiene; el panel escribe fuera del repo, en el directorio temporal.
+
+Lo que **no se puede ver desde la terminal** es que «la del lunes sigue activa» tras el paso 1 o 2, porque cada ejecución empieza de cero. Eso lo cubren los tests nuevos (8/8 en verde, lint sin hallazgos), con el fallo reproducido antes del fix.
+
+Dos cosas pendientes de cierre:
+- El `merge` de `sdd-kit.json` no declara `merge.into` ni `merge.noFf`. Por eso `sdd merge --check` se niega a seguir. Cuando valides te propongo los valores (`develop`, y dime si con `--no-ff`) y espero tu confirmación antes de fusionar.
+- Aviso: aún no hay `Validado` en `patch.md`.
+
+¿Has probado los pasos? Dime qué probaste y si funciona, o marca el panel y escribe «listo». También puedes diferir la validación diciendo qué probarás luego y cuándo.
+
+>>> Bash: V="$TEMP/validation-0012"; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" validation serve --steps "$V/steps.json" --out "$V/0012.json"
+<<< Command running in background with ID: bymfld01r. Output is being written to: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\claude\087e5a6aa42d5453\1bacef09-4bd1-4ce9-b131-42e5b48b1cca\tasks\bymfld01r.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Bash: sleep 2; cat "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/claude/087e5a6aa42d5453/1bacef09-4bd1-4ce9-b131-42e5b48b1cca/tasks/bymfld01r.output"
+<<< panel: http://127.0.0.1:9812/
+
+=== RESULTADO (3 turnos, 0.7874092000000003 $)
+El panel anterior se había parado, así que el enlace de antes ya no sirve. El nuevo es **http://127.0.0.1:9812/**. Tiene los mismos cuatro pasos y puede seguir abierto hasta dos horas.
+
+El cierre sigue parado en tu validación. No he escrito ningún `Validado` en `patch.md` y no he fusionado nada. Necesito una de estas respuestas:
+- Que pruebes los cuatro comandos y me digas qué probaste y que funciona. También vale marcar el panel y escribir «listo».
+- Que difieras la validación, diciendo qué probarás después y cuándo.
+
+La fusión sigue pendiente de `merge.into` y `merge.noFf`, que `sdd-kit.json` no declara. Cuando valides te propongo `develop` y te pregunto si va con `--no-ff`.

@@ -1,0 +1,120 @@
+--- [12]
+Estoy en el arranque de la feature: ya leí el contexto del proyecto y clasifiqué el carril. Ahora reservo el id y creo la rama. Después te presento el entendimiento y empiezo la entrevista.
+
+--- [18]
+Ahora: abro la entrevista de la spec. Queda: unas pocas preguntas, después la spec con su revisión y tu aprobación, y luego el plan y la implementación, ~20 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija ninguno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He reservado el id 0010 y creado la rama `feature/0010-exportar-csv-reservas`.
+
+**Lo que he entendido:** quieres un comando de `salas` que, dada una sala, saque sus reservas en CSV. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas.
+
+**Lo que he visto en el código:**
+- Las reservas son objetos `{ room, day, slot }`, por ejemplo `Norte · lun · 10:00-12:00`.
+- Viven en una lista en memoria de `src/app.js`.
+- El comando `reservar --cada-semana` no guarda nada, solo devuelve un texto.
+
+Que cada responsable abra el CSV en su hoja decide cosas concretas: el separador de columnas, la codificación de las tildes y los encabezados.
+
+❓ ¿Con qué programa de hoja de cálculo abre el CSV cada responsable?
+
+--- [20]
+Queda decidido: Excel en castellano, con `;` como separador. La codificación y los encabezados los decido yo y irán a la spec con su motivo. Excel solo muestra bien las tildes si el fichero empieza con una marca BOM UTF-8.
+
+Siguiente decisión: cómo recibe el responsable el CSV.
+
+❓ **¿Dónde sale el CSV?**
+`run()` devuelve hoy un texto, y `app.js` lo imprime con `console.log`.
+
+1️⃣ **Por pantalla.** `salas exportar Norte` escribe el CSV en la terminal, y el responsable lo guarda con `salas exportar Norte > norte.csv`.
+```text
+$ salas exportar Norte
+dia;franja
+lun;10:00-12:00
+```
+Es lo que ya hace el resto de comandos y no necesita ninguna ruta. A cambio, el redirect de PowerShell antiguo guarda en UTF-16 y Excel lo lee mal.
+
+2️⃣ **A un fichero.** `salas exportar Norte` crea `reservas-Norte.csv` en la carpeta actual y responde `exportadas 1 reservas de Norte en reservas-Norte.csv`.
+Sale un fichero listo para abrir, con codificación controlada. A cambio, escribe en disco sin avisar y pisa el del lunes anterior si no se mueve antes.
+
+3️⃣ **Fichero con ruta opcional.** `salas exportar Norte --salida norte.csv`. Si no hay `--salida`, usa el nombre de 2️⃣.
+Permite elegir dónde guardar, pero añade una opción que nadie ha pedido.
+
+➡️ **Recomiendo 2️⃣**, porque cada lunes lo van a abrir en Excel y solo escribiendo el fichero nosotros garantizamos el BOM y el `;`. A cambio, pisa el fichero anterior de la misma sala.
+
+--- [22]
+Queda decidido: el CSV sale por la salida estándar y tú lo rediriges a un fichero. Una advertencia sobre el redirect: el `>` de Windows PowerShell 5 guarda en UTF-16, y Excel lo lee mal. PowerShell 7 y cmd guardan en UTF-8. Lo dejo anotado en la spec como riesgo conocido, sin añadir nada al comando.
+
+❓ ¿Qué columnas necesita ver el responsable de la sala para cuadrar las reservas?
+
+--- [24]
+Queda decidido: columnas Sala, Día y Franja. Los nombres exactos de los encabezados los decido yo y irán a la spec.
+
+❓ **¿Qué pasa si la sala no existe o no tiene reservas?**
+Hoy las salas son `Norte` y `Sur`, y solo `Norte` tiene una reserva.
+
+1️⃣ **Distinguirlos.** Una sala sin reservas sale con solo los encabezados. Una sala que no existe da un error por la salida de errores y no escribe nada en el CSV.
+```text
+$ salas exportar Sur > sur.csv     → sur.csv: "Sala;Día;Franja" (sin filas)
+$ salas exportar Oeste > o.csv     → pantalla: "sala desconocida: Oeste", o.csv vacío
+```
+Un error de escritura (`Norte` mal tecleada) no se confunde con una sala sin reservas. A cambio, hay que tocar `app.js` para sacar el error por stderr y devolver un código de salida distinto de 0.
+
+2️⃣ **Solo encabezados en ambos casos.** `exportar Oeste` genera un CSV vacío, igual que `exportar Sur`. Es más simple, pero un responsable que teclea mal el nombre cree que su sala no tiene reservas.
+
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra a ciegas los lunes y no debe confundir un error de tecleo con «no hay reservas». A cambio, toca cómo `app.js` imprime y sale.
+
+--- [26]
+Ahora: escribo la spec con lo decidido. Queda: pasada de coherencia, revisión de la spec y tu aprobación, ~10 min.
+
+--- [39]
+Sigo escribiendo la spec. El primer intento de guardarla falló por un error de comillas en la shell y no dejó nada escrito. La guardo ahora con otra herramienta.
+
+--- [67]
+Sigo con la spec. Los hallazgos ya están integrados. Ajusto la línea de política de modelos, repito la comprobación del delta y te presento la spec para aprobar.
+
+--- [70]
+La spec está escrita, pero **necesita tu aprobación antes de seguir**. Todavía no hay plan ni código. Está en `.docs/sdd/changes/20261114-223910-feature-0010-exportar-csv-reservas/spec.md`, en la rama `feature/0010-exportar-csv-reservas`.
+
+🦆 `salas exportar Norte` escribe en la terminal el CSV de las reservas de Norte. Lleva una cabecera `Sala;Día;Franja` y una fila por reserva, por ejemplo `Norte;lun;10:00-12:00`. Tú lo rediriges a un fichero y el responsable lo abre en Excel en castellano. Una sala sin reservas da solo la cabecera. Una sala que no existe (`exportar Oeste`) da un error por stderr con código 1 y no escribe nada. Por dentro, `app.js` pasa a poder fallar con código de salida 1, y el CSV empieza con una marca BOM para que Excel lea bien las tildes.
+
+**✋ Decisiones que he tomado yo, para que las valides:**
+1. La capacidad nueva se llama `bookings`.
+2. El comando es `exportar <sala>`.
+3. El formato usa `;`, saltos de línea `\n` y BOM UTF-8.
+4. Un campo con `;`, `"` o salto de línea va entre comillas dobles.
+5. Las filas salen en el orden de la lista de reservas.
+6. La sala se compara con el nombre exacto: `norte` no vale, `Norte` sí.
+7. Los textos de error son `sala desconocida: Oeste` y `uso: salas exportar <sala>`. Si falta la sala, el error es `uso: …`.
+8. `run` lanza un `Error` y `app.js` lo captura, lo escribe por `console.error` y pone `process.exitCode = 1`.
+9. Las reservas semanales (`--cada-semana`) quedan fuera: hoy no se guardan, así que no hay nada que exportar.
+10. Enfoque: una función en `src/app.js`, sin ficheros nuevos.
+11. Riesgo conocido, que solo documento en el README: el `>` de Windows PowerShell 5 guarda en UTF-16 y Excel lo lee mal.
+
+- **Review:** la rúbrica pedía dos revisores independientes, pero esta sesión no tiene herramienta para lanzar subagentes. Pasé yo las dos lentes, dominio y técnica, y la spec lo dice. Encontré un problema importante: el escenario del campo con `;` no se podía probar con `run`. Lo cambié para probar una función `csvFila` exportada. Corregí también el salto de línea final que añade `console.log`. Rechacé el riesgo de fórmulas en Excel, porque los datos son fijos. Que lo revise otra persona o sesión es decisión tuya.
+- **Coherencia:** el delta se fusiona bien sobre una copia de `.docs/sdd`, y `capability check` da «Capacidades válidas: 1».
+- **Validación al cerrar:** la haces tú, abriendo el CSV en Excel.
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a la implementación.
+2. **Cambios**: dime qué ajusto en la spec.
+
+¿Apruebas la spec?
+
+--- [71]
+Vale, la spec queda en espera. No he escrito plan ni código.
+
+**Dónde queda todo:**
+- **Rama:** `feature/0010-exportar-csv-reservas`, con el id 0010 reservado.
+- **Spec:** `.docs/sdd/changes/20261114-223910-feature-0010-exportar-csv-reservas/spec.md`, con `status: draft` y la aprobación pendiente.
+- **Git:** nada commiteado. La carpeta `.docs/sdd/changes/` aparece como sin seguir.
+- **Fuera de git:** el contador del id vive en local y no hay remoto, así que el 0010 no se publica en ningún sitio.
+
+**Cuando retomes:** abre una sesión en esa rama y di «apruebo la spec» o dime los cambios que quieres. Con la aprobación escribo el plan y paso a implementar.
+
+Antes de aprobar, lo que más conviene mirar es la lista de decisiones ✋. También la nota sobre la review: la hice yo mismo, sin revisores independientes.
+

@@ -1,0 +1,131 @@
+--- [3]
+Ahora: leo el contexto del proyecto (producto, roadmap, steering, capacidades). Queda: clasificar el cambio y escribir la spec para presentártela, ~5 min.
+
+--- [17]
+Ahora: creo la rama `feature/0012-…` y reclamo el id. Queda: spec, revisión y presentación, ~10 min.
+
+--- [26]
+Ahora: escribo `spec.md` y paso el repaso de coherencia. Queda: revisión de la spec y presentártela, ~8 min.
+
+--- [32]
+Ahora: repaso de coherencia (delta probado sobre una copia). Queda: dos revisores de la spec y presentártela, ~6 min.
+
+--- [38]
+Ahora: despacho los dos revisores de la spec en paralelo (dominio y técnica). Queda: integrar sus hallazgos y presentarte la spec, ~5 min.
+
+--- [54]
+Los dos revisores de la spec están trabajando en segundo plano; espero a que terminen para integrar sus hallazgos antes de presentarte la spec.
+
+--- [63]
+1. Importante · Delta de comportamiento / Capacidades · `cancelar` y `anular` ganan caminos de fallo nuevos: salida 1 y `no se puede guardar…`. Eso cambia requisitos que hoy son de otra capacidad (cancelar, anular, libres), pero todo se declara como `ADDED` en `bookings`. Es un `MODIFIED` no declarado. · Declarar `MODIFIED` sobre la capacidad que hoy rige `cancelar`/`anular`/`libres`, o justificar por qué `bookings` absorbe esos comportamientos. Como no existe `capabilities/`, dejar escrito qué requisito previo cambia.
+
+2. Importante · Decisiones 11 y Scope · El cambio contradice el ADR 0004, que está `accepted` con `rutas: src/**`. La ADR 0007 que lo sustituye «la escribe el cierre», así que durante la implementación y el gate la verdad viva dice lo contrario del código. Además, la Confirmación nueva (`node:fs` solo en `src/app.js`) no existe como regla hasta el cierre. · Hacer que la ADR 0007 y el paso de la 0004 a `superseded by 0007` sean una tarea del plan, antes del código, o declarar explícitamente que el gate tolera la contradicción hasta el cierre.
+
+3. Importante · Reglas de la capacidad — Límites · «no aplica» es falso. El fichero introduce datos con dominio acotado y la spec no lo declara: `version` solo vale 1, `status` tiene valores que no se enumeran, y `room`, `day` y `slot` deberían ser los de la lista fija del ADR 0005. No se dice qué se considera `formato no reconocido` más allá de la versión. · Enumerar los valores válidos de `status`, `room`, `day` y `slot`, tomados del ADR 0005 y del código actual. Decir que cualquier otro valor da `formato no reconocido`, y añadir un escenario.
+
+4. Importante · Delta, «Un fichero ilegible no se pisa» · Solo se cubre `cancelar`. La decisión 6 y el 🦆 dicen que se niega a seguir al arrancar, pero ningún escenario lo prueba con `libres`, que es la orden de solo lectura. Tampoco hay escenario para un fichero vacío o con `"bookings": []` válido, y no se dice si en ese caso reaparece la reserva de ejemplo. · Añadir un escenario de `libres` con fichero estropeado, con el mismo error y salida 1. Declarar qué pasa con un fichero válido sin reservas (no se reinyecta el ejemplo).
+
+5. Menor · Reglas de la capacidad — Dónde viven los datos · `~/.salas/reservas.json` no dice cómo se resuelve `~` (p. ej. `os.homedir()`). El entorno es Windows y no se contempla un HOME ausente. Los placeholders `<ruta>` y `<motivo del sistema>` no indican si `<ruta>` es la absoluta resuelta o la tal como se escribió. · Fijar la resolución de la carpeta personal y que `<ruta>` es la ruta resuelta.
+
+6. Menor · Reglas de la capacidad — Idioma de los nombres · Se apoya en el ADR 0002 para justificar las claves en inglés, pero ese ADR solo habla de mensajes en castellano y de nombres de comando sin tildes. La constitución (punto 4) tampoco cubre las claves. Esa convención («como el código») no está respaldada por ninguna regla viva. · Citar la convención real del código, o decir que es una decisión nueva de esta spec. El ADR 0002 solo respalda los mensajes.
+
+7. Menor · Reglas de la capacidad — Avisos · Los dos mensajes de lectura se escriben con tilde (`válido`) y comparten el prefijo `no se puede leer`. El mensaje de escritura incluye `<motivo del sistema>`, que sale del sistema operativo y puede estar en inglés, lo que choca con el ADR 0002 («ningún mensaje de `src/` en inglés»). · Reconocer que el motivo del SO puede venir en inglés, o traducir un conjunto cerrado de motivos (`EACCES`, `ENOTDIR`) a castellano.
+
+8. Menor · Lo que se retira o cambia de forma · La tabla apunta a `operations.md:14` con «las reservas viven en memoria», pero el Scope habla de reescribir la línea «Motor de producción». Los dos nombres no coinciden. Tampoco se menciona `architecture.md`, aunque el razonamiento de la decisión 10 depende de él («un solo fichero de entrada»), y la arquitectura puede decir que no hay persistencia. · Unificar la referencia de la línea de `operations.md`. Comprobar `architecture.md` y añadirlo a la tabla y al Scope si menciona memoria o ausencia de persistencia.
+
+9. Menor · Scope · `PRODUCT.md` no existe en `.docs/sdd/steering/`, así que no pude contrastar la promesa del Intent («se usa a diario») con el producto. El Intent presenta esa frecuencia de uso como un hecho. · Confirmar que `PRODUCT.md` existe y respalda ese uso, o quitar la afirmación del Intent.
+
+10. Menor · 🦆 / Intent · El párrafo abre con «Hoy, si cancelas… la reserva vuelve a estar ahí» seguido de «Con este cambio». Describe el fallo actual como si fuera el resultado deseado, y mezcla comportamiento actual y futuro. · Reescribir en dos tiempos claros: hoy resucita lo cancelado, y con el cambio no.
+
+--- [65]
+Ha vuelto el revisor de dominio (10 hallazgos). Espero al técnico antes de integrar los cambios en la spec.
+
+--- [66]
+1. Crítico · Delta de comportamiento + Cómo (carga) · «Al cargar `src/app.js` se lee la ruta y el fichero» choca con los tests que importan `run`. Los imports estáticos se evalúan antes de poder fijar `process.env.SALAS_ARCHIVO`, y el estado queda en caché del módulo, compartido entre todos los tests de un fichero. El escenario 1 pasa con procesos reales, pero la fila «Comportamiento previo» de «Dónde se prueba» (tests por `run`, cada uno con su temporal) no es implementable tal cual. · Decidir si la ruta y el estado se resuelven en cada llamada a `run` (con la ruta como parámetro o leyendo la variable dentro) o si esos tests pasan a procesos reales. Reflejarlo en «Cómo» y en la fila de «Dónde se prueba».
+
+2. Crítico · Lo que se retira o cambia de forma + Términos y ADR (ADR 0004) · La 0004 está `accepted` con `rutas: src/**` y Confirmación «`src/` no importa `node:fs`». Mientras la rama escribe en `src/app.js` y la 0007 no existe (la escribe el cierre), `sdd decision check` en verify o en el gate detecta una violación de una ADR vigente. Además, el spec no dice si la Confirmación de la 0007 («`node:fs` solo en `src/app.js`») es comprobable por ese mecanismo, ni con qué `rutas`. · Crear la 0007 y marcar la 0004 como `superseded by 0007` en la rama (en una tarea del plan), no en el cierre. Declarar las `rutas` y la forma comprobable de la Confirmación de la 0007.
+
+3. Importante · Delta, escenarios 1, 4 y 5 (`salas cancelar Norte lun`) · Los GIVEN del escenario 1 dicen «sin fichero» sin fijar `SALAS_ARCHIVO`. Escrito así, el escenario escribiría en el `~/.salas` real, lo que contradice el anti-objetivo. «Sin la variable la ruta es `~/.salas/reservas.json`» (escenario 4) no se puede probar sin tocar el home real. Además `os.homedir()` usa `USERPROFILE` en Windows y `HOME` en Linux, y el spec no dice cómo se redirige. · Añadir al GIVEN `SALAS_ARCHIVO=<tmp>/r.json`. Para el home por defecto, un escenario aparte con `HOME` y `USERPROFILE` apuntados a un temporal en el proceso hijo. Decir que el test funciona en Windows y en Linux.
+
+4. Importante · Escenario «No se anuncia lo que no se guardó» · El criterio «`<motivo del sistema>`» pasa con cualquier texto. Con «padre que es un fichero», `mkdirSync` falla con `EEXIST` en Windows y con `ENOTDIR` en Linux, así que el literal no es verificable de forma portable. Tampoco dice si el fichero queda intacto ni si el estado en memoria ya se mutó antes del fallo. · Fijar en el THEN el patrón verificable (`/^no se puede guardar .+: .+/` y que el padre sigue siendo un fichero normal). Aclarar que se guarda antes de imprimir y qué hace el proceso tras el fallo.
+
+5. Importante · Decisión 8 (escritura atómica) y «Dónde se prueba» · Ningún escenario prueba la atomicidad, así que un `writeFileSync` directo pasa todos los tests. Sin especificar, el temporal puede tener un nombre fijo (colisión entre dos procesos) o estar en otro directorio (el rename falla en otro volumen). En Windows `renameSync` sobre un destino abierto por otro proceso puede lanzar `EPERM`/`EBUSY`, y eso choca con la decisión 9 («gana el último»). · Especificar que el temporal está en el mismo directorio con nombre único por pid. Añadir un escenario o una comprobación (no queda ningún `*.tmp` tras guardar, o se simula el fallo del rename). Decir qué pasa ante `EPERM` en Windows, o declarar que está fuera de alcance.
+
+6. Importante · Escenario «Un fichero ilegible no se pisa» y decisión 6 · «Formato no reconocido» no está definido. Solo se prueba `version: 2`. Quedan sin decidir `null`, `[]`, `{"version":1}` sin `bookings`, entradas con claves o `status` fuera del conjunto, y el fichero vacío de 0 bytes (el caso típico de un corte). Los valores de `status` y la semántica de `cancelada`/`anulada` en el fichero tampoco se definen, aunque `libres` depende de ellos. · Enumerar la validación mínima (objeto, `version===1`, `bookings` array, cada entrada con cuatro claves y `status` en un conjunto cerrado) y añadir un escenario para el fichero vacío y otro para una entrada mal formada. Listar los valores de `status`.
+
+7. Importante · «Decisiones que he tomado yo» · Hay decisiones tomadas en el cuerpo que no están numeradas. (a) La lectura se hace al arrancar para cualquier orden, así que `libres` y las órdenes desconocidas también fallan con salida 1 ante un fichero ilegible. (b) El fichero de 0 bytes. (c) Se crea la carpeta `~/.salas` si falta (solo en «Cómo»). (d) Qué pasa con una orden ya cancelada tras reabrir. (e) El código de salida 1 y el canal stderr. · Añadir las decisiones (a), (b), (c) y (d) a la lista numerada, con un escenario para (a).
+
+8. Importante · Scope y Delta · Lo que se toca cambia contratos sin reflejarlo. `operations.md` solo reescribe «Motor de producción», pero no documenta la variable `SALAS_ARCHIVO` en Comandos/Testing ni dónde están los datos en producción (el servidor propio del autor). El fichero JSON v1 es un contrato público, y `architecture.md` no lo recoge ni pasa por el Scope. · Añadir al Scope la entrada de `SALAS_ARCHIVO` y de la ruta de datos en `operations.md`, y una sección de datos/contrato en `architecture.md` con el formato v1. Quitar el punto del ficheros de la tabla de cambios o completarlo.
+
+9. Menor · Approach / Dónde se prueba · El spec dice «`package.json` declara `>=20`» mientras `architecture.md` dice «Node 22» (no hay `engines` en ella). Es una incoherencia que el spec cita para descartar SQLite pero no resuelve. La afirmación de que `scripts/lint.mjs` «cubre» `src/app.js` (decisión 10) no está comprobada en el spec y puede afectar al gate, por ejemplo si lint prohíbe `node:fs` siguiendo la Confirmación de la 0004. · Alinear `architecture.md` y `engines` (o citar qué prevalece). Comprobar y escribir en el spec qué reglas aplica `scripts/lint.mjs`, y añadir su ajuste al Scope si hace falta.
+
+10. Menor · Decisiones, bloque de review · «Mínimo razonable: solo técnica» contradice las dos líneas anteriores (dominio y técnica). La Técnica dice que `SALAS_ARCHIVO` basta «con dos procesos reales», pero no hay escenario con dos procesos concurrentes que respalde la regla de conflicto de la decisión 9. · Unificar la línea de review. Quitar «dos terminales a la vez» de la afirmación de prueba, o añadir un escenario de dos procesos secuenciales sobre el mismo fichero y declarar que la concurrencia real no se prueba.
+
+--- [68]
+Ahora: integro los hallazgos en la spec (dos Críticos aceptados: el estado cargado al importar el módulo choca con los tests, y la ADR 0007 no puede esperar al cierre). Queda: una segunda ronda con un revisor y presentarte la spec, ~5 min.
+
+--- [71]
+Ahora: repito el delta sobre una copia y lanzo la segunda ronda (un revisor, siete puntos). Queda: integrar y presentarte la spec, ~4 min.
+
+--- [77]
+La fusión del delta sobre la copia pasa (9 requisitos y 5 reglas, sin rechazos). La segunda ronda está en marcha; espero su resultado antes de presentarte la spec.
+
+--- [86]
+1. Importante · Decisiones 3 y 14, Capacidades, Reglas de la capacidad · `PRODUCT.md` (Terminology) marca «booking» y «room» como términos a evitar, y la spec los usa en el nombre de la capacidad `bookings` y en las claves del fichero (`room`, `bookings`). El resumen de review (hallazgo Menor de dominio) lo trató como decisión de estilo y no como choque con la verdad viva. · Nombrar la capacidad en castellano (`reservas`) y las claves como `sala`/`reservas`. Si se mantiene el inglés, añadir una nota en Términos de que PRODUCT lo evita y pedir al dev-lead que lo valide expresamente.
+
+2. Importante · Decisión 7 y Reglas «Avisos» · Solo hay dos mensajes de lectura (JSON no válido, formato no reconocido). No se dice qué pasa si la lectura falla por `EACCES`, `EISDIR` u otro error de sistema con el fichero existente. El 0 bytes se clasifica como «no es JSON», pero el resto cae fuera. · Añadir un mensaje `no se puede leer <ruta>: <código>` con su escenario, o declarar el caso fuera de alcance.
+
+3. Importante · Decisión 9 y escenario «No se anuncia lo que no se guardó» · La atomicidad (temporal con pid, renombrado, sin reintentos) y el `EPERM` de Windows no tienen escenario. Tampoco se dice si el temporal se borra cuando el renombrado falla. El escenario solo cubre un padre que es fichero, que falla antes de crear nada. Hoy se podría implementar con escritura directa y pasar todos los escenarios. · Añadir un escenario que fuerce el fallo del renombrado (por ejemplo, el destino es un directorio) y compruebe que el fichero original no cambia y que no quedan temporales. Fijar si el temporal se limpia.
+
+4. Importante · Decisión 8 y escenario de guardado · El patrón `^no se puede guardar .+: [A-Z]+$` no admite códigos con dígitos (`E2BIG`). El escenario dice «padre fichero normal» sin fijar el código, que varía por plataforma (`ENOTDIR` o `EEXIST` en `mkdir`). La decisión 8 lista ambos y el patrón queda laxo. · Usar `[A-Z0-9]+` o `E[A-Z0-9]+`. Fijar el código esperado por plataforma o dejarlo explícitamente como cualquiera.
+
+5. Importante · Escenario «Lo cancelado sigue cancelado» (último AND) · `repetir cancelar → sin reserva Norte lun` presupone que una reserva `cancelled` guardada cuenta como «sin reserva». Ese comportamiento previo no está definido en la spec ni en un ADR, y tampoco se dice qué hace `anular` sobre una reserva ya cancelada. · Declarar la regla («solo `active` cuenta como reserva») en el delta o en Reglas, y añadir `anular` tras `cancelar`.
+
+6. Importante · Decisión 5 y Scope · Se lee el fichero en cada orden, incluidas las desconocidas y `reservar`. Ningún escenario cubre una orden desconocida, `reservar` o la ayuda con un fichero ilegible. El resguardo de `reservar` podría pasar a fallar con exit 1, un cambio observable no declarado. · Añadir un escenario (orden desconocida o `reservar` con fichero corrupto) y decir qué sale. O bien limitar la lectura a las órdenes que usan el estado.
+
+7. Menor · Scope frente a «Lo que se retira o cambia de forma» · El Scope habla de la línea «Motor de producción» de `operations.md`, y la tabla cita `operations.md:14` «las reservas viven en memoria». Si son dos líneas, la tabla omite una. Si es la misma, uno de los dos textos sobra. · Unificar la referencia y listar todas las líneas de `operations.md` que cambian.
+
+8. Menor · Decisión 12, Confirmación de la 0007 · `git grep -l node:fs -- src` devuelve solo `src/app.js`, y «ningún paquete de base de datos» no excluye `node:sqlite`, que es un módulo integrado y no un paquete. Con la decisión 11 la comprobación queda tautológica. · Reformular la Confirmación: sin `node:sqlite` ni dependencias en `package.json`, y `node:fs` solo en `src/app.js`.
+
+9. Menor · Decisión 3 · «`status` en los valores que ya usa el código» es una afirmación sobre código que la spec no cita. Tampoco define qué pasa con claves extra, entradas duplicadas (misma sala, día y franja) ni dos activas a la vez; todo eso se acepta o se rechaza sin decirlo. · Citar de dónde salen los valores. Declarar la política: claves extra ignoradas o rechazadas, y qué hace el duplicado.
+
+10. Menor · Decisión 16 · Dice «resultado de la versión anterior; se repite al cerrar la ronda», es decir, una verificación no ejecutada sobre esta versión de la spec. Cita además un `bookings.md` que no existe todavía. Es un resultado desfasado en un documento que pasa a aprobación. · Volver a ejecutar `sdd capability merge` sobre esta versión y anotar el resultado actual, o quitar la afirmación.
+
+--- [88]
+Ahora: integro la segunda ronda (sin tercera ronda, según la regla) y reverifico el delta. Queda: presentarte la spec.
+
+--- [91]
+Python no está disponible, así que las ediciones no se aplicaron. Las hago con la herramienta de edición.
+
+--- [109]
+Todas las ediciones aplicadas. Reverifico el delta sobre una copia y dejo la spec en `in-review`.
+
+--- [112]
+Ahora: la spec está lista y espera tu aprobación. Queda: tu respuesta; con ella escribo el plan y paso a implementar, sin más paradas hasta la validación.
+
+**Carril:** feature, modo full · **Perfil:** delegate · **Id:** 0012, rama `feature/0012-persistir-reservas`
+**Spec:** `.docs/sdd/changes/20261116-111950-feature-0012-persist-bookings/spec.md` (sin commit todavía)
+
+🦆 Hoy, si cancelas la reserva de Norte del lunes y cierras la terminal, al abrirla otra vez la reserva vuelve a estar activa: `salas libres 10:00-12:00` dice `Sur`. Con este cambio, `salas` guarda el estado en `~/.salas/reservas.json` cada vez que una orden cambia algo, y lo lee en las órdenes que usan el estado. Tras cancelar, el mismo `libres` dice `Norte, Sur` aunque hayas cerrado la terminal entre medias. Si el fichero está estropeado, `salas` se niega a seguir y no lo toca, en vez de arrancar vacío y pisarlo.
+
+**✋ Decisiones que he tomado yo — valida estas** (hay 16 en la spec; estas son las que más pesan):
+
+- **Pendiente de ti: `reservar` no crea reservas hoy.** Solo contesta «reserva semanal creada». Lo que se nota con este cambio es `cancelar`, `anular` y `libres`. Si pensabas en reservas creadas con `reservar`, hace falta otra fila de roadmap antes de esta.
+- **Enfoque:** fichero JSON, frente a SQLite (experimental en Node 22 y ausente en Node 20, que `package.json` admite) y a un registro de eventos.
+- **Ruta:** `os.homedir()/.salas/reservas.json`, sustituible con `SALAS_ARCHIVO`. Así la terminal reabierta puede estar en otra carpeta, y los tests no tocan tu fichero real.
+- **Primera ejecución sin fichero:** se parte de la reserva de ejemplo de hoy (Norte lun 10:00-12:00).
+- **Solo se escribe cuando algo cambia:** `libres` o un `cancelar` sin reserva no crean el fichero.
+- **Errores:** fichero ilegible o de formato desconocido (también el de 0 bytes) → mensaje por stderr, salida 1, sin tocarlo. Si no se puede guardar, no se imprime `cancelada …`. Los literales exactos están en la spec.
+- **Escritura atómica** (temporal y renombrado). Con dos terminales a la vez gana la última que escribe, y esa concurrencia no se prueba.
+- **ADR 0004 queda sustituida.** Escribir en disco contradice su decisión y su Confirmación. La ADR 0007 y el paso de la 0004 a `superseded by 0007` serán la primera task del plan. También se actualizan `operations.md` y `architecture.md`.
+- **Para que lo valides:** las claves del fichero (`room`, `bookings`…) y la capacidad `bookings` van en inglés, aunque `PRODUCT.md` pide evitar «booking» y «room». Son internos, no texto que vea quien usa `salas`. Si prefieres claves en castellano, cambia el formato v1.
+
+**Review:** dos revisores en paralelo (dominio y técnica, Sonnet) más una segunda ronda de un revisor, porque aceptamos dos Críticos. Los dos Críticos eran que el estado se cargaba al importar el módulo, lo que impedía aislar los tests, y que la ADR 0007 no podía esperar al cierre. Los hallazgos aceptados y rechazados, con su motivo, están en la spec. La fusión del delta sobre una copia de `.docs/sdd` pasa sin rechazos (9 requisitos, 5 reglas). Tests y código no se han tocado.
+
+**Estimación:** unas 3 tasks, así que no propongo partirla. Validación: tuya, cerrando y reabriendo la terminal.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan y sigo a implementar.
+2. **Cambios**: dime qué ajustar (por ejemplo, claves en castellano, o que `reservar` entre en esta feature).
+

@@ -1,0 +1,303 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git branch --show-current; ls .docs/sdd/changes/*/ 2>/dev/null; cat .docs/sdd/sdd-kit.json; ls
+<<< feature/0035-room-hours-cs
+plan.md
+spec.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+CHANGELOG.md
+PRODUCT.md
+Program.cs
+README.md
+Reservas.csproj
+ROADMAP.md
+Rooms.cs
+Tests.cs
+
+>>> Bash: d=$(ls -d .docs/sdd/changes/*/); echo $d; cat $d/plan.md; cat $d/spec.md; git branch -a
+<<< .docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs//
+---
+id: 20261015-150000-feature-0035-room-hours-cs
+feature: 0035
+title: Plan de implementación — Horas reservadas por sala
+spec: ./spec.md
+status: approved
+created: 2026-10-15
+---
+
+# Plan de implementación — Horas reservadas por sala
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: `Rooms.Hours`.
+
+**Ejecución**: native, porque es una task en un fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+- Sin comentarios que repitan el código ni qu
+
+>>> Bash: b=$(git merge-base HEAD develop); git diff $b develop --stat; cat Rooms.cs Tests.cs Program.cs
+<<< public record Booking(string Room, string Day, string Slot, string Status);
+
+public static class Rooms
+{
+    public static readonly string[] All = ["Norte", "Sur"];
+
+    public static readonly List<Booking> Bookings =
+    [
+        new("Norte", "lun", "10:00-12:00", "active"),
+        new("Sur", "mar", "09:00-10:00", "cancelled"),
+    ];
+
+    public static double SlotHours(string slot)
+    {
+        var times = slot.Split('-').Select(ToHours).ToArray();
+        return times[1] - times[0];
+    }
+
+    public static string Free(string slot) =>
+        string.Join(", ", All.Wher
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "$(git rev-parse --show-toplevel)"; cd "$(git rev-parse --git-dir)" && pwd -P; cd - >/dev/null; cd "$(git rev-parse --git-common-dir)" && pwd -P; git rev-parse --show-superproject-working-tree; cat .gitignore; ls .docs/sdd/steering 2>/dev/null; grep -n -i "gate\|dotnet" .docs/sdd/steering/operations.md | head
+<<< <run>/repo/.git
+<run>/repo/.git
+cat: .gitignore: No such file or directory
+grep: .docs/sdd/steering/operations.md: No such file or directory
+
+>>> Bash: cd "<run>/repo" && pwd && S='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js' && P=.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md && $S workspace $P; git status --short
+<<< <run>/repo
+<run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+
+>>> Bash: cd "<run>/repo" && git worktree add --detach ../baseline-0035 HEAD >/dev/null 2>&1 && (cd ../baseline-0035 && dotnet run 2>&1 | tail -5; echo exit=$?); git worktree remove --force ../baseline-0035; git worktree list
+<<< todo en verde
+exit=0
+<run>/repo bf23c17 [feature/0035-room-hours-cs]
+
+>>> Bash: cd "<run>/repo" && W=.temp/sdd/plan && P=.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md && cat > $W/progress.md <<EOF
+# SDD ledger — plan: $P
+
+Pre-flight scan (una sola task):
+| Par/Task | Produce / consume | Hallazgo |
+| --- | --- | --- |
+| Task 1 (única; sin pares) | Consume SlotHours y Bookings (existen en Rooms.cs); produce Rooms.Hours | Plan coherente con spec: tests en Tests.cs, código en Rooms.cs, Verificación dotnet run |
+
+Ruling: trabajo en el checkout actual (rama feature/0035-room-hours-cs, no main) sin crear worktree — no hay preferencia declarada, el baseline corrió en worktree desacoplado y quedó en verde — si falla, el coste es tocar el árbol del dev-lead.
+Ruling: sin §Entornos ni operations.md; el gate es el del plan (dotnet run) — coste bajo.
+EOF
+S='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; $S task start $P 1
+<<< brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: bf23c17b2af686358e2cd96b36e514ff1c1c00cb
+
+>>> Read: <run>\repo\.temp\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — `Rooms.Hours`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `Tests.cs`
+5	**Superficies**: backend
+6	**Verificación**: `dotnet run` → `todo en verde`, con código de salida 0
+7	**Interfaces**:
+8	- Consume: `Rooms.SlotHours(slot)` (`"10:00-12:00"` → `2`) y `Rooms.Bookings` (`Booking(Room, Day, Slot, Status)`, `Status` en `active` o `cancelled`).
+9	- Produce: `Rooms.Hours(string room)` → `"<sala>: <n> h"`.
+10	**Ficheros**: `Rooms.cs`, `Tests.cs`
+11	
+12	## 3. Validación final
+13	
+14	- [ ] Gate de cierre: `dotnet run`
+15	
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF' 2>/dev/null || sed -i '/SlotHours("10:00-12:00")/a\        Check("las horas de una sala suman sus reservas activas", "Norte: 2 h", Rooms.Hours("Norte"));\n        Check("una reserva cancelada no cuenta en las horas", "Sur: 0 h", Rooms.Hours("Sur"));' Tests.cs
+EOF
+grep -n Hours Tests.cs; cp Tests.cs .temp/sdd/plan/Tests.red.cs; dotnet run 2>&1 | tail -4; echo exit=$?
+<<< 17:        Check("una franja de dos horas dura 2", "2", Rooms.SlotHours("10:00-12:00").ToString(CultureInfo.InvariantCulture));
+18:        Check("las horas de una sala suman sus reservas activas", "Norte: 2 h", Rooms.Hours("Norte"));
+19:        Check("una reserva cancelada no cuenta en las horas", "Sur: 0 h", Rooms.Hours("Sur"));
+<run>\repo\Tests.cs(18,87): error CS0117: 'Rooms' does not contain a definition for 'Hours' [<run>\repo\Reservas.csproj]
+<run>\repo\Tests.cs(19,81): error CS0117: 'Rooms' does not contain a definition for 'Hours' [<run>\repo\Reservas.csproj]
+
+The build failed. Fix 
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='Rooms.cs'
+s=open(p,encoding='utf-8').read()
+new='''    public static string Hours(string room)
+    {
+        var hours = Bookings.Where(b => b.Room == room && b.Status == "active").Sum(b => SlotHours(b.Slot));
+        return $"{room}: {hours.ToString(CultureInfo.InvariantCulture)} h";
+    }
+
+    private static double ToHours'''
+s=s.replace('    private static double ToHours',new,1)
+if 'using System.Globalization;' not in s: s='using System.Globalization;\n\n'+s
+open(p,'w',encoding='utf-8',newline='').write(s)
+EOF
+diff Tests.cs .temp/sdd/plan/Tests.red.cs && echo RED-copy-igual; dotnet run 2>&1 | tail -4; echo "exit=${PIPESTATUS[0]}"; git diff --stat
+<<< Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+RED-copy-igual
+<run>\repo\Tests.cs(18,87): error CS0117: 'Rooms' does not contain a definition for 'Hours' [<run>\repo\Reservas.csproj]
+<run>\repo\Tests.cs(19,81): error CS0117: 'Rooms' does not contain a definition for 'Hours' [<run>\repo\Reservas.csproj]
+
+The build failed. Fix the build errors and run again.
+exit=1
+warning: in the working copy of 'Tests.cs', LF will be replaced by CRLF the next time Git touches it
+
+>>> Bash: cd "<run>/repo" && git show HEAD:Tests.cs | file - ; file Tests.cs Rooms.cs; git config core.autocrlf; git diff --ignore-space-at-eol --stat
+<<< /dev/stdin: Unicode text, UTF-8 text, with CRLF line terminators
+Tests.cs: Unicode text, UTF-8 text
+Rooms.cs: ASCII text, with CRLF line terminators
+true
+warning: in the working copy of 'Tests.cs', LF will be replaced by CRLF the next time Git touches it
+ Tests.cs | 2 ++
+ 1 file changed, 2 insertions(+)
+
+>>> Bash: cd "<run>/repo" && sed -i 's/$/\r/' Tests.cs && file Tests.cs && git diff --stat && cp Tests.cs .temp/sdd/plan/Tests.red.cs
+
+>>> Read: <run>\repo\Rooms.cs · offset=14 · limit=8
+<<< Tests.cs: Unicode text, UTF-8 text, with CRLF line terminators
+ Tests.cs | 2 ++
+ 1 file changed, 2 insertions(+)
+<<< 14	    {
+15	        var times = slot.Split('-').Select(ToHours).ToArray();
+16	        return times[1] - times[0];
+17	    }
+18	
+19	    public static string Free(string slot) =>
+20	        string.Join(", ", All.Where(room => !Bookings.Any(b => b.Room == room && b.Slot == slot && b.Status == "active")));
+21	
+
+>>> Edit: <run>\repo\Rooms.cs
+<<< The file <run>\repo\Rooms.cs has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && file Rooms.cs; dotnet run 2>&1 | tail -4; echo "exit=${PIPESTATUS[0]}"; git diff --no-index --stat .temp/sdd/plan/Tests.red.cs Tests.cs && echo RED-igual
+<<< Rooms.cs: ASCII text, with CRLF line terminators
+todo en verde
+exit=0
+RED-igual
+
+>>> Bash: cd "<run>/repo" && git add Rooms.cs Tests.cs && git commit -q -m "feat(rooms): Rooms.Hours suma las horas de las reservas activas de una sala
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && git status --short
+<<< 7e5066f feat(rooms): Rooms.Hours suma las horas de las reservas activas de una sala
+bf23c17 docs(sdd): abrir la feature 0035 con su spec y su plan
+
+>>> Bash: cd "<run>/repo" && node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js task done .docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md 1 bf23c17b2af686358e2cd96b36e514ff1c1c00cb -- dotnet run
+<<< todo en verde
+ledger: Task 1: complete (commits bf23c17..7e5066f, tests: dotnet run → todo en verde)
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-verify\references\closing-the-review.md
+<<< 1	# Closing the review
+2	
+3	**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ship
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-verify\references\spec-reviewer-prompt.md
+<<< 1	# Spec axis reviewer prompt
+2	
+3	Dispatch it in the background, with its silence watch (`sdd-verify`, «Final review»). Fill every `<…>`.
+4	
+5	**Purpose:** verify the branch does what its spec, its plan and the project's decisions asked — nothing less and nothing more.
+6	
+7	```
+8	Subagent (sdd-kit:effort-high, model: opus):
+9	  description: "Final review — Spec axis"
+10	  prompt: |
+11	    ## Code constraints
+12	
+13	    <literal copy of the «De código» block of plan.md's Restricciones globales, the code quality article included; in lite mode, without a plan: the constitution's code quality art
+
+>>> Bash: cd "<run>/repo" && git diff bf23c17 HEAD; git diff --name-only bf23c17 HEAD; git status --short; dotnet run 2>&1 | tail -2; echo "exit=${PIPESTATUS[0]}"
+<<< diff --git a/Rooms.cs b/Rooms.cs
+index 6653e64..09a3b49 100644
+--- a/Rooms.cs
++++ b/Rooms.cs
+@@ -19,6 +19,9 @@ public static class Rooms
+     public static string Free(string slot) =>
+         string.Join(", ", All.Where(room => !Bookings.Any(b => b.Room == room && b.Slot == slot && b.Status == "active")));
+ 
++    public static string Hours(string room) =>
++        FormattableString.Invariant($"{room}: {Bookings.Where(b => b.Room == room && b.Status == "active").Sum(b => SlotHours(b.Slot))} h");
++
+     private static double ToHours(string time)
+     {
+         var parts = time.Split(':
+
+>>> Bash: cd "<run>/repo" && S='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js' && cat >> .temp/sdd/plan/progress.md <<'EOF'
+Final review: self-review (no subagent tool) — sobre 7e5066f
+Final: Eje Arquitectura: no en el plan (sin línea de eje) · señales en el diff: ninguna (sin módulo, dependencia, contrato ni datos nuevos) → no sale
+Final: Spec: THEN Norte 2 h y AND Sur 0 h cubiertos con tests en Tests.cs; Program.cs y demás funciones de Rooms intactos; sin hallazgos
+Final: Código: sin Critical ni Important; formato invariante evita «1,5 h» según cultura
+Final: minor (deferred): Rooms.Hours es una expresión larga en una línea; extraer la suma a una variable mejoraría la lectura
+EOF
+$S ledger rulings .docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs/plan.md
+<<< Ruling: trabajo en el checkout actual (rama feature/0035-room-hours-cs, no main) sin crear worktree — no hay preferencia declarada, el baseline corrió en worktree desacoplado y quedó en verde — si falla, el coste es tocar el árbol del dev-lead.
+Ruling: sin §Entornos ni operations.md; el gate es el del plan (dotnet run) — coste bajo.
+Final: minor (deferred): Rooms.Hours es una expresión larga en una línea; extraer la suma a una variable mejoraría la lectura
+
+>>> Bash: cd "<run>/repo" && rm -rf .temp/sdd/plan && git status --short
+
+>>> Skill: sdd-kit:sdd-archive
+<<< (Bash completed with no output)
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && git status --porcelain; node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js merge --check --project-root "$PWD"; git worktree list; git log --oneline -3; cat ROADMAP.md | head -30
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo 7e5066f [feature/0035-room-hours-cs]
+7e5066f feat(rooms): Rooms.Hours suma las horas de las reservas activas de una sala
+bf23c17 docs(sdd): abrir la feature 0035 con su spec y su plan
+1d60cdf feat: base del molde
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0035 | — | **Horas reservadas por sala**<br>*cada sala dice cuántas horas tiene reservadas*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>*
+
+=== RESULTADO (36 turnos, 0.41828819999999994 $)
+La Task 1 de la 0035 está implementada y revisada, pero el cierre está parado: falta que valides tú.
+
+**Qué hay hecho**
+- `Rooms.Hours(string room)` está en `Rooms.cs` y devuelve `"<sala>: <n> h"`. Solo suma las reservas activas, y el formato invariante evita un `1,5 h` según la cultura.
+- Los dos tests nuevos de `Tests.cs` cubren el THEN (`Norte: 2 h`) y el AND (`Sur: 0 h`, la reserva cancelada no cuenta). Los vi fallar por compilación antes de implementar.
+- El commit es `7e5066f`. `dotnet run` da `todo en verde` con código 0, en la línea base y tras la task. `Program.cs` y el resto de `Rooms` no se tocaron.
+- Es la única task del plan, así que la revisión final cubre toda la rama.
+- **Revisión final:** no tengo herramienta de subagentes en esta sesión, así que la hice yo mismo en pasadas por eje. Es más débil que revisores independientes. Salió sin Critical ni Important. El eje de arquitectura no sale, porque el diff no trae módulo, dependencia, contrato ni datos nuevos.
+
+**Rulings que tomé**
+1. Trabajo en el checkout actual, en `feature/0035-room-hours-cs` y no en `main`, sin crear worktree. No había preferencia declarada y la línea base corrió en un worktree desacoplado, en verde. Si me equivoco, el coste es haber tocado tu árbol.
+2. No hay `operations.md` ni `§Entornos`, así que usé como gate el `dotnet run` del plan. El coste es bajo.
+
+**Deferred minors**
+- `Rooms.Hours` es una expresión larga en una sola línea. Extraer la suma a una variable mejoraría la lectura.
+
+**Por qué no he archivado**
+`sdd-kit.json` no tiene `validation.mode`, así que cuenta como `manual`. Cerrar es la orden de cerrar, no una validación.
+- **`sdd merge --check`:** falla porque faltan `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Antes de fusionar hay que completar ese bloque, o fusionas tú.
+- **Todavía sin escribir:** el walkthrough, el merge del delta a `capabilities/`, la fila de ROADMAP (sigue en ⏳) y el squash del cierre.
+
+**Prueba que te toca hacer**
+1. En la raíz del repo, en la rama `feature/0035-room-hours-cs`, ejecuta `dotnet run`. Debe imprimir `todo en verde` y salir con 0.
+2. Si quieres ver el valor en pantalla, añade temporalmente `Console.WriteLine(Rooms.Hours("Norte") + " / " + Rooms.Hours("Sur"));` en `Program.cs`. Debe salir `Norte: 2 h / Sur: 0 h`. Revierte el cambio después.
+
+Dime qué has probado y que funciona (o «validado»), y completo el cierre. Necesito también que me confirmes `merge.into` y `merge.noFf`, o que prefieras fusionar tú.
+
+**No terminado.** Falta tu validación y el bloque `merge`. No borres todavía el repo de trabajo `<run>\repo`.

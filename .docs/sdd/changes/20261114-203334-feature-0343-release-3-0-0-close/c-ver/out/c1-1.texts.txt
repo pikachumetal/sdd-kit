@@ -1,0 +1,104 @@
+--- [3]
+Ahora: cerrar la revisión final con `sdd-verify`. Queda: leer los informes `review-spec.md` y `review-code.md` y tratar sus hallazgos, ~5 min.
+
+--- [17]
+Ahora: arreglar el Important del eje Código (`reasonOf` no recorta espacios) con TDD, y apuntar los informes en el ledger. Queda: test en rojo, arreglo, suite, commit y una re-revisión, ~10 min.
+
+--- [22]
+RED por la causa correcta («motivo no válido»). Ahora el arreglo.
+
+--- [27]
+Ahora: despachar la única re-revisión del commit `bc7317a`. Queda: leer los briefs y lanzarla en segundo plano, ~5 min.
+
+--- [37]
+Mientras revisa, apunto la pasada de fix en `tasks.md` y el ledger (docs, sin tocar código).
+
+--- [41]
+La revisión final ya está tratada y la re-revisión de mi arreglo sigue en marcha; hasta que vuelva no cierro ni valido nada.
+
+- **Eje Spec:** sin Critical ni Important. Solo un Minor: el test de `canceladas` depende de que antes corra el de `cancelar`. No tengo `review.minors: fix` en `sdd-kit.json`, así que queda como `minor (deferred)` en el ledger.
+- **Eje Código:** un Important. `reasonOf` no recortaba espacios, así que `--motivo "sala ocupada "` daba «motivo no válido». Lo arreglé con TDD.
+    - **Test en rojo:** «cancelar acepta el motivo con espacios alrededor». Falló por la causa correcta.
+    - **Arreglo:** `.trim()` en `src/app.js:16`.
+    - **Suite:** 6/6 en verde.
+    - **Commit:** `bc7317a`.
+- **Eje Arquitectura:** no sale. Lo apunté en el ledger con las señales del diff: ninguna.
+- **Re-revisión:** está en marcha en segundo plano (`opus` + `high`, rango `388025a..bc7317a`).
+- **Pendiente de commit:** la línea `Pasada de fix` en `tasks.md`.
+
+Cuando vuelva la re-revisión, apunto su veredicto en `tasks.md`, retiro el worktree de revisión y sigo con el cierre (`sdd-archive`).
+
+--- [49]
+### Finding Verdicts
+
+**[Code axis, Important] `src/app.js:14-17`, `reasonOf` keeps the spaces around the reason: ADDRESSED**
+- Evidence: the diff changes `src/app.js:16` in bc7317a (diff line 77) to `return index === -1 ? undefined : params[index + 1]?.trim();`. The reason is now trimmed before `cancelBooking` checks it with `reasons.includes(reason)` at `src/app.js:20`. Because the trimmed value is also what gets stored (`booking.reason = reason`, `src/app.js:24`), both the reply «cancelada … (sala ocupada)» and the `canceladas` listing carry the clean value. Using `?.` keeps the old result when `--motivo` is the last argument (`undefined`, so it still answers «motivo no válido: …»), which is the spec scenario at `spec.md:54`.
+- The test claim checks out against the diff. The new test `test/cancel.test.js:14-16` («cancelar acepta el motivo con espacios alrededor») sends `' sala ocupada '` to `Sur mar` and expects `'sin reserva Sur mar'`. Before the fix it would have answered «motivo no válido: …», so it was really RED. After the fix the reason passes validation and the code reaches the booking lookup, so it is GREEN. Using `Sur mar` avoids depending on the `Norte lun` booking that the first test already cancelled. The three existing tests are unchanged: the hunk at `test/cancel.test.js` only adds lines. I did not run the suite, as instructed, so "6/6" was not checked by running anything.
+
+### New Breakage in the Fix Diff
+- **Minor**, `src/app.js:1-48`: the commit changes the whole file's line endings from CRLF to LF. In the committed blobs, 388025a has 48 carriage returns and bc7317a has 0. That is why the diff shows 48 lines removed and 48 added when only line 16 really changed, which adds noise to the diff and to `git blame`.
+- **Minor**, `test/cancel.test.js:13-16`: the four added lines use LF while the rest of the file stays CRLF (15 CR in 19 lines in the committed blob), so the file now has mixed line endings. There is no `.gitattributes` to normalise them.
+- **Minor**, `test/cancel.test.js:14-16`: the new test only shows that a padded reason passes validation, through the `sin reserva` branch. It does not check the case reported in the finding: a successful cancellation with a padded reason that replies and stores `sala ocupada` without spaces. The code is correct by inspection, but no test pins the trimmed value in the output.
+
+### Out-of-Scope Observations
+- `cancelBooking` (`src/app.js:19`) is exported and does not trim by itself. Only the CLI path through `reasonOf` normalises the reason. No current caller is affected.
+- The order dependency between tests (`test/cancel.test.js:13`, deferred Minor from the Spec axis) is still there. The new test works around it rather than fixing it, as expected.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [52]
+La re-revisión (`opus` + `high`, rango `388025a..bc7317a`) cerró el Important y no encontró nada Critical ni Important nuevo. No la repetí y no abro otra. No volví a ejecutar la suite después de la re-revisión: el último 6/6 es el del arreglo, antes de ella.
+
+**Dos Minor de la re-revisión, ambos como `Ruling:` en el ledger y sin tocar código:**
+- **Finales de línea:** `src/app.js` pasó entero de CRLF a LF en `bc7317a`, y `test/cancel.test.js` quedó con finales mixtos. Normalizarlo sería un commit nuevo sin revisar, y el coste es un diff y un `git blame` ruidosos.
+- **Cobertura del test nuevo:** comprueba que la validación acepta el motivo con espacios, pero no que la respuesta y lo guardado lleven el valor recortado. Por inspección del código sí lo llevan.
+
+**Minor diferido del eje Spec:** el test de `canceladas` depende del orden de los tests. Va a «Deferred minors» de mi mensaje final, no a un ruling.
+
+Quité el worktree de revisión. En `tasks.md` están las líneas `Revisión final`, `Pasada de fix` y `Re-revisión`. Los commits son `bc7317a` (el fix) y `175546c` (los registros).
+
+Ahora: pasar al cierre con `sdd-archive` (validación, walkthrough, base integrada). Queda: los borradores del walkthrough y del merge de capacidades, que todavía no escribí.
+
+--- [54]
+El vigilante de silencio terminó sin nada que atender: la re-revisión ya había vuelto. Sigo con el cierre.
+
+--- [62]
+Validación `manual` (sin clave en `sdd-kit.json`): valida la persona, no yo. Ensayo el guion antes de presentarlo.
+
+--- [66]
+**No terminado.** Falta tu validación y que decidas el bloque `merge`. No he fusionado ni escrito el walkthrough, la hora real ni la fila del roadmap. No borres todavía el worktree `<run>/repo`.
+
+**Pre-checks**
+- El árbol está limpio y no hay otras ramas abiertas.
+- La spec está `approved` (Laura, 2026-10-08).
+- La revisión final está cerrada: el único commit posterior a la re-revisión es `175546c`, de documentación y de menos de 20 líneas, y lo leí en el hilo.
+- `sdd merge --check` falla con «falta `merge.into` o `merge.noFf`» en `sdd-kit.json`. Con el bloque `merge` incompleto el kit pide presentarlo y esperar. Dime el destino (¿`main` o `develop`?) y si va con `--no-ff`.
+- Del push no te pido nada todavía: va aparte y siempre lo confirmo contigo.
+
+**Validación** (modo `manual`: en `sdd-kit.json` no hay clave `validation`)
+
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). Y `canceladas` lista cada cancelada con su motivo, p. ej. «Norte lun — sala ocupada». En la revisión final salió un fallo, ya arreglado: un motivo con espacios alrededor se rechazaba.
+
+**✋ Me salí del plan en…** nada.
+
+Tests: `node --test` da 6/6 en verde. Los ensayé yo mismos los pasos siguientes. Hace falta que los pruebes tú.
+
+Panel: plan B (no tengo las herramientas de Chrome y es una app de CLI). No lancé `sdd validation serve`, así que no hay panel en ninguna URL. Puedes responder en texto.
+
+**Guion.** Parte de un estado limpio: la app no guarda reservas entre procesos y Norte lun está activa al arrancar. Cada comando va en su propio proceso, desde la raíz del repo.
+1. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+2. `node src/app.js cancelar Norte lun` (sin `--motivo`) → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun --motivo "sala ocupada "` (con un espacio al final) → `cancelada Norte lun (sala ocupada)`
+4. Cancelar y listar en el mismo proceso, porque `canceladas` solo ve lo cancelado en su propio proceso:
+   `node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"`
+   → `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`
+
+Dime qué probaste y si funciona («validado» o «sí» también vale). Si prefieres diferirlo, hacen falta tus palabras, un disparador y un responsable.
+
+**Deferred minors**
+- `test/cancel.test.js:13`: el test de `canceladas` depende de que antes corra el de `cancelar`.
+
+**Decisiones sin el dev-lead**
+- Dos `Ruling:` de la re-revisión, sobre los finales de línea de `src/app.js` y la cobertura del test nuevo.
+

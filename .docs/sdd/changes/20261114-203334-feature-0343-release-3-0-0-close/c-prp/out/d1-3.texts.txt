@@ -1,0 +1,115 @@
+--- [8]
+Ahora miro el código para confirmar la causa y clasificar.
+
+--- [23]
+Reproduzco con una CLI directa (el estado vive en memoria, así que cada llamada es un proceso nuevo; uso un script de una sola ejecución).
+
+--- [29]
+Ambos en rojo por la razón esperada. Aplico el fix mínimo.
+
+--- [34]
+Gate en verde (6/6 y lint sin hallazgos). Antes del commit, el patch exige un revisor (sonnet).
+
+--- [36]
+Revisor lanzado. Espero su resultado antes de commitear; no hay nada más que hacer en paralelo sin tocar los mismos ficheros.
+
+--- [43]
+Un hallazgo menor de documentación. La causa raíz y el fix son correctos, y los dos tests se comportan como debe.
+
+**Comprobaciones**
+1. **Causa raíz (§2): correcta.** Antes del fix, `src/app.js:10` solo comparaba `room` y `status`, y `day` no se usaba. `cancelBooking` (`:13-18`) y `voidBooking` (`:20-25`) devuelven el `day` pedido, no el de la reserva tocada, y por eso el mensaje parecía correcto.
+2. **Fix: mínimo y suficiente.** El diff es una línea (`b.day === day` en `src/app.js:10`). `findBooking` es la única función de búsqueda y la comparten `cancelBooking` y `voidBooking`, así que cubre las dos órdenes sin más cambios.
+3. **Tests.**
+   - Con `src/app.js` de HEAD, copiado a un directorio temporal, fallan `cancel-dia` y `anular-dia`. Los otros 4 tests pasan.
+   - Con el fix pasan los 6, incluidos los de `cancel.test.js` y `app.test.js`.
+   - No hay dependencia de orden. Cada fichero corre en su propio proceso con `node --test`, así que el estado en memoria (`bookings`) no se comparte. Dentro de cada fichero hay un solo test.
+
+**Hallazgos**
+- **Baja** · `.docs/sdd/changes/20261116-120659-patch-0012-cancel-dia/patch.md:4,10,48,50`: el `status: done` no concuerda con lo demás. La tabla de §4 dice «pendiente» en los dos casos, aunque ya pasan. `commit` y «Esfuerzo real» también están en «pendiente». Conviene rellenarlos antes del cierre (o dejar `status` en curso hasta entonces).
+
+Lo que no he podido comprobar:
+- **Referencia al patch 0007 (§2):** no la he verificado.
+- **Aislamiento de los tests:** depende del aislamiento por proceso que `node --test` aplica por defecto. Con `--test-isolation=none` los dos ficheros compartirían `bookings`. Hoy no es un fallo.
+
+Al comprobar el escenario sin fix hice un `git stash` y `git stash pop` de `src/app.js`. El árbol quedó igual que antes (`git status` sin cambios).
+
+--- [45]
+El revisor confirma la causa y el fix. Su único hallazgo es de documentación: la tabla de §4 sigue en «pendiente». Lo corrijo y commiteo.
+
+--- [47]
+Ahora: cierro el patch con `sdd-archive` (validación, tiempo real y merge). Queda: tu validación del cierre.
+
+--- [58]
+Estoy en el cierre del patch, esperando tu validación. Compruebo si el panel sigue vivo.
+
+--- [60]
+El patch está arreglado y commiteado, pero no lo he cerrado: falta tu validación. Con la validación en modo `manual`, «cierra» no cuenta como validar.
+
+🦆 Antes, `cancelar Norte mar` sin reserva el martes cancelaba la del lunes y respondía «cancelada Norte mar». Ahora responde «sin reserva Norte mar» y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada. Sí amplié el alcance en un punto: `anular` tenía la misma causa y lo cubre el mismo cambio, con su propio test.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` no cancela nada y la del lunes sigue activa | ejecución real | `sin reserva Norte mar`, y después `cancelada Norte lun` en el mismo proceso |
+| `cancelar Norte lun` | ejecución real | `cancelada Norte lun` |
+| `anular Norte mar` | ejecución real | `sin reserva Norte mar` |
+| Los dos tests nuevos fallan sin el fix | suite | rojo antes con `cancelada Norte mar` y `anulada Norte mar`, verde después |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 sobre `00cd223`, lint sin hallazgos.
+- El revisor (sonnet) confirmó causa y fix. Su único hallazgo, la tabla de §4 en «pendiente», está corregido.
+
+**Sin probar**
+
+- Nada. Una limitación del producto: las reservas viven en memoria, así que cada comando suelto parte de la reserva del lunes. Por eso el paso 4 usa un solo proceso.
+
+Para el cierre me falta una decisión tuya: `sdd-kit.json` no tiene el bloque `merge` (`merge.into` y `merge.noFf`). Cuando valides, te propongo fusionar en `develop` con `--no-ff` y espero tu confirmación.
+
+Panel: plan B en http://127.0.0.1:3020/ (no hay herramientas de Chrome, así que es una página aparte que solo guarda tus marcas).
+
+**Guion**
+
+Rama `feature/0012-cancel-dia` · worktree `<run>\repo`
+
+No hay entorno que arrancar: es una CLI. Un terminal:
+
+```
+cd <run>\repo
+```
+
+1. El paso del reporte, cancelar un día sin reserva → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. La del lunes sigue existiendo → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Lo mismo con `anular` → `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+4. Los dos días en el mismo proceso → primero `sin reserva Norte mar`, después `cancelada Norte lun`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','mar'])); console.log(run('cancelar',['Norte','lun']))"
+```
+
+Cuando acabes, paro el servidor del panel por su PID (25824).
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

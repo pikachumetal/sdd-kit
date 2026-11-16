@@ -1,0 +1,156 @@
+--- [3]
+Ahora: leer la spec de la 0011 y las referencias de la pasada de coherencia y la review. Queda: contar señales, decidir la review y presentarte la spec, ~3 min.
+
+--- [10]
+Antes de despachar la review toca la pasada de coherencia. Miro la constitución y el código que implementa `anular`.
+
+--- [16]
+La pasada de coherencia encuentra cuatro fallos, y el primero lo confirma `capability merge` sobre una copia. Los corrijo en la spec antes de dispatchar.
+
+--- [19]
+No hay Python en este equipo. Aplico las mismas correcciones con Edit.
+
+--- [35]
+Estoy corrigiendo el formato de la declaración de capacidades: el CLI solo lee los nombres antes de la primera raya, así que `bookings` tiene que ir en su propia línea.
+
+--- [39]
+Ya pasa el merge sobre la copia. Añado a ✋ el resultado y el bloque de la review, y despacho a los dos revisores.
+
+--- [43]
+Ahora: despacho los dos revisores de la spec en paralelo (dominio en Opus, técnica en Sonnet). Queda: plegar sus hallazgos y presentarte la spec, ~5 min, ~$0,40.
+
+--- [53]
+Los dos revisores están en marcha. Mientras tanto, esto es lo que he hecho y decidido:
+
+**Señales (5 de 8):** capacidad nueva (`room-managers`, y `bookings`, que no tenía fichero), contrato público (`--como` y el formato de `data/managers.json`), datos nuevos, área sin explorar y reglas de visibilidad (quién no puede anular). No hay `MODIFIED`, y no entran ni tres capacidades ni dependencias externas.
+
+**Review: dos revisores en paralelo.**
+- **Dominio (Opus):** revisa los permisos y si la decisión 4 contradice el Intent. Va en Opus porque la spec toca reglas de rol.
+- **Técnica (Sonnet):** revisa el fichero ausente, `--como` sin valor y el formato del JSON.
+- **Por qué dos y no uno:** el alcance es pequeño (~45 líneas), pero hay contrato público y eso exige dos.
+
+**Pasada de coherencia.** Corregí cuatro cosas en la spec:
+1. `capability merge` sobre una copia rechazaba el `MODIFIED`, porque `bookings` no tiene fichero en `capabilities/`. Ahora es capacidad nueva con `ADDED`. El merge ya pasa con salida 0.
+2. Las reservas no guardan quién las hizo, así que el escenario con «Pedro» no era comprobable. Ahora la regla es que `anular` es el acto del responsable de sala, como dice PRODUCT.md en «Anulación».
+3. Faltaban `--como` ausente y sala sin responsable. Los añadí con su escenario.
+4. El Scope no listaba `src/app.js` ni los tests. Ya los lista.
+
+En cuanto lleguen los hallazgos los plego en `### Hallazgos de la review`. Si hay un Crítico aceptado, habrá una segunda ronda antes de presentarte la spec con su 🦆 y «✋ Decisiones que he tomado yo — valida estas».
+
+--- [54]
+1. Crítico · Delta `room-managers` · El escenario «se pregunta el responsable de Norte» no describe ninguna interfaz del producto: no es comando, función ni salida. Pasa si el agente escribe cualquier función o lee el JSON, y no prueba comportamiento. · Reescribirlo con una entrada observable, por ejemplo GIVEN el JSON, WHEN `anular Sur lun --como Ana`, THEN «solo Luis anula reservas de Sur». O fusionar con el escenario de `bookings` y quitar el requisito suelto.
+
+2. Crítico · Delta `bookings` (AND «sala sin responsable») · No dice qué sala, qué fichero ni qué comando. «`<sala>`» es un placeholder y no hay GIVEN propio. Pasa con cualquier sala o con el literal «<sala>» tal cual. Además mezcla dos casos, sala ausente del JSON y fichero ausente, y solo uno de ellos aparece (5). · Separar en dos escenarios con GIVEN, WHEN y THEN concretos. Ejemplo: `managers.json` sin «Este», `anular Este lun --como Ana`, THEN «la sala Este no tiene responsable» y la reserva sigue activa. Otro con el fichero ausente.
+
+3. Importante · Delta `bookings` · El caso `--como` sin valor (`anular Norte lun --como`) no tiene escenario, aunque la sección de revisión dice que queda cubierto. Con `params` puede tomar el siguiente token o `undefined`. Tampoco hay escenario de que `--como` aparezca antes de la sala (`anular --como Ana Norte lun`). · Añadir un escenario para `--como` sin valor, con THEN igual a «indica quién anula con --como». Decidir y fijar si el orden de flags importa.
+
+4. Importante · Delta `bookings` · Falta el escenario de `data/managers.json` malformado, es decir JSON inválido o valores que no son cadenas. No aparece en ningún lado y la implementación lo resolverá con un crash o con un mensaje no definido. · Añadir la decisión y el escenario, por ejemplo mensaje «managers.json no es válido» y no anular. Registrarlo en «Decisiones».
+
+5. Importante · Decisiones (5) y Scope · La ruta `data/managers.json` es relativa, pero no se dice si se resuelve contra el cwd o contra el directorio del proyecto/`src/app.js`. Ejecutar desde otro directorio da «sin responsable» de forma silenciosa, igual que el fichero ausente. Los tests dependen de esa ruta y no se dice cómo la inyectan, ni si usan un fichero fixture. · Decidir la resolución (relativa al módulo) y cómo lo prueban los tests (ruta inyectable o variable de entorno). Añadirlo a «Decisiones».
+
+6. Importante · Decisiones (2) y (4) · Se decidió que `--como` sea obligatorio en `anular`, un cambio de contrato de la CLI que rompe usos actuales. En el Scope «`cancelar` sigue igual» no se dice si `cancelar` usa o ignora `--como`. Tampoco se dice si la comparación de nombres distingue mayúsculas (`--como ana`) ni si se recortan espacios. · Declarar la ruptura de compatibilidad en Approach. Fijar la comparación de nombres (sensible a mayúsculas o no) y añadir un escenario con `--como ana`.
+
+7. Importante · Decisiones (3) y bloque de revisión · El body cita tres veces `capability merge`, y se declara «sin MODIFIED» porque no existe `capabilities/`. Pero la regla anterior de bookings («cualquiera anula») está implícita en `voidBooking` y no en un fichero. No hay decisión sobre cómo se documenta ese comportamiento previo, ni sobre qué pasa con las reservas ya anuladas o inexistentes (`anular Norte mar` sin reserva). Ese caso no tiene escenario. · Añadir un escenario para una reserva inexistente o ya anulada, y el orden de las comprobaciones: `--como`, luego responsable, luego existencia de la reserva.
+
+8. Menor · Decisiones (6) · «Las cinco reglas de la capacidad» (sin límites, sin avisos, nombres en castellano…) se listan en las decisiones, pero ningún escenario las ejercita. «En conflicto manda el fichero» no tiene sentido con un JSON que no admite claves duplicadas, salvo que el parser tome la última. Son decisiones de body sin requisito que las respalde. · Quitar las que no tienen comportamiento observable, o dar a cada una un requisito. Aclarar el caso de claves duplicadas, o eliminarlo.
+
+9. Menor · Decisiones (1) y (5) · El formato `{"Sala": "Nombre"}` admite un solo responsable por sala y no se declara como contrato estable ni versionado. Tampoco se dice quién mantiene el fichero ni si se versiona en git. Es dato y contrato nuevo sin dueño. · Declarar en `architecture.md` o en la spec que el formato es contrato, y si el fichero está en git. Dejar una línea en «Decisiones».
+
+10. Menor · Decisiones (7) · «Política de modelos: la de `sdd-kit.json`» no es una decisión de producto y está numerada junto a las demás. El Scope menciona «`run`» pero no `params`, y el bloque de revisión habla de `params` sin que el Scope lo recoja. · Mover la política de modelos fuera de la lista. Añadir `params` al Scope si la implementación lo toca.
+
+--- [56]
+Ha llegado la review técnica, con 2 Críticos y 5 Importantes. Falta la de dominio. Espero a que llegue para plegar los hallazgos juntos y decidir si hace falta segunda ronda.
+
+--- [58]
+1. Crítico · Decisiones (4) frente a Intent · El Intent limita la regla a «las reservas de otras personas», pero la decisión 4 dice que la regla no mira de quién es la reserva. Además, se apoya en que «las reservas no guardan quién las hizo», y PRODUCT.md define Reserva como «a nombre de quien la pide». La spec contradice su propio Intent y la definición viva del producto. · Hay dos salidas. Si la reserva guarda el nombre, la regla tiene que distinguir propia de ajena. Si no lo guarda, hay que reescribir el Intent («solo el responsable de sala anula reservas, sean de quien sean») y corregir PRODUCT.md en Scope, o declarar la discrepancia.
+2. Importante · Scope (No entra) · Dice que «cancelar la propia reserva sigue igual», pero esconde un recorte. Hoy quien no es responsable puede deshacer su propia reserva con `anular` también dentro de las 24 h. Desde esta feature solo le queda `cancelar`, que según PRODUCT.md solo vale «antes de 24 h», así que pierde ese camino. · Hay que declarar en Intent y Scope que quien no es responsable pierde `anular` para sus propias reservas y no tiene salida dentro de las 24 h. Si eso no se quiere, hay que decidir qué hace en ese caso.
+3. Importante · Intent / Decisiones (2) frente a PRODUCT.md · Product Purpose dice «La uso yo… No hay más usuarios», y el Intent dice «hoy cualquiera anula cualquier reserva». Además, `--como` es una identidad que se declara uno mismo: cualquiera escribe `--como Ana` y anula. Por tanto «quién NO puede anular» no queda impedido de verdad, solo se declara. · Hay que decir de forma explícita que `--como` es un control de intención y no de seguridad. También hay que actualizar Product Purpose en Scope, o declarar cómo encaja una regla de permisos entre usuarios en un producto con un solo usuario.
+4. Importante · Delta `bookings` (complemento del rol) · El escenario de rechazo solo prueba a un responsable de otra sala (Luis). No hay escenario para un nombre que no es responsable de ninguna sala (cualquier usuario normal), que es el caso del Intent. Tampoco se dice qué no ve ni qué no puede hacer el responsable fuera de su sala más allá de anular. · Hay que añadir un escenario con un nombre inventado que no esté en `managers.json` y la frase literal del rechazo. También hay que declarar que el responsable no tiene ningún otro poder: ni sobre otras salas ni para editar responsables desde la CLI.
+5. Importante · Delta `room-managers` (complemento del rol) · El rol responsable solo se describe por lo que hace. No se dice quién da de alta o cambia responsables, ni si eso puede hacerse desde la CLI, así que no queda claro qué tiene prohibido el responsable. · Hay que declarar que `managers.json` se edita solo a mano, sin comando, y que ningún rol cambia responsables desde la terminal. Otra opción es sacarlo a «No entra».
+6. Crítico · Reglas de la capacidad (5 bis) · No existe la sección «Reglas de la capacidad». Las cinco reglas aparecen una sola vez en Decisiones (6) para dos capacidades. Para `bookings`, «datos en `data/managers.json`» es falso, porque las reservas no viven ahí. Además, ninguna regla dice de dónde sale su valor (constitución, PRODUCT.md). · Hay que crear «Reglas de la capacidad» por cada capacidad, con las cinco reglas por nombre. Cada una necesita un valor o «no aplica», más su origen. En `bookings` hay que indicar dónde viven las reservas.
+7. Crítico · Capacidades / idioma de los nombres (5 bis) · La regla declarada es «nombres en castellano» y la constitución (4) pide castellano. Aun así, las capacidades se llaman `room-managers` y `bookings`, y PRODUCT.md marca justo «_Evitar_: booking» y «_Evitar_: room». Además, la sección «Reglas de la capacidad» no existe. · Hay que renombrar las capacidades al castellano (p. ej. `responsables-de-sala`, `reservas`), o declarar y justificar la excepción frente a la constitución y la terminología.
+8. Menor · Reglas (conflicto) · Lo que dice la regla de conflicto, «manda el fichero (un solo responsable por sala)», no explica con qué compite el fichero. El formato `{"Sala": "Nombre"}` ya impide tener dos responsables, así que la regla no decide nada. · Hay que indicar entre qué fuentes hay conflicto (p. ej. fichero frente a `--como`, o sala presente en reservas pero ausente del fichero), o poner «no aplica».
+9. Menor · Delta `bookings` (último AND) · El caso «sala sin responsable» no tiene GIVEN concreto, la salida usa el marcador `<sala>` en lugar de un valor y no cubre el fichero ausente, que la decisión 5 sí promete. · Hay que concretarlo con una sala inventada que falte en el JSON (p. ej. «Este») y la frase literal. También hay que añadir el caso de `managers.json` ausente.
+10. Menor · Capacidades (`bookings` nace con ADDED) · `capabilities/bookings.md` nacerá con un único requisito, el de anular. Reservar y la cancelación de 24 h de PRODUCT.md quedan fuera de la verdad viva, así que el fichero parecerá completo sin serlo. · Hay que declarar en Scope que `bookings` nace parcial y apuntar en la deuda lo que falta por documentar.
+
+--- [66]
+Los dos revisores dan 4 Críticos. Pliego los hallazgos y reescribo la spec entera.
+
+--- [70]
+Merge en verde sobre la copia. Como acepté Críticos, toca la segunda ronda: un revisor Sonnet con los siete puntos relee la spec corregida.
+
+--- [76]
+La segunda ronda está en marcha. Hasta que vuelva no presento la spec.
+
+**Primera ronda:** 4 Críticos, todos aceptados, y 2 hallazgos rechazados con motivo. La spec quedó reescrita así:
+- **Intent:** ahora dice que solo el responsable anula, sea de quien sea la reserva.
+- **Reglas de la capacidad:** hay una entrada por cada capacidad.
+- **Nombres:** las capacidades pasan a `responsables-de-sala` y `reservas`.
+- **Escenarios:** son observables y cubren fichero ausente, fichero inválido, `--como` sin valor, mayúsculas y un nombre que no es responsable de nada.
+- **Merge:** `capability merge` sobre una copia de `.docs/sdd` sale con 0.
+
+**Pendiente de tu criterio:** quien no es responsable pierde `anular` incluso para su propia reserva, y le queda `cancelar`, que solo vale antes de 24 h. Tampoco he tocado el «Product Purpose» de PRODUCT.md, que dice que solo hay un usuario. Ambas cosas irán a ✋ en la presentación.
+
+--- [77]
+1. Crítico · Delta de comportamiento, `reservas` · El único requisito del delta es un único escenario con 9 `AND`, que mezcla permiso, `--como` ausente, reserva inexistente, fichero ausente y JSON inválido. Un solo requisito no dice qué comportamiento falla cuando falla un `AND`, y el escenario pasa si falta cualquiera de las ramas menores. · Dividir en requisitos y escenarios separados, cada uno con su GIVEN/WHEN/THEN: permiso, `--como` obligatorio y fichero de responsables ausente o inválido.
+
+2. Crítico · Delta, `responsables-de-sala` · La capacidad declara reglas pero no tiene ningún requisito ni escenario en el delta. El formato de `managers.json`, la sala sin responsable y el JSON inválido se prueban solo bajo `reservas`. El Scope dice que `reservas` nace con un solo requisito, y eso deja `responsables-de-sala` sin comportamiento propio. · Mover a `responsables-de-sala` un `ADDED` «Cada sala tiene un único responsable» con los escenarios de sala sin responsable, fichero ausente y fichero inválido. Dejar en `reservas` solo la exigencia de ser responsable para anular.
+
+3. Importante · Delta, escenario · Falta el caso de `managers.json` válido en JSON pero con tipos erróneos, por ejemplo `{"Norte": ["Ana"]}`, un valor vacío o la raíz como array. La decisión 5 dice «no es JSON válido de `{"Sala": "Nombre"}`», pero solo se prueba la sintaxis rota. · Añadir un escenario con JSON bien formado y forma errónea, que responda «managers.json no es válido», o acotar la decisión 5 a la sintaxis.
+
+4. Importante · Delta, escenario y decisión 10 · El orden de comprobaciones declarado (`--como`, responsable, reserva) solo se prueba parcialmente. No hay escenario con `--como` ausente y fichero inválido, ni con sala sin responsable y reserva inexistente. El escenario «sin reserva Norte mar» pasa igual si se comprueba la reserva antes que el responsable. · Añadir escenarios que fijen el orden, por ejemplo `anular Este mar` sin `--como` y `anular Este mar --como Ana` con la sala sin responsable.
+
+5. Importante · Decisión 8 y Scope · El Intent dice «solo el responsable anula», y la decisión 8 declara que quien reservó pierde `anular` y solo le queda `cancelar` antes de 24 h. Pasadas las 24 h, quien reservó no puede quitar su propia reserva, y la spec no lo dice. El escenario de la decisión 8 tampoco existe. · Declarar el hueco como consecuencia explícita, con un escenario o una nota en «No entra». Dejar claro que la decisión 8 queda como ✋ pendiente de Laura.
+
+6. Importante · Reglas de la capacidad, `reservas` · «Dónde viven los datos: no aplica» contradice la realidad de `reservas`: `voidBooking` modifica las reservas, que viven en algún sitio. La frase «esta regla no guarda reservas; vive el responsable en `responsables-de-sala`» está confusa. Además, «Límites», «Avisos» y «Regla ante conflicto» figuran como «no aplica» sin origen. · Reescribir la frase con claridad, indicar dónde viven las reservas aunque sea «según el código actual» y dar origen a cada «no aplica». El origen debe ser PRODUCT.md, el dev-lead o el Intent.
+
+7. Menor · «Decisiones que he tomado yo» · El bloque contiene el texto de la review propuesta (revisores, señales, «5 de 8») en prosa pegada, sin separar de la lista numerada de decisiones. Además, la «Pasada de coherencia» dice «el resultado del merge de la versión final se anota abajo», pero no hay nada anotado. · Separar la review de las decisiones y anotar el resultado real del `capability merge` de la versión final, o quitar la promesa.
+
+8. Menor · Capacidades · `responsables-de-sala` figura como «Nueva» pero sin ningún delta, y la decisión 3 justifica `ADDED` solo para `reservas`. Falta una nota que explique que esta capacidad nace sin requisitos, o que la cree con ellos (ver 2). · Resolver junto con el punto 2.
+
+9. Menor · Decisión 12 y PRODUCT.md · PRODUCT.md dice «No hay más usuarios», pero la spec introduce roles, responsables y `--como` entre personas, como Ana, Luis y Marta. Dejar la contradicción solo como pregunta abierta hace que el gate apruebe una feature que contradice el documento de producto vigente. · Pedir a Laura que decida antes de aprobar, o añadir una enmienda a PRODUCT.md al Scope. No dejarlo solo como una nota.
+
+10. Menor · Decisión 2 y escenarios · «Distingue mayúsculas» se prueba con `ana` frente a `Ana`, pero no se dice nada de espacios sobrantes ni de nombres con acentos. La regla de comparación queda a medias, aunque el riesgo es bajo. · Declarar «comparación exacta, sin recortar espacios» o añadir un escenario.
+
+--- [79]
+Hallazgos de la segunda ronda: 2 Críticos y 4 Importantes, y los acepto salvo el 9. Los pliego sin tercera ronda, como marca la regla.
+
+--- [82]
+Merge en verde con los cuatro requisitos. Anoto el resultado en la spec.
+
+--- [86]
+Ahora: te presento la spec de la 0011 para el gate de aprobación. Queda: tu «Apruebo» o tus cambios. No escribo el plan hasta entonces.
+
+🦆 Hoy cualquiera anula cualquier reserva. Con este cambio, solo el responsable de cada sala puede anular las reservas de esa sala. Por ejemplo, si Ana es responsable de Norte y Luis de Sur, Luis ya no puede anular la reserva de Norte del lunes y Ana sí. Para saber quién responde de cada sala, el programa mira una lista de responsables que se escribe a mano. Cada vez que alguien anula, tiene que decir quién es, y el programa lo compara con esa lista. Ese nombre se escribe a mano, así que no es seguridad: sirve para evitar errores, no para impedir que alguien se haga pasar por otro.
+
+Falta decidir qué hace quien no es responsable con su propia reserva pasadas las 24 h, y si «solo hay un usuario» sigue valiendo en PRODUCT.md.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+La spec está en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`.
+
+**Review.** Dos revisores en paralelo (dominio en Opus, técnica en Sonnet) y una segunda ronda con un revisor Sonnet, porque acepté Críticos en la primera. Entre las dos rondas hubo 6 Críticos aceptados y 4 hallazgos rechazados con motivo, todos anotados en la spec. `capability merge` sobre una copia de `.docs/sdd` sale con 0.
+
+**Cambios respecto a la primera versión.**
+- Las capacidades pasan a `responsables-de-sala` y `reservas`, en castellano como pide PRODUCT.md.
+- `reservas` nace parcial: solo documenta las reglas de anular, no reservar ni cancelar.
+- Hay 4 requisitos `ADDED`. No hay `MODIFIED`, porque no existe fichero que modificar.
+
+**Decisiones mías:**
+1. Los responsables viven en `data/managers.json`, con un nombre por sala. Se edita a mano y ningún comando lo cambia.
+2. `--como <nombre>` es obligatorio. Sin él, o sin valor, `anular` responde «indica quién anula con --como». La comparación es exacta: distingue mayúsculas y no recorta espacios.
+3. La regla no mira de quién es la reserva, porque hoy las reservas no guardan quién las hizo. Según PRODUCT.md, `anular` es el acto del responsable.
+4. Si el fichero falta, o la sala o el nombre no están, responde «la sala Este no tiene responsable». Si el fichero no es JSON o tiene forma errónea, responde «managers.json no es válido». En todos esos casos no anula.
+5. Orden de comprobaciones: `--como`, responsable, y por último si existe la reserva.
+6. `cancelar` no cambia ni usa `--como`.
+
+**Dos cosas que decides tú:**
+- **Decisión 8.** Quien no es responsable pierde `anular` incluso para su propia reserva. Le queda `cancelar`, que solo vale antes de 24 h, así que pasadas las 24 h no puede quitar su reserva. Si no lo quieres, dime qué debe poder hacer.
+- **Decisión 12.** PRODUCT.md dice «No hay más usuarios», y una regla de permisos entre personas no encaja con eso. No he tocado «Product Purpose». Dime si quieres una enmienda a PRODUCT.md.
+
+**Política de modelos:** la de `sdd-kit.json` (`execution: native`), sin cambios.
+
+**¿Apruebas la spec?** Elige una opción:
+1. **Apruebo (Recomendada).** Escribo el plan y paso a la implementación.
+2. **Cambios.** Dime qué quieres cambiar, incluidas las decisiones 8 y 12.
+

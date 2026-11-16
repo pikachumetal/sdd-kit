@@ -1,0 +1,59 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar y arrancar la spec, ~3 min.
+
+--- [16]
+Ahora: dejo la rama `feature/0012-informes` lista y te presento lo que he entendido y los enfoques. Queda: tu elección de enfoque, las secciones del diseño (5 tasks, así que van de una en una), la spec y su aprobación, y el plan, ~10 min de tu parte.
+
+```text
+Carril: feature, modo full · Perfil: pair, indicado por ti para esta feature (el proyecto tiene delegate en sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme**
+
+- Un comando nuevo `informes` con cuatro vistas: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado.
+- `--sala <nombre>` filtra las cuatro vistas. Por ejemplo, `informes --sala Norte` muestra las cuatro solo con las reservas de Norte.
+- La salida es una tabla de texto. Si no hay reservas, cada vista dice «sin reservas».
+- Son 5 tasks, una por vista más una para `--sala`. Todas tocan la misma superficie (`src/app.js` y su test) y ninguna lleva migración, así que no propongo dividirla en features.
+- Fuera de alcance, salvo que me digas lo contrario: exportar a fichero, rangos de fechas y cualquier cambio en `reservar`, `cancelar` o `anular`.
+- Hoy las reservas viven en memoria, con `room`, `day`, `slot` y `status`. Las vistas se calcularán sobre ese estado.
+
+Los detalles que no has fijado los decidiré yo y irán en «✋ Decisiones que he tomado yo»: qué cuenta como ocupación, el orden de las filas, cuántas franjas salen y si cuentan las reservas canceladas o anuladas.
+
+**Enfoques de construcción**
+
+1️⃣ **Una función pura por vista en `src/app.js`, con un formateador de tabla común.** Cada vista recibe las reservas (ya filtradas por sala si hay `--sala`) y devuelve filas. Encaja con cómo está hecho `app.js` hoy y cada task añade una función con su test. Su coste es que `app.js` crece unas 60 líneas.
+
+2️⃣ **Un módulo nuevo `src/informes.js`, con `app.js` solo enrutando `informes`.** Deja `app.js` pequeño. Su coste es que rompe la estructura de «un solo fichero» y exige exportar las reservas o pasarlas como argumento.
+
+3️⃣ **Una función genérica `agrupar(reservas, clave)` que sirve a las cuatro vistas.** Tiene menos código, pero «salas sin reservas» no encaja (es el complemento de un grupo) y las tasks quedarían acopladas.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto ya es un fichero con funciones pequeñas y exportadas, y así cada task es independiente. A cambio, `app.js` crece. ¿Qué enfoque eliges?
+
+--- [18]
+Sigo con el enfoque 1️⃣. Como la feature tiene 5 tasks, te presento el diseño por secciones, una por mensaje.
+
+**Sección 1 de 3: la tabla y la vista «ocupación por sala»**
+
+Al ejecutar `informes` sale un bloque por vista, cada uno con su título y su tabla de texto. Con la reserva que hay hoy (Norte, lun, 10:00-12:00) la primera vista queda así:
+
+```text
+$ node src/app.js informes
+OCUPACIÓN POR SALA
+sala   reservas
+Norte  1
+Sur    0
+```
+
+Esto es lo que propongo, y lo decido yo:
+
+- **Qué es la ocupación.** Es el número de reservas activas de cada sala. No calculo porcentajes, porque el proyecto no define cuántas franjas tiene una sala al día y inventarlo sería adivinar.
+- **Qué cuenta.** Solo las reservas activas. Las canceladas y las anuladas no cuentan.
+- **Qué salas salen.** Salen todas las salas, también las que tienen 0, ordenadas de más a menos reservas y, en caso de empate, por nombre.
+- **Sin reservas.** Si no hay ninguna reserva activa, el bloque dice solo `sin reservas` bajo el título y no pinta la tabla.
+
+Todas las vistas usarán este mismo formato de bloque: título en mayúsculas, cabecera, filas alineadas con dos espacios entre columnas.
+
+¿Va bien esta sección?
+

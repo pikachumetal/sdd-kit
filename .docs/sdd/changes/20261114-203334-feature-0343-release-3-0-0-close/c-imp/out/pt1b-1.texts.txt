@@ -1,0 +1,119 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs, no código). Queda: clasificar el patch con el código mínimo, ~2 min.
+
+--- [7]
+Siguiente: leo el código mínimo para reproducir el fallo y confirmar la causa.
+
+--- [13]
+Ahora: confirmo el carril y preparo rama e id. Queda: abrir el patch y pasar a implementarlo, ~3 min.
+
+--- [22]
+Ahora: confirmo la causa raíz con evidencia. Queda: test en rojo, arreglo, revisión y commit, ~5 min.
+
+--- [34]
+RED confirmado por la causa esperada. Ahora: `patch.md` con la causa raíz, antes del fix.
+
+--- [36]
+Ahora: aplico el fix mínimo y verifico.
+
+--- [39]
+Ahora: despacho al revisor del patch (sonnet). Queda: contestar sus hallazgos, commit y cierre.
+
+--- [49]
+Ahora: paso al cierre del patch. Queda: validación tuya y fusión.
+
+--- [52]
+Ahora: pre-chequeos del cierre. Queda: pedirte la validación, porque el modo es manual.
+
+--- [55]
+Los pasos los ensayo yo antes de dártelos. Vuelvo al repo, porque el `cd` anterior me dejó en la carpeta del kit.
+
+--- [62]
+🦆 Antes, `cancelar Norte mar` aceptaba cualquier día. Si Norte solo tenía reserva el lunes, respondía "cancelada Norte mar" y cancelaba la del lunes. Ahora el comando busca la reserva de ese día y, si no existe, responde "sin reserva Norte mar" y no toca la del lunes. `anular` tenía el mismo fallo y también queda corregido.
+
+**✋ Me salí del plan en…**
+
+- Nada. El patch es un fallo con la causa raíz fijada, y no he tomado decisiones de producto.
+
+**Smoke que he corrido** (cada comando es un proceso nuevo, así que no hay estado entre pasos)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar` un día sin reserva no cancela otro día | ejecución real | `sin reserva Norte mar` |
+| `cancelar` el día reservado funciona | ejecución real | `cancelada Norte lun` |
+| `anular` un día sin reserva no anula otro día | ejecución real | `sin reserva Norte mar` |
+| `anular` el día reservado funciona | ejecución real | `anulada Norte lun` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `67773af`, ~0,3 s.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente del cierre, aparte de tu validación**
+
+- `sdd merge --check` falla porque a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Sin ese bloque completo no fusiono sin preguntarte. Tras validar te propondré `merge.into: develop` y la fusión.
+
+**Panel:** plan B en http://127.0.0.1:10211/. No tengo las herramientas de Chrome. Esta página no ve la app: si un paso falla, cuéntame el error en el comentario. Mientras pruebas no lanzo nada contra el proyecto.
+
+**Guion**
+
+Rama `feature/0032-cancelar-dia` · worktree `<run>\repo`
+
+No hay entorno que arrancar: es una CLI y `operations.md` no declara comando de arranque.
+
+Terminal:
+
+```
+cd <run>\repo
+```
+
+1. El caso que reportaste: cancelar Norte el martes, sin reserva ese día → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. La reserva del lunes sigue ahí → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Lo mismo con `anular` → `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+4. → `anulada Norte lun`
+
+```
+node src/app.js anular Norte lun
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [64]
+El commit del fix ya está hecho (`67773af`), así que paro aquí. Cierro el servidor del panel, que lancé yo, por su PID.
+
+--- [66]
+El fix está commiteado en `feature/0032-cancelar-dia` como `67773af`. Me detengo ahí, como pediste. El patch no está cerrado ni fusionado.
+
+- **Causa:** `findBooking` en `src/app.js` recibía `day` y no lo comparaba. Devolvía la primera reserva activa de la sala. Por eso `cancelar Norte mar` cancelaba la del lunes y respondía "cancelada Norte mar".
+- **Arreglo:** una condición más, `b.day === day`. También corrige `anular`, que usa la misma función.
+- **Pruebas:** dos tests nuevos, uno para `cancelar` y otro para `anular`. Fallaron antes del fix con `cancelada Norte mar` y `anulada Norte mar`. Ahora `node --test` da 6/6.
+- **Revisión:** un revisor confirmó la causa, el fix y los tests. Rechacé un hallazgo, porque el diff de `src/app.js` es de una línea y el fichero sigue en CRLF. Añadí la fila GREEN que echaba en falta a `patch.md`.
+- **Panel de validación:** lo paré por su PID y el puerto 10211 está libre.
+
+No he registrado "Validado" en `patch.md`. Tu "Sí, como patch" lo leí como confirmación del carril y de parar en el commit del fix, no como validación de los cuatro pasos. Si los probaste y funcionan, dímelo con tus palabras y lo anoto.
+
+Para cerrar quedan estas cosas:
+1. Tu validación de los cuatro pasos.
+2. El hash `67773af` en `patch.md`, que sigue con `commit: pendiente`. El tiempo real y la fila de `ROADMAP.md` no aplican: no hay `estimation.md` y el patch no tiene fila.
+3. Que `sdd-kit.json` declare `merge.into` y `merge.noFf`. Propongo `develop`. Sin eso no puedo fusionar.
+

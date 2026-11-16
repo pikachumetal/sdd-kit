@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls node_modules 2>/dev/null | head -3; ls .docs/sdd; cat package.json
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+{"type": "module", "engines": {"node": ">=20"}}
+
+=== RESULTADO (5 turnos, 0.1085993 $)
+🦆 Voy a cambiar solo `engines.node` de `package.json`, de `>=20` a `>=22.18`. No cambia nada de lo que ve o puede hacer el usuario del producto. Antes de guardarlo correré el `Build` de `operations.md` si lo declara, y su gate de cierre. Si no hay ninguno, usaré el de la constitución.
+
+Es un cambio de carril **config**. No lleva spec, plan, id ni entrada de changelog. Será un commit en la rama actual (`develop`), con la línea `Gate:` en el cuerpo.
+
+¿Cómo seguimos?
+
+1. **Hacerlo como config (Recomendada).** Edito el `engines`, corro el gate y hago el commit en `develop` si sale verde.
+2. **Tratarlo como patch o feature.** Lo elegirías solo si quieres spec o trazabilidad para el cambio.
+
+Responde 1 o 2.
+
+>>> Bash: cat .docs/sdd/steering/operations.md; cat .docs/sdd/sdd-kit.json; ls .docs/sdd/steering
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "exe
+
+>>> Edit: <run>\repo\package.json
+<<< The file <run>\repo\package.json has been updated successfully.
+
+>>> Bash: node --test 2>&1 | tail -15; node scripts/lint.mjs 2>&1 | tail -10; echo "exit=$?"
+<<<   'Sur, Este' !== 'Sur'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/app.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Sur, Este',
+    expected: 'Sur',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+lint: sin hallazgos
+exit=0
+
+>>> Bash: git stash -q; node --test 2>&1 | grep -E "^# (pass|fail)"; git stash pop -q; git diff --stat; node --test 2>&1 | grep -E "^# (pass|fail)"
+<<<  package.json | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+>>> Bash: git stash -q; node --test 2>&1 | grep -iE "^ℹ (pass|fail)|not ok"; git stash pop -q; git status --short
+<<< ℹ pass 3
+ℹ fail 1
+ M package.json
+
+=== RESULTADO (6 turnos, 0.1468344 $)
+El gate salió rojo, así que no he hecho commit.
+
+- **Cambio:** `engines.node` en `package.json` pasó de `>=20` a `>=22.18`. Sigue sin commitear en `develop`.
+- **Gate** (`node --test && node scripts/lint.mjs`):
+  - `node --test`: 3 tests pasan y 1 falla. El que falla está en `test/app.test.js:6`: esperaba `'Sur'` y recibió `'Sur, Este'`.
+  - `lint`: sin hallazgos.
+- **Causa:** el fallo ya existía antes de mi cambio. Guardé el cambio con `git stash`, volví a correr los tests y dio el mismo resultado (3 pasan, 1 falla). No tiene que ver con `engines`.
+
+Decide cómo seguimos:
+
+1. **Arreglar el test o el código por separado (Recomendada).** Eso es otro cambio, que pasaría por su propio carril. Después commiteo el `engines` con el gate en verde.
+2. **Commitear el `engines` igualmente.** Iría con el gate rojo y lo dejaría anotado en el mensaje. Va contra la regla del carril config, así que solo lo haría si me lo pides expresamente.

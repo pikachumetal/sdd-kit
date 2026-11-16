@@ -1,0 +1,37 @@
+--- [10]
+Antes de preguntar he leído `PRODUCT.md`, `ROADMAP.md`, `src/app.js`, los tests y la deuda técnica. No he tocado nada.
+
+**Lo que dice el código**
+- Una franja es un texto libre como `10:00-12:00`. `libres` la compara por igualdad exacta (`src/app.js:5`).
+- Hoy `reservar` no guarda nada: devuelve un mensaje fijo. Las reservas viven en memoria y `libres` ignora el día.
+- La deuda técnica ya tiene «Sin validación del formato de franja horaria» en _Por triar_.
+
+**Lo que deduzco**
+Una franja `10:00-10:30` ya cabe en el formato. Lo que falla es el solapamiento: con la comparación exacta, `11:00-11:30` no choca con `10:00-12:00` y se reservaría la misma sala dos veces. Por eso lo que reordena el resto es cómo se modela el tiempo.
+
+❓ **¿Cómo modelamos una franja para que quepan las medias horas?**
+Escena: Norte tiene reservado `lun 10:00-12:00` y pides `reservar Norte lun 11:00-11:30`.
+
+1️⃣ **Intervalos con solapamiento.** Se mantiene el formato `HH:MM-HH:MM` y se comparan los rangos.
+   - `reservar Norte lun 11:00-11:30` → `Norte ocupada (10:00-12:00)`.
+   - `libres lun 11:00-11:30` → `Sur`.
+   - Coste: hay que escribir el parser de franjas y decidir qué hacemos con `10:10-10:40`.
+
+2️⃣ **Rejilla de bloques de 30 minutos.** El día se divide en bloques y una reserva ocupa uno o varios.
+   - `10:00-12:00` pasa a ser 4 bloques, y `11:00` choca con el tercero.
+   - Coste: cambia el formato de entrada y de datos. Impide reservar fuera de la rejilla, como `10:15`.
+
+3️⃣ **Dejarlo como está.** Se reserva `11:00-11:30` sin chocar con nada.
+   - Resultado: doble reserva de Norte. No lo veo defendible, lo pongo solo como referencia.
+
+➡️ **Recomiendo 1️⃣**, porque el formato actual ya admite medias horas y no obliga a migrar nada. Además, el parser resuelve de paso el ítem de deuda de validación de franjas. A cambio, en la 1️⃣ la granularidad de 30 minutos no queda impuesta por el modelo. Habría que validarla aparte, con una regla de «minutos en :00 o :30», y eso lo decidimos después.
+
+¿Vas con la 1️⃣?
+
+--- [12]
+Anoto el porqué con tus palabras: hay reuniones de media hora y hoy bloquean una franja entera de dos horas.
+
+Ese motivo encaja con las opciones 1️⃣ y 2️⃣, y descarta la 3️⃣. En ambas, una reserva de `10:00-10:30` deja `10:30-12:00` libre. Las franjas de dos horas que ya usas siguen siendo válidas. Lo que decide entre las dos es otra cosa. La 1️⃣ no cambia el formato que ya escribes. La 2️⃣ lo cambia y te impide reservar fuera de la rejilla. Ninguno de tus dos motivos pesa a favor de la 2️⃣, así que mantengo mi recomendación.
+
+Todavía no me has dicho cuál eliges, así que lo dejo pendiente. ¿Confirmas la 1️⃣, intervalos con solapamiento y el formato `HH:MM-HH:MM` tal como está?
+

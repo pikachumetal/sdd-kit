@@ -1,0 +1,126 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline -5 && ls .docs/sdd/changes/*0016* 2>/dev/null; find .docs/sdd/changes -maxdepth 2 | head -30; git diff
+<<<  M src/app.js
+513a4f3 docs(sdd): abrir la feature 0016 con su spec y su plan
+1625fc9 feat: base del molde
+find: ‘.docs/sdd/changes’: No such file or directory
+diff --git a/src/app.js b/src/app.js
+index 368efdd..bdfcfad 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room && b.status === 'active')
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run
+
+>>> Bash: cd "<run>/repo" && git show --stat HEAD | head -20; find . -path ./.git -prune -o -type f -print | head -50; cat src/app.js | head -35
+<<< commit 513a4f38844a2c00061b0d32de83ab432c20e888
+Author: Fixture <fixture@example.com>
+Date:   Sun Nov 15 15:17:12 2026 +0100
+
+    docs(sdd): abrir la feature 0016 con su spec y su plan
+    
+    Cuerpo del commit.
+
+ .../plan.md                                        | 50 ++++++++++++++++++++
+ .../spec.md                                        | 53 ++++++++++++++++++++++
+ 2 files changed, 103 insertions(+)
+./.docs/sdd/sdd-kit.json
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+./.docs/sdd/specs/20260917-090000-task-000
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/20261009-140000-feature-0016-room-hours/spec.md specs/20261009-140000-feature-0016-room-hours/plan.md sdd-kit.json; cd ../..; cat test/cancel.test.js package.json; cat .docs/sdd/steering/constitution.md | head -60
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && S='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md; $S workspace $P; $S task start $P 1
+<<< <run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: 513a4f38844a2c00061b0d32de83ab432c20e888
+
+>>> Bash: cd "<run>/repo" && cat > test/horas.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('horas suma las reservas activas de la sala', () => {
+  assert.equal(run('horas', ['Norte']), 'Norte: 2 h');
+});
+
+test('horas no cuenta una reserva cancelada', () => {
+  assert.equal(run('horas', ['Sur']), 'Sur: 0 h');
+});
+EOF
+mkdir -p ../red-copy && cp test/horas.test.js ../red-copy/horas.test.js && git diff src/app.js > ../red-copy/horas-impl-backup.patch && ls ../red-copy && git status --short
+<<< horas.test.js
+horas-impl-backup.patch
+ M src/app.js
+?? test/horas.test.js
+
+=== RESULTADO (12 turnos, 0.1765713 $)
+Dejé escrito `test/horas.test.js`, pero no he cerrado la Task 1: me paro antes de borrar tu `horas`.
+
+**Estado**
+- `test/horas.test.js` está sin commitear. Tiene un test por cada THEN de la spec: `Norte: 2 h` y `Sur: 0 h`. Lo escribí solo desde la spec.
+- Dejé una copia del test y un backup de tu diff de `src/app.js` fuera del repo, en `../red-copy/` (`horas.test.js` y `horas-impl-backup.patch`).
+- No he ejecutado nada todavía. No he visto el test en RED ni en verde.
+
+**Por qué paro**
+`sdd-tdd` pide borrar el código escrito antes del test y reimplementarlo desde un test visto en RED. Sin eso, un test que pasa a la primera no prueba nada. Aplicar la regla borra tu `horas` sin commitear, y eso no lo hago sin que me lo confirmes.
+
+**Opciones**
+1. **Recomendada: sigo la regla del kit.** Revierto `src/app.js` y ejecuto el test, que debe fallar porque falta `horas`. Escribo `horas` otra vez, mínimo, desde el test, y paso la verificación. Son unas 8 líneas y tu backup queda a salvo. Cuesta pocos minutos.
+2. **Dejo tu código tal cual.** Compruebo el RED revirtiendo `src/app.js` un momento y lo restauro desde el backup. Es más rápido, pero va contra la regla, así que lo anotaría como `Ruling:` en el ledger y en «Decisiones tomadas sin el dev-lead». Tú decides si lo aceptas.
+
+¿Con cuál sigo? Para la 2 necesito tu OK explícito. Con cualquiera de las dos el resto es el mismo: `node --test test/horas.test.js`, commit del test y de `src/app.js` por ruta, `sdd task done`, y luego la revisión final de `sdd-verify`.
+
+✋ Espero tu respuesta.

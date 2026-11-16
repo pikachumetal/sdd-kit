@@ -1,0 +1,30 @@
+--- [13]
+Ahora: entender qué quieres de la lista de espera. Queda: una ronda corta de preguntas, el enfoque y la spec para que la apruebes, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+- Hoy `salas` solo tiene `libres <franja>`, `cancelar <día> <hora>` y una `reservar` mínima. Las reservas están en memoria en `src/app.js` y no hay persistencia.
+- Quieres que, si pides una sala en una franja en la que ya está reservada, la herramienta no te rechace sin más. Te apuntaría en una lista de espera para esa sala y franja.
+- Es una feature de tamaño pequeño o mediano, unas 2-3 tareas. No propongo dividirla.
+
+Aún no sé para qué la quieres. ¿Qué haces hoy cuando la sala que quieres está ocupada, y qué querrías que pasara en cuanto esa reserva se cancele?
+
+--- [15]
+Entendido: lo que quieres evitar es ir mirando `libres` cada rato. Antes de escribir la spec tengo que cerrar qué pasa cuando la sala se libera.
+
+Hay un hecho del código que condiciona la respuesta. `salas` es una orden que se ejecuta y termina, y las reservas viven solo en memoria. Para que algo se entere de que Norte se ha liberado, la lista de espera tiene que guardarse en algún sitio. Alguien o algo tiene que mirarla cuando se cancele una reserva.
+
+❓ **Qué pasa cuando se libera la sala**
+1️⃣ **Reserva automática para el primero de la lista.** Al hacer `cancelar lun 10:00`, Norte pasa a quien esperaba. El resultado sería `cancelada lun 10:00; Norte reservada para ti (1.º en espera)`. Es lo que más te ahorra, porque ya no tienes que mirar nada. Si dejas de querer la sala, tendrás que cancelarla.
+2️⃣ **Solo avisar.** Al cancelar, sale `Norte libre en lun 10:00; hay 1 en espera`. La sala queda libre y tienes que reservarla tú, pero sigues sin tener que mirar `libres`. Tienes que volver a ejecutar la herramienta para enterarte del aviso.
+3️⃣ **Consultar a demanda.** Un `espera Norte lun 10:00` que te apunta y un `espera --ver` que dice si ya se liberó. No hace nada solo, y es casi lo mismo que mirar `libres`.
+
+➡️ **Recomiendo 1️⃣**, porque resuelve tu queja de raíz: apuntarte una vez y olvidarte. A cambio, puedes acabar con una reserva que ya no querías si no vuelves a mirar.
+
+¿Cuál de las tres prefieres?
+

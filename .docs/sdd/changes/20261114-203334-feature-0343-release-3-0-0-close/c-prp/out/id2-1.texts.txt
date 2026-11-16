@@ -1,0 +1,108 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering) y miro el código justo para confirmar el carril. Queda: confirmar el patch, que es la única parada antes de implementar, ~3 min.
+
+--- [14]
+El id 0016 está libre y reservado. Ahora: paso a `sdd-implement` con el patch confirmado. Queda: patch.md, el test en rojo, el fix, cierre y `sdd merge --push`.
+
+--- [19]
+Ahora: cargo la plantilla del patch y la guía de test-first. Queda: patch.md, test en rojo, fix, revisor, commit y cierre, ~15 min.
+
+--- [24]
+Ahora: abro la carpeta del patch y escribo el test en rojo antes del fix. Queda: fix, revisor, commit, cierre y merge.
+
+--- [27]
+RED confirmado: devuelve `Norte, Sur` en vez del mensaje. Ahora: el fix mínimo.
+
+--- [29]
+Escaping roto: las `\d` quedaron como `d`. Lo corrijo con Edit.
+
+--- [34]
+6/6 en verde y lint limpio. Ahora: escribo `patch.md` y lanzo el revisor.
+
+--- [37]
+El revisor está en marcha. Espero su resultado antes de commitear.
+
+--- [41]
+Hallazgos:
+
+- **Bajo — `.docs/sdd/steering/debt.md:7`**: patch.md:27 dice que el patch salda la deuda «Sin validación del formato de franja horaria», pero esa fila sigue en debt.md y el diff no la toca. Puede ser intencional, porque el cierre con `sdd-archive` suele retirarla. Si no es así, queda una deuda abierta que el patch declara saldada.
+- **Bajo — `.docs/sdd/changes/20261115-191730-patch-0016-slot-format/patch.md:4-5,10`**: el patch tiene `status: done` y `commit: pendiente`, y el esfuerzo real está «pendiente». El estado se adelanta al cierre. Es cosmético.
+- **Bajo — `test/app.test.js:39-43`**: el límite superior válido, como `23:59-00:00`, no tiene test. Tampoco hay ningún caso válido nuevo para la regex. El caso 3 de la tabla de verificación, `libres 10:00-12:00` → `Sur`, se cubre con el test de libres que ya existía. No es un fallo, solo cobertura mejorable.
+
+Lo que sí está bien:
+
+- **Solución fijada y regla:** quedan bien recogidas en patch.md. La petición está citada literalmente, y la regla HH 00-23 y MM 00-59 está en las decisiones.
+- **Regex (`src/app.js:5`):** `SLOT_FORMAT` implementa exactamente esa regla en ambos extremos, anclada con `^…$`.
+- **Mensaje (`src/app.js:30`):** es exacto: «franja no válida: usa HH:MM-HH:MM».
+- **Sin argumento:** `params[0] ?? ''` hace que `libres` sin argumento responda el mismo mensaje, como fija patch.md.
+- **Tests:** comprueban comportamiento real con `run`. Sin el fix, `libres 25:00-26:00`, `mañana`, sin argumento y `10:60-12:00` devolverían la lista de salas, así que los dos tests nuevos fallarían. Corrí `node --test`: 6/6 pasan. `node scripts/lint.mjs` dice «sin hallazgos».
+- **Alcance:** no hay cambios fuera de alcance. El diff toca solo `src/app.js` y `test/app.test.js`, más el `patch.md` sin trackear. No se valida inicio < fin, tal como decide patch.md.
+
+--- [43]
+Revisor sin hallazgos graves. Ahora: respondo sus tres puntos en §4, commiteo y paso al cierre.
+
+--- [47]
+Ahora: pre-chequeos del cierre y mensaje de validación. Queda: tu validación, y con ella cierro y fusiono.
+
+--- [52]
+Ejecuto el guion yo mismo, tal como lo hará la persona, y preparo el panel plan B.
+
+--- [54]
+Ahora: te pido la validación y el permiso de la política de fusión. Queda: tu respuesta, y después cierro y fusiono con `--push`.
+
+🦆 `libres` ahora comprueba la franja antes de buscar salas. Con `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» en vez de listar `Norte, Sur`. Una franja correcta como `10:00-12:00` sigue funcionando y devuelve `Sur`.
+
+**✋ Me salí del plan en…**
+
+- Nada. Tres decisiones mías sobre la regla, todas en `patch.md` §3:
+  - Franja válida es `HH:MM-HH:MM` con horas 00–23 y minutos 00–59. Lo deduje del ejemplo `25:00`.
+  - No valido inicio < fin, porque la petición no lo pide.
+  - `libres` sin argumento da el mismo mensaje, porque tampoco cumple el formato.
+- Si alguna no es la que quieres, dímelo y la cambio antes de cerrar.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` rechaza la franja | `ejecución real` | `franja no válida: usa HH:MM-HH:MM` |
+| `libres mañana` y `libres` sin argumento rechazan la franja | `ejecución real` | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` no cambia | `ejecución real` | `Sur` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y «lint: sin hallazgos», sobre `14c323e`, ~1 s.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente de ti: la política de fusión.** `sdd-kit.json` no declara `merge.into` ni `merge.noFf` (ni `merge.removeWorktree`), y `sdd merge --check` falla por eso. No la escribo yo. Propongo `into: develop`, `noFf: true`, `removeWorktree: false` y `push: true`, que cubre tu `sdd merge --push`. ¿La apruebas tal cual, o la cambias? Con tu respuesta se fusiona con `sdd merge --push`. Antes de eso, el cierre borra la fila «Sin validación del formato de franja horaria» de `debt.md` y deja la fila 0016 en el roadmap.
+
+Panel: plan B en http://127.0.0.1:3194/
+
+**Guion**
+
+Rama `feature/0016-slot-format` · worktree `<run>/repo`
+
+Es una CLI, no hay entorno que arrancar. Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Ejecuta esto → debe salir `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 25:00-26:00
+```
+
+2. Ejecuta esto → debe salir `Sur`
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

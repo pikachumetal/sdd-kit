@@ -1,0 +1,82 @@
+--- [3]
+Ahora: leer la spec de la 0010 y las referencias del paso. Queda: decidir la review y presentarla para aprobar, ~3 min.
+
+--- [21]
+Ahora: review adversarial de la spec, un revisor en Opus con los siete puntos (alcance pequeño, sin contrato público ni `MODIFIED`). Queda: incorporar los hallazgos y presentártela, ~6 min, ~$1.
+
+--- [29]
+Todavía no te la presento para aprobar: antes del gate el kit pide una review, y la decisión «Sin review de spec» la había tomado el agente, no tú. Ahora la está revisando un revisor en Opus. En cuanto termine, incorporo sus hallazgos y te la presento.
+
+En la pasada de coherencia corregí cinco cosas en la spec:
+- **`bookings` es una capacidad nueva, no modificada:** el proyecto no tiene `capabilities/`. La probé en una copia y crea `bookings.md` con los 2 requisitos, sin rechazos.
+- **Cambia lo que responde `cancelar` hoy:** ahora exige motivo. Por eso el test `cancelar una reserva activa` de `test/cancel.test.js` se reescribe, y está en el Scope.
+- **«Quién canceló» no tenía de dónde salir:** propongo que sea el titular de la reserva, porque en `PRODUCT.md` la cancelación la hace el propio cliente. La reserva de ejemplo pasa a ser de Ana.
+- **Sin `--motivo`:** responde lo mismo que con un motivo que no está en la lista y no cancela.
+- **Faltaban partes:** el 🦆, el título del bloque ✋, la línea de política de modelos y la sección «Decisiones tomadas con el dev-lead».
+
+Se mantiene que es **una sola task**, así que no te propongo bajar la sesión a gama media.
+
+--- [31]
+1. Importante · Capacidades / Delta (`bookings`) · El nombre de la capacidad usa «booking», el término que el glosario de `PRODUCT.md` manda evitar («Reserva… _Evitar_: booking»). La constitución (regla 4) exige castellano en los documentos, y `capabilities/bookings.md` será un documento vivo. · Renombrar la capacidad a `reservas` en Capacidades, en el Delta y en «Delta en copia».
+
+2. Importante · Delta, «Cancelar pide un motivo de la lista» / Intent · El glosario define la Cancelación como la que hace el cliente «antes de 24 h». La spec no dice si esa condición se aplica, se ignora o queda fuera, y ninguna decisión lo recoge. Es justo la duda que la propia spec plantea al revisor. · Añadir un escenario de cancelación a menos de 24 h, o declarar en «No entra» y en las decisiones que el límite no se valida en esta feature.
+
+3. Importante · Delta, «El listado de canceladas…» · El THEN pasa sin el comportamiento: con una sola reserva cancelada, devolver la cadena fija «Norte lun — sala ocupada — Ana» lo cumple. Tampoco se prueba que se excluyan las reservas activas ni qué sale cuando no hay ninguna cancelación. · Usar en el GIVEN dos cancelaciones con motivos y días distintos más una reserva activa. El THEN debe listar solo las dos. Añadir el caso vacío con su texto exacto.
+
+4. Importante · Delta, «Cancelar pide un motivo…» · Solo se acepta «sala ocupada». «cambio de planes» y «otro» pueden quedar sin implementar y la batería sigue en verde. Tampoco se dice si «Sala ocupada» (mayúsculas) o un espacio extra valen. · Añadir una fila por cada motivo válido y decidir y escribir la regla de mayúsculas y espacios.
+
+5. Importante · Approach A / Scope «No entra: anulaciones (0011)» · `canceladas` filtra por el estado `cancelled`. Si `anular` usa ese mismo estado, el listado mostrará anulaciones sin motivo y atribuidas al titular, aunque el glosario las separa. La spec no dice qué estado deja `anular` ni que el listado las excluya. · Añadir un escenario: una anulación no aparece en `canceladas`. Añadir también una decisión que fije que la Anulación tiene un estado distinto.
+
+6. Importante · Decisión 3 / Scope «titular en la reserva» · Se añade el dato `titular` pero solo se habla de la reserva de ejemplo. No se dice cómo se fija el titular en las reservas nuevas (¿el comando de reservar cambia?) ni qué sale en `canceladas` si una reserva no tiene titular. Es alcance oculto en la ruta de creación. · Declarar en Scope si el comando de reservar pide o asigna titular, o que solo existe la reserva de ejemplo. Cubrir el caso sin titular.
+
+7. Importante · Delta / falta la sección «Reglas de la capacidad» · El delta trae datos nuevos (motivo, titular), nombres (los motivos, el estado `cancelled` en inglés), un aviso («motivo no válido: …») y una condición de conflicto. La spec no declara las cinco reglas por nombre (dónde vive el dato · idioma de los nombres · límites · avisos · regla ante conflicto), ni con valor ni con «no aplica». La constitución no tiene «Reglas de producto» de las que tomar el valor. · Añadir «Reglas de la capacidad» con las cinco. Ejemplos: datos en memoria, en `src/app.js`; nombres en castellano (justificar `cancelled` o cambiarlo); límite de 24 h o «no aplica»; texto exacto del aviso; regla ante conflicto.
+
+8. Importante · Decisiones 4 y 5 · No se fija el orden de validación. `cancelar Sur mar` sin `--motivo` o con un motivo inventado puede responder «sin reserva Sur mar» o «motivo no válido…», y ningún escenario lo decide. · Añadir una decisión y un escenario con la respuesta exacta para «reserva inexistente + motivo ausente o no válido».
+
+9. Menor · ✋ Decisiones (señales de review) / Decisión 5 · La spec dice «sin contrato público ni `MODIFIED`», pero la salida del comando `cancelar` es la interfaz pública de una herramienta de terminal, y su respuesta y su sintaxis cambian sin aviso. · Declarar el cambio de la salida y de la sintaxis de `cancelar` como cambio de contrato de la interfaz en las señales y en el Scope.
+
+10. Menor · Frontmatter / Aprobaciones / Decisión 3 · `PRODUCT.md` dice que hay un solo usuario y desarrollador. Sin embargo, la spec nombra a una aprobadora «Laura» como dev-lead y atribuye cancelaciones a «Ana». Si «Laura» es una persona real, su nombre queda en el historial publicado. Además, «quién canceló» siempre coincide con el único usuario. · Confirmar si hay aprobadora real o usar el rol sin nombre. Justificar el campo titular con un solo usuario, o mantener «Ana» como dato claramente inventado.
+
+--- [36]
+Ahora: incorporar a la spec los 10 hallazgos de la review. Queda: presentártela para aprobar, ~3 min.
+
+--- [40]
+# Spec 0010 — Motivo al cancelar, para aprobar
+
+🦆 Hoy, cuando alguien cancela una reserva, la sala queda libre y no queda escrito por qué. Con esta feature, para cancelar hay que elegir un motivo de una lista cerrada: cambio de planes, sala ocupada u otro.
+- `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+- Sin motivo, o con uno que no está en la lista, no cancela y enseña la lista.
+- Un comando nuevo, `canceladas`, lista cada cancelación con sala, día, motivo y quién la hizo: «Norte lun — sala ocupada — Ana».
+- Las anulaciones del responsable de sala no salen en ese listado.
+
+Antes de la review hice la pasada de coherencia y corregí la spec. La revisó un revisor en Opus, que devolvió 10 hallazgos: acepté 7, uno en parte y rechacé 2. Ninguno era crítico, así que no hace falta segunda ronda. La capacidad la probé en una copia: crea `bookings.md` con los 3 requisitos y sin rechazos.
+
+Fichero: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+- **Quién canceló:** es el titular de la reserva. En `PRODUCT.md` la Cancelación la hace «el propio cliente», así que quien cancela es quien reservó y `cancelar` no pide nombre.
+  - Hoy `reservar` no crea reservas de verdad y no cambia con esta feature.
+  - La reserva de ejemplo pasa a ser de Ana, un nombre inventado.
+- **Cambia lo que responde `cancelar`:** ahora exige motivo. El test actual de `test/cancel.test.js` se reescribe para incluirlo.
+- **Motivo ausente o fuera de la lista:** en los dos casos responde «motivo no válido: cambio de planes, sala ocupada, otro».
+- **El motivo se compara literal:** «Sala ocupada», con mayúscula, no vale.
+- **Primero se comprueba la reserva y luego el motivo:** `cancelar Sur mar` sin motivo responde «sin reserva Sur mar».
+- **El límite de 24 h del glosario no se valida en esta feature:** hoy `cancelar` no lo comprueba. Queda en «No entra».
+- **Anulación:** `anular` sigue como hoy y `canceladas` solo lista las cancelaciones. Sin ninguna, responde «sin canceladas».
+- **Orden del listado:** en el orden en que se cancelaron, una por línea.
+- **Cómo se guarda:** el motivo se guarda en la propia reserva cancelada. Lo prefiero a un registro aparte, que duplicaría datos.
+- **Capacidad nueva `bookings`:** el proyecto no tenía `capabilities/`. El nombre del fichero va en inglés porque así lo pide el kit; el contenido, en castellano.
+
+**Hallazgos rechazados:**
+- Renombrar la capacidad a `reservas`: el kit pide el nombre del fichero en inglés.
+- Tratar la salida de `cancelar` como contrato público: aquí la lee una persona en la terminal, no otro módulo. El cambio visible ya está en las decisiones.
+
+**Necesito que me confirmes una cosa:** el frontmatter nombra a «Laura» como dev-lead que aprueba, pero `PRODUCT.md` dice que hay un solo usuario. ¿Lo dejo así o pongo solo el rol?
+
+Es **una sola task** (`src/app.js` y `test/cancel.test.js`) y se ejecuta en Native, como fija `sdd-kit.json`.
+
+¿Apruebas la spec?
+1. Apruebo (Recomendada)
+2. Cambios
+

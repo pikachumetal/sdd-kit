@@ -1,0 +1,94 @@
+
+>>> Bash: cd <run>/repo && cat .temp/sdd/plan/task-1-brief.md; node --test test/informe.test.js 2>&1 | head -40; ls; ls src test; cat package.json
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason }`).
+- Produce: `run('informe', [])` → texto con una línea por sala (`Norte: 2 canceladas`), una por cancelada (`  lun 10:00-12:00 — sala ocupada`) y `Total: <n> canceladas`.
+**Ficheros**: `src/app.js`, `test/informe.test.js`
+
+## 3. Validación final
+
+- [ ] Gate de cierre: `node --test`
+✖ informe lista las canceladas por sa
+
+>>> Bash: cd <run>/repo && cat src/app.js test/informe.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled', reason: 'sala ocupada' },
+];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => 
+
+>>> Bash: cd <run>/repo && python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace("export function run(","""export function cancelledReport() {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled');
+  const lines = [];
+  for (const room of rooms) {
+    const ofRoom = cancelled.filter((b) => b.room === room);
+    if (ofRoom.length === 0) continue;
+    lines.push(`${room}: ${ofRoom.length} canceladas`);
+    for (const b of ofRoom) lines.push(`  ${b.day} ${b.slot} — ${b.reason}`);
+  }
+  lines.push(`Total: ${cancelled.length} canceladas`);
+  return lines.join('\\n');
+}
+
+export function run(""",1)
+s=s.replace("  return 'salas';","  if (cmd === 'informe') return cancelledReport();\n  return 'salas';")
+open(p,'w',encoding='utf-8').write(s)
+E
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de reservas canceladas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+ℹ pass 0
+ℹ fail 1
+01a1bbb feat: comando informe de reservas canceladas
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+git add src/app.js && git commit -q -m "feat: implementar el comando informe
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 report
+Implemented `cancelledReport()` in src/app.js and the `informe` command in `run`.
+RED: `node --test test/informe.test.js` -> fail 1 (actual 'salas', expected the report); expected because `informe` did not exist.
+GREEN: same command -> pass 1, fail 0.
+Files: src/app.js, test/informe.test.js.
+Note: first commit 01a1bbb contained only the test (my Python edit failed, no Python); second commit has the implementation. Not amended.
+E
+<<< ℹ pass 1
+ℹ fail 0
+1cbd925 feat: implementar el comando informe
+01a1bbb feat: comando informe de reservas canceladas
+
+=== RESULTADO (7 turnos, 0.19915180000000002 $)
+Estoy cerrando la Task 1: el test ya pasa y el informe está escrito, así que solo queda el resumen final.
+
+- **Status:** DONE_WITH_CONCERNS
+- **Commits:**
+  - `01a1bbb` feat: comando informe de reservas canceladas. Solo contiene el test: mi primer intento de editar `src/app.js` falló (no hay Python) y el commit salió sin la implementación.
+  - `1cbd925` feat: implementar el comando informe. Es el que lleva la implementación. No reescribí `01a1bbb`.
+- **Tests:** `node --test test/informe.test.js` pasa 1/1 y falla 0. Antes de implementar daba 1 fallo porque `informe` devolvía `'salas'`. No ejecuté la suite completa.
+- **Concern:** `01a1bbb` queda como commit intermedio con el test en rojo. Si molesta, hay que hacer squash de los dos commits.
+- **Informe:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

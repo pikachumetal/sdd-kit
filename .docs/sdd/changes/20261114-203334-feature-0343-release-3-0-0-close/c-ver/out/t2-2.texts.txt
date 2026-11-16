@@ -1,0 +1,22 @@
+--- [3]
+Empiezo leyendo el log rojo, el arreglo y la sección de tests de `operations.md`.
+
+--- [14]
+El test que falló sigue en rojo después del arreglo 2ebf206. Miro por qué antes de dar ninguna línea `Gate:`.
+
+--- [20]
+El gate está en verde tras el arreglo. La línea para el walkthrough es:
+
+```
+Gate: `node --test test/cancel.test.js` · `node scripts/gate.mjs run bookings:test rooms:test --affected --base efe210e` · `node scripts/gate.mjs run rooms:test` → tras el rojo en efe210e, arreglo 2ebf206: bookings:test: corrió 5/5 · rooms:test: corrió 1/1 (no corrió en la pasada roja)
+```
+
+- **El fallo original:** `canceladas enseña sala, día y motivo` devolvía `'salas'` en efe210e. 2ebf206 añade la rama `canceladas` en `run`, y ahora devuelve `Norte lun — sala ocupada`.
+- **`bookings:test`:** en la pasada roja corrieron los 5 tests, con 4 en verde y 1 en rojo, así que no quedó ninguno sin ejecutar. Ahora pasan 5 de 5, tanto con `--base efe210e` como sin filtro.
+- **`rooms:test`:** saltó en la pasada roja porque depende de `bookings:test`. Con `--base efe210e` el filtro lo vuelve a saltar, porque el arreglo no toca sus inputs. Por eso lo corrí aparte y pasa 1 de 1.
+- **Rerun del test fallado en solitario:** con `--test-name-pattern` en solitario sigue rojo (`''` en lugar de `Norte lun — sala ocupada`), pero es un artefacto del aislamiento. Ese test lee el estado que deja el test anterior en el array `bookings` del módulo (`cancelar Norte lun`). Corrido dentro de su fichero (`test/cancel.test.js`, 3 de 3) pasa. El acoplamiento entre tests es frágil y conviene anotarlo en `debt.md`.
+- **Sin filtro:** el arreglo solo toca `src/app.js`. La rama no toca ningún fichero de «Sin filtro», así que no hace falta correr el gate entero sin filtro. Aun así lo corrí y sale en verde (5/5 y 1/1).
+- **Sin `operations.md`:** el proyecto no tiene `operations.md`, así que tomé el gate de la constitución. Sin sección «Suites» declarada, no hay suites unitarias que correr.
+
+No he lanzado la revisión final por ejes ni he commiteado nada.
+

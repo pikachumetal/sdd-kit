@@ -1,0 +1,60 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [23]
+Despacho la re-revisión en segundo plano, con su vigilancia de silencio en el mismo turno.
+
+--- [30]
+La re-revisión de `e600596..c4be5fc` está en marcha en segundo plano, con opus y effort-high. El pre-check 6 me impide escribir ningún registro hasta que vuelva, así que espero.
+
+**Por qué hay re-revisión.** Tu revisión final limpia se hizo sobre `e600596`. Después entraron dos commits:
+- `909a99d` solo toca documentación.
+- `c4be5fc` añade un script a `package.json`. Eso es más que documentación, y la regla del cierre exige revisarlo.
+
+**Pre-checks, resultado:**
+1. El árbol está limpio, sin ficheros sueltos.
+2. `merge --check` da listo. El destino es `develop`, en un worktree temporal.
+3. No hay otras ramas `feature/*` ni `patch/*` abiertas a la vez.
+4. La spec está `approved` y firmada por Laura el 2026-10-08. El modo es `full`.
+
+**Pendiente para después de la re-revisión:**
+- Validación en campo (`validation.mode: field`): la hago yo con el smoke y la suite.
+- Walkthrough.
+- Capability `bookings`.
+- Retro.
+- Roadmap.
+- Commit de cierre.
+- Merge a `develop`, sin push (`merge.push` es `false`).
+
+**Dos cosas que ya veo:**
+- En `.docs/sdd/` no hay `walkthrough.md` de la 0010 ni `capabilities/`, así que `sdd-implement` no dejó borradores y los escribo desde cero.
+- `tasks.md` tiene un Ruling de la Task 2: el test de `canceladas` depende del test anterior. Pasará a «Decisiones tomadas sin el dev-lead» y al mensaje final.
+
+--- [36]
+**Veredicto: limpia.** No hay hallazgos en el rango `e600596..c4be5fc`.
+
+**Comprobaciones**
+
+- **El script funciona con la entrada de `src/app.js`.** `src/app.js:1` lee `const [command, ...args] = process.argv.slice(2)`. Con `npm run cancelar -- Norte lun --motivo "sala ocupada"`, npm añade al final lo que va tras `--`, así que se ejecuta `node src/app.js cancelar Norte lun --motivo "sala ocupada"`. Entonces `command='cancelar'` y `args=['Norte','lun','--motivo','sala ocupada']`. `run` (`src/app.js:42`) toma `params[0]` y `params[1]` como sala y día, y `reasonOf` (`src/app.js:14-17`) toma el motivo que sigue a `--motivo`. El nombre del comando en el script coincide exactamente con el de la rama de `run`.
+- **`package.json` sigue bien.** Es JSON válido de una línea: `{"type": "module", "scripts": {"cancelar": "node src/app.js cancelar"}}`. `"type": "module"` se mantiene, y hace falta porque `src/app.js` usa `export`. No había otra clave `scripts` que pudiera chocar.
+- **No contradice la spec.** El scope (`.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md:33`) es `cancelar <sala> <día> --motivo <motivo>` y `canceladas`. El script es solo un atajo para lanzar `cancelar` y no cambia su comportamiento. Que no haya script para `canceladas` no va contra nada: la spec no pide scripts.
+- **Cumple la restricción de texto en castellano.** El script no añade texto de interfaz y su nombre, `cancelar`, ya está en castellano.
+- **El commit `909a99d` es solo documentación.** `tasks.md` recoge las dos tareas, la línea de la revisión final y un ruling que ya existía y se revisó sobre `e600596`. No toca ninguna restricción.
+
+**Observaciones que no son hallazgos**
+
+- El script solo funciona como se espera si se escribe `--` antes de los argumentos. Sin él, npm se queda con `--motivo` como opción suya y no llega a la app. Es lo normal en npm y el uso pedido ya lo incluye.
+- Ni el plan ni `tasks.md` mencionan el commit `c4be5fc`. Si el proyecto quiere dejar constancia de los chores que quedan fuera del plan, se puede apuntar al cerrar. No lo cuento como hallazgo.
+- Como verificación extra, propongo que el hilo principal ejecute una vez `npm run cancelar -- Norte lun --motivo "sala ocupada"` y compruebe que sale `cancelada Norte lun (sala ocupada)`, sobre todo en Windows por las comillas. Es barato.
+
+No he modificado ningún fichero. Revisé el paquete `<run>/review-rereview-c4be5fc.diff` y, en `<run>/review-0010-c4be5fc`, los ficheros `src/app.js`, `package.json` y la spec y el plan de `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/`.
+
+--- [38]
+La re-revisión salió limpia. Paro la vigilancia, quito el worktree de revisión y leo las referencias de validación y suite.
+
+--- [42]
+La vigilancia ya terminó por sí sola. Sigo con la validación en campo: miro `operations.md` y el estado de la base.
+
+--- [46]
+El `package.json` está en «Sin filtro», así que el gate corre sin `--affected`. Miro cómo se lanza el gate.
+

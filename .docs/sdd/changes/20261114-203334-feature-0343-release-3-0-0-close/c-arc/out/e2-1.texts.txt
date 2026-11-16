@@ -1,0 +1,31 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [14]
+Unitarias en verde (5/5) y el puerto libre. Levanto el entorno yo, en su propia llamada, y lo compruebo en otra.
+
+--- [20]
+La tercera ejecución de «la cancelada sale en canceladas…» terminó con exit 1 y sin resultado ni resumen. Miro el fichero crudo y el estado del servidor antes de sacar conclusiones.
+
+--- [23]
+El servidor sigue vivo. Que el runner muera sin mensaje de fallo ni resumen no es un rojo de aserción, y no pienso darlo por bueno. Repito ese lote solo, con stdout y stderr separados.
+
+--- [26]
+Ese lote pasa 3/3, pero el aborto anterior sigue sin explicación. Para no taparlo con un solo verde, repito la tanda completa una vez más, con stderr aparte.
+
+--- [30]
+No he empezado el cierre de la 0010. Las specs E2E no quedan descartadas como inestables, porque un lote abortó sin explicación y no sé la causa.
+
+**Qué pasé.** La rama toca `e2e/cancel.e2e.mjs` (3 tests nuevos o cambiados). `free.e2e.mjs` no cambia respecto a `develop`, así que no lo repetí. Levanté yo el entorno y lo comprobé en llamadas aparte, con el gate tal como lo declara `operations.md` (traza completa) y sin variables extra. Cada tanda fueron 11 ejecuciones: los 3 tests cambiados ×3 y los otros 2 del fichero ×1. Las unitarias dieron 5/5 en verde.
+
+**Resultados.**
+- **Tanda 1:** los lotes de «cancela una reserva con su motivo» y «rechaza un motivo fuera de la lista» dieron 3/3 cada uno. El de «la cancelada sale en canceladas con su motivo» hizo 2 ejecuciones verdes y el proceso salió con `exit 1`. No imprimió ninguna aserción fallida, ningún error en stderr ni el resumen final. El servidor seguía vivo después. Los 2 tests restantes pasaron.
+- **Repetición de ese lote:** 3/3 en verde, con stderr vacío.
+- **Tanda 2 completa:** 11/11 en verde, con stderr vacío.
+
+En total son 22 ejecuciones planificadas y una abortada. Que el runner salga con 1 sin escribir resumen no encaja con `e2e/run.mjs`, que siempre imprime el resumen antes de salir. Como tampoco hay error de conexión ni de aserción, no tengo una causa que dar. Podría ser algo externo a la suite, como un corte de la herramienta o del proceso, pero no lo he podido comprobar. Los volcados de salida están en `$TEMP/sdd-0010/`: `e2e.txt` es de la tanda 1 y `e2e-r2.*` y `e2e-r3.*` son de las repeticiones.
+
+**Estado.** Paré el entorno que levanté y el árbol está limpio. Del paso 0 de `sdd-archive` hice la comprobación del árbol y `sdd merge --check` (todo en orden: el merge irá a un worktree temporal de `develop`); no hay otras ramas abiertas. Faltan la revisión final y la validación.
+
+**Cómo prefieres seguir.** Mi recomendación es repetir la tanda completa una tercera vez con más cuidado (ejecuciones lanzadas por separado y con la salida guardada) y, si sale limpia, tratar el aborto como un fallo ajeno a la suite y cerrar. Lo haría constar como incidencia en la sección 4.1 del walkthrough y como fila de deuda. La alternativa es investigar el aborto antes de seguir. Dime cuál prefieres.
+

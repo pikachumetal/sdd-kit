@@ -1,0 +1,44 @@
+
+>>> Read: <run>/review-final-8a43ca8.diff · limit=400
+<<< 1	# Review package: 18f9d48..HEAD
+2	
+3	## Commits
+4	8a43ca8 feat(bookings): guardar la devolución
+5	
+6	## Files changed
+7	 src/app.js | 5 +++++
+8	 1 file changed, 5 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..92291d2 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -39,10 +39,15 @@ function cancelledList() {
+16	 export function run(cmd, params) {
+17	   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+18	   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+19	   if (cmd === 'cancelar') return c
+
+>>> ReportFindings: {"findings":[]}
+<<< No findings reported.
+
+>>> ReportFindings: {"findings":[{"file":"src/app.js","line":29,"category":"correctness","short_summary":"Math.trunc applied to iban yields NaN","summary":"saveRefund applies Math.trunc to a parameter named iban; the céntimos rule belongs to the amount, and an IBAN is a string.","failure_scenario":"saveRefund('A1','ES9121000418450200051332') returns {room:'A1', iban:NaN}; refund saved with no usable IBAN and no amount handled.","verdict":"CONFIRMED"},{"file":"src/app.js","line":28,"category":"comments","short_summary":"Comment cites capabilities/refunds.md","summary":"The comment references a project document (capabilities/), forbidden by Code constraints and liable to go stale.","failure_scenario":"If capabilities/refunds.md changes or moves, the comment misleads; it also says 'no admite' while the code silently truncates.","verdict":"CONFIRMED"},{"file":"src/app.js","line":27,"category":"test-coverage","short_summary":"saveRefund not wired, untested, persists nothing","summary":"saveRefund is exported but called by nothing, has no test, and despite the commit title 'guardar' only builds an object.","failure_scenario":"Feature appears delivered but no refund is stored; regressions in truncation go undetected.","verdict":"CONFIRMED"},{"file":"src/app.js","line":26,"category":"readability","short_summary":"Function declared after CLI entry line","summary":"saveRefund is placed after the module's side-effect line `if (command) console.log(...)`.","failure_scenario":"Works due to hoisting but reads out of order; minor confusion.","verdict":"PLAUSIBLE"}],"level":"medium"}
+<<< 4 findings reported.
+
+=== RESULTADO (4 turnos, 0.12814440000000002 $)
+I reviewed `8a43ca8` and my verdict is not ready to merge. I didn't run the suite, the build or the lint.
+
+My first `ReportFindings` call went out with an empty list by mistake. I re-sent it with the 4 findings below, so the host should show those and not the empty one.
+
+- **Critical, `src/app.js:29`:** `saveRefund` applies `Math.trunc` to a parameter called `iban`. An IBAN is a string, so the result is `NaN`. The céntimos rule belongs to the amount, which the function never receives. A call with a real IBAN saves the refund with `iban: NaN`.
+- **Important, `src/app.js:28`:** the comment cites `capabilities/refunds.md`, which the code constraints forbid. It also says refunds "no admite" céntimos while the code silently truncates them. Keep only the reason: the bank rejects céntimos.
+- **Important, `src/app.js:27`:** nothing calls `saveRefund` and there is no test for it. Despite the commit title "guardar", it only builds an object and stores nothing.
+- **Minor, `src/app.js:26`:** the function sits after the `if (command) console.log(...)` entry line. It works because function declarations are hoisted, but it reads out of order.
+
+**Declined to judge:**
+- **Persistence:** whether `saveRefund` should store the refund, and where, is for the Spec and Architecture axes. I only flagged that the name doesn't match what it does.
+- **Bank rule:** whether rejecting céntimos is the right business rule is for the Spec axis.
+- **E2E:** the project declares none, so no E2E rule applies.
+
+**Strengths:** the change is small and self-contained. The function is 3 lines, well under the 30-line limit, and it adds no interface text.

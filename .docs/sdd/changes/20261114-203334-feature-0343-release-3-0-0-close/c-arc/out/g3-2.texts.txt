@@ -1,0 +1,83 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [24]
+La 0010 todavía no está cerrada. La validación es `manual` y «cierra» no cuenta como validar, así que no he escrito ningún registro. Necesito que pruebes el guion de abajo.
+
+**Pre-checks**
+- El árbol está limpio y `sdd merge --check` da `destino: listo` (`develop`).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está aprobada: Laura firmó el 2026-10-08.
+- La revisión final está limpia, sobre `5bbea84`. `HEAD` (`cc62c32`) solo añade `tasks.md`, así que no hace falta otra revisión.
+
+🦆 Al cancelar una reserva hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). El comando `canceladas` lista lo cancelado con su motivo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla si corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo válido | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| `canceladas` enseña el motivo | ejecución real | `Norte lun — sala ocupada` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+
+**Suites**
+- `node --test test/`: 5/5 sobre `cc62c32`, 0,3 s.
+- El e2e no está en el gate de cierre del proyecto, así que no lo he corrido.
+
+**Sin probar**
+- El e2e completo (`node e2e/run.mjs`).
+- Cada `node src/app.js …` suelto arranca con memoria vacía. Por eso el guion usa el servidor, que guarda el estado por sesión.
+
+Panel: plan B en http://127.0.0.1:9278/ (esta página no ve la app; si algo falla, cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+El entorno ya está arrancado en el puerto 7211. Uso la sesión `validacion` para ensayar y está sucia: ya tiene Norte lun cancelada. Tú usa una sesión nueva, `persona`, que parte de cero.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -G -H "x-session: persona" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]' http://localhost:7211/run
+```
+
+2. Ver las canceladas → `Norte lun — sala ocupada`
+
+```
+curl -s -G -H "x-session: persona" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]" http://localhost:7211/run
+```
+
+3. Un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -G -H "x-session: persona" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","porque sí"]' http://localhost:7211/run
+```
+
+4. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -G -H "x-session: persona" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]' http://localhost:7211/run
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -1,0 +1,129 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix2/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Read: <run>\repo\PRODUCT.md
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+Sin capacidades
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+8	| 0011 | — | **Anular reservas de otros**<br>*solo el responsable de cada sala anula reservas de otras personas*<details><summary>Brief</summary>**Carril:** feature<br>**R
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md | head -150; cat .docs/sdd/sdd-kit.json; ls -R src test scripts; grep -rn "libres" --include=* -r src test README.md scripts | head -40
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `f
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; head -30 test/cancel.test.js; cat README.md; ls -R .docs/sdd/specs | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix2/skills/sdd-propose/references" && cat modo-lite.md; sed -n 1,60p patch-lane.md; cat "<run>/repo/.docs/sdd/specs/20260917-090000-task-0006-free/"* | head -60
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enable
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md | head -30; git status --short
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- L
+
+=== RESULTADO (10 turnos, 0.1734184 $)
+Ahora: clasificar el cambio (ya he leído el contexto y `src/app.js`). Queda: tu confirmación del carril; después, spec corta, implementación y validación, ~1 h.
+
+🦆 Hoy `libres` solo mira la franja: `libres 10:00-12:00` dice qué salas están libres en esa franja, pero cualquier día. Las reservas ya guardan el día (`lun`, `mar`…), así que el cambio es que `libres` también pueda filtrar por día.
+
+No es un patch: nadie ha fijado la solución. Faltan el orden de los argumentos, si el día es obligatorio y qué pasa si no se da. Eso es diseñar, así que no entra por ese carril. Sí cumple el predicado de **lite**, comprobado condición por condición:
+
+- El flujo ya existe y se lee: `freeRooms` en `src/app.js`.
+- No cambia contratos públicos: el día sería un argumento opcional y `libres <franja>` seguiría igual.
+- No cambia el esquema de datos: `day` ya está en las reservas.
+- Cabe en un solo módulo: `src/app.js` y su test.
+- Estimación: ≤ ½ día, unos 0,5 h más el gate de cierre.
+
+Perfil actual: `delegate`, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`.
+
+1. **Lite (recomendada).** Spec corta con la estimación dentro, sin plan, y yo decido el diseño en la spec para que lo valides: `libres <franja> [día]`, y sin día se comporta como hoy.
+2. **Full.** Spec y plan completos. Es más ceremonia de la que pide un cambio de una función y un test.
+3. **Lite, aprobando la spec por delegación.** Dices «apruebo la spec por delegación, nos vemos en la validación» y no paro en la spec.
+
+¿Cuál eliges? Si quieres otro perfil para esta tarea, dime «perfil `<otro>` para esta feature».

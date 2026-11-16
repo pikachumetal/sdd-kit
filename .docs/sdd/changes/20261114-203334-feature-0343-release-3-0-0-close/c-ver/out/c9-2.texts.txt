@@ -1,0 +1,81 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, porque los ejes ya volvieron. Queda: aplicar su «Closing the review» y llegar al siguiente stop, ~5 min.
+
+--- [18]
+Estoy aplicando la pasada de fix de la revisión final: el trim del motivo (Important de Código) y el tope de 20 del listado (Minor de Spec). Primero escribo los tests en RED.
+
+--- [25]
+`sed` me dejó los archivos en LF (el repo usa CRLF). Hago los cambios con Edit y restauro CRLF después.
+
+--- [37]
+Sigo con la pasada de fix: registro en el ledger y `tasks.md`, y commit. Después lanzo la re-revisión única.
+
+--- [45]
+La pasada de fix está hecha y committeada. La re-revisión está en marcha y todavía no sé qué dirá.
+
+**Revisión final**
+- **Spec**: sin Critical ni Important. Tenía 1 Minor: el listado de canceladas no tenía tope.
+- **Código**: 1 Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Arquitectura**: no sale. Lo dejé registrado en el ledger, con «ninguna» como señales del diff.
+
+**Pasada de fix** (`5248175`)
+- **Trim del motivo**: `reasonOf` ahora recorta el motivo antes de validarlo.
+- **Tope del listado**: `canceladas` enseña como mucho las 20 últimas y, si hay más, añade «… y N más».
+- **Tests**: los dos nuevos fallaron antes y pasan ahora. La suite completa está en 7/7.
+
+**Rulings**
+- **Tope de 20, no 10**: el revisor de Spec propuso 10. Apliqué 20 porque es lo que fija la decisión 4 del dev-lead en el spec. Si querían otro tope, basta cambiar `listLimit`.
+- **Orden**: «las 20 últimas» sigue el orden de la lista de reservas, porque no se guarda la fecha de cancelación.
+- **`bookings` exportado**: lo hice solo para sembrar las 24 canceladas en el test del tope.
+
+**✋ Enmienda sin aprobar**: añadí al delta de `bookings` el AND del tope de 20 y su línea en «Enmiendas». Es una aplicación literal de la decisión 4, que el delta no recogía. Necesita tu aprobación o la del dev-lead.
+
+**Pendiente**
+- La re-revisión con opus y esfuerzo alto cubre `1f4c855..5248175`. Cuando vuelva, anoto su veredicto en `tasks.md` y actúo según lo que diga.
+- `tasks.md` tiene un cambio sin committear: el sha de la pasada de fix.
+
+--- [49]
+### Finding Verdicts
+
+- **[Código · Important] `reasonOf` kept the spaces around the reason: ADDRESSED.** `src/app.js:14` now reads `params[index + 1]?.trim()`. `cancelBooking` compares and stores the trimmed value, and `?.` keeps the missing-value case returning `undefined`, so it still answers «motivo no válido…». The new test at `test/cancel.test.js:16-18` covers it: it passes `'sala ocupada '` for `Sur mar`, a slot with no booking, and expects «sin reserva Sur mar». That answer is only reachable once the reason passes the list check, so the test is RED before the fix and GREEN after. It does not use the finding's own example (`Norte lun`), so it never asserts the saved text «cancelada Norte lun (sala ocupada)». That gap is acceptable.
+- **[Spec · Minor] `cancelledList` had no limit: ADDRESSED.** `src/app.js:36-43` adds `listLimit = 20`, `slice(-listLimit)` and the line `… y ${cancelled.length - listLimit} más`. The new AND at spec.md line 61 («con más de 20 canceladas enseña solo las 20 últimas y añade la línea «… y N más»») matches decision 4 in «Decisiones que he tomado yo». The «Enmiendas» line is marked `sin aprobar`, which is right because the spec was approved on 2026-10-08, before this change to the delta. Using 20 instead of the reviewer's 10 is correct, since it follows the spec. The test at `test/cancel.test.js:20-26` covers it. The numbers check out: Norte lun plus 24 Sur bookings make 25 cancelled, the last 20 run from Sur d4 to Sur d23, and the overflow line says «… y 5 más».
+
+### New Breakage in the Fix Diff
+
+- **Minor · `src/app.js:41`.** Decision 4 says «las 20 últimas cancelaciones». `slice(-20)` returns the last 20 cancelled bookings in creation order, not in cancellation order. An old booking cancelled recently can drop off the list while a newer booking cancelled earlier stays. Today each command starts a new process with fresh in-memory data, so nothing breaks yet. Still, the code does not do exactly what the spec says, and there is no cancellation date or sequence to sort by.
+- **Minor · `src/app.js:4`.** `bookings` is now exported, mutable, only so the test can reach it. That exposes production module state as a test seam. A small fixture-loading function, or a `bookings` parameter, would avoid it.
+- **Minor · `test/cancel.test.js:20-26`.** The test permanently adds 24 bookings to shared module state, and its numbers depend on earlier tests having run. «… y 5 más» only holds if test 1 already cancelled Norte lun. Run alone, the list has 24 entries and it would show «… y 4 más», so the test fails. This adds to the order coupling test 3 already had.
+- **Minor · `tasks.md:9`.** Task 1 lists commit `1f4c855`, but the log puts the task in `0eaed54` («feat(bookings): cancelar con un motivo de la lista»). `1f4c855` belongs to task 2 only.
+
+### Out-of-Scope Observations
+
+None.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [52]
+La re-revisión terminó sin hallazgos abiertos, y la revisión final de la 0010 está cerrada. La suite está en 7/7 con `node --test`.
+
+**Re-revisión** (`1f4c855..5248175`, opus con esfuerzo alto): los dos hallazgos quedaron resueltos. No encontró ningún Critical ni Important nuevo, solo 4 Minor.
+
+**Los 4 Minor**
+- **Commit de la Task 1 en `tasks.md`**: corregí el hash a `0eaed54`, porque `1f4c855` es el commit de la Task 2.
+- **Orden de «las 20 últimas»**: sigue el orden de creación y no el de cancelación. Es el ruling que ya había registrado, y no hay fecha de cancelación por la que ordenar.
+- **`bookings` exportado**: lo dejo como está. Un cargador de fixtures añadiría API que producción no usa.
+- **Test del tope**: depende del orden de los tests anteriores. Ejecutado solo, falla con «… y 4 más». Lo dejo como ruling, porque los tests de la 0010 ya dependían de ese orden.
+
+**Estado**
+- **Commits**: `5248175` es la pasada de fix y `ba99708` registra todo en `tasks.md` y el ledger, sin cambios de código. `ba99708` tiene 5 líneas y es solo documentación, así que lo revisé yo mismo en el hilo. El árbol de trabajo está limpio.
+- **Limpieza**: quité el worktree y el diff temporales de la re-revisión.
+
+**✋ Pendiente de aprobación**: el AND del tope de 20 que añadí al delta de `bookings`. Está en la línea de «Enmiendas» marcada `sin aprobar` y aplica literal la decisión 4. Ningún commit queda `sin revisar`.
+
+**Siguiente paso**: queda `sdd-archive` (validación, walkthrough y cierre). No lo he lanzado, porque primero necesita tu aprobación de la enmienda.
+
+--- [53]
+Ese aviso es el del watch de silencio de la re-revisión, que terminó con código 0. La re-revisión ya había devuelto su informe, así que no hay nada nuevo que atender.
+
+El estado sigue como en mi mensaje anterior. Los commits `5248175` y `ba99708` están hechos, la suite está en 7/7 y el árbol está limpio. Falta solo que apruebes la enmienda sin aprobar del tope de 20 en el delta de `bookings`. Con eso sigo con `sdd-archive`.
+

@@ -1,0 +1,47 @@
+--- [4]
+Ahora: leo el contexto del proyecto (producto, roadmap, steering y capabilities). Queda: clasificar el cambio y hacerte las preguntas de diseño, ~3 min.
+
+--- [15]
+Ahora: clasifico el cambio y arranco la entrevista de la spec. Queda: unas pocas preguntas, luego la spec para tu aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`, sin `control.profile`, así que rige el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido (corrígeme):** hoy `reservar` no tiene forma de decirte que una sala está ocupada y qué hacer entonces. `libres` solo filtra por franja. Quieres que, cuando la sala que pides esté ocupada, quedes apuntado en una lista de espera para esa sala. He mirado `src/app.js` solo para clasificar. Es una feature nueva con decisiones de producto abiertas, no un patch. Preveo 3 tareas o menos, así que no propongo dividirla. No hay roadmap con una fila para esto: reservaré el id con el script antes de crear la carpeta.
+
+Antes de diseñar nada necesito saber el porqué. ¿Qué situación te ha pasado, o te imaginas que te pasará, para querer la lista de espera, y qué esperas que ocurra cuando la sala se libera?
+
+--- [19]
+Ahora: tengo la rama `feature/0010-lista-espera` (id 0010 reservado) y sigo con la entrevista. Queda: 2 o 3 preguntas y la spec para tu aprobación, ~8 min.
+
+Tu porqué es claro: no quieres hacer de sondeo a mano sobre `libres`. Hay un hecho que condiciona todo. En `src/app.js` las reservas viven en memoria y se pierden al acabar cada comando, y `cancelar` hoy solo imprime un texto. Una lista de espera necesita que alguien detecte que la sala se libera. Eso lo trato como la siguiente decisión, porque depende de esta.
+
+❓ **¿Qué pasa cuando Norte se libera y tú estás en espera?**
+
+1️⃣ **Se te reserva sola.** La espera es una reserva en cola. Al cancelarse la reserva de Norte, la primera persona en la lista pasa a tener la sala sin que hagas nada.
+Escena: `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Luego, alguien hace `cancelar Norte lun` → `Norte lun 10:00-12:00 reservada para ti (estabas 1.º en espera)`.
+Coste: reservas sin confirmar, y si ya no la quieres tienes que cancelarla.
+
+2️⃣ **Solo se te avisa.** La espera marca la sala como «pendiente de ti». Al liberarse, `libres` y un comando `espera` te dicen «Norte libre, estabas en espera», y reservas tú a mano.
+Escena: `espera` → `Norte lun 10:00-12:00: libre ahora`.
+Coste: sigues teniendo que mirar tú, que es justo lo que quieres evitar. Solo cambia el comando.
+
+➡️ **Recomiendo 1️⃣**, porque tu queja es tener que volver a mirar a mano, y solo 1️⃣ lo elimina. A cambio, puedes acabar con una reserva que ya no quieres, y habrá que decidir cómo la deshaces.
+
+¿Cuál eliges?
+
+--- [21]
+Te lo cuento con un caso concreto, sin elegir por ti.
+
+Hoy ocurre esto. Quieres Norte el lunes de 10:00 a 12:00, pero ya está reservada por otra persona. Haces `libres 10:00-12:00` y Norte no sale. Si esa persona cancela a las 9:00 y tú no vuelves a mirar hasta las 11:00, la sala ha estado libre dos horas y no te has enterado. Lo que quieres es no tener que estar mirando.
+
+La lista de espera resuelve eso a su manera. Primero te apuntas: `reservar Norte lun 10:00-12:00` te dice que está ocupada y que quedas el 1.º en la lista. Lo que queda por decidir es qué pasa en el momento en que la otra persona cancela. Hay dos formas de que ese momento te sirva:
+
+- **La sala pasa a ser tuya sin que hagas nada.** Cuando se cancela la reserva, el programa mira la lista y reserva Norte a tu nombre en ese mismo instante. Cuando mires, ya la tienes. Si resulta que ya no la quieres, tendrás que cancelarla tú.
+- **La sala queda libre y el programa solo te lo dice.** Cuando se cancela, no pasa nada más. La próxima vez que lances `libres`, o un comando nuevo `espera`, verás «Norte está libre y estabas en espera». La reservas tú entonces. Si otra persona se adelanta, la pierdes.
+
+La diferencia práctica es quién da el paso final: el programa o tú.
+
+¿Con qué idea te quedas?
+

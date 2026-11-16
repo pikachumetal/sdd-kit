@@ -1,0 +1,42 @@
+--- [11]
+Reproducido, y la causa está clara. Antes de tocar nada necesito que confirmes el carril.
+
+🦆 `toHours` en `src/app.js` convierte `"09:30"` en el número `9.30`, es decir, trata los minutos como decimales de hora. Por eso 09:30-12:00 sale como 12 − 9,30 = 2,70 h, que supera el máximo de 2,5. Los minutos son en realidad .5 de hora, así que 09:30 debería ser 9,5. El mismo fallo hace que `precio Sur 09:30-12:00` dé `40.499999999999986 €` en lugar de 37,5 €. Ya hay un test en `test/reservar.test.js` («reservar justo el máximo de horas se acepta») que describe este caso exacto.
+
+Es un fallo determinista con la causa raíz confirmada, así que encaja como **patch**. Es una sola corrección en `toHours`, con un test que hoy falla y pasa a verde. No hay `estimation.md` en el proyecto, así que no incluyo estimación.
+
+¿Cómo lo hacemos?
+
+1. **Patch (recomendada):** abro el patch, arreglo `toHours` para convertir minutos a fracción de hora (`h + m/60`), verifico con `node --test` y lo cierro. El arreglo de `precio` va incluido, porque es la misma causa.
+2. **Feature completa:** spec, plan y validación. Es más ceremonia de la que pide un fallo de una línea.
+
+Si te hace falta que lo hagas sin parar, puedes añadir «perfil `delegate`» a tu respuesta. Si no dices nada, uso el perfil del proyecto.
+
+--- [19]
+Ahora: preparo la rama y el `patch.md`. Queda: arreglo, verificación con revisor, commit y cierre, ~10 min.
+
+--- [30]
+Ahora: cierro con `sdd-archive`. Queda: commit y validación tuya, ~3 min.
+
+--- [34]
+El arreglo está hecho y commiteado, pero no he cerrado ni fusionado la rama. Falta tu validación.
+
+**Qué pasaba:** `toHours` leía `09:30` como `9.30` y no como 9,5 h. Por eso la franja salía de 2,70 h y se rechazaba. El mismo fallo hacía que `precio Sur 09:30-12:00` diera `40.499999999999986 €`.
+
+**Qué he cambiado:** `toHours` en `src/app.js` ahora calcula `horas + minutos / 60`. Son 4 líneas. El test de `test/reservar.test.js` («reservar justo el máximo de horas se acepta») ya existía y estaba en rojo. Ahora `node --test` pasa 6/6, y antes pasaba 5/6.
+
+**Revisión:** un revisor independiente confirmó la causa y el arreglo. Los casos `09:30-12:00`, `00:00-02:30` y `9:05-10:00` se aceptan, y `09:00-12:30` sigue rechazándose.
+
+**Registro:** el patch es el 0010, en la rama `feature/0010-horas-minutos`, commit `ff5c887`. El `patch.md` está en `.docs/sdd/changes/20261114-220441-patch-0010-horas-minutos/`.
+
+**Qué te toca ahora:** el proyecto valida a mano, así que necesito que lo pruebes tú. Ejecuta en la rama:
+1. `node src/app.js reservar Sur 09:30-12:00`. Debe responder `reservada Sur 09:30-12:00`.
+2. `node src/app.js precio Sur 09:30-12:00`. Debe responder `37.5 €`.
+3. `node src/app.js reservar Sur 09:00-12:30`. Debe seguir respondiendo `excede el máximo de horas`.
+
+Dime qué probaste y que funciona, y sigo con el cierre (`patch.md` con el hash, roadmap y fusión).
+
+**Dos cosas que debes saber:**
+- **Fusión:** `sdd merge --check` se queja de que a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Tendré que preguntarte a qué rama fusionar. La constitución dice `develop`, pero no puedo darlo por hecho.
+- **Fuera de este patch:** otras franjas dan decimales largos en el precio. Por ejemplo, `precio Sur 9:05-10:00` da `13.749999999999991 €`. Es un tema de redondeo, así que no lo he tocado. ¿Lo apunto en la deuda para triarlo?
+
