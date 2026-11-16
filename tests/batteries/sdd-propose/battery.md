@@ -175,7 +175,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | F1-C Aviso de fase | f1 | los mensajes no abren con `Ahora: … Queda: …` al cambiar de paso |
 | F1-A Sin skill intermedia | f1 | `tools: /Skill: sdd-kit:sdd-start-/` presente |
 | F1-B Entrega a implement | f1 | `tools: /Skill: sdd-kit:sdd-implement/` ausente |
-| TP Plantillas | sp1, co4, p2 | `tools: /^>>> (Skill: \S*sdd-templates(\s\|$)\|Read: [^\n]*sdd-templates[\\/](SKILL\|templates[\\/][\w-]+-template)\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*sdd-templates[\\/](SKILL\|templates[\\/][\w-]+-template)\.md(?![\w.])[^;&\|\n]*([;&\n]\|$\|[\|] *head -(n )?(\d{3,})(?!\d)))/` ausente |
+| TP Plantillas | sp1, co4, p2 | `tools: /^>>> (Skill: \S*sdd-templates(\s\|$)\|Read: [^\n]*sdd-templates[\\/](SKILL\|templates[\\/][\w-]+-template)\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*sdd-templates[\\/](SKILL\|templates[\\/][\w-]+-template)\.md(?![\w.])[^;&\|\n]*([;&\n]\|$\|[\|] *head -(n )?(2[1-9]\d\|[3-9]\d\d\|\d{4,})(?!\d)))/` ausente |
 
 ## Procedencia de las reglas
 
